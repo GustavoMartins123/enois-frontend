@@ -13,9 +13,9 @@ import { Route as VagasRouteImport } from './routes/vagas'
 import { Route as RedeRouteImport } from './routes/rede'
 import { Route as MentoriaRouteImport } from './routes/mentoria'
 import { Route as MensagensRouteImport } from './routes/mensagens'
+import { Route as FeedRouteImport } from './routes/feed'
 import { Route as EventosRouteImport } from './routes/eventos'
 import { Route as ComunidadesRouteImport } from './routes/comunidades'
-import { Route as IndexRouteImport } from './routes/index'
 import { Route as PerfilUsernameRouteImport } from './routes/perfil.$username'
 
 const VagasRoute = VagasRouteImport.update({
@@ -38,6 +38,11 @@ const MensagensRoute = MensagensRouteImport.update({
   path: '/mensagens',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FeedRoute = FeedRouteImport.update({
+  id: '/feed',
+  path: '/feed',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EventosRoute = EventosRouteImport.update({
   id: '/eventos',
   path: '/eventos',
@@ -48,11 +53,6 @@ const ComunidadesRoute = ComunidadesRouteImport.update({
   path: '/comunidades',
   getParentRoute: () => rootRouteImport,
 } as any)
-const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const PerfilUsernameRoute = PerfilUsernameRouteImport.update({
   id: '/perfil/$username',
   path: '/perfil/$username',
@@ -60,9 +60,9 @@ const PerfilUsernameRoute = PerfilUsernameRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
   '/comunidades': typeof ComunidadesRoute
   '/eventos': typeof EventosRoute
+  '/feed': typeof FeedRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
   '/rede': typeof RedeRoute
@@ -70,9 +70,9 @@ export interface FileRoutesByFullPath {
   '/perfil/$username': typeof PerfilUsernameRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
   '/comunidades': typeof ComunidadesRoute
   '/eventos': typeof EventosRoute
+  '/feed': typeof FeedRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
   '/rede': typeof RedeRoute
@@ -81,9 +81,9 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
   '/comunidades': typeof ComunidadesRoute
   '/eventos': typeof EventosRoute
+  '/feed': typeof FeedRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
   '/rede': typeof RedeRoute
@@ -93,9 +93,9 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    | '/'
     | '/comunidades'
     | '/eventos'
+    | '/feed'
     | '/mensagens'
     | '/mentoria'
     | '/rede'
@@ -103,9 +103,9 @@ export interface FileRouteTypes {
     | '/perfil/$username'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/comunidades'
     | '/eventos'
+    | '/feed'
     | '/mensagens'
     | '/mentoria'
     | '/rede'
@@ -113,9 +113,9 @@ export interface FileRouteTypes {
     | '/perfil/$username'
   id:
     | '__root__'
-    | '/'
     | '/comunidades'
     | '/eventos'
+    | '/feed'
     | '/mensagens'
     | '/mentoria'
     | '/rede'
@@ -124,9 +124,9 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
   ComunidadesRoute: typeof ComunidadesRoute
   EventosRoute: typeof EventosRoute
+  FeedRoute: typeof FeedRoute
   MensagensRoute: typeof MensagensRoute
   MentoriaRoute: typeof MentoriaRoute
   RedeRoute: typeof RedeRoute
@@ -164,6 +164,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MensagensRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/feed': {
+      id: '/feed'
+      path: '/feed'
+      fullPath: '/feed'
+      preLoaderRoute: typeof FeedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/eventos': {
       id: '/eventos'
       path: '/eventos'
@@ -178,13 +185,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ComunidadesRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/perfil/$username': {
       id: '/perfil/$username'
       path: '/perfil/$username'
@@ -196,9 +196,9 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
   ComunidadesRoute: ComunidadesRoute,
   EventosRoute: EventosRoute,
+  FeedRoute: FeedRoute,
   MensagensRoute: MensagensRoute,
   MentoriaRoute: MentoriaRoute,
   RedeRoute: RedeRoute,
@@ -208,3 +208,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
