@@ -1,17 +1,36 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { MapPin, Briefcase, GraduationCap, Award, Link as LinkIcon, MessageCircle, UserPlus, Sparkles, Target, Clock } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  MapPin,
+  Briefcase,
+  GraduationCap,
+  Award,
+  Link as LinkIcon,
+  MessageCircle,
+  UserPlus,
+  Sparkles,
+  Target,
+  Clock,
+  Camera,
+} from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PostCard } from "@/components/post-card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { findUserByUsername, posts, type User } from "@/lib/mock-data";
+import { profileApi, feedApi } from "@/lib/api";
+import { useAuth } from "@/lib/use-auth";
+import { useMediaUpload } from "@/lib/use-media-upload";
+import { useState, useRef } from "react";
 
 export const Route = createFileRoute("/perfil/$username")({
-  loader: ({ params }) => {
-    const user = findUserByUsername(params.username);
-    if (!user) throw notFound();
-    return { user };
+  loader: async ({ params }) => {
+    try {
+      const user = await profileApi.get(params.username);
+      return { user };
+    } catch {
+      throw notFound();
+    }
   },
   head: ({ loaderData }) => ({
     meta: [
@@ -40,20 +59,97 @@ export const Route = createFileRoute("/perfil/$username")({
 });
 
 function Profile() {
-  const { user } = Route.useLoaderData() as { user: User };
-  const userPosts = posts.filter((p) => p.authorId === user.id);
+  const { user } = Route.useLoaderData();
+  const { user: me } = useAuth();
+  const queryClient = useQueryClient();
+  const avatarUpload = useMediaUpload();
+  const bannerUpload = useMediaUpload();
+  const avatarRef = useRef<HTMLInputElement>(null);
+  const bannerRef = useRef<HTMLInputElement>(null);
+  const [hoveringAvatar, setHoveringAvatar] = useState(false);
+  const [hoveringBanner, setHoveringBanner] = useState(false);
+
+  const isOwnProfile = me?.id === user.id;
+
+  const updateProfile = useMutation({
+    mutationFn: (data: { avatar?: string; banner?: string }) => profileApi.update(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["me"] });
+      queryClient.invalidateQueries({ queryKey: ["profile", user.username] });
+    },
+  });
+
+  const { data: postsData } = useQuery({
+    queryKey: ["posts", user.username],
+    queryFn: () => feedApi.listByUser(user.username),
+  });
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const result = await avatarUpload.upload(file, "AVATAR");
+      await updateProfile.mutateAsync({ avatar: result.cdnUrl });
+    } catch { /* handled by hook state */ }
+  };
+
+  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const result = await bannerUpload.upload(file, "BANNER");
+      await updateProfile.mutateAsync({ banner: result.cdnUrl });
+    } catch { /* handled by hook state */ }
+  };
+
+  const userPosts = postsData?.items ?? [];
 
   return (
     <AppShell>
       <div className="space-y-6">
         <div className="surface-card overflow-hidden">
-          <img src={user.banner} alt="" className="h-40 w-full object-cover sm:h-52" />
+          <div
+            className="relative"
+            onMouseEnter={() => setHoveringBanner(true)}
+            onMouseLeave={() => setHoveringBanner(false)}
+          >
+            {user.banner ? (
+              <img src={user.banner} alt="" className="h-40 w-full object-cover sm:h-52" />
+            ) : (
+              <div className="h-40 w-full bg-gradient-to-r from-primary/20 to-primary/5 sm:h-52" />
+            )}
+            {isOwnProfile && hoveringBanner && (
+              <button
+                type="button"
+                onClick={() => bannerRef.current?.click()}
+                className="absolute inset-0 flex items-center justify-center bg-black/30 text-white transition"
+                disabled={bannerUpload.status === "uploading"}
+              >
+                {bannerUpload.status === "uploading" ? "Enviando..." : <Camera className="h-6 w-6" />}
+              </button>
+            )}
+            <input ref={bannerRef} type="file" accept="image/*" className="hidden" onChange={handleBannerUpload} />
+          </div>
           <div className="px-6 pb-6">
             <div className="-mt-14 flex flex-wrap items-end justify-between gap-4">
-              <Avatar className="h-28 w-28 ring-4 ring-card">
-                <AvatarImage src={user.avatar} alt={user.name} />
-                <AvatarFallback>{user.name[0]}</AvatarFallback>
-              </Avatar>
+              <div
+                className="relative"
+                onMouseEnter={() => setHoveringAvatar(true)}
+                onMouseLeave={() => setHoveringAvatar(false)}
+              >
+                <UserAvatar src={user.avatar} alt={user.name} className="h-28 w-28 ring-4 ring-card" />
+                {isOwnProfile && hoveringAvatar && (
+                  <button
+                    type="button"
+                    onClick={() => avatarRef.current?.click()}
+                    className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30 text-white transition"
+                    disabled={avatarUpload.status === "uploading"}
+                  >
+                    {avatarUpload.status === "uploading" ? "..." : <Camera className="h-5 w-5" />}
+                  </button>
+                )}
+                <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+              </div>
               <div className="flex flex-wrap gap-2">
                 <Button variant="outline" className="rounded-full gap-1.5">
                   <MessageCircle className="h-4 w-4" /> Mensagem
@@ -79,9 +175,17 @@ function Profile() {
               </div>
               <p className="mt-1 text-foreground">{user.headline}</p>
               <p className="mt-3 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                <span className="inline-flex items-center gap-1.5"><Briefcase className="h-4 w-4" /> {user.company}</span>
-                <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" /> {user.location}</span>
-                <span>· {user.connections} conexões</span>
+                {user.company && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Briefcase className="h-4 w-4" /> {user.company}
+                  </span>
+                )}
+                {user.location && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <MapPin className="h-4 w-4" /> {user.location}
+                  </span>
+                )}
+                <span>· {user.connectionsCount} conexões</span>
               </p>
             </div>
           </div>
@@ -89,92 +193,71 @@ function Profile() {
 
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-6">
-            <Section title="Sobre">
-              <p className="text-[15px] leading-relaxed text-foreground">{user.bio}</p>
-            </Section>
+            {user.bio && (
+              <Section title="Sobre">
+                <p className="text-[15px] leading-relaxed text-foreground">{user.bio}</p>
+              </Section>
+            )}
 
-            <Section title="Habilidades">
-              <div className="flex flex-wrap gap-2">
-                {user.skills.map((s) => (
-                  <Badge key={s} className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft">
-                    {s}
-                  </Badge>
-                ))}
-              </div>
-            </Section>
+            {user.skills.length > 0 && (
+              <Section title="Habilidades">
+                <div className="flex flex-wrap gap-2">
+                  {user.skills.map((s) => (
+                    <Badge
+                      key={s}
+                      className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft"
+                    >
+                      {s}
+                    </Badge>
+                  ))}
+                </div>
+              </Section>
+            )}
 
-            <Section title="Objetivos profissionais" icon={Target}>
-              <div className="grid gap-3 sm:grid-cols-3">
-                {user.goals.map((goal) => (
-                  <div key={goal} className="rounded-xl border border-border bg-muted/40 p-4">
-                    <p className="text-sm font-medium">{goal}</p>
-                  </div>
-                ))}
-              </div>
-            </Section>
-
-            <Section title="Experiência" icon={Briefcase}>
-              <Timeline items={user.experiences} />
-            </Section>
-
-            <Section title="Formação" icon={GraduationCap}>
-              <Timeline items={user.education} />
-            </Section>
-
-            <Section title="Certificações" icon={Award}>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {user.certifications.map((cert) => (
-                  <div key={`${cert.title}-${cert.year}`} className="rounded-xl border border-border bg-muted/40 p-4">
-                    <p className="font-medium">{cert.title}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      {cert.issuer} · {cert.year}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </Section>
+            {user.goals.length > 0 && (
+              <Section title="Objetivos profissionais" icon={Target}>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {user.goals.map((goal) => (
+                    <div key={goal} className="rounded-xl border border-border bg-muted/40 p-4">
+                      <p className="text-sm font-medium">{goal}</p>
+                    </div>
+                  ))}
+                </div>
+              </Section>
+            )}
 
             <Section title="Publicações recentes">
               {userPosts.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Ainda não há publicações.</p>
               ) : (
                 <div className="space-y-4">
-                  {userPosts.map((p) => <PostCard key={p.id} post={p} />)}
+                  {userPosts.map((p) => (
+                    <PostCard key={p.id} post={p} />
+                  ))}
                 </div>
               )}
             </Section>
           </div>
 
           <aside className="space-y-6">
-            <Section title="Reputação" icon={Award}>
-              <ul className="space-y-3">
-                {user.reputation.map((r) => (
-                  <li key={r.label} className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-medium">{r.label}</span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">Nível {r.level}</span>
-                  </li>
-                ))}
-              </ul>
-            </Section>
-
             <Section title="Disponibilidade" icon={Clock}>
-              <p className="text-sm leading-relaxed text-foreground">{user.availability}</p>
+              <p className="text-sm leading-relaxed text-foreground">
+                {user.availability ?? "Não informada"}
+              </p>
             </Section>
 
-            <Section title="Links">
-              <ul className="space-y-2 text-sm">
-                {user.externalLinks.map((link) => (
-                  <li key={link.url} className="flex items-center gap-2 text-muted-foreground">
-                    <LinkIcon className="h-4 w-4" />
-                    <span className="font-medium text-foreground">{link.label}</span>
-                    <span className="truncate">{link.url}</span>
-                  </li>
-                ))}
-              </ul>
-            </Section>
+            {user.externalLinks.length > 0 && (
+              <Section title="Links">
+                <ul className="space-y-2 text-sm">
+                  {user.externalLinks.map((link) => (
+                    <li key={link} className="flex items-center gap-2 text-muted-foreground">
+                      <LinkIcon className="h-4 w-4" />
+                      <span className="truncate text-foreground">{link}</span>
+                    </li>
+                  ))}
+                </ul>
+              </Section>
+            )}
           </aside>
         </div>
       </div>
@@ -183,7 +266,15 @@ function Profile() {
   );
 }
 
-function Section({ title, icon: Icon, children }: { title: string; icon?: React.ElementType; children: React.ReactNode }) {
+function Section({
+  title,
+  icon: Icon,
+  children,
+}: {
+  title: string;
+  icon?: React.ElementType;
+  children: React.ReactNode;
+}) {
   return (
     <section className="surface-card p-6">
       <h2 className="mb-4 flex items-center gap-2 text-base font-semibold">
@@ -192,20 +283,5 @@ function Section({ title, icon: Icon, children }: { title: string; icon?: React.
       </h2>
       {children}
     </section>
-  );
-}
-
-function Timeline({ items }: { items: { title: string; org: string; period: string; desc: string }[] }) {
-  return (
-    <ol className="relative space-y-5 border-l border-border pl-5">
-      {items.map((it, i) => (
-        <li key={i} className="relative">
-          <span className="absolute -left-[27px] top-1.5 h-3 w-3 rounded-full border-2 border-card bg-primary" />
-          <p className="font-medium">{it.title}</p>
-          <p className="text-sm text-muted-foreground">{it.org} · {it.period}</p>
-          <p className="mt-1 text-sm text-foreground/80">{it.desc}</p>
-        </li>
-      ))}
-    </ol>
   );
 }

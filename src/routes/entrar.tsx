@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { authApi, ApiError } from "@/lib/api";
 
 type Tab = "login" | "signup";
 
@@ -18,7 +19,10 @@ export const Route = createFileRoute("/entrar")({
   head: () => ({
     meta: [
       { title: "Entrar ou criar conta · Conexão" },
-      { name: "description", content: "Acesse sua conta ou comece sua jornada profissional na Conexão." },
+      {
+        name: "description",
+        content: "Acesse sua conta ou comece sua jornada profissional na Conexão.",
+      },
     ],
   }),
   component: Auth,
@@ -111,8 +115,12 @@ function Auth() {
 
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
           <div className="flex items-center gap-1 rounded-full border border-border bg-card p-1">
-            <TabBtn active={tab === "signup"} onClick={() => setTab("signup")}>Criar conta</TabBtn>
-            <TabBtn active={tab === "login"} onClick={() => setTab("login")}>Entrar</TabBtn>
+            <TabBtn active={tab === "signup"} onClick={() => setTab("signup")}>
+              Criar conta
+            </TabBtn>
+            <TabBtn active={tab === "login"} onClick={() => setTab("login")}>
+              Entrar
+            </TabBtn>
           </div>
 
           <div className="mt-8">
@@ -125,8 +133,14 @@ function Auth() {
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
             Ao continuar, você concorda com nossos{" "}
-            <a href="#" className="text-primary hover:underline">Termos</a> e{" "}
-            <a href="#" className="text-primary hover:underline">Política de Privacidade</a>.
+            <a href="#" className="text-primary hover:underline">
+              Termos
+            </a>{" "}
+            e{" "}
+            <a href="#" className="text-primary hover:underline">
+              Política de Privacidade
+            </a>
+            .
           </p>
         </div>
       </section>
@@ -134,12 +148,22 @@ function Auth() {
   );
 }
 
-function TabBtn({ active, children, onClick }: { active: boolean; children: React.ReactNode; onClick: () => void }) {
+function TabBtn({
+  active,
+  children,
+  onClick,
+}: {
+  active: boolean;
+  children: React.ReactNode;
+  onClick: () => void;
+}) {
   return (
     <button
       onClick={onClick}
       className={`flex-1 rounded-full px-4 py-2 text-sm font-medium transition ${
-        active ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+        active
+          ? "bg-primary text-primary-foreground shadow-sm"
+          : "text-muted-foreground hover:text-foreground"
       }`}
     >
       {children}
@@ -150,10 +174,16 @@ function TabBtn({ active, children, onClick }: { active: boolean; children: Reac
 function SocialButtons() {
   return (
     <div className="grid gap-2">
-      <button type="button" className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium transition hover:bg-muted">
+      <button
+        type="button"
+        className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium transition hover:bg-muted"
+      >
         <GoogleIcon /> Continuar com Google
       </button>
-      <button type="button" className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium transition hover:bg-muted">
+      <button
+        type="button"
+        className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium transition hover:bg-muted"
+      >
         <AppleIcon /> Continuar com Apple
       </button>
     </div>
@@ -175,7 +205,7 @@ function SignupForm({ onDone }: { onDone: () => void }) {
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
 
-  const submit = (e: FormEvent<HTMLFormElement>) => {
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const parsed = signupSchema.safeParse(Object.fromEntries(fd));
@@ -187,8 +217,25 @@ function SignupForm({ onDone }: { onDone: () => void }) {
     }
     setErrors({});
     setLoading(true);
-    // TODO: chamar backend (Supabase auth) — por enquanto mockado
-    setTimeout(() => onDone(), 700);
+    try {
+      const result = await authApi.signup({
+        name: parsed.data.name,
+        role: parsed.data.role,
+        email: parsed.data.email,
+        password: parsed.data.password,
+      });
+      localStorage.setItem("session_token", result.token);
+      localStorage.setItem("current_user", JSON.stringify(result.user));
+      onDone();
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setErrors({ form: err.message });
+      } else {
+        setErrors({ form: "Erro inesperado. Tente novamente." });
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -203,13 +250,26 @@ function SignupForm({ onDone }: { onDone: () => void }) {
 
       <form onSubmit={submit} className="space-y-4" noValidate>
         <Field label="Nome completo" error={errors.name}>
-          <Input name="name" placeholder="Maria da Silva" autoComplete="name" required maxLength={80} />
+          <Input
+            name="name"
+            placeholder="Maria da Silva"
+            autoComplete="name"
+            required
+            maxLength={80}
+          />
         </Field>
         <Field label="Cargo atual" error={errors.role}>
           <Input name="role" placeholder="Product Designer" required maxLength={80} />
         </Field>
         <Field label="E-mail" error={errors.email}>
-          <Input name="email" type="email" placeholder="voce@exemplo.com" autoComplete="email" required maxLength={255} />
+          <Input
+            name="email"
+            type="email"
+            placeholder="voce@exemplo.com"
+            autoComplete="email"
+            required
+            maxLength={255}
+          />
         </Field>
         <Field label="Senha" error={errors.password}>
           <div className="relative">
@@ -232,8 +292,19 @@ function SignupForm({ onDone }: { onDone: () => void }) {
           </div>
         </Field>
 
+        {errors.form && (
+          <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
+            {errors.form}
+          </p>
+        )}
         <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Criar conta <ArrowRight className="h-4 w-4" /></>}
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <>
+              Criar conta <ArrowRight className="h-4 w-4" />
+            </>
+          )}
         </Button>
       </form>
     </div>
@@ -245,7 +316,7 @@ function LoginForm({ onDone }: { onDone: () => void }) {
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
 
-  const submit = (e: FormEvent<HTMLFormElement>) => {
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const parsed = loginSchema.safeParse(Object.fromEntries(fd));
@@ -257,8 +328,23 @@ function LoginForm({ onDone }: { onDone: () => void }) {
     }
     setErrors({});
     setLoading(true);
-    // TODO: chamar backend (Supabase auth) — por enquanto mockado
-    setTimeout(() => onDone(), 600);
+    try {
+      const result = await authApi.login({
+        email: parsed.data.email,
+        password: parsed.data.password,
+      });
+      localStorage.setItem("session_token", result.token);
+      localStorage.setItem("current_user", JSON.stringify(result.user));
+      onDone();
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setErrors({ form: err.message });
+      } else {
+        setErrors({ form: "Erro inesperado. Tente novamente." });
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -273,12 +359,23 @@ function LoginForm({ onDone }: { onDone: () => void }) {
 
       <form onSubmit={submit} className="space-y-4" noValidate>
         <Field label="E-mail" error={errors.email}>
-          <Input name="email" type="email" placeholder="voce@exemplo.com" autoComplete="email" required maxLength={255} />
+          <Input
+            name="email"
+            type="email"
+            placeholder="voce@exemplo.com"
+            autoComplete="email"
+            required
+            maxLength={255}
+          />
         </Field>
         <Field
           label="Senha"
           error={errors.password}
-          right={<a href="#" className="text-xs font-medium text-primary hover:underline">Esqueci minha senha</a>}
+          right={
+            <a href="#" className="text-xs font-medium text-primary hover:underline">
+              Esqueci minha senha
+            </a>
+          }
         >
           <div className="relative">
             <Input
@@ -300,8 +397,19 @@ function LoginForm({ onDone }: { onDone: () => void }) {
           </div>
         </Field>
 
+        {errors.form && (
+          <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
+            {errors.form}
+          </p>
+        )}
         <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Entrar <ArrowRight className="h-4 w-4" /></>}
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <>
+              Entrar <ArrowRight className="h-4 w-4" />
+            </>
+          )}
         </Button>
       </form>
     </div>
@@ -334,7 +442,10 @@ function Field({
 function GoogleIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
-      <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.4-1.6 4.1-5.5 4.1-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.5 14.7 2.6 12 2.6 6.8 2.6 2.6 6.8 2.6 12s4.2 9.4 9.4 9.4c5.4 0 9-3.8 9-9.2 0-.6-.1-1.1-.2-1.6H12z"/>
+      <path
+        fill="#EA4335"
+        d="M12 10.2v3.9h5.5c-.2 1.4-1.6 4.1-5.5 4.1-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.5 14.7 2.6 12 2.6 6.8 2.6 2.6 6.8 2.6 12s4.2 9.4 9.4 9.4c5.4 0 9-3.8 9-9.2 0-.6-.1-1.1-.2-1.6H12z"
+      />
     </svg>
   );
 }
@@ -342,7 +453,7 @@ function GoogleIcon() {
 function AppleIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-4 w-4 fill-foreground" aria-hidden>
-      <path d="M16.4 12.7c0-2.4 2-3.6 2.1-3.6-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.2.9-4 2.4-1.7 3-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3.1 2.4 1.3-.1 1.7-.8 3.2-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.3.9-1.3 1.3-2.6 1.3-2.7-.1 0-2.6-1-2.7-3.9zM14 5.4c.7-.8 1.2-1.9 1-3-1 .1-2.2.7-2.9 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.2-.5 2.9-1.4z"/>
+      <path d="M16.4 12.7c0-2.4 2-3.6 2.1-3.6-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.2.9-4 2.4-1.7 3-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3.1 2.4 1.3-.1 1.7-.8 3.2-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.3.9-1.3 1.3-2.6 1.3-2.7-.1 0-2.6-1-2.7-3.9zM14 5.4c.7-.8 1.2-1.9 1-3-1 .1-2.2.7-2.9 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.2-.5 2.9-1.4z" />
     </svg>
   );
 }

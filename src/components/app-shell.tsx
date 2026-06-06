@@ -1,4 +1,5 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Home,
   Users,
@@ -13,13 +14,18 @@ import {
   CheckCheck,
   AtSign,
   UserPlus,
+  Loader2,
+  LogIn,
 } from "lucide-react";
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, useRef, useEffect, type ReactNode } from "react";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/user-avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { currentUser, findUser, notifications, type Notification } from "@/lib/mock-data";
+import { Button } from "@/components/ui/button";
+import { profileApi, notificationsApi, searchApi } from "@/lib/api";
+import { isAuthenticated } from "@/lib/use-auth";
+import type { Notification } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 const nav = [
@@ -33,7 +39,7 @@ const nav = [
 ];
 
 const notificationMeta: Record<
-  Notification["kind"],
+  string,
   { icon: React.ElementType; className: string }
 > = {
   connection: { icon: UserPlus, className: "bg-primary-soft text-primary" },
@@ -45,26 +51,45 @@ const notificationMeta: Record<
 };
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const [notificationList, setNotificationList] = useState(notifications);
+  const navigate = useNavigate();
+  const authenticated = isAuthenticated();
+
+  const { data: profile } = useQuery({
+    queryKey: ["me"],
+    queryFn: () => profileApi.me(),
+    enabled: authenticated,
+  });
+
+  const { data: notificationsData } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: () => notificationsApi.list(),
+    enabled: authenticated,
+  });
+
+  const markAsRead = useMutation({
+    mutationFn: (id: string) => notificationsApi.markAsRead(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+  });
+
+  const markAllAsRead = useMutation({
+    mutationFn: () => notificationsApi.markAllAsRead(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+  });
+
+  const notificationList = useMemo(
+    () => notificationsData?.items ?? [],
+    [notificationsData],
+  );
   const unreadCount = useMemo(
-    () => notificationList.filter((notification) => !notification.read).length,
+    () => notificationList.filter((n) => !n.read).length,
     [notificationList],
   );
-
-  const markNotificationAsRead = (id: string) => {
-    setNotificationList((current) =>
-      current.map((notification) =>
-        notification.id === id ? { ...notification, read: true } : notification,
-      ),
-    );
-  };
-
-  const markAllNotificationsAsRead = () => {
-    setNotificationList((current) =>
-      current.map((notification) => ({ ...notification, read: true })),
-    );
-  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -82,205 +107,355 @@ export function AppShell({ children }: { children: ReactNode }) {
             </span>
           </Link>
 
-          <div className="relative ml-2 hidden flex-1 max-w-md md:block">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Buscar pessoas, comunidades, vagas..."
-              className="h-10 rounded-full border-transparent bg-muted pl-9"
-            />
-          </div>
+          {authenticated && <SearchBox />}
 
           <div className="ml-auto flex items-center gap-2">
             <ThemeToggle />
-            <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  className="relative grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                  aria-label={
-                    unreadCount > 0 ? `${unreadCount} notificações não lidas` : "Notificações"
-                  }
-                >
-                  <Bell className="h-5 w-5" />
-                  {unreadCount > 0 && (
-                    <span className="absolute right-1.5 top-1.5 grid min-h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground ring-2 ring-background">
-                      {unreadCount}
-                    </span>
-                  )}
-                </button>
-              </PopoverTrigger>
-              <PopoverContent
-                align="end"
-                className="w-[min(calc(100vw-2rem),24rem)] overflow-hidden rounded-2xl p-0"
-              >
-                <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
-                  <div>
-                    <p className="text-sm font-semibold">Notificações</p>
-                    <p className="text-xs text-muted-foreground">
-                      {unreadCount > 0
-                        ? `${unreadCount} pendente${unreadCount > 1 ? "s" : ""}`
-                        : "Tudo lido por aqui"}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={markAllNotificationsAsRead}
-                    disabled={unreadCount === 0}
-                    className="inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-primary transition hover:bg-primary-soft disabled:pointer-events-none disabled:text-muted-foreground"
+            {authenticated ? (
+              <>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      className="relative grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                      aria-label={
+                        unreadCount > 0
+                          ? `${unreadCount} notificações não lidas`
+                          : "Notificações"
+                      }
+                    >
+                      <Bell className="h-5 w-5" />
+                      {unreadCount > 0 && (
+                        <span className="absolute right-1.5 top-1.5 grid min-h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground ring-2 ring-background">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    align="end"
+                    className="w-[min(calc(100vw-2rem),24rem)] overflow-hidden rounded-2xl p-0"
                   >
-                    <CheckCheck className="h-3.5 w-3.5" />
-                    Marcar lidas
-                  </button>
-                </div>
-
-                <div className="max-h-[28rem] overflow-y-auto">
-                  {notificationList.map((notification) => {
-                    const meta = notificationMeta[notification.kind];
-                    const Icon = meta.icon;
-                    const actor = notification.actorId ? findUser(notification.actorId) : null;
-
-                    return (
-                      <div
-                        key={notification.id}
-                        className={cn(
-                          "border-b border-border px-4 py-3 last:border-b-0",
-                          notification.read ? "bg-popover" : "bg-primary-soft/40",
-                        )}
+                    <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+                      <div>
+                        <p className="text-sm font-semibold">Notificações</p>
+                        <p className="text-xs text-muted-foreground">
+                          {unreadCount > 0
+                            ? `${unreadCount} pendente${unreadCount > 1 ? "s" : ""}`
+                            : "Tudo lido por aqui"}
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => markAllAsRead.mutate()}
+                        disabled={unreadCount === 0}
+                        className="inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-primary transition hover:bg-primary-soft disabled:pointer-events-none disabled:text-muted-foreground"
                       >
-                        <div className="flex items-start gap-3">
-                          <span
+                        <CheckCheck className="h-3.5 w-3.5" />
+                        Marcar lidas
+                      </button>
+                    </div>
+
+                    <div className="max-h-[28rem] overflow-y-auto">
+                      {notificationList.map((notification) => {
+                        const meta =
+                          notificationMeta[notification.kind] ??
+                          notificationMeta.connection;
+                        const Icon = meta.icon;
+
+                        return (
+                          <div
+                            key={notification.id}
                             className={cn(
-                              "grid h-9 w-9 shrink-0 place-items-center rounded-full",
-                              meta.className,
+                              "border-b border-border px-4 py-3 last:border-b-0",
+                              notification.read
+                                ? "bg-popover"
+                                : "bg-primary-soft/40",
                             )}
                           >
-                            <Icon className="h-4 w-4" />
-                          </span>
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-start justify-between gap-2">
-                              <p className="text-sm font-semibold leading-tight">
-                                {notification.title}
-                              </p>
-                              {!notification.read && (
-                                <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
-                              )}
-                            </div>
-                            {actor && (
-                              <p className="mt-0.5 truncate text-xs font-medium text-muted-foreground">
-                                {actor.name}
-                              </p>
-                            )}
-                            <p className="mt-1 text-sm leading-snug text-muted-foreground">
-                              {notification.body}
-                            </p>
-                            <div className="mt-3 flex items-center justify-between gap-2">
-                              <span className="text-xs text-muted-foreground">
-                                {notification.createdAt}
-                              </span>
-                              <div className="flex items-center gap-2">
-                                {!notification.read && (
-                                  <button
-                                    type="button"
-                                    onClick={() => markNotificationAsRead(notification.id)}
-                                    className="rounded-full px-2 py-1 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                                  >
-                                    Lida
-                                  </button>
+                            <div className="flex items-start gap-3">
+                              <span
+                                className={cn(
+                                  "grid h-9 w-9 shrink-0 place-items-center rounded-full",
+                                  meta.className,
                                 )}
-                                <Link
-                                  to={notification.href}
-                                  onClick={() => markNotificationAsRead(notification.id)}
-                                  className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground transition hover:bg-primary/90"
-                                >
-                                  {notification.ctaLabel}
-                                </Link>
+                              >
+                                <Icon className="h-4 w-4" />
+                              </span>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-start justify-between gap-2">
+                                  <p className="text-sm font-semibold leading-tight">
+                                    {notification.title}
+                                  </p>
+                                  {!notification.read && (
+                                    <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                                  )}
+                                </div>
+                                <p className="mt-1 text-sm leading-snug text-muted-foreground">
+                                  {notification.body}
+                                </p>
+                                <div className="mt-3 flex items-center justify-between gap-2">
+                                  <span className="text-xs text-muted-foreground">
+                                    {formatTime(notification.createdAt)}
+                                  </span>
+                                  <div className="flex items-center gap-2">
+                                    {!notification.read && (
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          markAsRead.mutate(notification.id)
+                                        }
+                                        className="rounded-full px-2 py-1 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                                      >
+                                        Lida
+                                      </button>
+                                    )}
+                                    <Link
+                                      to={
+                                        notification.href as
+                                          | "/feed"
+                                          | "/rede"
+                                          | "/mensagens"
+                                          | "/eventos"
+                                          | "/vagas"
+                                          | "/mentoria"
+                                      }
+                                      onClick={() => {
+                                        if (!notification.read)
+                                          markAsRead.mutate(notification.id);
+                                      }}
+                                      className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground transition hover:bg-primary/90"
+                                    >
+                                      {notification.ctaLabel}
+                                    </Link>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </PopoverContent>
-            </Popover>
-            <Link
-              to="/perfil/$username"
-              params={{ username: currentUser.username }}
-              className="flex items-center gap-2 rounded-full p-1 pr-3 transition hover:bg-muted"
-            >
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-                <AvatarFallback>VC</AvatarFallback>
-              </Avatar>
-              <span className="hidden text-sm font-medium sm:inline">Perfil</span>
-            </Link>
+                        );
+                      })}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
+                {profile && (
+                  <Link
+                    to="/perfil/$username"
+                    params={{ username: profile.username }}
+                    className="flex items-center gap-2 rounded-full p-1 pr-3 transition hover:bg-muted"
+                  >
+                    <UserAvatar
+                      src={profile.avatar}
+                      alt={profile.name}
+                      className="h-8 w-8"
+                    />
+                    <span className="hidden text-sm font-medium sm:inline">
+                      Perfil
+                    </span>
+                  </Link>
+                )}
+              </>
+            ) : (
+              <Button
+                onClick={() =>
+                  navigate({ to: "/entrar", search: { tab: "login" } })
+                }
+                className="rounded-full gap-1.5"
+                size="sm"
+              >
+                <LogIn className="h-4 w-4" /> Entrar
+              </Button>
+            )}
           </div>
         </div>
       </header>
 
       <div className="mx-auto flex max-w-7xl gap-6 px-4 py-6 sm:px-6">
-        <aside className="sticky top-20 hidden h-fit w-60 shrink-0 lg:block">
-          <nav className="flex flex-col gap-1">
-            {nav.map((item) => {
-              const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+        {authenticated && (
+          <aside className="sticky top-20 hidden h-fit w-60 shrink-0 lg:block">
+            <nav className="flex flex-col gap-1">
+              {nav.map((item) => {
+                const active =
+                  item.to === "/"
+                    ? pathname === "/"
+                    : pathname.startsWith(item.to);
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    className={cn(
+                      "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
+                      active
+                        ? "bg-primary-soft text-primary"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    )}
+                  >
+                    <Icon
+                      className={cn("h-4 w-4", active ? "text-primary" : "")}
+                    />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </aside>
+        )}
+
+        <main className="min-w-0 flex-1">{children}</main>
+      </div>
+
+      {authenticated && (
+        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
+          <div className="mx-auto flex max-w-7xl items-center justify-around px-2">
+            {nav.slice(0, 5).map((item) => {
+              const active =
+                item.to === "/"
+                  ? pathname === "/"
+                  : pathname.startsWith(item.to);
               const Icon = item.icon;
               return (
                 <Link
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
-                    active
-                      ? "bg-primary-soft text-primary"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                    "flex flex-col items-center gap-0.5 px-2 py-2.5 text-[10px] font-medium",
+                    active ? "text-primary" : "text-muted-foreground",
                   )}
                 >
-                  <Icon className={cn("h-4 w-4", active ? "text-primary" : "")} />
+                  <Icon className="h-5 w-5" />
                   {item.label}
                 </Link>
               );
             })}
-          </nav>
-
-          <div className="mt-6 surface-card p-4">
-            <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-              Sua reputação
-            </p>
-            <div className="mt-3 space-y-2">
-              {currentUser.reputation.map((r) => (
-                <div key={r.label} className="flex items-center justify-between text-sm">
-                  <span className="font-medium">{r.label}</span>
-                  <span className="text-xs text-muted-foreground">Nível {r.level}</span>
-                </div>
-              ))}
-            </div>
           </div>
-        </aside>
-
-        <main className="min-w-0 flex-1">{children}</main>
-      </div>
-
-      <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
-        <div className="mx-auto flex max-w-7xl items-center justify-around px-2">
-          {nav.slice(0, 5).map((item) => {
-            const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "flex flex-col items-center gap-0.5 px-2 py-2.5 text-[10px] font-medium",
-                  active ? "text-primary" : "text-muted-foreground",
-                )}
-              >
-                <Icon className="h-5 w-5" />
-                {item.label}
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
+        </nav>
+      )}
     </div>
   );
+}
+
+function SearchBox() {
+  const [query, setQuery] = useState("");
+  const [debounced, setDebounced] = useState("");
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebounced(query), 250);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const { data: results, isFetching } = useQuery({
+    queryKey: ["search", debounced],
+    queryFn: () => searchApi.search(debounced),
+    enabled: debounced.length >= 2,
+  });
+
+  const items = results?.items ?? [];
+
+  return (
+    <div ref={ref} className="relative ml-2 hidden flex-1 max-w-md md:block">
+      <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setOpen(true);
+        }}
+        onFocus={() => setOpen(true)}
+        placeholder="Buscar pessoas, comunidades, vagas..."
+        className="h-10 rounded-full border-transparent bg-muted pl-9"
+      />
+      {isFetching && (
+        <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+      )}
+      {open && debounced.length >= 2 && (
+        <div className="absolute left-0 right-0 top-full mt-2 overflow-hidden rounded-2xl border border-border bg-popover shadow-lg">
+          {items.length === 0 && !isFetching && (
+            <p className="px-4 py-6 text-center text-sm text-muted-foreground">
+              Nenhum resultado para "{debounced}"
+            </p>
+          )}
+          <ul className="max-h-80 overflow-y-auto">
+            {items.map((item) => {
+              const close = () => {
+                setOpen(false);
+                setQuery("");
+              };
+              return (
+                <li key={`${item.type}-${item.id}`}>
+                  {item.type === "users" ? (
+                    <Link
+                      to="/perfil/$username"
+                      params={{ username: item.id }}
+                      onClick={close}
+                      className="flex items-center gap-3 px-4 py-3 transition hover:bg-muted"
+                    >
+                      <UserAvatar
+                      src={item.image}
+                      alt={item.title}
+                      className="h-10 w-10"
+                    />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">
+                          {item.title}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {item.subtitle}
+                        </p>
+                      </div>
+                    </Link>
+                  ) : (
+                    <button
+                      onClick={close}
+                      className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted"
+                    >
+                      <UserAvatar
+                      src={item.image}
+                      alt={item.title}
+                      className="h-10 w-10"
+                    />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">
+                          {item.title}
+                        </p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {item.subtitle}
+                        </p>
+                      </div>
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function formatTime(iso: string): string {
+  const date = new Date(iso);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "agora";
+  if (diffMin < 60) return `há ${diffMin}min`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `há ${diffH}h`;
+  const diffD = Math.floor(diffH / 24);
+  if (diffD < 7) return `há ${diffD} dias`;
+  return date.toLocaleDateString("pt-BR");
 }

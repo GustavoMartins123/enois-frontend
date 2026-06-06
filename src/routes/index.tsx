@@ -1,5 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Sparkles, Users, GraduationCap, Compass, ShieldCheck, MessageCircle, ArrowRight, Heart, Star } from "lucide-react";
+import {
+  Sparkles,
+  Users,
+  GraduationCap,
+  Compass,
+  ShieldCheck,
+  MessageCircle,
+  ArrowRight,
+  Heart,
+  Star,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -7,9 +17,16 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Conexão · Networking profissional humano" },
-      { name: "description", content: "Plataforma de networking profissional com foco em conexões genuínas, mentoria e desenvolvimento de carreira." },
+      {
+        name: "description",
+        content:
+          "Plataforma de networking profissional com foco em conexões genuínas, mentoria e desenvolvimento de carreira.",
+      },
       { property: "og:title", content: "Conexão · Networking profissional humano" },
-      { property: "og:description", content: "Construa relacionamentos profissionais reais — não apenas conexões." },
+      {
+        property: "og:description",
+        content: "Construa relacionamentos profissionais reais — não apenas conexões.",
+      },
     ],
   }),
   component: Landing,
@@ -32,14 +49,22 @@ function Landing() {
             </span>
           </Link>
           <nav className="hidden items-center gap-7 text-sm text-muted-foreground md:flex">
-            <a href="#valores" className="hover:text-foreground">Valores</a>
-            <a href="#recursos" className="hover:text-foreground">Recursos</a>
-            <a href="#comunidade" className="hover:text-foreground">Comunidade</a>
+            <a href="#valores" className="hover:text-foreground">
+              Valores
+            </a>
+            <a href="#recursos" className="hover:text-foreground">
+              Recursos
+            </a>
+            <a href="#comunidade" className="hover:text-foreground">
+              Comunidade
+            </a>
           </nav>
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <Link to="/entrar" search={{ tab: "login" }} className="hidden sm:inline">
-              <Button variant="ghost" className="rounded-full">Entrar</Button>
+              <Button variant="ghost" className="rounded-full">
+                Entrar
+              </Button>
             </Link>
             <Link to="/entrar" search={{ tab: "signup" }}>
               <Button className="rounded-full">Criar conta</Button>
@@ -65,12 +90,13 @@ function Landing() {
             <Sparkles className="h-3.5 w-3.5" /> Networking profissional, com humanidade
           </span>
           <h1 className="mx-auto mt-6 max-w-3xl text-4xl font-semibold leading-[1.1] tracking-tight sm:text-6xl">
-            Construa <span className="gradient-text">relacionamentos reais</span>,<br className="hidden sm:block" />
+            Construa <span className="gradient-text">relacionamentos reais</span>,
+            <br className="hidden sm:block" />
             não apenas conexões.
           </h1>
           <p className="mx-auto mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
-            Conexão é onde profissionais trocam conhecimento, encontram mentoria
-            e crescem juntos — sem performance, sem ruído.
+            Conexão é onde profissionais trocam conhecimento, encontram mentoria e crescem juntos —
+            sem performance, sem ruído.
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link to="/entrar" search={{ tab: "signup" }}>
@@ -108,9 +134,15 @@ function Landing() {
                   <div className="h-2.5 w-3/4 rounded bg-foreground/10" />
                 </div>
                 <div className="mt-4 flex gap-4 text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-1"><Heart className="h-3 w-3" /> 184</span>
-                  <span className="inline-flex items-center gap-1"><MessageCircle className="h-3 w-3" /> 32</span>
-                  <span className="inline-flex items-center gap-1"><Star className="h-3 w-3" /> 96</span>
+                  <span className="inline-flex items-center gap-1">
+                    <Heart className="h-3 w-3" /> 184
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <MessageCircle className="h-3 w-3" /> 32
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <Star className="h-3 w-3" /> 96
+                  </span>
                 </div>
               </div>
             </div>
@@ -147,17 +179,28 @@ function Landing() {
       <section id="valores" className="border-y border-border bg-muted/30">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-20 sm:px-6 md:grid-cols-2">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-primary">Como pensamos</p>
+            <p className="text-xs font-medium uppercase tracking-wider text-primary">
+              Como pensamos
+            </p>
             <h2 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Reputação é construída por <span className="gradient-text">conhecimento compartilhado</span>.
+              Reputação é construída por{" "}
+              <span className="gradient-text">conhecimento compartilhado</span>.
             </h2>
             <p className="mt-4 text-muted-foreground">
-              Nada de métricas de popularidade. Aqui você é reconhecido pela qualidade
-              das suas contribuições, mentorias e participação em discussões.
+              Nada de métricas de popularidade. Aqui você é reconhecido pela qualidade das suas
+              contribuições, mentorias e participação em discussões.
             </p>
             <div className="mt-6 flex flex-wrap gap-2">
-              {["Mentor Confiável", "Especialista Reconhecido", "Colaborador Ativo", "Líder de Comunidade"].map((t) => (
-                <span key={t} className="rounded-full bg-card border border-border px-3 py-1.5 text-sm">
+              {[
+                "Mentor Confiável",
+                "Especialista Reconhecido",
+                "Colaborador Ativo",
+                "Líder de Comunidade",
+              ].map((t) => (
+                <span
+                  key={t}
+                  className="rounded-full bg-card border border-border px-3 py-1.5 text-sm"
+                >
                   {t}
                 </span>
               ))}
@@ -193,12 +236,20 @@ function Landing() {
           </p>
           <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
             <Link to="/entrar" search={{ tab: "signup" }}>
-              <Button size="lg" variant="secondary" className="rounded-full bg-card text-foreground hover:bg-card/90">
+              <Button
+                size="lg"
+                variant="secondary"
+                className="rounded-full bg-card text-foreground hover:bg-card/90"
+              >
                 Criar conta gratuita
               </Button>
             </Link>
             <Link to="/entrar" search={{ tab: "login" }}>
-              <Button size="lg" variant="ghost" className="rounded-full text-primary-foreground hover:bg-primary-foreground/10">
+              <Button
+                size="lg"
+                variant="ghost"
+                className="rounded-full text-primary-foreground hover:bg-primary-foreground/10"
+              >
                 Já tenho conta
               </Button>
             </Link>
@@ -210,9 +261,15 @@ function Landing() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-8 text-sm text-muted-foreground sm:px-6">
           <p>© {new Date().getFullYear()} Conexão · Feito com cuidado.</p>
           <div className="flex gap-5">
-            <a href="#" className="hover:text-foreground">Privacidade</a>
-            <a href="#" className="hover:text-foreground">Termos</a>
-            <a href="#" className="hover:text-foreground">Contato</a>
+            <a href="#" className="hover:text-foreground">
+              Privacidade
+            </a>
+            <a href="#" className="hover:text-foreground">
+              Termos
+            </a>
+            <a href="#" className="hover:text-foreground">
+              Contato
+            </a>
           </div>
         </div>
       </footer>
@@ -221,12 +278,36 @@ function Landing() {
 }
 
 const features = [
-  { icon: MessageCircle, title: "Discussões com profundidade", desc: "Algoritmo que favorece conteúdo relevante e conversas significativas, não engajamento vazio." },
-  { icon: GraduationCap, title: "Mentoria nativa", desc: "Encontre mentores verificados, agende sessões e acompanhe sua trilha de aprendizado." },
-  { icon: Compass, title: "Comunidades fortes", desc: "Grupos profissionais e fóruns temáticos para troca contínua entre pares." },
-  { icon: Users, title: "Conexões por afinidade", desc: "Sugestões baseadas em habilidades, objetivos e interesses — não em volume." },
-  { icon: ShieldCheck, title: "Recrutamento honesto", desc: "Match entre empresas e candidatos com transparência sobre faixa salarial e cultura." },
-  { icon: Sparkles, title: "Bem-estar digital", desc: "Notificações respeitosas e um ambiente que valoriza o seu tempo." },
+  {
+    icon: MessageCircle,
+    title: "Discussões com profundidade",
+    desc: "Algoritmo que favorece conteúdo relevante e conversas significativas, não engajamento vazio.",
+  },
+  {
+    icon: GraduationCap,
+    title: "Mentoria nativa",
+    desc: "Encontre mentores verificados, agende sessões e acompanhe sua trilha de aprendizado.",
+  },
+  {
+    icon: Compass,
+    title: "Comunidades fortes",
+    desc: "Grupos profissionais e fóruns temáticos para troca contínua entre pares.",
+  },
+  {
+    icon: Users,
+    title: "Conexões por afinidade",
+    desc: "Sugestões baseadas em habilidades, objetivos e interesses — não em volume.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Recrutamento honesto",
+    desc: "Match entre empresas e candidatos com transparência sobre faixa salarial e cultura.",
+  },
+  {
+    icon: Sparkles,
+    title: "Bem-estar digital",
+    desc: "Notificações respeitosas e um ambiente que valoriza o seu tempo.",
+  },
 ];
 
 const values = [

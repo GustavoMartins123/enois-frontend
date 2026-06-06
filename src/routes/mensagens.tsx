@@ -1,31 +1,39 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Search, Send, Paperclip, Phone, Video, MoreHorizontal } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/user-avatar";
 import { Input } from "@/components/ui/input";
-import { conversations, findUser } from "@/lib/mock-data";
+import { messagesApi, profileApi } from "@/lib/api";
+import { useAuth } from "@/lib/use-auth";
 
 export const Route = createFileRoute("/mensagens")({
   head: () => ({ meta: [{ title: "Mensagens · Conexão" }] }),
   component: Mensagens,
 });
 
-const sampleThread = [
-  { from: "them", text: "Oi! Vi seu post sobre design systems. Adorei a perspectiva.", time: "12:30" },
-  { from: "me", text: "Obrigada! Foi um aprendizado de muitos meses 🙂", time: "12:34" },
-  { from: "them", text: "Topa marcar 30 min essa semana pra trocar ideia?", time: "12:42" },
-];
-
 function Mensagens() {
-  const [activeId, setActiveId] = useState(conversations[0].id);
-  const active = conversations.find((c) => c.id === activeId)!;
-  const activeUser = findUser(active.userId);
-  const activeTitle = active.kind === "group" ? active.title! : activeUser.name;
-  const activeSubtitle =
-    active.kind === "group"
-      ? `${active.participantIds?.length ?? 0} participantes · círculo de mentoria`
-      : activeUser.headline;
+  const { user: currentUser } = useAuth();
+  const { data: conversationsData } = useQuery({
+    queryKey: ["conversations"],
+    queryFn: () => messagesApi.listConversations(),
+  });
+
+  const conversations = conversationsData?.items ?? [];
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  const activeConversation = activeId
+    ? conversations.find((c) => c.id === activeId)
+    : conversations[0];
+
+  const { data: messagesData } = useQuery({
+    queryKey: ["messages", activeConversation?.id],
+    queryFn: () => messagesApi.listMessages(activeConversation!.id),
+    enabled: !!activeConversation,
+  });
+
+  const messages = messagesData?.items ?? [];
 
   return (
     <AppShell>
@@ -40,9 +48,8 @@ function Mensagens() {
           </div>
           <ul className="flex-1 overflow-y-auto">
             {conversations.map((c) => {
-              const u = findUser(c.userId);
-              const isActive = c.id === activeId;
-              const title = c.kind === "group" ? c.title! : u.name;
+              const isActive = c.id === (activeConversation?.id ?? "");
+              const title = c.title ?? "Conversa";
               return (
                 <li key={c.id}>
                   <button
@@ -51,20 +58,25 @@ function Mensagens() {
                       isActive ? "bg-primary-soft" : "hover:bg-muted"
                     }`}
                   >
-                    <Avatar className="h-11 w-11">
-                      <AvatarImage src={u.avatar} alt={u.name} />
-                      <AvatarFallback>{u.name[0]}</AvatarFallback>
-                    </Avatar>
+                    <UserAvatar
+                      className="h-11 w-11"
+                      alt={title}
+                      fallback={(title[0] ?? "?").toUpperCase()}
+                    />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between">
                         <span className="truncate text-sm font-medium">{title}</span>
-                        <span className="text-[11px] text-muted-foreground">{c.time}</span>
+                        <span className="text-[11px] text-muted-foreground">
+                          {c.lastMessageAt ? formatTime(c.lastMessageAt) : ""}
+                        </span>
                       </div>
                       <div className="flex items-center justify-between gap-2">
-                        <p className="truncate text-xs text-muted-foreground">{c.lastMessage}</p>
-                        {c.unread > 0 && (
+                        <p className="truncate text-xs text-muted-foreground">
+                          {c.lastMessage ?? ""}
+                        </p>
+                        {c.unreadCount > 0 && (
                           <span className="grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
-                            {c.unread}
+                            {c.unreadCount}
                           </span>
                         )}
                       </div>
@@ -79,13 +91,20 @@ function Mensagens() {
         <div className="flex min-w-0 flex-col">
           <header className="flex items-center justify-between gap-3 border-b border-border p-4">
             <div className="flex min-w-0 items-center gap-3">
-              <Avatar className="h-10 w-10">
-                <AvatarImage src={activeUser.avatar} alt={activeUser.name} />
-                <AvatarFallback>{activeUser.name[0]}</AvatarFallback>
-              </Avatar>
+              <UserAvatar
+                className="h-10 w-10"
+                alt={activeConversation?.title}
+                fallback={((activeConversation?.title ?? "?")[0] ?? "?").toUpperCase()}
+              />
               <div className="min-w-0">
-                <p className="truncate font-semibold">{activeTitle}</p>
-                <p className="truncate text-xs text-muted-foreground">{activeSubtitle}</p>
+                <p className="truncate font-semibold">
+                  {activeConversation?.title ?? "Selecione uma conversa"}
+                </p>
+                {!activeConversation && (
+                  <p className="text-xs text-muted-foreground">
+                    Nenhuma conversa disponível
+                  </p>
+                )}
               </div>
             </div>
             <div className="flex items-center gap-1 text-muted-foreground">
@@ -96,25 +115,37 @@ function Mensagens() {
           </header>
 
           <div className="flex-1 space-y-3 overflow-y-auto bg-muted/30 p-5">
-            {sampleThread.map((m, i) => (
-              <div
-                key={i}
-                className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm shadow-sm ${
-                    m.from === "me"
-                      ? "rounded-br-md bg-primary text-primary-foreground"
-                      : "rounded-bl-md bg-card text-foreground"
-                  }`}
-                >
-                  <p>{m.text}</p>
-                  <p className={`mt-1 text-[10px] ${m.from === "me" ? "text-primary-foreground/70" : "text-muted-foreground"}`}>
-                    {m.time}
-                  </p>
-                </div>
+            {!activeConversation ? (
+              <div className="flex h-full items-center justify-center">
+                <p className="text-sm text-muted-foreground">Nenhuma conversa selecionada</p>
               </div>
-            ))}
+            ) : messages.length === 0 ? (
+              <div className="flex h-full items-center justify-center">
+                <p className="text-sm text-muted-foreground">Nenhuma mensagem ainda</p>
+              </div>
+            ) : (
+              messages.map((m) => {
+                const isMe = m.senderId === currentUser?.id;
+                return (
+                  <div key={m.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+                    <div
+                      className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm shadow-sm ${
+                        isMe
+                          ? "rounded-br-md bg-primary text-primary-foreground"
+                          : "rounded-bl-md bg-card text-foreground"
+                      }`}
+                    >
+                      <p>{m.text}</p>
+                      <p
+                        className={`mt-1 text-[10px] ${isMe ? "text-primary-foreground/70" : "text-muted-foreground"}`}
+                      >
+                        {formatTime(m.createdAt)}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
 
           <form
@@ -143,4 +174,18 @@ function IconBtn({ icon: Icon }: { icon: React.ElementType }) {
       <Icon className="h-4 w-4" />
     </button>
   );
+}
+
+function formatTime(iso: string): string {
+  const date = new Date(iso);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "agora";
+  if (diffMin < 60) return `há ${diffMin}min`;
+  const diffH = Math.floor(diffMin / 60);
+  if (diffH < 24) return `há ${diffH}h`;
+  const diffD = Math.floor(diffH / 24);
+  if (diffD < 7) return `há ${diffD} dias`;
+  return date.toLocaleDateString("pt-BR");
 }

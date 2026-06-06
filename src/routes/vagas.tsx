@@ -1,17 +1,27 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { requireAuth } from "@/lib/require-auth";
+import { useQuery } from "@tanstack/react-query";
 import { MapPin, Bookmark, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { jobs } from "@/lib/mock-data";
+import { jobsApi } from "@/lib/api";
 
 export const Route = createFileRoute("/vagas")({
+  beforeLoad: requireAuth,
   head: () => ({ meta: [{ title: "Vagas · Conexão" }] }),
   component: Vagas,
 });
 
 function Vagas() {
+  const { data: jobsData } = useQuery({
+    queryKey: ["jobs"],
+    queryFn: () => jobsApi.list(),
+  });
+
+  const jobs = jobsData?.items ?? [];
+
   return (
     <AppShell>
       <div className="space-y-6">
@@ -21,11 +31,13 @@ function Vagas() {
             Curadoria baseada nas suas habilidades, objetivos e disponibilidade.
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
-            {["Remoto", "Híbrido", "Sênior", "Pleno", "Design", "Engenharia", "Produto"].map((t) => (
-              <Badge key={t} variant="outline" className="rounded-full bg-card font-normal">
-                {t}
-              </Badge>
-            ))}
+            {["Remoto", "Híbrido", "Sênior", "Pleno", "Design", "Engenharia", "Produto"].map(
+              (t) => (
+                <Badge key={t} variant="outline" className="rounded-full bg-card font-normal">
+                  {t}
+                </Badge>
+              ),
+            )}
           </div>
         </div>
 
@@ -34,7 +46,7 @@ function Vagas() {
             <article key={j.id} className="surface-card flex flex-col p-5">
               <div className="flex items-start gap-3">
                 <Avatar className="h-12 w-12 rounded-xl">
-                  <AvatarImage src={j.logo} alt={j.company} className="rounded-xl" />
+                  {j.logo && <AvatarImage src={j.logo} alt={j.company} className="rounded-xl" />}
                   <AvatarFallback className="rounded-xl">{j.company[0]}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
@@ -50,11 +62,17 @@ function Vagas() {
               </div>
 
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                <span className="rounded-full bg-primary-soft px-2.5 py-1 font-medium text-primary inline-flex items-center gap-1">
-                  <Sparkles className="h-3 w-3" /> {j.matchScore}% match
+                {j.matchScore && (
+                  <span className="rounded-full bg-primary-soft px-2.5 py-1 font-medium text-primary inline-flex items-center gap-1">
+                    <Sparkles className="h-3 w-3" /> {j.matchScore}% match
+                  </span>
+                )}
+                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
+                  {j.type}
                 </span>
-                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">{j.type}</span>
-                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">{j.level}</span>
+                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
+                  {j.level}
+                </span>
                 {j.salary && (
                   <span className="rounded-full bg-growth/15 px-2.5 py-1 font-medium text-growth">
                     {j.salary}
@@ -64,7 +82,11 @@ function Vagas() {
 
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {j.skills.map((s) => (
-                  <Badge key={s} variant="secondary" className="rounded-full bg-accent font-normal text-accent-foreground">
+                  <Badge
+                    key={s}
+                    variant="secondary"
+                    className="rounded-full bg-accent font-normal text-accent-foreground"
+                  >
                     {s}
                   </Badge>
                 ))}
@@ -73,8 +95,12 @@ function Vagas() {
               <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-xs text-muted-foreground">
                 <span>Publicada {j.postedAt}</span>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline" className="rounded-full">Ver detalhes</Button>
-                  <Button size="sm" className="rounded-full">Candidatar</Button>
+                  <Button size="sm" variant="outline" className="rounded-full">
+                    Ver detalhes
+                  </Button>
+                  <Button size="sm" className="rounded-full">
+                    Candidatar
+                  </Button>
                 </div>
               </div>
             </article>
