@@ -15,7 +15,9 @@ import { Route as MentoriaRouteImport } from './routes/mentoria'
 import { Route as MensagensRouteImport } from './routes/mensagens'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as EventosRouteImport } from './routes/eventos'
+import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as ComunidadesRouteImport } from './routes/comunidades'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as PerfilUsernameRouteImport } from './routes/perfil.$username'
 
 const VagasRoute = VagasRouteImport.update({
@@ -48,9 +50,19 @@ const EventosRoute = EventosRouteImport.update({
   path: '/eventos',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EntrarRoute = EntrarRouteImport.update({
+  id: '/entrar',
+  path: '/entrar',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ComunidadesRoute = ComunidadesRouteImport.update({
   id: '/comunidades',
   path: '/comunidades',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PerfilUsernameRoute = PerfilUsernameRouteImport.update({
@@ -60,7 +72,9 @@ const PerfilUsernameRoute = PerfilUsernameRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/comunidades': typeof ComunidadesRoute
+  '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
   '/mensagens': typeof MensagensRoute
@@ -70,7 +84,9 @@ export interface FileRoutesByFullPath {
   '/perfil/$username': typeof PerfilUsernameRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/comunidades': typeof ComunidadesRoute
+  '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
   '/mensagens': typeof MensagensRoute
@@ -81,7 +97,9 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/comunidades': typeof ComunidadesRoute
+  '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
   '/mensagens': typeof MensagensRoute
@@ -93,7 +111,9 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/comunidades'
+    | '/entrar'
     | '/eventos'
     | '/feed'
     | '/mensagens'
@@ -103,7 +123,9 @@ export interface FileRouteTypes {
     | '/perfil/$username'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/comunidades'
+    | '/entrar'
     | '/eventos'
     | '/feed'
     | '/mensagens'
@@ -113,7 +135,9 @@ export interface FileRouteTypes {
     | '/perfil/$username'
   id:
     | '__root__'
+    | '/'
     | '/comunidades'
+    | '/entrar'
     | '/eventos'
     | '/feed'
     | '/mensagens'
@@ -124,7 +148,9 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   ComunidadesRoute: typeof ComunidadesRoute
+  EntrarRoute: typeof EntrarRoute
   EventosRoute: typeof EventosRoute
   FeedRoute: typeof FeedRoute
   MensagensRoute: typeof MensagensRoute
@@ -178,11 +204,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/entrar': {
+      id: '/entrar'
+      path: '/entrar'
+      fullPath: '/entrar'
+      preLoaderRoute: typeof EntrarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/comunidades': {
       id: '/comunidades'
       path: '/comunidades'
       fullPath: '/comunidades'
       preLoaderRoute: typeof ComunidadesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/perfil/$username': {
@@ -196,7 +236,9 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   ComunidadesRoute: ComunidadesRoute,
+  EntrarRoute: EntrarRoute,
   EventosRoute: EventosRoute,
   FeedRoute: FeedRoute,
   MensagensRoute: MensagensRoute,
@@ -208,3 +250,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
