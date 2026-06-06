@@ -5,7 +5,7 @@ import { PostCard } from "@/components/post-card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { findUserByUsername, posts } from "@/lib/mock-data";
+import { findUserByUsername, posts, type User } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/perfil/$username")({
   loader: ({ params }) => {
@@ -40,7 +40,7 @@ export const Route = createFileRoute("/perfil/$username")({
 });
 
 function Profile() {
-  const { user } = Route.useLoaderData() as { user: ReturnType<typeof findUserByUsername> & {} };
+  const { user } = Route.useLoaderData() as { user: User };
   const userPosts = posts.filter((p) => p.authorId === user.id);
 
   return (
