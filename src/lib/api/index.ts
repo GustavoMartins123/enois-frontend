@@ -2,7 +2,7 @@ export { authApi } from "./auth";
 export type { SignupInput, LoginInput, AuthUser, AuthResponse } from "./auth";
 
 export { profileApi } from "./profile";
-export type { Profile, ProfileUpdate } from "./profile";
+export type { Profile, UpdateProfileRequest, Experience, Education, Certification } from "./profile";
 
 export { feedApi } from "./feed";
 export type { PostView, CreatePostInput, PageResponse } from "./feed";
@@ -20,7 +20,7 @@ export { mediaApi } from "./media";
 export type { MediaUploadResponse, MediaAsset } from "./media";
 
 export { communitiesApi } from "./communities";
-export type { Community, CreateCommunityInput } from "./communities";
+export type { Community, CreateCommunityInput, CommunityMember } from "./communities";
 
 export { jobsApi } from "./jobs";
 export type { Job } from "./jobs";

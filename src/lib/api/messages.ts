@@ -6,16 +6,15 @@ export interface Conversation {
   title: string | null;
   participantIds: string[];
   lastMessage: string | null;
-  lastMessageAt: string | null;
-  unreadCount: number;
+  time: string | null;
+  unread: number;
 }
 
 export interface Message {
   id: string;
-  conversationId: string;
-  senderId: string;
+  from: string;
   text: string;
-  createdAt: string;
+  time: string;
 }
 
 export interface PageResponse<T> {

@@ -12,9 +12,19 @@ export interface Mentor {
 
 export interface TimeSlot {
   id: string;
-  startTime: string;
-  endTime: string;
+  startsAt: string;
+  endsAt: string;
   available: boolean;
+}
+
+export interface CreateMentorInput {
+  expertise: string[];
+  price: string;
+}
+
+export interface CreateSlotInput {
+  startsAt: string;
+  endsAt: string;
 }
 
 export interface PageResponse<T> {
@@ -28,7 +38,12 @@ export const mentorsApi = {
 
   get: (mentorId: string) => api.get<Mentor>(`/mentors/${mentorId}`),
 
+  create: (data: CreateMentorInput) => api.post<Mentor>("/mentors", data),
+
   getSlots: (mentorId: string) => api.get<TimeSlot[]>(`/mentors/${mentorId}/slots`),
+
+  createSlot: (mentorId: string, data: CreateSlotInput) =>
+    api.post<TimeSlot>(`/mentors/${mentorId}/slots`, data),
 
   bookSession: (mentorId: string, slotId: string, message?: string) =>
     api.post<{ status: string; sessionId: string }>(`/mentors/${mentorId}/sessions`, {

@@ -28,6 +28,23 @@ import { isAuthenticated } from "@/lib/use-auth";
 import type { Notification } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
+function navigateToHref(href: string, navigate: (opts: { to: string; params?: Record<string, string> }) => void) {
+  for (const route of ["/feed", "/rede", "/mensagens", "/eventos", "/vagas", "/comunidades", "/mentoria"] as const) {
+    if (href === route || href.startsWith(route + "/")) {
+      navigate({ to: route });
+      return;
+    }
+  }
+  if (href.startsWith("/perfil/")) {
+    const username = href.replace("/perfil/", "");
+    if (username) {
+      navigate({ to: "/perfil/$username", params: { username } });
+      return;
+    }
+  }
+  navigate({ to: "/feed" });
+}
+
 const nav = [
   { to: "/feed", label: "Início", icon: Home },
   { to: "/rede", label: "Rede", icon: Users },
@@ -209,24 +226,19 @@ export function AppShell({ children }: { children: ReactNode }) {
                                         Lida
                                       </button>
                                     )}
-                                    <Link
-                                      to={
-                                        notification.href as
-                                          | "/feed"
-                                          | "/rede"
-                                          | "/mensagens"
-                                          | "/eventos"
-                                          | "/vagas"
-                                          | "/mentoria"
-                                      }
-                                      onClick={() => {
-                                        if (!notification.read)
-                                          markAsRead.mutate(notification.id);
-                                      }}
-                                      className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground transition hover:bg-primary/90"
-                                    >
-                                      {notification.ctaLabel}
-                                    </Link>
+                                    {notification.ctaLabel && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          if (!notification.read)
+                                            markAsRead.mutate(notification.id);
+                                          navigateToHref(notification.href, navigate);
+                                        }}
+                                        className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground transition hover:bg-primary/90"
+                                      >
+                                        {notification.ctaLabel}
+                                      </button>
+                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -446,8 +458,10 @@ function SearchBox() {
   );
 }
 
-function formatTime(iso: string): string {
+function formatTime(iso: string | null | undefined): string {
+  if (!iso) return "";
   const date = new Date(iso);
+  if (isNaN(date.getTime())) return "";
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMin = Math.floor(diffMs / 60000);

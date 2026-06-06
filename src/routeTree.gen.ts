@@ -19,6 +19,7 @@ import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as ComunidadesRouteImport } from './routes/comunidades'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PerfilUsernameRouteImport } from './routes/perfil.$username'
+import { Route as ComunidadesCommunityIdRouteImport } from './routes/comunidades.$communityId'
 
 const VagasRoute = VagasRouteImport.update({
   id: '/vagas',
@@ -70,10 +71,15 @@ const PerfilUsernameRoute = PerfilUsernameRouteImport.update({
   path: '/perfil/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ComunidadesCommunityIdRoute = ComunidadesCommunityIdRouteImport.update({
+  id: '/$communityId',
+  path: '/$communityId',
+  getParentRoute: () => ComunidadesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/comunidades': typeof ComunidadesRoute
+  '/comunidades': typeof ComunidadesRouteWithChildren
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
@@ -81,11 +87,12 @@ export interface FileRoutesByFullPath {
   '/mentoria': typeof MentoriaRoute
   '/rede': typeof RedeRoute
   '/vagas': typeof VagasRoute
+  '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/comunidades': typeof ComunidadesRoute
+  '/comunidades': typeof ComunidadesRouteWithChildren
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
@@ -93,12 +100,13 @@ export interface FileRoutesByTo {
   '/mentoria': typeof MentoriaRoute
   '/rede': typeof RedeRoute
   '/vagas': typeof VagasRoute
+  '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/comunidades': typeof ComunidadesRoute
+  '/comunidades': typeof ComunidadesRouteWithChildren
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/mentoria': typeof MentoriaRoute
   '/rede': typeof RedeRoute
   '/vagas': typeof VagasRoute
+  '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
 }
 export interface FileRouteTypes {
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/mentoria'
     | '/rede'
     | '/vagas'
+    | '/comunidades/$communityId'
     | '/perfil/$username'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -132,6 +142,7 @@ export interface FileRouteTypes {
     | '/mentoria'
     | '/rede'
     | '/vagas'
+    | '/comunidades/$communityId'
     | '/perfil/$username'
   id:
     | '__root__'
@@ -144,12 +155,13 @@ export interface FileRouteTypes {
     | '/mentoria'
     | '/rede'
     | '/vagas'
+    | '/comunidades/$communityId'
     | '/perfil/$username'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  ComunidadesRoute: typeof ComunidadesRoute
+  ComunidadesRoute: typeof ComunidadesRouteWithChildren
   EntrarRoute: typeof EntrarRoute
   EventosRoute: typeof EventosRoute
   FeedRoute: typeof FeedRoute
@@ -232,12 +244,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PerfilUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/comunidades/$communityId': {
+      id: '/comunidades/$communityId'
+      path: '/$communityId'
+      fullPath: '/comunidades/$communityId'
+      preLoaderRoute: typeof ComunidadesCommunityIdRouteImport
+      parentRoute: typeof ComunidadesRoute
+    }
   }
 }
 
+interface ComunidadesRouteChildren {
+  ComunidadesCommunityIdRoute: typeof ComunidadesCommunityIdRoute
+}
+
+const ComunidadesRouteChildren: ComunidadesRouteChildren = {
+  ComunidadesCommunityIdRoute: ComunidadesCommunityIdRoute,
+}
+
+const ComunidadesRouteWithChildren = ComunidadesRoute._addFileChildren(
+  ComunidadesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  ComunidadesRoute: ComunidadesRoute,
+  ComunidadesRoute: ComunidadesRouteWithChildren,
   EntrarRoute: EntrarRoute,
   EventosRoute: EventosRoute,
   FeedRoute: FeedRoute,

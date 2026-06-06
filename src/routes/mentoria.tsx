@@ -1,25 +1,47 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { requireAuth } from "@/lib/require-auth";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { Star, Calendar, Sparkles } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { UserAvatar } from "@/components/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { mentorsApi, profileApi } from "@/lib/api";
 
 export const Route = createFileRoute("/mentoria")({
+  beforeLoad: requireAuth,
   head: () => ({ meta: [{ title: "Mentoria · Conexão" }] }),
   component: Mentoria,
 });
 
 function Mentoria() {
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+
   const { data: mentorsData } = useQuery({
     queryKey: ["mentors"],
     queryFn: () => mentorsApi.list(),
   });
 
   const mentors = mentorsData?.items ?? [];
+
+  const createMentor = useMutation({
+    mutationFn: (data: { expertise: string[]; price: string }) => mentorsApi.create(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["mentors"] });
+      setOpen(false);
+    },
+  });
 
   return (
     <AppShell>
@@ -40,15 +62,36 @@ function Mentoria() {
               honestas, trilhas de aprendizado e agendamento em um clique.
             </p>
             <div className="mt-5 flex flex-wrap gap-2">
-              <Button className="rounded-full">Encontrar mentor</Button>
-              <Button variant="outline" className="rounded-full">
-                Tornar-me mentor
+              <Button
+                className="rounded-full"
+                onClick={() => {
+                  const el = document.getElementById("mentores-lista");
+                  el?.scrollIntoView({ behavior: "smooth" });
+                }}
+              >
+                Encontrar mentor
               </Button>
+              <Dialog open={open} onOpenChange={setOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" className="rounded-full">
+                    Tornar-me mentor
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Tornar-se mentor</DialogTitle>
+                  </DialogHeader>
+                  <RegisterMentorForm
+                    onSave={(data) => createMentor.mutate(data)}
+                    isPending={createMentor.isPending}
+                  />
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         </div>
 
-        <div>
+        <div id="mentores-lista">
           <h2 className="text-lg font-semibold">Mentores em destaque</h2>
           <p className="text-sm text-muted-foreground">
             Avaliados pela comunidade nas últimas 8 semanas.
@@ -62,6 +105,46 @@ function Mentoria() {
       </div>
       <div className="h-16 lg:hidden" />
     </AppShell>
+  );
+}
+
+function RegisterMentorForm({
+  onSave,
+  isPending,
+}: {
+  onSave: (data: { expertise: string[]; price: string }) => void;
+  isPending: boolean;
+}) {
+  const [skillsText, setSkillsText] = useState("");
+  const [price, setPrice] = useState("Gratuito");
+
+  return (
+    <div className="space-y-4 pt-2">
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">
+          Especialidades (separadas por vírgula)
+        </Label>
+        <Input
+          value={skillsText}
+          onChange={(e) => setSkillsText(e.target.value)}
+          placeholder="Java, Spring, React"
+        />
+      </div>
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">Investimento</Label>
+        <Input value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Gratuito" />
+      </div>
+      <Button
+        className="w-full rounded-full"
+        disabled={!skillsText.trim() || isPending}
+        onClick={() => {
+          const expertise = skillsText.split(",").map((s) => s.trim()).filter(Boolean);
+          onSave({ expertise, price: price || "Gratuito" });
+        }}
+      >
+        {isPending ? "Salvando..." : "Salvar"}
+      </Button>
+    </div>
   );
 }
 

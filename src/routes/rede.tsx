@@ -1,11 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { requireAuth } from "@/lib/require-auth";
-import { useQuery } from "@tanstack/react-query";
-import { UserPlus, Check } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { UserPlus, UserMinus, Check, Send } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { UserAvatar } from "@/components/user-avatar";
 import { Button } from "@/components/ui/button";
-import { networkApi } from "@/lib/api";
+import { networkApi, profileApi, type ConnectionRequest } from "@/lib/api";
 
 export const Route = createFileRoute("/rede")({
   beforeLoad: requireAuth,
@@ -14,6 +15,9 @@ export const Route = createFileRoute("/rede")({
 });
 
 function Rede() {
+  const queryClient = useQueryClient();
+  const [localStatus, setLocalStatus] = useState<Record<string, string>>({});
+
   const { data: usersData } = useQuery({
     queryKey: ["network", "users"],
     queryFn: () => networkApi.list(),
@@ -22,8 +26,26 @@ function Rede() {
     queryKey: ["network", "summary"],
     queryFn: () => networkApi.summary(),
   });
+  const { data: requestsData } = useQuery({
+    queryKey: ["network", "requests"],
+    queryFn: () => networkApi.requests(),
+    refetchInterval: 30_000,
+  });
 
   const users = usersData?.items ?? [];
+  const pendingRequests = (requestsData?.items ?? []).filter((r) => r.status === "PENDING");
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ["network"] });
+
+  const acceptRequest = useMutation({ mutationFn: (id: string) => networkApi.accept(id), onSuccess: invalidate });
+  const connect = useMutation({ mutationFn: (id: string) => networkApi.connect(id), onSuccess: invalidate });
+  const remove = useMutation({ mutationFn: (id: string) => networkApi.remove(id), onSuccess: invalidate });
+
+  const statusFor = (userId: string): string => {
+    if (localStatus[userId]) return localStatus[userId];
+    if (pendingRequests.some((r) => r.fromUserId === userId)) return "PENDING_INCOMING";
+    return "NONE";
+  };
 
   return (
     <AppShell>
@@ -40,6 +62,22 @@ function Rede() {
             <Stat label="Sugestões" value={String(users.length)} />
           </div>
         </div>
+
+        {pendingRequests.length > 0 && (
+          <section>
+            <div className="mb-3">
+              <h2 className="text-lg font-semibold">Solicitações pendentes</h2>
+              <p className="text-sm text-muted-foreground">
+                {pendingRequests.length} solicitação{pendingRequests.length > 1 ? "ões" : ""} pendente{pendingRequests.length > 1 ? "s" : ""}
+              </p>
+            </div>
+            <div className="space-y-3">
+              {pendingRequests.map((req) => (
+                <RequestCard key={req.id} request={req} onAccept={acceptRequest.mutate} />
+              ))}
+            </div>
+          </section>
+        )}
 
         <section>
           <div className="mb-3 flex items-end justify-between">
@@ -71,8 +109,27 @@ function Rede() {
                     <Check className="mr-1 inline h-3 w-3" />
                     {u.connected ? "Conectado" : "3 interesses em comum"}
                   </p>
-                  <Button className="mt-4 w-full rounded-full gap-1.5" variant="outline">
-                    <UserPlus className="h-4 w-4" /> Conectar
+                  <Button
+                    className={`mt-4 w-full rounded-full gap-1.5 ${u.connected ? "text-destructive hover:text-destructive" : ""}`}
+                    variant={u.connected ? "outline" : "default"}
+                    disabled={connect.isPending || remove.isPending}
+                    onClick={() => {
+                      if (u.connected) {
+                        remove.mutate(u.id);
+                        setLocalStatus((s) => ({ ...s, [u.id]: "REMOVED" }));
+                      } else {
+                        connect.mutate(u.id);
+                        setLocalStatus((s) => ({ ...s, [u.id]: "REQUESTED" }));
+                      }
+                    }}
+                  >
+                    {u.connected ? (
+                      <><UserMinus className="h-4 w-4" /> Remover</>
+                    ) : localStatus[u.id] === "REQUESTED" ? (
+                      <><Send className="h-4 w-4" /> Solicitado</>
+                    ) : (
+                      <><UserPlus className="h-4 w-4" /> Conectar</>
+                    )}
                   </Button>
                 </div>
               </article>
@@ -82,6 +139,36 @@ function Rede() {
       </div>
       <div className="h-16 lg:hidden" />
     </AppShell>
+  );
+}
+
+function RequestCard({ request, onAccept }: { request: ConnectionRequest; onAccept: (id: string) => void }) {
+  const { data: requester } = useQuery({
+    queryKey: ["profile", "by-id", request.fromUserId],
+    queryFn: () => profileApi.getById(request.fromUserId),
+  });
+
+  return (
+    <div className="surface-card flex items-center justify-between gap-4 p-4">
+      <div className="flex items-center gap-3 min-w-0">
+        <UserAvatar src={requester?.avatar} alt={requester?.name} className="h-12 w-12 shrink-0" />
+        <div className="min-w-0">
+          <Link
+            to="/perfil/$username"
+            params={{ username: requester?.username ?? request.fromUserId }}
+            className="font-semibold hover:underline"
+          >
+            {requester?.name ?? "Carregando..."}
+          </Link>
+          {requester?.headline && (
+            <p className="truncate text-xs text-muted-foreground">{requester.headline}</p>
+          )}
+        </div>
+      </div>
+      <Button size="sm" className="rounded-full shrink-0 gap-1.5" onClick={() => onAccept(request.fromUserId)}>
+        <Check className="h-4 w-4" /> Aceitar
+      </Button>
+    </div>
   );
 }
 

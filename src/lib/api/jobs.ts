@@ -20,8 +20,15 @@ export interface PageResponse<T> {
 }
 
 export const jobsApi = {
-  list: (query?: string, type?: string, cursor?: string | null, limit = 20) =>
-    api.get<PageResponse<Job>>(`/jobs${buildQuery({ query, type, cursor, limit })}`),
+  list: (params?: {
+    query?: string;
+    type?: string;
+    level?: string;
+    location?: string;
+    skills?: string;
+    cursor?: string | null;
+    limit?: number;
+  }) => api.get<PageResponse<Job>>(`/jobs${buildQuery({ ...params, cursor: params?.cursor ?? undefined, limit: params?.limit ?? 20 })}`),
 
   get: (jobId: string) => api.get<Job>(`/jobs/${jobId}`),
 

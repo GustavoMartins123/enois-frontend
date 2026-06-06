@@ -28,6 +28,7 @@ export interface CreatePostInput {
   content: string;
   tags?: string[];
   mediaIds?: string[];
+  communityId?: string;
 }
 
 export interface DeleteResult {

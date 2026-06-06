@@ -1,5 +1,4 @@
 import { Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
 import {
   Heart,
   MessageCircle,
@@ -12,11 +11,14 @@ import {
   BookOpen,
 } from "lucide-react";
 import { useMemo, useState, type FormEvent } from "react";
+import { useQuery, useQueries } from "@tanstack/react-query";
+import { useAuth } from "@/lib/use-auth";
 import { UserAvatar } from "@/components/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { commentsApi, reactionsApi } from "@/lib/api";
+import { commentsApi, reactionsApi, mediaApi, profileApi } from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
 import type { PostView, CommentView } from "@/lib/api";
 
 const typeMeta: Record<
@@ -39,6 +41,7 @@ const typeMeta: Record<
 };
 
 export function PostCard({ post }: { post: PostView }) {
+  const { user: currentUser } = useAuth();
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
   const Icon = meta.icon;
   const [showComments, setShowComments] = useState(false);
@@ -109,22 +112,7 @@ export function PostCard({ post }: { post: PostView }) {
   return (
     <article className="surface-card p-5 transition hover:shadow-[var(--shadow-card)]">
       <header className="flex items-start gap-3">
-        <Link to="/perfil/$username" params={{ username: post.authorId }}>
-          <UserAvatar className="h-11 w-11" />
-        </Link>
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <Link
-              to="/perfil/$username"
-              params={{ username: post.authorId }}
-              className="font-semibold hover:underline"
-            >
-              Usuário
-            </Link>
-            <span className="text-xs text-muted-foreground">· {formatTime(post.createdAt)}</span>
-          </div>
-          <p className="line-clamp-1 text-sm text-muted-foreground" />
-        </div>
+        <AuthorInfo authorId={post.authorId} createdAt={post.createdAt} />
         <span
           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${meta.className}`}
         >
@@ -136,6 +124,12 @@ export function PostCard({ post }: { post: PostView }) {
       <p className="mt-4 whitespace-pre-line text-[15px] leading-relaxed text-foreground">
         {post.content}
       </p>
+
+      {post.mediaIds.length > 0 && (
+        <div className="mt-4">
+          <MediaGrid mediaIds={post.mediaIds} />
+        </div>
+      )}
 
       {post.tags.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-1.5">
@@ -190,7 +184,7 @@ export function PostCard({ post }: { post: PostView }) {
           </div>
 
           <form onSubmit={submitComment} className="mt-4 flex items-center gap-2">
-            <UserAvatar className="h-8 w-8" />
+            <UserAvatar src={currentUser?.avatar} alt={currentUser?.name} className="h-8 w-8" />
             <Input
               value={draft}
               onChange={(event) => setDraft(event.target.value)}
@@ -209,13 +203,27 @@ export function PostCard({ post }: { post: PostView }) {
 }
 
 function CommentItem({ comment, nested = false }: { comment: CommentView; nested?: boolean }) {
+  const { data: author } = useQuery({
+    queryKey: ["profile", "by-id", comment.authorId],
+    queryFn: () => profileApi.getById(comment.authorId),
+    staleTime: 120_000,
+  });
+
   return (
     <div className={`flex gap-3 ${nested ? "ml-10 mt-3" : ""}`}>
-      <UserAvatar className="h-8 w-8" />
+      <Link to="/perfil/$username" params={{ username: author?.username ?? comment.authorId }}>
+        <UserAvatar src={author?.avatar} alt={author?.name} className="h-8 w-8" />
+      </Link>
       <div className="min-w-0 flex-1">
         <div className="rounded-2xl bg-muted/60 px-3 py-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-semibold">Usuário</span>
+            <Link
+              to="/perfil/$username"
+              params={{ username: author?.username ?? comment.authorId }}
+              className="text-sm font-semibold hover:underline"
+            >
+              {author?.name ?? "Usuário"}
+            </Link>
             <span className="text-[11px] text-muted-foreground">
               {formatTime(comment.createdAt)}
             </span>
@@ -230,8 +238,41 @@ function CommentItem({ comment, nested = false }: { comment: CommentView; nested
   );
 }
 
-function formatTime(iso: string): string {
+function AuthorInfo({ authorId, createdAt }: { authorId: string; createdAt: string }) {
+  const { data: author } = useQuery({
+    queryKey: ["profile", "by-id", authorId],
+    queryFn: () => profileApi.getById(authorId),
+    staleTime: 120_000,
+  });
+
+  return (
+    <div className="flex items-start gap-3">
+      <Link to="/perfil/$username" params={{ username: author?.username ?? authorId }}>
+        <UserAvatar src={author?.avatar} alt={author?.name} className="h-11 w-11" />
+      </Link>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <Link
+            to="/perfil/$username"
+            params={{ username: author?.username ?? authorId }}
+            className="font-semibold hover:underline"
+          >
+            {author?.name ?? "Usuário"}
+          </Link>
+          <span className="text-xs text-muted-foreground">· {formatTime(createdAt)}</span>
+        </div>
+        {author?.headline && (
+          <p className="line-clamp-1 text-sm text-muted-foreground">{author.headline}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function formatTime(iso: string | null | undefined): string {
+  if (!iso) return "";
   const date = new Date(iso);
+  if (isNaN(date.getTime())) return "";
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMin = Math.floor(diffMs / 60000);
@@ -242,4 +283,52 @@ function formatTime(iso: string): string {
   const diffD = Math.floor(diffH / 24);
   if (diffD < 7) return `há ${diffD} dias`;
   return date.toLocaleDateString("pt-BR");
+}
+
+function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
+  const queryResults = useQueries({
+    queries: mediaIds.map((id) => ({
+      queryKey: ["media", id],
+      queryFn: () => mediaApi.get(id),
+      staleTime: 60_000,
+    })),
+  });
+
+  const items = queryResults
+    .filter((q) => q.data?.cdnUrl)
+    .map((q) => q.data!);
+
+  if (items.length === 0) return null;
+
+  const isVideo = items.some((m) => m.mimeType.startsWith("video/"));
+
+  if (isVideo) {
+    return (
+      <div className="overflow-hidden rounded-xl border border-border">
+        <video
+          src={resolveCdnUrl(items[0].cdnUrl)}
+          controls
+          className="max-h-96 w-full bg-muted"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={`grid gap-2 ${
+        items.length === 1 ? "grid-cols-1" : "grid-cols-2"
+      }`}
+    >
+      {items.map((m) => (
+        <div key={m.id} className="overflow-hidden rounded-xl border border-border">
+          <img
+            src={resolveCdnUrl(m.cdnUrl)}
+            alt=""
+            className="h-48 w-full object-cover bg-muted"
+          />
+        </div>
+      ))}
+    </div>
+  );
 }

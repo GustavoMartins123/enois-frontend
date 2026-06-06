@@ -1,11 +1,12 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Search, Send, Paperclip, Phone, Video, MoreHorizontal } from "lucide-react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState, useRef, useEffect, type FormEvent } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Search, Send, ArrowLeft } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { UserAvatar } from "@/components/user-avatar";
 import { Input } from "@/components/ui/input";
-import { messagesApi, profileApi } from "@/lib/api";
+import { Button } from "@/components/ui/button";
+import { messagesApi, networkApi, profileApi } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
 
 export const Route = createFileRoute("/mensagens")({
@@ -15,14 +16,20 @@ export const Route = createFileRoute("/mensagens")({
 
 function Mensagens() {
   const { user: currentUser } = useAuth();
+  const queryClient = useQueryClient();
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [text, setText] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
   const { data: conversationsData } = useQuery({
     queryKey: ["conversations"],
     queryFn: () => messagesApi.listConversations(),
+    refetchInterval: 15_000,
   });
 
   const conversations = conversationsData?.items ?? [];
-  const [activeId, setActiveId] = useState<string | null>(null);
-
   const activeConversation = activeId
     ? conversations.find((c) => c.id === activeId)
     : conversations[0];
@@ -31,136 +38,214 @@ function Mensagens() {
     queryKey: ["messages", activeConversation?.id],
     queryFn: () => messagesApi.listMessages(activeConversation!.id),
     enabled: !!activeConversation,
+    refetchInterval: 10_000,
   });
 
-  const messages = messagesData?.items ?? [];
+  const messages = (messagesData?.items ?? []).sort(
+    (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
+  );
+
+  const { data: searchResults } = useQuery({
+    queryKey: ["network", "users", searchQuery],
+    queryFn: () => networkApi.list(searchQuery),
+    enabled: searchQuery.length > 0,
+  });
+
+  const filteredUsers = (searchResults?.items ?? []).filter((u) => u.id !== currentUser?.id);
+
+  const sendMessage = useMutation({
+    mutationFn: ({ conversationId, text }: { conversationId: string; text: string }) =>
+      messagesApi.sendMessage(conversationId, text),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["messages", activeConversation?.id] });
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      setText("");
+    },
+  });
+
+  const createConversation = useMutation({
+    mutationFn: (participantId: string) =>
+      messagesApi.createConversation({ kind: "DIRECT", participantIds: [participantId] }),
+    onSuccess: (conv) => {
+      setActiveId(conv.id);
+      setShowSearch(false);
+      setSearchQuery("");
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    },
+  });
+
+  const markAsRead = useMutation({
+    mutationFn: (conversationId: string) => messagesApi.markAsRead(conversationId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["conversations"] }),
+  });
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
+    const content = text.trim();
+    if (!content || !activeConversation) return;
+    sendMessage.mutate({ conversationId: activeConversation.id, text: content });
+  };
+
+  const activeMessages = activeConversation ? messages : [];
+
+  const otherParticipantId = activeConversation?.participantIds.find(
+    (id) => id !== currentUser?.id,
+  );
+  const { data: otherUser } = useQuery({
+    queryKey: ["profile", "by-id", otherParticipantId],
+    queryFn: () => profileApi.getById(otherParticipantId ?? ""),
+    enabled: !!otherParticipantId,
+  });
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [activeMessages.length]);
 
   return (
     <AppShell>
       <div className="surface-card grid h-[calc(100vh-9rem)] grid-cols-1 overflow-hidden md:grid-cols-[320px_1fr]">
-        <div className="flex flex-col border-r border-border">
+        <div className={`flex flex-col border-r border-border ${activeConversation ? "hidden md:flex" : "flex"}`}>
           <div className="border-b border-border p-4">
-            <h1 className="mb-3 text-lg font-semibold">Mensagens</h1>
-            <div className="relative">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input placeholder="Buscar conversas" className="h-9 rounded-full bg-muted pl-9" />
+            <div className="flex items-center justify-between mb-3">
+              <h1 className="text-lg font-semibold">Mensagens</h1>
+              <Button size="sm" variant="outline" className="rounded-full" onClick={() => setShowSearch(!showSearch)}>
+                {showSearch ? "Voltar" : "Nova"}
+              </Button>
             </div>
+            {showSearch ? (
+              <div className="space-y-3">
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Buscar contatos..."
+                    className="h-9 rounded-full bg-muted pl-9"
+                    autoFocus
+                  />
+                </div>
+                {searchQuery && (
+                  <div className="space-y-1">
+                    {filteredUsers.length === 0 ? (
+                      <p className="py-4 text-center text-sm text-muted-foreground">Nenhum contato encontrado</p>
+                    ) : (
+                      filteredUsers.map((u) => (
+                        <button
+                          key={u.id}
+                          onClick={() => createConversation.mutate(u.id)}
+                          className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition hover:bg-muted"
+                        >
+                          <UserAvatar src={u.avatar} alt={u.name} className="h-10 w-10" />
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-medium">{u.name}</p>
+                            <p className="truncate text-xs text-muted-foreground">{u.headline}</p>
+                          </div>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar conversas"
+                  className="h-9 rounded-full bg-muted pl-9"
+                />
+              </div>
+            )}
           </div>
           <ul className="flex-1 overflow-y-auto">
-            {conversations.map((c) => {
-              const isActive = c.id === (activeConversation?.id ?? "");
-              const title = c.title ?? "Conversa";
-              return (
-                <li key={c.id}>
-                  <button
-                    onClick={() => setActiveId(c.id)}
-                    className={`flex w-full items-center gap-3 px-4 py-3 text-left transition ${
-                      isActive ? "bg-primary-soft" : "hover:bg-muted"
-                    }`}
-                  >
-                    <UserAvatar
-                      className="h-11 w-11"
-                      alt={title}
-                      fallback={(title[0] ?? "?").toUpperCase()}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center justify-between">
-                        <span className="truncate text-sm font-medium">{title}</span>
-                        <span className="text-[11px] text-muted-foreground">
-                          {c.lastMessageAt ? formatTime(c.lastMessageAt) : ""}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="truncate text-xs text-muted-foreground">
-                          {c.lastMessage ?? ""}
-                        </p>
-                        {c.unreadCount > 0 && (
-                          <span className="grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
-                            {c.unreadCount}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </button>
-                </li>
-              );
-            })}
+            {conversations.length === 0 ? (
+              <li className="p-4 text-center text-sm text-muted-foreground">
+                Nenhuma conversa ainda
+              </li>
+            ) : (
+              conversations.map((c) => (
+                <ConversationItem
+                  key={c.id}
+                  conversation={c}
+                  isActive={c.id === (activeConversation?.id ?? "")}
+                  currentUserId={currentUser?.id ?? ""}
+                  onSelect={() => {
+                    setActiveId(c.id);
+                    if (c.unread > 0) markAsRead.mutate(c.id);
+                  }}
+                />
+              ))
+            )}
           </ul>
         </div>
 
-        <div className="flex min-w-0 flex-col">
-          <header className="flex items-center justify-between gap-3 border-b border-border p-4">
-            <div className="flex min-w-0 items-center gap-3">
-              <UserAvatar
-                className="h-10 w-10"
-                alt={activeConversation?.title}
-                fallback={((activeConversation?.title ?? "?")[0] ?? "?").toUpperCase()}
+        <div className={`flex min-h-0 flex-col ${!activeConversation ? "hidden md:flex" : "flex"}`}>
+          {!activeConversation ? (
+            <div className="flex h-full items-center justify-center">
+              <p className="text-sm text-muted-foreground">Selecione ou inicie uma conversa</p>
+            </div>
+          ) : (
+            <>
+              <ConversationHeader
+                conversation={activeConversation}
+                currentUserId={currentUser?.id ?? ""}
+                onBack={() => setActiveId(null)}
               />
-              <div className="min-w-0">
-                <p className="truncate font-semibold">
-                  {activeConversation?.title ?? "Selecione uma conversa"}
-                </p>
-                {!activeConversation && (
-                  <p className="text-xs text-muted-foreground">
-                    Nenhuma conversa disponível
-                  </p>
+              <div className="flex-1 overflow-y-auto bg-muted/30 p-5">
+                <div className="space-y-3">
+                  {activeMessages.length === 0 ? (
+                    <p className="py-16 text-center text-sm text-muted-foreground">Nenhuma mensagem ainda</p>
+                ) : (
+                  activeMessages.map((m) => {
+                    const isMe = m.from === currentUser?.id;
+                    return (
+                      <div key={m.id} className={`flex items-end gap-2 ${isMe ? "justify-end" : "justify-start"}`}>
+                        {!isMe && (
+                          <Link to="/perfil/$username" params={{ username: otherUser?.username ?? otherParticipantId ?? "" }}>
+                            <UserAvatar src={otherUser?.avatar} alt={otherUser?.name} className="h-7 w-7 shrink-0 mb-1" />
+                          </Link>
+                        )}
+                        <div
+                          className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm shadow-sm ${
+                            isMe
+                              ? "rounded-br-md bg-primary text-primary-foreground"
+                              : "rounded-bl-md bg-card text-foreground"
+                          }`}
+                        >
+                          <p>{m.text}</p>
+                          <p
+                            className={`mt-1 text-[10px] ${isMe ? "text-primary-foreground/70" : "text-muted-foreground"}`}
+                          >
+                            {formatTime(m.time)}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })
                 )}
-              </div>
-            </div>
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <IconBtn icon={Phone} />
-              <IconBtn icon={Video} />
-              <IconBtn icon={MoreHorizontal} />
-            </div>
-          </header>
+                <div ref={messagesEndRef} />
+                </div>
+                </div>
 
-          <div className="flex-1 space-y-3 overflow-y-auto bg-muted/30 p-5">
-            {!activeConversation ? (
-              <div className="flex h-full items-center justify-center">
-                <p className="text-sm text-muted-foreground">Nenhuma conversa selecionada</p>
-              </div>
-            ) : messages.length === 0 ? (
-              <div className="flex h-full items-center justify-center">
-                <p className="text-sm text-muted-foreground">Nenhuma mensagem ainda</p>
-              </div>
-            ) : (
-              messages.map((m) => {
-                const isMe = m.senderId === currentUser?.id;
-                return (
-                  <div key={m.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                    <div
-                      className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm shadow-sm ${
-                        isMe
-                          ? "rounded-br-md bg-primary text-primary-foreground"
-                          : "rounded-bl-md bg-card text-foreground"
-                      }`}
-                    >
-                      <p>{m.text}</p>
-                      <p
-                        className={`mt-1 text-[10px] ${isMe ? "text-primary-foreground/70" : "text-muted-foreground"}`}
-                      >
-                        {formatTime(m.createdAt)}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-
-          <form
-            onSubmit={(e) => e.preventDefault()}
-            className="flex items-center gap-2 border-t border-border p-3"
-          >
-            <IconBtn icon={Paperclip} />
-            <Input placeholder="Escreva uma mensagem..." className="h-10 rounded-full bg-muted" />
-            <button
-              type="submit"
-              className="grid h-10 w-10 place-items-center rounded-full bg-primary text-primary-foreground transition hover:opacity-90"
-            >
-              <Send className="h-4 w-4" />
-            </button>
-          </form>
+              <form
+                onSubmit={handleSubmit}
+                className="flex items-center gap-2 border-t border-border p-3"
+              >
+                <Input
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder="Escreva uma mensagem..."
+                  className="h-10 rounded-full bg-muted"
+                />
+                <button
+                  type="submit"
+                  disabled={!text.trim() || sendMessage.isPending}
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+                >
+                  <Send className="h-4 w-4" />
+                </button>
+              </form>
+            </>
+          )}
         </div>
       </div>
       <div className="h-16 lg:hidden" />
@@ -168,16 +253,104 @@ function Mensagens() {
   );
 }
 
-function IconBtn({ icon: Icon }: { icon: React.ElementType }) {
+function ConversationItem({
+  conversation,
+  isActive,
+  currentUserId,
+  onSelect,
+}: {
+  conversation: { id: string; title: string | null; participantIds: string[]; lastMessage: string | null; time: string | null; unread: number };
+  isActive: boolean;
+  currentUserId: string;
+  onSelect: () => void;
+}) {
+  const otherId = conversation.participantIds.find((id) => id !== currentUserId);
+  const { data: otherUser } = useQuery({
+    queryKey: ["profile", "by-id", otherId],
+    queryFn: () => profileApi.getById(otherId ?? ""),
+    enabled: !!otherId,
+  });
+
+  const title = conversation.title ?? otherUser?.name ?? "Conversa";
+
   return (
-    <button className="grid h-9 w-9 place-items-center rounded-full transition hover:bg-muted hover:text-foreground">
-      <Icon className="h-4 w-4" />
-    </button>
+    <li>
+      <button
+        onClick={onSelect}
+        className={`flex w-full items-center gap-3 px-4 py-3 text-left transition ${
+          isActive ? "bg-primary-soft" : "hover:bg-muted"
+        }`}
+      >
+        <Link to="/perfil/$username" params={{ username: otherUser?.username ?? otherId ?? "" }}>
+          <UserAvatar src={otherUser?.avatar} alt={title} className="h-11 w-11 shrink-0" />
+        </Link>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center justify-between">
+            <span className="truncate text-sm font-medium">{title}</span>
+            <span className="text-[11px] text-muted-foreground shrink-0 ml-2">
+              {conversation.time ? formatTime(conversation.time) : ""}
+            </span>
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <p className="truncate text-xs text-muted-foreground">
+              {conversation.lastMessage ?? ""}
+            </p>
+            {conversation.unread > 0 && (
+              <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
+                {conversation.unread}
+              </span>
+            )}
+          </div>
+        </div>
+      </button>
+    </li>
   );
 }
 
-function formatTime(iso: string): string {
+function ConversationHeader({
+  conversation,
+  currentUserId,
+  onBack,
+}: {
+  conversation: { id: string; title: string | null; participantIds: string[] };
+  currentUserId: string;
+  onBack?: () => void;
+}) {
+  const otherId = conversation.participantIds.find((id) => id !== currentUserId);
+  const { data: otherUser } = useQuery({
+    queryKey: ["profile", "by-id", otherId],
+    queryFn: () => profileApi.getById(otherId ?? ""),
+    enabled: !!otherId,
+  });
+
+  const title = conversation.title ?? otherUser?.name ?? "Conversa";
+
+  return (
+    <header className="flex items-center gap-3 border-b border-border p-4">
+      <div className="flex items-center gap-3 min-w-0">
+        {onBack && (
+          <button onClick={onBack} className="grid h-8 w-8 shrink-0 place-items-center rounded-full hover:bg-muted md:hidden">
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+        )}
+        <Link to="/perfil/$username" params={{ username: otherUser?.username ?? otherId ?? "" }}>
+          <UserAvatar src={otherUser?.avatar} alt={title} className="h-10 w-10 shrink-0" />
+        </Link>
+        <div className="min-w-0">
+          <p className="truncate font-semibold">{title}</p>
+          {otherUser?.headline && (
+            <p className="truncate text-xs text-muted-foreground">{otherUser.headline}</p>
+          )}
+        </div>
+      </div>
+    </header>
+  );
+}
+
+function formatTime(iso: string | null | undefined): string {
+  if (!iso) return "";
   const date = new Date(iso);
+  if (isNaN(date.getTime())) return "";
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMin = Math.floor(diffMs / 60000);

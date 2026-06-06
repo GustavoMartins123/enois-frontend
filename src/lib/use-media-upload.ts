@@ -12,9 +12,13 @@ export interface UploadResult {
   cdnUrl: string;
 }
 
+function sanitizeName(name: string): string {
+  return name.replace(/[^a-zA-Z0-9.\-]/g, "_");
+}
+
 function genFileName(file: File): string {
   const key = crypto.randomUUID();
-  return `media/${key}/${file.name}`;
+  return `media/${key}/${sanitizeName(file.name)}`;
 }
 
 export function useMediaUpload() {

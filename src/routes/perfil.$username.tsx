@@ -3,8 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   MapPin,
   Briefcase,
-  GraduationCap,
-  Award,
   Link as LinkIcon,
   MessageCircle,
   UserPlus,
@@ -12,15 +10,18 @@ import {
   Target,
   Clock,
   Camera,
+  Settings,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { profileApi, feedApi } from "@/lib/api";
+import { profileApi, feedApi, networkApi } from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
+import { EditProfileDialog } from "@/components/edit-profile-dialog";
 import { useState, useRef } from "react";
 
 export const Route = createFileRoute("/perfil/$username")({
@@ -59,7 +60,7 @@ export const Route = createFileRoute("/perfil/$username")({
 });
 
 function Profile() {
-  const { user } = Route.useLoaderData();
+  const { user: loaderUser } = Route.useLoaderData();
   const { user: me } = useAuth();
   const queryClient = useQueryClient();
   const avatarUpload = useMediaUpload();
@@ -68,7 +69,15 @@ function Profile() {
   const bannerRef = useRef<HTMLInputElement>(null);
   const [hoveringAvatar, setHoveringAvatar] = useState(false);
   const [hoveringBanner, setHoveringBanner] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<string | null>(null);
 
+  const { data: liveProfile } = useQuery({
+    queryKey: ["profile", loaderUser.username],
+    queryFn: () => profileApi.get(loaderUser.username),
+    initialData: loaderUser,
+  });
+
+  const user = liveProfile ?? loaderUser;
   const isOwnProfile = me?.id === user.id;
 
   const updateProfile = useMutation({
@@ -79,9 +88,16 @@ function Profile() {
     },
   });
 
-  const { data: postsData } = useQuery({
-    queryKey: ["posts", user.username],
-    queryFn: () => feedApi.listByUser(user.username),
+  const { data: feedData } = useQuery({
+    queryKey: ["feed"],
+    queryFn: () => feedApi.list(),
+  });
+
+  const userPosts = (feedData?.items ?? []).filter((p) => p.authorId === user.id);
+
+  const connect = useMutation({
+    mutationFn: () => networkApi.connect(user.id),
+    onSuccess: (res) => setConnectionStatus(res.status),
   });
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,8 +118,6 @@ function Profile() {
     } catch { /* handled by hook state */ }
   };
 
-  const userPosts = postsData?.items ?? [];
-
   return (
     <AppShell>
       <div className="space-y-6">
@@ -114,7 +128,7 @@ function Profile() {
             onMouseLeave={() => setHoveringBanner(false)}
           >
             {user.banner ? (
-              <img src={user.banner} alt="" className="h-40 w-full object-cover sm:h-52" />
+              <img src={resolveCdnUrl(user.banner)} alt="" className="h-40 w-full object-cover sm:h-52" />
             ) : (
               <div className="h-40 w-full bg-gradient-to-r from-primary/20 to-primary/5 sm:h-52" />
             )}
@@ -137,7 +151,7 @@ function Profile() {
                 onMouseEnter={() => setHoveringAvatar(true)}
                 onMouseLeave={() => setHoveringAvatar(false)}
               >
-                <UserAvatar src={user.avatar} alt={user.name} className="h-28 w-28 ring-4 ring-card" />
+                <UserAvatar src={resolveCdnUrl(user.avatar)} alt={user.name} className="h-28 w-28 ring-4 ring-card" />
                 {isOwnProfile && hoveringAvatar && (
                   <button
                     type="button"
@@ -151,12 +165,27 @@ function Profile() {
                 <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
               </div>
               <div className="flex flex-wrap gap-2">
-                <Button variant="outline" className="rounded-full gap-1.5">
-                  <MessageCircle className="h-4 w-4" /> Mensagem
-                </Button>
-                <Button className="rounded-full gap-1.5">
-                  <UserPlus className="h-4 w-4" /> Conectar
-                </Button>
+                {isOwnProfile ? (
+                  <EditProfileDialog profile={user}>
+                    <Button variant="outline" className="rounded-full gap-1.5">
+                      <Settings className="h-4 w-4" /> Editar perfil
+                    </Button>
+                  </EditProfileDialog>
+                ) : (
+                  <>
+                    <Button variant="outline" className="rounded-full gap-1.5">
+                      <MessageCircle className="h-4 w-4" /> Mensagem
+                    </Button>
+                    <Button
+                      className="rounded-full gap-1.5"
+                      onClick={() => connect.mutate()}
+                      disabled={connect.isPending || connectionStatus === "ACCEPTED" || connectionStatus === "REQUESTED"}
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      {connectionStatus === "REQUESTED" ? "Solicitado" : connectionStatus === "ACCEPTED" ? "Conectado" : "Conectar"}
+                    </Button>
+                  </>
+                )}
               </div>
             </div>
             <div className="mt-4">

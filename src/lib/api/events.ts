@@ -11,6 +11,15 @@ export interface Event {
   cover: string | null;
 }
 
+export interface CreateEventRequest {
+  title: string;
+  date: string;
+  time: string;
+  format: string;
+  host: string;
+  cover?: string | null;
+}
+
 export interface PageResponse<T> {
   items: T[];
   nextCursor: string | null;
@@ -21,6 +30,8 @@ export const eventsApi = {
     api.get<PageResponse<Event>>(`/events${buildQuery({ format, cursor, limit })}`),
 
   get: (eventId: string) => api.get<Event>(`/events/${eventId}`),
+
+  create: (data: CreateEventRequest) => api.post<Event>("/events", data),
 
   attend: (eventId: string) => api.post<{ status: string }>(`/events/${eventId}/attendees`),
 
