@@ -5,6 +5,7 @@ import { Sparkles, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 type Tab = "login" | "signup";
 
@@ -105,6 +106,7 @@ function Auth() {
             </div>
             <span className="font-semibold tracking-tight">Conexão</span>
           </Link>
+          <ThemeToggle />
         </div>
 
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">

@@ -1,10 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Image, FileText, BarChart3, Calendar, UserPlus, TrendingUp } from "lucide-react";
+import { useState, type FormEvent } from "react";
 import { AppShell } from "@/components/app-shell";
 import { PostCard } from "@/components/post-card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { currentUser, posts, suggestedConnections, events } from "@/lib/mock-data";
+import { Textarea } from "@/components/ui/textarea";
+import { currentUser, posts, suggestedConnections, events, type Post } from "@/lib/mock-data";
 
 export const Route = createFileRoute("/feed")({
   head: () => ({
@@ -17,31 +19,83 @@ export const Route = createFileRoute("/feed")({
 });
 
 function Home() {
+  const [feedPosts, setFeedPosts] = useState(posts);
+  const [draft, setDraft] = useState("");
+  const [postType, setPostType] = useState<Post["type"]>("insight");
+
+  const publishPost = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const content = draft.trim();
+    if (!content) return;
+
+    const nextPost: Post = {
+      id: `local-${Date.now()}`,
+      authorId: currentUser.id,
+      createdAt: "agora",
+      type: postType,
+      content,
+      tags: ["Comunidade", "Aprendizado"],
+      reactions: 0,
+      comments: 0,
+      saves: 0,
+    };
+
+    setFeedPosts((current) => [nextPost, ...current]);
+    setDraft("");
+    setPostType("insight");
+  };
+
   return (
     <AppShell>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-4">
           {/* Composer */}
-          <div className="surface-card p-5">
+          <form onSubmit={publishPost} className="surface-card p-5">
             <div className="flex items-center gap-3">
               <Avatar className="h-11 w-11">
                 <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
                 <AvatarFallback>VC</AvatarFallback>
               </Avatar>
-              <button className="flex-1 rounded-full border border-border bg-muted/40 px-4 py-2.5 text-left text-sm text-muted-foreground transition hover:bg-muted">
-                Compartilhe algo que aprendeu hoje...
-              </button>
+              <Textarea
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder="Compartilhe algo que aprendeu hoje..."
+                className="min-h-11 flex-1 resize-none rounded-2xl border-border bg-muted/40 text-sm"
+                maxLength={600}
+              />
             </div>
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-sm text-muted-foreground">
               <div className="flex flex-wrap gap-1">
-                <ComposerAction icon={Image} label="Mídia" />
-                <ComposerAction icon={FileText} label="Artigo" />
-                <ComposerAction icon={BarChart3} label="Enquete" />
-                <ComposerAction icon={Calendar} label="Evento" />
+                <ComposerAction
+                  icon={Image}
+                  label="Insight"
+                  active={postType === "insight"}
+                  onClick={() => setPostType("insight")}
+                />
+                <ComposerAction
+                  icon={FileText}
+                  label="Artigo"
+                  active={postType === "article"}
+                  onClick={() => setPostType("article")}
+                />
+                <ComposerAction
+                  icon={BarChart3}
+                  label="Pergunta"
+                  active={postType === "question"}
+                  onClick={() => setPostType("question")}
+                />
+                <ComposerAction
+                  icon={Calendar}
+                  label="Projeto"
+                  active={postType === "project"}
+                  onClick={() => setPostType("project")}
+                />
               </div>
-              <Button size="sm" className="rounded-full">Publicar</Button>
+              <Button size="sm" className="rounded-full" disabled={!draft.trim()}>
+                Publicar
+              </Button>
             </div>
-          </div>
+          </form>
 
           {/* Tabs */}
           <div className="flex items-center gap-1 rounded-full border border-border bg-card p-1 text-sm">
@@ -52,7 +106,7 @@ function Home() {
           </div>
 
           <div className="space-y-4">
-            {posts.map((p) => (
+            {feedPosts.map((p) => (
               <PostCard key={p.id} post={p} />
             ))}
           </div>
@@ -147,9 +201,25 @@ function Home() {
   );
 }
 
-function ComposerAction({ icon: Icon, label }: { icon: React.ElementType; label: string }) {
+function ComposerAction({
+  icon: Icon,
+  label,
+  active,
+  onClick,
+}: {
+  icon: React.ElementType;
+  label: string;
+  active?: boolean;
+  onClick: () => void;
+}) {
   return (
-    <button className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition hover:bg-muted hover:text-foreground">
+    <button
+      type="button"
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition ${
+        active ? "bg-primary-soft text-primary" : "hover:bg-muted hover:text-foreground"
+      }`}
+    >
       <Icon className="h-4 w-4" />
       {label}
     </button>

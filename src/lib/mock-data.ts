@@ -9,8 +9,30 @@ export type User = {
   company: string;
   location: string;
   avatar: string;
+  banner: string;
   bio: string;
   skills: string[];
+  goals: string[];
+  availability: string;
+  portfolio: string;
+  externalLinks: { label: string; url: string }[];
+  experiences: {
+    title: string;
+    org: string;
+    period: string;
+    desc: string;
+  }[];
+  education: {
+    title: string;
+    org: string;
+    period: string;
+    desc: string;
+  }[];
+  certifications: {
+    title: string;
+    issuer: string;
+    year: string;
+  }[];
   reputation: { label: string; level: number }[];
   openToWork: boolean;
   isMentor: boolean;
@@ -29,6 +51,17 @@ export type Post = {
   comments: number;
   saves: number;
   image?: string;
+};
+
+export type Comment = {
+  id: string;
+  postId: string;
+  authorId: string;
+  content: string;
+  createdAt: string;
+  reactions: number;
+  highlighted?: boolean;
+  replies?: Comment[];
 };
 
 export type Job = {
@@ -79,6 +112,9 @@ export type Mentor = {
 export type Conversation = {
   id: string;
   userId: string;
+  kind: "private" | "group";
+  title?: string;
+  participantIds?: string[];
   lastMessage: string;
   time: string;
   unread: number;
@@ -98,8 +134,43 @@ export const currentUser: User = {
   company: "Atlas Studio",
   location: "São Paulo, Brasil",
   avatar: avatar("voce-user"),
+  banner: cover("voce-banner", 1400, 420),
   bio: "Designer de produto focada em sistemas, acessibilidade e colaboração. Acredito que boas ideias nascem de boas conversas.",
   skills: ["Design Systems", "UX Research", "Figma", "Acessibilidade", "Estratégia de Produto"],
+  goals: ["Mentorar designers em transição", "Liderar produtos mais acessíveis", "Publicar estudos de caso"],
+  availability: "Aberta a mentorias e colaborações selecionadas",
+  portfolio: "portfolio.exemplo.com/voce",
+  externalLinks: [
+    { label: "Portfólio", url: "portfolio.exemplo.com/voce" },
+    { label: "GitHub", url: "github.com/voce" },
+    { label: "Newsletter", url: "newsletter.exemplo.com" },
+  ],
+  experiences: [
+    {
+      title: "Product Designer",
+      org: "Atlas Studio",
+      period: "2022 — Atual",
+      desc: "Liderança de design systems, pesquisa contínua e jornadas para produtos B2B.",
+    },
+    {
+      title: "UX Designer",
+      org: "Crescer Labs",
+      period: "2019 — 2022",
+      desc: "Pesquisa com usuários, prototipação e validação de fluxos para times de produto.",
+    },
+  ],
+  education: [
+    {
+      title: "Design Digital",
+      org: "Universidade Federal",
+      period: "2015 — 2019",
+      desc: "Foco em interação humano-computador, acessibilidade e sistemas visuais.",
+    },
+  ],
+  certifications: [
+    { title: "Acessibilidade para Produtos Digitais", issuer: "W3C Academy", year: "2024" },
+    { title: "Product Discovery", issuer: "Reforge", year: "2023" },
+  ],
   reputation: [
     { label: "Colaboradora Ativa", level: 3 },
     { label: "Especialista Reconhecida", level: 2 },
@@ -119,8 +190,41 @@ export const users: User[] = [
     company: "Nubank",
     location: "São Paulo, BR",
     avatar: avatar("marina"),
+    banner: cover("marina-banner", 1400, 420),
     bio: "Aprendo escrevendo. Compartilho o que aprendo.",
     skills: ["Go", "Kubernetes", "Arquitetura", "Observabilidade"],
+    goals: ["Apoiar lideranças técnicas", "Compartilhar decisões de arquitetura", "Criar rituais de documentação"],
+    availability: "Disponível para mentoria gratuita duas vezes por mês",
+    portfolio: "marinarocha.dev",
+    externalLinks: [
+      { label: "Blog", url: "marinarocha.dev" },
+      { label: "GitHub", url: "github.com/marina-rocha" },
+    ],
+    experiences: [
+      {
+        title: "Engenheira de Software Sênior",
+        org: "Nubank",
+        period: "2021 — Atual",
+        desc: "Sistemas distribuídos, observabilidade e mentoria técnica para squads de plataforma.",
+      },
+      {
+        title: "Software Engineer",
+        org: "Stone",
+        period: "2018 — 2021",
+        desc: "Serviços financeiros de alta disponibilidade e evolução de arquitetura.",
+      },
+    ],
+    education: [
+      {
+        title: "Bacharelado em Ciência da Computação",
+        org: "UFMG",
+        period: "2014 — 2018",
+        desc: "Pesquisa aplicada em sistemas distribuídos.",
+      },
+    ],
+    certifications: [
+      { title: "Kubernetes Application Developer", issuer: "CNCF", year: "2023" },
+    ],
     reputation: [{ label: "Mentora Confiável", level: 4 }],
     openToWork: false,
     isMentor: true,
@@ -135,8 +239,35 @@ export const users: User[] = [
     company: "Mercado Livre",
     location: "Florianópolis, BR",
     avatar: avatar("diego"),
+    banner: cover("diego-banner", 1400, 420),
     bio: "Construindo produtos que respeitam o tempo das pessoas.",
     skills: ["Discovery", "Estratégia", "Métricas", "Liderança"],
+    goals: ["Apoiar PMs em primeira liderança", "Trocar sobre estratégia de marketplaces"],
+    availability: "Aberto a conversas sobre produto e liderança",
+    portfolio: "diegoalves.com",
+    externalLinks: [
+      { label: "Site", url: "diegoalves.com" },
+      { label: "LinkedIn", url: "linkedin.com/in/diegoalves" },
+    ],
+    experiences: [
+      {
+        title: "Product Manager",
+        org: "Mercado Livre",
+        period: "2020 — Atual",
+        desc: "Estratégia de marketplace, discovery contínuo e liderança de squads multidisciplinares.",
+      },
+    ],
+    education: [
+      {
+        title: "Administração",
+        org: "UFSC",
+        period: "2012 — 2016",
+        desc: "Ênfase em estratégia e operações digitais.",
+      },
+    ],
+    certifications: [
+      { title: "Product Leadership", issuer: "Mind the Product", year: "2022" },
+    ],
     reputation: [{ label: "Líder de Comunidade", level: 3 }],
     openToWork: false,
     isMentor: true,
@@ -151,8 +282,35 @@ export const users: User[] = [
     company: "Stone",
     location: "Rio de Janeiro, BR",
     avatar: avatar("ana"),
+    banner: cover("ana-banner", 1400, 420),
     bio: "Pessoas primeiro. Sempre.",
     skills: ["Cultura", "Recrutamento", "D&I", "Coaching"],
+    goals: ["Fortalecer lideranças inclusivas", "Compartilhar práticas de recrutamento transparente"],
+    availability: "Disponível para mentorias sobre carreira e cultura",
+    portfolio: "anafigueiredo.people",
+    externalLinks: [
+      { label: "Artigos", url: "anafigueiredo.people/artigos" },
+      { label: "LinkedIn", url: "linkedin.com/in/anafigueiredo" },
+    ],
+    experiences: [
+      {
+        title: "Head de People",
+        org: "Stone",
+        period: "2019 — Atual",
+        desc: "Cultura, diversidade, recrutamento e desenvolvimento de lideranças.",
+      },
+    ],
+    education: [
+      {
+        title: "Psicologia Organizacional",
+        org: "PUC-Rio",
+        period: "2010 — 2015",
+        desc: "Desenvolvimento humano e comportamento organizacional.",
+      },
+    ],
+    certifications: [
+      { title: "Executive Coaching", issuer: "ICF", year: "2021" },
+    ],
     reputation: [{ label: "Mentora Confiável", level: 5 }],
     openToWork: false,
     isMentor: true,
@@ -167,8 +325,30 @@ export const users: User[] = [
     company: "USP",
     location: "São Paulo, BR",
     avatar: avatar("lucas"),
+    banner: cover("lucas-banner", 1400, 420),
     bio: "Aprendendo em público. Curioso sobre tudo.",
     skills: ["Python", "Algoritmos", "Open Source"],
+    goals: ["Encontrar primeiro estágio", "Contribuir em open source", "Aprender backend"],
+    availability: "Aberto a estágio e mentoria",
+    portfolio: "github.com/lucas-tanaka",
+    externalLinks: [{ label: "GitHub", url: "github.com/lucas-tanaka" }],
+    experiences: [
+      {
+        title: "Monitor de Algoritmos",
+        org: "USP",
+        period: "2025 — Atual",
+        desc: "Apoio a estudantes em estruturas de dados e resolução de problemas.",
+      },
+    ],
+    education: [
+      {
+        title: "Ciência da Computação",
+        org: "USP",
+        period: "2023 — Atual",
+        desc: "Interesse em backend, dados e comunidades open source.",
+      },
+    ],
+    certifications: [{ title: "CS50", issuer: "HarvardX", year: "2024" }],
     reputation: [{ label: "Colaborador Ativo", level: 1 }],
     openToWork: true,
     isMentor: false,
@@ -183,8 +363,33 @@ export const users: User[] = [
     company: "Independente",
     location: "Porto, PT",
     avatar: avatar("bea"),
+    banner: cover("bea-banner", 1400, 420),
     bio: "Trabalho com fundadoras que querem comunicar com clareza.",
     skills: ["Branding", "Webflow", "UI", "Direção de Arte"],
+    goals: ["Conectar com founders", "Compartilhar processos de marca", "Criar uma comunidade freelancer"],
+    availability: "Aceitando projetos para o próximo trimestre",
+    portfolio: "beacosta.studio",
+    externalLinks: [
+      { label: "Portfólio", url: "beacosta.studio" },
+      { label: "Behance", url: "behance.net/beacosta" },
+    ],
+    experiences: [
+      {
+        title: "Designer Freelancer",
+        org: "Independente",
+        period: "2020 — Atual",
+        desc: "Identidade visual, websites e produto para negócios early-stage.",
+      },
+    ],
+    education: [
+      {
+        title: "Design Gráfico",
+        org: "ESAD",
+        period: "2014 — 2018",
+        desc: "Direção de arte, tipografia e sistemas visuais.",
+      },
+    ],
+    certifications: [{ title: "Brand Strategy", issuer: "Future London Academy", year: "2023" }],
     reputation: [{ label: "Especialista Reconhecida", level: 3 }],
     openToWork: true,
     isMentor: false,
@@ -199,8 +404,33 @@ export const users: User[] = [
     company: "Talent Bridge",
     location: "Remoto · Brasil",
     avatar: avatar("rafael"),
+    banner: cover("rafael-banner", 1400, 420),
     bio: "Recrutamento sem ruído. Conversas honestas.",
     skills: ["Recrutamento Técnico", "Hiring", "Sourcing"],
+    goals: ["Ajudar candidatos a negociar com clareza", "Construir processos seletivos mais transparentes"],
+    availability: "Aberto a conversar com talentos e empresas",
+    portfolio: "talentbridge.exemplo/rafael",
+    externalLinks: [
+      { label: "Talent Bridge", url: "talentbridge.exemplo/rafael" },
+      { label: "LinkedIn", url: "linkedin.com/in/rafaelmenezes" },
+    ],
+    experiences: [
+      {
+        title: "Tech Recruiter",
+        org: "Talent Bridge",
+        period: "2021 — Atual",
+        desc: "Sourcing técnico, desenho de processos e consultoria para times de engenharia.",
+      },
+    ],
+    education: [
+      {
+        title: "Gestão de Pessoas",
+        org: "FGV",
+        period: "2015 — 2017",
+        desc: "Recrutamento, cultura e desenvolvimento organizacional.",
+      },
+    ],
+    certifications: [{ title: "Technical Recruiting", issuer: "AIRS", year: "2022" }],
     reputation: [{ label: "Colaborador Ativo", level: 2 }],
     openToWork: false,
     isMentor: false,
@@ -266,6 +496,60 @@ export const posts: Post[] = [
     saves: 188,
   },
 ];
+
+export const comments: Comment[] = [
+  {
+    id: "cm-1",
+    postId: "p-1",
+    authorId: "u-2",
+    content:
+      "ADRs curtos mudaram nosso onboarding também. O ponto que mais ajudou foi registrar alternativas descartadas.",
+    createdAt: "há 1h",
+    reactions: 24,
+    highlighted: true,
+    replies: [
+      {
+        id: "cm-1-r1",
+        postId: "p-1",
+        authorId: "u-1",
+        content: "@diego.alves exatamente. Sem alternativas descartadas, a decisão vira só uma conclusão solta.",
+        createdAt: "há 48min",
+        reactions: 12,
+      },
+    ],
+  },
+  {
+    id: "cm-2",
+    postId: "p-2",
+    authorId: "u-5",
+    content:
+      "No meu time, a combinação de demos quinzenais e um canal assíncrono de vitórias pequenas funcionou melhor que check-ins longos.",
+    createdAt: "há 3h",
+    reactions: 18,
+    highlighted: true,
+  },
+  {
+    id: "cm-3",
+    postId: "p-3",
+    authorId: "u-3",
+    content:
+      "Gosto muito da formação por objetivo. Hierarquia costuma esconder quem realmente pode ajudar.",
+    createdAt: "ontem",
+    reactions: 31,
+  },
+  {
+    id: "cm-4",
+    postId: "p-4",
+    authorId: "u-1",
+    content:
+      "Essa distinção entre maturidade de time e escolha técnica é ouro. Vale para arquitetura também.",
+    createdAt: "há 1 dia",
+    reactions: 15,
+  },
+];
+
+export const getCommentsForPost = (postId: string) =>
+  comments.filter((comment) => comment.postId === postId);
 
 export const jobs: Job[] = [
   {
@@ -438,11 +722,72 @@ export const mentors: Mentor[] = [
 ];
 
 export const conversations: Conversation[] = [
-  { id: "conv-1", userId: "u-1", lastMessage: "Topa marcar 30 min essa semana?", time: "12:42", unread: 2 },
-  { id: "conv-2", userId: "u-3", lastMessage: "Mandei o material que comentei.", time: "10:08", unread: 0 },
-  { id: "conv-2b", userId: "u-2", lastMessage: "Concordo. Vamos seguir por aí.", time: "ontem", unread: 0 },
-  { id: "conv-3", userId: "u-5", lastMessage: "Adorei a ideia. Posso contribuir?", time: "ontem", unread: 1 },
-  { id: "conv-4", userId: "u-6", lastMessage: "Tem disponibilidade pra conversar?", time: "seg", unread: 0 },
+  {
+    id: "conv-1",
+    userId: "u-1",
+    kind: "private",
+    lastMessage: "Topa marcar 30 min essa semana?",
+    time: "12:42",
+    unread: 2,
+  },
+  {
+    id: "conv-2",
+    userId: "u-3",
+    kind: "private",
+    lastMessage: "Mandei o material que comentei.",
+    time: "10:08",
+    unread: 0,
+  },
+  {
+    id: "conv-2b",
+    userId: "u-2",
+    kind: "group",
+    title: "Círculo de Produto",
+    participantIds: ["u-2", "u-3", "u-5"],
+    lastMessage: "Concordo. Vamos seguir por aí.",
+    time: "ontem",
+    unread: 0,
+  },
+  {
+    id: "conv-3",
+    userId: "u-5",
+    kind: "private",
+    lastMessage: "Adorei a ideia. Posso contribuir?",
+    time: "ontem",
+    unread: 1,
+  },
+  {
+    id: "conv-4",
+    userId: "u-6",
+    kind: "private",
+    lastMessage: "Tem disponibilidade pra conversar?",
+    time: "seg",
+    unread: 0,
+  },
 ];
 
 export const suggestedConnections = users.slice(0, 4);
+
+export const reputationSignals = [
+  { label: "Contribuições úteis", value: "86", trend: "+12 este mês" },
+  { label: "Mentorias concluídas", value: "18", trend: "4 avaliações 5.0" },
+  { label: "Discussões relevantes", value: "42", trend: "sem caça-engajamento" },
+];
+
+export const learningTracks = [
+  {
+    title: "Transição para Produto",
+    progress: 64,
+    nextStep: "Sessão com mentor de discovery",
+  },
+  {
+    title: "Liderança técnica",
+    progress: 38,
+    nextStep: "Workshop de documentação de decisões",
+  },
+  {
+    title: "Carreira internacional",
+    progress: 22,
+    nextStep: "Revisão de perfil em inglês",
+  },
+];

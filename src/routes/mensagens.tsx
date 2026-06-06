@@ -21,6 +21,11 @@ function Mensagens() {
   const [activeId, setActiveId] = useState(conversations[0].id);
   const active = conversations.find((c) => c.id === activeId)!;
   const activeUser = findUser(active.userId);
+  const activeTitle = active.kind === "group" ? active.title! : activeUser.name;
+  const activeSubtitle =
+    active.kind === "group"
+      ? `${active.participantIds?.length ?? 0} participantes · círculo de mentoria`
+      : activeUser.headline;
 
   return (
     <AppShell>
@@ -37,6 +42,7 @@ function Mensagens() {
             {conversations.map((c) => {
               const u = findUser(c.userId);
               const isActive = c.id === activeId;
+              const title = c.kind === "group" ? c.title! : u.name;
               return (
                 <li key={c.id}>
                   <button
@@ -51,7 +57,7 @@ function Mensagens() {
                     </Avatar>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between">
-                        <span className="truncate text-sm font-medium">{u.name}</span>
+                        <span className="truncate text-sm font-medium">{title}</span>
                         <span className="text-[11px] text-muted-foreground">{c.time}</span>
                       </div>
                       <div className="flex items-center justify-between gap-2">
@@ -78,8 +84,8 @@ function Mensagens() {
                 <AvatarFallback>{activeUser.name[0]}</AvatarFallback>
               </Avatar>
               <div className="min-w-0">
-                <p className="truncate font-semibold">{activeUser.name}</p>
-                <p className="truncate text-xs text-muted-foreground">{activeUser.headline}</p>
+                <p className="truncate font-semibold">{activeTitle}</p>
+                <p className="truncate text-xs text-muted-foreground">{activeSubtitle}</p>
               </div>
             </div>
             <div className="flex items-center gap-1 text-muted-foreground">

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Sparkles, Users, GraduationCap, Compass, ShieldCheck, MessageCircle, ArrowRight, Heart, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -36,6 +37,7 @@ function Landing() {
             <a href="#comunidade" className="hover:text-foreground">Comunidade</a>
           </nav>
           <div className="flex items-center gap-2">
+            <ThemeToggle />
             <Link to="/entrar" search={{ tab: "login" }} className="hidden sm:inline">
               <Button variant="ghost" className="rounded-full">Entrar</Button>
             </Link>

@@ -14,6 +14,7 @@ import {
 import type { ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { currentUser } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
@@ -55,6 +56,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="ml-auto flex items-center gap-2">
+            <ThemeToggle />
             <button className="grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground">
               <Bell className="h-5 w-5" />
             </button>

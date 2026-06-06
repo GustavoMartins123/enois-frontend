@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { MapPin, Briefcase, GraduationCap, Award, Link as LinkIcon, MessageCircle, UserPlus, Sparkles } from "lucide-react";
+import { MapPin, Briefcase, GraduationCap, Award, Link as LinkIcon, MessageCircle, UserPlus, Sparkles, Target, Clock } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PostCard } from "@/components/post-card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -47,13 +47,7 @@ function Profile() {
     <AppShell>
       <div className="space-y-6">
         <div className="surface-card overflow-hidden">
-          <div
-            className="h-40 sm:h-52"
-            style={{
-              background:
-                "linear-gradient(135deg, oklch(0.55 0.22 295), oklch(0.78 0.14 320))",
-            }}
-          />
+          <img src={user.banner} alt="" className="h-40 w-full object-cover sm:h-52" />
           <div className="px-6 pb-6">
             <div className="-mt-14 flex flex-wrap items-end justify-between gap-4">
               <Avatar className="h-28 w-28 ring-4 ring-card">
@@ -109,21 +103,35 @@ function Profile() {
               </div>
             </Section>
 
+            <Section title="Objetivos profissionais" icon={Target}>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {user.goals.map((goal) => (
+                  <div key={goal} className="rounded-xl border border-border bg-muted/40 p-4">
+                    <p className="text-sm font-medium">{goal}</p>
+                  </div>
+                ))}
+              </div>
+            </Section>
+
             <Section title="Experiência" icon={Briefcase}>
-              <Timeline
-                items={[
-                  { title: user.headline.split("·")[0].trim(), org: user.company, period: "2022 — Atual", desc: "Liderança de iniciativas multidisciplinares com foco em qualidade e impacto." },
-                  { title: "Cargo anterior", org: "Empresa anterior", period: "2019 — 2022", desc: "Construção de produtos do zero com times pequenos e ágeis." },
-                ]}
-              />
+              <Timeline items={user.experiences} />
             </Section>
 
             <Section title="Formação" icon={GraduationCap}>
-              <Timeline
-                items={[
-                  { title: "Bacharelado em Computação", org: "Universidade Federal", period: "2014 — 2018", desc: "Foco em sistemas e interação humano-computador." },
-                ]}
-              />
+              <Timeline items={user.education} />
+            </Section>
+
+            <Section title="Certificações" icon={Award}>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {user.certifications.map((cert) => (
+                  <div key={`${cert.title}-${cert.year}`} className="rounded-xl border border-border bg-muted/40 p-4">
+                    <p className="font-medium">{cert.title}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {cert.issuer} · {cert.year}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </Section>
 
             <Section title="Publicações recentes">
@@ -152,12 +160,17 @@ function Profile() {
               </ul>
             </Section>
 
+            <Section title="Disponibilidade" icon={Clock}>
+              <p className="text-sm leading-relaxed text-foreground">{user.availability}</p>
+            </Section>
+
             <Section title="Links">
               <ul className="space-y-2 text-sm">
-                {["portfolio.exemplo.com", "github.com/" + user.username, "site.exemplo.com"].map((l) => (
-                  <li key={l} className="flex items-center gap-2 text-muted-foreground">
+                {user.externalLinks.map((link) => (
+                  <li key={link.url} className="flex items-center gap-2 text-muted-foreground">
                     <LinkIcon className="h-4 w-4" />
-                    <span className="truncate">{l}</span>
+                    <span className="font-medium text-foreground">{link.label}</span>
+                    <span className="truncate">{link.url}</span>
                   </li>
                 ))}
               </ul>
