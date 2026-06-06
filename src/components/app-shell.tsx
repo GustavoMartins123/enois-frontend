@@ -18,7 +18,7 @@ import { currentUser } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
 const nav = [
-  { to: "/", label: "Início", icon: Home },
+  { to: "/feed", label: "Início", icon: Home },
   { to: "/rede", label: "Rede", icon: Users },
   { to: "/comunidades", label: "Comunidades", icon: Compass },
   { to: "/mensagens", label: "Mensagens", icon: MessageCircle },
