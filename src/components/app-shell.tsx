@@ -18,7 +18,7 @@ import { currentUser } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
 const nav = [
-  { to: "/", label: "Início", icon: Home },
+  { to: "/feed", label: "Início", icon: Home },
   { to: "/rede", label: "Rede", icon: Users },
   { to: "/comunidades", label: "Comunidades", icon: Compass },
   { to: "/mensagens", label: "Mensagens", icon: MessageCircle },
@@ -34,7 +34,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/feed" className="flex items-center gap-2">
             <div
               className="grid h-9 w-9 place-items-center rounded-xl text-primary-foreground"
               style={{ background: "var(--gradient-primary)" }}
