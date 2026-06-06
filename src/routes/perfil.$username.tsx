@@ -40,7 +40,7 @@ export const Route = createFileRoute("/perfil/$username")({
 });
 
 function Profile() {
-  const { user } = Route.useLoaderData();
+  const { user } = Route.useLoaderData() as { user: ReturnType<typeof findUserByUsername> & {} };
   const userPosts = posts.filter((p) => p.authorId === user.id);
 
   return (
