@@ -120,6 +120,18 @@ export type Conversation = {
   unread: number;
 };
 
+export type Notification = {
+  id: string;
+  kind: "connection" | "message" | "mention" | "event" | "job" | "mentoring";
+  actorId?: string;
+  title: string;
+  body: string;
+  createdAt: string;
+  read: boolean;
+  href: "/feed" | "/rede" | "/mensagens" | "/eventos" | "/vagas" | "/mentoria";
+  ctaLabel: string;
+};
+
 const avatar = (seed: string) =>
   `https://api.dicebear.com/9.x/notionists/svg?seed=${encodeURIComponent(seed)}&backgroundColor=ede9fe,ddd6fe,c4b5fd`;
 
@@ -137,7 +149,11 @@ export const currentUser: User = {
   banner: cover("voce-banner", 1400, 420),
   bio: "Designer de produto focada em sistemas, acessibilidade e colaboração. Acredito que boas ideias nascem de boas conversas.",
   skills: ["Design Systems", "UX Research", "Figma", "Acessibilidade", "Estratégia de Produto"],
-  goals: ["Mentorar designers em transição", "Liderar produtos mais acessíveis", "Publicar estudos de caso"],
+  goals: [
+    "Mentorar designers em transição",
+    "Liderar produtos mais acessíveis",
+    "Publicar estudos de caso",
+  ],
   availability: "Aberta a mentorias e colaborações selecionadas",
   portfolio: "portfolio.exemplo.com/voce",
   externalLinks: [
@@ -193,7 +209,11 @@ export const users: User[] = [
     banner: cover("marina-banner", 1400, 420),
     bio: "Aprendo escrevendo. Compartilho o que aprendo.",
     skills: ["Go", "Kubernetes", "Arquitetura", "Observabilidade"],
-    goals: ["Apoiar lideranças técnicas", "Compartilhar decisões de arquitetura", "Criar rituais de documentação"],
+    goals: [
+      "Apoiar lideranças técnicas",
+      "Compartilhar decisões de arquitetura",
+      "Criar rituais de documentação",
+    ],
     availability: "Disponível para mentoria gratuita duas vezes por mês",
     portfolio: "marinarocha.dev",
     externalLinks: [
@@ -222,9 +242,7 @@ export const users: User[] = [
         desc: "Pesquisa aplicada em sistemas distribuídos.",
       },
     ],
-    certifications: [
-      { title: "Kubernetes Application Developer", issuer: "CNCF", year: "2023" },
-    ],
+    certifications: [{ title: "Kubernetes Application Developer", issuer: "CNCF", year: "2023" }],
     reputation: [{ label: "Mentora Confiável", level: 4 }],
     openToWork: false,
     isMentor: true,
@@ -265,9 +283,7 @@ export const users: User[] = [
         desc: "Ênfase em estratégia e operações digitais.",
       },
     ],
-    certifications: [
-      { title: "Product Leadership", issuer: "Mind the Product", year: "2022" },
-    ],
+    certifications: [{ title: "Product Leadership", issuer: "Mind the Product", year: "2022" }],
     reputation: [{ label: "Líder de Comunidade", level: 3 }],
     openToWork: false,
     isMentor: true,
@@ -285,7 +301,10 @@ export const users: User[] = [
     banner: cover("ana-banner", 1400, 420),
     bio: "Pessoas primeiro. Sempre.",
     skills: ["Cultura", "Recrutamento", "D&I", "Coaching"],
-    goals: ["Fortalecer lideranças inclusivas", "Compartilhar práticas de recrutamento transparente"],
+    goals: [
+      "Fortalecer lideranças inclusivas",
+      "Compartilhar práticas de recrutamento transparente",
+    ],
     availability: "Disponível para mentorias sobre carreira e cultura",
     portfolio: "anafigueiredo.people",
     externalLinks: [
@@ -308,9 +327,7 @@ export const users: User[] = [
         desc: "Desenvolvimento humano e comportamento organizacional.",
       },
     ],
-    certifications: [
-      { title: "Executive Coaching", issuer: "ICF", year: "2021" },
-    ],
+    certifications: [{ title: "Executive Coaching", issuer: "ICF", year: "2021" }],
     reputation: [{ label: "Mentora Confiável", level: 5 }],
     openToWork: false,
     isMentor: true,
@@ -366,7 +383,11 @@ export const users: User[] = [
     banner: cover("bea-banner", 1400, 420),
     bio: "Trabalho com fundadoras que querem comunicar com clareza.",
     skills: ["Branding", "Webflow", "UI", "Direção de Arte"],
-    goals: ["Conectar com founders", "Compartilhar processos de marca", "Criar uma comunidade freelancer"],
+    goals: [
+      "Conectar com founders",
+      "Compartilhar processos de marca",
+      "Criar uma comunidade freelancer",
+    ],
     availability: "Aceitando projetos para o próximo trimestre",
     portfolio: "beacosta.studio",
     externalLinks: [
@@ -407,7 +428,10 @@ export const users: User[] = [
     banner: cover("rafael-banner", 1400, 420),
     bio: "Recrutamento sem ruído. Conversas honestas.",
     skills: ["Recrutamento Técnico", "Hiring", "Sourcing"],
-    goals: ["Ajudar candidatos a negociar com clareza", "Construir processos seletivos mais transparentes"],
+    goals: [
+      "Ajudar candidatos a negociar com clareza",
+      "Construir processos seletivos mais transparentes",
+    ],
     availability: "Aberto a conversar com talentos e empresas",
     portfolio: "talentbridge.exemplo/rafael",
     externalLinks: [
@@ -512,7 +536,8 @@ export const comments: Comment[] = [
         id: "cm-1-r1",
         postId: "p-1",
         authorId: "u-1",
-        content: "@diego.alves exatamente. Sem alternativas descartadas, a decisão vira só uma conclusão solta.",
+        content:
+          "@diego.alves exatamente. Sem alternativas descartadas, a decisão vira só uma conclusão solta.",
         createdAt: "há 48min",
         reactions: 12,
       },
@@ -767,6 +792,73 @@ export const conversations: Conversation[] = [
 ];
 
 export const suggestedConnections = users.slice(0, 4);
+
+export const notifications: Notification[] = [
+  {
+    id: "n-1",
+    kind: "connection",
+    actorId: "u-1",
+    title: "Nova sugestão forte de conexão",
+    body: "Marina Rocha compartilha interesses em arquitetura e mentoria técnica.",
+    createdAt: "agora",
+    read: false,
+    href: "/rede",
+    ctaLabel: "Ver perfil",
+  },
+  {
+    id: "n-2",
+    kind: "message",
+    actorId: "u-1",
+    title: "Mensagem não lida",
+    body: "Marina perguntou se você topa marcar 30 min essa semana.",
+    createdAt: "12:42",
+    read: false,
+    href: "/mensagens",
+    ctaLabel: "Abrir conversa",
+  },
+  {
+    id: "n-3",
+    kind: "mention",
+    actorId: "u-2",
+    title: "Comentário em discussão salva",
+    body: "Diego respondeu em um post sobre mentoria cruzada entre times.",
+    createdAt: "há 28 min",
+    read: false,
+    href: "/feed",
+    ctaLabel: "Ver discussão",
+  },
+  {
+    id: "n-4",
+    kind: "event",
+    title: "Evento chegando",
+    body: "Painel: O futuro da mentoria em tecnologia começa em breve.",
+    createdAt: "hoje",
+    read: true,
+    href: "/eventos",
+    ctaLabel: "Ver evento",
+  },
+  {
+    id: "n-5",
+    kind: "job",
+    title: "Vaga com alto match",
+    body: "Senior Product Designer na Loft tem 88% de compatibilidade com seu perfil.",
+    createdAt: "ontem",
+    read: true,
+    href: "/vagas",
+    ctaLabel: "Ver vaga",
+  },
+  {
+    id: "n-6",
+    kind: "mentoring",
+    actorId: "u-3",
+    title: "Novo horário de mentoria",
+    body: "Ana abriu agenda para conversas sobre transição de carreira.",
+    createdAt: "seg",
+    read: true,
+    href: "/mentoria",
+    ctaLabel: "Ver mentoria",
+  },
+];
 
 export const reputationSignals = [
   { label: "Contribuições úteis", value: "86", trend: "+12 este mês" },
