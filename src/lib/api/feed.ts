@@ -64,8 +64,10 @@ export const feedApi = {
 
   delete: (postId: string) => api.delete<DeleteResult>(`/feed/posts/${postId}`),
 
-  listReactions: (postId: string) =>
-    api.get<ReactionUser[]>(`/feed/posts/${postId}/reactions`),
+  listSaved: (cursor?: string | null, limit = 20) =>
+    api.get<PageResponse<PostView>>(`/feed/saved${buildQuery({ cursor, limit })}`),
+
+  listReactions: (postId: string) => api.get<ReactionUser[]>(`/feed/posts/${postId}/reactions`),
 
   bulkDelete: (data: BulkDeleteInput) =>
     api.post<BulkDeleteResult>("/feed/posts/bulk-delete", data),

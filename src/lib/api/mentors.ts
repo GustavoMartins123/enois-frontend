@@ -22,6 +22,11 @@ export interface CreateMentorInput {
   price: string;
 }
 
+export interface UpdateMentorInput {
+  expertise?: string[];
+  price?: string;
+}
+
 export interface CreateSlotInput {
   startsAt: string;
   endsAt: string;
@@ -39,6 +44,11 @@ export const mentorsApi = {
   get: (mentorId: string) => api.get<Mentor>(`/mentors/${mentorId}`),
 
   create: (data: CreateMentorInput) => api.post<Mentor>("/mentors", data),
+
+  update: (mentorId: string, data: UpdateMentorInput) =>
+    api.patch<Mentor>(`/mentors/${mentorId}`, data),
+
+  remove: (mentorId: string) => api.delete<{ status: string }>(`/mentors/${mentorId}`),
 
   getSlots: (mentorId: string) => api.get<TimeSlot[]>(`/mentors/${mentorId}/slots`),
 

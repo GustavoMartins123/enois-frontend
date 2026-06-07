@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useMatchRoute } from "@tanstack/react-router";
 import { requireAuth } from "@/lib/require-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -18,7 +18,16 @@ import {
 import { communitiesApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 
-const TOPICS = ["Todas", "TECNOLOGIA", "ENGENHARIA", "DESIGN", "PRODUTO", "LIDERANCA", "CARREIRA", "FREELANCE"];
+const TOPICS = [
+  "Todas",
+  "TECNOLOGIA",
+  "ENGENHARIA",
+  "DESIGN",
+  "PRODUTO",
+  "LIDERANCA",
+  "CARREIRA",
+  "FREELANCE",
+];
 
 export const Route = createFileRoute("/comunidades")({
   beforeLoad: requireAuth,
@@ -28,12 +37,15 @@ export const Route = createFileRoute("/comunidades")({
 
 function Comunidades() {
   const queryClient = useQueryClient();
+  const matchRoute = useMatchRoute();
   const [topic, setTopic] = useState<string | undefined>(undefined);
   const [open, setOpen] = useState(false);
+  const isDetail = matchRoute({ to: "/comunidades/$communityId" });
 
   const { data: communitiesData } = useQuery({
     queryKey: ["communities", topic],
     queryFn: () => communitiesApi.list(topic),
+    enabled: !isDetail,
   });
 
   const communities = communitiesData?.items ?? [];
@@ -47,6 +59,10 @@ function Comunidades() {
     mutationFn: (id: string) => communitiesApi.leave(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["communities"] }),
   });
+
+  if (isDetail) {
+    return <Outlet />;
+  }
 
   return (
     <AppShell>
@@ -85,39 +101,47 @@ function Comunidades() {
           {communities.map((c) => (
             <Link key={c.id} to="/comunidades/$communityId" params={{ communityId: c.id }}>
               <article className="surface-card overflow-hidden cursor-pointer transition hover:shadow-[var(--shadow-card)]">
-              {c.cover ? (
-                <img src={resolveCdnUrl(c.cover)} alt="" className="h-32 w-full object-cover" />
-              ) : (
-                <div className="h-32 w-full bg-gradient-to-br from-primary/20 to-primary/5" />
-              )}
-              <div className="p-5">
-                <div className="flex items-center gap-3 mb-3">
-                  {c.avatar && (
-                    <img src={resolveCdnUrl(c.avatar)} alt="" className="h-10 w-10 rounded-full object-cover ring-2 ring-border" />
-                  )}
-                  <div className="min-w-0">
-                    <p className="text-xs font-medium uppercase tracking-wider text-primary">{c.topic}</p>
-                    <h3 className="font-semibold truncate">{c.name}</h3>
+                {c.cover ? (
+                  <img src={resolveCdnUrl(c.cover)} alt="" className="h-32 w-full object-cover" />
+                ) : (
+                  <div className="h-32 w-full bg-gradient-to-br from-primary/20 to-primary/5" />
+                )}
+                <div className="p-5">
+                  <div className="flex items-center gap-3 mb-3">
+                    {c.avatar && (
+                      <img
+                        src={resolveCdnUrl(c.avatar)}
+                        alt=""
+                        className="h-10 w-10 rounded-full object-cover ring-2 ring-border"
+                      />
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-xs font-medium uppercase tracking-wider text-primary">
+                        {c.topic}
+                      </p>
+                      <h3 className="font-semibold truncate">{c.name}</h3>
+                    </div>
+                  </div>
+                  <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">
+                    {c.description}
+                  </p>
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Users className="h-3.5 w-3.5" />
+                      {(c.members ?? 0).toLocaleString("pt-BR")} membros
+                    </span>
+                    <Button
+                      size="sm"
+                      variant={c.joined ? "secondary" : "default"}
+                      className="rounded-full"
+                      disabled={join.isPending || leave.isPending}
+                      onClick={() => (c.joined ? leave.mutate(c.id) : join.mutate(c.id))}
+                    >
+                      {c.joined ? "Participando" : "Entrar"}
+                    </Button>
                   </div>
                 </div>
-                <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">{c.description}</p>
-                <div className="mt-4 flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Users className="h-3.5 w-3.5" />
-                    {(c.members ?? 0).toLocaleString("pt-BR")} membros
-                  </span>
-                  <Button
-                    size="sm"
-                    variant={c.joined ? "secondary" : "default"}
-                    className="rounded-full"
-                    disabled={join.isPending || leave.isPending}
-                    onClick={() => (c.joined ? leave.mutate(c.id) : join.mutate(c.id))}
-                  >
-                    {c.joined ? "Participando" : "Entrar"}
-                  </Button>
-                </div>
-              </div>
-            </article>
+              </article>
             </Link>
           ))}
         </div>
@@ -166,7 +190,11 @@ function CreateCommunityDialog({
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Descrição</Label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+            />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Tópico</Label>

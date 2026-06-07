@@ -16,6 +16,7 @@ import {
   UserPlus,
   Loader2,
   LogIn,
+  Bookmark,
 } from "lucide-react";
 import { useMemo, useState, useRef, useEffect, type ReactNode } from "react";
 import { Input } from "@/components/ui/input";
@@ -28,8 +29,19 @@ import { isAuthenticated } from "@/lib/use-auth";
 import type { Notification } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
-function navigateToHref(href: string, navigate: (opts: { to: string; params?: Record<string, string> }) => void) {
-  for (const route of ["/feed", "/rede", "/mensagens", "/eventos", "/vagas", "/comunidades", "/mentoria"] as const) {
+function navigateToHref(
+  href: string,
+  navigate: (opts: { to: string; params?: Record<string, string> }) => void,
+) {
+  for (const route of [
+    "/feed",
+    "/rede",
+    "/mensagens",
+    "/eventos",
+    "/vagas",
+    "/comunidades",
+    "/mentoria",
+  ] as const) {
     if (href === route || href.startsWith(route + "/")) {
       navigate({ to: route });
       return;
@@ -50,15 +62,13 @@ const nav = [
   { to: "/rede", label: "Rede", icon: Users },
   { to: "/comunidades", label: "Comunidades", icon: Compass },
   { to: "/mensagens", label: "Mensagens", icon: MessageCircle },
+  { to: "/salvos", label: "Salvos", icon: Bookmark },
   { to: "/vagas", label: "Vagas", icon: Briefcase },
   { to: "/mentoria", label: "Mentoria", icon: GraduationCap },
   { to: "/eventos", label: "Eventos", icon: Calendar },
 ];
 
-const notificationMeta: Record<
-  string,
-  { icon: React.ElementType; className: string }
-> = {
+const notificationMeta: Record<string, { icon: React.ElementType; className: string }> = {
   connection: { icon: UserPlus, className: "bg-primary-soft text-primary" },
   message: { icon: MessageCircle, className: "bg-secondary/30 text-secondary-foreground" },
   mention: { icon: AtSign, className: "bg-accent text-accent-foreground" },
@@ -99,10 +109,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     },
   });
 
-  const notificationList = useMemo(
-    () => notificationsData?.items ?? [],
-    [notificationsData],
-  );
+  const notificationList = useMemo(() => notificationsData?.items ?? [], [notificationsData]);
   const unreadCount = useMemo(
     () => notificationList.filter((n) => !n.read).length,
     [notificationList],
@@ -135,9 +142,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     <button
                       className="relative grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
                       aria-label={
-                        unreadCount > 0
-                          ? `${unreadCount} notificações não lidas`
-                          : "Notificações"
+                        unreadCount > 0 ? `${unreadCount} notificações não lidas` : "Notificações"
                       }
                     >
                       <Bell className="h-5 w-5" />
@@ -175,8 +180,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     <div className="max-h-[28rem] overflow-y-auto">
                       {notificationList.map((notification) => {
                         const meta =
-                          notificationMeta[notification.kind] ??
-                          notificationMeta.connection;
+                          notificationMeta[notification.kind] ?? notificationMeta.connection;
                         const Icon = meta.icon;
 
                         return (
@@ -184,9 +188,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                             key={notification.id}
                             className={cn(
                               "border-b border-border px-4 py-3 last:border-b-0",
-                              notification.read
-                                ? "bg-popover"
-                                : "bg-primary-soft/40",
+                              notification.read ? "bg-popover" : "bg-primary-soft/40",
                             )}
                           >
                             <div className="flex items-start gap-3">
@@ -218,9 +220,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                                     {!notification.read && (
                                       <button
                                         type="button"
-                                        onClick={() =>
-                                          markAsRead.mutate(notification.id)
-                                        }
+                                        onClick={() => markAsRead.mutate(notification.id)}
                                         className="rounded-full px-2 py-1 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
                                       >
                                         Lida
@@ -256,22 +256,14 @@ export function AppShell({ children }: { children: ReactNode }) {
                     params={{ username: profile.username }}
                     className="flex items-center gap-2 rounded-full p-1 pr-3 transition hover:bg-muted"
                   >
-                    <UserAvatar
-                      src={profile.avatar}
-                      alt={profile.name}
-                      className="h-8 w-8"
-                    />
-                    <span className="hidden text-sm font-medium sm:inline">
-                      Perfil
-                    </span>
+                    <UserAvatar src={profile.avatar} alt={profile.name} className="h-8 w-8" />
+                    <span className="hidden text-sm font-medium sm:inline">Perfil</span>
                   </Link>
                 )}
               </>
             ) : (
               <Button
-                onClick={() =>
-                  navigate({ to: "/entrar", search: { tab: "login" } })
-                }
+                onClick={() => navigate({ to: "/entrar", search: { tab: "login" } })}
                 className="rounded-full gap-1.5"
                 size="sm"
               >
@@ -287,10 +279,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <aside className="sticky top-20 hidden h-fit w-60 shrink-0 lg:block">
             <nav className="flex flex-col gap-1">
               {nav.map((item) => {
-                const active =
-                  item.to === "/"
-                    ? pathname === "/"
-                    : pathname.startsWith(item.to);
+                const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
                 const Icon = item.icon;
                 return (
                   <Link
@@ -303,9 +292,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                         : "text-muted-foreground hover:bg-muted hover:text-foreground",
                     )}
                   >
-                    <Icon
-                      className={cn("h-4 w-4", active ? "text-primary" : "")}
-                    />
+                    <Icon className={cn("h-4 w-4", active ? "text-primary" : "")} />
                     {item.label}
                   </Link>
                 );
@@ -321,10 +308,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
           <div className="mx-auto flex max-w-7xl items-center justify-around px-2">
             {nav.slice(0, 5).map((item) => {
-              const active =
-                item.to === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(item.to);
+              const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
               const Icon = item.icon;
               return (
                 <Link
@@ -414,18 +398,10 @@ function SearchBox() {
                       onClick={close}
                       className="flex items-center gap-3 px-4 py-3 transition hover:bg-muted"
                     >
-                      <UserAvatar
-                      src={item.image}
-                      alt={item.title}
-                      className="h-10 w-10"
-                    />
+                      <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">
-                          {item.title}
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {item.subtitle}
-                        </p>
+                        <p className="truncate text-sm font-medium">{item.title}</p>
+                        <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
                       </div>
                     </Link>
                   ) : (
@@ -433,18 +409,10 @@ function SearchBox() {
                       onClick={close}
                       className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted"
                     >
-                      <UserAvatar
-                      src={item.image}
-                      alt={item.title}
-                      className="h-10 w-10"
-                    />
+                      <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">
-                          {item.title}
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {item.subtitle}
-                        </p>
+                        <p className="truncate text-sm font-medium">{item.title}</p>
+                        <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
                       </div>
                     </button>
                   )}

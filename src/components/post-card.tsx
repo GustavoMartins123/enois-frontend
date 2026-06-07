@@ -11,7 +11,7 @@ import {
   BookOpen,
   Flag,
 } from "lucide-react";
-import { useMemo, useState, type FormEvent } from "react";
+import { useMemo, useState, useEffect, type FormEvent } from "react";
 import { useQuery, useQueries } from "@tanstack/react-query";
 import { useAuth } from "@/lib/use-auth";
 import { UserAvatar } from "@/components/user-avatar";
@@ -50,7 +50,15 @@ const typeMeta: Record<
   ARTICLE: { label: "Artigo", icon: BookOpen, className: "bg-primary-soft text-primary" },
 };
 
-function ReactionsDialog({ postId, open, onOpenChange }: { postId: string; open: boolean; onOpenChange: (v: boolean) => void }) {
+function ReactionsDialog({
+  postId,
+  open,
+  onOpenChange,
+}: {
+  postId: string;
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
   const { data: reactions } = useQuery({
     queryKey: ["reactions", postId],
     queryFn: () => feedApi.listReactions(postId),
@@ -64,7 +72,9 @@ function ReactionsDialog({ postId, open, onOpenChange }: { postId: string; open:
           <DialogTitle>Reações</DialogTitle>
         </DialogHeader>
         <div className="space-y-2">
-          {(!reactions || reactions.length === 0) && <p className="text-sm text-muted-foreground">Nenhuma reação ainda.</p>}
+          {(!reactions || reactions.length === 0) && (
+            <p className="text-sm text-muted-foreground">Nenhuma reação ainda.</p>
+          )}
           {reactions?.map((r) => (
             <ReactionUserItem key={r.userId} userId={r.userId} type={r.type} />
           ))}
@@ -94,20 +104,43 @@ function ReactionUserItem({ userId, type }: { userId: string; type: string }) {
 }
 
 const REPORT_REASONS = [
-  "AI_GENERATED", "FAKE_CONTENT", "SCAM", "DISCRIMINATION",
-  "PREJUDICE", "HARASSMENT", "SPAM", "VIOLENCE", "COPYRIGHT", "OTHER",
+  "AI_GENERATED",
+  "FAKE_CONTENT",
+  "SCAM",
+  "DISCRIMINATION",
+  "PREJUDICE",
+  "HARASSMENT",
+  "SPAM",
+  "VIOLENCE",
+  "COPYRIGHT",
+  "OTHER",
 ];
 
-function ReportDialog({ postId, open, onOpenChange }: { postId: string; open: boolean; onOpenChange: (v: boolean) => void }) {
+function ReportDialog({
+  postId,
+  open,
+  onOpenChange,
+}: {
+  postId: string;
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
   const [reason, setReason] = useState("SPAM");
   const [description, setDescription] = useState("");
 
   const submit = async () => {
     try {
-      await reportsApi.create({ targetId: postId, targetType: "POST", reason: reason as any, description: description || undefined });
+      await reportsApi.create({
+        targetId: postId,
+        targetType: "POST",
+        reason: reason as any,
+        description: description || undefined,
+      });
       onOpenChange(false);
       setDescription("");
-    } catch { /* silent */ }
+    } catch {
+      /* silent */
+    }
   };
 
   return (
@@ -125,13 +158,19 @@ function ReportDialog({ postId, open, onOpenChange }: { postId: string; open: bo
               className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
             >
               {REPORT_REASONS.map((r) => (
-                <option key={r} value={r}>{r.replace(/_/g, " ").toLowerCase()}</option>
+                <option key={r} value={r}>
+                  {r.replace(/_/g, " ").toLowerCase()}
+                </option>
               ))}
             </select>
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Descrição (opcional)</Label>
-            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+            />
           </div>
           <Button className="w-full rounded-full" onClick={submit}>
             Denunciar
@@ -150,10 +189,28 @@ export function PostCard({ post }: { post: PostView }) {
   const [draft, setDraft] = useState("");
   const [localComments, setLocalComments] = useState<CommentView[]>([]);
   const [postCounters, setPostCounters] = useState(post.counters);
-  const [reactionStatus, setReactionStatus] = useState<string | null>(post.currentUserReaction ?? null);
+  const [reactionStatus, setReactionStatus] = useState<string | null>(
+    post.currentUserReaction ?? null,
+  );
   const [saved, setSaved] = useState(false);
   const [showReactions, setShowReactions] = useState(false);
   const [showReport, setShowReport] = useState(false);
+
+  useEffect(() => {
+    setReactionStatus(post.currentUserReaction ?? null);
+  }, [post.currentUserReaction]);
+
+  const { data: savedData } = useQuery({
+    queryKey: ["saved-posts"],
+    queryFn: () => feedApi.listSaved(),
+    staleTime: 30_000,
+  });
+
+  useEffect(() => {
+    if (savedData) {
+      setSaved(savedData.items.some((p) => p.id === post.id));
+    }
+  }, [savedData, post.id]);
 
   const totalComments = useMemo(() => postCounters.comments, [postCounters.comments]);
 
@@ -174,10 +231,11 @@ export function PostCard({ post }: { post: PostView }) {
 
   const handleReaction = async () => {
     try {
-      const result = reactionStatus
+      const wasLiked = !!reactionStatus;
+      const result = wasLiked
         ? await reactionsApi.removeReaction(post.id)
         : await reactionsApi.react(post.id);
-      setReactionStatus(result.status === "REACTED" ? "REACTED" : null);
+      setReactionStatus(wasLiked ? null : "LIKE");
       setPostCounters(result.counters);
     } catch {
       // silently fail
@@ -200,6 +258,22 @@ export function PostCard({ post }: { post: PostView }) {
     try {
       const result = await reactionsApi.share(post.id);
       setPostCounters(result.counters);
+      const url = `${window.location.origin}/feed/${post.id}`;
+      if (navigator.share) {
+        await navigator.share({ url });
+      } else {
+        await navigator.clipboard.writeText(url);
+      }
+    } catch {
+      // silently fail
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      await commentsApi.remove(post.id, commentId);
+      setLocalComments((prev) => prev.filter((c) => c.id !== commentId));
+      setPostCounters((c) => ({ ...c, comments: c.comments - 1 }));
     } catch {
       // silently fail
     }
@@ -304,7 +378,12 @@ export function PostCard({ post }: { post: PostView }) {
         <section className="mt-4 border-t border-border pt-4">
           <div className="space-y-3">
             {localComments.map((comment) => (
-              <CommentItem key={comment.id} comment={comment} />
+              <CommentItem
+                key={comment.id}
+                comment={comment}
+                currentUserId={currentUser?.id}
+                onDelete={handleDeleteComment}
+              />
             ))}
           </div>
 
@@ -327,12 +406,23 @@ export function PostCard({ post }: { post: PostView }) {
   );
 }
 
-function CommentItem({ comment, nested = false }: { comment: CommentView; nested?: boolean }) {
+function CommentItem({
+  comment,
+  nested = false,
+  currentUserId,
+  onDelete,
+}: {
+  comment: CommentView;
+  nested?: boolean;
+  currentUserId?: string;
+  onDelete?: (commentId: string) => void;
+}) {
   const { data: author } = useQuery({
     queryKey: ["profile", "by-id", comment.authorId],
     queryFn: () => profileApi.getById(comment.authorId),
     staleTime: 120_000,
   });
+  const isOwner = currentUserId === comment.authorId;
 
   return (
     <div className={`flex gap-3 ${nested ? "ml-10 mt-3" : ""}`}>
@@ -356,7 +446,14 @@ function CommentItem({ comment, nested = false }: { comment: CommentView; nested
           <p className="mt-1 text-sm leading-relaxed">{comment.content}</p>
         </div>
         <div className="mt-1 flex gap-3 px-3 text-[11px] font-medium text-muted-foreground">
-          <button className="hover:text-foreground">Responder</button>
+          {isOwner && onDelete && (
+            <button
+              onClick={() => onDelete(comment.id)}
+              className="text-destructive hover:text-destructive/80"
+            >
+              Excluir
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -419,9 +516,7 @@ function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
     })),
   });
 
-  const items = queryResults
-    .filter((q) => q.data?.cdnUrl)
-    .map((q) => q.data!);
+  const items = queryResults.filter((q) => q.data?.cdnUrl).map((q) => q.data!);
 
   if (items.length === 0) return null;
 
@@ -430,28 +525,16 @@ function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
   if (isVideo) {
     return (
       <div className="overflow-hidden rounded-xl border border-border">
-        <video
-          src={resolveCdnUrl(items[0].cdnUrl)}
-          controls
-          className="max-h-96 w-full bg-muted"
-        />
-    </div>
-  );
-}
+        <video src={resolveCdnUrl(items[0].cdnUrl)} controls className="max-h-96 w-full bg-muted" />
+      </div>
+    );
+  }
 
   return (
-    <div
-      className={`grid gap-2 ${
-        items.length === 1 ? "grid-cols-1" : "grid-cols-2"
-      }`}
-    >
+    <div className={`grid gap-2 ${items.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
       {items.map((m) => (
         <div key={m.id} className="overflow-hidden rounded-xl border border-border">
-          <img
-            src={resolveCdnUrl(m.cdnUrl)}
-            alt=""
-            className="h-48 w-full object-cover bg-muted"
-          />
+          <img src={resolveCdnUrl(m.cdnUrl)} alt="" className="h-48 w-full object-cover bg-muted" />
         </div>
       ))}
     </div>

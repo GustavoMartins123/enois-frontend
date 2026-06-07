@@ -22,7 +22,8 @@ import { resolveCdnUrl } from "@/lib/api/media";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 import { EditProfileDialog } from "@/components/edit-profile-dialog";
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
+import { ImageCropDialog } from "@/components/image-crop-dialog";
 
 export const Route = createFileRoute("/perfil/$username")({
   loader: async ({ params }) => {
@@ -70,6 +71,9 @@ function Profile() {
   const [hoveringAvatar, setHoveringAvatar] = useState(false);
   const [hoveringBanner, setHoveringBanner] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<string | null>(null);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [cropPurpose, setCropPurpose] = useState<"AVATAR" | "BANNER" | null>(null);
+  const [cropFile, setCropFile] = useState<File | null>(null);
 
   const { data: liveProfile } = useQuery({
     queryKey: ["profile", loaderUser.username],
@@ -103,20 +107,44 @@ function Profile() {
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    try {
-      const result = await avatarUpload.upload(file, "AVATAR");
-      await updateProfile.mutateAsync({ avatar: result.cdnUrl });
-    } catch { /* handled by hook state */ }
+    const src = URL.createObjectURL(file);
+    setCropImageSrc(src);
+    setCropPurpose("AVATAR");
+    setCropFile(file);
   };
 
   const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    try {
-      const result = await bannerUpload.upload(file, "BANNER");
-      await updateProfile.mutateAsync({ banner: result.cdnUrl });
-    } catch { /* handled by hook state */ }
+    const src = URL.createObjectURL(file);
+    setCropImageSrc(src);
+    setCropPurpose("BANNER");
+    setCropFile(file);
   };
+
+  const handleCropComplete = useCallback(
+    async (blob: Blob) => {
+      const upload = cropPurpose === "AVATAR" ? avatarUpload : bannerUpload;
+      const result = await upload.upload(
+        new File([blob], "crop.jpg", { type: "image/jpeg" }),
+        cropPurpose!,
+      );
+      const field = cropPurpose === "AVATAR" ? "avatar" : "banner";
+      await updateProfile.mutateAsync({ [field]: result.cdnUrl });
+      if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
+      setCropImageSrc(null);
+      setCropPurpose(null);
+      setCropFile(null);
+    },
+    [cropPurpose, cropImageSrc, avatarUpload, bannerUpload, updateProfile],
+  );
+
+  const handleCropCancel = useCallback(() => {
+    if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
+    setCropImageSrc(null);
+    setCropPurpose(null);
+    setCropFile(null);
+  }, [cropImageSrc]);
 
   return (
     <AppShell>
@@ -128,7 +156,11 @@ function Profile() {
             onMouseLeave={() => setHoveringBanner(false)}
           >
             {user.banner ? (
-              <img src={resolveCdnUrl(user.banner)} alt="" className="h-40 w-full object-cover sm:h-52" />
+              <img
+                src={resolveCdnUrl(user.banner)}
+                alt=""
+                className="h-40 w-full object-cover sm:h-52"
+              />
             ) : (
               <div className="h-40 w-full bg-gradient-to-r from-primary/20 to-primary/5 sm:h-52" />
             )}
@@ -139,10 +171,20 @@ function Profile() {
                 className="absolute inset-0 flex items-center justify-center bg-black/30 text-white transition"
                 disabled={bannerUpload.status === "uploading"}
               >
-                {bannerUpload.status === "uploading" ? "Enviando..." : <Camera className="h-6 w-6" />}
+                {bannerUpload.status === "uploading" ? (
+                  "Enviando..."
+                ) : (
+                  <Camera className="h-6 w-6" />
+                )}
               </button>
             )}
-            <input ref={bannerRef} type="file" accept="image/*" className="hidden" onChange={handleBannerUpload} />
+            <input
+              ref={bannerRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleBannerUpload}
+            />
           </div>
           <div className="px-6 pb-6">
             <div className="-mt-14 flex flex-wrap items-end justify-between gap-4">
@@ -151,7 +193,11 @@ function Profile() {
                 onMouseEnter={() => setHoveringAvatar(true)}
                 onMouseLeave={() => setHoveringAvatar(false)}
               >
-                <UserAvatar src={resolveCdnUrl(user.avatar)} alt={user.name} className="h-28 w-28 ring-4 ring-card" />
+                <UserAvatar
+                  src={resolveCdnUrl(user.avatar)}
+                  alt={user.name}
+                  className="h-28 w-28 ring-4 ring-card"
+                />
                 {isOwnProfile && hoveringAvatar && (
                   <button
                     type="button"
@@ -162,7 +208,13 @@ function Profile() {
                     {avatarUpload.status === "uploading" ? "..." : <Camera className="h-5 w-5" />}
                   </button>
                 )}
-                <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+                <input
+                  ref={avatarRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarUpload}
+                />
               </div>
               <div className="flex flex-wrap gap-2">
                 {isOwnProfile ? (
@@ -179,10 +231,18 @@ function Profile() {
                     <Button
                       className="rounded-full gap-1.5"
                       onClick={() => connect.mutate()}
-                      disabled={connect.isPending || connectionStatus === "ACCEPTED" || connectionStatus === "REQUESTED"}
+                      disabled={
+                        connect.isPending ||
+                        connectionStatus === "ACCEPTED" ||
+                        connectionStatus === "REQUESTED"
+                      }
                     >
                       <UserPlus className="h-4 w-4" />
-                      {connectionStatus === "REQUESTED" ? "Solicitado" : connectionStatus === "ACCEPTED" ? "Conectado" : "Conectar"}
+                      {connectionStatus === "REQUESTED"
+                        ? "Solicitado"
+                        : connectionStatus === "ACCEPTED"
+                          ? "Conectado"
+                          : "Conectar"}
                     </Button>
                   </>
                 )}
@@ -291,6 +351,19 @@ function Profile() {
         </div>
       </div>
       <div className="h-16 lg:hidden" />
+
+      {cropImageSrc && cropPurpose && (
+        <ImageCropDialog
+          open={!!cropImageSrc}
+          onOpenChange={(v) => {
+            if (!v) handleCropCancel();
+          }}
+          imageSrc={cropImageSrc}
+          aspect={cropPurpose === "AVATAR" ? 1 : 3}
+          title={cropPurpose === "AVATAR" ? "Ajustar foto de perfil" : "Ajustar foto de capa"}
+          onCropComplete={handleCropComplete}
+        />
+      )}
     </AppShell>
   );
 }
