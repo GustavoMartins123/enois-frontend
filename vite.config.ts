@@ -6,22 +6,20 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-const BACKEND_PORT = process.env.BACKEND_PORT ?? "8081";
+const BACKEND_TARGET = process.env.BACKEND_TARGET ?? "https://socialcoisa-1azg39ci.b4a.run";
 
 export default defineConfig({
   nitro: {
     preset: "vercel",
   },
   tanstackStart: {
-    // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
-    // nitro/vite builds from this
     server: { entry: "server" },
   },
   vite: {
     server: {
       proxy: {
         "/api": {
-          target: `http://localhost:${BACKEND_PORT}`,
+          target: BACKEND_TARGET,
           changeOrigin: true,
         },
       },
