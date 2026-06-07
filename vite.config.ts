@@ -6,7 +6,7 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-const BACKEND_TARGET = process.env.BACKEND_TARGET ?? "http://66.241.125.184:8081";
+const BACKEND_TARGET = process.env.BACKEND_TARGET ?? "https://66.241.125.184:8081";
 
 export default defineConfig({
   nitro: {
