@@ -93,8 +93,8 @@ function Profile() {
   });
 
   const { data: feedData } = useQuery({
-    queryKey: ["feed", "user", user.username],
-    queryFn: () => feedApi.listByUser(user.username),
+    queryKey: ["feed", "user", user.id],
+    queryFn: () => feedApi.listByUserId(user.id),
   });
 
   const userPosts = feedData?.items ?? [];

@@ -62,6 +62,9 @@ export const feedApi = {
   listByUser: (username: string, cursor?: string | null, limit = 20) =>
     api.get<PageResponse<PostView>>(`/users/${username}/posts${buildQuery({ cursor, limit })}`),
 
+  listByUserId: (userId: string, cursor?: string | null, limit = 20) =>
+    api.get<PageResponse<PostView>>(`/users/${userId}/posts${buildQuery({ cursor, limit })}`),
+
   delete: (postId: string) => api.delete<DeleteResult>(`/feed/posts/${postId}`),
 
   listSaved: (cursor?: string | null, limit = 20) =>
