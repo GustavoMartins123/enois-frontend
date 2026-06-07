@@ -231,7 +231,7 @@ function Profile() {
             {user.skills.length > 0 && (
               <Section title="Habilidades">
                 <div className="flex flex-wrap gap-2">
-                  {user.skills.map((s) => (
+                  {user.skills.map((s: string) => (
                     <Badge
                       key={s}
                       className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft"
@@ -246,7 +246,7 @@ function Profile() {
             {user.goals.length > 0 && (
               <Section title="Objetivos profissionais" icon={Target}>
                 <div className="grid gap-3 sm:grid-cols-3">
-                  {user.goals.map((goal) => (
+                  {user.goals.map((goal: string) => (
                     <div key={goal} className="rounded-xl border border-border bg-muted/40 p-4">
                       <p className="text-sm font-medium">{goal}</p>
                     </div>
@@ -278,7 +278,7 @@ function Profile() {
             {user.externalLinks.length > 0 && (
               <Section title="Links">
                 <ul className="space-y-2 text-sm">
-                  {user.externalLinks.map((link) => (
+                  {user.externalLinks.map((link: string) => (
                     <li key={link} className="flex items-center gap-2 text-muted-foreground">
                       <LinkIcon className="h-4 w-4" />
                       <span className="truncate text-foreground">{link}</span>
