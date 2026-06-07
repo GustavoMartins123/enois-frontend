@@ -2,8 +2,7 @@ const API_BACKEND = import.meta.env.VITE_API_BACKEND ?? "http://localhost:8081/a
 
 function baseUrl(): string {
   if (typeof window === "undefined") return API_BACKEND;
-  if (import.meta.env.DEV) return "/api";
-  return API_BACKEND;
+  return "/api";
 }
 
 export class ApiError extends Error {
