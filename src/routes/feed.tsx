@@ -33,7 +33,7 @@ export const Route = createFileRoute("/feed")({
   component: Home,
 });
 
-function useFeed(tab: string) {
+function useFeed(tab: string | undefined) {
   return useQuery({
     queryKey: ["feed", tab],
     queryFn: () => feedApi.list(null, 20, tab),
@@ -63,7 +63,7 @@ function useEvents() {
 
 function Home() {
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState("FOR_YOU");
+  const [tab, setTab] = useState<string | undefined>(undefined);
   const { data: feedData } = useFeed(tab);
   const { data: profile } = useProfile();
   const { data: suggestions } = useSuggestions();
@@ -91,10 +91,8 @@ function Home() {
     try {
       let mediaIds: string[] = [];
       if (media.length > 0) {
-        const results = await upload.uploadAll(
-          media.map(m => ({ file: m.file }))
-        );
-        mediaIds = results.map(r => r.mediaId);
+        const results = await upload.uploadAll(media.map((m) => ({ file: m.file })));
+        mediaIds = results.map((r) => r.mediaId);
       }
       await createPost.mutateAsync({ content, type: postType, mediaIds });
       setDraft("");
@@ -114,21 +112,21 @@ function Home() {
       const isImage = file.type.startsWith("image/");
       if (!isVideo && !isImage) continue;
 
-      const hasExistingImages = media.some(m => m.type === "image");
-      const hasExistingVideo = media.some(m => m.type === "video");
+      const hasExistingImages = media.some((m) => m.type === "image");
+      const hasExistingVideo = media.some((m) => m.type === "video");
 
       if (isVideo && (hasExistingImages || hasExistingVideo || media.length >= 1)) break;
       if (isImage && hasExistingVideo) break;
       if (isImage && media.length >= 4) break;
 
       const preview = URL.createObjectURL(file);
-      setMedia(prev => [...prev, { type: isVideo ? "video" : "image", file, preview }]);
+      setMedia((prev) => [...prev, { type: isVideo ? "video" : "image", file, preview }]);
     }
     e.target.value = "";
   };
 
   const removeMedia = (index: number) => {
-    setMedia(prev => {
+    setMedia((prev) => {
       URL.revokeObjectURL(prev[index].preview);
       return prev.filter((_, i) => i !== index);
     });
@@ -165,13 +163,20 @@ function Home() {
             {media.length > 0 && (
               <div className="relative mt-3">
                 {mediaType === "image" ? (
-                  <div className={`grid gap-2 ${
-                    media.length === 1 ? "grid-cols-1" :
-                    media.length === 2 ? "grid-cols-2" :
-                    "grid-cols-2"
-                  }`}>
+                  <div
+                    className={`grid gap-2 ${
+                      media.length === 1
+                        ? "grid-cols-1"
+                        : media.length === 2
+                          ? "grid-cols-2"
+                          : "grid-cols-2"
+                    }`}
+                  >
                     {media.map((item, i) => (
-                      <div key={i} className="relative overflow-hidden rounded-xl border border-border">
+                      <div
+                        key={i}
+                        className="relative overflow-hidden rounded-xl border border-border"
+                      >
                         <img
                           src={item.preview}
                           alt=""
@@ -189,11 +194,7 @@ function Home() {
                   </div>
                 ) : (
                   <div className="relative overflow-hidden rounded-xl border border-border">
-                    <video
-                      src={media[0].preview}
-                      controls
-                      className="max-h-64 w-full bg-muted"
-                    />
+                    <video src={media[0].preview} controls className="max-h-64 w-full bg-muted" />
                     <button
                       type="button"
                       onClick={() => removeMedia(0)}
@@ -243,14 +244,22 @@ function Home() {
                 />
                 <ComposerAction
                   icon={mediaType === "video" ? Film : Image}
-                  label={mediaType === "video" ? "Vídeo" : media.length > 0 ? `${media.length} mídia` : "Mídia"}
+                  label={
+                    mediaType === "video"
+                      ? "Vídeo"
+                      : media.length > 0
+                        ? `${media.length} mídia`
+                        : "Mídia"
+                  }
                   active={media.length > 0}
                   onClick={() => fileRef.current?.click()}
                 />
               </div>
               <div className="flex items-center gap-2">
                 {upload.status === "uploading" && (
-                  <span className="text-xs text-muted-foreground">Enviando... {upload.progress}%</span>
+                  <span className="text-xs text-muted-foreground">
+                    Enviando... {upload.progress}%
+                  </span>
                 )}
                 <Button
                   size="sm"
@@ -265,10 +274,18 @@ function Home() {
 
           {/* Tabs */}
           <div className="flex items-center gap-1 rounded-full border border-border bg-card p-1 text-sm">
-            <TabPill active={tab === "FOR_YOU"} onClick={() => setTab("FOR_YOU")}>Para você</TabPill>
-            <TabPill active={tab === "FOLLOWING"} onClick={() => setTab("FOLLOWING")}>Seguindo</TabPill>
-            <TabPill active={tab === "RECENT"} onClick={() => setTab("RECENT")}>Discussões</TabPill>
-            <TabPill active={tab === "PROJECTS"} onClick={() => setTab("PROJECTS")}>Projetos</TabPill>
+            <TabPill active={tab === undefined} onClick={() => setTab(undefined)}>
+              Para você
+            </TabPill>
+            <TabPill active={tab === "FOLLOWING"} onClick={() => setTab("FOLLOWING")}>
+              Seguindo
+            </TabPill>
+            <TabPill active={tab === "RECENT"} onClick={() => setTab("RECENT")}>
+              Discussões
+            </TabPill>
+            <TabPill active={tab === "PROJECTS"} onClick={() => setTab("PROJECTS")}>
+              Projetos
+            </TabPill>
           </div>
 
           <div className="space-y-4">
@@ -334,11 +351,20 @@ function Home() {
                       </Link>
                       <p className="truncate text-xs text-muted-foreground">{u.headline}</p>
                     </div>
-      <Button size="sm" variant="outline" className="h-8 rounded-full px-3 text-xs" onClick={() => {
-        networkApi.connect(u.id).then(() => queryClient.invalidateQueries({ queryKey: ["network", "suggestions"] }));
-      }}>
-        Conectar
-      </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-8 rounded-full px-3 text-xs"
+                      onClick={() => {
+                        networkApi
+                          .connect(u.id)
+                          .then(() =>
+                            queryClient.invalidateQueries({ queryKey: ["network", "suggestions"] }),
+                          );
+                      }}
+                    >
+                      Conectar
+                    </Button>
                   </li>
                 ))}
               </ul>
@@ -395,7 +421,15 @@ function ComposerAction({
   );
 }
 
-function TabPill({ children, active, onClick }: { children: React.ReactNode; active?: boolean; onClick?: () => void }) {
+function TabPill({
+  children,
+  active,
+  onClick,
+}: {
+  children: React.ReactNode;
+  active?: boolean;
+  onClick?: () => void;
+}) {
   return (
     <button
       onClick={onClick}
