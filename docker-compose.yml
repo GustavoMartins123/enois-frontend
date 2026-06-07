@@ -1,0 +1,14 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=3000
+      - VITE_API_BACKEND=${VITE_API_BACKEND:-https://socialcoisa-1azg39ci.b4a.run/api}
+      - VITE_IMAGEKIT_PUBLIC_KEY=${VITE_IMAGEKIT_PUBLIC_KEY:-public_0Y+bnNURFVY+XZuqyCWQGafHo/0=}
+      - VITE_IMAGEKIT_UPLOAD_URL=${VITE_IMAGEKIT_UPLOAD_URL:-https://upload.imagekit.io/api/v1/files/upload}
+      - VITE_IMAGEKIT_URL_ENDPOINT=${VITE_IMAGEKIT_URL_ENDPOINT:-https://ik.imagekit.io/socialcoisa}
+      - IMAGEKIT_PRIVATE_KEY=${IMAGEKIT_PRIVATE_KEY}
