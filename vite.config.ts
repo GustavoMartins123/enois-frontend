@@ -11,9 +11,6 @@ const BACKEND_TARGET = process.env.BACKEND_TARGET ?? "https://socialcoisa-1azg39
 export default defineConfig({
   nitro: {
     preset: "vercel",
-    server: {
-      allowedHosts: ["connect-grow-m1d3.onrender.com", "localhost", ".onrender.com"],
-    },
   },
   tanstackStart: {
     server: { entry: "server" },
