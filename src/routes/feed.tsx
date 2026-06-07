@@ -63,7 +63,7 @@ function useEvents() {
 
 function Home() {
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<string | undefined>(undefined);
+  const [tab, setTab] = useState<string | undefined>("FOR_YOU");
   const { data: feedData } = useFeed(tab);
   const { data: profile } = useProfile();
   const { data: suggestions } = useSuggestions();
@@ -274,8 +274,11 @@ function Home() {
 
           {/* Tabs */}
           <div className="flex items-center gap-1 rounded-full border border-border bg-card p-1 text-sm">
-            <TabPill active={tab === undefined} onClick={() => setTab(undefined)}>
+            <TabPill active={tab === "FOR_YOU"} onClick={() => setTab("FOR_YOU")}>
               Para você
+            </TabPill>
+            <TabPill active={tab === undefined} onClick={() => setTab(undefined)}>
+              Tudo
             </TabPill>
             <TabPill active={tab === "FOLLOWING"} onClick={() => setTab("FOLLOWING")}>
               Seguindo
