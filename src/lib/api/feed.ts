@@ -16,6 +16,13 @@ export interface PostView {
     shares: number;
   };
   status: "ACTIVE" | "DELETED";
+  currentUserReaction?: string | null;
+}
+
+export interface ReactionUser {
+  userId: string;
+  type: string;
+  createdAt: string;
 }
 
 export interface PageResponse<T> {
@@ -56,6 +63,9 @@ export const feedApi = {
     api.get<PageResponse<PostView>>(`/users/${username}/posts${buildQuery({ cursor, limit })}`),
 
   delete: (postId: string) => api.delete<DeleteResult>(`/feed/posts/${postId}`),
+
+  listReactions: (postId: string) =>
+    api.get<ReactionUser[]>(`/feed/posts/${postId}/reactions`),
 
   bulkDelete: (data: BulkDeleteInput) =>
     api.post<BulkDeleteResult>("/feed/posts/bulk-delete", data),

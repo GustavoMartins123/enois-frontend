@@ -5,7 +5,7 @@ export { profileApi } from "./profile";
 export type { Profile, UpdateProfileRequest, Experience, Education, Certification } from "./profile";
 
 export { feedApi } from "./feed";
-export type { PostView, CreatePostInput, PageResponse } from "./feed";
+export type { PostView, CreatePostInput, PageResponse, ReactionUser } from "./feed";
 
 export { commentsApi } from "./comments";
 export type { CommentView } from "./comments";
@@ -39,5 +39,8 @@ export type { Notification } from "./notifications";
 
 export { searchApi } from "./search";
 export type { SearchResult, SearchResponse } from "./search";
+
+export { reportsApi } from "./reports";
+export type { ReportReason, ReportInput } from "./reports";
 
 export { api, ApiError, buildQuery, getSessionToken } from "../api-client";

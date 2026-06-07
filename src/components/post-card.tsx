@@ -9,6 +9,7 @@ import {
   Briefcase,
   FolderGit2,
   BookOpen,
+  Flag,
 } from "lucide-react";
 import { useMemo, useState, type FormEvent } from "react";
 import { useQuery, useQueries } from "@tanstack/react-query";
@@ -17,7 +18,16 @@ import { UserAvatar } from "@/components/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { commentsApi, reactionsApi, mediaApi, profileApi } from "@/lib/api";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { commentsApi, reactionsApi, mediaApi, profileApi, reportsApi, feedApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import type { PostView, CommentView } from "@/lib/api";
 
@@ -40,6 +50,98 @@ const typeMeta: Record<
   ARTICLE: { label: "Artigo", icon: BookOpen, className: "bg-primary-soft text-primary" },
 };
 
+function ReactionsDialog({ postId, open, onOpenChange }: { postId: string; open: boolean; onOpenChange: (v: boolean) => void }) {
+  const { data: reactions } = useQuery({
+    queryKey: ["reactions", postId],
+    queryFn: () => feedApi.listReactions(postId),
+    enabled: open,
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Reações</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-2">
+          {(!reactions || reactions.length === 0) && <p className="text-sm text-muted-foreground">Nenhuma reação ainda.</p>}
+          {reactions?.map((r) => (
+            <ReactionUserItem key={r.userId} userId={r.userId} type={r.type} />
+          ))}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function ReactionUserItem({ userId, type }: { userId: string; type: string }) {
+  const { data: user } = useQuery({
+    queryKey: ["profile", "by-id", userId],
+    queryFn: () => profileApi.getById(userId),
+  });
+
+  return (
+    <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
+      <Link to="/perfil/$username" params={{ username: user?.username ?? userId }}>
+        <UserAvatar src={user?.avatar} alt={user?.name} className="h-8 w-8" />
+      </Link>
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium">{user?.name ?? "Carregando..."}</p>
+      </div>
+      <span className="text-sm">{type === "LIKE" ? "❤️" : type}</span>
+    </div>
+  );
+}
+
+const REPORT_REASONS = [
+  "AI_GENERATED", "FAKE_CONTENT", "SCAM", "DISCRIMINATION",
+  "PREJUDICE", "HARASSMENT", "SPAM", "VIOLENCE", "COPYRIGHT", "OTHER",
+];
+
+function ReportDialog({ postId, open, onOpenChange }: { postId: string; open: boolean; onOpenChange: (v: boolean) => void }) {
+  const [reason, setReason] = useState("SPAM");
+  const [description, setDescription] = useState("");
+
+  const submit = async () => {
+    try {
+      await reportsApi.create({ targetId: postId, targetType: "POST", reason: reason as any, description: description || undefined });
+      onOpenChange(false);
+      setDescription("");
+    } catch { /* silent */ }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Denunciar post</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 pt-2">
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Motivo</Label>
+            <select
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
+            >
+              {REPORT_REASONS.map((r) => (
+                <option key={r} value={r}>{r.replace(/_/g, " ").toLowerCase()}</option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">Descrição (opcional)</Label>
+            <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
+          </div>
+          <Button className="w-full rounded-full" onClick={submit}>
+            Denunciar
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function PostCard({ post }: { post: PostView }) {
   const { user: currentUser } = useAuth();
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
@@ -48,8 +150,10 @@ export function PostCard({ post }: { post: PostView }) {
   const [draft, setDraft] = useState("");
   const [localComments, setLocalComments] = useState<CommentView[]>([]);
   const [postCounters, setPostCounters] = useState(post.counters);
-  const [reactionStatus, setReactionStatus] = useState<string | null>(null);
+  const [reactionStatus, setReactionStatus] = useState<string | null>(post.currentUserReaction ?? null);
   const [saved, setSaved] = useState(false);
+  const [showReactions, setShowReactions] = useState(false);
+  const [showReport, setShowReport] = useState(false);
 
   const totalComments = useMemo(() => postCounters.comments, [postCounters.comments]);
 
@@ -166,6 +270,12 @@ export function PostCard({ post }: { post: PostView }) {
           <MessageCircle className="h-4 w-4" /> {totalComments}
         </button>
         <button
+          onClick={() => setShowReactions(true)}
+          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
+        >
+          <Heart className="h-4 w-4" /> {postCounters.reactions}
+        </button>
+        <button
           onClick={handleSave}
           className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
             saved ? "text-primary" : ""
@@ -179,7 +289,16 @@ export function PostCard({ post }: { post: PostView }) {
         >
           <Share2 className="h-4 w-4" /> Compartilhar
         </button>
+        <button
+          onClick={() => setShowReport(true)}
+          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
+        >
+          <Flag className="h-4 w-4" />
+        </button>
       </footer>
+
+      <ReactionsDialog postId={post.id} open={showReactions} onOpenChange={setShowReactions} />
+      <ReportDialog postId={post.id} open={showReport} onOpenChange={setShowReport} />
 
       {showComments && (
         <section className="mt-4 border-t border-border pt-4">
@@ -316,9 +435,9 @@ function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
           controls
           className="max-h-96 w-full bg-muted"
         />
-      </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div
