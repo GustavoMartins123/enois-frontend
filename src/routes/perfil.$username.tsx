@@ -17,7 +17,7 @@ import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { profileApi, feedApi, networkApi } from "@/lib/api";
+import { profileApi, feedApi, networkApi, ApiError } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
@@ -102,6 +102,11 @@ function Profile() {
   const connect = useMutation({
     mutationFn: () => networkApi.connect(user.id),
     onSuccess: (res) => setConnectionStatus(res.status),
+    onError: (err: unknown) => {
+      if (err instanceof ApiError && err.code === "CONNECTION_ALREADY_REQUESTED") {
+        setConnectionStatus("PENDING");
+      }
+    },
   });
 
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -234,12 +239,11 @@ function Profile() {
                       disabled={
                         connect.isPending ||
                         connectionStatus === "ACCEPTED" ||
-                        connectionStatus === "REQUESTED"
+                        connectionStatus === "PENDING"
                       }
                     >
-                      <UserPlus className="h-4 w-4" />
-                      {connectionStatus === "REQUESTED"
-                        ? "Solicitado"
+                      {connectionStatus === "PENDING"
+                        ? "Aguardando resposta"
                         : connectionStatus === "ACCEPTED"
                           ? "Conectado"
                           : "Conectar"}
