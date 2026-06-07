@@ -49,4 +49,10 @@ export type { SearchResult, SearchResponse } from "./search";
 export { reportsApi } from "./reports";
 export type { ReportReason, ReportInput } from "./reports";
 
+export { rankingApi } from "./ranking";
+export type { RankingUser } from "./ranking";
+
+export { recommendationsApi } from "./recommendations";
+export type { Recommendation } from "./recommendations";
+
 export { api, ApiError, buildQuery, getSessionToken } from "../api-client";
