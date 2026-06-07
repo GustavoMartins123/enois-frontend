@@ -36,6 +36,11 @@ export interface ConnectionStatus {
   status: string;
 }
 
+export interface ConnectionStatusResult {
+  targetUserId: string;
+  status: "NONE" | "PENDING" | "ACCEPTED" | "REMOVED" | "BLOCKED";
+}
+
 export const networkApi = {
   list: (query?: string, cursor?: string | null, limit = 20) =>
     api.get<PageResponse<NetworkUser>>(`/network/users${buildQuery({ query, cursor, limit })}`),
@@ -56,4 +61,7 @@ export const networkApi = {
 
   remove: (targetUserId: string) =>
     api.delete<ConnectionStatus>(`/network/connections/${targetUserId}`),
+
+  status: (targetUserId: string) =>
+    api.get<ConnectionStatusResult>(`/network/connections/${targetUserId}/status`),
 };

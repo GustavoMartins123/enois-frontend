@@ -70,7 +70,6 @@ function Profile() {
   const bannerRef = useRef<HTMLInputElement>(null);
   const [hoveringAvatar, setHoveringAvatar] = useState(false);
   const [hoveringBanner, setHoveringBanner] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<string | null>(null);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [cropPurpose, setCropPurpose] = useState<"AVATAR" | "BANNER" | null>(null);
   const [cropFile, setCropFile] = useState<File | null>(null);
@@ -83,6 +82,14 @@ function Profile() {
 
   const user = liveProfile ?? loaderUser;
   const isOwnProfile = me?.id === user.id;
+
+  const { data: connectionData } = useQuery({
+    queryKey: ["connection-status", user.id],
+    queryFn: () => networkApi.status(user.id),
+    enabled: !isOwnProfile && !!me,
+  });
+
+  const connectionStatus = connectionData?.status ?? null;
 
   const updateProfile = useMutation({
     mutationFn: (data: { avatar?: string; banner?: string }) => profileApi.update(data),
@@ -101,10 +108,12 @@ function Profile() {
 
   const connect = useMutation({
     mutationFn: () => networkApi.connect(user.id),
-    onSuccess: (res) => setConnectionStatus(res.status),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["connection-status", user.id] });
+    },
     onError: (err: unknown) => {
       if (err instanceof ApiError && err.code === "CONNECTION_ALREADY_REQUESTED") {
-        setConnectionStatus("PENDING");
+        queryClient.invalidateQueries({ queryKey: ["connection-status", user.id] });
       }
     },
   });

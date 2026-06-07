@@ -2,11 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { requireAuth } from "@/lib/require-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { UserPlus, UserMinus, Check, Send } from "lucide-react";
+import { UserPlus, UserMinus, Check, Send, X } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { UserAvatar } from "@/components/user-avatar";
 import { Button } from "@/components/ui/button";
 import { networkApi, profileApi, type ConnectionRequest } from "@/lib/api";
+import { useAuth } from "@/lib/use-auth";
 
 export const Route = createFileRoute("/rede")({
   beforeLoad: requireAuth,
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/rede")({
 
 function Rede() {
   const queryClient = useQueryClient();
+  const { user: currentUser } = useAuth();
   const [localStatus, setLocalStatus] = useState<Record<string, string>>({});
 
   const { data: usersData } = useQuery({
@@ -37,9 +39,18 @@ function Rede() {
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["network"] });
 
-  const acceptRequest = useMutation({ mutationFn: (id: string) => networkApi.accept(id), onSuccess: invalidate });
-  const connect = useMutation({ mutationFn: (id: string) => networkApi.connect(id), onSuccess: invalidate });
-  const remove = useMutation({ mutationFn: (id: string) => networkApi.remove(id), onSuccess: invalidate });
+  const acceptRequest = useMutation({
+    mutationFn: (id: string) => networkApi.accept(id),
+    onSuccess: invalidate,
+  });
+  const connect = useMutation({
+    mutationFn: (id: string) => networkApi.connect(id),
+    onSuccess: invalidate,
+  });
+  const remove = useMutation({
+    mutationFn: (id: string) => networkApi.remove(id),
+    onSuccess: invalidate,
+  });
 
   const statusFor = (userId: string): string => {
     if (localStatus[userId]) return localStatus[userId];
@@ -68,12 +79,19 @@ function Rede() {
             <div className="mb-3">
               <h2 className="text-lg font-semibold">Solicitações pendentes</h2>
               <p className="text-sm text-muted-foreground">
-                {pendingRequests.length} solicitação{pendingRequests.length > 1 ? "ões" : ""} pendente{pendingRequests.length > 1 ? "s" : ""}
+                {pendingRequests.length} solicitação{pendingRequests.length > 1 ? "ões" : ""}{" "}
+                pendente{pendingRequests.length > 1 ? "s" : ""}
               </p>
             </div>
             <div className="space-y-3">
               {pendingRequests.map((req) => (
-                <RequestCard key={req.id} request={req} onAccept={acceptRequest.mutate} />
+                <RequestCard
+                  key={req.id}
+                  request={req}
+                  currentUserId={currentUser?.id ?? ""}
+                  onAccept={acceptRequest.mutate}
+                  onCancel={remove.mutate}
+                />
               ))}
             </div>
           </section>
@@ -94,7 +112,11 @@ function Rede() {
               <article key={u.id} className="surface-card overflow-hidden text-center">
                 <div className="h-16" style={{ background: "var(--gradient-soft)" }} />
                 <div className="-mt-10 px-5 pb-5">
-                  <UserAvatar src={u.avatar} alt={u.name} className="mx-auto h-20 w-20 ring-4 ring-card" />
+                  <UserAvatar
+                    src={u.avatar}
+                    alt={u.name}
+                    className="mx-auto h-20 w-20 ring-4 ring-card"
+                  />
                   <Link
                     to="/perfil/$username"
                     params={{ username: u.username }}
@@ -124,11 +146,17 @@ function Rede() {
                     }}
                   >
                     {u.connected ? (
-                      <><UserMinus className="h-4 w-4" /> Remover</>
+                      <>
+                        <UserMinus className="h-4 w-4" /> Remover
+                      </>
                     ) : localStatus[u.id] === "REQUESTED" ? (
-                      <><Send className="h-4 w-4" /> Solicitado</>
+                      <>
+                        <Send className="h-4 w-4" /> Solicitado
+                      </>
                     ) : (
-                      <><UserPlus className="h-4 w-4" /> Conectar</>
+                      <>
+                        <UserPlus className="h-4 w-4" /> Conectar
+                      </>
                     )}
                   </Button>
                 </div>
@@ -142,32 +170,73 @@ function Rede() {
   );
 }
 
-function RequestCard({ request, onAccept }: { request: ConnectionRequest; onAccept: (id: string) => void }) {
-  const { data: requester } = useQuery({
-    queryKey: ["profile", "by-id", request.fromUserId],
-    queryFn: () => profileApi.getById(request.fromUserId),
+function RequestCard({
+  request,
+  currentUserId,
+  onAccept,
+  onCancel,
+}: {
+  request: ConnectionRequest;
+  currentUserId: string;
+  onAccept: (id: string) => void;
+  onCancel: (id: string) => void;
+}) {
+  const isOutgoing = request.fromUserId === currentUserId;
+  const targetUserId = isOutgoing ? request.toUserId : request.fromUserId;
+
+  const { data: user } = useQuery({
+    queryKey: ["profile", "by-id", targetUserId],
+    queryFn: () => profileApi.getById(targetUserId),
   });
 
   return (
     <div className="surface-card flex items-center justify-between gap-4 p-4">
       <div className="flex items-center gap-3 min-w-0">
-        <UserAvatar src={requester?.avatar} alt={requester?.name} className="h-12 w-12 shrink-0" />
+        <UserAvatar src={user?.avatar} alt={user?.name} className="h-12 w-12 shrink-0" />
         <div className="min-w-0">
           <Link
             to="/perfil/$username"
-            params={{ username: requester?.username ?? request.fromUserId }}
+            params={{ username: user?.username ?? targetUserId }}
             className="font-semibold hover:underline"
           >
-            {requester?.name ?? "Carregando..."}
+            {user?.name ?? "Carregando..."}
           </Link>
-          {requester?.headline && (
-            <p className="truncate text-xs text-muted-foreground">{requester.headline}</p>
+          {user?.headline && (
+            <p className="truncate text-xs text-muted-foreground">{user.headline}</p>
           )}
+          <p className="text-[11px] text-muted-foreground">
+            {isOutgoing ? "Você enviou a solicitação" : "Quer se conectar com você"}
+          </p>
         </div>
       </div>
-      <Button size="sm" className="rounded-full shrink-0 gap-1.5" onClick={() => onAccept(request.fromUserId)}>
-        <Check className="h-4 w-4" /> Aceitar
-      </Button>
+      {isOutgoing ? (
+        <Button
+          size="sm"
+          variant="outline"
+          className="rounded-full shrink-0 gap-1.5"
+          onClick={() => onCancel(request.toUserId)}
+        >
+          <X className="h-4 w-4" /> Cancelar
+        </Button>
+      ) : (
+        <div className="flex gap-2 shrink-0">
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-full gap-1.5"
+            onClick={() => onCancel(request.fromUserId)}
+          >
+            <X className="h-4 w-4" /> Rejeitar
+          </Button>
+          <Button
+            size="sm"
+            className="rounded-full gap-1.5"
+            onClick={() => onAccept(request.fromUserId)}
+          >
+            <Check className="h-4 w-4" /> Aceitar
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
