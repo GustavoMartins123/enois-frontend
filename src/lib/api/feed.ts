@@ -47,8 +47,8 @@ export interface BulkDeleteResult {
 }
 
 export const feedApi = {
-  list: (cursor?: string | null, limit = 20) =>
-    api.get<PageResponse<PostView>>(`/feed${buildQuery({ cursor, limit })}`),
+  list: (cursor?: string | null, limit = 20, tab?: string) =>
+    api.get<PageResponse<PostView>>(`/feed${buildQuery({ cursor, limit, tab })}`),
 
   create: (data: CreatePostInput) => api.post<PostView>("/feed/posts", data),
 

@@ -33,10 +33,10 @@ export const Route = createFileRoute("/feed")({
   component: Home,
 });
 
-function useFeed() {
+function useFeed(tab: string) {
   return useQuery({
-    queryKey: ["feed"],
-    queryFn: () => feedApi.list(),
+    queryKey: ["feed", tab],
+    queryFn: () => feedApi.list(null, 20, tab),
   });
 }
 
@@ -63,7 +63,8 @@ function useEvents() {
 
 function Home() {
   const queryClient = useQueryClient();
-  const { data: feedData } = useFeed();
+  const [tab, setTab] = useState("FOR_YOU");
+  const { data: feedData } = useFeed(tab);
   const { data: profile } = useProfile();
   const { data: suggestions } = useSuggestions();
   const { data: eventsData } = useEvents();
@@ -264,10 +265,10 @@ function Home() {
 
           {/* Tabs */}
           <div className="flex items-center gap-1 rounded-full border border-border bg-card p-1 text-sm">
-            <TabPill active>Para você</TabPill>
-            <TabPill>Seguindo</TabPill>
-            <TabPill>Discussões</TabPill>
-            <TabPill>Projetos</TabPill>
+            <TabPill active={tab === "FOR_YOU"} onClick={() => setTab("FOR_YOU")}>Para você</TabPill>
+            <TabPill active={tab === "FOLLOWING"} onClick={() => setTab("FOLLOWING")}>Seguindo</TabPill>
+            <TabPill active={tab === "RECENT"} onClick={() => setTab("RECENT")}>Discussões</TabPill>
+            <TabPill active={tab === "PROJECTS"} onClick={() => setTab("PROJECTS")}>Projetos</TabPill>
           </div>
 
           <div className="space-y-4">
@@ -392,9 +393,10 @@ function ComposerAction({
   );
 }
 
-function TabPill({ children, active }: { children: React.ReactNode; active?: boolean }) {
+function TabPill({ children, active, onClick }: { children: React.ReactNode; active?: boolean; onClick?: () => void }) {
   return (
     <button
+      onClick={onClick}
       className={`flex-1 rounded-full px-3 py-1.5 text-sm font-medium transition ${
         active
           ? "bg-primary text-primary-foreground"

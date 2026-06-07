@@ -49,6 +49,7 @@ export function PostCard({ post }: { post: PostView }) {
   const [localComments, setLocalComments] = useState<CommentView[]>([]);
   const [postCounters, setPostCounters] = useState(post.counters);
   const [reactionStatus, setReactionStatus] = useState<string | null>(null);
+  const [saved, setSaved] = useState(false);
 
   const totalComments = useMemo(() => postCounters.comments, [postCounters.comments]);
 
@@ -81,7 +82,10 @@ export function PostCard({ post }: { post: PostView }) {
 
   const handleSave = async () => {
     try {
-      const result = await reactionsApi.save(post.id);
+      const result = saved
+        ? await reactionsApi.removeSave(post.id)
+        : await reactionsApi.save(post.id);
+      setSaved(!saved);
       setPostCounters(result.counters);
     } catch {
       // silently fail
@@ -163,9 +167,11 @@ export function PostCard({ post }: { post: PostView }) {
         </button>
         <button
           onClick={handleSave}
-          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
+          className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
+            saved ? "text-primary" : ""
+          }`}
         >
-          <Bookmark className="h-4 w-4" /> {postCounters.saves}
+          <Bookmark className={`h-4 w-4`} /> {postCounters.saves}
         </button>
         <button
           onClick={handleShare}
