@@ -56,7 +56,8 @@ export default {
         return response;
       } catch (error) {
         console.error("Proxy error:", error);
-        return new Response(JSON.stringify({ error: "Bad gateway" }), {
+        const msg = error instanceof Error ? error.message : "Unknown error";
+        return new Response(JSON.stringify({ error: "Bad gateway", detail: msg }), {
           status: 502,
           headers: { "content-type": "application/json" },
         });
