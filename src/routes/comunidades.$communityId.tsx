@@ -334,23 +334,40 @@ function EditCommunityForm({
       </div>
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Capa</Label>
-        <div className="flex gap-2">
-          <Input
-            value={cover}
-            onChange={(e) => setCover(e.target.value)}
-            placeholder="https://..."
-            className="flex-1"
-          />
+        {cover ? (
+          <div className="relative overflow-hidden rounded-xl border border-border">
+            <img src={cover} alt="" className="h-24 w-full object-cover" />
+            <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition hover:opacity-100">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="rounded-full gap-1.5"
+                onClick={() => coverRef.current?.click()}
+              >
+                <Camera className="h-4 w-4" /> Alterar
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="rounded-full"
+                onClick={() => setCover("")}
+              >
+                Remover
+              </Button>
+            </div>
+          </div>
+        ) : (
           <Button
             type="button"
             variant="outline"
-            size="sm"
-            className="shrink-0 rounded-full gap-1.5"
+            className="w-full rounded-full gap-1.5"
             onClick={() => coverRef.current?.click()}
           >
-            <Camera className="h-4 w-4" />
+            <Camera className="h-4 w-4" /> Adicionar capa
           </Button>
-        </div>
+        )}
         <input
           ref={coverRef}
           type="file"
@@ -361,23 +378,44 @@ function EditCommunityForm({
       </div>
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Avatar</Label>
-        <div className="flex gap-2">
-          <Input
-            value={avatar}
-            onChange={(e) => setAvatar(e.target.value)}
-            placeholder="https://..."
-            className="flex-1"
-          />
+        {avatar ? (
+          <div className="flex items-center gap-3">
+            <img
+              src={avatar}
+              alt=""
+              className="h-16 w-16 rounded-full object-cover ring-2 ring-border"
+            />
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-full gap-1.5"
+                onClick={() => avatarRef.current?.click()}
+              >
+                <Camera className="h-4 w-4" /> Alterar
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="rounded-full"
+                onClick={() => setAvatar("")}
+              >
+                Remover
+              </Button>
+            </div>
+          </div>
+        ) : (
           <Button
             type="button"
             variant="outline"
-            size="sm"
-            className="shrink-0 rounded-full gap-1.5"
+            className="w-full rounded-full gap-1.5"
             onClick={() => avatarRef.current?.click()}
           >
-            <Camera className="h-4 w-4" />
+            <Camera className="h-4 w-4" /> Adicionar avatar
           </Button>
-        </div>
+        )}
         <input
           ref={avatarRef}
           type="file"
