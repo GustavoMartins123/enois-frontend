@@ -13,6 +13,9 @@ const NITRO_PRESET = process.env.NITRO_PRESET ?? "vercel";
 export default defineConfig({
   nitro: {
     preset: NITRO_PRESET,
+    routeRules: {
+      "/api/**": { proxy: `${BACKEND_TARGET}/api/**` },
+    },
   },
   tanstackStart: {
     server: { entry: "server" },
