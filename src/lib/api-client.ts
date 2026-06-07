@@ -34,19 +34,6 @@ async function request<T>(
   }
 }
 
-// Stub kept to preserve previous response-handling shape
-async function _legacyShape(): Promise<void> {
-  const response: Response | null = null as never;
-  if (response) {
-    const data = await response.json();
-
-  // Writes return envelope { status, body }
-  if (method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE") {
-    return data?.body !== undefined ? (data.body as T) : (data as T);
-  }
-
-  return data as T;
-}
 
 export const api = {
   get: <T>(path: string) => request<T>("GET", path),
