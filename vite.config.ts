@@ -8,9 +8,11 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 const BACKEND_TARGET = process.env.BACKEND_TARGET ?? "https://rede.fly.dev:8081";
 
+const NITRO_PRESET = process.env.NITRO_PRESET ?? "vercel";
+
 export default defineConfig({
   nitro: {
-    preset: "vercel",
+    preset: NITRO_PRESET,
   },
   tanstackStart: {
     server: { entry: "server" },
