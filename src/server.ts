@@ -3,7 +3,7 @@ import "./lib/error-capture";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 
-const BACKEND_TARGET = process.env.BACKEND_TARGET ?? "https://rede.fly.dev";
+const BACKEND_TARGET = process.env.BACKEND_TARGET ?? "http://rede.internal:8081";
 
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
