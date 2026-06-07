@@ -14,7 +14,7 @@ export default defineConfig({
   nitro: {
     preset: NITRO_PRESET,
     routeRules: {
-      "/api/**": { proxy: `${BACKEND_TARGET}/api/**` },
+      "/api/**": { proxy: BACKEND_TARGET },
     },
   },
   tanstackStart: {
