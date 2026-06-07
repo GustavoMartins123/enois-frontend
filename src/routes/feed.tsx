@@ -334,9 +334,11 @@ function Home() {
                       </Link>
                       <p className="truncate text-xs text-muted-foreground">{u.headline}</p>
                     </div>
-                    <Button size="sm" variant="outline" className="h-8 rounded-full px-3 text-xs">
-                      Conectar
-                    </Button>
+      <Button size="sm" variant="outline" className="h-8 rounded-full px-3 text-xs" onClick={() => {
+        networkApi.connect(u.id).then(() => queryClient.invalidateQueries({ queryKey: ["network", "suggestions"] }));
+      }}>
+        Conectar
+      </Button>
                   </li>
                 ))}
               </ul>
