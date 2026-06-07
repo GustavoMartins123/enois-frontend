@@ -259,8 +259,14 @@ export function PostCard({ post }: { post: PostView }) {
           className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
             reactionStatus ? "text-primary" : ""
           }`}
+          title={reactionStatus ? "Remover reação" : "Curtir"}
         >
-          <Heart className={`h-4 w-4 ${reactionStatus ? "fill-primary" : ""}`} />{" "}
+          <Heart className={`h-4 w-4 ${reactionStatus ? "fill-primary" : ""}`} />
+        </button>
+        <button
+          onClick={() => setShowReactions(true)}
+          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs tabular-nums transition hover:bg-muted hover:text-foreground text-muted-foreground"
+        >
           {postCounters.reactions}
         </button>
         <button
@@ -268,12 +274,6 @@ export function PostCard({ post }: { post: PostView }) {
           className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
         >
           <MessageCircle className="h-4 w-4" /> {totalComments}
-        </button>
-        <button
-          onClick={() => setShowReactions(true)}
-          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
-        >
-          <Heart className="h-4 w-4" /> {postCounters.reactions}
         </button>
         <button
           onClick={handleSave}
