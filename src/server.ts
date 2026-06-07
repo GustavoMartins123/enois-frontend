@@ -3,6 +3,8 @@ import "./lib/error-capture";
 import { consumeLastCapturedError } from "./lib/error-capture";
 import { renderErrorPage } from "./lib/error-page";
 
+const BACKEND_TARGET = process.env.BACKEND_TARGET ?? "https://rede.fly.dev";
+
 type ServerEntry = {
   fetch: (request: Request, env: unknown, ctx: unknown) => Promise<Response> | Response;
 };
@@ -37,6 +39,27 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
+    const url = new URL(request.url);
+
+    if (url.pathname.startsWith("/api/")) {
+      const backendUrl = `${BACKEND_TARGET}${url.pathname}${url.search}`;
+
+      try {
+        const response = await fetch(backendUrl, {
+          method: request.method,
+          headers: request.headers,
+          body: request.method !== "GET" && request.method !== "HEAD" ? request.body : undefined,
+        });
+        return response;
+      } catch (error) {
+        console.error("Proxy error:", error);
+        return new Response(JSON.stringify({ error: "Bad gateway" }), {
+          status: 502,
+          headers: { "content-type": "application/json" },
+        });
+      }
+    }
+
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
