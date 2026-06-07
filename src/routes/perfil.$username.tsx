@@ -288,6 +288,11 @@ function Profile() {
                   </span>
                 )}
                 <span>· {user.connectionsCount} conexões</span>
+                {user.reputation > 0 && (
+                  <span className="inline-flex items-center gap-1 rounded-full bg-opportunity/15 px-2 py-0.5 text-xs font-medium text-opportunity-foreground">
+                    ★ {user.reputation} reputação
+                  </span>
+                )}
               </p>
             </div>
           </div>
