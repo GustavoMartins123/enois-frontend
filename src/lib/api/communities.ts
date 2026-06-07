@@ -9,6 +9,7 @@ export interface Community {
   members: number;
   joined: boolean;
   cover: string | null;
+  avatar: string | null;
 }
 
 export interface CommunityMember {
@@ -24,6 +25,7 @@ export interface CreateCommunityInput {
   description: string;
   topic: string;
   cover?: string | null;
+  avatar?: string | null;
 }
 
 export interface PageResponse<T> {

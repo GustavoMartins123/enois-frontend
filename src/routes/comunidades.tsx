@@ -91,8 +91,15 @@ function Comunidades() {
                 <div className="h-32 w-full bg-gradient-to-br from-primary/20 to-primary/5" />
               )}
               <div className="p-5">
-                <p className="text-xs font-medium uppercase tracking-wider text-primary">{c.topic}</p>
-                <h3 className="mt-1 font-semibold">{c.name}</h3>
+                <div className="flex items-center gap-3 mb-3">
+                  {c.avatar && (
+                    <img src={resolveCdnUrl(c.avatar)} alt="" className="h-10 w-10 rounded-full object-cover ring-2 ring-border" />
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium uppercase tracking-wider text-primary">{c.topic}</p>
+                    <h3 className="font-semibold truncate">{c.name}</h3>
+                  </div>
+                </div>
                 <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">{c.description}</p>
                 <div className="mt-4 flex items-center justify-between">
                   <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
