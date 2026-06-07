@@ -93,11 +93,11 @@ function Profile() {
   });
 
   const { data: feedData } = useQuery({
-    queryKey: ["feed"],
-    queryFn: () => feedApi.list(),
+    queryKey: ["feed", "user", user.username],
+    queryFn: () => feedApi.listByUser(user.username),
   });
 
-  const userPosts = (feedData?.items ?? []).filter((p) => p.authorId === user.id);
+  const userPosts = feedData?.items ?? [];
 
   const connect = useMutation({
     mutationFn: () => networkApi.connect(user.id),
