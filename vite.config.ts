@@ -14,7 +14,7 @@ export default defineConfig({
   nitro: {
     preset: NITRO_PRESET,
     routeRules: {
-      "/api/**": { proxy: BACKEND_TARGET },
+      "/api/**": { proxy: "https://rede.fly.dev" },
     },
   },
   tanstackStart: {
