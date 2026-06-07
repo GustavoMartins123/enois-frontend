@@ -163,7 +163,7 @@ function MentorCard({
 }) {
   const { data: user } = useQuery({
     queryKey: ["profile", mentor.userId],
-    queryFn: () => profileApi.get(mentor.userId),
+    queryFn: () => profileApi.getById(mentor.userId),
   });
 
   return (
