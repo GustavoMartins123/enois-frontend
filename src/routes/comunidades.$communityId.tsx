@@ -80,6 +80,7 @@ function CommunityDetail() {
       feedApi.create({ type: "INSIGHT", content, communityId: community.id }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["community", community.id, "feed"] });
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
       setDraft("");
     },
   });
