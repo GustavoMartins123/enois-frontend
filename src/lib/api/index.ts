@@ -2,7 +2,13 @@ export { authApi } from "./auth";
 export type { SignupInput, LoginInput, AuthUser, AuthResponse } from "./auth";
 
 export { profileApi } from "./profile";
-export type { Profile, UpdateProfileRequest, Experience, Education, Certification } from "./profile";
+export type {
+  Profile,
+  UpdateProfileRequest,
+  Experience,
+  Education,
+  Certification,
+} from "./profile";
 
 export { feedApi } from "./feed";
 export type { PostView, CreatePostInput, PageResponse, ReactionUser } from "./feed";
@@ -29,7 +35,7 @@ export { eventsApi } from "./events";
 export type { Event } from "./events";
 
 export { mentorsApi } from "./mentors";
-export type { Mentor, TimeSlot } from "./mentors";
+export type { Mentor, TimeSlot, UpdateMentorInput } from "./mentors";
 
 export { messagesApi } from "./messages";
 export type { Conversation, Message, CreateConversationInput } from "./messages";

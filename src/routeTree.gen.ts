@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VagasRouteImport } from './routes/vagas'
+import { Route as SalvosRouteImport } from './routes/salvos'
 import { Route as RedeRouteImport } from './routes/rede'
 import { Route as MentoriaRouteImport } from './routes/mentoria'
 import { Route as MensagensRouteImport } from './routes/mensagens'
@@ -24,6 +25,11 @@ import { Route as ComunidadesCommunityIdRouteImport } from './routes/comunidades
 const VagasRoute = VagasRouteImport.update({
   id: '/vagas',
   path: '/vagas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SalvosRoute = SalvosRouteImport.update({
+  id: '/salvos',
+  path: '/salvos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RedeRoute = RedeRouteImport.update({
@@ -86,6 +92,7 @@ export interface FileRoutesByFullPath {
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
   '/rede': typeof RedeRoute
+  '/salvos': typeof SalvosRoute
   '/vagas': typeof VagasRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByTo {
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
   '/rede': typeof RedeRoute
+  '/salvos': typeof SalvosRoute
   '/vagas': typeof VagasRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
@@ -113,6 +121,7 @@ export interface FileRoutesById {
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
   '/rede': typeof RedeRoute
+  '/salvos': typeof SalvosRoute
   '/vagas': typeof VagasRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
@@ -128,6 +137,7 @@ export interface FileRouteTypes {
     | '/mensagens'
     | '/mentoria'
     | '/rede'
+    | '/salvos'
     | '/vagas'
     | '/comunidades/$communityId'
     | '/perfil/$username'
@@ -141,6 +151,7 @@ export interface FileRouteTypes {
     | '/mensagens'
     | '/mentoria'
     | '/rede'
+    | '/salvos'
     | '/vagas'
     | '/comunidades/$communityId'
     | '/perfil/$username'
@@ -154,6 +165,7 @@ export interface FileRouteTypes {
     | '/mensagens'
     | '/mentoria'
     | '/rede'
+    | '/salvos'
     | '/vagas'
     | '/comunidades/$communityId'
     | '/perfil/$username'
@@ -168,6 +180,7 @@ export interface RootRouteChildren {
   MensagensRoute: typeof MensagensRoute
   MentoriaRoute: typeof MentoriaRoute
   RedeRoute: typeof RedeRoute
+  SalvosRoute: typeof SalvosRoute
   VagasRoute: typeof VagasRoute
   PerfilUsernameRoute: typeof PerfilUsernameRoute
 }
@@ -179,6 +192,13 @@ declare module '@tanstack/react-router' {
       path: '/vagas'
       fullPath: '/vagas'
       preLoaderRoute: typeof VagasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/salvos': {
+      id: '/salvos'
+      path: '/salvos'
+      fullPath: '/salvos'
+      preLoaderRoute: typeof SalvosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/rede': {
@@ -275,6 +295,7 @@ const rootRouteChildren: RootRouteChildren = {
   MensagensRoute: MensagensRoute,
   MentoriaRoute: MentoriaRoute,
   RedeRoute: RedeRoute,
+  SalvosRoute: SalvosRoute,
   VagasRoute: VagasRoute,
   PerfilUsernameRoute: PerfilUsernameRoute,
 }

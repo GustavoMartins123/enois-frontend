@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { requireAuth } from "@/lib/require-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, type FormEvent } from "react";
+import { useState, useRef, useCallback, type FormEvent } from "react";
 import { Users, Settings, ArrowLeft, Send, Camera } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PostCard } from "@/components/post-card";
@@ -21,6 +21,8 @@ import {
 import { communitiesApi, feedApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { useAuth } from "@/lib/use-auth";
+import { useMediaUpload } from "@/lib/use-media-upload";
+import { ImageCropDialog } from "@/components/image-crop-dialog";
 
 export const Route = createFileRoute("/comunidades/$communityId")({
   beforeLoad: requireAuth,
@@ -74,7 +76,8 @@ function CommunityDetail() {
   });
 
   const createPost = useMutation({
-    mutationFn: (content: string) => feedApi.create({ type: "INSIGHT", content, communityId: community.id }),
+    mutationFn: (content: string) =>
+      feedApi.create({ type: "INSIGHT", content, communityId: community.id }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["community", community.id, "feed"] });
       setDraft("");
@@ -99,7 +102,10 @@ function CommunityDetail() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <Link to="/comunidades" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          to="/comunidades"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className="h-4 w-4" /> Comunidades
         </Link>
 
@@ -113,7 +119,11 @@ function CommunityDetail() {
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="flex items-start gap-4 min-w-0">
                 {live.avatar && (
-                  <img src={resolveCdnUrl(live.avatar)} alt="" className="h-16 w-16 rounded-full object-cover ring-4 ring-card shrink-0" />
+                  <img
+                    src={resolveCdnUrl(live.avatar)}
+                    alt=""
+                    className="h-16 w-16 rounded-full object-cover ring-4 ring-card shrink-0"
+                  />
                 )}
                 <div className="min-w-0">
                   <Badge className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft">
@@ -123,7 +133,8 @@ function CommunityDetail() {
                   <p className="mt-1 text-muted-foreground">{live.description}</p>
                   <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
-                      <Users className="h-4 w-4" /> {live.members} membro{live.members > 1 ? "s" : ""}
+                      <Users className="h-4 w-4" /> {live.members} membro
+                      {live.members > 1 ? "s" : ""}
                     </span>
                     {admins.length > 0 && (
                       <span>
@@ -152,21 +163,18 @@ function CommunityDetail() {
                       <DialogHeader>
                         <DialogTitle>Editar comunidade</DialogTitle>
                       </DialogHeader>
-                      <EditCommunityForm
-                        community={live}
-                        onClose={() => setEditOpen(false)}
-                      />
+                      <EditCommunityForm community={live} onClose={() => setEditOpen(false)} />
                     </DialogContent>
                   </Dialog>
                 )}
                 <Button
-                className="rounded-full shrink-0"
-                variant={isMember ? "secondary" : "default"}
-                disabled={join.isPending || leave.isPending}
-                onClick={() => (isMember ? leave.mutate() : join.mutate())}
-              >
-                {isMember ? "Participando" : "Entrar"}
-              </Button>
+                  className="rounded-full shrink-0"
+                  variant={isMember ? "secondary" : "default"}
+                  disabled={join.isPending || leave.isPending}
+                  onClick={() => (isMember ? leave.mutate() : join.mutate())}
+                >
+                  {isMember ? "Participando" : "Entrar"}
+                </Button>
               </div>
             </div>
           </div>
@@ -198,7 +206,9 @@ function CommunityDetail() {
             <h2 className="text-lg font-semibold">Feed</h2>
             {posts.length === 0 ? (
               <p className="surface-card p-8 text-center text-sm text-muted-foreground">
-                {isMember ? "Nenhum post ainda. Seja o primeiro!" : "Entre na comunidade para ver o feed."}
+                {isMember
+                  ? "Nenhum post ainda. Seja o primeiro!"
+                  : "Entre na comunidade para ver o feed."}
               </p>
             ) : (
               posts.map((p) => <PostCard key={p.id} post={p} />)
@@ -223,7 +233,10 @@ function CommunityDetail() {
                         {m.name}
                       </Link>
                       {m.role === "ADMIN" && (
-                        <Badge variant="outline" className="ml-2 rounded-full text-[10px] px-1.5 py-0">
+                        <Badge
+                          variant="outline"
+                          className="ml-2 rounded-full text-[10px] px-1.5 py-0"
+                        >
                           ADMIN
                         </Badge>
                       )}
@@ -244,7 +257,13 @@ function EditCommunityForm({
   community,
   onClose,
 }: {
-  community: { id: string; name: string; description: string; cover: string | null; avatar: string | null };
+  community: {
+    id: string;
+    name: string;
+    description: string;
+    cover: string | null;
+    avatar: string | null;
+  };
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
@@ -252,6 +271,42 @@ function EditCommunityForm({
   const [description, setDescription] = useState(community.description);
   const [cover, setCover] = useState(community.cover ?? "");
   const [avatar, setAvatar] = useState(community.avatar ?? "");
+  const coverUpload = useMediaUpload();
+  const avatarUpload = useMediaUpload();
+  const coverRef = useRef<HTMLInputElement>(null);
+  const avatarRef = useRef<HTMLInputElement>(null);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [cropPurpose, setCropPurpose] = useState<"COVER" | "AVATAR" | null>(null);
+
+  const handleCropComplete = useCallback(
+    async (blob: Blob) => {
+      const upload = cropPurpose === "COVER" ? coverUpload : avatarUpload;
+      const result = await upload.upload(
+        new File([blob], "crop.jpg", { type: "image/jpeg" }),
+        cropPurpose!,
+      );
+      if (cropPurpose === "COVER") setCover(result.cdnUrl);
+      else setAvatar(result.cdnUrl);
+      if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
+      setCropImageSrc(null);
+      setCropPurpose(null);
+    },
+    [cropPurpose, cropImageSrc, coverUpload, avatarUpload],
+  );
+
+  const handleCropCancel = useCallback(() => {
+    if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
+    setCropImageSrc(null);
+    setCropPurpose(null);
+  }, [cropImageSrc]);
+
+  const handleFileSelect =
+    (field: "COVER" | "AVATAR") => (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      setCropPurpose(field);
+      setCropImageSrc(URL.createObjectURL(file));
+    };
 
   const update = useMutation({
     mutationFn: () =>
@@ -278,12 +333,58 @@ function EditCommunityForm({
         <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
       </div>
       <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">URL da capa</Label>
-        <Input value={cover} onChange={(e) => setCover(e.target.value)} placeholder="https://..." />
+        <Label className="text-xs text-muted-foreground">Capa</Label>
+        <div className="flex gap-2">
+          <Input
+            value={cover}
+            onChange={(e) => setCover(e.target.value)}
+            placeholder="https://..."
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0 rounded-full gap-1.5"
+            onClick={() => coverRef.current?.click()}
+          >
+            <Camera className="h-4 w-4" />
+          </Button>
+        </div>
+        <input
+          ref={coverRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileSelect("COVER")}
+        />
       </div>
       <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">URL do avatar</Label>
-        <Input value={avatar} onChange={(e) => setAvatar(e.target.value)} placeholder="https://..." />
+        <Label className="text-xs text-muted-foreground">Avatar</Label>
+        <div className="flex gap-2">
+          <Input
+            value={avatar}
+            onChange={(e) => setAvatar(e.target.value)}
+            placeholder="https://..."
+            className="flex-1"
+          />
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="shrink-0 rounded-full gap-1.5"
+            onClick={() => avatarRef.current?.click()}
+          >
+            <Camera className="h-4 w-4" />
+          </Button>
+        </div>
+        <input
+          ref={avatarRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileSelect("AVATAR")}
+        />
       </div>
       <Button
         className="w-full rounded-full"
@@ -292,6 +393,19 @@ function EditCommunityForm({
       >
         {update.isPending ? "Salvando..." : "Salvar"}
       </Button>
+
+      {cropImageSrc && cropPurpose && (
+        <ImageCropDialog
+          open={!!cropImageSrc}
+          onOpenChange={(v) => {
+            if (!v) handleCropCancel();
+          }}
+          imageSrc={cropImageSrc}
+          aspect={cropPurpose === "COVER" ? 3 : 1}
+          title={cropPurpose === "COVER" ? "Ajustar capa" : "Ajustar avatar"}
+          onCropComplete={handleCropComplete}
+        />
+      )}
     </div>
   );
 }

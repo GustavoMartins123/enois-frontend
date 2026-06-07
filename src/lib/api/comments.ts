@@ -26,4 +26,7 @@ export const commentsApi = {
     api.get<PageResponse<CommentView>>(
       `/feed/posts/${postId}/comments${buildQuery({ cursor, limit })}`,
     ),
+
+  remove: (postId: string, commentId: string) =>
+    api.delete<{ status: string }>(`/feed/posts/${postId}/comments/${commentId}`),
 };
