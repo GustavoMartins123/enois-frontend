@@ -7,14 +7,13 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 const BACKEND_TARGET = process.env.BACKEND_TARGET ?? "https://rede.fly.dev";
-
 const NITRO_PRESET = process.env.NITRO_PRESET ?? "vercel";
 
 export default defineConfig({
   nitro: {
     preset: NITRO_PRESET,
     routeRules: {
-      "/api/**": { proxy: "https://rede.fly.dev" },
+      "/api/**": { proxy: BACKEND_TARGET },
     },
   },
   tanstackStart: {
