@@ -11,13 +11,31 @@ import {
   Clock,
   Camera,
   Settings,
+  ThumbsUp,
+  Star,
+  Trophy,
 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { profileApi, feedApi, networkApi, ApiError } from "@/lib/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  profileApi,
+  feedApi,
+  networkApi,
+  ApiError,
+  rankingApi,
+  recommendationsApi,
+} from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
@@ -73,6 +91,8 @@ function Profile() {
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [cropPurpose, setCropPurpose] = useState<"AVATAR" | "BANNER" | null>(null);
   const [cropFile, setCropFile] = useState<File | null>(null);
+  const [recommendOpen, setRecommendOpen] = useState(false);
+  const [recommendComment, setRecommendComment] = useState("");
 
   const { data: liveProfile } = useQuery({
     queryKey: ["profile", loaderUser.username],
@@ -106,6 +126,16 @@ function Profile() {
 
   const userPosts = feedData?.items ?? [];
 
+  const { data: rankingData } = useQuery({
+    queryKey: ["ranking"],
+    queryFn: () => rankingApi.list(10),
+  });
+
+  const { data: recommendationsData } = useQuery({
+    queryKey: ["recommendations", user.id],
+    queryFn: () => recommendationsApi.listReceived(user.id),
+  });
+
   const connect = useMutation({
     mutationFn: () => networkApi.connect(user.id),
     onSuccess: () => {
@@ -115,6 +145,15 @@ function Profile() {
       if (err instanceof ApiError && err.code === "CONNECTION_ALREADY_REQUESTED") {
         queryClient.invalidateQueries({ queryKey: ["connection-status", user.id] });
       }
+    },
+  });
+
+  const recommend = useMutation({
+    mutationFn: () => recommendationsApi.create(user.id, { comment: recommendComment }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["recommendations", user.id] });
+      setRecommendOpen(false);
+      setRecommendComment("");
     },
   });
 
@@ -353,6 +392,82 @@ function Profile() {
               </p>
             </Section>
 
+            {!isOwnProfile && (
+              <Section title="Recomendar" icon={ThumbsUp}>
+                <p className="mb-3 text-sm text-muted-foreground">
+                  Recomende este perfil para ajudar a comunidade.
+                </p>
+                <Dialog open={recommendOpen} onOpenChange={setRecommendOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="w-full rounded-full gap-1.5">
+                      <ThumbsUp className="h-4 w-4" /> Recomendar
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Recomendar {user.name}</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 pt-2">
+                      <Textarea
+                        value={recommendComment}
+                        onChange={(e) => setRecommendComment(e.target.value)}
+                        placeholder="Descreva como conhece este profissional..."
+                        rows={3}
+                      />
+                      <Button
+                        className="w-full rounded-full"
+                        disabled={!recommendComment.trim() || recommend.isPending}
+                        onClick={() => recommend.mutate()}
+                      >
+                        {recommend.isPending ? "Enviando..." : "Enviar recomendação"}
+                      </Button>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </Section>
+            )}
+
+            {recommendationsData && recommendationsData.length > 0 && (
+              <Section title="Recomendações" icon={Star}>
+                <div className="space-y-3">
+                  {recommendationsData.map((rec) => (
+                    <RecommendationItem key={rec.id} recommendation={rec} />
+                  ))}
+                </div>
+              </Section>
+            )}
+
+            {rankingData && rankingData.length > 0 && (
+              <Section title="Ranking" icon={Trophy}>
+                <div className="space-y-2">
+                  {rankingData.slice(0, 5).map((u, i) => (
+                    <div key={u.id} className="flex items-center gap-3">
+                      <span
+                        className={`w-5 text-center text-sm font-bold ${i < 3 ? "text-opportunity" : "text-muted-foreground"}`}
+                      >
+                        {i + 1}º
+                      </span>
+                      <Link to="/perfil/$username" params={{ username: u.username }}>
+                        <UserAvatar src={u.avatar} alt={u.name} className="h-8 w-8 shrink-0" />
+                      </Link>
+                      <div className="min-w-0 flex-1">
+                        <Link
+                          to="/perfil/$username"
+                          params={{ username: u.username }}
+                          className="truncate text-sm font-medium hover:underline"
+                        >
+                          {u.name}
+                        </Link>
+                      </div>
+                      <span className="text-xs font-semibold text-opportunity-foreground">
+                        {u.reputation}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </Section>
+            )}
+
             {user.externalLinks.length > 0 && (
               <Section title="Links">
                 <ul className="space-y-2 text-sm">
@@ -403,5 +518,26 @@ function Section({
       </h2>
       {children}
     </section>
+  );
+}
+
+function RecommendationItem({
+  recommendation,
+}: {
+  recommendation: { recommenderId: string; comment: string };
+}) {
+  const { data: recommender } = useQuery({
+    queryKey: ["profile", "by-id", recommendation.recommenderId],
+    queryFn: () => profileApi.getById(recommendation.recommenderId),
+  });
+
+  return (
+    <div className="rounded-xl bg-muted/50 p-3">
+      <div className="flex items-center gap-2 mb-2">
+        <UserAvatar src={recommender?.avatar} alt={recommender?.name} className="h-6 w-6" />
+        <span className="text-xs font-medium">{recommender?.name ?? "Usuário"}</span>
+      </div>
+      <p className="text-sm leading-relaxed text-muted-foreground">"{recommendation.comment}"</p>
+    </div>
   );
 }
