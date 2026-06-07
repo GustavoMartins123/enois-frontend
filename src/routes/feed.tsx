@@ -277,7 +277,7 @@ function Home() {
             <TabPill active={tab === "FOR_YOU"} onClick={() => setTab("FOR_YOU")}>
               Para você
             </TabPill>
-            <TabPill active={tab === undefined} onClick={() => setTab(undefined)}>
+            <TabPill active={tab === "ALL"} onClick={() => setTab("ALL")}>
               Tudo
             </TabPill>
             <TabPill active={tab === "FOLLOWING"} onClick={() => setTab("FOLLOWING")}>
