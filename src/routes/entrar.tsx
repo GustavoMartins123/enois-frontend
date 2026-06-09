@@ -235,6 +235,8 @@ function SignupForm({ onDone }: { onDone: () => void }) {
     }
     setErrors({});
     setLoading(true);
+    localStorage.removeItem("session_token");
+    localStorage.removeItem("current_user");
     try {
       const result = await authApi.signup({
         name: parsed.data.name,
@@ -346,6 +348,8 @@ function LoginForm({ onDone }: { onDone: () => void }) {
     }
     setErrors({});
     setLoading(true);
+    localStorage.removeItem("session_token");
+    localStorage.removeItem("current_user");
     try {
       const result = await authApi.login({
         email: parsed.data.email,
