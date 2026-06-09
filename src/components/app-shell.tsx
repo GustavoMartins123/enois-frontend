@@ -337,6 +337,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 }
 
 function SearchBox() {
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [debounced, setDebounced] = useState("");
   const [open, setOpen] = useState(false);
@@ -422,7 +423,7 @@ function SearchBox() {
                         {item.type === "users" ? (
                           <Link
                             to="/perfil/$username"
-                            params={{ username: item.id }}
+                            params={{ username: item.href.replace("/perfil/", "") }}
                             onClick={close}
                             className="flex items-center gap-3 px-4 py-3 transition hover:bg-muted"
                           >
@@ -434,7 +435,7 @@ function SearchBox() {
                           </Link>
                         ) : (
                           <button
-                            onClick={close}
+                            onClick={() => { close(); navigateToHref(item.href, navigate); }}
                             className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted"
                           >
                             <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
@@ -486,7 +487,7 @@ function SearchBox() {
                     {item.type === "users" ? (
                       <Link
                         to="/perfil/$username"
-                        params={{ username: item.id }}
+                        params={{ username: item.href.replace("/perfil/", "") }}
                         onClick={close}
                         className="flex items-center gap-3 px-4 py-3 transition hover:bg-muted"
                       >
@@ -498,7 +499,7 @@ function SearchBox() {
                       </Link>
                     ) : (
                       <button
-                        onClick={close}
+                        onClick={() => { close(); navigateToHref(item.href, navigate); }}
                         className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted"
                       >
                         <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
