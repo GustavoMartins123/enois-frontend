@@ -392,15 +392,13 @@ export function PostCard({ post }: { post: PostView }) {
 
           <form onSubmit={submitComment} className="mt-4 flex items-center gap-2">
             <UserAvatar src={currentUser?.avatar} alt={currentUser?.name} className="h-8 w-8 shrink-0" />
-            <div className="flex-1">
-              <MentionTextarea
-                value={draft}
-                onChange={(val, ids) => { setDraft(val); setCommentMentions(ids); }}
-                placeholder="Comente com contexto, dúvida ou referência..."
-                className="h-10 w-full resize-none rounded-full bg-muted px-4 py-2 text-sm outline-none"
-                maxLength={280}
-              />
-            </div>
+            <MentionTextarea
+              value={draft}
+              onChange={(val, ids) => { setDraft(val); setCommentMentions(ids); }}
+              placeholder="Comente com contexto, dúvida ou referência..."
+              className="h-10 resize-none rounded-full bg-muted px-4 py-2 text-sm outline-none"
+              maxLength={280}
+            />
             <Button type="submit" size="sm" className="rounded-full" disabled={!draft.trim()}>
               Enviar
             </Button>
@@ -522,6 +520,7 @@ function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
   });
 
   const items = queryResults.filter((q) => q.data?.cdnUrl).map((q) => q.data!);
+  const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
 
   if (items.length === 0) return null;
 
@@ -536,12 +535,32 @@ function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
   }
 
   return (
-    <div className={`grid gap-2 ${items.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
-      {items.map((m) => (
-        <div key={m.id} className="overflow-hidden rounded-xl border border-border">
-          <img src={resolveCdnUrl(m.cdnUrl)} alt="" className="h-48 w-full object-cover bg-muted" />
+    <>
+      <div className={`grid gap-2 ${items.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
+        {items.map((m) => (
+          <button
+            key={m.id}
+            type="button"
+            onClick={() => setFullscreenUrl(resolveCdnUrl(m.cdnUrl) ?? null)}
+            className="overflow-hidden rounded-xl border border-border text-left"
+          >
+            <img src={resolveCdnUrl(m.cdnUrl)} alt="" className="h-48 w-full object-cover bg-muted transition hover:scale-105" />
+          </button>
+        ))}
+      </div>
+      {fullscreenUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          onClick={() => setFullscreenUrl(null)}
+        >
+          <img
+            src={fullscreenUrl}
+            alt=""
+            className="max-h-[90vh] max-w-[90vw] rounded-2xl object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
         </div>
-      ))}
-    </div>
+      )}
+    </>
   );
 }
