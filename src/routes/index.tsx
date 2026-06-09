@@ -18,7 +18,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Uma rede profissional diferente. Sem paywalls, sem métricas de vaidade. Apenas conexões reais, mentoria e conhecimento compartilhado — gratuito para sempre.",
+          "Uma rede profissional diferente. Sem paywalls, sem métricas de vaidade. Apenas conexões reais, mentoria e conhecimento compartilhado, gratuito para sempre.",
       },
       { property: "og:title", content: "Conexão · Rede profissional gratuita e humana" },
       {
@@ -90,7 +90,7 @@ function Landing() {
             <span className="gradient-text">em um lugar seguro e gratuito</span>
           </h1>
           <p className="mx-auto mt-5 max-w-lg text-base text-muted-foreground">
-            Conexão conecta profissionais por conhecimento, mentoria e propósito — não por métricas
+            Conexão conecta profissionais por conhecimento, mentoria e propósito, não por métricas
             de popularidade.
           </p>
           <p className="mt-1 text-sm font-medium text-foreground">100% gratuito. Sem anúncios. Sem planos pagos.</p>
@@ -129,7 +129,7 @@ function Landing() {
             </h2>
             <p className="mt-4 text-muted-foreground">
               Acreditamos que o crescimento profissional acontece quando pessoas se conectam de forma
-              autêntica — sem barreiras, sem ruído, sem custo.
+              autêntica, sem barreiras, sem ruído, sem custo.
             </p>
           </div>
           <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -158,7 +158,7 @@ function Landing() {
             O que você encontra aqui
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Tudo o que você precisa para crescer profissionalmente — sem os excessos das redes tradicionais.
+            Tudo o que você precisa para crescer profissionalmente, sem os excessos das redes tradicionais.
           </p>
         </div>
         <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -184,7 +184,7 @@ function Landing() {
               Sua carreira merece um espaço melhor
             </h2>
             <p className="mt-4 text-muted-foreground">
-              Entre para uma comunidade que valoriza autenticidade, colaboração e aprendizado — sem
+              Entre para uma comunidade que valoriza autenticidade, colaboração e aprendizado, sem
               pagar nada por isso. Sem planos, sem anúncios, sem surpresas.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -268,7 +268,7 @@ const features = [
   {
     icon: Users,
     title: "Conexões por afinidade",
-    desc: "Sugestões baseadas em habilidades, objetivos e interesses — não em volume.",
+    desc: "Sugestões baseadas em habilidades, objetivos e interesses, não em volume.",
   },
   {
     icon: ShieldCheck,
