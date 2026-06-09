@@ -115,7 +115,7 @@ function Eventos() {
                   <Badge variant="outline" className="rounded-full bg-card font-normal">
                     <Icon className="mr-1 h-3 w-3" /> {formatLabel}
                   </Badge>
-                  <h3 className="mt-2 font-semibold">{e.title}</h3>
+                  <h3 className="mt-2 break-words font-semibold">{e.title}</h3>
                   <p className="mt-1 text-xs text-muted-foreground">por {e.host}</p>
                   <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">

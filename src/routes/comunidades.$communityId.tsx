@@ -130,8 +130,8 @@ function CommunityDetail() {
                   <Badge className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft">
                     {live.topic}
                   </Badge>
-                  <h1 className="mt-2 text-2xl font-semibold tracking-tight">{live.name}</h1>
-                  <p className="mt-1 text-muted-foreground">{live.description}</p>
+                  <h1 className="mt-2 break-words text-2xl font-semibold tracking-tight">{live.name}</h1>
+                  <p className="mt-1 break-words text-muted-foreground">{live.description}</p>
                   <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
                       <Users className="h-4 w-4" /> {live.members} membro

@@ -211,7 +211,7 @@ function Mensagens() {
                               : "rounded-bl-md bg-card text-foreground"
                           }`}
                         >
-                          <p>{m.text}</p>
+                          <p className="break-words">{m.text}</p>
                           <p
                             className={`mt-1 text-[10px] ${isMe ? "text-primary-foreground/70" : "text-muted-foreground"}`}
                           >

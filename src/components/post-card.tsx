@@ -303,7 +303,7 @@ export function PostCard({ post }: { post: PostView }) {
         </span>
       </header>
 
-      <p className="mt-4 whitespace-pre-line text-[15px] leading-relaxed text-foreground">
+      <p className="mt-4 whitespace-pre-line break-words text-[15px] leading-relaxed text-foreground">
         {post.content}
       </p>
 
@@ -443,7 +443,7 @@ function CommentItem({
               {formatTime(comment.createdAt)}
             </span>
           </div>
-          <p className="mt-1 text-sm leading-relaxed">{comment.content}</p>
+          <p className="mt-1 break-words text-sm leading-relaxed">{comment.content}</p>
         </div>
         <div className="mt-1 flex gap-3 px-3 text-[11px] font-medium text-muted-foreground">
           {isOwner && onDelete && (
