@@ -1,8 +1,8 @@
 import { createFileRoute, Link, Outlet, useMatchRoute } from "@tanstack/react-router";
 import { requireAuth } from "@/lib/require-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
-import { Users, Plus } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Users, Plus, Loader2 } from "lucide-react";
 import { AppShell } from "@/components/app-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,15 +40,43 @@ function Comunidades() {
   const matchRoute = useMatchRoute();
   const [topic, setTopic] = useState<string | undefined>(undefined);
   const [open, setOpen] = useState(false);
+  const [cursor, setCursor] = useState<string | undefined>(undefined);
+  const [allItems, setAllItems] = useState<any[]>([]);
+  const cursorRef = useRef(cursor);
+  cursorRef.current = cursor;
   const isDetail = matchRoute({ to: "/comunidades/$communityId" });
 
-  const { data: communitiesData } = useQuery({
-    queryKey: ["communities", topic],
-    queryFn: () => communitiesApi.list(topic),
+  const { data: communitiesData, isFetching } = useQuery({
+    queryKey: ["communities", topic, cursor],
+    queryFn: () => communitiesApi.list(topic, cursor),
     enabled: !isDetail,
   });
 
-  const communities = communitiesData?.items ?? [];
+  const nextCursor = communitiesData?.nextCursor ?? null;
+
+  useEffect(() => {
+    if (!communitiesData?.items) return;
+    setAllItems((prev) => {
+      if (cursorRef.current) {
+        const existing = new Set(prev.map((c: any) => c.id));
+        const newItems = communitiesData.items.filter((c: any) => !existing.has(c.id));
+        return newItems.length > 0 ? [...prev, ...newItems] : prev;
+      }
+      return communitiesData.items;
+    });
+  }, [communitiesData]);
+
+  const loadMore = () => {
+    if (nextCursor && !isFetching) {
+      setCursor(nextCursor);
+    }
+  };
+
+  const handleTopicChange = (t: string) => {
+    setTopic(t === "Todas" ? undefined : t);
+    setCursor(undefined);
+    setAllItems([]);
+  };
 
   const join = useMutation({
     mutationFn: (id: string) => communitiesApi.join(id),
@@ -85,7 +113,7 @@ function Comunidades() {
           {TOPICS.map((t) => (
             <button
               key={t}
-              onClick={() => setTopic(t === "Todas" ? undefined : t)}
+              onClick={() => handleTopicChange(t)}
               className={`rounded-full border px-3.5 py-1.5 text-sm transition ${
                 (t === "Todas" && !topic) || t === topic
                   ? "border-primary bg-primary text-primary-foreground"
@@ -98,7 +126,7 @@ function Comunidades() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {communities.map((c) => (
+          {allItems.map((c: any) => (
             <Link key={c.id} to="/comunidades/$communityId" params={{ communityId: c.id }}>
               <article className="surface-card overflow-hidden cursor-pointer transition hover:shadow-[var(--shadow-card)]">
                 {c.cover ? (
@@ -135,7 +163,10 @@ function Comunidades() {
                       variant={c.joined ? "secondary" : "default"}
                       className="rounded-full"
                       disabled={join.isPending || leave.isPending}
-                      onClick={() => (c.joined ? leave.mutate(c.id) : join.mutate(c.id))}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        c.joined ? leave.mutate(c.id) : join.mutate(c.id);
+                      }}
                     >
                       {c.joined ? "Participando" : "Entrar"}
                     </Button>
@@ -145,6 +176,23 @@ function Comunidades() {
             </Link>
           ))}
         </div>
+
+        {nextCursor && (
+          <div className="flex justify-center pb-8">
+            <Button
+              variant="outline"
+              className="rounded-full"
+              onClick={loadMore}
+              disabled={isFetching}
+            >
+              {isFetching ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Carregar mais"
+              )}
+            </Button>
+          </div>
+        )}
       </div>
       <div className="h-16 lg:hidden" />
     </AppShell>
