@@ -32,7 +32,7 @@ function Mensagens() {
   const conversations = conversationsData?.items ?? [];
   const activeConversation = activeId
     ? conversations.find((c) => c.id === activeId)
-    : conversations[0];
+    : null;
 
   const { data: messagesData } = useQuery({
     queryKey: ["messages", activeConversation?.id],
@@ -103,7 +103,7 @@ function Mensagens() {
 
   return (
     <AppShell>
-      <div className="surface-card grid h-[calc(100vh-9rem)] grid-cols-1 overflow-hidden md:grid-cols-[320px_1fr]">
+      <div className="surface-card grid h-[calc(100dvh-11rem)] md:h-[calc(100vh-9rem)] grid-cols-1 overflow-hidden md:grid-cols-[320px_1fr]">
         <div className={`flex flex-col border-r border-border ${activeConversation ? "hidden md:flex" : "flex"}`}>
           <div className="border-b border-border p-4">
             <div className="flex items-center justify-between mb-3">
@@ -181,7 +181,7 @@ function Mensagens() {
         <div className={`flex min-h-0 flex-col ${!activeConversation ? "hidden md:flex" : "flex"}`}>
           {!activeConversation ? (
             <div className="flex h-full items-center justify-center">
-              <p className="text-sm text-muted-foreground">Selecione ou inicie uma conversa</p>
+              <p className="text-sm text-muted-foreground">Selecione ou comece uma mensagem para exibir</p>
             </div>
           ) : (
             <>
