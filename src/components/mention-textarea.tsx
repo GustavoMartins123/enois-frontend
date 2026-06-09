@@ -29,7 +29,7 @@ export function MentionTextarea({
   const { data: mentionResults = [] } = useQuery({
     queryKey: ["users", "search", mentionSearch],
     queryFn: () => usersApi.search(mentionSearch),
-    enabled: mentionSearch.length >= 2,
+    enabled: mentionSearch.length >= 1,
   });
 
   useEffect(() => {
@@ -110,19 +110,19 @@ export function MentionTextarea({
   };
 
   return (
-    <div className="relative">
+    <div className="relative min-w-0 flex-1">
       <textarea
         ref={textareaRef}
         value={value}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        className={className}
+        className={`w-full ${className}`}
         maxLength={maxLength}
         rows={rows}
       />
-      {mentionSearch.length >= 2 && mentionResults.length > 0 && (
-        <div className="absolute bottom-full left-0 right-0 z-50 mb-1 max-h-48 overflow-y-auto rounded-xl border border-border bg-popover shadow-lg">
+      {mentionSearch.length >= 1 && mentionResults.length > 0 && (
+        <div className="absolute left-0 right-0 z-50 mt-1 max-h-48 overflow-y-auto rounded-xl border border-border bg-popover shadow-lg">
           {mentionResults.map((user, i) => (
             <button
               key={user.id}

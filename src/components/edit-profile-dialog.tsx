@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "@tanstack/react-router";
 import { X, Plus, Pencil, Trash2 } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ interface Props {
 
 export function EditProfileDialog({ profile, children }: Props) {
   const queryClient = useQueryClient();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"info" | "experiences" | "education" | "certifications">("info");
 
@@ -37,9 +39,13 @@ export function EditProfileDialog({ profile, children }: Props) {
 
   const updateProfile = useMutation({
     mutationFn: (data: Parameters<typeof profileApi.update>[0]) => profileApi.update(data),
-    onSuccess: () => {
+    onSuccess: (updated) => {
       queryClient.invalidateQueries({ queryKey: ["me"] });
       queryClient.invalidateQueries({ queryKey: ["profile", profile.username] });
+      if (updated.username && updated.username !== profile.username) {
+        queryClient.invalidateQueries({ queryKey: ["profile", updated.username] });
+        router.navigate({ to: "/perfil/$username", params: { username: updated.username }, replace: true });
+      }
       setOpen(false);
     },
     onError: (err) => {
