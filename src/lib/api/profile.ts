@@ -18,9 +18,9 @@ export interface UserProfile {
   externalLinks: string[];
   openToWork: boolean;
   isMentor: boolean;
-  connectionsCount: number;
-  followersCount: number;
-  reputation: number;
+  connectionsCount?: number;
+  followersCount?: number;
+  reputation?: number;
 }
 
 export type Profile = UserProfile;
