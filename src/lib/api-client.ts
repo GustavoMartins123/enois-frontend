@@ -78,11 +78,7 @@ async function request<T>(
 
   const data = await response.json();
 
-  // Writes return envelope { status, body }
-  if (method === "POST" || method === "PUT" || method === "PATCH" || method === "DELETE") {
-    return data?.body !== undefined ? (data.body as T) : (data as T);
-  }
-
+  if (data?.body !== undefined) return data.body as T;
   return data as T;
 }
 
