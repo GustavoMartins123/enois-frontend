@@ -508,8 +508,8 @@ function LinkPreviews({ content }: { content: string }) {
         if (seen.has(url)) return null;
         seen.add(url);
 
-        const youtubeId = extractYoutubeId(url);
-        if (youtubeId) {
+        const video = extractVideoId(url);
+        if (video) {
           return (
             <a
               key={url}
@@ -518,14 +518,36 @@ function LinkPreviews({ content }: { content: string }) {
               rel="noopener noreferrer"
               className="mt-3 block overflow-hidden rounded-xl border border-border transition hover:opacity-90"
             >
-              <img
-                src={`https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`}
-                alt=""
-                className="aspect-video w-full bg-muted object-cover"
-                onError={(e) => {
-                  (e.currentTarget as HTMLImageElement).src = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
-                }}
-              />
+              {video.type === "youtube" && (
+                <img
+                  src={`https://img.youtube.com/vi/${video.id}/maxresdefault.jpg`}
+                  alt=""
+                  className="aspect-video w-full bg-muted object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src = `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`;
+                  }}
+                />
+              )}
+              {video.type === "dailymotion" && (
+                <img
+                  src={`https://www.dailymotion.com/thumbnail/video/${video.id}`}
+                  alt=""
+                  className="aspect-video w-full bg-muted object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                  }}
+                />
+              )}
+              {video.type === "vimeo" && (
+                <div className="flex aspect-video w-full items-center justify-center bg-muted">
+                  <span className="text-sm text-muted-foreground">🎬 Vimeo</span>
+                </div>
+              )}
+              {video.type === "twitch" && (
+                <div className="flex aspect-video w-full items-center justify-center bg-muted">
+                  <span className="text-sm text-muted-foreground">📺 Twitch</span>
+                </div>
+              )}
             </a>
           );
         }
@@ -539,10 +561,12 @@ function LinkPreviews({ content }: { content: string }) {
             className="mt-2 flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm transition hover:bg-muted"
           >
             <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary-soft text-xs font-bold text-primary">
-              {new URL(url).hostname.slice(0, 2).toUpperCase()}
+              {(() => { try { return new URL(url).hostname.slice(0, 2).toUpperCase(); } catch { return "🌐"; } })()}
             </div>
             <div className="min-w-0">
-              <p className="truncate font-medium text-foreground">{new URL(url).hostname}</p>
+              <p className="truncate font-medium text-foreground">
+                {(() => { try { return new URL(url).hostname; } catch { return url; } })()}
+              </p>
               <p className="truncate text-xs text-muted-foreground">{url}</p>
             </div>
           </a>
@@ -552,13 +576,17 @@ function LinkPreviews({ content }: { content: string }) {
   );
 }
 
-function extractYoutubeId(url: string): string | null {
-  const patterns = [
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+function extractVideoId(url: string): { type: string; id: string } | null {
+  const patterns: [RegExp, string][] = [
+    [/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/, "youtube"],
+    [/(?:dailymotion\.com\/video\/|dai\.ly\/)([a-zA-Z0-9]+)/, "dailymotion"],
+    [/(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(\d+)/, "vimeo"],
+    [/(?:twitch\.tv\/videos\/|clips\.twitch\.tv\/)([a-zA-Z0-9_-]+)/, "twitch"],
+    [/twitch\.tv\/([a-zA-Z0-9_]+)\/?$/, "twitch"],
   ];
-  for (const p of patterns) {
-    const m = url.match(p);
-    if (m) return m[1];
+  for (const [regex, type] of patterns) {
+    const m = url.match(regex);
+    if (m) return { type, id: m[1] };
   }
   return null;
 }
