@@ -316,6 +316,8 @@ export function PostCard({ post }: { post: PostView }) {
         </div>
       )}
 
+      <LinkPreviews content={post.content} />
+
       {post.tags.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-1.5">
           {post.tags.map((t) => (
@@ -493,6 +495,72 @@ function AuthorInfo({
       </div>
     </div>
   );
+}
+
+function LinkPreviews({ content }: { content: string }) {
+  const urlRegex = /https?:\/\/[^\s]+/g;
+  const urls = content.match(urlRegex) ?? [];
+  const seen = new Set<string>();
+
+  return (
+    <>
+      {urls.map((url) => {
+        if (seen.has(url)) return null;
+        seen.add(url);
+
+        const youtubeId = extractYoutubeId(url);
+        if (youtubeId) {
+          return (
+            <a
+              key={url}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-3 block overflow-hidden rounded-xl border border-border transition hover:opacity-90"
+            >
+              <img
+                src={`https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`}
+                alt=""
+                className="aspect-video w-full bg-muted object-cover"
+                onError={(e) => {
+                  (e.currentTarget as HTMLImageElement).src = `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
+                }}
+              />
+            </a>
+          );
+        }
+
+        return (
+          <a
+            key={url}
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm transition hover:bg-muted"
+          >
+            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary-soft text-xs font-bold text-primary">
+              {new URL(url).hostname.slice(0, 2).toUpperCase()}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate font-medium text-foreground">{new URL(url).hostname}</p>
+              <p className="truncate text-xs text-muted-foreground">{url}</p>
+            </div>
+          </a>
+        );
+      })}
+    </>
+  );
+}
+
+function extractYoutubeId(url: string): string | null {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m) return m[1];
+  }
+  return null;
 }
 
 function linkifyText(text: string) {
