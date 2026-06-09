@@ -35,6 +35,7 @@ export interface CreatePostInput {
   content: string;
   tags?: string[];
   mediaIds?: string[];
+  mentionedUserIds?: string[];
   communityId?: string;
 }
 

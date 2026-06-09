@@ -18,6 +18,7 @@ import { UserAvatar } from "@/components/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MentionTextarea } from "@/components/mention-textarea";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
@@ -187,6 +188,7 @@ export function PostCard({ post }: { post: PostView }) {
   const Icon = meta.icon;
   const [showComments, setShowComments] = useState(false);
   const [draft, setDraft] = useState("");
+  const [commentMentions, setCommentMentions] = useState<string[]>([]);
   const [localComments, setLocalComments] = useState<CommentView[]>([]);
   const [postCounters, setPostCounters] = useState(post.counters);
   const [reactionStatus, setReactionStatus] = useState<string | null>(
@@ -220,10 +222,11 @@ export function PostCard({ post }: { post: PostView }) {
     if (!content) return;
 
     try {
-      const newComment = await commentsApi.create(post.id, content);
+      const newComment = await commentsApi.create(post.id, content, null, commentMentions);
       setLocalComments((current) => [...current, newComment]);
       setPostCounters((c) => ({ ...c, comments: c.comments + 1 }));
       setDraft("");
+      setCommentMentions([]);
     } catch {
       // silently fail
     }
@@ -327,7 +330,7 @@ export function PostCard({ post }: { post: PostView }) {
         </div>
       )}
 
-      <footer className="mt-4 flex items-center justify-between border-t border-border pt-3 text-sm text-muted-foreground">
+      <footer className="mt-4 flex flex-wrap items-center gap-1 border-t border-border pt-3 text-sm text-muted-foreground">
         <button
           onClick={handleReaction}
           className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
@@ -388,14 +391,16 @@ export function PostCard({ post }: { post: PostView }) {
           </div>
 
           <form onSubmit={submitComment} className="mt-4 flex items-center gap-2">
-            <UserAvatar src={currentUser?.avatar} alt={currentUser?.name} className="h-8 w-8" />
-            <Input
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              placeholder="Comente com contexto, dúvida ou referência..."
-              className="h-10 rounded-full bg-muted"
-              maxLength={280}
-            />
+            <UserAvatar src={currentUser?.avatar} alt={currentUser?.name} className="h-8 w-8 shrink-0" />
+            <div className="flex-1">
+              <MentionTextarea
+                value={draft}
+                onChange={(val, ids) => { setDraft(val); setCommentMentions(ids); }}
+                placeholder="Comente com contexto, dúvida ou referência..."
+                className="h-10 w-full resize-none rounded-full bg-muted px-4 py-2 text-sm outline-none"
+                maxLength={280}
+              />
+            </div>
             <Button type="submit" size="sm" className="rounded-full" disabled={!draft.trim()}>
               Enviar
             </Button>

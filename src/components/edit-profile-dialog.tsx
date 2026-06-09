@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { profileApi } from "@/lib/api";
+import { profileApi, ApiError } from "@/lib/api";
 import type { Profile, Experience, Education, Certification } from "@/lib/api";
 
 interface Props {
@@ -20,6 +20,7 @@ export function EditProfileDialog({ profile, children }: Props) {
   const [open, setOpen] = useState(false);
   const [tab, setTab] = useState<"info" | "experiences" | "education" | "certifications">("info");
 
+  const [username, setUsername] = useState(profile.username);
   const [name, setName] = useState(profile.name);
   const [headline, setHeadline] = useState(profile.headline ?? "");
   const [bio, setBio] = useState(profile.bio ?? "");
@@ -32,6 +33,7 @@ export function EditProfileDialog({ profile, children }: Props) {
   const [goalsText, setGoalsText] = useState(profile.goals.join(", "));
   const [openToWork, setOpenToWork] = useState(profile.openToWork);
   const [isMentor, setIsMentor] = useState(profile.isMentor);
+  const [usernameError, setUsernameError] = useState("");
 
   const updateProfile = useMutation({
     mutationFn: (data: Parameters<typeof profileApi.update>[0]) => profileApi.update(data),
@@ -39,6 +41,11 @@ export function EditProfileDialog({ profile, children }: Props) {
       queryClient.invalidateQueries({ queryKey: ["me"] });
       queryClient.invalidateQueries({ queryKey: ["profile", profile.username] });
       setOpen(false);
+    },
+    onError: (err) => {
+      if (err instanceof ApiError && err.status === 409) {
+        setUsernameError("Este username já está em uso");
+      }
     },
   });
 
@@ -61,7 +68,9 @@ export function EditProfileDialog({ profile, children }: Props) {
   });
 
   const handleSave = async () => {
+    setUsernameError("");
     await updateProfile.mutateAsync({
+      username: username !== profile.username ? username : undefined,
       name: name !== profile.name ? name : undefined,
       headline: headline || null,
       bio: bio || null,
@@ -120,6 +129,9 @@ export function EditProfileDialog({ profile, children }: Props) {
             <div className="space-y-5">
               <Field label="Nome">
                 <Input value={name} onChange={(e) => setName(e.target.value)} />
+              </Field>
+              <Field label="Username (URL do perfil)" error={usernameError}>
+                <Input value={username} onChange={(e) => { setUsername(e.target.value); setUsernameError(""); }} placeholder="seu-username" />
               </Field>
               <Field label="Headline">
                 <Input value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="Cargo ou frase de destaque" />
@@ -230,11 +242,12 @@ export function EditProfileDialog({ profile, children }: Props) {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
       <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
       {children}
+      {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }

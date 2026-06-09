@@ -1,4 +1,4 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   MapPin,
@@ -80,7 +80,8 @@ export const Route = createFileRoute("/perfil/$username")({
 
 function Profile() {
   const { user: loaderUser } = Route.useLoaderData();
-  const { user: me } = useAuth();
+  const { user: me, requireAuth } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const avatarUpload = useMediaUpload();
   const bannerUpload = useMediaUpload();
@@ -278,12 +279,22 @@ function Profile() {
                   </EditProfileDialog>
                 ) : (
                   <>
-                    <Button variant="outline" className="rounded-full gap-1.5">
+                    <Button
+                      variant="outline"
+                      className="rounded-full gap-1.5"
+                      onClick={() => {
+                        if (!requireAuth()) return;
+                        navigate({ to: "/mensagens" });
+                      }}
+                    >
                       <MessageCircle className="h-4 w-4" /> Mensagem
                     </Button>
                     <Button
                       className="rounded-full gap-1.5"
-                      onClick={() => connect.mutate()}
+                      onClick={() => {
+                        if (!requireAuth()) return;
+                        connect.mutate();
+                      }}
                       disabled={
                         connect.isPending ||
                         connectionStatus === "ACCEPTED" ||

@@ -26,6 +26,7 @@ export interface UserProfile {
 export type Profile = UserProfile;
 
 export interface UpdateProfileRequest {
+  username?: string;
   name?: string;
   headline?: string | null;
   company?: string | null;
