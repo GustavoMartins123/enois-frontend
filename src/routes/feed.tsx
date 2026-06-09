@@ -15,7 +15,7 @@ import { AppShell } from "@/components/app-shell";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { MentionTextarea } from "@/components/mention-textarea";
 import { feedApi, networkApi, eventsApi, profileApi, ApiError } from "@/lib/api";
 import type { PostView } from "@/lib/api";
 
@@ -70,13 +70,14 @@ function Home() {
   const { data: eventsData } = useEvents();
 
   const [draft, setDraft] = useState("");
+  const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([]);
   const [postType, setPostType] = useState<PostView["type"]>("INSIGHT");
   const [media, setMedia] = useState<MediaItem[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
   const upload = useMediaUpload();
 
   const createPost = useMutation({
-    mutationFn: (data: { content: string; type: PostView["type"]; mediaIds?: string[] }) =>
+    mutationFn: (data: { content: string; type: PostView["type"]; mediaIds?: string[]; mentionedUserIds?: string[] }) =>
       feedApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["feed"] });
@@ -94,8 +95,9 @@ function Home() {
         const results = await upload.uploadAll(media.map((m) => ({ file: m.file })));
         mediaIds = results.map((r) => r.mediaId);
       }
-      await createPost.mutateAsync({ content, type: postType, mediaIds });
+      await createPost.mutateAsync({ content, type: postType, mediaIds, mentionedUserIds });
       setDraft("");
+      setMentionedUserIds([]);
       setPostType("INSIGHT");
       setMedia([]);
     } catch {
@@ -151,11 +153,11 @@ function Home() {
                 alt={profileUser?.name ?? "Você"}
                 className="h-11 w-11"
               />
-              <Textarea
+              <MentionTextarea
                 value={draft}
-                onChange={(event) => setDraft(event.target.value)}
+                onChange={(val, ids) => { setDraft(val); setMentionedUserIds(ids); }}
                 placeholder="Compartilhe algo que aprendeu hoje..."
-                className="min-h-11 flex-1 resize-none rounded-2xl border-border bg-muted/40 text-sm"
+                className="min-h-11 flex-1 resize-none rounded-2xl border-border bg-muted/40 px-3 py-2 text-sm"
                 maxLength={600}
               />
             </div>
@@ -273,7 +275,7 @@ function Home() {
           </form>
 
           {/* Tabs */}
-          <div className="flex items-center gap-1 rounded-full border border-border bg-card p-1 text-sm">
+          <div className="flex items-center gap-1 overflow-x-auto rounded-full border border-border bg-card p-1 text-sm">
             <TabPill active={tab === "FOR_YOU"} onClick={() => setTab("FOR_YOU")}>
               Para você
             </TabPill>
@@ -436,7 +438,7 @@ function TabPill({
   return (
     <button
       onClick={onClick}
-      className={`flex-1 rounded-full px-3 py-1.5 text-sm font-medium transition ${
+      className={`flex-1 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition ${
         active
           ? "bg-primary text-primary-foreground"
           : "text-muted-foreground hover:text-foreground"

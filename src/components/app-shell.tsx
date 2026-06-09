@@ -180,7 +180,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     <div className="max-h-[28rem] overflow-y-auto">
                       {notificationList.map((notification) => {
                         const meta =
-                          notificationMeta[notification.kind] ?? notificationMeta.connection;
+                          notificationMeta[notification.kind.toLowerCase()] ?? notificationMeta.connection;
                         const Icon = meta.icon;
 
                         return (
@@ -307,7 +307,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {authenticated && (
         <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
           <div className="mx-auto flex max-w-7xl items-center justify-around px-2">
-            {nav.slice(0, 5).map((item) => {
+            {nav.map((item) => {
               const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
               const Icon = item.icon;
               return (
@@ -335,7 +335,9 @@ function SearchBox() {
   const [query, setQuery] = useState("");
   const [debounced, setDebounced] = useState("");
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const desktopRef = useRef<HTMLDivElement>(null);
+  const mobileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebounced(query), 250);
@@ -344,7 +346,7 @@ function SearchBox() {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
+      if (desktopRef.current && !desktopRef.current.contains(event.target as Node)) {
         setOpen(false);
       }
     }
@@ -361,68 +363,154 @@ function SearchBox() {
   const items = results?.items ?? [];
 
   return (
-    <div ref={ref} className="relative ml-2 hidden flex-1 max-w-md md:block">
-      <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-      <Input
-        value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          setOpen(true);
-        }}
-        onFocus={() => setOpen(true)}
-        placeholder="Buscar pessoas, comunidades, vagas..."
-        className="h-10 rounded-full border-transparent bg-muted pl-9"
-      />
-      {isFetching && (
-        <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
-      )}
-      {open && debounced.length >= 2 && (
-        <div className="absolute left-0 right-0 top-full mt-2 overflow-hidden rounded-2xl border border-border bg-popover shadow-lg">
-          {items.length === 0 && !isFetching && (
-            <p className="px-4 py-6 text-center text-sm text-muted-foreground">
-              Nenhum resultado para "{debounced}"
-            </p>
-          )}
-          <ul className="max-h-80 overflow-y-auto">
-            {items.map((item) => {
-              const close = () => {
-                setOpen(false);
-                setQuery("");
-              };
-              return (
-                <li key={`${item.type}-${item.id}`}>
-                  {item.type === "users" ? (
-                    <Link
-                      to="/perfil/$username"
-                      params={{ username: item.id }}
-                      onClick={close}
-                      className="flex items-center gap-3 px-4 py-3 transition hover:bg-muted"
-                    >
-                      <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">{item.title}</p>
-                        <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
-                      </div>
-                    </Link>
-                  ) : (
-                    <button
-                      onClick={close}
-                      className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted"
-                    >
-                      <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">{item.title}</p>
-                        <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
-                      </div>
-                    </button>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
+    <>
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="ml-auto grid h-9 w-9 place-items-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground md:hidden"
+        aria-label="Buscar"
+      >
+        <Search className="h-4 w-4" />
+      </button>
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-start justify-center bg-background/80 pt-4 backdrop-blur-sm md:hidden"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) {
+              setMobileOpen(false);
+              setOpen(false);
+              setQuery("");
+            }
+          }}
+        >
+          <div ref={mobileRef} className="relative w-full max-w-md px-4">
+            <Search className="pointer-events-none absolute left-7 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                setOpen(true);
+              }}
+              onFocus={() => setOpen(true)}
+              placeholder="Buscar pessoas, comunidades, vagas..."
+              className="h-12 rounded-full border-border bg-card pl-10 pr-4"
+              autoFocus
+            />
+            {isFetching && (
+              <Loader2 className="absolute right-7 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+            )}
+            {open && debounced.length >= 2 && (
+              <div className="absolute left-4 right-4 top-full mt-2 overflow-hidden rounded-2xl border border-border bg-popover shadow-lg">
+                {items.length === 0 && !isFetching && (
+                  <p className="px-4 py-6 text-center text-sm text-muted-foreground">
+                    Nenhum resultado para "{debounced}"
+                  </p>
+                )}
+                <ul className="max-h-80 overflow-y-auto">
+                  {items.map((item) => {
+                    const close = () => {
+                      setOpen(false);
+                      setQuery("");
+                      setMobileOpen(false);
+                    };
+                    return (
+                      <li key={`${item.type}-${item.id}`}>
+                        {item.type === "users" ? (
+                          <Link
+                            to="/perfil/$username"
+                            params={{ username: item.id }}
+                            onClick={close}
+                            className="flex items-center gap-3 px-4 py-3 transition hover:bg-muted"
+                          >
+                            <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium">{item.title}</p>
+                              <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
+                            </div>
+                          </Link>
+                        ) : (
+                          <button
+                            onClick={close}
+                            className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted"
+                          >
+                            <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-medium">{item.title}</p>
+                              <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
+                            </div>
+                          </button>
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
       )}
-    </div>
+      <div ref={desktopRef} className="relative ml-2 hidden flex-1 max-w-md md:block">
+        <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          placeholder="Buscar pessoas, comunidades, vagas..."
+          className="h-10 rounded-full border-transparent bg-muted pl-9"
+        />
+        {isFetching && (
+          <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+        )}
+        {open && debounced.length >= 2 && (
+          <div className="absolute left-0 right-0 top-full mt-2 overflow-hidden rounded-2xl border border-border bg-popover shadow-lg">
+            {items.length === 0 && !isFetching && (
+              <p className="px-4 py-6 text-center text-sm text-muted-foreground">
+                Nenhum resultado para "{debounced}"
+              </p>
+            )}
+            <ul className="max-h-80 overflow-y-auto">
+              {items.map((item) => {
+                const close = () => {
+                  setOpen(false);
+                  setQuery("");
+                };
+                return (
+                  <li key={`${item.type}-${item.id}`}>
+                    {item.type === "users" ? (
+                      <Link
+                        to="/perfil/$username"
+                        params={{ username: item.id }}
+                        onClick={close}
+                        className="flex items-center gap-3 px-4 py-3 transition hover:bg-muted"
+                      >
+                        <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium">{item.title}</p>
+                          <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
+                        </div>
+                      </Link>
+                    ) : (
+                      <button
+                        onClick={close}
+                        className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted"
+                      >
+                        <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium">{item.title}</p>
+                          <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
+                        </div>
+                      </button>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        )}
+      </div>
+    </>
   );
 }
 

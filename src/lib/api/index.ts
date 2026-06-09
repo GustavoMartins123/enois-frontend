@@ -52,6 +52,9 @@ export type { ReportReason, ReportInput } from "./reports";
 export { rankingApi } from "./ranking";
 export type { RankingUser } from "./ranking";
 
+export { usersApi } from "./users";
+export type { UserSearchResult } from "./users";
+
 export { recommendationsApi } from "./recommendations";
 export type { Recommendation } from "./recommendations";
 

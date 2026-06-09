@@ -36,6 +36,8 @@ function Rede() {
 
   const users = usersData?.items ?? [];
   const pendingRequests = (requestsData?.items ?? []).filter((r) => r.status === "PENDING");
+  const incomingRequests = pendingRequests.filter((r) => r.fromUserId !== currentUser?.id);
+  const outgoingRequests = pendingRequests.filter((r) => r.fromUserId === currentUser?.id);
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["network"] });
 
@@ -74,25 +76,51 @@ function Rede() {
           </div>
         </div>
 
-        {pendingRequests.length > 0 && (
+        {(incomingRequests.length > 0 || outgoingRequests.length > 0) && (
           <section>
             <div className="mb-3">
               <h2 className="text-lg font-semibold">Solicitações pendentes</h2>
               <p className="text-sm text-muted-foreground">
-                {pendingRequests.length} solicitação{pendingRequests.length > 1 ? "ões" : ""}{" "}
-                pendente{pendingRequests.length > 1 ? "s" : ""}
+                {incomingRequests.length + outgoingRequests.length} solicitação
+                {incomingRequests.length + outgoingRequests.length > 1 ? "ões" : ""} pendente
+                {incomingRequests.length + outgoingRequests.length > 1 ? "s" : ""}
               </p>
             </div>
             <div className="space-y-3">
-              {pendingRequests.map((req) => (
-                <RequestCard
-                  key={req.id}
-                  request={req}
-                  currentUserId={currentUser?.id ?? ""}
-                  onAccept={acceptRequest.mutate}
-                  onCancel={remove.mutate}
-                />
-              ))}
+              {incomingRequests.length > 0 && (
+                <>
+                  <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    Recebidas
+                  </p>
+                  {incomingRequests.map((req) => (
+                    <RequestCard
+                      key={req.id}
+                      request={req}
+                      currentUserId={currentUser?.id ?? ""}
+                      onAccept={acceptRequest.mutate}
+                      onCancel={remove.mutate}
+                    />
+                  ))}
+                </>
+              )}
+              {outgoingRequests.length > 0 && (
+                <>
+                  <div className={incomingRequests.length > 0 ? "pt-3" : ""}>
+                    <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      Enviadas por você
+                    </p>
+                  </div>
+                  {outgoingRequests.map((req) => (
+                    <RequestCard
+                      key={req.id}
+                      request={req}
+                      currentUserId={currentUser?.id ?? ""}
+                      onAccept={acceptRequest.mutate}
+                      onCancel={remove.mutate}
+                    />
+                  ))}
+                </>
+              )}
             </div>
           </section>
         )}

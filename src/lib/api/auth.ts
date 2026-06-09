@@ -26,6 +26,12 @@ export interface AuthResponse {
   user: AuthUser;
 }
 
+export interface OAuthStartResponse {
+  provider: "GOOGLE" | "APPLE";
+  state: string;
+  authorizationUrl: string;
+}
+
 export const authApi = {
   signup: (data: SignupInput) => api.post<AuthResponse>("/auth/signup", data),
 
@@ -40,4 +46,7 @@ export const authApi = {
 
   resetPassword: (token: string, password: string) =>
     api.post<{ status: string }>("/auth/password/reset", { token, password }),
+
+  oauthStart: (provider: "GOOGLE" | "APPLE") =>
+    api.get<OAuthStartResponse>(`/auth/oauth/${provider.toLowerCase()}/start`),
 };

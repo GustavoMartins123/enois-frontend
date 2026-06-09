@@ -172,19 +172,37 @@ function TabBtn({
 }
 
 function SocialButtons() {
+  const [loading, setLoading] = useState<"GOOGLE" | "APPLE" | null>(null);
+
+  const startOAuth = async (provider: "GOOGLE" | "APPLE") => {
+    setLoading(provider);
+    try {
+      const { authorizationUrl } = await authApi.oauthStart(provider);
+      window.location.href = authorizationUrl;
+    } catch {
+      setLoading(null);
+    }
+  };
+
   return (
     <div className="grid gap-2">
       <button
         type="button"
-        className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium transition hover:bg-muted"
+        onClick={() => startOAuth("GOOGLE")}
+        disabled={loading !== null}
+        className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium transition hover:bg-muted disabled:opacity-50"
       >
-        <GoogleIcon /> Continuar com Google
+        {loading === "GOOGLE" ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
+        Continuar com Google
       </button>
       <button
         type="button"
-        className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium transition hover:bg-muted"
+        onClick={() => startOAuth("APPLE")}
+        disabled={loading !== null}
+        className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium transition hover:bg-muted disabled:opacity-50"
       >
-        <AppleIcon /> Continuar com Apple
+        {loading === "APPLE" ? <Loader2 className="h-4 w-4 animate-spin" /> : <AppleIcon />}
+        Continuar com Apple
       </button>
     </div>
   );

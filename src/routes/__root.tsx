@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useNavigate,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -121,12 +122,30 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function OAuthCallbackHandler() {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    const expiresAt = params.get("expiresAt");
+    if (token) {
+      localStorage.setItem("session_token", token);
+      if (expiresAt) localStorage.setItem("session_expires_at", expiresAt);
+      navigate({ to: "/feed", replace: true });
+    }
+  }, [navigate]);
+
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+      <OAuthCallbackHandler />
       <Outlet />
     </QueryClientProvider>
   );
