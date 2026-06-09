@@ -1,5 +1,5 @@
-import { createFileRoute, Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { useState, useEffect, type FormEvent } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState, type FormEvent } from "react";
 import { z } from "zod";
 import { Sparkles, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -44,17 +44,6 @@ function Auth() {
   const initial = Route.useSearch().tab as Tab;
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>(initial);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-    const expiresAt = params.get("expiresAt");
-    if (token) {
-      localStorage.setItem("session_token", token);
-      if (expiresAt) localStorage.setItem("session_expires_at", expiresAt);
-      navigate({ to: "/feed", replace: true });
-    }
-  }, [navigate]);
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
