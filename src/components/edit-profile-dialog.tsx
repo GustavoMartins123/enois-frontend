@@ -371,8 +371,8 @@ function SubList<T extends { id: string }>({
               <div key={item.id} className="rounded-xl border border-border bg-muted/30 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1 text-sm">
-                    <p className="font-medium">{String((item as Record<string, unknown>)[fields[0].key] ?? "")}</p>
-                    <p className="text-muted-foreground">{String((item as Record<string, unknown>)[fields[1]?.key] ?? "")}</p>
+                    <p className="break-words font-medium">{String((item as Record<string, unknown>)[fields[0].key] ?? "")}</p>
+                    <p className="break-words text-muted-foreground">{String((item as Record<string, unknown>)[fields[1]?.key] ?? "")}</p>
                   </div>
                   <div className="flex items-center gap-1">
                     <button onClick={() => startEdit(item)} className="grid h-8 w-8 place-items-center rounded-lg hover:bg-muted">

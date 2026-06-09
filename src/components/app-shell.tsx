@@ -209,7 +209,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                                     <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
                                   )}
                                 </div>
-                                <p className="mt-1 text-sm leading-snug text-muted-foreground">
+                                <p className="mt-1 break-words text-sm leading-snug text-muted-foreground">
                                   {notification.body}
                                 </p>
                                 <div className="mt-3 flex items-center justify-between gap-2">

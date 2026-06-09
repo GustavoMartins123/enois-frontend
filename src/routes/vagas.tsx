@@ -190,8 +190,8 @@ function Vagas() {
                   <AvatarFallback className="rounded-xl">{j.company[0]}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <h3 className="font-semibold">{j.title}</h3>
-                  <p className="text-sm text-muted-foreground">{j.company}</p>
+                  <h3 className="break-words font-semibold">{j.title}</h3>
+                  <p className="break-words text-sm text-muted-foreground">{j.company}</p>
                   <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
                     <MapPin className="h-3 w-3" /> {j.location}
                   </p>

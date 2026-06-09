@@ -302,7 +302,7 @@ function Profile() {
             </div>
             <div className="mt-4">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-2xl font-semibold tracking-tight">{user.name}</h1>
+                <h1 className="break-words text-2xl font-semibold tracking-tight">{user.name}</h1>
                 {user.openToWork && (
                   <span className="rounded-full bg-growth/15 px-2.5 py-0.5 text-xs font-medium text-growth">
                     Aberto a oportunidades
@@ -314,7 +314,7 @@ function Profile() {
                   </span>
                 )}
               </div>
-              <p className="mt-1 text-foreground">{user.headline}</p>
+              <p className="mt-1 break-words text-foreground">{user.headline}</p>
               <p className="mt-3 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                 {user.company && (
                   <span className="inline-flex items-center gap-1.5">
@@ -341,7 +341,7 @@ function Profile() {
           <div className="space-y-6">
             {user.bio && (
               <Section title="Sobre">
-                <p className="text-[15px] leading-relaxed text-foreground">{user.bio}</p>
+                <p className="break-words text-[15px] leading-relaxed text-foreground">{user.bio}</p>
               </Section>
             )}
 
@@ -365,7 +365,7 @@ function Profile() {
                 <div className="grid gap-3 sm:grid-cols-3">
                   {user.goals.map((goal) => (
                     <div key={goal} className="rounded-xl border border-border bg-muted/40 p-4">
-                      <p className="text-sm font-medium">{goal}</p>
+                      <p className="break-words text-sm font-medium">{goal}</p>
                     </div>
                   ))}
                 </div>
@@ -387,7 +387,7 @@ function Profile() {
 
           <aside className="space-y-6">
             <Section title="Disponibilidade" icon={Clock}>
-              <p className="text-sm leading-relaxed text-foreground">
+              <p className="break-words text-sm leading-relaxed text-foreground">
                 {user.availability ?? "Não informada"}
               </p>
             </Section>
@@ -537,7 +537,7 @@ function RecommendationItem({
         <UserAvatar src={recommender?.avatar} alt={recommender?.name} className="h-6 w-6" />
         <span className="text-xs font-medium">{recommender?.name ?? "Usuário"}</span>
       </div>
-      <p className="text-sm leading-relaxed text-muted-foreground">"{recommendation.comment}"</p>
+      <p className="break-words text-sm leading-relaxed text-muted-foreground">"{recommendation.comment}"</p>
     </div>
   );
 }
