@@ -297,7 +297,7 @@ export function PostCard({ post }: { post: PostView }) {
   return (
     <article className="surface-card p-5 transition hover:shadow-[var(--shadow-card)]">
       <header className="flex items-start gap-3">
-        <AuthorInfo authorId={post.authorId} createdAt={post.createdAt} />
+        <AuthorInfo authorUsername={post.authorUsername} authorName={post.authorName} authorAvatar={post.authorAvatar} createdAt={post.createdAt} />
         <span
           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${meta.className}`}
         >
@@ -463,32 +463,33 @@ function CommentItem({
   );
 }
 
-function AuthorInfo({ authorId, createdAt }: { authorId: string; createdAt: string }) {
-  const { data: author } = useQuery({
-    queryKey: ["profile", "by-id", authorId],
-    queryFn: () => profileApi.getById(authorId),
-    staleTime: 120_000,
-  });
-
+function AuthorInfo({
+  authorUsername,
+  authorName,
+  authorAvatar,
+  createdAt,
+}: {
+  authorUsername: string;
+  authorName: string;
+  authorAvatar: string | null;
+  createdAt: string;
+}) {
   return (
     <div className="flex items-start gap-3">
-      <Link to="/perfil/$username" params={{ username: author?.username ?? authorId }}>
-        <UserAvatar src={author?.avatar} alt={author?.name} className="h-11 w-11" />
+      <Link to="/perfil/$username" params={{ username: authorUsername }}>
+        <UserAvatar src={authorAvatar} alt={authorName} className="h-11 w-11" />
       </Link>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <Link
             to="/perfil/$username"
-            params={{ username: author?.username ?? authorId }}
+            params={{ username: authorUsername }}
             className="font-semibold hover:underline"
           >
-            {author?.name ?? "Usuário"}
+            {authorName}
           </Link>
           <span className="text-xs text-muted-foreground">· {formatTime(createdAt)}</span>
         </div>
-        {author?.headline && (
-          <p className="line-clamp-1 text-sm text-muted-foreground">{author.headline}</p>
-        )}
       </div>
     </div>
   );

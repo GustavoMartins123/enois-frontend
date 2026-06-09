@@ -3,6 +3,9 @@ import { api, buildQuery } from "../api-client";
 export interface PostView {
   id: string;
   authorId: string;
+  authorUsername: string;
+  authorName: string;
+  authorAvatar: string | null;
   type: "INSIGHT" | "ARTICLE" | "QUESTION" | "PROJECT" | "OPPORTUNITY";
   content: string;
   tags: string[];
