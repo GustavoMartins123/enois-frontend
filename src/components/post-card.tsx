@@ -307,7 +307,7 @@ export function PostCard({ post }: { post: PostView }) {
       </header>
 
       <p className="mt-4 whitespace-pre-line break-words text-[15px] leading-relaxed text-foreground">
-        {post.content}
+        {linkifyText(post.content)}
       </p>
 
       {post.mediaIds.length > 0 && (
@@ -446,7 +446,7 @@ function CommentItem({
               {formatTime(comment.createdAt)}
             </span>
           </div>
-          <p className="mt-1 break-words text-sm leading-relaxed">{comment.content}</p>
+          <p className="mt-1 break-words text-sm leading-relaxed">{linkifyText(comment.content)}</p>
         </div>
         <div className="mt-1 flex gap-3 px-3 text-[11px] font-medium text-muted-foreground">
           {isOwner && onDelete && (
@@ -493,6 +493,51 @@ function AuthorInfo({
       </div>
     </div>
   );
+}
+
+function linkifyText(text: string) {
+  const parts: React.ReactNode[] = [];
+  const regex = /(@\w+|https?:\/\/[^\s]+)/g;
+  let last = 0;
+  let match: RegExpExecArray | null;
+  let key = 0;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > last) {
+      parts.push(text.slice(last, match.index));
+    }
+    const token = match[0];
+    if (token.startsWith("@")) {
+      const username = token.slice(1);
+      parts.push(
+        <Link
+          key={key++}
+          to="/perfil/$username"
+          params={{ username }}
+          className="font-medium text-primary hover:underline"
+        >
+          {token}
+        </Link>,
+      );
+    } else {
+      parts.push(
+        <a
+          key={key++}
+          href={token}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-primary hover:underline"
+        >
+          {token}
+        </a>,
+      );
+    }
+    last = match.index + token.length;
+  }
+  if (last < text.length) {
+    parts.push(text.slice(last));
+  }
+  return parts.length > 0 ? parts : text;
 }
 
 function formatTime(iso: string | null | undefined): string {
