@@ -28,6 +28,11 @@ export interface ReactionUser {
   createdAt: string;
 }
 
+export interface ReactionsResponse {
+  postId: string;
+  reactions: ReactionUser[];
+}
+
 export interface PageResponse<T> {
   items: T[];
   nextCursor: string | null;
@@ -74,7 +79,7 @@ export const feedApi = {
   listSaved: (cursor?: string | null, limit = 20) =>
     api.get<PageResponse<PostView>>(`/feed/saved${buildQuery({ cursor, limit })}`),
 
-  listReactions: (postId: string) => api.get<ReactionUser[]>(`/feed/posts/${postId}/reactions`),
+  listReactions: (postId: string) => api.get<ReactionsResponse>(`/feed/posts/${postId}/reactions`),
 
   bulkDelete: (data: BulkDeleteInput) =>
     api.post<BulkDeleteResult>("/feed/posts/bulk-delete", data),

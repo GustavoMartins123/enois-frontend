@@ -60,11 +60,13 @@ function ReactionsDialog({
   open: boolean;
   onOpenChange: (v: boolean) => void;
 }) {
-  const { data: reactions } = useQuery({
+  const { data } = useQuery({
     queryKey: ["reactions", postId],
     queryFn: () => feedApi.listReactions(postId),
     enabled: open,
   });
+
+  const reactions = data?.reactions ?? [];
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -72,11 +74,11 @@ function ReactionsDialog({
         <DialogHeader>
           <DialogTitle>Reações</DialogTitle>
         </DialogHeader>
-        <div className="space-y-2">
-          {(!reactions || reactions.length === 0) && (
-            <p className="text-sm text-muted-foreground">Nenhuma reação ainda.</p>
+        <div className="space-y-2 pt-2">
+          {reactions.length === 0 && (
+            <p className="py-8 text-center text-sm text-muted-foreground">Nenhuma reação ainda</p>
           )}
-          {reactions?.map((r) => (
+          {reactions.map((r) => (
             <ReactionUserItem key={r.userId} userId={r.userId} type={r.type} />
           ))}
         </div>
