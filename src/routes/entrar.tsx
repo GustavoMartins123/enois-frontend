@@ -206,6 +206,11 @@ function SocialButtons() {
         {loading === "APPLE" ? <Loader2 className="h-4 w-4 animate-spin" /> : <AppleIcon />}
         Continuar com Apple
       </button>
+      {error && (
+        <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
