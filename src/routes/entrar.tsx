@@ -37,7 +37,6 @@ const signupSchema = z.object({
   name: z.string().trim().min(2, "Como podemos te chamar?").max(80),
   email: z.string().trim().email("E-mail inválido").max(255),
   password: z.string().min(8, "Use ao menos 8 caracteres").max(128),
-  role: z.string().trim().min(2, "Conte seu cargo atual").max(80),
 });
 
 function Auth() {
@@ -243,15 +242,18 @@ function SignupForm({ onDone }: { onDone: () => void }) {
     setErrors({});
     setLoading(true);
     localStorage.removeItem("session_token");
+    localStorage.removeItem("refresh_token");
     localStorage.removeItem("current_user");
     try {
       const result = await authApi.signup({
         name: parsed.data.name,
-        role: parsed.data.role,
         email: parsed.data.email,
         password: parsed.data.password,
       });
       localStorage.setItem("session_token", result.token);
+      localStorage.setItem("refresh_token", result.refreshToken);
+      localStorage.setItem("session_expires_at", result.expiresAt);
+      localStorage.setItem("refresh_expires_at", result.refreshExpiresAt);
       localStorage.setItem("current_user", JSON.stringify(result.user));
       onDone();
     } catch (err) {
@@ -284,9 +286,6 @@ function SignupForm({ onDone }: { onDone: () => void }) {
             required
             maxLength={80}
           />
-        </Field>
-        <Field label="Cargo atual" error={errors.role}>
-          <Input name="role" placeholder="Product Designer" required maxLength={80} />
         </Field>
         <Field label="E-mail" error={errors.email}>
           <Input
@@ -356,6 +355,7 @@ function LoginForm({ onDone }: { onDone: () => void }) {
     setErrors({});
     setLoading(true);
     localStorage.removeItem("session_token");
+    localStorage.removeItem("refresh_token");
     localStorage.removeItem("current_user");
     try {
       const result = await authApi.login({
@@ -363,6 +363,9 @@ function LoginForm({ onDone }: { onDone: () => void }) {
         password: parsed.data.password,
       });
       localStorage.setItem("session_token", result.token);
+      localStorage.setItem("refresh_token", result.refreshToken);
+      localStorage.setItem("session_expires_at", result.expiresAt);
+      localStorage.setItem("refresh_expires_at", result.refreshExpiresAt);
       localStorage.setItem("current_user", JSON.stringify(result.user));
       onDone();
     } catch (err) {
