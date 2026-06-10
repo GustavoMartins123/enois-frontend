@@ -227,22 +227,31 @@ export function AppShell({ children }: { children: ReactNode }) {
                             )}
                           >
                             <div className="flex items-start gap-3">
-                              {notification.actorAvatar ? (
-                                <img
-                                  src={notification.actorAvatar}
-                                  alt={notification.actorName ?? ""}
-                                  className="h-9 w-9 shrink-0 rounded-full object-cover"
-                                />
-                              ) : (
-                                <span
-                                  className={cn(
-                                    "grid h-9 w-9 shrink-0 place-items-center rounded-full",
-                                    meta.className,
-                                  )}
-                                >
-                                  <Icon className="h-4 w-4" />
-                                </span>
-                              )}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (!notification.read) markAsRead.mutate(notification.id);
+                                  navigateToHref(notification.href, navigate);
+                                }}
+                                className="shrink-0 rounded-full transition hover:opacity-80"
+                              >
+                                {notification.actorAvatar ? (
+                                  <img
+                                    src={notification.actorAvatar}
+                                    alt={notification.actorName ?? ""}
+                                    className="h-9 w-9 rounded-full object-cover"
+                                  />
+                                ) : (
+                                  <span
+                                    className={cn(
+                                      "grid h-9 w-9 place-items-center rounded-full",
+                                      meta.className,
+                                    )}
+                                  >
+                                    <Icon className="h-4 w-4" />
+                                  </span>
+                                )}
+                              </button>
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-start justify-between gap-2">
                                   <p className="text-sm font-semibold leading-tight">

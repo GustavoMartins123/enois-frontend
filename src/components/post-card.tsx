@@ -348,7 +348,7 @@ export function PostCard({ post }: { post: PostView }) {
   };
 
   return (
-    <article className="surface-card p-4 transition hover:shadow-[var(--shadow-card)] sm:p-5">
+    <article className="min-w-0 surface-card p-4 transition hover:shadow-[var(--shadow-card)] sm:p-5">
       <header className="flex items-start gap-3">
         <AuthorInfo authorUsername={post.authorUsername} authorName={post.authorName} authorAvatar={post.authorAvatar} createdAt={post.createdAt} />
         <span
@@ -805,7 +805,7 @@ function linkifyText(text: string) {
           href={token}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary hover:underline"
+          className="break-words text-primary hover:underline"
         >
           {token}
         </a>,
