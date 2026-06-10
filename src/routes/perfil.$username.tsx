@@ -359,7 +359,7 @@ function Profile() {
             {user.skills.length > 0 && (
               <Section title="Habilidades">
                 <div className="flex flex-wrap gap-2">
-                  {user.skills.map((s) => (
+                  {user.skills.map((s: string) => (
                     <Badge
                       key={s}
                       className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft"
