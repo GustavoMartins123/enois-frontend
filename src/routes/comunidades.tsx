@@ -95,7 +95,7 @@ function Comunidades() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <div className="surface-card flex flex-wrap items-center justify-between gap-4 p-6">
+        <div className="surface-card flex flex-wrap items-center justify-between gap-3 p-4 sm:gap-4 sm:p-6">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">Comunidades</h1>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -194,7 +194,7 @@ function Comunidades() {
           </div>
         )}
       </div>
-      <div className="h-16 lg:hidden" />
+      
     </AppShell>
   );
 }

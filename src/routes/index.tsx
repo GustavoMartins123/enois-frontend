@@ -163,7 +163,7 @@ function Landing() {
         </div>
         <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
-            <div key={f.title} className="surface-card p-6">
+            <div key={f.title} className="surface-card p-4 sm:p-6">
               <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary-soft text-primary">
                 <f.icon className="h-5 w-5" />
               </div>

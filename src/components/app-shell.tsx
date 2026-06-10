@@ -153,7 +153,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
+        <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-3 sm:h-16 sm:gap-4 sm:px-6">
           <Link to="/feed" className="flex items-center gap-2">
             <div
               className="grid h-9 w-9 place-items-center rounded-xl text-primary-foreground"
@@ -337,7 +337,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-7xl gap-6 px-4 py-6 sm:px-6">
+      <div className="mx-auto flex max-w-7xl gap-6 px-3 py-4 pb-24 sm:px-6 sm:py-6 lg:pb-6">
         {authenticated && (
           <aside className="sticky top-20 hidden h-fit w-60 shrink-0 lg:block">
             <nav className="flex flex-col gap-1">
@@ -369,7 +369,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {authenticated && (
         <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
-          <div className="mx-auto flex max-w-7xl items-center justify-around px-2">
+          <div className="mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {nav.map((item) => {
               const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
               const Icon = item.icon;
@@ -378,7 +378,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "flex flex-col items-center gap-0.5 px-2 py-2.5 text-[10px] font-medium",
+                    "flex min-w-[64px] shrink-0 flex-col items-center gap-0.5 whitespace-nowrap px-2 py-2 text-[10px] font-medium",
                     active ? "text-primary" : "text-muted-foreground",
                   )}
                 >

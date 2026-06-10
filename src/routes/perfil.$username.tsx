@@ -240,8 +240,8 @@ function Profile() {
               onChange={handleBannerUpload}
             />
           </div>
-          <div className="px-6 pb-6">
-            <div className="-mt-14 flex flex-wrap items-end justify-between gap-4">
+          <div className="px-4 pb-5 sm:px-6 sm:pb-6">
+            <div className="-mt-12 flex flex-wrap items-end justify-between gap-3 sm:-mt-14 sm:gap-4">
               <div
                 className="relative"
                 onMouseEnter={() => setHoveringAvatar(true)}
@@ -250,7 +250,7 @@ function Profile() {
                 <UserAvatar
                   src={resolveCdnUrl(user.avatar)}
                   alt={user.name}
-                  className="h-28 w-28 ring-4 ring-card"
+                  className="h-24 w-24 ring-4 ring-card sm:h-28 sm:w-28"
                 />
                 {isOwnProfile && hoveringAvatar && (
                   <button
@@ -313,7 +313,7 @@ function Profile() {
             </div>
             <div className="mt-4">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="break-words text-2xl font-semibold tracking-tight">{user.name}</h1>
+                <h1 className="break-words text-xl font-semibold tracking-tight sm:text-2xl">{user.name}</h1>
                 {user.openToWork && (
                   <span className="rounded-full bg-growth/15 px-2.5 py-0.5 text-xs font-medium text-growth">
                     Aberto a oportunidades
@@ -359,7 +359,7 @@ function Profile() {
             {user.skills.length > 0 && (
               <Section title="Habilidades">
                 <div className="flex flex-wrap gap-2">
-                  {user.skills.map((s) => (
+                  {user.skills.map((s: string) => (
                     <Badge
                       key={s}
                       className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft"
@@ -374,7 +374,7 @@ function Profile() {
             {user.goals.length > 0 && (
               <Section title="Objetivos profissionais" icon={Target}>
                 <div className="grid gap-3 sm:grid-cols-3">
-                  {user.goals.map((goal) => (
+                  {user.goals.map((goal: string) => (
                     <div key={goal} className="rounded-xl border border-border bg-muted/40 p-4">
                       <p className="break-words text-sm font-medium">{goal}</p>
                     </div>
@@ -482,7 +482,7 @@ function Profile() {
             {user.externalLinks.length > 0 && (
               <Section title="Links">
                 <ul className="space-y-2 text-sm">
-                  {user.externalLinks.map((link) => (
+                  {user.externalLinks.map((link: string) => (
                     <li key={link} className="flex items-center gap-2 text-muted-foreground">
                       <LinkIcon className="h-4 w-4" />
                       <span className="truncate text-foreground">{link}</span>
@@ -494,7 +494,7 @@ function Profile() {
           </aside>
         </div>
       </div>
-      <div className="h-16 lg:hidden" />
+      <div className="h-4 lg:hidden" />
 
       {cropImageSrc && cropPurpose && (
         <ImageCropDialog
@@ -522,7 +522,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="surface-card p-6">
+    <section className="surface-card p-4 sm:p-6">
       <h2 className="mb-4 flex items-center gap-2 text-base font-semibold">
         {Icon && <Icon className="h-4 w-4 text-primary" />}
         {title}

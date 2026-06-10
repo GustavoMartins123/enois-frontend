@@ -63,7 +63,7 @@ function Rede() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <div className="surface-card p-6">
+        <div className="surface-card p-4 sm:p-6">
           <h1 className="text-2xl font-semibold tracking-tight">Sua rede</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             Construa relacionamentos por afinidade, não por volume.
@@ -193,7 +193,7 @@ function Rede() {
           </div>
         </section>
       </div>
-      <div className="h-16 lg:hidden" />
+      
     </AppShell>
   );
 }

@@ -23,7 +23,7 @@ function SavedPosts() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <div className="surface-card p-6">
+        <div className="surface-card p-4 sm:p-6">
           <div className="flex items-center gap-3">
             <Link
               to="/feed"
@@ -57,7 +57,7 @@ function SavedPosts() {
           </div>
         )}
       </div>
-      <div className="h-16 lg:hidden" />
+      
     </AppShell>
   );
 }
