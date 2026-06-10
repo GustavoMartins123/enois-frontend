@@ -87,10 +87,14 @@ function ReactionsSummary({ postId, reactionStatus }: { postId: string; reaction
 
 function ReactionsDialog({
   postId,
+  currentUserReaction,
+  currentUserId,
   open,
   onOpenChange,
 }: {
   postId: string;
+  currentUserReaction: string | null;
+  currentUserId?: string;
   open: boolean;
   onOpenChange: (v: boolean) => void;
 }) {
@@ -100,7 +104,10 @@ function ReactionsDialog({
     enabled: open,
   });
 
-  const reactions = data?.reactions ?? [];
+  const apiReactions = data?.reactions ?? [];
+  const reactions = currentUserReaction && currentUserId && !apiReactions.some((r) => r.userId === currentUserId)
+    ? [{ userId: currentUserId, type: currentUserReaction, createdAt: new Date().toISOString() }, ...apiReactions]
+    : apiReactions;
 
   const uniqueUserIds = [...new Set(reactions.map((r) => r.userId))];
   const { data: users } = useQuery({
@@ -447,7 +454,7 @@ export function PostCard({ post }: { post: PostView }) {
         </button>
       </footer>
 
-      <ReactionsDialog postId={post.id} open={showReactions} onOpenChange={setShowReactions} />
+      <ReactionsDialog postId={post.id} currentUserReaction={reactionStatus} currentUserId={currentUser?.id} open={showReactions} onOpenChange={setShowReactions} />
       <ReportDialog postId={post.id} open={showReport} onOpenChange={setShowReport} />
 
       {showComments && (
