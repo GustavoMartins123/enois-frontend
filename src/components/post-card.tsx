@@ -102,11 +102,19 @@ function ReactionsDialog({
 
   const reactions = data?.reactions ?? [];
 
-  const grouped = reactions.reduce<Record<string, { users: typeof reactions }>>((acc, r) => {
-    if (!acc[r.type]) acc[r.type] = { users: [] };
-    acc[r.type].users.push(r);
-    return acc;
-  }, {});
+  const uniqueUserIds = [...new Set(reactions.map((r) => r.userId))];
+  const { data: users } = useQuery({
+    queryKey: ["profiles", "by-ids", uniqueUserIds.sort().join(",")],
+    queryFn: async () => {
+      const results = await Promise.all(
+        uniqueUserIds.map((id) => profileApi.getById(id).catch(() => null)),
+      );
+      return Object.fromEntries(
+        results.filter(Boolean).map((u) => [u!.id, u!]),
+      );
+    },
+    enabled: open && uniqueUserIds.length > 0,
+  });
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -117,12 +125,19 @@ function ReactionsDialog({
         {reactions.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">Nenhuma reação ainda</p>
         ) : (
-          <div className="flex flex-wrap gap-2 pb-2">
-            {Object.entries(grouped).map(([type, group]) => (
-              <span key={type} className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs tabular-nums">
-                {REACTION_EMOJIS[type] ?? type} {group.users.length}
-              </span>
-            ))}
+          <div className="space-y-2 pt-2">
+            {reactions.map((r) => {
+              const user = users?.[r.userId];
+              return (
+                <div key={`${r.userId}-${r.type}`} className="flex items-center gap-3 rounded-xl bg-muted/30 p-3">
+                  <UserAvatar src={user?.avatar} alt={user?.name} className="h-9 w-9 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{user?.name ?? "Carregando..."}</p>
+                  </div>
+                  <span className="text-xl">{REACTION_EMOJIS[r.type] ?? r.type}</span>
+                </div>
+              );
+            })}
           </div>
         )}
       </DialogContent>
