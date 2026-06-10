@@ -28,9 +28,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { commentsApi, reactionsApi, mediaApi, profileApi, reportsApi, feedApi } from "@/lib/api";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { commentsApi, reactionsApi, mediaApi, profileApi, reportsApi, feedApi, REACTION_EMOJIS } from "@/lib/api";
+import type { PostView, CommentView, ReactionType } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
-import type { PostView, CommentView } from "@/lib/api";
 
 const typeMeta: Record<
   PostView["type"],
@@ -62,11 +67,17 @@ function ReactionsDialog({
 }) {
   const { data } = useQuery({
     queryKey: ["reactions", postId],
-    queryFn: () => feedApi.listReactions(postId),
+    queryFn: () => reactionsApi.listReactions(postId),
     enabled: open,
   });
 
   const reactions = data?.reactions ?? [];
+
+  const grouped = reactions.reduce<Record<string, { users: typeof reactions }>>((acc, r) => {
+    if (!acc[r.type]) acc[r.type] = { users: [] };
+    acc[r.type].users.push(r);
+    return acc;
+  }, {});
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -74,35 +85,19 @@ function ReactionsDialog({
         <DialogHeader>
           <DialogTitle>Reações</DialogTitle>
         </DialogHeader>
-        <div className="space-y-2 pt-2">
-          {reactions.length === 0 && (
-            <p className="py-8 text-center text-sm text-muted-foreground">Nenhuma reação ainda</p>
-          )}
-          {reactions.map((r) => (
-            <ReactionUserItem key={r.userId} userId={r.userId} type={r.type} />
-          ))}
-        </div>
+        {reactions.length === 0 ? (
+          <p className="py-8 text-center text-sm text-muted-foreground">Nenhuma reação ainda</p>
+        ) : (
+          <div className="flex flex-wrap gap-2 pb-2">
+            {Object.entries(grouped).map(([type, group]) => (
+              <span key={type} className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-1 text-xs tabular-nums">
+                {REACTION_EMOJIS[type] ?? type} {group.users.length}
+              </span>
+            ))}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
-  );
-}
-
-function ReactionUserItem({ userId, type }: { userId: string; type: string }) {
-  const { data: user } = useQuery({
-    queryKey: ["profile", "by-id", userId],
-    queryFn: () => profileApi.getById(userId),
-  });
-
-  return (
-    <div className="flex items-center gap-3 rounded-xl bg-muted/50 p-3">
-      <Link to="/perfil/$username" params={{ username: user?.username ?? userId }}>
-        <UserAvatar src={user?.avatar} alt={user?.name} className="h-8 w-8" />
-      </Link>
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium">{user?.name ?? "Carregando..."}</p>
-      </div>
-      <span className="text-sm">{type === "LIKE" ? "❤️" : type}</span>
-    </div>
   );
 }
 
@@ -236,14 +231,17 @@ export function PostCard({ post }: { post: PostView }) {
     }
   };
 
-  const handleReaction = async () => {
+  const handleReaction = async (type: ReactionType) => {
     try {
-      const wasLiked = !!reactionStatus;
-      const result = wasLiked
-        ? await reactionsApi.removeReaction(post.id)
-        : await reactionsApi.react(post.id);
-      setReactionStatus(wasLiked ? null : "LIKE");
-      setPostCounters(result.counters);
+      if (reactionStatus === type) {
+        const result = await reactionsApi.removeReaction(post.id);
+        setReactionStatus(null);
+        if ("counters" in result) setPostCounters((result as any).counters);
+      } else {
+        const result = await reactionsApi.react(post.id, type);
+        setReactionStatus(type);
+        if ("counters" in result) setPostCounters((result as any).counters);
+      }
     } catch {
       // silently fail
     }
@@ -337,15 +335,38 @@ export function PostCard({ post }: { post: PostView }) {
       )}
 
       <footer className="mt-4 flex flex-wrap items-center gap-1 border-t border-border pt-3 text-sm text-muted-foreground">
-        <button
-          onClick={handleReaction}
-          className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
-            reactionStatus ? "text-primary" : ""
-          }`}
-          title={reactionStatus ? "Remover reação" : "Curtir"}
-        >
-          <Heart className={`h-4 w-4 ${reactionStatus ? "fill-primary" : ""}`} />
-        </button>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
+                reactionStatus ? "text-primary" : ""
+              }`}
+              title={reactionStatus ? `Reagiu com ${REACTION_EMOJIS[reactionStatus]}` : "Reagir"}
+            >
+              {reactionStatus ? (
+                <span className="text-base leading-none">{REACTION_EMOJIS[reactionStatus]}</span>
+              ) : (
+                <Heart className="h-4 w-4" />
+              )}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="start" side="top" className="w-fit rounded-2xl border-border p-1.5">
+            <div className="flex gap-1">
+              {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(([type, emoji]) => (
+                <button
+                  key={type}
+                  onClick={() => handleReaction(type)}
+                  className={`rounded-lg px-2 py-1 text-xl transition hover:bg-muted ${
+                    reactionStatus === type ? "bg-muted ring-1 ring-primary" : ""
+                  }`}
+                  title={type.toLowerCase()}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
         <button
           onClick={() => setShowReactions(true)}
           className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs tabular-nums transition hover:bg-muted hover:text-foreground text-muted-foreground"
@@ -480,6 +501,19 @@ function CommentItem({
   onReply?: (comment: CommentView) => void;
 }) {
   const isOwner = currentUserId === comment.authorId;
+  const [commentReaction, setCommentReaction] = useState<string | null>(null);
+
+  const handleCommentReaction = async (type: ReactionType) => {
+    try {
+      if (commentReaction === type) {
+        await reactionsApi.removeCommentReaction(comment.postId, comment.id);
+        setCommentReaction(null);
+      } else {
+        await reactionsApi.reactComment(comment.postId, comment.id, type);
+        setCommentReaction(type);
+      }
+    } catch {}
+  };
 
   return (
     <div className="flex gap-3">
@@ -499,17 +533,39 @@ function CommentItem({
           </div>
           <p className="mt-1 break-words text-sm leading-relaxed">{linkifyText(comment.content)}</p>
         </div>
-        <div className="mt-1 flex gap-3 px-3 text-[11px] font-medium text-muted-foreground">
+        <div className="mt-1 flex items-center gap-2 px-3 text-[11px] font-medium text-muted-foreground">
           <button
             onClick={() => onReply?.(comment)}
-            className="hover:text-foreground transition-colors"
+            className="transition-colors hover:text-foreground"
           >
             Responder
           </button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button className="transition-colors hover:text-foreground">
+                {commentReaction ? REACTION_EMOJIS[commentReaction] : "Reagir"}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="start" side="top" className="w-fit rounded-2xl border-border p-1.5">
+              <div className="flex gap-1">
+                {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(([type, emoji]) => (
+                  <button
+                    key={type}
+                    onClick={() => handleCommentReaction(type)}
+                    className={`rounded-lg px-2 py-1 text-lg transition hover:bg-muted ${
+                      commentReaction === type ? "bg-muted ring-1 ring-primary" : ""
+                    }`}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
           {isOwner && onDelete && (
             <button
               onClick={() => onDelete(comment.id)}
-              className="text-destructive hover:text-destructive/80"
+              className="text-destructive transition-colors hover:text-destructive/80"
             >
               Excluir
             </button>
