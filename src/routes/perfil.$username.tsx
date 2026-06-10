@@ -313,7 +313,7 @@ function Profile() {
             </div>
             <div className="mt-4">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="break-words text-2xl font-semibold tracking-tight">{user.name}</h1>
+                <h1 className="break-words text-xl font-semibold tracking-tight sm:text-2xl">{user.name}</h1>
                 {user.openToWork && (
                   <span className="rounded-full bg-growth/15 px-2.5 py-0.5 text-xs font-medium text-growth">
                     Aberto a oportunidades
