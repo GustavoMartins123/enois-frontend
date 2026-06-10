@@ -22,28 +22,53 @@ function getToken(): string | null {
   return localStorage.getItem("session_token");
 }
 
-function getUserId(): string | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = localStorage.getItem("current_user");
-    if (!raw) return null;
-    return JSON.parse(raw).id ?? null;
-  } catch {
-    return null;
-  }
-}
-
 function authHeaders(): Record<string, string> {
   const token = getToken();
-  const userId = getUserId();
   const headers: Record<string, string> = {};
   if (token) headers["X-Session-Token"] = token;
-  if (userId) headers["X-User-Id"] = userId;
   return headers;
 }
 
 function idemKey(): Record<string, string> {
   return { "Idempotency-Key": crypto.randomUUID() };
+}
+
+let isRefreshing = false;
+
+async function tryRefreshToken(): Promise<boolean> {
+  const token = localStorage.getItem("refresh_token");
+  if (!token) return false;
+
+  try {
+    const response = await fetch(`${baseUrl()}/auth/refresh`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ refreshToken: token }),
+    });
+
+    if (!response.ok) {
+      clearSession();
+      return false;
+    }
+
+    const data = await response.json();
+    const body = data?.body ?? data;
+    localStorage.setItem("session_token", body.token);
+    localStorage.setItem("refresh_token", body.refreshToken);
+    localStorage.setItem("session_expires_at", body.expiresAt);
+    localStorage.setItem("refresh_expires_at", body.refreshExpiresAt);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function clearSession() {
+  localStorage.removeItem("session_token");
+  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("session_expires_at");
+  localStorage.removeItem("refresh_expires_at");
+  localStorage.removeItem("current_user");
 }
 
 async function request<T>(
@@ -66,6 +91,39 @@ async function request<T>(
     headers,
     body: body ? JSON.stringify(body) : undefined,
   });
+
+  if (response.status === 401 && !isRefreshing) {
+    isRefreshing = true;
+    const refreshed = await tryRefreshToken();
+    isRefreshing = false;
+
+    if (refreshed) {
+      headers["X-Session-Token"] = getToken() ?? "";
+      const retry = await fetch(`${baseUrl()}${path}`, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : undefined,
+      });
+
+      if (retry.ok) {
+        if (retry.status === 204 || retry.headers.get("content-length") === "0") {
+          return undefined as T;
+        }
+        const data = await retry.json();
+        if (data?.body !== undefined) return data.body as T;
+        return data as T;
+      }
+
+      const errorBody = await retry.json().catch(() => null);
+      throw new ApiError(retry.status, errorBody?.code, errorBody?.message ?? retry.statusText);
+    }
+
+    clearSession();
+    if (typeof window !== "undefined") {
+      window.location.href = "/entrar?tab=login";
+    }
+    throw new ApiError(401, "SESSION_EXPIRED", "Sessão expirada. Faça login novamente.");
+  }
 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
