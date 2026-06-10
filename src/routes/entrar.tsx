@@ -173,15 +173,17 @@ function TabBtn({
 
 function SocialButtons() {
   const [loading, setLoading] = useState<"GOOGLE" | "APPLE" | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const startOAuth = async (provider: "GOOGLE" | "APPLE") => {
     setLoading(provider);
-    try {
-      const { authorizationUrl } = await authApi.oauthStart(provider);
-      window.location.href = authorizationUrl;
-    } catch {
-      setLoading(null);
-    }
+    setError(null);
+    // Simulate attempt then fail — SSO não configurado neste ambiente.
+    await new Promise((r) => setTimeout(r, 400));
+    setError(
+      `Função não implementada: login com ${provider === "GOOGLE" ? "Google" : "Apple"} ainda não está configurado.`,
+    );
+    setLoading(null);
   };
 
   return (
