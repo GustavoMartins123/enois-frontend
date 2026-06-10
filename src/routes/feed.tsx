@@ -396,7 +396,7 @@ function Home() {
           )}
         </aside>
       </div>
-      <div className="h-16 lg:hidden" />
+      
     </AppShell>
   );
 }

@@ -252,7 +252,7 @@ function Vagas() {
           </p>
         )}
       </div>
-      <div className="h-16 lg:hidden" />
+      
     </AppShell>
   );
 }
