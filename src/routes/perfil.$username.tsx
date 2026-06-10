@@ -374,7 +374,7 @@ function Profile() {
             {user.goals.length > 0 && (
               <Section title="Objetivos profissionais" icon={Target}>
                 <div className="grid gap-3 sm:grid-cols-3">
-                  {user.goals.map((goal) => (
+                  {user.goals.map((goal: string) => (
                     <div key={goal} className="rounded-xl border border-border bg-muted/40 p-4">
                       <p className="break-words text-sm font-medium">{goal}</p>
                     </div>
