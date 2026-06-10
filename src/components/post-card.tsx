@@ -348,7 +348,7 @@ export function PostCard({ post }: { post: PostView }) {
   };
 
   return (
-    <article className="surface-card p-5 transition hover:shadow-[var(--shadow-card)]">
+    <article className="surface-card p-4 transition hover:shadow-[var(--shadow-card)] sm:p-5">
       <header className="flex items-start gap-3">
         <AuthorInfo authorUsername={post.authorUsername} authorName={post.authorName} authorAvatar={post.authorAvatar} createdAt={post.createdAt} />
         <span
