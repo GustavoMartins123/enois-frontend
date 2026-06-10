@@ -369,7 +369,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
       {authenticated && (
         <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
-          <div className="mx-auto flex max-w-7xl items-center justify-around px-2">
+          <div className="mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {nav.map((item) => {
               const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
               const Icon = item.icon;
@@ -378,7 +378,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "flex flex-col items-center gap-0.5 px-2 py-2.5 text-[10px] font-medium",
+                    "flex min-w-[64px] shrink-0 flex-col items-center gap-0.5 whitespace-nowrap px-2 py-2 text-[10px] font-medium",
                     active ? "text-primary" : "text-muted-foreground",
                   )}
                 >
