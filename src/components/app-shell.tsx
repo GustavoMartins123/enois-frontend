@@ -34,6 +34,32 @@ function navigateToHref(
   href: string,
   navigate: (opts: { to: string; params?: Record<string, string> }) => void,
 ) {
+  if (href.startsWith("/api/users/")) {
+    const username = href.replace("/api/users/", "");
+    if (username) {
+      navigate({ to: "/perfil/$username", params: { username } });
+      return;
+    }
+  }
+  if (href.startsWith("/api/communities/")) {
+    const id = href.replace("/api/communities/", "");
+    if (id) {
+      navigate({ to: "/comunidades/$communityId", params: { communityId: id } });
+      return;
+    }
+  }
+  if (href.startsWith("/api/jobs/")) {
+    navigate({ to: "/vagas" });
+    return;
+  }
+  if (href.startsWith("/api/events/")) {
+    navigate({ to: "/eventos" });
+    return;
+  }
+  if (href.startsWith("/api/mentors/")) {
+    navigate({ to: "/mentoria" });
+    return;
+  }
   if (href.startsWith("/perfil/")) {
     const username = href.replace("/perfil/", "");
     if (username) {
@@ -420,39 +446,16 @@ function SearchBox() {
                     };
                     return (
                       <li key={`${item.type}-${item.id}`}>
-                        {item.type === "users" ? (
-                          <button
-                            onClick={async () => {
-                              close();
-                              try {
-                                const profile = await profileApi.getById(item.id);
-                                if (profile?.username) {
-                                  navigate({ to: "/perfil/$username", params: { username: profile.username } });
-                                }
-                              } catch {
-                                navigateToHref(item.href, navigate);
-                              }
-                            }}
-                            className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted"
-                          >
-                            <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm font-medium">{item.title}</p>
-                              <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
-                            </div>
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => { close(); navigateToHref(item.href, navigate); }}
-                            className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted"
-                          >
-                            <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm font-medium">{item.title}</p>
-                              <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
-                            </div>
-                          </button>
-                        )}
+                        <button
+                          onClick={() => { close(); navigateToHref(item.href, navigate); }}
+                          className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted"
+                        >
+                          <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">{item.title}</p>
+                            <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
+                          </div>
+                        </button>
                       </li>
                     );
                   })}
@@ -492,39 +495,16 @@ function SearchBox() {
                 };
                 return (
                   <li key={`${item.type}-${item.id}`}>
-                    {item.type === "users" ? (
-                      <button
-                        onClick={async () => {
-                          close();
-                          try {
-                            const profile = await profileApi.getById(item.id);
-                            if (profile?.username) {
-                              navigate({ to: "/perfil/$username", params: { username: profile.username } });
-                            }
-                          } catch {
-                            navigateToHref(item.href, navigate);
-                          }
-                        }}
-                        className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted"
-                      >
-                        <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">{item.title}</p>
-                          <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
-                        </div>
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => { close(); navigateToHref(item.href, navigate); }}
-                        className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted"
-                      >
-                        <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">{item.title}</p>
-                          <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
-                        </div>
-                      </button>
-                    )}
+                    <button
+                      onClick={() => { close(); navigateToHref(item.href, navigate); }}
+                      className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted"
+                    >
+                      <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium">{item.title}</p>
+                        <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
+                      </div>
+                    </button>
                   </li>
                 );
               })}
