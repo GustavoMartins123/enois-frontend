@@ -56,6 +56,35 @@ const typeMeta: Record<
   ARTICLE: { label: "Artigo", icon: BookOpen, className: "bg-primary-soft text-primary" },
 };
 
+function ReactionsSummary({ postId, reactionStatus }: { postId: string; reactionStatus: string | null }) {
+  const { data } = useQuery({
+    queryKey: ["reactions-summary", postId],
+    queryFn: () => reactionsApi.listReactions(postId),
+    staleTime: 30_000,
+  });
+
+  const summary = data?.summary;
+  if (!summary) return null;
+
+  const entries = (Object.entries(summary) as [string, number][]).filter(([, count]) => count > 0);
+  if (entries.length === 0) return null;
+
+  return (
+    <div className="mt-3 flex flex-wrap items-center gap-1.5">
+      {entries.map(([type, count]) => (
+        <span
+          key={type}
+          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs tabular-nums ${
+            reactionStatus === type ? "bg-primary-soft text-primary" : "bg-muted text-muted-foreground"
+          }`}
+        >
+          {REACTION_EMOJIS[type] ?? type} {count}
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function ReactionsDialog({
   postId,
   open,
@@ -317,6 +346,8 @@ export function PostCard({ post }: { post: PostView }) {
           <MediaGrid mediaIds={post.mediaIds} />
         </div>
       )}
+
+      <ReactionsSummary postId={post.id} reactionStatus={reactionStatus} />
 
       <LinkPreviews content={post.content} />
 

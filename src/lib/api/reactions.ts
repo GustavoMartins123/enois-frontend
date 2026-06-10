@@ -38,8 +38,14 @@ function removeReaction(path: string) {
   return api.delete<{ status: string }>(path);
 }
 
+export interface ReactionsListResponse {
+  postId?: string;
+  summary: Record<string, number>;
+  reactions: ReactionItem[];
+}
+
 function listReactions(path: string) {
-  return api.get<{ postId?: string; reactions: ReactionItem[] }>(path);
+  return api.get<ReactionsListResponse>(path);
 }
 
 export const reactionsApi = {
