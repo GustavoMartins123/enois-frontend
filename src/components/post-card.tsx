@@ -191,6 +191,7 @@ export function PostCard({ post }: { post: PostView }) {
   const [showComments, setShowComments] = useState(false);
   const [draft, setDraft] = useState("");
   const [commentMentions, setCommentMentions] = useState<string[]>([]);
+  const [replyToId, setReplyToId] = useState<string | null>(null);
   const [localComments, setLocalComments] = useState<CommentView[]>([]);
   const [postCounters, setPostCounters] = useState(post.counters);
   const [reactionStatus, setReactionStatus] = useState<string | null>(
@@ -224,11 +225,12 @@ export function PostCard({ post }: { post: PostView }) {
     if (!content) return;
 
     try {
-      const newComment = await commentsApi.create(post.id, content, null, commentMentions);
+      const newComment = await commentsApi.create(post.id, content, replyToId, commentMentions);
       setLocalComments((current) => [...current, newComment]);
       setPostCounters((c) => ({ ...c, comments: c.comments + 1 }));
       setDraft("");
       setCommentMentions([]);
+      setReplyToId(null);
     } catch {
       // silently fail
     }
@@ -384,14 +386,65 @@ export function PostCard({ post }: { post: PostView }) {
       {showComments && (
         <section className="mt-4 border-t border-border pt-4">
           <div className="space-y-3">
-            {localComments.map((comment) => (
-              <CommentItem
-                key={comment.id}
-                comment={comment}
-                currentUserId={currentUser?.id}
-                onDelete={handleDeleteComment}
-              />
-            ))}
+            {localComments
+              .filter((c) => !c.parentCommentId)
+              .map((comment) => {
+                const replies = localComments.filter((r) => r.parentCommentId === comment.id);
+                return (
+                  <div key={comment.id}>
+                    <CommentItem
+                      comment={comment}
+                      currentUserId={currentUser?.id}
+                      onDelete={handleDeleteComment}
+                      onReply={async (c) => {
+                        try {
+                          const profile = await profileApi.getById(c.authorId);
+                          if (profile?.username) {
+                            setDraft(`@${profile.username} `);
+                            setCommentMentions([c.authorId]);
+                          }
+                        } catch {
+                          setDraft(`${c.authorName} `);
+                        }
+                        setReplyToId(c.id);
+                      }}
+                    />
+                    {replies.length > 0 && (
+                      <div className="ml-10 mt-2 space-y-2 border-l-2 border-border pl-4">
+                        {replies.map((reply) => {
+                          const parentAuthor = localComments.find((c) => c.id === reply.parentCommentId)?.authorName;
+                          return (
+                            <CommentItem
+                              key={reply.id}
+                              comment={reply}
+                              replyingTo={parentAuthor}
+                              currentUserId={currentUser?.id}
+                              onDelete={handleDeleteComment}
+                              onReply={async (c) => {
+                                try {
+                                  const profile = await profileApi.getById(c.authorId);
+                                  if (profile?.username) {
+                                    setDraft(`@${profile.username} `);
+                                    setCommentMentions([c.authorId]);
+                                  }
+                                } catch {
+                                  setDraft(`${c.authorName} `);
+                                }
+                                setReplyToId(c.id);
+                              }}
+                            />
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            {localComments.filter((c) => !c.parentCommentId).length === 0 && (
+              <p className="py-4 text-center text-sm text-muted-foreground">
+                Nenhum comentário ainda. Seja o primeiro a comentar.
+              </p>
+            )}
           </div>
 
           <form onSubmit={submitComment} className="mt-4 flex items-center gap-2">
@@ -415,37 +468,31 @@ export function PostCard({ post }: { post: PostView }) {
 
 function CommentItem({
   comment,
-  nested = false,
+  replyingTo,
   currentUserId,
   onDelete,
+  onReply,
 }: {
   comment: CommentView;
-  nested?: boolean;
+  replyingTo?: string;
   currentUserId?: string;
   onDelete?: (commentId: string) => void;
+  onReply?: (comment: CommentView) => void;
 }) {
-  const { data: author } = useQuery({
-    queryKey: ["profile", "by-id", comment.authorId],
-    queryFn: () => profileApi.getById(comment.authorId),
-    staleTime: 120_000,
-  });
   const isOwner = currentUserId === comment.authorId;
 
   return (
-    <div className={`flex gap-3 ${nested ? "ml-10 mt-3" : ""}`}>
-      <Link to="/perfil/$username" params={{ username: author?.username ?? comment.authorId }}>
-        <UserAvatar src={author?.avatar} alt={author?.name} className="h-8 w-8" />
-      </Link>
+    <div className="flex gap-3">
+      <UserAvatar src={comment.authorAvatar} alt={comment.authorName} className="h-8 w-8 shrink-0" />
       <div className="min-w-0 flex-1">
         <div className="rounded-2xl bg-muted/60 px-3 py-2">
           <div className="flex flex-wrap items-center gap-2">
-            <Link
-              to="/perfil/$username"
-              params={{ username: author?.username ?? comment.authorId }}
-              className="text-sm font-semibold hover:underline"
-            >
-              {author?.name ?? "Usuário"}
-            </Link>
+            <span className="text-sm font-semibold">{comment.authorName}</span>
+            {replyingTo && (
+              <span className="text-[11px] text-muted-foreground">
+                respondendo a {replyingTo}
+              </span>
+            )}
             <span className="text-[11px] text-muted-foreground">
               {formatTime(comment.createdAt)}
             </span>
@@ -453,6 +500,12 @@ function CommentItem({
           <p className="mt-1 break-words text-sm leading-relaxed">{linkifyText(comment.content)}</p>
         </div>
         <div className="mt-1 flex gap-3 px-3 text-[11px] font-medium text-muted-foreground">
+          <button
+            onClick={() => onReply?.(comment)}
+            className="hover:text-foreground transition-colors"
+          >
+            Responder
+          </button>
           {isOwner && onDelete && (
             <button
               onClick={() => onDelete(comment.id)}
