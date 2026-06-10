@@ -146,7 +146,7 @@ function Home() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="space-y-4">
           {/* Composer */}
-          <form onSubmit={publishPost} className="surface-card p-5">
+          <form onSubmit={publishPost} className="surface-card p-4 sm:p-5">
             <div className="flex items-center gap-3">
               <UserAvatar
                 src={profileUser?.avatar}
@@ -334,7 +334,7 @@ function Home() {
           )}
 
           {suggestionList.length > 0 && (
-            <div className="surface-card p-5">
+            <div className="surface-card p-4 sm:p-5">
               <div className="flex items-center gap-2">
                 <UserPlus className="h-4 w-4 text-primary" />
                 <h3 className="font-semibold">Sugestões para você</h3>
@@ -377,7 +377,7 @@ function Home() {
           )}
 
           {eventList.length > 0 && (
-            <div className="surface-card p-5">
+            <div className="surface-card p-4 sm:p-5">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-growth" />
                 <h3 className="font-semibold">Acontecendo agora</h3>
