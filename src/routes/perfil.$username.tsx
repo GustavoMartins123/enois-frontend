@@ -482,7 +482,7 @@ function Profile() {
             {user.externalLinks.length > 0 && (
               <Section title="Links">
                 <ul className="space-y-2 text-sm">
-                  {user.externalLinks.map((link) => (
+                  {user.externalLinks.map((link: string) => (
                     <li key={link} className="flex items-center gap-2 text-muted-foreground">
                       <LinkIcon className="h-4 w-4" />
                       <span className="truncate text-foreground">{link}</span>
