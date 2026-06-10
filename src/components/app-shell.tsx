@@ -337,7 +337,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-7xl gap-6 px-4 py-6 sm:px-6">
+      <div className="mx-auto flex max-w-7xl gap-6 px-3 py-4 pb-24 sm:px-6 sm:py-6 lg:pb-6">
         {authenticated && (
           <aside className="sticky top-20 hidden h-fit w-60 shrink-0 lg:block">
             <nav className="flex flex-col gap-1">
