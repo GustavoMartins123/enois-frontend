@@ -25,7 +25,7 @@ import { UserAvatar } from "@/components/user-avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
-import { profileApi, notificationsApi, searchApi } from "@/lib/api";
+import { profileApi, notificationsApi, searchApi, networkApi } from "@/lib/api";
 import { isAuthenticated } from "@/lib/use-auth";
 import type { Notification } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -34,6 +34,10 @@ function navigateToHref(
   href: string,
   navigate: (opts: { to: string; params?: Record<string, string> }) => void,
 ) {
+  if (href.startsWith("/api/feed/posts/")) {
+    navigate({ to: "/feed" });
+    return;
+  }
   if (href.startsWith("/api/users/")) {
     const username = href.replace("/api/users/", "");
     if (username) {
@@ -223,18 +227,31 @@ export function AppShell({ children }: { children: ReactNode }) {
                             )}
                           >
                             <div className="flex items-start gap-3">
-                              <span
-                                className={cn(
-                                  "grid h-9 w-9 shrink-0 place-items-center rounded-full",
-                                  meta.className,
-                                )}
-                              >
-                                <Icon className="h-4 w-4" />
-                              </span>
+                              {notification.actorAvatar ? (
+                                <img
+                                  src={notification.actorAvatar}
+                                  alt={notification.actorName ?? ""}
+                                  className="h-9 w-9 shrink-0 rounded-full object-cover"
+                                />
+                              ) : (
+                                <span
+                                  className={cn(
+                                    "grid h-9 w-9 shrink-0 place-items-center rounded-full",
+                                    meta.className,
+                                  )}
+                                >
+                                  <Icon className="h-4 w-4" />
+                                </span>
+                              )}
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-start justify-between gap-2">
                                   <p className="text-sm font-semibold leading-tight">
-                                    {notification.title}
+                                    {notification.actorName && (
+                                      <span>{notification.actorName} </span>
+                                    )}
+                                    <span className="font-normal text-muted-foreground">
+                                      {notification.title.toLowerCase()}
+                                    </span>
                                   </p>
                                   {!notification.read && (
                                     <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
@@ -257,7 +274,22 @@ export function AppShell({ children }: { children: ReactNode }) {
                                         Lida
                                       </button>
                                     )}
-                                    {notification.ctaLabel && (
+                                    {notification.ctaLabel === "Aceitar" && !!notification.actorId ? (
+                                      <button
+                                        type="button"
+                                        onClick={async () => {
+                                          if (!notification.read)
+                                            markAsRead.mutate(notification.id);
+                                          try {
+                                            await networkApi.accept(notification.actorId!);
+                                            queryClient.invalidateQueries({ queryKey: ["network"] });
+                                          } catch {}
+                                        }}
+                                        className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground transition hover:bg-primary/90"
+                                      >
+                                        Aceitar
+                                      </button>
+                                    ) : notification.ctaLabel && notification.ctaLabel !== "Aceitar" ? (
                                       <button
                                         type="button"
                                         onClick={() => {
@@ -269,7 +301,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                                       >
                                         {notification.ctaLabel}
                                       </button>
-                                    )}
+                                    ) : null}
                                   </div>
                                 </div>
                               </div>
