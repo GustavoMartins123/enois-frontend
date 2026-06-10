@@ -92,7 +92,7 @@ async function request<T>(
     body: body ? JSON.stringify(body) : undefined,
   });
 
-  if (response.status === 401 && !isRefreshing) {
+  if ((response.status === 401 || response.status === 403) && !isRefreshing) {
     isRefreshing = true;
     const refreshed = await tryRefreshToken();
     isRefreshing = false;
@@ -113,16 +113,17 @@ async function request<T>(
         if (data?.body !== undefined) return data.body as T;
         return data as T;
       }
-
-      const errorBody = await retry.json().catch(() => null);
-      throw new ApiError(retry.status, errorBody?.code, errorBody?.message ?? retry.statusText);
     }
 
     clearSession();
     if (typeof window !== "undefined") {
       window.location.href = "/entrar?tab=login";
     }
-    throw new ApiError(401, "SESSION_EXPIRED", "Sessão expirada. Faça login novamente.");
+    throw new ApiError(
+      response.status,
+      "SESSION_EXPIRED",
+      "Sessão expirada. Faça login novamente.",
+    );
   }
 
   if (!response.ok) {
