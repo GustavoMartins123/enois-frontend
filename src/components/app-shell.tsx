@@ -34,24 +34,24 @@ function navigateToHref(
   href: string,
   navigate: (opts: { to: string; params?: Record<string, string> }) => void,
 ) {
-  for (const route of [
-    "/feed",
-    "/rede",
-    "/mensagens",
-    "/eventos",
-    "/vagas",
-    "/comunidades",
-    "/mentoria",
-  ] as const) {
-    if (href === route || href.startsWith(route + "/")) {
-      navigate({ to: route });
-      return;
-    }
-  }
   if (href.startsWith("/perfil/")) {
     const username = href.replace("/perfil/", "");
     if (username) {
       navigate({ to: "/perfil/$username", params: { username } });
+      return;
+    }
+  }
+  if (href.startsWith("/comunidades/")) {
+    const communityId = href.replace("/comunidades/", "");
+    if (communityId) {
+      navigate({ to: "/comunidades/$communityId", params: { communityId } });
+      return;
+    }
+  }
+  const listRoutes = ["/feed", "/rede", "/mensagens", "/vagas", "/comunidades", "/eventos", "/mentoria"] as const;
+  for (const route of listRoutes) {
+    if (href === route || href.startsWith(route + "/")) {
+      navigate({ to: route });
       return;
     }
   }
@@ -421,18 +421,26 @@ function SearchBox() {
                     return (
                       <li key={`${item.type}-${item.id}`}>
                         {item.type === "users" ? (
-                          <Link
-                            to="/perfil/$username"
-                            params={{ username: item.href.replace("/perfil/", "") }}
-                            onClick={close}
-                            className="flex items-center gap-3 px-4 py-3 transition hover:bg-muted"
+                          <button
+                            onClick={async () => {
+                              close();
+                              try {
+                                const profile = await profileApi.getById(item.id);
+                                if (profile?.username) {
+                                  navigate({ to: "/perfil/$username", params: { username: profile.username } });
+                                }
+                              } catch {
+                                navigateToHref(item.href, navigate);
+                              }
+                            }}
+                            className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted"
                           >
                             <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
                             <div className="min-w-0 flex-1">
                               <p className="truncate text-sm font-medium">{item.title}</p>
                               <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
                             </div>
-                          </Link>
+                          </button>
                         ) : (
                           <button
                             onClick={() => { close(); navigateToHref(item.href, navigate); }}
@@ -485,18 +493,26 @@ function SearchBox() {
                 return (
                   <li key={`${item.type}-${item.id}`}>
                     {item.type === "users" ? (
-                      <Link
-                        to="/perfil/$username"
-                        params={{ username: item.href.replace("/perfil/", "") }}
-                        onClick={close}
-                        className="flex items-center gap-3 px-4 py-3 transition hover:bg-muted"
+                      <button
+                        onClick={async () => {
+                          close();
+                          try {
+                            const profile = await profileApi.getById(item.id);
+                            if (profile?.username) {
+                              navigate({ to: "/perfil/$username", params: { username: profile.username } });
+                            }
+                          } catch {
+                            navigateToHref(item.href, navigate);
+                          }
+                        }}
+                        className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted"
                       >
                         <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium">{item.title}</p>
                           <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
                         </div>
-                      </Link>
+                      </button>
                     ) : (
                       <button
                         onClick={() => { close(); navigateToHref(item.href, navigate); }}
