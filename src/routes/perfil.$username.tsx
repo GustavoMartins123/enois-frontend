@@ -240,8 +240,8 @@ function Profile() {
               onChange={handleBannerUpload}
             />
           </div>
-          <div className="px-6 pb-6">
-            <div className="-mt-14 flex flex-wrap items-end justify-between gap-4">
+          <div className="px-4 pb-5 sm:px-6 sm:pb-6">
+            <div className="-mt-12 flex flex-wrap items-end justify-between gap-3 sm:-mt-14 sm:gap-4">
               <div
                 className="relative"
                 onMouseEnter={() => setHoveringAvatar(true)}
@@ -250,7 +250,7 @@ function Profile() {
                 <UserAvatar
                   src={resolveCdnUrl(user.avatar)}
                   alt={user.name}
-                  className="h-28 w-28 ring-4 ring-card"
+                  className="h-24 w-24 ring-4 ring-card sm:h-28 sm:w-28"
                 />
                 {isOwnProfile && hoveringAvatar && (
                   <button
