@@ -522,7 +522,7 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="surface-card p-6">
+    <section className="surface-card p-4 sm:p-6">
       <h2 className="mb-4 flex items-center gap-2 text-base font-semibold">
         {Icon && <Icon className="h-4 w-4 text-primary" />}
         {title}

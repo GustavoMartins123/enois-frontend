@@ -90,7 +90,7 @@ function Vagas() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <div className="surface-card p-6">
+        <div className="surface-card p-4 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">Oportunidades</h1>

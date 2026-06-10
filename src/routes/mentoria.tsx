@@ -49,7 +49,7 @@ function Mentoria() {
     <AppShell>
       <div className="space-y-6">
         <div
-          className="surface-card relative overflow-hidden p-8"
+          className="surface-card relative overflow-hidden p-5 sm:p-8"
           style={{ background: "var(--gradient-soft)" }}
         >
           <div className="relative max-w-2xl">
