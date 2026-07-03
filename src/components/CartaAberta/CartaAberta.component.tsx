@@ -4,7 +4,6 @@ export const OpenLetterSection = () => {
   return (
     <section className="relative overflow-hidden bg-linear-to-b from-[#EEEDF2] to-[#F9F8FF] dark:from-[#0b0817] dark:to-[#080614] py-16" id="carta-aberta">
 
-      {/* Carro absoluto, colado na borda direita */}
       <div className="pointer-events-none absolute inset-y-0 right-0 hidden w-[52%] md:block">
         <img
           src={carImg}
@@ -14,11 +13,9 @@ export const OpenLetterSection = () => {
         />
       </div>
 
-      {/* Conteúdo de texto — lado esquerdo */}
       <div className="relative z-10 mx-auto max-w-300 px-10 md:px-20">
         <div className="relative max-w-88 py-10 text-center">
 
-          {/* Aspas abertura — topo esquerdo */}
           <span
             className="select-none absolute top-0 left-0 text-[72px] leading-none text-[#0f0f14] dark:text-[#e8e6ff]"
             style={{ fontFamily: "'Playfair Display', Georgia, serif", fontStyle: 'italic' }}
@@ -27,7 +24,6 @@ export const OpenLetterSection = () => {
             &ldquo;
           </span>
 
-          {/* Texto centrado entre as aspas */}
           <div className="px-8">
             <p className="text-[30px] font-light leading-[1.25] tracking-tight text-[#0f0f14] dark:text-[#e8e6ff] md:text-[36px]">
               Oi, eu sou a Melissa.
@@ -39,7 +35,6 @@ export const OpenLetterSection = () => {
             </p>
           </div>
 
-          {/* Aspas fechamento — baixo direito */}
           <span
             className="select-none absolute bottom-0 right-0 text-[72px] leading-none text-[#0f0f14] dark:text-[#e8e6ff]"
             style={{ fontFamily: "'Playfair Display', Georgia, serif", fontStyle: 'italic' }}
@@ -48,7 +43,6 @@ export const OpenLetterSection = () => {
             &rdquo;
           </span>
 
-          {/* Assinatura abaixo do texto */}
           <div className="mt-8 flex flex-col items-center gap-1">
             <p className="text-[15px] font-medium leading-snug text-[#0f0f14] dark:text-[#e8e6ff]">
               Melissa Monfre

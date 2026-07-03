@@ -39,7 +39,7 @@ export const FAQSection = () => {
   const toggle = (id: string) => setOpenId((prev) => (prev === id ? null : id));
 
   return (
-    <section className="relative overflow-hidden bg-[#F9F8FF] dark:bg-linear-to-b dark:from-[#04030d] dark:to-[#03020a] px-6 py-24">
+    <section className="relative overflow-hidden bg-[#F9F8FF] dark:bg-linear-to-b dark:from-[#04030d] dark:to-[#03020a] px-6 py-24" id="faq">
       <div className="mx-auto flex max-w-300 flex-col gap-16 md:flex-row">
 
         <div className="shrink-0 md:w-64">

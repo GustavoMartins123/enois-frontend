@@ -4,7 +4,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { Button } from '../Sistema/Button';
 
 export const Navbar: React.FC = () => {
-  const navLinks = ['O Problema', 'Features', 'Carta Aberta', 'Roadmap'];
+  const navLinks = ['O Problema', 'Carta Aberta', 'FAQ'];
   const { isDark, toggle } = useTheme();
   const navigate = useNavigate();
 
@@ -26,7 +26,7 @@ export const Navbar: React.FC = () => {
             <li key={link}>
               <a
                 className="text-[17px] font-normal leading-none text-[#14131a] dark:text-[#e8e6ff] transition-colors hover:text-[#7C3AED] dark:hover:text-[#a78bfa]"
-                href={`#${link.toLowerCase().replace(' ', '-')}`}
+                href={`#${link.toLowerCase().replace(/ /g, '-')}`}
               >
                 {link}
               </a>
@@ -42,7 +42,8 @@ export const Navbar: React.FC = () => {
           >
             {isDark ? <Sun size={18} /> : <Moon size={18} />}
           </button>
-          <Button variant="primary" size="nav" onClick={() => navigate('/cadastro')}>Criar conta</Button>
+          <Button variant="ghost" size="nav" onClick={() => navigate('/entrar?tab=login')}>Entrar</Button>
+          <Button variant="primary" size="nav" onClick={() => navigate('/entrar?tab=signup')}>Criar conta</Button>
         </div>
       </div>
     </nav>

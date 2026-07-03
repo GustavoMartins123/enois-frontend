@@ -24,8 +24,8 @@ export const Hero = () => {
         </p>
 
         <div className="mt-10.5 flex flex-wrap items-center justify-center gap-5">
-          <Button variant="primary" size="hero" onClick={() => navigate('/cadastro')}>Criar conta</Button>
-          <Button variant="secondarySoft" size="hero" onClick={() => navigate('/cadastro')}>Explorar Plataforma</Button>
+          <Button variant="primary" size="hero" onClick={() => navigate('/entrar?tab=signup')}>Criar conta</Button>
+          <Button variant="secondarySoft" size="hero" onClick={() => navigate('/feed')}>Explorar Plataforma</Button>
         </div>
       </div>
 
@@ -36,7 +36,6 @@ export const Hero = () => {
             src={heroMockup}
             alt="Mockup do aplicativo Conexão na mão de um usuário"
           />
-          {/* gradient branco no pulso — parte inferior da imagem */}
           <div className="pointer-events-none absolute inset-x-0 bottom-0 h-52 bg-linear-to-t from-[#F9F8FF] via-[#F9F8FF]/60 to-transparent dark:from-[#140d25] dark:via-[#140d25]/60" />
         </div>
       </div>

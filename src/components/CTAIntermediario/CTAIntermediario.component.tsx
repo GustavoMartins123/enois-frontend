@@ -26,7 +26,7 @@ export const MidCTASection = () => {
         </p>
 
         <div className="mt-10">
-          <Button variant="primary" size="hero" onClick={() => navigate('/cadastro')}>Criar conta</Button>
+          <Button variant="primary" size="hero" onClick={() => navigate('/entrar?tab=signup')}>Criar conta</Button>
         </div>
 
       </div>
