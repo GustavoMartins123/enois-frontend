@@ -1,25 +1,18 @@
 import { useState } from 'react';
-import { UserPlus, UserCheck, Bell, Users } from 'lucide-react';
+import { UserPlus, UserCheck, Bell, Users, Loader2 } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppShell, Avatar } from '../../components/AppShell';
 import { useNotifications } from '../../contexts/NotificationsContext';
+import { networkApi } from '../../lib/api/network';
+import type { NetworkUser } from '../../lib/api/network';
 
 type FilterTab = 'conexoes' | 'seguindo' | 'solicitacoes' | 'sugestoes';
 
-type Person = { id: string; name: string; headline: string; avatar: null; mutual: number };
+type Person = { id: string; name: string; headline: string; avatar: string | null; mutual: number };
 
-const MOCK_SUGGESTIONS: Person[] = [
-  { id: '1', name: 'Diego de Souza Faria', headline: 'Gestão de Projetos de TI', avatar: null, mutual: 3 },
-  { id: '2', name: 'Guilherme L.', headline: 'UX Designer · Nubank', avatar: null, mutual: 1 },
-  { id: '3', name: 'Vitor Hugo Paschen', headline: 'Engenheiro de Software', avatar: null, mutual: 5 },
-  { id: '4', name: 'André Kalil Rosenberg', headline: 'Marketing Digital', avatar: null, mutual: 2 },
-  { id: '5', name: 'Camila Souza', headline: 'Product Manager · iFood', avatar: null, mutual: 4 },
-  { id: '6', name: 'Rafael Mendes', headline: 'Data Scientist · Itaú', avatar: null, mutual: 0 },
-];
-
-const MOCK_REQUESTS: Person[] = [
-  { id: 'r1', name: 'João Silva', headline: 'Engenheiro de Software · Google', avatar: null, mutual: 3 },
-  { id: 'r2', name: 'Maria Santos', headline: 'Product Designer · Figma', avatar: null, mutual: 1 },
-];
+function networkUserToPerson(u: NetworkUser): Person {
+  return { id: u.id, name: u.name, headline: u.headline, avatar: u.avatar, mutual: 0 };
+}
 
 /* ── Cartão de estatística/tab ──────────────── */
 function StatTab({
@@ -81,43 +74,99 @@ function PersonCard({ person, actions }: {
 
 export function RedePage() {
   const { add: addNotif } = useNotifications();
+  const qc = useQueryClient();
   const [activeTab, setActiveTab] = useState<FilterTab>('sugestoes');
-  const [suggestions, setSuggestions] = useState(MOCK_SUGGESTIONS);
-  const [connections, setConnections] = useState<Person[]>([]);
-  const [requests, setRequests] = useState(MOCK_REQUESTS);
   const [following, setFollowing] = useState<Person[]>([]);
+  const [pendingConnect, setPendingConnect] = useState<Set<string>>(new Set());
+
+  const { data: suggestionsData, isLoading: suggestionsLoading } = useQuery({
+    queryKey: ['network-suggestions'],
+    queryFn: () => networkApi.suggestions(8),
+  });
+
+  const { data: networkData, isLoading: networkLoading } = useQuery({
+    queryKey: ['network-list'],
+    queryFn: () => networkApi.list(),
+  });
+
+  const { data: requestsData } = useQuery({
+    queryKey: ['network-requests'],
+    queryFn: () => networkApi.requests(),
+  });
+
+  const { data: summaryData } = useQuery({
+    queryKey: ['network-summary'],
+    queryFn: () => networkApi.summary(),
+  });
+
+  const connectMut = useMutation({
+    mutationFn: (userId: string) => networkApi.connect(userId),
+    onSuccess: (_, userId) => {
+      const person = suggestions.find(u => u.id === userId);
+      if (person) addNotif(`Solicitação enviada para ${person.name}.`, 'connect');
+      setPendingConnect(prev => new Set([...prev, userId]));
+      qc.invalidateQueries({ queryKey: ['network-suggestions'] });
+      qc.invalidateQueries({ queryKey: ['network-summary'] });
+    },
+  });
+
+  const acceptMut = useMutation({
+    mutationFn: (userId: string) => networkApi.accept(userId),
+    onSuccess: (_, userId) => {
+      qc.invalidateQueries({ queryKey: ['network-requests'] });
+      qc.invalidateQueries({ queryKey: ['network-list'] });
+      qc.invalidateQueries({ queryKey: ['network-summary'] });
+      addNotif(`Solicitação aceita.`, 'connect');
+    },
+  });
+
+  const removeMut = useMutation({
+    mutationFn: (userId: string) => networkApi.remove(userId),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['network-list'] });
+      qc.invalidateQueries({ queryKey: ['network-summary'] });
+    },
+  });
+
+  const suggestions: Person[] = (suggestionsData ?? [])
+    .filter(u => !pendingConnect.has(u.id))
+    .map(networkUserToPerson);
+
+  const connections: Person[] = (networkData?.items ?? [])
+    .filter(u => u.connected)
+    .map(networkUserToPerson);
+
+  const requests: Person[] = (requestsData?.items ?? []).map(r => ({
+    id: r.fromUserId,
+    name: `Usuário ${r.fromUserId.slice(0, 6)}`,
+    headline: 'Conexão pendente',
+    avatar: null,
+    mutual: 0,
+  }));
 
   const handleConnect = (id: string) => {
-    const person = suggestions.find(u => u.id === id);
-    if (!person) return;
-    setConnections(prev => [...prev, person]);
-    setSuggestions(prev => prev.filter(u => u.id !== id));
-    addNotif(`Você se conectou com ${person.name}.`, 'connect');
+    connectMut.mutate(id);
   };
 
   const handleFollow = (id: string) => {
     const person = suggestions.find(u => u.id === id);
     if (!person) return;
     setFollowing(prev => [...prev, person]);
-    setSuggestions(prev => prev.filter(u => u.id !== id));
+    setPendingConnect(prev => new Set([...prev, id]));
   };
 
   const handleAccept = (id: string) => {
-    const person = requests.find(u => u.id === id);
-    if (!person) return;
-    setConnections(prev => [...prev, person]);
-    setRequests(prev => prev.filter(u => u.id !== id));
-    addNotif(`Você aceitou a solicitação de ${person.name}.`, 'connect');
+    acceptMut.mutate(id);
   };
 
-  const handleDecline = (id: string) => setRequests(prev => prev.filter(u => u.id !== id));
+  const handleDecline = (id: string) => removeMut.mutate(id);
 
   const handleRemove = (id: string) => {
-    const person = connections.find(u => u.id === id);
-    if (!person) return;
-    setSuggestions(prev => [...prev, person]);
-    setConnections(prev => prev.filter(u => u.id !== id));
+    removeMut.mutate(id);
   };
+
+  const connectionsCount = summaryData?.connections ?? connections.length;
+  const requestsCount = summaryData?.pendingRequests ?? requests.length;
 
   const btnPrimary = 'rounded-full bg-[#7C3AED] px-3 py-1.5 text-[12px] font-light text-white transition hover:bg-[#6D28D9]';
   const btnDanger = 'rounded-full border border-[#E5E0EB] px-3 py-1.5 text-[12px] font-light text-[#6B7280] transition hover:border-red-300 hover:text-red-500';
@@ -132,9 +181,9 @@ export function RedePage() {
             <h1 className="text-[22px] font-light text-[#0f0f14]">Sua rede</h1>
 
             <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <StatTab label="Conexões" count={connections.length} icon={Users} active={activeTab === 'conexoes'} onClick={() => setActiveTab('conexoes')} />
+              <StatTab label="Conexões" count={connectionsCount} icon={Users} active={activeTab === 'conexoes'} onClick={() => setActiveTab('conexoes')} />
               <StatTab label="Seguindo" count={following.length} icon={UserCheck} active={activeTab === 'seguindo'} onClick={() => setActiveTab('seguindo')} />
-              <StatTab label="Solicitações" count={requests.length} icon={Bell} active={activeTab === 'solicitacoes'} pending={requests.length || undefined} onClick={() => setActiveTab('solicitacoes')} />
+              <StatTab label="Solicitações" count={requestsCount} icon={Bell} active={activeTab === 'solicitacoes'} pending={requestsCount || undefined} onClick={() => setActiveTab('solicitacoes')} />
               <StatTab label="Sugestões" count={suggestions.length} icon={UserPlus} active={activeTab === 'sugestoes'} onClick={() => setActiveTab('sugestoes')} />
             </div>
           </div>
@@ -172,12 +221,18 @@ export function RedePage() {
                 <h2 className="text-[16px] font-light text-[#0f0f14]">Pessoas que combinam com você</h2>
                 <p className="text-[13px] font-light text-[#6B7280]">Baseado em habilidades, objetivos e comunidades em comum.</p>
               </div>
-              {suggestions.length === 0 ? (
+              {suggestionsLoading && (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-[#7C3AED]" />
+                </div>
+              )}
+              {!suggestionsLoading && suggestions.length === 0 && (
                 <div className="rounded-2xl border border-[#E5E0EB] bg-white px-6 py-12 text-center">
                   <UserPlus className="mx-auto h-8 w-8 text-[#9CA3AF]" />
                   <p className="mt-3 text-[14px] font-light text-[#9CA3AF]">Nenhuma sugestão no momento.</p>
                 </div>
-              ) : (
+              )}
+              {!suggestionsLoading && suggestions.length > 0 && (
                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
                   {suggestions.map(u => (
                     <div key={u.id} className="flex flex-col items-center rounded-2xl border border-[#E5E0EB] bg-white p-4 text-center transition hover:border-[#C4B5FD] hover:shadow-sm">
@@ -224,8 +279,9 @@ export function RedePage() {
         {/* ── Conexões ── */}
         {activeTab === 'conexoes' && (
           <section className="space-y-3">
-            <h2 className="text-[16px] font-light text-[#0f0f14]">Suas conexões ({connections.length})</h2>
-            {connections.length === 0 ? (
+            <h2 className="text-[16px] font-light text-[#0f0f14]">Suas conexões ({connectionsCount})</h2>
+            {networkLoading && <div className="flex items-center justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-[#7C3AED]" /></div>}
+            {!networkLoading && connections.length === 0 ? (
               <div className="rounded-2xl border border-[#E5E0EB] bg-white px-6 py-12 text-center">
                 <Users className="mx-auto h-8 w-8 text-[#9CA3AF]" />
                 <p className="mt-3 text-[14px] font-light text-[#9CA3AF]">Você ainda não tem conexões.</p>

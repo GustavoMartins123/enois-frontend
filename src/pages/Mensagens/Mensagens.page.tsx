@@ -3,22 +3,6 @@ import { MessageCircle, Send } from 'lucide-react';
 import { AppShell, Avatar } from '../../components/AppShell';
 import { messagesApi, type Conversation, type Message } from '../../lib/api/messages';
 
-const MOCK_CONV_KEY = 'mock_conversations';
-
-function loadMockConversations(): Conversation[] {
-  try { return JSON.parse(localStorage.getItem(MOCK_CONV_KEY) ?? '[]'); } catch { return []; }
-}
-
-function loadMockMessages(convId: string): Message[] {
-  try { return JSON.parse(localStorage.getItem(`mock_messages_${convId}`) ?? '[]'); } catch { return []; }
-}
-
-function saveMockMessages(convId: string, messages: Message[]) {
-  try { localStorage.setItem(`mock_messages_${convId}`, JSON.stringify(messages)); } catch {}
-}
-
-function isMockConv(id: string) { return id.startsWith('mentor-'); }
-
 function timeLabel(iso: string | null) {
   if (!iso) return '';
   const d = new Date(iso);
@@ -31,47 +15,39 @@ function timeLabel(iso: string | null) {
 }
 
 export function MensagensPage() {
-  const [apiConversations, setApiConversations] = useState<Conversation[]>([]);
-  const [mockConversations, setMockConversations] = useState<Conversation[]>(loadMockConversations);
+  const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selected, setSelected] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const conversations = [...mockConversations, ...apiConversations];
-
   useEffect(() => {
     messagesApi.listConversations()
-      .then(r => setApiConversations(r.items))
+      .then(r => setConversations(r.items))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
-  /* Auto-select pending conversation (from Mentoria) */
+  /* Auto-select conversation requested by another page (e.g. Mentoria) */
   useEffect(() => {
     const pendingId = localStorage.getItem('pending_open_conv');
     if (!pendingId) return;
     localStorage.removeItem('pending_open_conv');
-    const mock = loadMockConversations();
-    const conv = mock.find(c => c.id === pendingId);
-    if (conv) {
-      setMockConversations(mock);
-      setSelected(conv);
-    }
-  }, []);
+    setConversations(prev => {
+      const conv = prev.find(c => c.id === pendingId);
+      if (conv) setSelected(conv);
+      return prev;
+    });
+  }, [conversations]);
 
   /* Load messages when conversation selected */
   useEffect(() => {
     if (!selected) return;
-    if (isMockConv(selected.id)) {
-      setMessages(loadMockMessages(selected.id));
-    } else {
-      messagesApi.listMessages(selected.id)
-        .then(r => setMessages(r.items))
-        .catch(() => {});
-      messagesApi.markAsRead(selected.id).catch(() => {});
-    }
+    messagesApi.listMessages(selected.id)
+      .then(r => setMessages(r.items))
+      .catch(() => {});
+    messagesApi.markAsRead(selected.id).catch(() => {});
   }, [selected]);
 
   /* Scroll to bottom on new message */
@@ -83,29 +59,8 @@ export function MensagensPage() {
     if (!selected || !input.trim()) return;
     const text = input.trim();
     setInput('');
-
-    if (isMockConv(selected.id)) {
-      const msg: Message = {
-        id: `msg-${Date.now()}`,
-        from: 'Você',
-        text,
-        time: new Date().toISOString(),
-      };
-      const next = [...messages, msg];
-      setMessages(next);
-      saveMockMessages(selected.id, next);
-
-      setMockConversations(prev => {
-        const updated = prev.map(c =>
-          c.id === selected.id ? { ...c, lastMessage: text, time: msg.time } : c
-        );
-        localStorage.setItem(MOCK_CONV_KEY, JSON.stringify(updated));
-        return updated;
-      });
-    } else {
-      const msg = await messagesApi.sendMessage(selected.id, text).catch(() => null);
-      if (msg) setMessages(prev => [...prev, msg]);
-    }
+    const msg = await messagesApi.sendMessage(selected.id, text).catch(() => null);
+    if (msg) setMessages(prev => [...prev, msg]);
   };
 
   return (
@@ -116,7 +71,7 @@ export function MensagensPage() {
           <div className="border-b border-[#E5E0EB] px-4 py-3 dark:border-[#2a2a3d]">
             <p className="text-[16px] font-light text-[#0f0f14] dark:text-[#e8e6ff]">Mensagens</p>
           </div>
-          {loading && mockConversations.length === 0 ? (
+          {loading ? (
             <div className="flex-1 space-y-3 p-4">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="h-14 animate-pulse rounded-xl bg-[#F9F8FF] dark:bg-[#1c1c2e]" />

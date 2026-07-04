@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '../../components/Sistema/Button';
 import { useAuth } from '../../contexts/AuthContext';
@@ -22,7 +22,7 @@ const GoogleIcon = () => (
 );
 
 const AppleIcon = () => (
-  <img src={appleLogo} alt="" className="block h-4.5 w-auto dark:invert" />
+  <img src={appleLogo} alt="" className="block h-4 w-auto dark:invert" />
 );
 
 const EyeIcon = ({ open }: { open: boolean }) => (
@@ -41,8 +41,12 @@ const EyeIcon = ({ open }: { open: boolean }) => (
 export const CadastroPage = () => {
   const { login, signup } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
-  const [tab, setTab] = useState<'cadastro' | 'entrar'>('cadastro');
+  const initialTab: 'cadastro' | 'entrar' =
+    searchParams.get('tab') === 'login' ? 'entrar' : 'cadastro';
+
+  const [tab, setTab] = useState<'cadastro' | 'entrar'>(initialTab);
   const [forgotPassword, setForgotPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -194,7 +198,7 @@ export const CadastroPage = () => {
                   Continuar com Google
                 </button>
                 <button className="relative flex items-center justify-center rounded-xl border border-[#E5E0EB] bg-white py-2.5 text-[14px] font-light text-[#0f0f14] outline-none transition hover:border-[#C4B5FD] hover:bg-[#F5F3FF] focus:outline-none">
-                  <span className="absolute left-4 flex h-4 w-4 shrink-0 items-center justify-center overflow-hidden">
+                  <span className="absolute left-4 flex h-4 w-4 shrink-0 items-center justify-center">
                     <AppleIcon />
                   </span>
                   Continuar com Apple

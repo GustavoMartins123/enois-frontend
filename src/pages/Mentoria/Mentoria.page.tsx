@@ -1,7 +1,11 @@
 import { useState } from 'react';
-import { Star, Calendar, CheckCircle, X } from 'lucide-react';
+import { Star, Calendar, CheckCircle, X, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppShell, Avatar } from '../../components/AppShell';
+import { mentorsApi } from '../../lib/api/mentors';
+import { profileApi } from '../../lib/api/profile';
+import { messagesApi } from '../../lib/api/messages';
 
 interface Mentor {
   id: string;
@@ -16,85 +20,19 @@ interface Mentor {
   verified: boolean;
 }
 
-const MOCK_MENTORS: Mentor[] = [
-  {
-    id: '1',
-    name: 'Joao Reis',
-    headline: 'Engenheiro de Dados e Escritor Persuasivo',
-    avatar: null,
-    expertise: ['Engenharia de Dados'],
-    rating: 4.9,
-    sessions: 12,
-    price: 'R$ 0,00',
-    nextSlot: '2026-07-02T10:00:00',
-    verified: true,
-  },
-  {
-    id: '2',
-    name: 'Iraê C. Brandão',
-    headline: 'Reflexões & críticas sobre: tecnologia, cibersegurança e mais',
-    avatar: null,
-    expertise: ['IT Management', 'Systems Analysis', 'Academics', 'Projects', 'Research', 'Mentoring', 'Development', 'Front End', 'Back End', 'Cybersecurity', 'Maintenance'],
-    rating: 4.7,
-    sessions: 34,
-    price: 'R$ 0,00',
-    nextSlot: '2026-06-30T14:00:00',
-    verified: true,
-  },
-  {
-    id: '3',
-    name: 'Victor Penachio',
-    headline: 'Designer Digital Estratégico',
-    avatar: null,
-    expertise: ['Estratégia de Conteúdo Digital'],
-    rating: 4.8,
-    sessions: 21,
-    price: 'R$ 500,00',
-    nextSlot: '2026-07-01T09:00:00',
-    verified: true,
-  },
-  {
-    id: '4',
-    name: 'Camila Torres',
-    headline: 'Product Manager · Ex-iFood · Mentora de carreira',
-    avatar: null,
-    expertise: ['Product Management', 'Discovery', 'Roadmap', 'OKRs'],
-    rating: 5.0,
-    sessions: 58,
-    price: 'R$ 500,00',
-    nextSlot: '2026-07-03T11:00:00',
-    verified: false,
-  },
-  {
-    id: '5',
-    name: 'Rafael Monteiro',
-    headline: 'Tech Lead · Arquitetura de Software',
-    avatar: null,
-    expertise: ['Arquitetura', 'Node.js', 'React', 'AWS'],
-    rating: 4.6,
-    sessions: 45,
-    price: 'R$ 1.000,00',
-    nextSlot: '2026-07-04T16:00:00',
-    verified: false,
-  },
-  {
-    id: '6',
-    name: 'Beatriz Alves',
-    headline: 'UX Researcher · Design centrado no usuário',
-    avatar: null,
-    expertise: ['UX Research', 'Usability', 'Design Thinking'],
-    rating: 4.8,
-    sessions: 29,
-    price: 'R$ 500,00',
-    nextSlot: null,
-    verified: false,
-  },
-];
-
 /* ── Modal Tornar-se mentor ──────────────────────── */
 function BecomeMentorModal({ onClose }: { onClose: () => void }) {
+  const qc = useQueryClient();
   const [specialties, setSpecialties] = useState('');
   const [price, setPrice] = useState('');
+
+  const createMut = useMutation({
+    mutationFn: () => mentorsApi.create({
+      expertise: specialties.split(',').map(s => s.trim()).filter(Boolean),
+      price: price.trim() || 'R$ 0,00',
+    }),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['mentors-enriched'] }); onClose(); },
+  });
 
   const inputCls =
     'w-full rounded-xl border border-[#E5E0EB] bg-white px-4 py-3 text-[14px] font-light text-[#0f0f14] placeholder:text-[#9CA3AF] outline-none transition focus:border-[#7C3AED]';
@@ -122,10 +60,11 @@ function BecomeMentorModal({ onClose }: { onClose: () => void }) {
             <input id="mentor-price" value={price} onChange={e => setPrice(e.target.value)} placeholder="R$ 0,00" className={inputCls} />
           </div>
           <button
-            onClick={onClose}
-            className="mt-2 w-full rounded-full bg-[#7C3AED] py-3 text-[14px] font-light text-white transition hover:bg-[#6D28D9]"
+            onClick={() => createMut.mutate()}
+            disabled={!specialties.trim() || createMut.isPending}
+            className="mt-2 w-full rounded-full bg-[#7C3AED] py-3 text-[14px] font-light text-white transition hover:bg-[#6D28D9] disabled:opacity-40"
           >
-            Salvar
+            {createMut.isPending ? 'Salvando...' : 'Salvar'}
           </button>
         </div>
       </div>
@@ -138,32 +77,23 @@ function MentorCard({ mentor }: { mentor: Mentor }) {
   const navigate = useNavigate();
   const [scheduled, setScheduled] = useState(false);
 
-  const handleSchedule = () => {
+  const bookMut = useMutation({
+    mutationFn: () => mentorsApi.bookSession(mentor.id, '', `Olá, ${mentor.name}! Tenho interesse em agendar uma sessão de mentoria com você.`),
+  });
+
+  const handleSchedule = async () => {
     setScheduled(true);
-
-    const convId = `mentor-${mentor.id}-${Date.now()}`;
-    const autoMsg = {
-      id: '1',
-      from: 'Você',
-      text: `Olá, ${mentor.name}! Tenho interesse em agendar uma sessão de mentoria com você. Quais são os seus horários disponíveis?`,
-      time: new Date().toISOString(),
-    };
-
-    const conv = {
-      id: convId,
-      kind: 'DIRECT' as const,
-      title: mentor.name,
-      participantIds: [mentor.id],
-      lastMessage: autoMsg.text,
-      time: autoMsg.time,
-      unread: 0,
-    };
+    bookMut.mutate();
 
     try {
-      const prev = JSON.parse(localStorage.getItem('mock_conversations') ?? '[]');
-      localStorage.setItem('mock_conversations', JSON.stringify([conv, ...prev]));
-      localStorage.setItem(`mock_messages_${convId}`, JSON.stringify([autoMsg]));
-      localStorage.setItem('pending_open_conv', convId);
+      const conv = await messagesApi.createConversation({
+        kind: 'DIRECT',
+        title: mentor.name,
+        participantIds: [mentor.id],
+      });
+      const text = `Olá, ${mentor.name}! Tenho interesse em agendar uma sessão de mentoria com você. Quais são os seus horários disponíveis?`;
+      await messagesApi.sendMessage(conv.id, text).catch(() => {});
+      localStorage.setItem('pending_open_conv', conv.id);
     } catch {}
 
     setTimeout(() => navigate('/mensagens'), 400);
@@ -269,9 +199,31 @@ export function MentoriaPage() {
   const [filter, setFilter] = useState<'todos' | 'gratuito' | 'pago'>('todos');
   const [becomeMentor, setBecomeMentor] = useState(false);
 
-  const filtered = MOCK_MENTORS.filter(m => {
-    if (filter === 'gratuito') return m.price === 'R$ 0,00';
-    if (filter === 'pago') return m.price !== 'R$ 0,00';
+  const { data: mentors = [], isLoading } = useQuery({
+    queryKey: ['mentors-enriched'],
+    queryFn: async (): Promise<Mentor[]> => {
+      const res = await mentorsApi.list();
+      const profiles = await Promise.all(
+        res.items.map(m => profileApi.getById(m.userId).catch(() => null)),
+      );
+      return res.items.map((m, i) => ({
+        id: m.id,
+        name: profiles[i]?.name ?? `Mentor ${m.userId.slice(0, 6)}`,
+        headline: profiles[i]?.headline ?? (m.expertise[0] ?? 'Mentor'),
+        avatar: profiles[i]?.avatar ?? null,
+        expertise: m.expertise,
+        rating: m.rating,
+        sessions: m.sessions,
+        price: m.price,
+        nextSlot: m.nextSlot ?? null,
+        verified: false,
+      }));
+    },
+  });
+
+  const filtered = mentors.filter(m => {
+    if (filter === 'gratuito') return m.price === 'R$ 0,00' || m.price === '0';
+    if (filter === 'pago') return m.price !== 'R$ 0,00' && m.price !== '0';
     return true;
   });
 
@@ -341,11 +293,17 @@ export function MentoriaPage() {
             </div>
           </div>
 
-          {filtered.length === 0 ? (
+          {isLoading && (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-6 w-6 animate-spin text-[#7C3AED]" />
+            </div>
+          )}
+          {!isLoading && filtered.length === 0 && (
             <div className="rounded-2xl border border-[#E5E0EB] bg-white px-6 py-12 text-center">
               <p className="text-[14px] font-light text-[#9CA3AF]">Nenhum mentor encontrado com esse filtro.</p>
             </div>
-          ) : (
+          )}
+          {!isLoading && filtered.length > 0 && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map(mentor => (
                 <MentorCard key={mentor.id} mentor={mentor} />

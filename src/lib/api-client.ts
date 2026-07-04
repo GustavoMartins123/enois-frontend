@@ -71,15 +71,18 @@ function clearSession() {
   localStorage.removeItem("current_user");
 }
 
+const PUBLIC_PATHS = ["/auth/signup", "/auth/login", "/auth/password/forgot", "/auth/password/reset"];
+
 async function request<T>(
   method: string,
   path: string,
   body?: unknown,
   opts?: { idempotent?: boolean },
 ): Promise<T> {
+  const isPublic = PUBLIC_PATHS.some(p => path.startsWith(p));
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    ...authHeaders(),
+    ...(isPublic ? {} : authHeaders()),
   };
 
   if (opts?.idempotent) {
@@ -93,6 +96,16 @@ async function request<T>(
   });
 
   if ((response.status === 401 || response.status === 403) && !isRefreshing) {
+    // Auth endpoints handle their own errors — never redirect from them
+    if (path.startsWith("/auth/")) {
+      const errorBody = await response.json().catch(() => null);
+      throw new ApiError(
+        response.status,
+        errorBody?.code,
+        errorBody?.message ?? response.statusText,
+      );
+    }
+
     isRefreshing = true;
     const refreshed = await tryRefreshToken();
     isRefreshing = false;

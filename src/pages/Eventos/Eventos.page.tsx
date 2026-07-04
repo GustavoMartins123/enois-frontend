@@ -1,9 +1,12 @@
 import { useState, useRef, useEffect, type FormEvent } from 'react';
-import { Calendar, Users, MapPin, Monitor, ArrowLeft, Send, Heart, MessageCircle, Trash2, Bold, Italic, ChevronRight } from 'lucide-react';
+import { Calendar, Users, MapPin, Monitor, ArrowLeft, Send, Heart, MessageCircle, Trash2, Bold, Italic, ChevronRight, Loader2 } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppShell, Avatar } from '../../components/AppShell';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationsContext';
 import { useConfirm } from '../../contexts/ConfirmContext';
+import { eventsApi } from '../../lib/api/events';
+import type { Event as ApiEvent } from '../../lib/api/events';
 
 type EventFormat = 'ONLINE' | 'IN_PERSON' | 'HYBRID';
 
@@ -19,32 +22,28 @@ interface MockEvent {
   gradient: string;
 }
 
-const MOCK_EVENTS: MockEvent[] = [
-  {
-    id: '1', title: 'Lançamento — Hub Figital de Inovação', host: 'Hub Figital', date: '2026-06-30', time: '19:00',
-    format: 'HYBRID', attendees: 2,
-    description: 'Apresentação oficial do Hub Figital, espaço de colaboração entre startups, empresas e universidades voltado para inovação aberta.',
-    gradient: 'linear-gradient(135deg, #2e1065 0%, #7C3AED 100%)',
-  },
-  {
-    id: '2', title: 'Workshop de Comunicações Via Satélite, LEO, NTN e 5G/6G', host: 'IEEE Brasil', date: '2026-07-10', time: '14:00',
-    format: 'HYBRID', attendees: 1,
-    description: 'Workshop técnico sobre as tecnologias de comunicação de nova geração: satélites LEO, redes NTN e o roadmap de 5G/6G no Brasil.',
-    gradient: 'linear-gradient(135deg, #1e3a5f 0%, #2563EB 100%)',
-  },
-  {
-    id: '3', title: 'Meetup React Brasil — Julho 2026', host: 'React Brasil', date: '2026-07-05', time: '10:00',
-    format: 'ONLINE', attendees: 48,
-    description: 'Encontro mensal da comunidade React no Brasil. Palestras sobre React 19, Server Components e performance de aplicações frontend.',
-    gradient: 'linear-gradient(135deg, #064e3b 0%, #059669 100%)',
-  },
-  {
-    id: '4', title: 'Design Systems Summit 2026', host: 'UX Brasil', date: '2026-07-18', time: '09:00',
-    format: 'IN_PERSON', attendees: 120,
-    description: 'Conferência nacional sobre Design Systems, tokens de design e como escalar componentes em grandes times de produto.',
-    gradient: 'linear-gradient(135deg, #0f4c5c 0%, #0D9488 100%)',
-  },
+const GRADIENTS = [
+  'linear-gradient(135deg, #2e1065 0%, #7C3AED 100%)',
+  'linear-gradient(135deg, #1e3a5f 0%, #2563EB 100%)',
+  'linear-gradient(135deg, #064e3b 0%, #059669 100%)',
+  'linear-gradient(135deg, #0f4c5c 0%, #0D9488 100%)',
+  'linear-gradient(135deg, #3B1E7A 0%, #A78BFA 100%)',
 ];
+
+function apiEventToLocal(e: ApiEvent): MockEvent {
+  const idx = e.id.charCodeAt(0) % GRADIENTS.length;
+  return {
+    id: e.id,
+    title: e.title,
+    host: e.host,
+    date: e.date,
+    time: e.time,
+    format: e.format as EventFormat,
+    description: '',
+    attendees: e.attendees,
+    gradient: GRADIENTS[idx],
+  };
+}
 
 const FORMAT_ICON: Record<EventFormat, React.ElementType> = {
   ONLINE: Monitor, IN_PERSON: MapPin, HYBRID: Users,
@@ -54,15 +53,13 @@ const FORMAT_LABEL: Record<EventFormat, string> = {
   ONLINE: 'Online', IN_PERSON: 'Presencial', HYBRID: 'Híbrido',
 };
 
-const simulateApi = (ms = 600) => new Promise<void>(resolve => setTimeout(resolve, ms));
-
 /* ── Feed do evento ──────────────────────────── */
 interface EventPost { id: string; authorName: string; authorAvatar: string | null; text: string; createdAt: string; likes: number; liked: boolean; }
 
-function EventFeed({ eventId }: { eventId: string }) {
+function EventFeed({ eventId, eventHost }: { eventId: string; eventHost: string }) {
   const { user } = useAuth();
   const [posts, setPosts] = useState<EventPost[]>([
-    { id: 'seed-1', authorName: 'Organização ' + MOCK_EVENTS.find(e => e.id === eventId)?.host, authorAvatar: null, text: 'Bem-vindos ao feed do evento! Compartilhem dúvidas, insights e conexões aqui 🎉', createdAt: new Date(Date.now() - 3600000).toISOString(), likes: 3, liked: false },
+    { id: 'seed-1', authorName: 'Organização ' + eventHost, authorAvatar: null, text: 'Bem-vindos ao feed do evento! Compartilhem dúvidas, insights e conexões aqui 🎉', createdAt: new Date(Date.now() - 3600000).toISOString(), likes: 3, liked: false },
   ]);
   const [draft, setDraft] = useState('');
 
@@ -391,22 +388,46 @@ function EventChat({ event }: { event: MockEvent }) {
 export function EventosPage() {
   const { add: addNotif } = useNotifications();
   const { confirm } = useConfirm();
+  const qc = useQueryClient();
 
   const [selected, setSelected] = useState<MockEvent | null>(null);
   const [tab, setTab] = useState<'feed' | 'chat'>('feed');
   const [attending, setAttending] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState<EventFormat | ''>('');
 
+  const { data: eventsData, isLoading: eventsLoading } = useQuery({
+    queryKey: ['events', filter],
+    queryFn: () => eventsApi.list(filter || undefined),
+  });
+
   const today = new Date().toISOString().slice(0, 10);
-  const shown = MOCK_EVENTS
+  const allEvents = (eventsData?.items ?? []).map(apiEventToLocal);
+  const shown = allEvents
     .filter(e => e.date >= today)
     .filter(e => !filter || e.format === filter);
 
+  const attendMut = useMutation({
+    mutationFn: (eventId: string) => eventsApi.attend(eventId),
+    onSuccess: (_, eventId) => {
+      setAttending(prev => new Set([...prev, eventId]));
+      const ev = allEvents.find(e => e.id === eventId);
+      if (ev) addNotif(`Você confirmou presença no evento "${ev.title}".`, 'event');
+      qc.invalidateQueries({ queryKey: ['events'] });
+    },
+  });
+
+  const cancelMut = useMutation({
+    mutationFn: (eventId: string) => eventsApi.cancelAttendance(eventId),
+    onSuccess: (_, eventId) => {
+      setAttending(prev => { const n = new Set(prev); n.delete(eventId); return n; });
+      const ev = allEvents.find(e => e.id === eventId);
+      if (ev) addNotif(`Você cancelou sua participação no evento "${ev.title}".`, 'event');
+      qc.invalidateQueries({ queryKey: ['events'] });
+    },
+  });
+
   const handleAttend = (event: MockEvent) => {
-    setAttending(prev => new Set([...prev, event.id]));
-    simulateApi(400).then(() => {
-      addNotif(`Você confirmou presença no evento "${event.title}".`, 'event');
-    });
+    attendMut.mutate(event.id);
   };
 
   const handleUnattend = (event: MockEvent) => {
@@ -417,9 +438,7 @@ export function EventosPage() {
       cancelLabel: 'Voltar',
       variant: 'danger',
       onConfirm: async () => {
-        await simulateApi(600);
-        setAttending(prev => { const n = new Set(prev); n.delete(event.id); return n; });
-        addNotif(`Você cancelou sua participação no evento "${event.title}".`, 'event');
+        cancelMut.mutate(event.id);
       },
     });
   };
@@ -474,7 +493,7 @@ export function EventosPage() {
             ))}
           </div>
 
-          {tab === 'feed' ? <EventFeed eventId={selected.id} /> : <EventChat event={selected} />}
+          {tab === 'feed' ? <EventFeed eventId={selected.id} eventHost={selected.host} /> : <EventChat event={selected} />}
         </div>
       </AppShell>
     );
@@ -495,6 +514,12 @@ export function EventosPage() {
             >{lbl}</button>
           ))}
         </div>
+
+        {eventsLoading && (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-6 w-6 animate-spin text-[#7C3AED]" />
+          </div>
+        )}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {shown.map(event => {

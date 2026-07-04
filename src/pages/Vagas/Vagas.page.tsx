@@ -2,11 +2,14 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Briefcase, MapPin, Clock, Search, BookmarkPlus, BookmarkCheck,
-  Check, X, Plus, Send, Mail, MessageCircle,
+  Check, X, Plus, Send, Mail, MessageCircle, Loader2,
 } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppShell } from '../../components/AppShell';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationsContext';
+import { jobsApi } from '../../lib/api';
+import type { Job as ApiJob } from '../../lib/api';
 
 type Level = 'Junior' | 'Mid' | 'Senior' | 'Lead';
 type Local = 'Remoto' | 'Híbrido' | 'Presencial';
@@ -58,22 +61,6 @@ function loadApplications(): JobApplication[] {
 function persistApplications(list: JobApplication[]) {
   try { localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(list)); } catch {}
 }
-
-/* ── Mock data ─────────────────────────────────────── */
-const MOCK_JOBS_INITIAL: Job[] = [
-  { id: '1', title: 'Desenvolvedor Frontend Sênior', company: 'Nubank', location: 'São Paulo, SP', level: 'Senior', local: 'Remoto', tipo: 'CLT', skills: ['React', 'TypeScript', 'CSS', 'GraphQL'], salary: 'R$ 12.000 – 18.000', postedAt: '2026-06-24' },
-  { id: '2', title: 'Engenheiro de Backend', company: 'iFood', location: 'Osasco, SP', level: 'Mid', local: 'Híbrido', tipo: 'PJ', skills: ['Java', 'Spring Boot', 'Kafka', 'AWS'], salary: 'R$ 9.000 – 13.000', postedAt: '2026-06-22' },
-  { id: '3', title: 'Desenvolvedor Full Stack', company: 'Mercado Livre', location: 'São Paulo, SP', level: 'Mid', local: 'Remoto', tipo: 'CLT', skills: ['Node.js', 'React', 'Go', 'PostgreSQL'], salary: 'R$ 10.000 – 15.000', postedAt: '2026-06-21' },
-  { id: '4', title: 'Cientista de Dados', company: 'BTG Pactual', location: 'São Paulo, SP', level: 'Senior', local: 'Presencial', tipo: 'CLT', skills: ['Python', 'SQL', 'Machine Learning', 'Spark'], salary: 'R$ 15.000 – 22.000', postedAt: '2026-06-20' },
-  { id: '5', title: 'Engenheiro DevOps', company: 'Stone', location: 'Rio de Janeiro, RJ', level: 'Senior', local: 'Remoto', tipo: 'CLT', skills: ['Kubernetes', 'Terraform', 'AWS', 'CI/CD'], salary: 'R$ 13.000 – 19.000', postedAt: '2026-06-19' },
-  { id: '6', title: 'UX Designer', company: 'Itaú', location: 'São Paulo, SP', level: 'Mid', local: 'Híbrido', tipo: 'PJ', skills: ['Figma', 'Pesquisa', 'Design System', 'Prototipação'], salary: 'R$ 7.000 – 11.000', postedAt: '2026-06-18' },
-  { id: '7', title: 'Desenvolvedor Mobile — React Native', company: 'PicPay', location: 'São Paulo, SP', level: 'Mid', local: 'Remoto', tipo: 'CLT', skills: ['React Native', 'TypeScript', 'Redux'], salary: 'R$ 9.000 – 14.000', postedAt: '2026-06-17' },
-  { id: '8', title: 'Analista de QA', company: 'Totvs', location: 'São Paulo, SP', level: 'Junior', local: 'Híbrido', tipo: 'CLT', skills: ['Cypress', 'Selenium', 'Postman'], salary: 'R$ 4.000 – 6.000', postedAt: '2026-06-16' },
-  { id: '9', title: 'Tech Lead Frontend', company: 'Creditas', location: 'São Paulo, SP', level: 'Lead', local: 'Remoto', tipo: 'CLT', skills: ['React', 'Architecture', 'TypeScript', 'Micro-frontend'], salary: 'R$ 20.000 – 28.000', postedAt: '2026-06-15' },
-  { id: '10', title: 'Desenvolvedor Backend', company: 'Startup Anônima', location: 'Remoto', level: 'Mid', local: 'Remoto', tipo: 'Freelance', skills: ['Node.js', 'MongoDB', 'REST APIs'], salary: 'R$ 80/h', postedAt: '2026-06-14' },
-  { id: '11', title: 'Estágio em Engenharia de Software', company: 'Vivo', location: 'São Paulo, SP', level: 'Junior', local: 'Híbrido', tipo: 'Estágio', skills: ['Python', 'Git', 'Linux'], salary: 'R$ 2.200', postedAt: '2026-06-13' },
-  { id: '12', title: 'Arquiteto de Soluções Cloud', company: 'Stefanini', location: 'São Paulo, SP', level: 'Lead', local: 'Remoto', tipo: 'PJ', skills: ['AWS', 'Azure', 'GCP', 'Terraform'], salary: 'R$ 25.000 – 35.000', postedAt: '2026-06-12' },
-];
 
 const LEVELS: Level[] = ['Junior', 'Mid', 'Senior', 'Lead'];
 const LOCALS: Local[] = ['Remoto', 'Híbrido', 'Presencial'];
@@ -482,11 +469,26 @@ function CandidaturaModal({ job, onClose, onSubmit }: {
   );
 }
 
+function apiJobToLocal(j: ApiJob): Job {
+  return {
+    id: j.id,
+    title: j.title,
+    company: j.company,
+    location: j.location,
+    level: (j.level as Level) ?? 'Mid',
+    local: (j.location?.toLowerCase().includes('remoto') ? 'Remoto' : j.location?.toLowerCase().includes('brid') ? 'Híbrido' : 'Presencial') as Local,
+    tipo: (j.type as Tipo) ?? 'CLT',
+    skills: j.skills ?? [],
+    salary: j.salary ?? 'A combinar',
+    postedAt: j.postedAt ?? '',
+  };
+}
+
 /* ── Page ─────────────────────────────────────────── */
 export function VagasPage() {
   const { add: addNotification } = useNotifications();
+  const qc = useQueryClient();
 
-  const [jobs, setJobs] = useState<Job[]>(MOCK_JOBS_INITIAL);
   const [levels, setLevels] = useState<Set<Level>>(new Set());
   const [locals, setLocals] = useState<Set<Local>>(new Set());
   const [tipos, setTipos] = useState<Set<Tipo>>(new Set());
@@ -494,14 +496,40 @@ export function VagasPage() {
   const [skills, setSkills] = useState('');
   const [publishOpen, setPublishOpen] = useState(false);
   const [candidaturaJob, setCandidaturaJob] = useState<Job | null>(null);
+  const [localJobs, setLocalJobs] = useState<Job[]>([]);
 
   const [savedEntries, setSavedEntries] = useState<SavedJobEntry[]>(loadSavedJobs);
   const [applications, setApplications] = useState<JobApplication[]>(loadApplications);
+
+  const { data: jobsData, isLoading: jobsLoading } = useQuery({
+    queryKey: ['jobs', query, skills, levels, locals, tipos],
+    queryFn: () => jobsApi.list({
+      query: query || undefined,
+      level: [...levels][0] || undefined,
+      location: [...locals][0] || undefined,
+      type: [...tipos][0] || undefined,
+      skills: skills || undefined,
+    }),
+  });
+
+  const applyMut = useMutation({ mutationFn: (jobId: string) => jobsApi.apply(jobId) });
+
+  const saveMut = useMutation({ mutationFn: (jobId: string) => jobsApi.save(jobId) });
+  const removeSaveMut = useMutation({ mutationFn: (jobId: string) => jobsApi.removeSave(jobId) });
+
+  const apiJobs = (jobsData?.items ?? []).map(apiJobToLocal);
+  const allJobs = [...localJobs, ...apiJobs];
 
   const savedIds = new Set(savedEntries.map(e => e.job.id));
   const appliedIds = new Set(applications.map(a => a.jobId));
 
   function toggleSave(job: Job) {
+    const isSaved = savedIds.has(job.id);
+    if (isSaved) {
+      removeSaveMut.mutate(job.id);
+    } else {
+      saveMut.mutate(job.id);
+    }
     setSavedEntries(prev => {
       const exists = prev.find(e => e.job.id === job.id);
       const next = exists
@@ -515,6 +543,8 @@ export function VagasPage() {
   function handleApply(message?: string, mode: CandidaturaMode = 'simplificada') {
     if (!candidaturaJob) return;
     const job = candidaturaJob;
+
+    applyMut.mutate(job.id);
 
     const application: JobApplication = {
       jobId: job.id,
@@ -553,7 +583,7 @@ export function VagasPage() {
 
   const filtered = useMemo(() => {
     const skillList = skills.split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-    return jobs.filter(j => {
+    return allJobs.filter(j => {
       if (levels.size > 0 && !levels.has(j.level)) return false;
       if (locals.size > 0 && !locals.has(j.local)) return false;
       if (tipos.size > 0 && !tipos.has(j.tipo)) return false;
@@ -561,14 +591,14 @@ export function VagasPage() {
       if (skillList.length > 0 && !skillList.every(s => j.skills.some(sk => sk.toLowerCase().includes(s)))) return false;
       return true;
     });
-  }, [jobs, levels, locals, tipos, query, skills]);
+  }, [allJobs, levels, locals, tipos, query, skills]);
 
   return (
     <AppShell>
       {publishOpen && (
         <PublicarVagaModal
           onClose={() => setPublishOpen(false)}
-          onPublish={job => setJobs(prev => [job, ...prev])}
+          onPublish={job => setLocalJobs(prev => [job, ...prev])}
         />
       )}
       {candidaturaJob && (
@@ -619,11 +649,17 @@ export function VagasPage() {
           </div>
         </div>
 
-        <p className="text-[12px] text-[#9CA3AF]">
-          {filtered.length} {filtered.length === 1 ? 'vaga encontrada' : 'vagas encontradas'}
-        </p>
+        {jobsLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-6 w-6 animate-spin text-[#7C3AED]" />
+          </div>
+        ) : null}
 
-        {filtered.length === 0 ? (
+        {!jobsLoading && <p className="text-[12px] text-[#9CA3AF]">
+          {filtered.length} {filtered.length === 1 ? 'vaga encontrada' : 'vagas encontradas'}
+        </p>}
+
+        {!jobsLoading && filtered.length === 0 && (
           <div className="rounded-2xl border border-[#E5E0EB] bg-white p-10 text-center dark:border-[#2a2a3d] dark:bg-[#13131f]">
             <Briefcase className="mx-auto h-8 w-8 text-[#9CA3AF]" />
             <p className="mt-3 text-[14px] font-light text-[#9CA3AF]">Nenhuma vaga encontrada com os filtros selecionados.</p>
@@ -634,7 +670,8 @@ export function VagasPage() {
               Limpar filtros
             </button>
           </div>
-        ) : (
+        )}
+        {!jobsLoading && filtered.length > 0 && (
           <div className="space-y-3">
             {filtered.map(job => (
               <div key={job.id} className="flex items-start gap-4 rounded-2xl border border-[#E5E0EB] bg-white p-4 transition hover:border-[#D4CAED] dark:border-[#2a2a3d] dark:bg-[#13131f]">
@@ -696,3 +733,4 @@ export function VagasPage() {
     </AppShell>
   );
 }
+

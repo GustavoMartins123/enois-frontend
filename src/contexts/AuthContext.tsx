@@ -1,39 +1,29 @@
 import { createContext, useContext, useState, type ReactNode } from 'react';
 import type { AuthUser } from '../lib/api/auth';
+import { authApi } from '../lib/api/auth';
+import { profileApi } from '../lib/api/profile';
+
+export type AppUser = AuthUser & { avatar: string | null };
 
 interface AuthContextType {
-  user: AuthUser | null;
+  user: AppUser | null;
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  updateUser: (partial: Partial<AuthUser>) => void;
-}
-
-const MOCK_TOKEN = 'mock-session-token';
-
-function mockUser(name: string, email: string): AuthUser {
-  return {
-    id: '1',
-    name,
-    email,
-    username: email.split('@')[0],
-    avatar: null,
-    headline: 'Profissional · Conexão',
-  };
+  updateUser: (partial: Partial<AppUser>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(() => {
+  const [user, setUser] = useState<AppUser | null>(() => {
     try {
       const stored = localStorage.getItem('current_user');
       if (!stored) return null;
-      const u = JSON.parse(stored) as AuthUser;
-      // Migrate avatar to persistent key so it survives logout
+      const u = JSON.parse(stored) as AppUser;
       if (u.avatar && u.email && !localStorage.getItem(`avatar_${u.email}`)) {
-        try { localStorage.setItem(`avatar_${u.email}`, u.avatar); } catch { /* quota */ }
+        try { localStorage.setItem(`avatar_${u.email}`, u.avatar); } catch { /**/ }
       }
       return u;
     } catch {
@@ -43,27 +33,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isAuthenticated = !!localStorage.getItem('session_token') && !!user;
 
-  const login = async (email: string, _password: string) => {
-    const u = mockUser(email.split('@')[0], email);
-    const saved = localStorage.getItem(`avatar_${email}`);
-    if (saved) u.avatar = saved;
-    localStorage.setItem('session_token', MOCK_TOKEN);
-    localStorage.setItem('refresh_token', MOCK_TOKEN);
+  const login = async (email: string, password: string) => {
+    const res = await authApi.login({ email, password });
+    localStorage.setItem('session_token', res.token);
+    localStorage.setItem('refresh_token', res.refreshToken);
+    const u: AppUser = { ...res.user, avatar: null };
+    try {
+      const profile = await profileApi.me();
+      if (profile.avatar) u.avatar = profile.avatar;
+    } catch {}
     localStorage.setItem('current_user', JSON.stringify(u));
     setUser(u);
   };
 
-  const signup = async (name: string, email: string, _password: string) => {
-    const u = mockUser(name, email);
-    const saved = localStorage.getItem(`avatar_${email}`);
-    if (saved) u.avatar = saved;
-    localStorage.setItem('session_token', MOCK_TOKEN);
-    localStorage.setItem('refresh_token', MOCK_TOKEN);
+  const signup = async (name: string, email: string, password: string) => {
+    const res = await authApi.signup({ name, email, password });
+    localStorage.setItem('session_token', res.token);
+    localStorage.setItem('refresh_token', res.refreshToken);
+    const u: AppUser = { ...res.user, avatar: null };
+    try {
+      const profile = await profileApi.me();
+      if (profile.avatar) u.avatar = profile.avatar;
+    } catch {}
     localStorage.setItem('current_user', JSON.stringify(u));
     setUser(u);
   };
 
-  const updateUser = (partial: Partial<AuthUser>) => {
+  const updateUser = (partial: Partial<AppUser>) => {
     setUser(prev => {
       if (!prev) return prev;
       const updated = { ...prev, ...partial };
@@ -77,6 +73,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    try { await authApi.logout(); } catch {}
     localStorage.removeItem('session_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('current_user');

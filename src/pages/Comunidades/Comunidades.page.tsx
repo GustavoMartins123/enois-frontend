@@ -1,12 +1,17 @@
 import { useState } from 'react';
-import { Plus, Users } from 'lucide-react';
+import { Plus, Users, Loader2 } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppShell } from '../../components/AppShell';
 import { useNotifications } from '../../contexts/NotificationsContext';
 import { useConfirm } from '../../contexts/ConfirmContext';
+import { communitiesApi } from '../../lib/api/communities';
+import type { Community } from '../../lib/api/communities';
 
-type Category = 'Todas' | 'Tecnologia' | 'Engenharia' | 'Design' | 'Produto' | 'Liderança' | 'Carreira' | 'Freelance';
+type CategoryFilter = 'Todas' | string;
 
-const CATEGORIES: Category[] = ['Todas', 'Tecnologia', 'Engenharia', 'Design', 'Produto', 'Liderança', 'Carreira', 'Freelance'];
+const CATEGORIES: CategoryFilter[] = [
+  'Todas', 'Tecnologia', 'Engenharia', 'Design', 'Produto', 'Liderança', 'Carreira', 'Freelance',
+];
 
 const CATEGORY_COLOR: Record<string, string> = {
   Tecnologia: 'text-[#7C3AED]',
@@ -28,114 +33,74 @@ const COVER_GRADIENT: Record<string, string> = {
   Freelance: 'linear-gradient(135deg, #312e81 0%, #4F46E5 100%)',
 };
 
-interface Community {
-  id: string;
-  category: Exclude<Category, 'Todas'>;
-  icon: string;
-  name: string;
-  description: string;
-  members: number;
-  joined: boolean;
+const TOPIC_ICON: Record<string, string> = {
+  Tecnologia: '💻', Engenharia: '🔧', Design: '🎨', Produto: '📦',
+  Liderança: '🚀', Carreira: '🏛️', Freelance: '💼',
+};
+
+function coverFor(c: Community): string {
+  if (c.cover) return '';
+  return COVER_GRADIENT[c.topic] ?? 'linear-gradient(135deg, #3B1E7A 0%, #7C3AED 100%)';
 }
-
-const MOCK_COMMUNITIES: Community[] = [
-  {
-    id: '2', category: 'Tecnologia', icon: '📣',
-    name: 'Editais, Inovação & Parcerias',
-    description: 'Comunidade dedicada ao compartilhamento de oportunidades de inovação e parcerias estratégicas.',
-    members: 8, joined: true,
-  },
-  {
-    id: '3', category: 'Tecnologia', icon: '⚛️',
-    name: 'Mundinho React',
-    description: 'Comunidade sobre React',
-    members: 6, joined: true,
-  },
-  {
-    id: '4', category: 'Carreira', icon: '🏛️',
-    name: 'Finjo que sei até saber',
-    description: 'Comunidade pra aqueles que têm a síndrome do impostor mas seguem em frente mesmo assim.',
-    members: 14, joined: false,
-  },
-  {
-    id: '5', category: 'Design', icon: '🎨',
-    name: 'Design Digital',
-    description: 'Compartilhar ideias, temas, ajudar com dúvidas e aprender juntos sobre design.',
-    members: 31, joined: false,
-  },
-  {
-    id: '6', category: 'Tecnologia', icon: '🗄️',
-    name: 'Bancos de Dados',
-    description: 'Comunidade para bancos de dados em geral — SQL, NoSQL, modelagem e performance.',
-    members: 19, joined: false,
-  },
-  {
-    id: '7', category: 'Engenharia', icon: '🔧',
-    name: 'Engenharia de Software BR',
-    description: 'Discussões sobre arquitetura, boas práticas e carreira em engenharia de software.',
-    members: 52, joined: false,
-  },
-  {
-    id: '8', category: 'Produto', icon: '📦',
-    name: 'Product Managers Brasil',
-    description: 'Tudo sobre gestão de produto — discovery, métricas, roadmap e cultura de produto.',
-    members: 27, joined: false,
-  },
-  {
-    id: '9', category: 'Freelance', icon: '💼',
-    name: 'Freelancers Tech',
-    description: 'Para profissionais autônomos de tecnologia: contratos, precificação e clientes.',
-    members: 11, joined: false,
-  },
-];
-
-const simulateApi = (ms = 600) => new Promise<void>(resolve => setTimeout(resolve, ms));
 
 export function ComunidadesPage() {
   const { add: addNotif } = useNotifications();
   const { confirm } = useConfirm();
+  const qc = useQueryClient();
 
-  const [activeCategory, setActiveCategory] = useState<Category>('Tecnologia');
-  const [communities, setCommunities] = useState(MOCK_COMMUNITIES);
+  const [activeCategory, setActiveCategory] = useState<CategoryFilter>('Tecnologia');
+  const [showCreate, setShowCreate] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [newDesc, setNewDesc] = useState('');
+  const [newTopic, setNewTopic] = useState('Tecnologia');
 
-  const filtered = activeCategory === 'Todas'
-    ? communities
-    : communities.filter(c => c.category === activeCategory);
+  const { data, isLoading } = useQuery({
+    queryKey: ['communities', activeCategory],
+    queryFn: () => communitiesApi.list(activeCategory === 'Todas' ? undefined : activeCategory),
+  });
 
-  const handleJoin = (community: Community) => {
-    setCommunities(prev =>
-      prev.map(c => c.id === community.id ? { ...c, joined: true, members: c.members + 1 } : c),
-    );
-    simulateApi(400).then(() => {
-      addNotif(`Você entrou na comunidade "${community.name}".`, 'community');
-    });
-  };
+  const joinMut = useMutation({
+    mutationFn: (id: string) => communitiesApi.join(id),
+    onSuccess: (_, id) => {
+      const c = data?.items.find(x => x.id === id);
+      if (c) addNotif(`Você entrou na comunidade "${c.name}".`, 'community');
+      qc.invalidateQueries({ queryKey: ['communities'] });
+    },
+  });
 
-  const handleLeave = (community: Community) => {
-    confirm({
-      title: 'Sair da comunidade',
-      message: `Tem certeza que quer cancelar a subscrição de "${community.name}"?`,
-      confirmLabel: 'Sair',
-      variant: 'danger',
-      onConfirm: async () => {
-        await simulateApi(600);
-        setCommunities(prev =>
-          prev.map(c => c.id === community.id ? { ...c, joined: false, members: c.members - 1 } : c),
-        );
-        addNotif(`Você saiu da comunidade "${community.name}".`, 'community');
-      },
-    });
-  };
+  const leaveMut = useMutation({
+    mutationFn: (id: string) => communitiesApi.leave(id),
+    onSuccess: (_, id) => {
+      const c = data?.items.find(x => x.id === id);
+      if (c) addNotif(`Você saiu da comunidade "${c.name}".`, 'community');
+      qc.invalidateQueries({ queryKey: ['communities'] });
+    },
+  });
 
-  const handleToggle = (id: string) => {
-    const community = communities.find(c => c.id === id);
-    if (!community) return;
-    if (community.joined) {
-      handleLeave(community);
+  const createMut = useMutation({
+    mutationFn: () => communitiesApi.create({ name: newName.trim(), description: newDesc.trim(), topic: newTopic }),
+    onSuccess: () => {
+      setShowCreate(false);
+      setNewName(''); setNewDesc('');
+      qc.invalidateQueries({ queryKey: ['communities'] });
+    },
+  });
+
+  const handleToggle = (c: Community) => {
+    if (c.joined) {
+      confirm({
+        title: 'Sair da comunidade',
+        message: `Tem certeza que quer sair de "${c.name}"?`,
+        confirmLabel: 'Sair',
+        variant: 'danger',
+        onConfirm: async () => leaveMut.mutate(c.id),
+      });
     } else {
-      handleJoin(community);
+      joinMut.mutate(c.id);
     }
   };
+
+  const communities = data?.items ?? [];
 
   return (
     <AppShell>
@@ -143,18 +108,61 @@ export function ComunidadesPage() {
         {/* Cabeçalho */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-[26px] font-light text-[#0f0f14]">Comunidades</h1>
-            <p className="mt-0.5 text-[14px] font-light text-[#6B7280]">
+            <h1 className="text-[26px] font-light text-[#0f0f14] dark:text-[#e8e6ff]">Comunidades</h1>
+            <p className="mt-0.5 text-[14px] font-light text-[#6B7280] dark:text-[#9CA3AF]">
               Encontre grupos profissionais, fóruns temáticos e círculos de mentoria.
             </p>
           </div>
-          <button className="flex shrink-0 items-center gap-2 rounded-full bg-[#7C3AED] px-4 py-2 text-[14px] font-light text-white transition hover:bg-[#6D28D9]">
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex shrink-0 items-center gap-2 rounded-full bg-[#7C3AED] px-4 py-2 text-[14px] font-light text-white transition hover:bg-[#6D28D9]"
+          >
             <Plus className="h-4 w-4" />
             Criar comunidade
           </button>
         </div>
 
-        {/* Filtros de categoria */}
+        {/* Modal criar */}
+        {showCreate && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+            <div className="w-full max-w-md rounded-2xl border border-[#E5E0EB] bg-white p-6 shadow-2xl dark:border-[#2a2a3d] dark:bg-[#1c1c2e]">
+              <h2 className="mb-4 text-[17px] font-light text-[#0f0f14] dark:text-[#e8e6ff]">Criar comunidade</h2>
+              <div className="space-y-3">
+                <input
+                  value={newName} onChange={e => setNewName(e.target.value)}
+                  placeholder="Nome da comunidade"
+                  className="w-full rounded-xl border border-[#E5E0EB] bg-[#F9F8FF] px-4 py-2.5 text-[13px] text-[#0f0f14] placeholder:text-[#9CA3AF] outline-none focus:border-[#7C3AED] dark:border-[#2a2a3d] dark:bg-[#13131f] dark:text-[#e8e6ff]"
+                />
+                <textarea
+                  value={newDesc} onChange={e => setNewDesc(e.target.value)}
+                  placeholder="Descrição"
+                  rows={3}
+                  className="w-full resize-none rounded-xl border border-[#E5E0EB] bg-[#F9F8FF] px-4 py-2.5 text-[13px] text-[#0f0f14] placeholder:text-[#9CA3AF] outline-none focus:border-[#7C3AED] dark:border-[#2a2a3d] dark:bg-[#13131f] dark:text-[#e8e6ff]"
+                />
+                <select
+                  value={newTopic} onChange={e => setNewTopic(e.target.value)}
+                  className="w-full rounded-xl border border-[#E5E0EB] bg-[#F9F8FF] px-4 py-2.5 text-[13px] text-[#0f0f14] outline-none focus:border-[#7C3AED] dark:border-[#2a2a3d] dark:bg-[#13131f] dark:text-[#e8e6ff]"
+                >
+                  {CATEGORIES.filter(c => c !== 'Todas').map(c => <option key={c}>{c}</option>)}
+                </select>
+              </div>
+              <div className="mt-4 flex justify-end gap-2">
+                <button onClick={() => setShowCreate(false)} className="rounded-full border border-[#E5E0EB] px-4 py-2 text-[13px] font-light text-[#6B7280] dark:border-[#2a2a3d] dark:text-[#9CA3AF]">
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => createMut.mutate()}
+                  disabled={!newName.trim() || createMut.isPending}
+                  className="rounded-full bg-[#7C3AED] px-4 py-2 text-[13px] font-light text-white disabled:opacity-40"
+                >
+                  Criar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Filtros */}
         <div className="flex flex-wrap gap-2">
           {CATEGORIES.map(cat => (
             <button
@@ -163,7 +171,7 @@ export function ComunidadesPage() {
               className={`rounded-full border px-4 py-1.5 text-[13px] font-light transition ${
                 activeCategory === cat
                   ? 'border-[#7C3AED] bg-[#7C3AED] text-white'
-                  : 'border-[#E5E0EB] bg-white text-[#6B7280] hover:border-[#7C3AED] hover:text-[#7C3AED]'
+                  : 'border-[#E5E0EB] bg-white text-[#6B7280] hover:border-[#7C3AED] hover:text-[#7C3AED] dark:border-[#2a2a3d] dark:bg-transparent dark:text-[#9CA3AF]'
               }`}
             >
               {cat}
@@ -171,48 +179,67 @@ export function ComunidadesPage() {
           ))}
         </div>
 
-        {/* Grid de comunidades */}
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map(c => (
-            <div key={c.id} className="flex flex-col overflow-hidden rounded-2xl border border-[#E5E0EB] bg-white transition hover:shadow-sm">
-              {/* Capa */}
-              <div
-                className="flex h-28 w-full items-center justify-center text-4xl"
-                style={{ background: COVER_GRADIENT[c.category] }}
-              >
-                <span role="img" aria-hidden="true">{c.icon}</span>
-              </div>
+        {/* Loading */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-6 w-6 animate-spin text-[#7C3AED]" />
+          </div>
+        )}
 
-              {/* Conteúdo */}
-              <div className="flex flex-1 flex-col p-4">
-                <div className="flex items-center gap-2">
-                  <span className={`text-[11px] font-semibold tracking-wider ${CATEGORY_COLOR[c.category]}`}>
-                    {c.category.toUpperCase()}
-                  </span>
-                </div>
-                <p className="mt-1 text-[15px] font-medium text-[#0f0f14] line-clamp-1">{c.name}</p>
-                <p className="mt-1 text-[12px] font-light text-[#6B7280] line-clamp-2 flex-1">{c.description}</p>
+        {/* Grid */}
+        {!isLoading && communities.length === 0 && (
+          <div className="rounded-2xl border border-[#E5E0EB] bg-white p-10 text-center dark:border-[#2a2a3d] dark:bg-[#13131f]">
+            <Users className="mx-auto h-8 w-8 text-[#9CA3AF]" />
+            <p className="mt-3 text-[14px] font-light text-[#9CA3AF]">Nenhuma comunidade encontrada.</p>
+          </div>
+        )}
 
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="flex items-center gap-1 text-[12px] text-[#9CA3AF]">
-                    <Users className="h-3.5 w-3.5" />
-                    {c.members} membros
-                  </span>
-                  <button
-                    onClick={() => handleToggle(c.id)}
-                    className={`rounded-full px-4 py-1.5 text-[12px] font-light transition ${
-                      c.joined
-                        ? 'bg-[#EDE8F5] text-[#7C3AED] hover:bg-red-50 hover:text-red-500'
-                        : 'bg-[#7C3AED] text-white hover:bg-[#6D28D9]'
-                    }`}
-                  >
-                    {c.joined ? 'Participando' : 'Entrar'}
-                  </button>
+        {!isLoading && communities.length > 0 && (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {communities.map(c => (
+              <div key={c.id} className="flex flex-col overflow-hidden rounded-2xl border border-[#E5E0EB] bg-white transition hover:shadow-sm dark:border-[#2a2a3d] dark:bg-[#13131f]">
+                <div
+                  className="flex h-28 w-full items-center justify-center text-4xl"
+                  style={
+                    c.cover
+                      ? { backgroundImage: `url(${c.cover})`, backgroundSize: 'cover', backgroundPosition: 'center' }
+                      : { background: coverFor(c) }
+                  }
+                >
+                  {!c.cover && <span role="img" aria-hidden="true">{TOPIC_ICON[c.topic] ?? '💬'}</span>}
+                </div>
+
+                <div className="flex flex-1 flex-col p-4">
+                  <div className="flex items-center gap-2">
+                    <span className={`text-[11px] font-semibold tracking-wider ${CATEGORY_COLOR[c.topic] ?? 'text-[#7C3AED]'}`}>
+                      {c.topic.toUpperCase()}
+                    </span>
+                  </div>
+                  <p className="mt-1 line-clamp-1 text-[15px] font-medium text-[#0f0f14] dark:text-[#e8e6ff]">{c.name}</p>
+                  <p className="mt-1 line-clamp-2 flex-1 text-[12px] font-light text-[#6B7280] dark:text-[#9CA3AF]">{c.description}</p>
+
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="flex items-center gap-1 text-[12px] text-[#9CA3AF]">
+                      <Users className="h-3.5 w-3.5" />
+                      {c.members} membros
+                    </span>
+                    <button
+                      onClick={() => handleToggle(c)}
+                      disabled={joinMut.isPending || leaveMut.isPending}
+                      className={`rounded-full px-4 py-1.5 text-[12px] font-light transition disabled:opacity-50 ${
+                        c.joined
+                          ? 'bg-[#EDE8F5] text-[#7C3AED] hover:bg-red-50 hover:text-red-500 dark:bg-[#2a1a4e] dark:text-[#a78bfa]'
+                          : 'bg-[#7C3AED] text-white hover:bg-[#6D28D9]'
+                      }`}
+                    >
+                      {c.joined ? 'Participando' : 'Entrar'}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </AppShell>
   );

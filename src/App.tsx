@@ -1,5 +1,10 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: 1, staleTime: 30_000 } },
+});
 import { ThemeProvider } from './contexts/ThemeContext';
 import { NotificationsProvider } from './contexts/NotificationsContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -33,6 +38,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<BaseLayout><Home /></BaseLayout>} />
       <Route path="/cadastro" element={<PublicOnlyRoute><CadastroPage /></PublicOnlyRoute>} />
+      <Route path="/entrar" element={<PublicOnlyRoute><CadastroPage /></PublicOnlyRoute>} />
       <Route path="/inicio" element={<ProtectedRoute><InicioPage /></ProtectedRoute>} />
       <Route path="/rede" element={<ProtectedRoute><RedePage /></ProtectedRoute>} />
       <Route path="/comunidades" element={<ProtectedRoute><ComunidadesPage /></ProtectedRoute>} />
@@ -48,6 +54,7 @@ function AppRoutes() {
 }
 
 export const App = () => (
+  <QueryClientProvider client={queryClient}>
   <Router>
     <AuthProvider>
       <ThemeProvider>
@@ -61,6 +68,7 @@ export const App = () => (
       </ThemeProvider>
     </AuthProvider>
   </Router>
+  </QueryClientProvider>
 );
 
 export default App;

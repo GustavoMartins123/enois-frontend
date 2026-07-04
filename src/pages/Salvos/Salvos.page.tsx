@@ -1,6 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Bookmark, Heart, MessageCircle, Trash2, Briefcase, MapPin, Clock, Check, ChevronDown, X } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppShell, Avatar } from '../../components/AppShell';
+import { feedApi } from '../../lib/api/feed';
+import { reactionsApi } from '../../lib/api/reactions';
 import { type SavedJobEntry, type SavedJobStatus, loadSavedJobs, persistSavedJobs } from '../Vagas/Vagas.page';
 
 /* ── Posts ──────────────────────────────────────── */
@@ -39,10 +42,6 @@ function postedAgo(iso: string): string {
   if (d === 0) return 'Hoje';
   if (d === 1) return 'Ontem';
   return `${d} dias atrás`;
-}
-
-function readSavedPosts(): SavedPost[] {
-  try { return JSON.parse(localStorage.getItem('saved_posts_data') ?? '[]'); } catch { return []; }
 }
 
 /* ── Vagas ──────────────────────────────────────── */
@@ -147,20 +146,35 @@ function SavedJobCard({ entry, onRemove, onStatusChange }: {
 
 /* ── Page ─────────────────────────────────────────── */
 export function SalvosPage() {
+  const qc = useQueryClient();
   const [activeTab, setActiveTab] = useState<'posts' | 'vagas'>('posts');
-  const [posts, setPosts] = useState<SavedPost[]>([]);
   const [jobEntries, setJobEntries] = useState<SavedJobEntry[]>(loadSavedJobs);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    setPosts(readSavedPosts());
-    setLoading(false);
-  }, []);
+  const { data: savedPostsData, isLoading: loading } = useQuery({
+    queryKey: ['saved-posts'],
+    queryFn: () => feedApi.listSaved(),
+  });
+
+  const unsaveMut = useMutation({
+    mutationFn: (postId: string) => reactionsApi.removeSave(postId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['saved-posts'] }),
+  });
+
+  const posts: SavedPost[] = (savedPostsData?.items ?? []).map(p => ({
+    id: p.id,
+    authorName: p.authorName,
+    authorUsername: p.authorUsername,
+    authorAvatar: p.authorAvatar,
+    type: p.type,
+    content: p.content,
+    createdAt: p.createdAt,
+    reactions: p.counters.reactions,
+    comments: p.counters.comments,
+    saves: p.counters.saves,
+  }));
 
   const handleUnsavePost = (id: string) => {
-    const updated = posts.filter(p => p.id !== id);
-    setPosts(updated);
-    localStorage.setItem('saved_posts_data', JSON.stringify(updated));
+    unsaveMut.mutate(id);
   };
 
   const handleRemoveJob = (jobId: string) => {

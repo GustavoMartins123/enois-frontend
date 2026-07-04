@@ -2,11 +2,15 @@ import { useState, useRef } from 'react';
 import {
   Settings, Clock, Camera, Plus, Save, X, Sun, Moon, Bell, Mail,
   Bookmark, Calendar, MessageCircle, Users, Heart, Briefcase, GraduationCap,
-  Award, Trash2,
+  Award, Trash2, Loader2,
 } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AppShell, Avatar } from '../../components/AppShell';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { profileApi } from '../../lib/api/profile';
+import type { Experience as ApiExp, Education as ApiEdu, Certification as ApiCert } from '../../lib/api/profile';
+import { notificationsApi } from '../../lib/api/notifications';
 
 /* ── Types ───────────────────────────────────────── */
 export interface Experiencia {
@@ -44,37 +48,13 @@ function timeAgo(iso: string): string {
   return `${Math.floor(h / 24)}d`;
 }
 
-const MOCK_ACTIVITY: ActivityItem[] = [
-  { id: 'a1', type: 'event', description: 'Confirmou presença em Meetup React Brasil — Julho 2026', createdAt: new Date(Date.now() - 90 * 60000).toISOString() },
-  { id: 'a2', type: 'connect', description: 'Conectou-se com Diego de Souza F.', createdAt: new Date(Date.now() - 4 * 3600000).toISOString() },
-  { id: 'a3', type: 'comment', description: 'Comentou em uma publicação de Iraê C. Brandão', detail: 'Concordo! Os Server Actions mudaram muito a forma de trabalhar com formulários.', createdAt: new Date(Date.now() - 8 * 3600000).toISOString() },
-  { id: 'a4', type: 'post', description: 'Compartilhou uma publicação no feed', detail: 'Dica rápida: use o hook `use()` do React 19 para unwrap Promises diretamente no render.', createdAt: new Date(Date.now() - 18 * 3600000).toISOString() },
-];
-
-function readActivityItems(): ActivityItem[] {
-  const real: ActivityItem[] = [];
-  try {
-    const feed: ActivityItem[] = JSON.parse(localStorage.getItem('user_activity_feed') ?? '[]');
-    real.push(...feed);
-  } catch {}
-  try {
-    const saved: Array<{ id: string; authorName: string; content: string; createdAt: string }> =
-      JSON.parse(localStorage.getItem('saved_posts_data') ?? '[]');
-    saved.forEach(p => {
-      const id = `save-${p.id}`;
-      if (!real.some(r => r.id === id)) {
-        real.push({
-          id, type: 'save',
-          description: `Salvou uma publicação de ${p.authorName}`,
-          detail: (p.content ?? '').replace(/<[^>]*>/g, '').slice(0, 100),
-          createdAt: p.createdAt ?? new Date().toISOString(),
-        });
-      }
-    });
-  } catch {}
-  const seen = new Set(real.map(r => r.id));
-  const all = [...real, ...MOCK_ACTIVITY.filter(m => !seen.has(m.id))];
-  return all.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+function notifKindToActivityType(kind: string): ActivityType {
+  const k = kind.toLowerCase();
+  if (k.includes('event')) return 'event';
+  if (k.includes('connect') || k.includes('follow')) return 'connect';
+  if (k.includes('comment') || k.includes('reply')) return 'comment';
+  if (k.includes('save') || k.includes('bookmark')) return 'save';
+  return 'post';
 }
 
 /* ── Toggle ─────────────────────────────────────── */
@@ -123,83 +103,180 @@ function PrefRow({ icon: Icon, label, description, checked, onChange }: {
 }
 
 /* ── EditModal ───────────────────────────────────── */
-function EditModal({ onClose }: { onClose: () => void }) {
+function EditModal({
+  onClose,
+  initExperiencias,
+  initEducacoes,
+  initCertificacoes,
+}: {
+  onClose: () => void;
+  initExperiencias: Experiencia[];
+  initEducacoes: Educacao[];
+  initCertificacoes: Certificacao[];
+}) {
   const { user, updateUser } = useAuth();
   const { isDark, toggle: toggleTheme } = useTheme();
+  const qc = useQueryClient();
   const [tab, setTab] = useState<EditTab>('Informações');
 
   const [name, setName] = useState(user?.name ?? '');
   const [username, setUsername] = useState(user?.username ?? '');
   const [headline, setHeadline] = useState(user?.headline ?? '');
-  const [bio, setBio] = useState(() => localStorage.getItem('profile_bio') ?? '');
-  const [empresa, setEmpresa] = useState(() => localStorage.getItem('profile_empresa') ?? '');
-  const [localizacao, setLocalizacao] = useState(() => localStorage.getItem('profile_localizacao') ?? '');
-  const [disponibilidade, setDisponibilidade] = useState(() => localStorage.getItem('profile_disponibilidade') ?? '');
-  const [portfolio, setPortfolio] = useState(() => localStorage.getItem('profile_portfolio') ?? '');
-  const [links, setLinks] = useState(() => localStorage.getItem('profile_links') ?? '');
-  const [habilidades, setHabilidades] = useState(() => localStorage.getItem('profile_habilidades') ?? '');
-  const [objetivos, setObjetivos] = useState(() => localStorage.getItem('profile_objetivos') ?? '');
-  const [aberto, setAberto] = useState(() => localStorage.getItem('profile_aberto') === 'true');
-  const [mentor, setMentor] = useState(() => localStorage.getItem('profile_mentor') === 'true');
-  const [emailNotif, setEmailNotif] = useState(() => localStorage.getItem('pref_email') === 'true');
-  const [pushNotif, setPushNotif] = useState(() => localStorage.getItem('pref_push') !== 'false');
-  const [connectionNotif, setConnectionNotif] = useState(() => localStorage.getItem('pref_connection') !== 'false');
+  const [bio, setBio] = useState('');
+  const [empresa, setEmpresa] = useState('');
+  const [localizacao, setLocalizacao] = useState('');
+  const [disponibilidade, setDisponibilidade] = useState('');
+  const [portfolio, setPortfolio] = useState('');
+  const [links, setLinks] = useState('');
+  const [habilidades, setHabilidades] = useState('');
+  const [objetivos, setObjetivos] = useState('');
+  const [aberto, setAberto] = useState(false);
+  const [mentor, setMentor] = useState(false);
+  const [emailNotif, setEmailNotif] = useState(false);
+  const [pushNotif, setPushNotif] = useState(true);
+  const [connectionNotif, setConnectionNotif] = useState(true);
+
+  /* Load profile data */
+  useQuery({
+    queryKey: ['profile-me'],
+    queryFn: () => profileApi.me(),
+    select: (p) => {
+      setBio(p.bio ?? '');
+      setEmpresa(p.company ?? '');
+      setLocalizacao(p.location ?? '');
+      setDisponibilidade(p.availability ?? '');
+      setPortfolio(p.portfolio ?? '');
+      setLinks(p.externalLinks?.join(', ') ?? '');
+      setHabilidades(p.skills?.join(', ') ?? '');
+      setObjetivos(p.goals?.join(', ') ?? '');
+      setAberto(p.openToWork);
+      setMentor(p.isMentor);
+      return p;
+    },
+  });
 
   /* Experiências */
-  const [experiencias, setExperiencias] = useState<Experiencia[]>(() => loadList('profile_experiencias'));
+  const [experiencias, setExperiencias] = useState<Experiencia[]>(initExperiencias);
   const [addingExp, setAddingExp] = useState(false);
   const [newExp, setNewExp] = useState({ cargo: '', empresa: '', periodo: '', descricao: '' });
 
   /* Educação */
-  const [educacoes, setEducacoes] = useState<Educacao[]>(() => loadList('profile_educacoes'));
+  const [educacoes, setEducacoes] = useState<Educacao[]>(initEducacoes);
   const [addingEdu, setAddingEdu] = useState(false);
   const [newEdu, setNewEdu] = useState({ curso: '', instituicao: '', periodo: '' });
 
   /* Certificações */
-  const [certificacoes, setCertificacoes] = useState<Certificacao[]>(() => loadList('profile_certificacoes'));
+  const [certificacoes, setCertificacoes] = useState<Certificacao[]>(initCertificacoes);
   const [addingCert, setAddingCert] = useState(false);
   const [newCert, setNewCert] = useState({ nome: '', emissor: '', ano: '', url: '' });
 
+  const updateMut = useMutation({
+    mutationFn: () => profileApi.update({
+      name: name.trim() || user?.name,
+      username: username.trim() || user?.username,
+      headline: headline.trim() || null,
+      bio: bio || null,
+      company: empresa || null,
+      location: localizacao || null,
+      availability: disponibilidade || null,
+      portfolio: portfolio || null,
+      externalLinks: links ? links.split(',').map(s => s.trim()).filter(Boolean) : [],
+      skills: habilidades ? habilidades.split(',').map(s => s.trim()).filter(Boolean) : [],
+      goals: objetivos ? objetivos.split(',').map(s => s.trim()).filter(Boolean) : [],
+      openToWork: aberto,
+      isMentor: mentor,
+    }),
+    onSuccess: (profile) => {
+      updateUser({ name: profile.name, username: profile.username, headline: profile.headline ?? undefined });
+      qc.invalidateQueries({ queryKey: ['profile-me'] });
+    },
+  });
+
   const handleSave = () => {
-    updateUser({ name: name.trim() || user?.name, username: username.trim() || user?.username, headline: headline.trim() || user?.headline });
-    localStorage.setItem('profile_bio', bio);
-    localStorage.setItem('profile_empresa', empresa);
-    localStorage.setItem('profile_localizacao', localizacao);
-    localStorage.setItem('profile_disponibilidade', disponibilidade);
-    localStorage.setItem('profile_portfolio', portfolio);
-    localStorage.setItem('profile_links', links);
-    localStorage.setItem('profile_habilidades', habilidades);
-    localStorage.setItem('profile_objetivos', objetivos);
-    localStorage.setItem('profile_aberto', String(aberto));
-    localStorage.setItem('profile_mentor', String(mentor));
-    localStorage.setItem('pref_email', String(emailNotif));
-    localStorage.setItem('pref_push', String(pushNotif));
-    localStorage.setItem('pref_connection', String(connectionNotif));
-    persistList('profile_experiencias', experiencias);
-    persistList('profile_educacoes', educacoes);
-    persistList('profile_certificacoes', certificacoes);
+    updateMut.mutate();
     onClose();
   };
 
-  const addExp = () => {
+  const addExp = async () => {
     if (!newExp.cargo.trim() || !newExp.empresa.trim()) return;
-    setExperiencias(prev => [...prev, { ...newExp, id: String(Date.now()) }]);
+    const [startDate, endDate] = newExp.periodo.split('–').map(s => s.trim());
+    const created = await profileApi.experiences.create({
+      title: newExp.cargo,
+      company: newExp.empresa,
+      description: newExp.descricao || null,
+      startDate: startDate || null,
+      endDate: endDate && endDate !== 'presente' ? endDate : null,
+    }).catch(() => null);
+    if (created) {
+      setExperiencias(prev => [...prev, {
+        id: created.id, cargo: created.title, empresa: created.company,
+        periodo: newExp.periodo, descricao: created.description ?? '',
+      }]);
+      qc.invalidateQueries({ queryKey: ['profile-experiences'] });
+    }
     setNewExp({ cargo: '', empresa: '', periodo: '', descricao: '' });
     setAddingExp(false);
   };
 
-  const addEdu = () => {
+  const deleteExp = async (id: string) => {
+    setExperiencias(prev => prev.filter(e => e.id !== id));
+    await profileApi.experiences.delete(id).catch(() => {});
+    qc.invalidateQueries({ queryKey: ['profile-experiences'] });
+  };
+
+  const addEdu = async () => {
     if (!newEdu.curso.trim() || !newEdu.instituicao.trim()) return;
-    setEducacoes(prev => [...prev, { ...newEdu, id: String(Date.now()) }]);
+    const [degree, field] = newEdu.curso.includes(' em ')
+      ? newEdu.curso.split(' em ').map(s => s.trim())
+      : [newEdu.curso, ''];
+    const [startDate, endDate] = newEdu.periodo.split('–').map(s => s.trim());
+    const created = await profileApi.education.create({
+      school: newEdu.instituicao,
+      degree,
+      field: field || degree,
+      startDate: startDate || null,
+      endDate: endDate && endDate !== 'presente' ? endDate : null,
+    }).catch(() => null);
+    if (created) {
+      setEducacoes(prev => [...prev, {
+        id: created.id, curso: `${created.degree} em ${created.field}`,
+        instituicao: created.school, periodo: newEdu.periodo,
+      }]);
+      qc.invalidateQueries({ queryKey: ['profile-education'] });
+    }
     setNewEdu({ curso: '', instituicao: '', periodo: '' });
     setAddingEdu(false);
   };
 
-  const addCert = () => {
+  const deleteEdu = async (id: string) => {
+    setEducacoes(prev => prev.filter(e => e.id !== id));
+    await profileApi.education.delete(id).catch(() => {});
+    qc.invalidateQueries({ queryKey: ['profile-education'] });
+  };
+
+  const addCert = async () => {
     if (!newCert.nome.trim() || !newCert.emissor.trim()) return;
-    setCertificacoes(prev => [...prev, { ...newCert, id: String(Date.now()) }]);
+    const created = await profileApi.certifications.create({
+      name: newCert.nome,
+      issuer: newCert.emissor,
+      issueDate: newCert.ano ? `${newCert.ano}-01-01` : null,
+      credentialUrl: newCert.url || null,
+    }).catch(() => null);
+    if (created) {
+      setCertificacoes(prev => [...prev, {
+        id: created.id, nome: created.name, emissor: created.issuer,
+        ano: created.issueDate?.slice(0, 4) ?? '', url: created.credentialUrl ?? undefined,
+      }]);
+      qc.invalidateQueries({ queryKey: ['profile-certifications'] });
+    }
     setNewCert({ nome: '', emissor: '', ano: '', url: '' });
     setAddingCert(false);
+  };
+
+  const deleteCert = async (id: string) => {
+    setCertificacoes(prev => prev.filter(c => c.id !== id));
+    await profileApi.certifications.delete(id).catch(() => {});
+    qc.invalidateQueries({ queryKey: ['profile-certifications'] });
   };
 
   const handleAdd = () => {
@@ -285,7 +362,7 @@ function EditModal({ onClose }: { onClose: () => void }) {
                       {exp.descricao && <p className="mt-1 text-[12px] text-[#6B7280] dark:text-[#9CA3AF]">{exp.descricao}</p>}
                     </div>
                     <button
-                      onClick={() => setExperiencias(prev => prev.filter(e => e.id !== exp.id))}
+                      onClick={() => deleteExp(exp.id)}
                       className="shrink-0 rounded-lg p-1.5 text-[#9CA3AF] transition hover:bg-red-50 hover:text-red-400 dark:hover:bg-red-950/30"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -337,7 +414,7 @@ function EditModal({ onClose }: { onClose: () => void }) {
                       {edu.periodo && <p className="text-[12px] text-[#9CA3AF]">{edu.periodo}</p>}
                     </div>
                     <button
-                      onClick={() => setEducacoes(prev => prev.filter(e => e.id !== edu.id))}
+                      onClick={() => deleteEdu(edu.id)}
                       className="shrink-0 rounded-lg p-1.5 text-[#9CA3AF] transition hover:bg-red-50 hover:text-red-400 dark:hover:bg-red-950/30"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -386,7 +463,7 @@ function EditModal({ onClose }: { onClose: () => void }) {
                       {cert.url && <a href={cert.url} target="_blank" rel="noreferrer" className="text-[12px] text-[#7C3AED] hover:underline">Ver credencial →</a>}
                     </div>
                     <button
-                      onClick={() => setCertificacoes(prev => prev.filter(c => c.id !== cert.id))}
+                      onClick={() => deleteCert(cert.id)}
                       className="shrink-0 rounded-lg p-1.5 text-[#9CA3AF] transition hover:bg-red-50 hover:text-red-400 dark:hover:bg-red-950/30"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -489,26 +566,76 @@ function EditModal({ onClose }: { onClose: () => void }) {
 /* ── PerfilPage ──────────────────────────────────── */
 export function PerfilPage() {
   const { user, updateUser } = useAuth();
+  const qc = useQueryClient();
   const [editOpen, setEditOpen] = useState(false);
-  const [activityItems, setActivityItems] = useState<ActivityItem[]>(readActivityItems);
   const [coverUrl, setCoverUrl] = useState<string | null>(() => localStorage.getItem('cover_image'));
 
-  const [disponibilidade, setDisponibilidade] = useState(() => localStorage.getItem('profile_disponibilidade') ?? '');
-  const [bio, setBio] = useState(() => localStorage.getItem('profile_bio') ?? '');
-  const [habilidades, setHabilidades] = useState(() => localStorage.getItem('profile_habilidades') ?? '');
-  const [experiencias, setExperiencias] = useState<Experiencia[]>(() => loadList('profile_experiencias'));
-  const [educacoes, setEducacoes] = useState<Educacao[]>(() => loadList('profile_educacoes'));
-  const [certificacoes, setCertificacoes] = useState<Certificacao[]>(() => loadList('profile_certificacoes'));
+  const { data: profileData } = useQuery({
+    queryKey: ['profile-me'],
+    queryFn: () => profileApi.me(),
+  });
+
+  const { data: notifData } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => notificationsApi.list(),
+  });
+
+  const { data: expData } = useQuery({
+    queryKey: ['profile-experiences'],
+    queryFn: () => profileApi.experiences.list(),
+  });
+
+  const { data: eduData } = useQuery({
+    queryKey: ['profile-education'],
+    queryFn: () => profileApi.education.list(),
+  });
+
+  const { data: certData } = useQuery({
+    queryKey: ['profile-certifications'],
+    queryFn: () => profileApi.certifications.list(),
+  });
+
+  const bio = profileData?.bio ?? localStorage.getItem('profile_bio') ?? '';
+  const habilidades = profileData?.skills?.join(', ') ?? localStorage.getItem('profile_habilidades') ?? '';
+  const disponibilidade = profileData?.availability ?? localStorage.getItem('profile_disponibilidade') ?? '';
+
+  const activityItems: ActivityItem[] = (notifData?.items ?? []).map(n => ({
+    id: n.id,
+    type: notifKindToActivityType(n.kind),
+    description: n.body || n.title,
+    createdAt: n.createdAt,
+  }));
+
+  const experiencias: Experiencia[] = (expData ?? []).map((e: ApiExp) => ({
+    id: e.id,
+    cargo: e.title,
+    empresa: e.company,
+    periodo: [e.startDate?.slice(0, 7), e.currentlyHere ? 'presente' : e.endDate?.slice(0, 7)].filter(Boolean).join(' – '),
+    descricao: e.description ?? '',
+  }));
+
+  const educacoes: Educacao[] = (eduData ?? []).map((e: ApiEdu) => ({
+    id: e.id,
+    curso: `${e.degree} em ${e.field}`,
+    instituicao: e.school,
+    periodo: [e.startDate?.slice(0, 7), e.currentlyHere ? 'presente' : e.endDate?.slice(0, 7)].filter(Boolean).join(' – '),
+  }));
+
+  const certificacoes: Certificacao[] = (certData ?? []).map((c: ApiCert) => ({
+    id: c.id,
+    nome: c.name,
+    emissor: c.issuer,
+    ano: c.issueDate?.slice(0, 4) ?? '',
+    url: c.credentialUrl ?? undefined,
+  }));
 
   const handleEditClose = () => {
     setEditOpen(false);
-    setDisponibilidade(localStorage.getItem('profile_disponibilidade') ?? '');
-    setBio(localStorage.getItem('profile_bio') ?? '');
-    setHabilidades(localStorage.getItem('profile_habilidades') ?? '');
-    setExperiencias(loadList('profile_experiencias'));
-    setEducacoes(loadList('profile_educacoes'));
-    setCertificacoes(loadList('profile_certificacoes'));
-    setActivityItems(readActivityItems());
+    qc.invalidateQueries({ queryKey: ['profile-me'] });
+    qc.invalidateQueries({ queryKey: ['profile-experiences'] });
+    qc.invalidateQueries({ queryKey: ['profile-education'] });
+    qc.invalidateQueries({ queryKey: ['profile-certifications'] });
+    qc.invalidateQueries({ queryKey: ['notifications'] });
   };
 
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -537,7 +664,14 @@ export function PerfilPage() {
 
   return (
     <AppShell>
-      {editOpen && <EditModal onClose={handleEditClose} />}
+      {editOpen && (
+        <EditModal
+          onClose={handleEditClose}
+          initExperiencias={experiencias}
+          initEducacoes={educacoes}
+          initCertificacoes={certificacoes}
+        />
+      )}
 
       <div className="space-y-4">
         {/* Card principal */}

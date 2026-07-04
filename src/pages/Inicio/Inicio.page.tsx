@@ -3,11 +3,14 @@ import {
   Image, FileText, BarChart3, Calendar, Video,
   Send, Heart, MessageCircle, Bookmark, Share2, Flag, Trash2,
   TrendingUp, UserPlus, Link2, Repeat2, Users, Camera, Play,
-  Bold, Italic, Paperclip, X,
+  Bold, Italic, Paperclip, X, Loader2,
 } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { AppShell, Avatar } from '../../components/AppShell';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNotifications } from '../../contexts/NotificationsContext';
+import { feedApi, networkApi, eventsApi, reactionsApi, commentsApi } from '../../lib/api';
+import type { PostView, CommentView } from '../../lib/api';
 
 const POST_TYPES = [
   { key: 'INSIGHT',  label: 'Insight',  icon: Image    },
@@ -26,16 +29,26 @@ const FILTER_CHIPS = [
   { key: 'MEDIA',    label: 'Mídia'    },
 ] as const;
 
-const MOCK_SUGGESTIONS = [
-  { id: '1', name: 'Diego de Souza F.', headline: 'Gestão de Projetos de...', avatar: null },
-  { id: '2', name: 'Guilherme L.',       headline: 'UX Designer · Nubank',      avatar: null },
-  { id: '3', name: 'Vitor Hugo Pasch.', headline: 'Engenheiro de Software',    avatar: null },
-  { id: '4', name: 'André Kalil Rosen.', headline: 'Marketing Digital',         avatar: null },
-];
 
 const EMOJIS = ['👋','🚀','💡','🎯','💪','🔥','✅','⚡','🌟','🤝','💻','📊','🎉','🙌','👀','💬'];
 
-const now = Date.now();
+
+function postViewToLocal(p: PostView): LocalPost {
+  return {
+    id: p.id,
+    authorName: p.authorName,
+    authorUsername: p.authorUsername,
+    authorAvatar: p.authorAvatar,
+    type: (p.type === 'OPPORTUNITY' ? 'PROJECT' : p.type) as PostType,
+    content: p.content,
+    createdAt: p.createdAt,
+    reactions: p.counters.reactions,
+    comments: p.counters.comments,
+    saves: p.counters.saves,
+    hasVideo: p.mediaIds.length > 0,
+    currentUserReaction: p.currentUserReaction,
+  };
+}
 
 type PostType = typeof POST_TYPES[number]['key'];
 
@@ -54,65 +67,15 @@ interface LocalPost {
   saves: number;
   communityName?: string;
   hasVideo?: boolean;
+  currentUserReaction?: string | null;
 }
 
-const MOCK_COMMUNITY_POSTS: LocalPost[] = [
-  {
-    id: 'c1', authorName: 'Iraê C. Brandão', authorUsername: 'irae', authorAvatar: null,
-    type: 'INSIGHT', communityName: 'Mundinho React',
-    content: 'Alguém mais animado com o React 19 Server Actions? Testei ontem e sinceramente, mudou a forma como penso em formulários. Menos useEffect, mais intenção.',
-    createdAt: new Date(now - 25 * 60000).toISOString(), reactions: 14, comments: 5, saves: 3,
-  },
-  {
-    id: 'c2', authorName: 'Beatriz Alves', authorUsername: 'bealves', authorAvatar: null,
-    type: 'QUESTION', communityName: 'Mundinho React',
-    content: 'Vocês usam Zustand ou Context API para estado global em projetos médios? Tenho sentido o Context pesado demais em re-renders mas não quero adicionar dependências desnecessárias.',
-    createdAt: new Date(now - 2 * 3600000).toISOString(), reactions: 8, comments: 12, saves: 1,
-  },
-  {
-    id: 'c3', authorName: 'Victor Penachio', authorUsername: 'victorp', authorAvatar: null,
-    type: 'ARTICLE', communityName: 'Editais, Inovação & Parcerias',
-    content: 'Edital aberto: FINEP está com chamada pública para startups de impacto social na área de clima. Prazo até 30/07/2026. Vale muito a pena olhar — subsídio de até R$ 500 mil sem contrapartida financeira. 👀',
-    createdAt: new Date(now - 4 * 3600000).toISOString(), reactions: 23, comments: 7, saves: 9,
-  },
-  {
-    id: 'c6', authorName: 'Lucas Ferreira', authorUsername: 'lucasf', authorAvatar: null,
-    type: 'MEDIA', communityName: 'Mundinho React', hasVideo: true,
-    content: 'Gravei um vídeo rápido mostrando como configurar Vite + React + TypeScript em menos de 2 minutos. Confira!',
-    createdAt: new Date(now - 5 * 3600000).toISOString(), reactions: 7, comments: 2, saves: 3,
-  },
-  {
-    id: 'c4', authorName: 'Camila Torres', authorUsername: 'camilat', authorAvatar: null,
-    type: 'INSIGHT', communityName: 'Editais, Inovação & Parcerias',
-    content: 'Parceria firmada entre o Hub Figital e a USP para desenvolvimento de projetos de inovação aberta. Oportunidades abertas para makers, devs e designers até agosto. Link no perfil.',
-    createdAt: new Date(now - 6 * 3600000).toISOString(), reactions: 11, comments: 3, saves: 4,
-  },
-  {
-    id: 'c5', authorName: 'Rafael Monteiro', authorUsername: 'rafaelm', authorAvatar: null,
-    type: 'INSIGHT', communityName: 'Mundinho React',
-    content: 'Dica rápida: use o hook `use()` do React 19 para unwrap Promises diretamente no render. Reduz consideravelmente o boilerplate de loading state.',
-    createdAt: new Date(now - 10 * 3600000).toISOString(), reactions: 19, comments: 4, saves: 6,
-  },
-];
-
-const MOCK_EVENTS = [
-  { id: '1', title: 'Lançamento - Hub Figital de Inovação',    date: '2026-07-10', format: 'HYBRID', attendees: 2  },
-  { id: '2', title: 'Workshop de Comunicações Via Satélite',    date: '2026-07-15', format: 'HYBRID', attendees: 1  },
-  { id: '3', title: 'Meetup React Brasil',                      date: '2026-07-05', format: 'ONLINE', attendees: 48 },
-];
 
 const TYPE_LABEL: Record<string, string> = {
   INSIGHT: 'Insight', ARTICLE: 'Artigo', QUESTION: 'Pergunta',
   PROJECT: 'Projeto', MEDIA: 'Mídia',
 };
 
-function trackActivity(type: 'post' | 'connect' | 'save' | 'comment', description: string, detail?: string) {
-  const item = { id: `${type}-${Date.now()}`, type, description, detail, createdAt: new Date().toISOString() };
-  try {
-    const prev = JSON.parse(localStorage.getItem('user_activity_feed') ?? '[]');
-    localStorage.setItem('user_activity_feed', JSON.stringify([item, ...prev].slice(0, 100)));
-  } catch {}
-}
 
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
@@ -386,24 +349,57 @@ function PostCard({ post, isOwn, onDelete }: {
 }) {
   const { user } = useAuth();
   const { add: addNotif } = useNotifications();
+  const qc = useQueryClient();
 
-  const isSavedInitially = () => {
-    try {
-      const data: LocalPost[] = JSON.parse(localStorage.getItem('saved_posts_data') ?? '[]');
-      return data.some(p => p.id === post.id);
-    } catch { return false; }
-  };
-
-  const [liked,        setLiked]        = useState(false);
-  const [saved,        setSaved]        = useState(isSavedInitially);
+  const [liked,        setLiked]        = useState(() => !!post.currentUserReaction);
+  const [saved,        setSaved]        = useState(false);
   const [flagged,      setFlagged]      = useState(false);
   const [showComments, setShowComments] = useState(false);
-  const [comments,     setComments]     = useState<Comment[]>([]);
   const [reply,        setReply]        = useState('');
   const [pendingDelete, setPendingDelete] = useState<null | 'post' | string>(null);
   const [shareOpen,    setShareOpen]    = useState(false);
   const [linkCopied,   setLinkCopied]   = useState(false);
   const shareRef = useRef<HTMLDivElement>(null);
+
+  const { data: apiComments } = useQuery({
+    queryKey: ['comments', post.id],
+    queryFn: () => commentsApi.list(post.id),
+    enabled: showComments,
+    select: (r) => r.items,
+  });
+
+  const apiToComment = (c: CommentView): Comment => ({
+    id: c.id, author: c.authorName, avatar: c.authorAvatar, text: c.content,
+  });
+
+  const [localComments, setLocalComments] = useState<Comment[]>([]);
+  const comments = [
+    ...(apiComments ?? []).map(apiToComment),
+    ...localComments,
+  ];
+
+  const likeMut = useMutation({
+    mutationFn: () => liked ? reactionsApi.removeReaction(post.id) : reactionsApi.react(post.id, 'LIKE'),
+    onMutate: () => setLiked(p => !p),
+    onError: () => setLiked(p => !p),
+  });
+
+  const saveMut = useMutation({
+    mutationFn: () => saved ? reactionsApi.removeSave(post.id) : reactionsApi.save(post.id),
+    onMutate: () => setSaved(p => !p),
+    onError: () => setSaved(p => !p),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['saved-posts'] }),
+  });
+
+  const addCommentMut = useMutation({
+    mutationFn: (text: string) => commentsApi.create(post.id, text),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['comments', post.id] }),
+  });
+
+  const deleteCommentMut = useMutation({
+    mutationFn: (commentId: string) => commentsApi.remove(post.id, commentId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['comments', post.id] }),
+  });
 
   useEffect(() => {
     if (!shareOpen) return;
@@ -415,20 +411,7 @@ function PostCard({ post, isOwn, onDelete }: {
   }, [shareOpen]);
 
   const handleSaveToggle = () => {
-    const next = !saved;
-    setSaved(next);
-    try {
-      const data: LocalPost[] = JSON.parse(localStorage.getItem('saved_posts_data') ?? '[]');
-      if (next) {
-        if (!data.some(p => p.id === post.id)) data.push(post);
-        const preview = post.content.replace(/<[^>]*>/g, '').trim().slice(0, 120);
-        trackActivity('save', `Salvou uma publicação de ${post.authorName}`, preview || undefined);
-      } else {
-        const idx = data.findIndex(p => p.id === post.id);
-        if (idx !== -1) data.splice(idx, 1);
-      }
-      localStorage.setItem('saved_posts_data', JSON.stringify(data));
-    } catch {}
+    saveMut.mutate();
   };
 
   const handleCopyLink = async () => {
@@ -446,16 +429,28 @@ function PostCard({ post, isOwn, onDelete }: {
   const submitReply = (e: FormEvent) => {
     e.preventDefault();
     if (!reply.trim()) return;
-    setComments(prev => [...prev, {
-      id: String(Date.now()), author: user?.name ?? 'Você',
-      avatar: user?.avatar ?? null, text: reply.trim(),
-    }]);
+    const text = reply.trim();
     setReply('');
+    addCommentMut.mutate(text, {
+      onError: () => {
+        setLocalComments(prev => [...prev, {
+          id: String(Date.now()), author: user?.name ?? 'Você',
+          avatar: user?.avatar ?? null, text,
+        }]);
+      },
+    });
   };
 
   const handleConfirm = () => {
     if (pendingDelete === 'post') onDelete();
-    else if (pendingDelete) setComments(prev => prev.filter(c => c.id !== pendingDelete));
+    else if (pendingDelete) {
+      const isLocalComment = localComments.some(c => c.id === pendingDelete);
+      if (isLocalComment) {
+        setLocalComments(prev => prev.filter(c => c.id !== pendingDelete));
+      } else {
+        deleteCommentMut.mutate(pendingDelete);
+      }
+    }
     setPendingDelete(null);
   };
 
@@ -506,7 +501,7 @@ function PostCard({ post, isOwn, onDelete }: {
         )}
 
         <div className="mt-4 flex items-center gap-4 border-t border-[#F5F3FF] pt-3 text-[13px] text-[#9CA3AF] dark:border-[#1e1e2e]">
-          <button aria-label="Curtir" onClick={() => setLiked(p => !p)} className={`flex items-center gap-1.5 transition ${liked ? 'text-[#7C3AED]' : 'hover:text-[#7C3AED]'}`}>
+          <button aria-label="Curtir" onClick={() => likeMut.mutate()} className={`flex items-center gap-1.5 transition ${liked ? 'text-[#7C3AED]' : 'hover:text-[#7C3AED]'}`}>
             <Heart className={`h-4 w-4 ${liked ? 'fill-[#7C3AED]' : ''}`} />
             {post.reactions + (liked ? 1 : 0)}
           </button>
@@ -584,12 +579,50 @@ function PostCard({ post, isOwn, onDelete }: {
 export function InicioPage() {
   const { user } = useAuth();
   const { add: addNotif } = useNotifications();
+  const qc = useQueryClient();
   const [typeFilter,   setTypeFilter]   = useState<PostType | null>(null);
-  const [posts,        setPosts]        = useState<LocalPost[]>(MOCK_COMMUNITY_POSTS);
   const [composerOpen, setComposerOpen] = useState(false);
-  const [suggestions,  setSuggestions]  = useState(MOCK_SUGGESTIONS);
   const [coverUrl,     setCoverUrl]     = useState<string | null>(() => localStorage.getItem('cover_image'));
   const coverInputRef = useRef<HTMLInputElement>(null);
+
+  const { data: feedData, isLoading: feedLoading } = useQuery({
+    queryKey: ['feed'],
+    queryFn: () => feedApi.list(null, 20),
+  });
+
+  const { data: suggestionsData } = useQuery({
+    queryKey: ['suggestions'],
+    queryFn: () => networkApi.suggestions(4),
+  });
+
+  const { data: eventsData } = useQuery({
+    queryKey: ['events'],
+    queryFn: () => eventsApi.list(),
+  });
+
+  const { data: networkSummary } = useQuery({
+    queryKey: ['network-summary'],
+    queryFn: () => networkApi.summary(),
+  });
+
+  const createPostMut = useMutation({
+    mutationFn: (data: { content: string; type: PostView['type']; }) => feedApi.create(data),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['feed'] }),
+  });
+
+  const deletePostMut = useMutation({
+    mutationFn: (postId: string) => feedApi.delete(postId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['feed'] }),
+  });
+
+  const connectMut = useMutation({
+    mutationFn: (userId: string) => networkApi.connect(userId),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['suggestions'] }),
+  });
+
+  const apiPosts = (feedData?.items ?? []).map(postViewToLocal);
+  const suggestions = suggestionsData ?? [];
+  const events = eventsData?.items ?? [];
 
   const handleCoverChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -603,27 +636,14 @@ export function InicioPage() {
     reader.readAsDataURL(file);
   };
 
-  const handlePublish = (draft: string, type: PostType, videoFile: File | null) => {
-    const newPost: LocalPost = {
-      id: String(Date.now()),
-      authorName: user?.name ?? 'Você',
-      authorUsername: user?.username ?? 'voce',
-      authorAvatar: user?.avatar ?? null,
-      type,
-      content: draft,
-      createdAt: new Date().toISOString(),
-      reactions: 0, comments: 0, saves: 0,
-      hasVideo: videoFile != null,
-    };
-    setPosts(prev => [newPost, ...prev]);
+  const handlePublish = (draft: string, type: PostType, _videoFile: File | null) => {
+    createPostMut.mutate({ content: draft, type: type as PostView['type'] });
     addNotif('Sua publicação foi compartilhada com a rede.', 'post');
-    const preview = draft.replace(/<[^>]*>/g, '').trim().slice(0, 120);
-    trackActivity('post', 'Publicou uma publicação no feed', preview || undefined);
   };
 
-  const handleDelete = (id: string) => setPosts(prev => prev.filter(p => p.id !== id));
+  const handleDelete = (id: string) => deletePostMut.mutate(id);
 
-  const visiblePosts = typeFilter ? posts.filter(p => p.type === typeFilter) : posts;
+  const visiblePosts = typeFilter ? apiPosts.filter(p => p.type === typeFilter) : apiPosts;
 
   return (
     <AppShell>
@@ -673,7 +693,11 @@ export function InicioPage() {
 
           {/* Feed */}
           <div className="space-y-4">
-            {visiblePosts.length === 0 ? (
+            {feedLoading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-6 w-6 animate-spin text-[#7C3AED]" />
+              </div>
+            ) : visiblePosts.length === 0 ? (
               <div className="rounded-2xl border border-[#E5E0EB] bg-white px-6 py-14 text-center dark:border-[#2a2a3d] dark:bg-[#13131f]">
                 <p className="text-[15px] font-light text-[#0f0f14] dark:text-[#e8e6ff]">
                   {typeFilter ? `Nenhuma publicação do tipo "${TYPE_LABEL[typeFilter]}"` : 'Sem publicações ainda'}
@@ -681,7 +705,7 @@ export function InicioPage() {
               </div>
             ) : (
               visiblePosts.map(p => (
-                <PostCard key={p.id} post={p} isOwn={p.authorName === user?.name} onDelete={() => handleDelete(p.id)} />
+                <PostCard key={p.id} post={p} isOwn={p.authorUsername === user?.username} onDelete={() => handleDelete(p.id)} />
               ))
             )}
           </div>
@@ -711,8 +735,8 @@ export function InicioPage() {
               <p className="mt-2 text-[14px] font-light text-[#0f0f14] dark:text-[#e8e6ff]">{user?.name}</p>
               <p className="text-[12px] text-[#9CA3AF]">{user?.headline ?? 'Conexão'}</p>
               <div className="mt-3 grid grid-cols-2 gap-1 border-t border-[#F5F3FF] pt-3 text-center text-[12px] dark:border-[#1e1e2e]">
-                <div><p className="font-light text-[#0f0f14] dark:text-[#e8e6ff]">0</p><p className="text-[#9CA3AF]">Conexões</p></div>
-                <div><p className="font-light text-[#0f0f14] dark:text-[#e8e6ff]">0</p><p className="text-[#9CA3AF]">Seguidores</p></div>
+                <div><p className="font-light text-[#0f0f14] dark:text-[#e8e6ff]">{networkSummary?.connections ?? 0}</p><p className="text-[#9CA3AF]">Conexões</p></div>
+                <div><p className="font-light text-[#0f0f14] dark:text-[#e8e6ff]">{networkSummary?.followers ?? 0}</p><p className="text-[#9CA3AF]">Seguidores</p></div>
               </div>
             </div>
           </div>
@@ -734,8 +758,12 @@ export function InicioPage() {
                     <p className="truncate text-[11px] text-[#9CA3AF]">{u.headline}</p>
                   </div>
                   <button
-                    onClick={() => { setSuggestions(prev => prev.filter(s => s.id !== u.id)); addNotif(`Você se conectou com ${u.name}.`, 'connect'); trackActivity('connect', `Conectou-se com ${u.name}`); }}
-                    className="shrink-0 rounded-full border border-[#E5E0EB] px-3 py-1 text-[12px] font-light text-[#6B7280] transition hover:border-[#7C3AED] hover:text-[#7C3AED] dark:border-[#2a2a3d] dark:text-[#9CA3AF]"
+                    onClick={() => {
+                      connectMut.mutate(u.id);
+                      addNotif(`Você se conectou com ${u.name}.`, 'connect');
+                    }}
+                    disabled={connectMut.isPending}
+                    className="shrink-0 rounded-full border border-[#E5E0EB] px-3 py-1 text-[12px] font-light text-[#6B7280] transition hover:border-[#7C3AED] hover:text-[#7C3AED] disabled:opacity-50 dark:border-[#2a2a3d] dark:text-[#9CA3AF]"
                   >
                     Conectar
                   </button>
@@ -750,7 +778,7 @@ export function InicioPage() {
               <p className="text-[14px] font-light text-[#0f0f14] dark:text-[#e8e6ff]">Acontecendo agora</p>
             </div>
             <ul className="space-y-4">
-              {MOCK_EVENTS.map(e => (
+              {events.slice(0, 3).map(e => (
                 <li key={e.id}>
                   <p className="text-[13px] font-light text-[#0f0f14] dark:text-[#e8e6ff]">{e.title}</p>
                   <p className="text-[11px] text-[#9CA3AF]">
