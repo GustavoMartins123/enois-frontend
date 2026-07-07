@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { requireAuth } from "@/lib/require-auth";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Image, FileText, BarChart3, Calendar, UserPlus, TrendingUp, X, Film } from "lucide-react";
+import { Image, FileText, BarChart3, Calendar, UserPlus, TrendingUp, X, Film, Loader2 } from "lucide-react";
 import { useState, useRef, type FormEvent } from "react";
 import { useMediaUpload } from "@/lib/use-media-upload";
 import type { UploadResult } from "@/lib/use-media-upload";
@@ -73,6 +73,7 @@ function Home() {
   const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([]);
   const [postType, setPostType] = useState<PostView["type"]>("INSIGHT");
   const [media, setMedia] = useState<MediaItem[]>([]);
+  const [publishError, setPublishError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const upload = useMediaUpload();
 
@@ -89,6 +90,7 @@ function Home() {
     const content = draft.trim();
     if (!content) return;
 
+    setPublishError(null);
     try {
       let mediaIds: string[] = [];
       if (media.length > 0) {
@@ -100,8 +102,8 @@ function Home() {
       setMentionedUserIds([]);
       setPostType("INSIGHT");
       setMedia([]);
-    } catch {
-      // error handled by mutation state
+    } catch (err) {
+      setPublishError(err instanceof Error ? err.message : "Erro ao publicar. Tente novamente.");
     }
   };
 
@@ -258,7 +260,10 @@ function Home() {
                 />
               </div>
               <div className="flex items-center gap-2">
-                {upload.status === "uploading" && (
+                {publishError && (
+                  <p className="max-w-[200px] truncate text-xs text-destructive">{publishError}</p>
+                )}
+                {!publishError && upload.status === "uploading" && (
                   <span className="text-xs text-muted-foreground">
                     Enviando... {upload.progress}%
                   </span>
@@ -268,7 +273,9 @@ function Home() {
                   className="rounded-full"
                   disabled={!draft.trim() || createPost.isPending || upload.status === "uploading"}
                 >
-                  {createPost.isPending ? "Publicando..." : "Publicar"}
+                  {createPost.isPending || upload.status === "uploading" ? (
+                    <><Loader2 className="h-3.5 w-3.5 animate-spin" /> {upload.status === "uploading" ? "Enviando..." : "Publicando..."}</>
+                  ) : "Publicar"}
                 </Button>
               </div>
             </div>

@@ -30,9 +30,9 @@ export function EditProfileDialog({ profile, children }: Props) {
   const [location, setLocation] = useState(profile.location ?? "");
   const [availability, setAvailability] = useState(profile.availability ?? "");
   const [portfolio, setPortfolio] = useState(profile.portfolio ?? "");
-  const [linksText, setLinksText] = useState(profile.externalLinks.join("\n"));
-  const [skillsText, setSkillsText] = useState(profile.skills.join(", "));
-  const [goalsText, setGoalsText] = useState(profile.goals.join(", "));
+  const [linksText, setLinksText] = useState((profile.externalLinks ?? []).join("\n"));
+  const [skillsText, setSkillsText] = useState((profile.skills ?? []).join(", "));
+  const [goalsText, setGoalsText] = useState((profile.goals ?? []).join(", "));
   const [openToWork, setOpenToWork] = useState(profile.openToWork);
   const [isMentor, setIsMentor] = useState(profile.isMentor);
   const [usernameError, setUsernameError] = useState("");
