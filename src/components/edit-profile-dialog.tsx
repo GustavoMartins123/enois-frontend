@@ -355,12 +355,15 @@ function SubList<T extends { id: string }>({
                   value={form[f.key] ?? ""}
                   onChange={(e) => setForm((p) => ({ ...p, [f.key]: e.target.value }))}
                   rows={2}
+                  className="h-10 border-transparent bg-muted"
                 />
               ) : (
+
                 <Input
                   type={f.type ?? "text"}
                   value={form[f.key] ?? ""}
                   onChange={(e) => setForm((p) => ({ ...p, [f.key]: e.target.value }))}
+                  className="h-10 border-transparent bg-muted"
                 />
               )}
             </Field>
