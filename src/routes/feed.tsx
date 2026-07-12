@@ -148,7 +148,7 @@ function Home() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-4">
           {/* Composer */}
-          <form onSubmit={publishPost} className="surface-card p-4 sm:p-5">
+          <form onSubmit={publishPost} className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-5">
             <div className="flex items-center gap-3">
               <UserAvatar
                 src={profileUser?.avatar}
@@ -159,7 +159,7 @@ function Home() {
                 value={draft}
                 onChange={(val, ids) => { setDraft(val); setMentionedUserIds(ids); }}
                 placeholder="Compartilhe algo que aprendeu hoje..."
-                className="min-h-11 flex-1 resize-none rounded-2xl border-border bg-muted/40 px-3 py-2 text-sm"
+                className="min-h-11 flex-1 resize-none rounded-2xl border-border-soft bg-surface-1 px-3 py-2 text-[14px] font-light"
                 maxLength={600}
               />
             </div>
@@ -179,17 +179,17 @@ function Home() {
                     {media.map((item, i) => (
                       <div
                         key={i}
-                        className="relative overflow-hidden rounded-xl border border-border"
+                        className="relative overflow-hidden rounded-xl border border-border-soft"
                       >
                         <img
                           src={item.preview}
                           alt=""
-                          className="h-48 w-full object-cover bg-muted"
+                          className="h-48 w-full object-cover bg-surface-1"
                         />
                         <button
                           type="button"
                           onClick={() => removeMedia(i)}
-                          className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-background/80 text-foreground shadow hover:bg-background"
+                          className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-surface-card/80 text-text-strong shadow hover:bg-surface-card"
                         >
                           <X className="h-4 w-4" />
                         </button>
@@ -197,12 +197,12 @@ function Home() {
                     ))}
                   </div>
                 ) : (
-                  <div className="relative overflow-hidden rounded-xl border border-border">
-                    <video src={media[0].preview} controls className="max-h-64 w-full bg-muted" />
+                  <div className="relative overflow-hidden rounded-xl border border-border-soft">
+                    <video src={media[0].preview} controls className="max-h-64 w-full bg-surface-1" />
                     <button
                       type="button"
                       onClick={() => removeMedia(0)}
-                      className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-background/80 text-foreground shadow hover:bg-background"
+                      className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-surface-card/80 text-text-strong shadow hover:bg-surface-card"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -220,8 +220,8 @@ function Home() {
               onChange={handleMediaSelect}
             />
 
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-sm text-muted-foreground">
-              <div className="flex flex-wrap gap-1">
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border-soft pt-3 text-[13px] font-light text-text-subtle">
+              <div className="flex flex-wrap gap-1.5">
                 <ComposerAction
                   icon={Image}
                   label="Insight"
@@ -261,10 +261,10 @@ function Home() {
               </div>
               <div className="flex items-center gap-2">
                 {publishError && (
-                  <p className="max-w-[200px] truncate text-xs text-destructive">{publishError}</p>
+                  <p className="max-w-[200px] truncate text-[12px] font-light text-destructive">{publishError}</p>
                 )}
                 {!publishError && upload.status === "uploading" && (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-[12px] font-light text-text-subtle">
                     Enviando... {upload.progress}%
                   </span>
                 )}
@@ -282,7 +282,7 @@ function Home() {
           </form>
 
           {/* Tabs */}
-          <div className="flex items-center gap-1 overflow-x-auto rounded-full border border-border bg-card p-1 text-sm">
+          <div className="flex flex-wrap items-center gap-1.5">
             <TabPill active={tab === "FOR_YOU"} onClick={() => setTab("FOR_YOU")}>
               Para você
             </TabPill>
@@ -310,30 +310,30 @@ function Home() {
         {/* Right rail */}
         <aside className="hidden space-y-4 lg:block">
           {profileUser && (
-            <div className="surface-card overflow-hidden">
-              <div className="h-16" style={{ background: "var(--gradient-primary)" }} />
-              <div className="-mt-8 px-5 pb-5 text-center">
+            <div className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
+              <div className="h-14" style={{ background: "var(--gradient-primary)" }} />
+              <div className="-mt-7 px-4 pb-4 text-center">
                 <UserAvatar
                   src={profileUser.avatar}
                   alt={profileUser.name}
-                  className="mx-auto h-16 w-16 ring-4 ring-card"
+                  className="mx-auto h-16 w-16 ring-4 ring-surface-card"
                 />
                 <Link
                   to="/perfil/$username"
                   params={{ username: profileUser.username }}
-                  className="mt-3 block font-semibold hover:underline"
+                  className="mt-2 block text-[14px] font-light text-text-strong hover:underline"
                 >
                   {profileUser.name}
                 </Link>
-                <p className="line-clamp-2 text-xs text-muted-foreground">{profileUser.headline}</p>
-                <div className="mt-4 grid grid-cols-2 gap-1 border-t border-border pt-3 text-xs">
+                <p className="line-clamp-2 text-[12px] font-light text-text-subtle">{profileUser.headline}</p>
+                <div className="mt-3 grid grid-cols-2 gap-1 border-t border-border-soft pt-3 text-[12px]">
                   <div>
-                    <p className="font-semibold text-foreground">{profileUser.connectionsCount}</p>
-                    <p className="text-muted-foreground">Conexões</p>
+                    <p className="font-light text-text-strong">{profileUser.connectionsCount}</p>
+                    <p className="text-text-subtle">Conexões</p>
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground">{profileUser.followersCount}</p>
-                    <p className="text-muted-foreground">Seguidores</p>
+                    <p className="font-light text-text-strong">{profileUser.followersCount}</p>
+                    <p className="text-text-subtle">Seguidores</p>
                   </div>
                 </div>
               </div>
@@ -341,12 +341,12 @@ function Home() {
           )}
 
           {suggestionList.length > 0 && (
-            <div className="surface-card p-4 sm:p-5">
+            <div className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-5">
               <div className="flex items-center gap-2">
                 <UserPlus className="h-4 w-4 text-primary" />
-                <h3 className="font-semibold">Sugestões para você</h3>
+                <h3 className="text-[14px] font-light text-text-strong">Sugestões para você</h3>
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-0.5 text-[12px] font-light text-text-subtle">
                 Com base em interesses e objetivos em comum.
               </p>
               <ul className="mt-4 space-y-3">
@@ -357,16 +357,15 @@ function Home() {
                       <Link
                         to="/perfil/$username"
                         params={{ username: u.username }}
-                        className="block truncate text-sm font-medium hover:underline"
+                        className="block truncate text-[13px] font-light text-text-strong hover:underline"
                       >
                         {u.name}
                       </Link>
-                      <p className="truncate text-xs text-muted-foreground">{u.headline}</p>
+                      <p className="truncate text-[11px] font-light text-text-subtle">{u.headline}</p>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8 rounded-full px-3 text-xs"
+                    <button
+                      type="button"
+                      className="shrink-0 rounded-full border border-border-soft px-3 py-1 text-[12px] font-light text-text-subtle transition hover:border-primary hover:text-primary"
                       onClick={() => {
                         networkApi
                           .connect(u.id)
@@ -376,7 +375,7 @@ function Home() {
                       }}
                     >
                       Conectar
-                    </Button>
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -384,16 +383,16 @@ function Home() {
           )}
 
           {eventList.length > 0 && (
-            <div className="surface-card p-4 sm:p-5">
+            <div className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-5">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-growth" />
-                <h3 className="font-semibold">Acontecendo agora</h3>
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <h3 className="text-[14px] font-light text-text-strong">Acontecendo agora</h3>
               </div>
-              <ul className="mt-3 space-y-3 text-sm">
+              <ul className="mt-3 space-y-3">
                 {eventList.slice(0, 3).map((e) => (
                   <li key={e.id}>
-                    <p className="font-medium">{e.title}</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-[13px] font-light text-text-strong">{e.title}</p>
+                    <p className="text-[11px] font-light text-text-subtle">
                       {e.date} · {e.format} · {e.attendees} confirmados
                     </p>
                   </li>
@@ -423,11 +422,13 @@ function ComposerAction({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition ${
-        active ? "bg-primary-soft text-primary" : "hover:bg-muted hover:text-foreground"
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-light transition ${
+        active
+          ? "bg-primary text-primary-foreground"
+          : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
       }`}
     >
-      <Icon className="h-4 w-4" />
+      <Icon className="h-3.5 w-3.5" />
       {label}
     </button>
   );
@@ -445,10 +446,10 @@ function TabPill({
   return (
     <button
       onClick={onClick}
-      className={`flex-1 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition ${
+      className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-light transition ${
         active
           ? "bg-primary text-primary-foreground"
-          : "text-muted-foreground hover:text-foreground"
+          : "border border-border-soft bg-surface-card text-text-subtle hover:border-primary hover:text-primary"
       }`}
     >
       {children}
