@@ -152,16 +152,16 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-border-soft bg-surface-card/90 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-3 sm:h-16 sm:gap-4 sm:px-6">
-          <Link to="/feed" className="flex items-center gap-2">
+          <Link to="/feed" className="flex shrink-0 items-center gap-2">
             <div
-              className="grid h-9 w-9 place-items-center rounded-xl text-primary-foreground"
+              className="grid h-8 w-8 place-items-center rounded-xl text-primary-foreground sm:h-9 sm:w-9"
               style={{ background: "var(--gradient-primary)" }}
             >
               <Sparkles className="h-4 w-4" />
             </div>
-            <span className="text-lg font-semibold tracking-tight">
+            <span className="text-lg font-semibold tracking-tight text-text-strong">
               Conex<span className="gradient-text">ão</span>
             </span>
           </Link>
@@ -175,7 +175,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Popover>
                   <PopoverTrigger asChild>
                     <button
-                      className="relative grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                      className="relative grid h-10 w-10 place-items-center rounded-full text-text-subtle transition hover:bg-surface-2 hover:text-primary"
                       aria-label={
                         unreadCount > 0 ? `${unreadCount} notificações não lidas` : "Notificações"
                       }
@@ -190,12 +190,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                   </PopoverTrigger>
                   <PopoverContent
                     align="end"
-                    className="w-[min(calc(100vw-2rem),24rem)] overflow-hidden rounded-2xl p-0"
+                    className="w-[min(calc(100vw-2rem),24rem)] overflow-hidden rounded-2xl border-border-soft bg-surface-card p-0 shadow-card"
                   >
-                    <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
+                    <div className="flex items-center justify-between gap-3 border-b border-border-soft px-4 py-3">
                       <div>
-                        <p className="text-sm font-semibold">Notificações</p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-sm font-semibold text-text-strong">Notificações</p>
+                        <p className="text-xs text-text-subtle">
                           {unreadCount > 0
                             ? `${unreadCount} pendente${unreadCount > 1 ? "s" : ""}`
                             : "Tudo lido por aqui"}
@@ -205,7 +205,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                         type="button"
                         onClick={() => markAllAsRead.mutate()}
                         disabled={unreadCount === 0}
-                        className="inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-primary transition hover:bg-primary-soft disabled:pointer-events-none disabled:text-muted-foreground"
+                        className="inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-primary transition hover:bg-surface-2 disabled:pointer-events-none disabled:text-text-subtle"
                       >
                         <CheckCheck className="h-3.5 w-3.5" />
                         Marcar lidas
@@ -222,8 +222,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                           <div
                             key={notification.id}
                             className={cn(
-                              "border-b border-border px-4 py-3 last:border-b-0",
-                              notification.read ? "bg-popover" : "bg-primary-soft/40",
+                              "border-b border-border-soft px-4 py-3 last:border-b-0",
+                              notification.read ? "bg-surface-card" : "bg-surface-3",
                             )}
                           >
                             <div className="flex items-start gap-3">
@@ -254,11 +254,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                               </button>
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-start justify-between gap-2">
-                                  <p className="text-sm font-semibold leading-tight">
+                                  <p className="text-sm font-semibold leading-tight text-text-strong">
                                     {notification.actorName && (
                                       <span>{notification.actorName} </span>
                                     )}
-                                    <span className="font-normal text-muted-foreground">
+                                    <span className="font-normal text-text-subtle">
                                       {notification.title.toLowerCase()}
                                     </span>
                                   </p>
@@ -266,11 +266,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                                     <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
                                   )}
                                 </div>
-                                <p className="mt-1 break-words text-sm leading-snug text-muted-foreground">
+                                <p className="mt-1 break-words text-sm leading-snug text-text-subtle">
                                   {notification.body}
                                 </p>
                                 <div className="mt-3 flex items-center justify-between gap-2">
-                                  <span className="text-xs text-muted-foreground">
+                                  <span className="text-xs text-text-subtle">
                                     {formatTime(notification.createdAt)}
                                   </span>
                                   <div className="flex items-center gap-2">
@@ -278,7 +278,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                                       <button
                                         type="button"
                                         onClick={() => markAsRead.mutate(notification.id)}
-                                        className="rounded-full px-2 py-1 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                                        className="rounded-full px-2 py-1 text-xs font-medium text-text-subtle transition hover:bg-surface-2 hover:text-text-strong"
                                       >
                                         Lida
                                       </button>
@@ -326,10 +326,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <Link
                     to="/perfil/$username"
                     params={{ username: profile.username }}
-                    className="flex items-center gap-2 rounded-full p-1 pr-3 transition hover:bg-muted"
+                    className="flex items-center gap-2 rounded-full p-1 pr-3 transition hover:bg-surface-2"
                   >
                     <UserAvatar src={profile.avatar} alt={profile.name} className="h-8 w-8" />
-                    <span className="hidden text-sm font-medium sm:inline">Perfil</span>
+                    <span className="hidden text-sm font-medium text-text-strong sm:inline">Perfil</span>
                   </Link>
                 )}
               </>
@@ -358,10 +358,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                     key={item.to}
                     to={item.to}
                     className={cn(
-                      "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
+                      "group flex items-center gap-3 rounded-xl border-l-2 px-3 py-2.5 text-sm font-medium transition",
                       active
-                        ? "bg-primary-soft text-primary"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                        ? "border-primary bg-surface-2 text-primary"
+                        : "border-transparent text-text-subtle hover:bg-surface-3 hover:text-text-strong",
                     )}
                   >
                     <Icon className={cn("h-4 w-4", active ? "text-primary" : "")} />
@@ -377,7 +377,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       {authenticated && (
-        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
+        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border-soft bg-surface-card/95 backdrop-blur lg:hidden">
           <div className="mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {nav.map((item) => {
               const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
@@ -388,7 +388,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   to={item.to}
                   className={cn(
                     "flex min-w-[64px] shrink-0 flex-col items-center gap-0.5 whitespace-nowrap px-2 py-2 text-[10px] font-medium",
-                    active ? "text-primary" : "text-muted-foreground",
+                    active ? "text-primary" : "text-text-subtle",
                   )}
                 >
                   <Icon className="h-5 w-5" />
@@ -439,7 +439,7 @@ function SearchBox() {
     <>
       <button
         onClick={() => setMobileOpen(true)}
-        className="ml-auto grid h-9 w-9 place-items-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground md:hidden"
+        className="ml-auto grid h-9 w-9 place-items-center rounded-full text-text-subtle transition hover:bg-surface-2 hover:text-primary md:hidden"
         aria-label="Buscar"
       >
         <Search className="h-4 w-4" />
@@ -456,7 +456,7 @@ function SearchBox() {
           }}
         >
           <div ref={mobileRef} className="relative w-full max-w-md px-4">
-            <Search className="pointer-events-none absolute left-7 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-7 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-text-subtle" />
             <Input
               value={query}
               onChange={(e) => {
@@ -465,16 +465,16 @@ function SearchBox() {
               }}
               onFocus={() => setOpen(true)}
               placeholder="Buscar pessoas, comunidades, vagas..."
-              className="h-12 rounded-full border-border bg-card pl-10 pr-4"
+              className="h-12 rounded-full border-border-soft bg-surface-card pl-10 pr-4 focus-visible:border-primary"
               autoFocus
             />
             {isFetching && (
-              <Loader2 className="absolute right-7 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+              <Loader2 className="absolute right-7 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-text-subtle" />
             )}
             {open && debounced.length >= 2 && (
-              <div className="absolute left-4 right-4 top-full mt-2 overflow-hidden rounded-2xl border border-border bg-popover shadow-lg">
+              <div className="absolute left-4 right-4 top-full mt-2 overflow-hidden rounded-2xl border border-border-soft bg-surface-card shadow-card">
                 {items.length === 0 && !isFetching && (
-                  <p className="px-4 py-6 text-center text-sm text-muted-foreground">
+                  <p className="px-4 py-6 text-center text-sm text-text-subtle">
                     Nenhum resultado para "{debounced}"
                   </p>
                 )}
@@ -489,12 +489,12 @@ function SearchBox() {
                       <li key={`${item.type}-${item.id}`}>
                         <button
                           onClick={() => { close(); navigateToHref(item.href, navigate); }}
-                          className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted"
+                          className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-surface-3"
                         >
                           <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium">{item.title}</p>
-                            <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
+                            <p className="truncate text-sm font-medium text-text-strong">{item.title}</p>
+                            <p className="truncate text-xs text-text-subtle">{item.subtitle}</p>
                           </div>
                         </button>
                       </li>
@@ -507,7 +507,7 @@ function SearchBox() {
         </div>
       )}
       <div ref={desktopRef} className="relative ml-2 hidden flex-1 max-w-md md:block">
-        <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-text-subtle" />
         <Input
           value={query}
           onChange={(e) => {
@@ -516,15 +516,15 @@ function SearchBox() {
           }}
           onFocus={() => setOpen(true)}
           placeholder="Buscar pessoas, comunidades, vagas..."
-          className="h-10 rounded-full border-transparent bg-muted pl-9"
+          className="h-10 rounded-full border-border-soft bg-surface-1 pl-9 focus-visible:border-primary"
         />
         {isFetching && (
-          <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+          <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-text-subtle" />
         )}
         {open && debounced.length >= 2 && (
-          <div className="absolute left-0 right-0 top-full mt-2 overflow-hidden rounded-2xl border border-border bg-popover shadow-lg">
+          <div className="absolute left-0 right-0 top-full mt-2 overflow-hidden rounded-2xl border border-border-soft bg-surface-card shadow-card">
             {items.length === 0 && !isFetching && (
-              <p className="px-4 py-6 text-center text-sm text-muted-foreground">
+              <p className="px-4 py-6 text-center text-sm text-text-subtle">
                 Nenhum resultado para "{debounced}"
               </p>
             )}
@@ -538,12 +538,12 @@ function SearchBox() {
                   <li key={`${item.type}-${item.id}`}>
                     <button
                       onClick={() => { close(); navigateToHref(item.href, navigate); }}
-                      className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted"
+                      className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-surface-3"
                     >
                       <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">{item.title}</p>
-                        <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
+                        <p className="truncate text-sm font-medium text-text-strong">{item.title}</p>
+                        <p className="truncate text-xs text-text-subtle">{item.subtitle}</p>
                       </div>
                     </button>
                   </li>
