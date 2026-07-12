@@ -120,9 +120,8 @@ export function EditProfileDialog({ profile, children }: Props) {
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-                className={`rounded-full px-4 py-1.5 font-medium transition ${
-                  tab === t.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                }`}
+                className={`rounded-full px-4 py-1.5 font-medium transition ${tab === t.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
               >
                 {t.label}
               </button>
@@ -134,39 +133,39 @@ export function EditProfileDialog({ profile, children }: Props) {
           {tab === "info" && (
             <div className="space-y-5">
               <Field label="Nome">
-                <Input value={name} onChange={(e) => setName(e.target.value)} />
+                <Input value={name} onChange={(e) => setName(e.target.value)} className="h-10 border-transparent bg-muted" />
               </Field>
               <Field label="Username (URL do perfil)" error={usernameError}>
-                <Input value={username} onChange={(e) => { setUsername(e.target.value); setUsernameError(""); }} placeholder="seu-username" />
+                <Input value={username} onChange={(e) => { setUsername(e.target.value); setUsernameError(""); }} placeholder="seu-username" className="h-10 border-transparent bg-muted" />
               </Field>
               <Field label="Headline">
-                <Input value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="Cargo ou frase de destaque" />
+                <Input value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="Cargo ou frase de destaque" className="h-10 border-transparent bg-muted" />
               </Field>
               <Field label="Bio">
-                <Textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} />
+                <Textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="h-10 border-transparent bg-muted pl-9" />
               </Field>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Empresa">
-                  <Input value={company} onChange={(e) => setCompany(e.target.value)} />
+                  <Input value={company} onChange={(e) => setCompany(e.target.value)} className="h-10 border-transparent bg-muted" />
                 </Field>
                 <Field label="Localização">
-                  <Input value={location} onChange={(e) => setLocation(e.target.value)} />
+                  <Input value={location} onChange={(e) => setLocation(e.target.value)} className="h-10 border-transparent bg-muted" />
                 </Field>
               </div>
               <Field label="Disponibilidade">
-                <Input value={availability} onChange={(e) => setAvailability(e.target.value)} placeholder="Ex: Disponível para freelas" />
+                <Input value={availability} onChange={(e) => setAvailability(e.target.value)} placeholder="Ex: Disponível para freelas" className="h-10 border-transparent bg-muted" />
               </Field>
               <Field label="Portfólio">
-                <Input value={portfolio} onChange={(e) => setPortfolio(e.target.value)} placeholder="https://..." />
+                <Input value={portfolio} onChange={(e) => setPortfolio(e.target.value)} placeholder="https://..." className="h-10 border-transparent bg-muted" />
               </Field>
               <Field label="Links externos (um por linha)">
-                <Textarea value={linksText} onChange={(e) => setLinksText(e.target.value)} rows={3} />
+                <Textarea value={linksText} onChange={(e) => setLinksText(e.target.value)} rows={3} className="h-10 border-transparent bg-muted" />
               </Field>
               <Field label="Habilidades (separadas por vírgula)">
-                <Input value={skillsText} onChange={(e) => setSkillsText(e.target.value)} />
+                <Input value={skillsText} onChange={(e) => setSkillsText(e.target.value)} className="h-10 border-transparent bg-muted" />
               </Field>
               <Field label="Objetivos (separados por vírgula)">
-                <Input value={goalsText} onChange={(e) => setGoalsText(e.target.value)} />
+                <Input value={goalsText} onChange={(e) => setGoalsText(e.target.value)} className="h-10 border-transparent bg-muted" />
               </Field>
               <div className="flex items-center gap-8">
                 <label className="flex items-center gap-3 text-sm">
