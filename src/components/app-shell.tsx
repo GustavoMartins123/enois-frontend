@@ -117,6 +117,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const authenticated = isAuthenticated();
+  const [notifTab, setNotifTab] = useState<"novas" | "historico">("novas");
 
   const { data: profile } = useQuery({
     queryKey: ["me"],
@@ -149,6 +150,10 @@ export function AppShell({ children }: { children: ReactNode }) {
     () => notificationList.filter((n) => !n.read).length,
     [notificationList],
   );
+  const displayedNotifications = useMemo(
+    () => notificationList.filter((n) => (notifTab === "novas" ? !n.read : n.read)),
+    [notificationList, notifTab],
+  );
 
   return (
     <div className="min-h-screen bg-background">
@@ -161,8 +166,8 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               <Sparkles className="h-4 w-4" />
             </div>
-            <span className="text-lg font-semibold tracking-tight text-text-strong">
-              Conex<span className="gradient-text">ão</span>
+            <span className="text-[17px] font-light tracking-tight text-text-strong">
+              Conexão
             </span>
           </Link>
 
@@ -182,8 +187,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                     >
                       <Bell className="h-5 w-5" />
                       {unreadCount > 0 && (
-                        <span className="absolute right-1.5 top-1.5 grid min-h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground ring-2 ring-background">
-                          {unreadCount}
+                        <span className="absolute right-1.5 top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-[8px] font-medium leading-none text-primary-foreground">
+                          {unreadCount > 9 ? "9+" : unreadCount}
                         </span>
                       )}
                     </button>
@@ -193,27 +198,58 @@ export function AppShell({ children }: { children: ReactNode }) {
                     className="w-[min(calc(100vw-2rem),24rem)] overflow-hidden rounded-2xl border-border-soft bg-surface-card p-0 shadow-card"
                   >
                     <div className="flex items-center justify-between gap-3 border-b border-border-soft px-4 py-3">
-                      <div>
-                        <p className="text-sm font-semibold text-text-strong">Notificações</p>
-                        <p className="text-xs text-text-subtle">
-                          {unreadCount > 0
-                            ? `${unreadCount} pendente${unreadCount > 1 ? "s" : ""}`
-                            : "Tudo lido por aqui"}
-                        </p>
-                      </div>
+                      <span className="text-[14px] font-light text-text-strong">Notificações</span>
+                      {unreadCount > 0 && notifTab === "novas" && (
+                        <button
+                          type="button"
+                          onClick={() => markAllAsRead.mutate()}
+                          className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-light text-text-subtle transition hover:text-primary"
+                        >
+                          <CheckCheck className="h-3 w-3" />
+                          Ler tudo
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex border-b border-border-soft">
                       <button
                         type="button"
-                        onClick={() => markAllAsRead.mutate()}
-                        disabled={unreadCount === 0}
-                        className="inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-primary transition hover:bg-surface-2 disabled:pointer-events-none disabled:text-text-subtle"
+                        onClick={() => setNotifTab("novas")}
+                        className={cn(
+                          "flex flex-1 items-center justify-center gap-1.5 py-2.5 text-[12px] font-light transition",
+                          notifTab === "novas"
+                            ? "border-b-2 border-primary text-primary"
+                            : "text-text-subtle hover:text-text-strong",
+                        )}
                       >
-                        <CheckCheck className="h-3.5 w-3.5" />
-                        Marcar lidas
+                        Novas
+                        {unreadCount > 0 && (
+                          <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] text-primary-foreground">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setNotifTab("historico")}
+                        className={cn(
+                          "flex-1 py-2.5 text-[12px] font-light transition",
+                          notifTab === "historico"
+                            ? "border-b-2 border-primary text-primary"
+                            : "text-text-subtle hover:text-text-strong",
+                        )}
+                      >
+                        Histórico
                       </button>
                     </div>
 
                     <div className="max-h-[28rem] overflow-y-auto">
-                      {notificationList.map((notification) => {
+                      {displayedNotifications.length === 0 && (
+                        <p className="px-4 py-8 text-center text-[13px] font-light text-text-subtle">
+                          {notifTab === "novas" ? "Nenhuma notificação nova." : "Nenhum histórico ainda."}
+                        </p>
+                      )}
+                      {displayedNotifications.map((notification) => {
                         const meta =
                           notificationMeta[notification.kind.toLowerCase()] ?? notificationMeta.connection;
                         const Icon = meta.icon;
@@ -254,11 +290,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                               </button>
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-start justify-between gap-2">
-                                  <p className="text-sm font-semibold leading-tight text-text-strong">
+                                  <p className="text-[13px] font-light leading-tight text-text-strong">
                                     {notification.actorName && (
                                       <span>{notification.actorName} </span>
                                     )}
-                                    <span className="font-normal text-text-subtle">
+                                    <span className="text-text-subtle">
                                       {notification.title.toLowerCase()}
                                     </span>
                                   </p>
@@ -266,11 +302,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                                     <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
                                   )}
                                 </div>
-                                <p className="mt-1 break-words text-sm leading-snug text-text-subtle">
+                                <p className="mt-1 break-words text-[13px] font-light leading-snug text-text-subtle">
                                   {notification.body}
                                 </p>
                                 <div className="mt-3 flex items-center justify-between gap-2">
-                                  <span className="text-xs text-text-subtle">
+                                  <span className="text-[11px] font-light text-text-subtle">
                                     {formatTime(notification.createdAt)}
                                   </span>
                                   <div className="flex items-center gap-2">
@@ -278,7 +314,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                                       <button
                                         type="button"
                                         onClick={() => markAsRead.mutate(notification.id)}
-                                        className="rounded-full px-2 py-1 text-xs font-medium text-text-subtle transition hover:bg-surface-2 hover:text-text-strong"
+                                        className="rounded-full px-2 py-1 text-[11px] font-light text-text-subtle transition hover:bg-surface-2 hover:text-text-strong"
                                       >
                                         Lida
                                       </button>
@@ -294,7 +330,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                                             queryClient.invalidateQueries({ queryKey: ["network"] });
                                           } catch {}
                                         }}
-                                        className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground transition hover:bg-primary/90"
+                                        className="rounded-full bg-primary px-3 py-1 text-[11px] font-light text-primary-foreground transition hover:bg-primary/90"
                                       >
                                         Aceitar
                                       </button>
@@ -306,7 +342,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                                             markAsRead.mutate(notification.id);
                                           navigateToHref(notification.href, navigate);
                                         }}
-                                        className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground transition hover:bg-primary/90"
+                                        className="rounded-full bg-primary px-3 py-1 text-[11px] font-light text-primary-foreground transition hover:bg-primary/90"
                                       >
                                         {notification.ctaLabel}
                                       </button>
@@ -329,7 +365,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     className="flex items-center gap-2 rounded-full p-1 pr-3 transition hover:bg-surface-2"
                   >
                     <UserAvatar src={profile.avatar} alt={profile.name} className="h-8 w-8" />
-                    <span className="hidden text-sm font-medium text-text-strong sm:inline">Perfil</span>
+                    <span className="hidden text-[13px] font-light text-text-strong sm:inline">Perfil</span>
                   </Link>
                 )}
               </>
@@ -358,7 +394,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     key={item.to}
                     to={item.to}
                     className={cn(
-                      "group flex items-center gap-3 rounded-xl border-l-2 px-3 py-2.5 text-sm font-medium transition",
+                      "group flex items-center gap-3 rounded-xl border-l-2 py-3 pl-3 pr-3 text-[14px] font-light transition",
                       active
                         ? "border-primary bg-surface-2 text-primary"
                         : "border-transparent text-text-subtle hover:bg-surface-3 hover:text-text-strong",
@@ -387,7 +423,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "flex min-w-[64px] shrink-0 flex-col items-center gap-0.5 whitespace-nowrap px-2 py-2 text-[10px] font-medium",
+                    "flex min-w-[64px] shrink-0 flex-col items-center gap-0.5 whitespace-nowrap px-2 py-2 text-[10px] font-light",
                     active ? "text-primary" : "text-text-subtle",
                   )}
                 >
@@ -493,7 +529,7 @@ function SearchBox() {
                         >
                           <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium text-text-strong">{item.title}</p>
+                            <p className="truncate text-[13px] font-light text-text-strong">{item.title}</p>
                             <p className="truncate text-xs text-text-subtle">{item.subtitle}</p>
                           </div>
                         </button>
@@ -542,7 +578,7 @@ function SearchBox() {
                     >
                       <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-text-strong">{item.title}</p>
+                        <p className="truncate text-[13px] font-light text-text-strong">{item.title}</p>
                         <p className="truncate text-xs text-text-subtle">{item.subtitle}</p>
                       </div>
                     </button>
