@@ -52,6 +52,12 @@
   --shadow-card: 0 1px 3px oklch(0.2 0.05 290 / 0.06), 0 8px 24px -8px oklch(0.2 0.05 290 / 0.08);
   --gradient-primary: linear-gradient(135deg, oklch(0.52 0.22 295), oklch(0.68 0.18 310));
   --gradient-soft: linear-gradient(135deg, oklch(0.97 0.02 295), oklch(0.96 0.03 310));
+  --color-highlight-insight: var(--highlight-insight);
+  --color-highlight-insight-text: var(--highlight-insight-text);
+  --color-highlight-project: var(--highlight-project);
+  --color-highlight-project-text: var(--highlight-project-text);
+  --color-highlight-article: var(--highlight-article);
+  --color-highlight-article-text: var(--highlight-article-text);
 }
 
 :root {
@@ -83,6 +89,16 @@
   --sidebar: oklch(1 0 0);
   --sidebar-foreground: oklch(0.30 0.02 280);
   --sidebar-border: oklch(0.93 0.01 285);
+  /* badge insight */
+  --highlight-insight: #FEF3C7;
+  --highlight-insight-text: #92400E;
+  /* badge project */
+  --highlight-project: #DDD6FE;
+  --highlight-project-text: #6D28D9;
+  /* highlight article */
+  --highlight-article: #E0F2FE;
+  --highlight-article-text: #0369A1;
+
 
   /* Novos tokens (Fase 0) */
   --surface-card: #ffffff;

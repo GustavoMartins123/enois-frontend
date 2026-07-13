@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import {
   Heart,
-  MessageCircle,
+  MessageSquare,
   Bookmark,
   Share2,
   Lightbulb,
@@ -41,19 +41,19 @@ const typeMeta: Record<
   PostView["type"],
   { label: string; icon: React.ElementType; className: string }
 > = {
-  INSIGHT: { label: "Insight", icon: Lightbulb, className: "bg-accent text-accent-foreground" },
+  INSIGHT: { label: "Insight", icon: Lightbulb, className: "bg-highlight-insight text-highlight-insight-text" },
   QUESTION: {
     label: "Pergunta",
     icon: HelpCircle,
     className: "bg-secondary/30 text-secondary-foreground",
   },
-  PROJECT: { label: "Projeto", icon: FolderGit2, className: "bg-growth/15 text-growth" },
+  PROJECT: { label: "Projeto", icon: FolderGit2, className: "bg-highlight-project text-highlight-project-text" },
   OPPORTUNITY: {
     label: "Oportunidade",
     icon: Briefcase,
     className: "bg-opportunity/20 text-opportunity-foreground",
   },
-  ARTICLE: { label: "Artigo", icon: BookOpen, className: "bg-primary-soft text-primary" },
+  ARTICLE: { label: "Artigo", icon: BookOpen, className: "bg-highlight-article text-highlight-article-text" },
 };
 
 function ReactionsSummary({ postId, reactionStatus }: { postId: string; reactionStatus: string | null }) {
@@ -74,9 +74,8 @@ function ReactionsSummary({ postId, reactionStatus }: { postId: string; reaction
       {entries.map(([type, count]) => (
         <span
           key={type}
-          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs tabular-nums ${
-            reactionStatus === type ? "bg-primary-soft text-primary" : "bg-muted text-muted-foreground"
-          }`}
+          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs tabular-nums ${reactionStatus === type ? "bg-primary-soft text-primary" : "bg-muted text-muted-foreground"
+            }`}
         >
           {REACTION_EMOJIS[type] ?? type} {count}
         </span>
@@ -204,7 +203,7 @@ function ReportDialog({
             <select
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-10 border-transparent bg-muted"
             >
               {REPORT_REASONS.map((r) => (
                 <option key={r} value={r}>
@@ -219,6 +218,7 @@ function ReportDialog({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
+              className="h-10 border-transparent bg-muted"
             />
           </div>
           <Button className="w-full rounded-full" onClick={submit}>
@@ -233,7 +233,6 @@ function ReportDialog({
 export function PostCard({ post }: { post: PostView }) {
   const { user: currentUser } = useAuth();
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
-  const Icon = meta.icon;
   const [showComments, setShowComments] = useState(false);
   const [draft, setDraft] = useState("");
   const [commentMentions, setCommentMentions] = useState<string[]>([]);
@@ -349,14 +348,14 @@ export function PostCard({ post }: { post: PostView }) {
 
   return (
     <article className="min-w-0 surface-card p-4 transition hover:shadow-[var(--shadow-card)] sm:p-5">
-      <header className="flex items-start gap-3">
-        <AuthorInfo authorUsername={post.authorUsername} authorName={post.authorName} authorAvatar={post.authorAvatar} createdAt={post.createdAt} />
+      <header className="flex justify-between items-start gap-3 ">
+        <AuthorInfo authorUsername={post.authorUsername} authorName={post.authorName} authorAvatar={post.authorAvatar} createdAt={post.createdAt} fallbackClassName={meta.className} />
         <span
           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${meta.className}`}
         >
-          <Icon className="h-3 w-3" />
           {meta.label}
         </span>
+
       </header>
 
       <p className="mt-4 whitespace-pre-line break-words text-[15px] leading-relaxed text-foreground">
@@ -387,70 +386,71 @@ export function PostCard({ post }: { post: PostView }) {
         </div>
       )}
 
-      <footer className="mt-4 flex flex-wrap items-center gap-1 border-t border-border pt-3 text-sm text-muted-foreground">
-        <Popover>
-          <PopoverTrigger asChild>
-            <button
-              className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
-                reactionStatus ? "text-primary" : ""
-              }`}
-              title={reactionStatus ? `Reagiu com ${REACTION_EMOJIS[reactionStatus]}` : "Reagir"}
-            >
-              {reactionStatus ? (
-                <span className="text-base leading-none">{REACTION_EMOJIS[reactionStatus]}</span>
-              ) : (
-                <Heart className="h-4 w-4" />
-              )}
-            </button>
-          </PopoverTrigger>
-          <PopoverContent align="start" side="top" className="w-fit rounded-2xl border-border p-1.5">
-            <div className="flex gap-1">
-              {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(([type, emoji]) => (
-                <button
-                  key={type}
-                  onClick={() => handleReaction(type)}
-                  className={`rounded-lg px-2 py-1 text-xl transition hover:bg-muted ${
-                    reactionStatus === type ? "bg-muted ring-1 ring-primary" : ""
+      <footer className="mt-4 flex justify-between flex-wrap items-center gap-1 border-t border-border pt-3 text-sm text-muted-foreground">
+        <div className="flex">
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${reactionStatus ? "text-primary" : ""
                   }`}
-                  title={type.toLowerCase()}
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
-        <button
-          onClick={() => setShowReactions(true)}
-          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs tabular-nums transition hover:bg-muted hover:text-foreground text-muted-foreground"
-        >
-          {postCounters.reactions}
-        </button>
-        <button
-          onClick={loadComments}
-          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
-        >
-          <MessageCircle className="h-4 w-4" /> {totalComments}
-        </button>
+                title={reactionStatus ? `Reagiu com ${REACTION_EMOJIS[reactionStatus]}` : "Reagir"}
+              >
+                {reactionStatus ? (
+                  <span className="text-base leading-none">{REACTION_EMOJIS[reactionStatus]}</span>
+                ) : (
+                  <Heart className="h-4 w-4" />
+                )}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="start" side="top" className="w-fit rounded-2xl border-border p-1.5">
+              <div className="flex gap-1">
+                {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(([type, emoji]) => (
+                  <button
+                    key={type}
+                    onClick={() => handleReaction(type)}
+                    className={`rounded-lg px-2 py-1 text-xl transition hover:bg-muted ${reactionStatus === type ? "bg-muted ring-1 ring-primary" : ""
+                      }`}
+                    title={type.toLowerCase()}
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+          <button
+            onClick={() => setShowReactions(true)}
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs tabular-nums transition hover:bg-muted hover:text-foreground text-muted-foreground"
+          >
+            {postCounters.reactions}
+          </button>
+          <button
+            onClick={loadComments}
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
+          >
+            <MessageSquare className="h-4 w-4" /> {totalComments}
+          </button>
+
+          <button
+            onClick={handleShare}
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
+          >
+            <Share2 className="h-4 w-4" /> Compartilhar
+          </button>
+          <button
+            onClick={() => setShowReport(true)}
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
+          >
+            <Flag className="h-4 w-4" />
+          </button>
+        </div>
+
         <button
           onClick={handleSave}
-          className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
-            saved ? "text-primary" : ""
-          }`}
+          className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${saved ? "text-primary" : ""
+            }`}
         >
           <Bookmark className={`h-4 w-4`} /> {postCounters.saves}
-        </button>
-        <button
-          onClick={handleShare}
-          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
-        >
-          <Share2 className="h-4 w-4" /> Compartilhar
-        </button>
-        <button
-          onClick={() => setShowReport(true)}
-          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
-        >
-          <Flag className="h-4 w-4" />
         </button>
       </footer>
 
@@ -565,7 +565,7 @@ function CommentItem({
         await reactionsApi.reactComment(comment.postId, comment.id, type);
         setCommentReaction(type);
       }
-    } catch {}
+    } catch { }
   };
 
   return (
@@ -605,9 +605,8 @@ function CommentItem({
                   <button
                     key={type}
                     onClick={() => handleCommentReaction(type)}
-                    className={`rounded-lg px-2 py-1 text-lg transition hover:bg-muted ${
-                      commentReaction === type ? "bg-muted ring-1 ring-primary" : ""
-                    }`}
+                    className={`rounded-lg px-2 py-1 text-lg transition hover:bg-muted ${commentReaction === type ? "bg-muted ring-1 ring-primary" : ""
+                      }`}
                   >
                     {emoji}
                   </button>
@@ -634,16 +633,18 @@ function AuthorInfo({
   authorName,
   authorAvatar,
   createdAt,
+  fallbackClassName,
 }: {
   authorUsername: string;
   authorName: string;
   authorAvatar: string | null;
   createdAt: string;
+  fallbackClassName?: string;
 }) {
   return (
     <div className="flex items-start gap-3">
       <Link to="/perfil/$username" params={{ username: authorUsername }}>
-        <UserAvatar src={authorAvatar} alt={authorName} className="h-11 w-11" />
+        <UserAvatar src={authorAvatar} alt={authorName} className="h-11 w-11" fallbackClassName={fallbackClassName} />
       </Link>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">

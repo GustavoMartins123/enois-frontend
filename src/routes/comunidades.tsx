@@ -114,11 +114,10 @@ function Comunidades() {
             <button
               key={t}
               onClick={() => handleTopicChange(t)}
-              className={`rounded-full border px-3.5 py-1.5 text-sm transition ${
-                (t === "Todas" && !topic) || t === topic
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground hover:text-foreground"
-              }`}
+              className={`rounded-full border px-3.5 py-1.5 text-sm transition ${(t === "Todas" && !topic) || t === topic
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-card text-muted-foreground hover:text-foreground"
+                }`}
             >
               {t.charAt(0) + t.slice(1).toLowerCase()}
             </button>
@@ -194,7 +193,7 @@ function Comunidades() {
           </div>
         )}
       </div>
-      
+
     </AppShell>
   );
 }
@@ -234,7 +233,7 @@ function CreateCommunityDialog({
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Nome</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
+            <Input value={name} onChange={(e) => setName(e.target.value)} className="h-10 border-transparent bg-muted" />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Descrição</Label>
@@ -242,6 +241,7 @@ function CreateCommunityDialog({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
+              className="h-10 border-transparent bg-muted"
             />
           </div>
           <div className="space-y-1.5">
@@ -249,7 +249,7 @@ function CreateCommunityDialog({
             <select
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 border-transparent bg-muted"
             >
               {TOPICS.filter((t) => t !== "Todas").map((t) => (
                 <option key={t} value={t}>
@@ -267,6 +267,6 @@ function CreateCommunityDialog({
           </Button>
         </div>
       </DialogContent>
-    </Dialog>
+    </Dialog >
   );
 }

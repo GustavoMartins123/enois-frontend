@@ -138,7 +138,7 @@ function Eventos() {
           })}
         </div>
       </div>
-      
+
     </AppShell>
   );
 }
@@ -159,24 +159,24 @@ function CreateEventForm({
   return (
     <div className="space-y-4 pt-2">
       <Field label="Título">
-        <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+        <Input value={title} onChange={(e) => setTitle(e.target.value)} className="h-10 border-transparent bg-muted" />
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Data">
-          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} className="h-10 border-transparent bg-muted" />
         </Field>
         <Field label="Horário">
-          <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+          <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} className="h-10 border-transparent bg-muted" />
         </Field>
       </div>
       <Field label="Realizador">
-        <Input value={host} onChange={(e) => setHost(e.target.value)} placeholder="Comunidade X" />
+        <Input value={host} onChange={(e) => setHost(e.target.value)} placeholder="Comunidade X" className="h-10 border-transparent bg-muted" />
       </Field>
       <Field label="Formato">
         <select
           value={format}
           onChange={(e) => setFormat(e.target.value)}
-          className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-10 border-transparent bg-muted"
         >
           <option value="ONLINE">Online</option>
           <option value="IN_PERSON">Presencial</option>
