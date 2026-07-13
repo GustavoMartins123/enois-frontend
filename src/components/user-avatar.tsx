@@ -24,7 +24,7 @@ export function UserAvatar({ src, alt, className, fallback, fallbackClassName }:
         <AvatarImage src={resolved} alt={label} />
       )}
       {/* <AvatarFallback className="bg-highlight-project text-highlight-project-text"> */}
-      <AvatarFallback className={fallbackClassName ?? "bg-highlight-project text-highlight-project-text font-semibold"}>
+      <AvatarFallback className={fallbackClassName ?? "bg-highlight-project text-highlight-project-text font-semibold bg-violet-300 text-violet-900 font-bold text-xl leading-[30px] tracking-normal"}>
         {fallback ?? getInitials(label)}
       </AvatarFallback>
     </Avatar>
