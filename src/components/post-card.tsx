@@ -17,7 +17,6 @@ import { useAuth } from "@/lib/use-auth";
 import { UserAvatar } from "@/components/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { MentionTextarea } from "@/components/mention-textarea";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
