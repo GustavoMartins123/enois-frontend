@@ -1,16 +1,18 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { type FormEvent, useCallback, useRef, useState } from "react";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, createFileRoute, notFound } from "@tanstack/react-router";
+
+import { ArrowLeft, Camera, Send, Settings, Users } from "lucide-react";
+
+import { communitiesApi, feedApi } from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
 import { requireAuth } from "@/lib/require-auth";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useRef, useCallback, type FormEvent } from "react";
-import { Users, Settings, ArrowLeft, Send, Camera } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
-import { PostCard } from "@/components/post-card";
-import { UserAvatar } from "@/components/user-avatar";
-import { Button } from "@/components/ui/button";
+import { useAuth } from "@/lib/use-auth";
+import { useMediaUpload } from "@/lib/use-media-upload";
+
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -18,11 +20,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { communitiesApi, feedApi } from "@/lib/api";
-import { resolveCdnUrl } from "@/lib/api/media";
-import { useAuth } from "@/lib/use-auth";
-import { useMediaUpload } from "@/lib/use-media-upload";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+
+import { AppShell } from "@/components/app-shell";
 import { ImageCropDialog } from "@/components/image-crop-dialog";
+import { PostCard } from "@/components/post-card";
+import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/comunidades/$communityId")({
   beforeLoad: requireAuth,
@@ -130,7 +135,9 @@ function CommunityDetail() {
                   <Badge className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft">
                     {live.topic}
                   </Badge>
-                  <h1 className="mt-2 break-words text-2xl font-semibold tracking-tight">{live.name}</h1>
+                  <h1 className="mt-2 break-words text-2xl font-semibold tracking-tight">
+                    {live.name}
+                  </h1>
                   <p className="mt-1 break-words text-muted-foreground">{live.description}</p>
                   <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
@@ -249,7 +256,6 @@ function CommunityDetail() {
           </aside>
         </div>
       </div>
-      
     </AppShell>
   );
 }

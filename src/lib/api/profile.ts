@@ -122,8 +122,7 @@ export const profileApi = {
   education: {
     list: () => api.get<Education[]>("/me/education"),
     create: (data: EducationRequest) => api.post<Education>("/me/education", data),
-    update: (id: string, data: EducationRequest) =>
-      api.put<Education>(`/me/education/${id}`, data),
+    update: (id: string, data: EducationRequest) => api.put<Education>(`/me/education/${id}`, data),
     delete: (id: string) => api.delete<void>(`/me/education/${id}`),
   },
 

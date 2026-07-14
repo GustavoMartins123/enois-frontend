@@ -1,13 +1,15 @@
-import { createFileRoute, Link, Outlet, useMatchRoute } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
+
+import { Loader2, Plus, Users } from "lucide-react";
+
+import { communitiesApi } from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
 import { requireAuth } from "@/lib/require-auth";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useRef, useEffect } from "react";
-import { Users, Plus, Loader2 } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -15,8 +17,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { communitiesApi } from "@/lib/api";
-import { resolveCdnUrl } from "@/lib/api/media";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+
+import { AppShell } from "@/components/app-shell";
 
 const TOPICS = [
   "Todas",
@@ -185,16 +190,11 @@ function Comunidades() {
               onClick={loadMore}
               disabled={isFetching}
             >
-              {isFetching ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                "Carregar mais"
-              )}
+              {isFetching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Carregar mais"}
             </Button>
           </div>
         )}
       </div>
-      
     </AppShell>
   );
 }

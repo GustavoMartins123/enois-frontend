@@ -17,7 +17,12 @@ export { commentsApi } from "./comments";
 export type { CommentView } from "./comments";
 
 export { reactionsApi, REACTION_EMOJIS } from "./reactions";
-export type { ActionResponse, ReactionType, ReactionItem, ReactionsListResponse } from "./reactions";
+export type {
+  ActionResponse,
+  ReactionType,
+  ReactionItem,
+  ReactionsListResponse,
+} from "./reactions";
 
 export { networkApi } from "./network";
 export type { NetworkUser, NetworkSummary, ConnectionRequest, ConnectionStatus } from "./network";

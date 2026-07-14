@@ -11,15 +11,16 @@ CORS    = liberado (qualquer origem, credenciais ativas)
 
 Autenticação é feita via **headers** em cada requisição. Não há cookie/JWT — a POC usa headers diretos.
 
-| Header | Obrigatório | Descrição |
-|--------|-------------|-----------|
-| `X-User-Id` | Sim (rotas autenticadas) | ID do usuário |
-| `X-Session-Token` | Sim (rotas autenticadas) | Token de sessão |
-| `Idempotency-Key` | Opcional | Evita duplicatas em POST/PUT/DELETE |
+| Header            | Obrigatório              | Descrição                           |
+| ----------------- | ------------------------ | ----------------------------------- |
+| `X-User-Id`       | Sim (rotas autenticadas) | ID do usuário                       |
+| `X-Session-Token` | Sim (rotas autenticadas) | Token de sessão                     |
+| `Idempotency-Key` | Opcional                 | Evita duplicatas em POST/PUT/DELETE |
 
 O backend valida o `X-Session-Token` contra um token ativo. Em dev, tokens são simulados.
 
 ### Signup
+
 ```
 POST /api/auth/signup
 Body: { "name": "...", "role": "MEMBER", "email": "...", "password": "..." }
@@ -27,6 +28,7 @@ Response 201: { "id": "...", "token": "...", "email": "...", ... }
 ```
 
 ### Login
+
 ```
 POST /api/auth/login
 Body: { "email": "...", "password": "..." }
@@ -34,6 +36,7 @@ Response 200: { "id": "...", "token": "...", "email": "...", ... }
 ```
 
 ### Logout
+
 ```
 POST /api/auth/logout
 Headers: X-Session-Token
@@ -41,6 +44,7 @@ Response 200: { "status": "LOGGED_OUT" }
 ```
 
 ### Meus dados
+
 ```
 GET /api/auth/me
 Headers: X-Session-Token
@@ -54,7 +58,7 @@ Fluxo completo:
 ```
 1. FRONTEND → POST /api/media/uploads               (pede URL de destino)
                Body: { "fileName": "foto.jpg", "mimeType": "image/jpeg", "size": 12345 }
-               Response 201: { "id": "media_...", "cdnUrl": "https://ik.imagekit.io/socialcoisa/...", 
+               Response 201: { "id": "media_...", "cdnUrl": "https://ik.imagekit.io/socialcoisa/...",
                                "uploadUrl": "https://ik.imagekit.io/socialcoisa/...", "expiresAt": "..." }
 
 2. FRONTEND → ImageKit Upload API (client-side)      (sobe o arquivo direto no ImageKit)
@@ -69,6 +73,7 @@ Fluxo completo:
 > **Nota:** O endpoint de confirmação (`POST /api/media/{mediaId}/confirm`) ainda não existe no backend. Para a POC, o asset já é criado como `PENDING` e o `cdnUrl` já é válido antes do upload. O frontend pode subir o arquivo para o ImageKit com qualquer `fileName` e depois referenciar o `mediaId` nos posts.
 
 ### Criar upload (passo 1)
+
 ```
 POST /api/media/uploads
 Headers: X-User-Id, X-Session-Token
@@ -83,30 +88,32 @@ Response 201: { "id": "media_...", "fileName": "...", "mimeType": "...", "size":
 
 ```js
 // Exemplo com fetch
-const formData = new FormData()
-formData.append('file', fileBlob)
-formData.append('fileName', fileName)
-formData.append('publicKey', 'public_0Y+bnNURFVY+XZuqyCWQGafHo/0=')
+const formData = new FormData();
+formData.append("file", fileBlob);
+formData.append("fileName", fileName);
+formData.append("publicKey", "public_0Y+bnNURFVY+XZuqyCWQGafHo/0=");
 
-const res = await fetch('https://upload.imagekit.io/api/v1/files/upload', {
-  method: 'POST',
-  body: formData
-})
+const res = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
+  method: "POST",
+  body: formData,
+});
 ```
 
-| Campo | Valor |
-|-------|-------|
-| Upload endpoint | `https://upload.imagekit.io/api/v1/files/upload` |
-| Public key | `public_0Y+bnNURFVY+XZuqyCWQGafHo/0=` |
+| Campo           | Valor                                                           |
+| --------------- | --------------------------------------------------------------- |
+| Upload endpoint | `https://upload.imagekit.io/api/v1/files/upload`                |
+| Public key      | `public_0Y+bnNURFVY+XZuqyCWQGafHo/0=`                           |
 | CDN URL pattern | `https://ik.imagekit.io/socialcoisa/media/{mediaId}/{fileName}` |
 
 ### Ver mídia
+
 ```
 GET /api/media/{mediaId}
 Response 200: { "id": "...", "cdnUrl": "...", "status": "PENDING"|"UPLOADED"|"DELETED", ... }
 ```
 
 ### Deletar mídia
+
 ```
 DELETE /api/media/{mediaId}
 Headers: X-User-Id, X-Session-Token
@@ -116,6 +123,7 @@ Response 200: { "id": "...", "status": "DELETE_REQUESTED" }
 ## Feed (Posts)
 
 ### Publicar post
+
 ```
 POST /api/feed/posts
 Headers: X-User-Id, X-Session-Token
@@ -126,6 +134,7 @@ Response 201: { "id": "post_...", ... }
 Tipos de post: `POST` (texto+imagem), `ARTICLE` (artigo longo), `REPOST` (compartilhamento)
 
 ### Feed
+
 ```
 GET /api/feed?cursor=...&limit=20&tab=FOR_YOU
 Headers: X-User-Id, X-Session-Token
@@ -134,12 +143,14 @@ Response: { "items": [...], "nextCursor": "..." }
 ```
 
 ### Posts de um perfil
+
 ```
 GET /api/users/{username}/posts?cursor=...&limit=20
 Response: { "items": [...], "nextCursor": "..." }
 ```
 
 ### Deletar post
+
 ```
 DELETE /api/feed/posts/{postId}?reason=...
 Headers: X-User-Id, X-Session-Token
@@ -147,6 +158,7 @@ Response 200: { "id": "...", "status": "DELETED" }
 ```
 
 ### Comentar
+
 ```
 POST /api/feed/posts/{postId}/comments
 Headers: X-User-Id, X-Session-Token
@@ -155,12 +167,14 @@ Response 201: { "id": "comment_...", ... }
 ```
 
 ### Ver comentários
+
 ```
 GET /api/feed/posts/{postId}/comments?cursor=...&limit=20
 Response: { "items": [...], "nextCursor": "..." }
 ```
 
 ### Reagir (curtir etc)
+
 ```
 POST /api/feed/posts/{postId}/reactions
 Body: { "type": "LIKE"|"LOVE"|"HAHA"|"WOW"|"SAD"|"ANGRY" }
@@ -171,12 +185,14 @@ Response 200: { "status": "UNREACTED" }
 ```
 
 ### Salvar post
+
 ```
 POST   /api/feed/posts/{postId}/saves       → { "status": "SAVED" }
 DELETE /api/feed/posts/{postId}/saves       → { "status": "UNSAVED" }
 ```
 
 ### Compartilhar
+
 ```
 POST /api/feed/posts/{postId}/shares        → { "status": "SHARED" }
 ```
@@ -184,6 +200,7 @@ POST /api/feed/posts/{postId}/shares        → { "status": "SHARED" }
 ## Perfil
 
 ### Meu perfil
+
 ```
 GET /api/me
 Headers: X-User-Id, X-Session-Token
@@ -191,18 +208,21 @@ Response: { "id": "...", "username": "...", "name": "...", "reputation": ..., ..
 ```
 
 ### Perfil público por username
+
 ```
 GET /api/users/{username}
 Response: { "id": "...", "username": "...", "name": "...", "headline": "...", ... }
 ```
 
 ### Perfil público por ID
+
 ```
 GET /api/users/by-id/{userId}
 Response: { "id": "...", "username": "...", "name": "...", ... }
 ```
 
 ### Atualizar perfil
+
 ```
 PATCH /api/me/profile
 Headers: X-User-Id, X-Session-Token
@@ -217,13 +237,14 @@ Response 200: perfil atualizado
 
 Cada um segue CRUD no padrão `/me/{section}` e `/me/{section}/{id}`:
 
-| Recurso | GET (lista) | POST (criar) | PUT (atualizar) | DELETE |
-|---------|-------------|---------------|-----------------|--------|
-| Experiências | `GET /me/experiences` | `POST /me/experiences` | `PUT /me/experiences/{id}` | `DELETE /me/experiences/{id}` |
-| Educação | `GET /me/education` | `POST /me/education` | `PUT /me/education/{id}` | `DELETE /me/education/{id}` |
+| Recurso       | GET (lista)              | POST (criar)              | PUT (atualizar)               | DELETE                           |
+| ------------- | ------------------------ | ------------------------- | ----------------------------- | -------------------------------- |
+| Experiências  | `GET /me/experiences`    | `POST /me/experiences`    | `PUT /me/experiences/{id}`    | `DELETE /me/experiences/{id}`    |
+| Educação      | `GET /me/education`      | `POST /me/education`      | `PUT /me/education/{id}`      | `DELETE /me/education/{id}`      |
 | Certificações | `GET /me/certifications` | `POST /me/certifications` | `PUT /me/certifications/{id}` | `DELETE /me/certifications/{id}` |
 
 Body exemplos:
+
 ```js
 // Experiência
 { "title": "Desenvolvedor", "company": "Empresa", "location": "Remoto",
@@ -241,6 +262,7 @@ Body exemplos:
 ## Rede Social (Conexões)
 
 ### Sugestões de conexão
+
 ```
 GET /api/network/suggestions?limit=4
 Headers: X-User-Id, X-Session-Token
@@ -248,6 +270,7 @@ Response: [{ "id": "...", "username": "...", "name": "...", "headline": "...", "
 ```
 
 ### Resumo da rede
+
 ```
 GET /api/network/summary
 Headers: X-User-Id, X-Session-Token
@@ -255,6 +278,7 @@ Response: { "userId": "...", "connections": 5, "followers": 0, "pendingRequests"
 ```
 
 ### Solicitações pendentes
+
 ```
 GET /api/network/requests?cursor=...&limit=20
 Headers: X-User-Id, X-Session-Token
@@ -262,6 +286,7 @@ Response: { "items": [{ "id": "...", "fromUserId": "...", "toUserId": "...", "st
 ```
 
 ### Conectar / Aceitar / Remover
+
 ```
 POST   /api/network/connections/{targetUserId}           → { "status": "REQUESTED" }
 PUT    /api/network/connections/{targetUserId}/accept     → { "status": "ACCEPTED" }
@@ -273,17 +298,20 @@ DELETE /api/network/connections/{targetUserId}            → { "status": "REMOV
 Criar vaga exige reputação ≥ 300. Reputação máxima é 1000.
 
 ### Listar vagas
+
 ```
 GET /api/jobs?query=...&type=...&cursor=...&limit=20
 Response: { "items": [{ "id": "...", "title": "...", "company": "...", "location": "...", ... }] }
 ```
 
 ### Ver vaga
+
 ```
 GET /api/jobs/{jobId}
 ```
 
 ### Criar vaga
+
 ```
 POST /api/jobs
 Headers: X-User-Id, X-Session-Token
@@ -294,12 +322,14 @@ Response 201: { "id": "...", ... }
 ```
 
 ### Atualizar / Deletar vaga
+
 ```
 PUT    /api/jobs/{jobId}    (só o dono)
 DELETE /api/jobs/{jobId}    (só o dono) → 204 No Content
 ```
 
 ### Candidatar-se / Salvar vaga
+
 ```
 POST   /api/jobs/{jobId}/applications  → { "status": "APPLIED" }
 POST   /api/jobs/{jobId}/saves          → { "status": "SAVED" }
@@ -309,6 +339,7 @@ DELETE /api/jobs/{jobId}/saves          → { "status": "UNSAVED" }
 ## Mensagens
 
 ### Listar conversas
+
 ```
 GET /api/conversations?cursor=...&limit=20
 Headers: X-User-Id, X-Session-Token
@@ -317,11 +348,13 @@ Response: { "items": [{ "id": "...", "kind": "DIRECT|GROUP", "title": "...", "pa
 ```
 
 ### Pesquisar conversas
+
 ```
 GET /api/conversations/search?q=...
 ```
 
 ### Criar conversa
+
 ```
 POST /api/conversations
 Body: { "kind": "DIRECT", "title": null, "participantIds": ["user_..."] }
@@ -329,6 +362,7 @@ Response 201: conversa criada
 ```
 
 ### Enviar mensagem
+
 ```
 POST /api/conversations/{conversationId}/messages
 Body: { "text": "..." }
@@ -336,6 +370,7 @@ Response 201: { "id": "...", "conversationId": "...", "from": "...", "text": "..
 ```
 
 ### Listar mensagens
+
 ```
 GET /api/conversations/{conversationId}/messages?cursor=...&limit=50
 Headers: X-User-Id, X-Session-Token
@@ -343,6 +378,7 @@ Response: { "items": [{ "id": "...", "conversationId": "...", "from": "...", "te
 ```
 
 ### Marcar como lida
+
 ```
 POST /api/conversations/{conversationId}/read → { "status": "READ" }
 ```
@@ -350,6 +386,7 @@ POST /api/conversations/{conversationId}/read → { "status": "READ" }
 ## Notificações
 
 ### Listar
+
 ```
 GET /api/notifications?cursor=...&limit=20
 Headers: X-User-Id, X-Session-Token
@@ -358,6 +395,7 @@ Response: { "items": [{ "id": "...", "kind": "...", "actorId": "...", "title": "
 ```
 
 ### Marcar como lida / Ler todas
+
 ```
 POST /api/notifications/{notificationId}/read  → { "status": "READ" }
 POST /api/notifications/read-all                → { "status": "ALL_READ" }
@@ -387,9 +425,15 @@ Use `nextCursor` da resposta como `cursor` da próxima requisição. Quando `nex
 ## Tratamento de Erros
 
 Erros seguem o padrão:
+
 ```json
-{ "type": "about:blank", "title": "Bad Request",
-  "status": 400, "detail": "...", "instance": "/api/..." }
+{
+  "type": "about:blank",
+  "title": "Bad Request",
+  "status": 400,
+  "detail": "...",
+  "instance": "/api/..."
+}
 ```
 
 Códigos comuns:
@@ -430,9 +474,9 @@ O Swagger permite testar todos os endpoints interativamente. Para autenticação
 
 ## Resumo de Headers
 
-| Header | Quando usar |
-|--------|-------------|
-| `X-User-Id` | Todas as rotas autenticadas |
-| `X-Session-Token` | Todas as rotas autenticadas |
-| `Idempotency-Key` | POST/PUT/DELETE (opcional) |
-| `Content-Type: application/json` | POST/PUT/PATCH com body |
+| Header                           | Quando usar                 |
+| -------------------------------- | --------------------------- |
+| `X-User-Id`                      | Todas as rotas autenticadas |
+| `X-Session-Token`                | Todas as rotas autenticadas |
+| `Idempotency-Key`                | POST/PUT/DELETE (opcional)  |
+| `Content-Type: application/json` | POST/PUT/PATCH com body     |

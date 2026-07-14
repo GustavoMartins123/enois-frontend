@@ -1,15 +1,20 @@
+import { useEffect, useRef, useState } from "react";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+
+import { Briefcase, Loader2, MapPin, Sparkles, X } from "lucide-react";
+
+import { jobsApi } from "@/lib/api";
+import type { Job } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useRef, useEffect } from "react";
-import { MapPin, Sparkles, Briefcase, X, Loader2 } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { jobsApi } from "@/lib/api";
-import type { Job } from "@/lib/api";
+
+import { AppShell } from "@/components/app-shell";
 
 export const Route = createFileRoute("/vagas")({
   beforeLoad: requireAuth,
@@ -42,7 +47,13 @@ function Vagas() {
   const [cursor, setCursor] = useState<string | null>(null);
   const [allJobs, setAllJobs] = useState<Job[]>([]);
 
-  const filters = { query: query || undefined, level: level || undefined, location: location || undefined, type: type || undefined, skills: skills || undefined };
+  const filters = {
+    query: query || undefined,
+    level: level || undefined,
+    location: location || undefined,
+    type: type || undefined,
+    skills: skills || undefined,
+  };
 
   const { data: jobsData, isFetching } = useQuery({
     queryKey: ["jobs", filters, cursor],
@@ -99,7 +110,12 @@ function Vagas() {
               </p>
             </div>
             {hasFilters && (
-              <Button size="sm" variant="ghost" className="rounded-full gap-1.5 text-muted-foreground" onClick={clearFilters}>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="rounded-full gap-1.5 text-muted-foreground"
+                onClick={clearFilters}
+              >
                 <X className="h-4 w-4" /> Limpar filtros
               </Button>
             )}
@@ -204,16 +220,26 @@ function Vagas() {
                     <Sparkles className="h-3 w-3" /> {j.matchScore}% match
                   </span>
                 )}
-                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">{j.type}</span>
-                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">{j.level}</span>
+                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
+                  {j.type}
+                </span>
+                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
+                  {j.level}
+                </span>
                 {j.salary && (
-                  <span className="rounded-full bg-growth/15 px-2.5 py-1 font-medium text-growth">{j.salary}</span>
+                  <span className="rounded-full bg-growth/15 px-2.5 py-1 font-medium text-growth">
+                    {j.salary}
+                  </span>
                 )}
               </div>
 
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {j.skills.map((s) => (
-                  <Badge key={s} variant="secondary" className="rounded-full bg-accent font-normal text-accent-foreground">
+                  <Badge
+                    key={s}
+                    variant="secondary"
+                    className="rounded-full bg-accent font-normal text-accent-foreground"
+                  >
                     {s}
                   </Badge>
                 ))}
@@ -225,7 +251,12 @@ function Vagas() {
                   <Button size="sm" variant="outline" className="rounded-full">
                     Ver detalhes
                   </Button>
-                  <Button size="sm" className="rounded-full" disabled={apply.isPending} onClick={() => apply.mutate(j.id)}>
+                  <Button
+                    size="sm"
+                    className="rounded-full"
+                    disabled={apply.isPending}
+                    onClick={() => apply.mutate(j.id)}
+                  >
                     Candidatar
                   </Button>
                 </div>
@@ -243,7 +274,9 @@ function Vagas() {
         <InfiniteScroll
           hasMore={!!nextCursor}
           loading={isFetching}
-          onLoadMore={() => { if (nextCursor) setCursor(nextCursor); }}
+          onLoadMore={() => {
+            if (nextCursor) setCursor(nextCursor);
+          }}
         />
 
         {!isFetching && allJobs.length === 0 && (
@@ -252,7 +285,6 @@ function Vagas() {
           </p>
         )}
       </div>
-      
     </AppShell>
   );
 }
@@ -283,7 +315,5 @@ function InfiniteScroll({
 
   if (!hasMore) return null;
 
-  return (
-    <div ref={sentinelRef} className="h-4" />
-  );
+  return <div ref={sentinelRef} className="h-4" />;
 }

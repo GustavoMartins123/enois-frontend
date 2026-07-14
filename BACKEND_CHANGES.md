@@ -5,11 +5,13 @@
 Adicionar campo `avatar` (String, opcional) no `Community`.
 
 **Modelo:**
+
 ```java
 private String avatar; // URL da imagem de perfil da comunidade (CDN)
 ```
 
 **Response atualizado (`GET /api/communities` e `GET /api/communities/{id}`):**
+
 ```json
 {
   "id": "community_...",
@@ -24,6 +26,7 @@ private String avatar; // URL da imagem de perfil da comunidade (CDN)
 ```
 
 **Create/Update (`POST` / `PATCH`):**
+
 ```json
 {
   "name": "...",
@@ -43,12 +46,14 @@ private String avatar; // URL da imagem de perfil da comunidade (CDN)
 **Provável causa:** o feed está filtrando por um campo errado ou o `communityId` não está sendo salvo corretamente nos posts ao criar via `POST /api/feed/posts`.
 
 **Passos pra debug:**
+
 1. Criar um post com `communityId: "community_xxx"` via `POST /api/feed/posts`
 2. Verificar se o post foi salvo no banco com o `communityId` correto
 3. Chamar `GET /api/communities/{communityId}/feed` e verificar a query
 4. Verificar se o controller/filtro do feed da comunidade está usando o mesmo campo que o repository
 
 **Sugestão de query (Spring Data JPA):**
+
 ```java
 @Query("SELECT p FROM Post p WHERE p.communityId = :communityId ORDER BY p.createdAt DESC")
 Page<Post> findByCommunityId(@Param("communityId") String communityId, Pageable pageable);
@@ -59,11 +64,17 @@ Page<Post> findByCommunityId(@Param("communityId") String communityId, Pageable 
 **Endpoint:** `GET /api/communities/{communityId}/members`
 
 Já implementado? Precisa retornar:
+
 ```json
 {
   "items": [
-    { "userId": "user_...", "username": "joao", "name": "João",
-      "avatar": "https://...", "role": "ADMIN" }
+    {
+      "userId": "user_...",
+      "username": "joao",
+      "name": "João",
+      "avatar": "https://...",
+      "role": "ADMIN"
+    }
   ]
 }
 ```

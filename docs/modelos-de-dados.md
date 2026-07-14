@@ -153,7 +153,15 @@ type PostType = "INSIGHT" | "ARTICLE" | "QUESTION" | "PROJECT" | "OPPORTUNITY";
 ## Reações
 
 ```typescript
-type ReactionType = "LIKE" | "LOVE" | "LAUGH" | "WOW" | "SAD" | "CELEBRATE" | "SUPPORT" | "INSIGHTFUL";
+type ReactionType =
+  | "LIKE"
+  | "LOVE"
+  | "LAUGH"
+  | "WOW"
+  | "SAD"
+  | "CELEBRATE"
+  | "SUPPORT"
+  | "INSIGHTFUL";
 
 interface ActionResponse {
   postId: string;
@@ -376,7 +384,17 @@ interface RankingUser {
 ## Denúncia (Report)
 
 ```typescript
-type ReportReason = "AI_GENERATED" | "FAKE_CONTENT" | "SCAM" | "DISCRIMINATION" | "PREJUDICE" | "HARASSMENT" | "SPAM" | "VIOLENCE" | "COPYRIGHT" | "OTHER";
+type ReportReason =
+  | "AI_GENERATED"
+  | "FAKE_CONTENT"
+  | "SCAM"
+  | "DISCRIMINATION"
+  | "PREJUDICE"
+  | "HARASSMENT"
+  | "SPAM"
+  | "VIOLENCE"
+  | "COPYRIGHT"
+  | "OTHER";
 
 interface ReportInput {
   targetId: string;
@@ -411,25 +429,29 @@ interface PageResponse<T> {
 ## Respostas Padrão
 
 ### Sucesso (Escritas - CommandResponse)
+
 ```json
 { "status": 201, "body": { ... } }
 ```
 
 ### Sucesso (Leituras)
+
 Retorno direto do objeto ou `PageResponse`.
 
 ### Erro
+
 ```json
 { "code": "ERROR_CODE", "message": "Descrição do erro.", "timestamp": "..." }
 ```
 
 ### Códigos de Erro
-| Código | Significado |
-|---|---|
-| INVALID_CREDENTIALS | Email ou senha inválidos |
-| EMAIL_ALREADY_REGISTERED | Email já cadastrado |
-| UNAUTHENTICATED | Sessão inválida ou expirada |
-| POST_NOT_FOUND | Post não encontrado |
-| RATE_LIMITED | Muitas requisições (429) |
-| DEPENDENCY_UNAVAILABLE | Serviço indisponível (503) |
-| CONFLICT | Conflito de idempotência (409) |
+
+| Código                   | Significado                    |
+| ------------------------ | ------------------------------ |
+| INVALID_CREDENTIALS      | Email ou senha inválidos       |
+| EMAIL_ALREADY_REGISTERED | Email já cadastrado            |
+| UNAUTHENTICATED          | Sessão inválida ou expirada    |
+| POST_NOT_FOUND           | Post não encontrado            |
+| RATE_LIMITED             | Muitas requisições (429)       |
+| DEPENDENCY_UNAVAILABLE   | Serviço indisponível (503)     |
+| CONFLICT                 | Conflito de idempotência (409) |

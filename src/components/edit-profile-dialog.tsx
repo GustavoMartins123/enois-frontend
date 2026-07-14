@@ -1,15 +1,25 @@
 import { useState } from "react";
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { X, Plus, Pencil, Trash2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
+import { Pencil, Plus, Trash2, X } from "lucide-react";
+
+import { ApiError, profileApi } from "@/lib/api";
+import type { Certification, Education, Experience, Profile } from "@/lib/api";
+
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { profileApi, ApiError } from "@/lib/api";
-import type { Profile, Experience, Education, Certification } from "@/lib/api";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Props {
   profile: Profile;
@@ -44,7 +54,11 @@ export function EditProfileDialog({ profile, children }: Props) {
       queryClient.invalidateQueries({ queryKey: ["profile", profile.username] });
       if (updated.username && updated.username !== profile.username) {
         queryClient.invalidateQueries({ queryKey: ["profile", updated.username] });
-        router.navigate({ to: "/perfil/$username", params: { username: updated.username }, replace: true });
+        router.navigate({
+          to: "/perfil/$username",
+          params: { username: updated.username },
+          replace: true,
+        });
       }
       setOpen(false);
     },
@@ -84,9 +98,24 @@ export function EditProfileDialog({ profile, children }: Props) {
       location: location || null,
       availability: availability || null,
       portfolio: portfolio || null,
-      externalLinks: linksText ? linksText.split("\n").map((s) => s.trim()).filter(Boolean) : [],
-      skills: skillsText ? skillsText.split(",").map((s) => s.trim()).filter(Boolean) : [],
-      goals: goalsText ? goalsText.split(",").map((s) => s.trim()).filter(Boolean) : [],
+      externalLinks: linksText
+        ? linksText
+            .split("\n")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
+      skills: skillsText
+        ? skillsText
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
+      goals: goalsText
+        ? goalsText
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
       openToWork,
       isMentor,
     });
@@ -121,7 +150,9 @@ export function EditProfileDialog({ profile, children }: Props) {
                 key={t.key}
                 onClick={() => setTab(t.key)}
                 className={`rounded-full px-4 py-1.5 font-medium transition ${
-                  tab === t.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  tab === t.key
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 {t.label}
@@ -137,10 +168,21 @@ export function EditProfileDialog({ profile, children }: Props) {
                 <Input value={name} onChange={(e) => setName(e.target.value)} />
               </Field>
               <Field label="Username (URL do perfil)" error={usernameError}>
-                <Input value={username} onChange={(e) => { setUsername(e.target.value); setUsernameError(""); }} placeholder="seu-username" />
+                <Input
+                  value={username}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    setUsernameError("");
+                  }}
+                  placeholder="seu-username"
+                />
               </Field>
               <Field label="Headline">
-                <Input value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="Cargo ou frase de destaque" />
+                <Input
+                  value={headline}
+                  onChange={(e) => setHeadline(e.target.value)}
+                  placeholder="Cargo ou frase de destaque"
+                />
               </Field>
               <Field label="Bio">
                 <Textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} />
@@ -154,13 +196,25 @@ export function EditProfileDialog({ profile, children }: Props) {
                 </Field>
               </div>
               <Field label="Disponibilidade">
-                <Input value={availability} onChange={(e) => setAvailability(e.target.value)} placeholder="Ex: Disponível para freelas" />
+                <Input
+                  value={availability}
+                  onChange={(e) => setAvailability(e.target.value)}
+                  placeholder="Ex: Disponível para freelas"
+                />
               </Field>
               <Field label="Portfólio">
-                <Input value={portfolio} onChange={(e) => setPortfolio(e.target.value)} placeholder="https://..." />
+                <Input
+                  value={portfolio}
+                  onChange={(e) => setPortfolio(e.target.value)}
+                  placeholder="https://..."
+                />
               </Field>
               <Field label="Links externos (um por linha)">
-                <Textarea value={linksText} onChange={(e) => setLinksText(e.target.value)} rows={3} />
+                <Textarea
+                  value={linksText}
+                  onChange={(e) => setLinksText(e.target.value)}
+                  rows={3}
+                />
               </Field>
               <Field label="Habilidades (separadas por vírgula)">
                 <Input value={skillsText} onChange={(e) => setSkillsText(e.target.value)} />
@@ -198,7 +252,14 @@ export function EditProfileDialog({ profile, children }: Props) {
               deleteApi={(id) => profileApi.experiences.delete(id)}
               queryKey={["me", "experiences"]}
               emptyMessage="Nenhuma experiência adicionada"
-              newItem={{ title: "", company: "", location: "", description: "", startDate: "", endDate: "" }}
+              newItem={{
+                title: "",
+                company: "",
+                location: "",
+                description: "",
+                startDate: "",
+                endDate: "",
+              }}
             />
           )}
 
@@ -219,7 +280,14 @@ export function EditProfileDialog({ profile, children }: Props) {
               deleteApi={(id) => profileApi.education.delete(id)}
               queryKey={["me", "education"]}
               emptyMessage="Nenhuma formação adicionada"
-              newItem={{ school: "", degree: "", field: "", description: "", startDate: "", endDate: "" }}
+              newItem={{
+                school: "",
+                degree: "",
+                field: "",
+                description: "",
+                startDate: "",
+                endDate: "",
+              }}
             />
           )}
 
@@ -239,7 +307,14 @@ export function EditProfileDialog({ profile, children }: Props) {
               deleteApi={(id) => profileApi.certifications.delete(id)}
               queryKey={["me", "certifications"]}
               emptyMessage="Nenhuma certificação adicionada"
-              newItem={{ name: "", issuer: "", description: "", issueDate: "", expirationDate: "", credentialUrl: "" }}
+              newItem={{
+                name: "",
+                issuer: "",
+                description: "",
+                issueDate: "",
+                expirationDate: "",
+                credentialUrl: "",
+              }}
             />
           )}
         </div>
@@ -248,7 +323,15 @@ export function EditProfileDialog({ profile, children }: Props) {
   );
 }
 
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+function Field({
+  label,
+  error,
+  children,
+}: {
+  label: string;
+  error?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-1.5">
       <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
@@ -303,7 +386,8 @@ function SubList<T extends { id: string }>({
   });
 
   const update = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => updateApi(id, data),
+    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
+      updateApi(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
       setEditingId(null);
@@ -376,7 +460,15 @@ function SubList<T extends { id: string }>({
             <Button size="sm" onClick={handleSubmit} disabled={isPending}>
               {isPending ? "Salvando..." : "Salvar"}
             </Button>
-            <Button size="sm" variant="outline" onClick={() => { setEditingId(null); setForm({ ...newItem }); setCurrentlyHere(false); }}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setEditingId(null);
+                setForm({ ...newItem });
+                setCurrentlyHere(false);
+              }}
+            >
               Cancelar
             </Button>
           </div>
@@ -390,11 +482,18 @@ function SubList<T extends { id: string }>({
               <div key={item.id} className="rounded-xl border border-border bg-muted/30 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0 flex-1 text-sm">
-                    <p className="break-words font-medium">{String((item as Record<string, unknown>)[fields[0].key] ?? "")}</p>
-                    <p className="break-words text-muted-foreground">{String((item as Record<string, unknown>)[fields[1]?.key] ?? "")}</p>
+                    <p className="break-words font-medium">
+                      {String((item as Record<string, unknown>)[fields[0].key] ?? "")}
+                    </p>
+                    <p className="break-words text-muted-foreground">
+                      {String((item as Record<string, unknown>)[fields[1]?.key] ?? "")}
+                    </p>
                   </div>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => startEdit(item)} className="grid h-8 w-8 place-items-center rounded-lg hover:bg-muted">
+                    <button
+                      onClick={() => startEdit(item)}
+                      className="grid h-8 w-8 place-items-center rounded-lg hover:bg-muted"
+                    >
                       <Pencil className="h-4 w-4 text-muted-foreground" />
                     </button>
                     <button
@@ -408,7 +507,15 @@ function SubList<T extends { id: string }>({
               </div>
             ))
           )}
-          <Button variant="outline" className="w-full gap-1.5" onClick={() => { setEditingId("__new__"); setForm({ ...newItem }); setCurrentlyHere(false); }}>
+          <Button
+            variant="outline"
+            className="w-full gap-1.5"
+            onClick={() => {
+              setEditingId("__new__");
+              setForm({ ...newItem });
+              setCurrentlyHere(false);
+            }}
+          >
             <Plus className="h-4 w-4" /> Adicionar
           </Button>
         </>
