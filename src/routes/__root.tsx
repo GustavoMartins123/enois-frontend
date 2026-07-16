@@ -1,17 +1,18 @@
+import { type ReactNode, useEffect } from "react";
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
-  Outlet,
-  Link,
-  createRootRouteWithContext,
-  useRouter,
-  useNavigate,
   HeadContent,
+  Link,
+  Outlet,
   Scripts,
+  createRootRouteWithContext,
+  useNavigate,
+  useRouter,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
 
-import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
   return (
@@ -98,7 +99,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap",
       },
     ],
   }),

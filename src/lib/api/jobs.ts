@@ -28,7 +28,10 @@ export const jobsApi = {
     skills?: string;
     cursor?: string | null;
     limit?: number;
-  }) => api.get<PageResponse<Job>>(`/jobs${buildQuery({ ...params, cursor: params?.cursor ?? undefined, limit: params?.limit ?? 20 })}`),
+  }) =>
+    api.get<PageResponse<Job>>(
+      `/jobs${buildQuery({ ...params, cursor: params?.cursor ?? undefined, limit: params?.limit ?? 20 })}`,
+    ),
 
   get: (jobId: string) => api.get<Job>(`/jobs/${jobId}`),
 

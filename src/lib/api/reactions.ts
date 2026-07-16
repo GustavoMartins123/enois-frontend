@@ -52,11 +52,9 @@ export const reactionsApi = {
   react: (postId: string, type: ReactionType) =>
     postReaction(`/feed/posts/${postId}/reactions`, type),
 
-  removeReaction: (postId: string) =>
-    removeReaction(`/feed/posts/${postId}/reactions`),
+  removeReaction: (postId: string) => removeReaction(`/feed/posts/${postId}/reactions`),
 
-  listReactions: (postId: string) =>
-    listReactions(`/feed/posts/${postId}/reactions`),
+  listReactions: (postId: string) => listReactions(`/feed/posts/${postId}/reactions`),
 
   reactComment: (postId: string, commentId: string, type: ReactionType) =>
     postReaction(`/feed/posts/${postId}/comments/${commentId}/reactions`, type),

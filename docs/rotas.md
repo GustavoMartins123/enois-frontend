@@ -9,6 +9,7 @@ Página de marketing pública. Sem autenticação necessária.
 **Componente:** `Landing()`
 
 Seções:
+
 - Header com navegação interna (Filosofia, Recursos, Comunidade)
 - Hero com CTA para criar conta ou explorar
 - Seção "Filosofia" com 4 valores (Autenticidade, Colaboração, Aprendizado, Segurança)
@@ -23,12 +24,14 @@ Seções:
 **Componente:** `Home()`
 
 Funcionalidades:
+
 - **Compositor de posts** com textarea com @menção, seletor de tipo (INSIGHT, ARTICLE, QUESTION, PROJECT), upload de mídia (imagem/vídeo)
 - **Abas de filtro:** Para você, Tudo, Seguindo, Discussões, Projetos
 - **Feed infinito** de `PostCard` components
 - **Sidebar direita:** Mini-perfil, sugestões de conexão, eventos
 
 **Componentes auxiliares:**
+
 - `ComposerAction()` - Botão de tipo de post no compositor
 - `TabPill()` - Botão de aba de filtro
 
@@ -48,6 +51,7 @@ Página pública de autenticação com duas abas.
 - Salvamento de token no localStorage após sucesso
 
 **Componentes auxiliares:**
+
 - `TabBtn()` - Botão de alternância de aba
 - `SocialButtons()` - Botões SSO
 - `Divider()` - Divisor "ou com e-mail"
@@ -69,6 +73,7 @@ Página pública de autenticação com duas abas.
 - Dialog de criação de comunidade (nome, descrição, tópico)
 
 **Componentes auxiliares:**
+
 - `CreateCommunityDialog()` - Dialog de criação
 
 ## `/comunidades/$communityId` - Detalhe da Comunidade (`src/routes/comunidades.$communityId.tsx`)
@@ -86,6 +91,7 @@ Página pública de autenticação com duas abas.
 - Lista de membros na sidebar
 
 **Componentes auxiliares:**
+
 - `EditCommunityForm()` - Formulário de edição da comunidade
 
 ## `/eventos` - Eventos (`src/routes/eventos.tsx`)
@@ -100,6 +106,7 @@ Página pública de autenticação com duas abas.
 - Dialog de criação de evento (título, data, hora, realizador, formato)
 
 **Componentes auxiliares:**
+
 - `CreateEventForm()` - Formulário de criação de evento
 - `Field()` - Wrapper de campo
 
@@ -117,6 +124,7 @@ Página pública (mostra layout mesmo sem auth, mas sem funcionalidade).
 - Marcação de lidas ao selecionar conversa
 
 **Componentes auxiliares:**
+
 - `ConversationItem()` - Item da lista de conversas
 - `ConversationHeader()` - Cabeçalho do chat ativo
 - `formatTime()` - Formata timestamp relativo
@@ -134,6 +142,7 @@ Página pública (mostra layout mesmo sem auth, mas sem funcionalidade).
 - Dialog de cadastro como mentor (especialidades, preço)
 
 **Componentes auxiliares:**
+
 - `RegisterMentorForm()` - Formulário de cadastro de mentor
 - `MentorCard()` - Card de mentor
 - `EditMentorForm()` - Formulário de edição de mentor
@@ -150,6 +159,7 @@ Página pública (mostra layout mesmo sem auth, mas sem funcionalidade).
 - Botão Conectar/Remover
 
 **Componentes auxiliares:**
+
 - `RequestCard()` - Card de solicitação de conexão
 - `Stat()` - Card de estatística
 
@@ -175,6 +185,7 @@ Página pública (mostra layout mesmo sem auth, mas sem funcionalidade).
 - Infinite scroll com IntersectionObserver
 
 **Componentes auxiliares:**
+
 - `formatPostedAt()` - Formata data de postagem
 - `InfiniteScroll()` - Trigger de scroll infinito
 
@@ -194,13 +205,14 @@ Página pública (qualquer um pode ver). Loader busca dados ou `notFound`.
 - Recomendação com dialog
 
 **Componentes auxiliares:**
+
 - `Section()` - Wrapper de seção do perfil
 - `RecommendationItem()` - Item de recomendação
 
 ## Tratamento de Erros por Rota
 
-| Rota | NotFound | ErrorComponent |
-|------|----------|----------------|
-| `/comunidades/$communityId` | `notFound()` no loader | - |
-| `/perfil/$username` | "Pessoa não encontrada" | "Não foi possível carregar" |
-| `__root` (qualquer outra) | 404 genérico | Error boundary com reset |
+| Rota                        | NotFound                | ErrorComponent              |
+| --------------------------- | ----------------------- | --------------------------- |
+| `/comunidades/$communityId` | `notFound()` no loader  | -                           |
+| `/perfil/$username`         | "Pessoa não encontrada" | "Não foi possível carregar" |
+| `__root` (qualquer outra)   | 404 genérico            | Error boundary com reset    |

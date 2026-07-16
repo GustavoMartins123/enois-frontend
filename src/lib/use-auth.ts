@@ -1,5 +1,6 @@
-import { useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+
 import { profileApi } from "./api";
 import { getSessionToken } from "./api-client";
 

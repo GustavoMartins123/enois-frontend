@@ -20,10 +20,10 @@ Response: { "items": [{ "id": "community_...", "name": "Devs BR", "description":
                         "joined": false }] }
 ```
 
-| Parâmetro | Obrigatório | Descrição |
-|-----------|-------------|-----------|
-| `topic` | Não | Filtra por tópico |
-| `limit` | Não | Máx 50, default 20 |
+| Parâmetro | Obrigatório | Descrição          |
+| --------- | ----------- | ------------------ |
+| `topic`   | Não         | Filtra por tópico  |
+| `limit`   | Não         | Máx 50, default 20 |
 
 - Usuário **não logado** pode ver (sem headers)
 - `joined` = `true` se o usuário logado é membro
@@ -56,12 +56,12 @@ Response 201: { "id": "community_...", "name": "Devs BR", "description": "...",
                 "members": 1, "topic": "TECNOLOGIA", "cover": "...", "joined": true }
 ```
 
-| Campo | Obrigatório | Descrição |
-|-------|-------------|-----------|
-| `name` | Sim | Nome da comunidade |
-| `description` | Sim | Descrição (até 2000 chars) |
-| `topic` | Não | Tópico pra categorizar |
-| `cover` | Não | URL da imagem de capa (CDN) |
+| Campo         | Obrigatório | Descrição                   |
+| ------------- | ----------- | --------------------------- |
+| `name`        | Sim         | Nome da comunidade          |
+| `description` | Sim         | Descrição (até 2000 chars)  |
+| `topic`       | Não         | Tópico pra categorizar      |
+| `cover`       | Não         | URL da imagem de capa (CDN) |
 
 - Quem cria é automaticamente `ADMIN`
 - Só ADMIN pode editar a comunidade
@@ -95,8 +95,8 @@ Headers: X-User-Id, X-Session-Token
 Response: { "id": "{communityId}", "status": "JOINED" }
 ```
 
-| Erro | Significado |
-|------|-------------|
+| Erro               | Significado |
+| ------------------ | ----------- |
 | 409 ALREADY_MEMBER | Já é membro |
 
 **Tela:** Botão "Entrar" no card/header da comunidade. Vira "Sair" após entrar.
@@ -111,8 +111,8 @@ Headers: X-User-Id, X-Session-Token
 Response: { "id": "{communityId}", "status": "LEFT" }
 ```
 
-| Erro | Significado |
-|------|-------------|
+| Erro           | Significado  |
+| -------------- | ------------ |
 | 404 NOT_MEMBER | Não é membro |
 
 ---
@@ -130,13 +130,13 @@ Response: { "items": [
 ] }
 ```
 
-| Campo | Descrição |
-|-------|-----------|
-| `userId` | UUID do usuário (pra linkar ao perfil ou conectar) |
-| `username` | Username (pra link: `/perfil/{username}`) |
-| `name` | Nome de exibição |
-| `avatar` | URL do avatar |
-| `role` | `ADMIN` (criador) ou `MEMBER` |
+| Campo      | Descrição                                          |
+| ---------- | -------------------------------------------------- |
+| `userId`   | UUID do usuário (pra linkar ao perfil ou conectar) |
+| `username` | Username (pra link: `/perfil/{username}`)          |
+| `name`     | Nome de exibição                                   |
+| `avatar`   | URL do avatar                                      |
+| `role`     | `ADMIN` (criador) ou `MEMBER`                      |
 
 - Qualquer um logado pode ver os membros
 - Usar `userId` pra conectar: `POST /api/network/connections/{userId}`
@@ -160,19 +160,19 @@ Response: { "items": [
 ], "nextCursor": "..." }
 ```
 
-| Parâmetro | Descrição |
-|-----------|-----------|
-| `cursor` | Cursor da paginação (vazio = primeira página) |
-| `limit` | Máx 50, default 20 |
+| Parâmetro | Descrição                                     |
+| --------- | --------------------------------------------- |
+| `cursor`  | Cursor da paginação (vazio = primeira página) |
+| `limit`   | Máx 50, default 20                            |
 
-| Campo do post | Descrição |
-|---------------|-----------|
-| `authorUsername` | Username do autor (link: `/perfil/{authorUsername}`) |
-| `authorName` | Nome do autor |
-| `authorAvatar` | Avatar do autor |
-| `type` | `INSIGHT`, `ARTICLE`, `QUESTION`, `PROJECT`, `OPPORTUNITY` |
-| `counters` | `reactions`, `comments`, `saves`, `shares` |
-| `communityId` | ID da comunidade (sempre presente no feed da comunidade) |
+| Campo do post    | Descrição                                                  |
+| ---------------- | ---------------------------------------------------------- |
+| `authorUsername` | Username do autor (link: `/perfil/{authorUsername}`)       |
+| `authorName`     | Nome do autor                                              |
+| `authorAvatar`   | Avatar do autor                                            |
+| `type`           | `INSIGHT`, `ARTICLE`, `QUESTION`, `PROJECT`, `OPPORTUNITY` |
+| `counters`       | `reactions`, `comments`, `saves`, `shares`                 |
+| `communityId`    | ID da comunidade (sempre presente no feed da comunidade)   |
 
 - Paginação por cursor: use `nextCursor` na próxima request
 - `nextCursor` = `null` = não tem mais páginas
@@ -193,13 +193,13 @@ Body: { "type": "INSIGHT", "content": "Conteúdo do post",
 Response 201: { "id": "post_...", "authorId": "user_...", ... }
 ```
 
-| Campo | Obrigatório | Descrição |
-|-------|-------------|-----------|
-| `type` | Sim | `INSIGHT`, `ARTICLE`, `QUESTION`, `PROJECT`, `OPPORTUNITY` |
-| `content` | Sim | Texto do post (max 1024 chars) |
-| `tags` | Não | Lista de tags (max 5) |
-| `mediaIds` | Não | Lista de media IDs do ImageKit (max 5) |
-| `communityId` | Não | ID da comunidade (null = post no feed global) |
+| Campo         | Obrigatório | Descrição                                                  |
+| ------------- | ----------- | ---------------------------------------------------------- |
+| `type`        | Sim         | `INSIGHT`, `ARTICLE`, `QUESTION`, `PROJECT`, `OPPORTUNITY` |
+| `content`     | Sim         | Texto do post (max 1024 chars)                             |
+| `tags`        | Não         | Lista de tags (max 5)                                      |
+| `mediaIds`    | Não         | Lista de media IDs do ImageKit (max 5)                     |
+| `communityId` | Não         | ID da comunidade (null = post no feed global)              |
 
 - Se `communityId` for enviado, o post aparece no feed da comunidade
 - Se não for enviado, post normal no feed global
@@ -213,28 +213,28 @@ Response 201: { "id": "post_...", "authorId": "user_...", ... }
 
 Os endpoints de interação são os mesmos do feed global:
 
-| Ação | Endpoint |
-|------|----------|
-| Curtir/Reagir | `POST /api/feed/posts/{postId}/reactions` |
-| Remover reação | `DELETE /api/feed/posts/{postId}/reactions` |
-| Comentar | `POST /api/feed/posts/{postId}/comments` |
-| Ver comentários | `GET /api/feed/posts/{postId}/comments` |
-| Salvar | `POST /api/feed/posts/{postId}/saves` |
-| Remover save | `DELETE /api/feed/posts/{postId}/saves` |
-| Compartilhar | `POST /api/feed/posts/{postId}/shares` |
-| Deletar post | `DELETE /api/feed/posts/{postId}` |
+| Ação            | Endpoint                                    |
+| --------------- | ------------------------------------------- |
+| Curtir/Reagir   | `POST /api/feed/posts/{postId}/reactions`   |
+| Remover reação  | `DELETE /api/feed/posts/{postId}/reactions` |
+| Comentar        | `POST /api/feed/posts/{postId}/comments`    |
+| Ver comentários | `GET /api/feed/posts/{postId}/comments`     |
+| Salvar          | `POST /api/feed/posts/{postId}/saves`       |
+| Remover save    | `DELETE /api/feed/posts/{postId}/saves`     |
+| Compartilhar    | `POST /api/feed/posts/{postId}/shares`      |
+| Deletar post    | `DELETE /api/feed/posts/{postId}`           |
 
 ---
 
 ## Resumo dos endpoints de comunidade
 
-| Método | Path | Autenticação | Descrição |
-|--------|------|-------------|-----------|
-| GET | `/api/communities` | Opcional | Listar comunidades |
-| GET | `/api/communities/{id}` | Opcional | Ver comunidade |
-| POST | `/api/communities` | Obrigatória | Criar comunidade |
-| PATCH | `/api/communities/{id}` | Obrigatória | Editar (só ADMIN) |
-| POST | `/api/communities/{id}/members` | Obrigatória | Entrar |
-| DELETE | `/api/communities/{id}/members` | Obrigatória | Sair |
-| GET | `/api/communities/{id}/members` | Obrigatória | Listar membros |
-| GET | `/api/communities/{id}/feed` | Opcional | Feed da comunidade |
+| Método | Path                            | Autenticação | Descrição          |
+| ------ | ------------------------------- | ------------ | ------------------ |
+| GET    | `/api/communities`              | Opcional     | Listar comunidades |
+| GET    | `/api/communities/{id}`         | Opcional     | Ver comunidade     |
+| POST   | `/api/communities`              | Obrigatória  | Criar comunidade   |
+| PATCH  | `/api/communities/{id}`         | Obrigatória  | Editar (só ADMIN)  |
+| POST   | `/api/communities/{id}/members` | Obrigatória  | Entrar             |
+| DELETE | `/api/communities/{id}/members` | Obrigatória  | Sair               |
+| GET    | `/api/communities/{id}/members` | Obrigatória  | Listar membros     |
+| GET    | `/api/communities/{id}/feed`    | Opcional     | Feed da comunidade |

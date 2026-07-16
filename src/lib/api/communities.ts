@@ -44,9 +44,11 @@ export const communitiesApi = {
   update: (communityId: string, data: Partial<CreateCommunityInput>) =>
     api.patch<Community>(`/communities/${communityId}`, data),
 
-  join: (communityId: string) => api.post<{ status: string }>(`/communities/${communityId}/members`),
+  join: (communityId: string) =>
+    api.post<{ status: string }>(`/communities/${communityId}/members`),
 
-  leave: (communityId: string) => api.delete<{ status: string }>(`/communities/${communityId}/members`),
+  leave: (communityId: string) =>
+    api.delete<{ status: string }>(`/communities/${communityId}/members`),
 
   getMembers: (communityId: string) =>
     api.get<{ items: CommunityMember[] }>(`/communities/${communityId}/members`),

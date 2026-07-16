@@ -18,7 +18,12 @@ export interface PageResponse<T> {
 }
 
 export const commentsApi = {
-  create: (postId: string, content: string, parentCommentId?: string | null, mentionedUserIds?: string[]) =>
+  create: (
+    postId: string,
+    content: string,
+    parentCommentId?: string | null,
+    mentionedUserIds?: string[],
+  ) =>
     api.post<CommentView>(`/feed/posts/${postId}/comments`, {
       content,
       parentCommentId: parentCommentId ?? null,

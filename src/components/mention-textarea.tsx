@@ -1,6 +1,9 @@
-import { useState, useRef, useEffect, type KeyboardEvent } from "react";
+import { type KeyboardEvent, useEffect, useRef, useState } from "react";
+
 import { useQuery } from "@tanstack/react-query";
-import { usersApi, type UserSearchResult } from "@/lib/api";
+
+import { type UserSearchResult, usersApi } from "@/lib/api";
+
 import { UserAvatar } from "@/components/user-avatar";
 
 interface Props {

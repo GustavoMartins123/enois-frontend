@@ -1,13 +1,18 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { requireAuth } from "@/lib/require-auth";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { UserPlus, UserMinus, Check, Send, X } from "lucide-react";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, createFileRoute } from "@tanstack/react-router";
+
+import { Check, Send, UserMinus, UserPlus, X } from "lucide-react";
+
+import { type ConnectionRequest, networkApi, profileApi } from "@/lib/api";
+import { requireAuth } from "@/lib/require-auth";
+import { useAuth } from "@/lib/use-auth";
+
+import { Button } from "@/components/ui/button";
+
 import { AppShell } from "@/components/app-shell";
 import { UserAvatar } from "@/components/user-avatar";
-import { Button } from "@/components/ui/button";
-import { networkApi, profileApi, type ConnectionRequest } from "@/lib/api";
-import { useAuth } from "@/lib/use-auth";
 
 export const Route = createFileRoute("/rede")({
   beforeLoad: requireAuth,
@@ -193,7 +198,6 @@ function Rede() {
           </div>
         </section>
       </div>
-      
     </AppShell>
   );
 }

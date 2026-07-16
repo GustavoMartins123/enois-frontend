@@ -1,13 +1,15 @@
-import { createFileRoute, Link, Outlet, useMatchRoute } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
+
+import { Loader2, Plus, Users } from "lucide-react";
+
+import { communitiesApi } from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
 import { requireAuth } from "@/lib/require-auth";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useRef, useEffect } from "react";
-import { Users, Plus, Loader2 } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -15,8 +17,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { communitiesApi } from "@/lib/api";
-import { resolveCdnUrl } from "@/lib/api/media";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+
+import { AppShell } from "@/components/app-shell";
 
 const TOPICS = [
   "Todas",
@@ -185,16 +190,11 @@ function Comunidades() {
               onClick={loadMore}
               disabled={isFetching}
             >
-              {isFetching ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                "Carregar mais"
-              )}
+              {isFetching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Carregar mais"}
             </Button>
           </div>
         )}
       </div>
-      
     </AppShell>
   );
 }
@@ -234,7 +234,11 @@ function CreateCommunityDialog({
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Nome</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="h-10 border-transparent bg-muted"
+            />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">Descrição</Label>
@@ -242,6 +246,7 @@ function CreateCommunityDialog({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
+              className="h-10 border-transparent bg-muted"
             />
           </div>
           <div className="space-y-1.5">
@@ -249,7 +254,7 @@ function CreateCommunityDialog({
             <select
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
-              className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 border-transparent bg-muted"
             >
               {TOPICS.filter((t) => t !== "Todas").map((t) => (
                 <option key={t} value={t}>
