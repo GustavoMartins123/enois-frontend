@@ -1,12 +1,17 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
+import { type FormEvent, useState } from "react";
+
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+
+import { ArrowRight, Eye, EyeOff, Loader2, Sparkles } from "lucide-react";
 import { z } from "zod";
-import { Sparkles, ArrowRight, Loader2, Eye, EyeOff } from "lucide-react";
+
+import { ApiError, authApi } from "@/lib/api";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
 import { ThemeToggle } from "@/components/theme-toggle";
-import { authApi, ApiError } from "@/lib/api";
 
 type Tab = "login" | "signup";
 
@@ -206,9 +211,7 @@ function SocialButtons() {
         Continuar com Apple
       </button>
       {error && (
-        <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
-          {error}
-        </p>
+        <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p>
       )}
     </div>
   );

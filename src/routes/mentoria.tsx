@@ -1,14 +1,17 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { requireAuth } from "@/lib/require-auth";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Star, Calendar, Sparkles, Pencil, Trash2 } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
-import { UserAvatar } from "@/components/user-avatar";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, createFileRoute } from "@tanstack/react-router";
+
+import { Calendar, Pencil, Sparkles, Star, Trash2 } from "lucide-react";
+
+import { mentorsApi, profileApi } from "@/lib/api";
+import type { UpdateMentorInput } from "@/lib/api";
+import { requireAuth } from "@/lib/require-auth";
+import { useAuth } from "@/lib/use-auth";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -16,9 +19,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { mentorsApi, profileApi } from "@/lib/api";
-import { useAuth } from "@/lib/use-auth";
-import type { UpdateMentorInput } from "@/lib/api";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+import { AppShell } from "@/components/app-shell";
+import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/mentoria")({
   beforeLoad: requireAuth,
@@ -105,7 +110,6 @@ function Mentoria() {
           </div>
         </div>
       </div>
-
     </AppShell>
   );
 }
@@ -135,7 +139,12 @@ function RegisterMentorForm({
       </div>
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Investimento</Label>
-        <Input value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Gratuito" className="h-10 border-transparent bg-muted" />
+        <Input
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          placeholder="Gratuito"
+          className="h-10 border-transparent bg-muted"
+        />
       </div>
       <Button
         className="w-full rounded-full"

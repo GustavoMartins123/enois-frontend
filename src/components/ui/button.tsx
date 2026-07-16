@@ -1,6 +1,7 @@
 import * as React from "react";
+
 import { Slot } from "@radix-ui/react-slot";
-import { cva, type VariantProps } from "class-variance-authority";
+import { type VariantProps, cva } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
@@ -11,7 +12,8 @@ const buttonVariants = cva(
       variant: {
         default: "bg-primary text-white shadow-soft hover:bg-[oklch(0.49_0.24_293)]",
         destructive: "bg-destructive text-white shadow-sm hover:bg-destructive/90",
-        outline: "border border-border-soft bg-transparent hover:bg-surface-2 hover:text-foreground",
+        outline:
+          "border border-border-soft bg-transparent hover:bg-surface-2 hover:text-foreground",
         secondary: "bg-surface-2 text-foreground hover:bg-surface-3",
         ghost: "hover:bg-surface-2 hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline hover:text-primary/80",

@@ -1,10 +1,13 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { requireAuth } from "@/lib/require-auth";
 import { useQuery } from "@tanstack/react-query";
-import { Bookmark, ArrowLeft } from "lucide-react";
+import { Link, createFileRoute } from "@tanstack/react-router";
+
+import { ArrowLeft, Bookmark } from "lucide-react";
+
+import { feedApi } from "@/lib/api";
+import { requireAuth } from "@/lib/require-auth";
+
 import { AppShell } from "@/components/app-shell";
 import { PostCard } from "@/components/post-card";
-import { feedApi } from "@/lib/api";
 
 export const Route = createFileRoute("/salvos")({
   beforeLoad: requireAuth,
@@ -57,7 +60,6 @@ function SavedPosts() {
           </div>
         )}
       </div>
-      
     </AppShell>
   );
 }

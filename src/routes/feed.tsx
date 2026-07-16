@@ -1,23 +1,28 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { type FormEvent, useRef, useState } from "react";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, createFileRoute } from "@tanstack/react-router";
+
+import { BarChart3, Calendar, FileText, Film, Image, TrendingUp, UserPlus, X } from "lucide-react";
+
+import { ApiError, eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
+import type { PostView } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Image, FileText, BarChart3, Calendar, UserPlus, TrendingUp, X, Film } from "lucide-react";
-import { useState, useRef, type FormEvent } from "react";
 import { useMediaUpload } from "@/lib/use-media-upload";
 import type { UploadResult } from "@/lib/use-media-upload";
+
+import { Button } from "@/components/ui/button";
+
+import { AppShell } from "@/components/app-shell";
+import { MentionTextarea } from "@/components/mention-textarea";
+import { PostCard } from "@/components/post-card";
+import { UserAvatar } from "@/components/user-avatar";
 
 interface MediaItem {
   type: "image" | "video";
   file: File;
   preview: string;
 }
-import { AppShell } from "@/components/app-shell";
-import { PostCard } from "@/components/post-card";
-import { UserAvatar } from "@/components/user-avatar";
-import { Button } from "@/components/ui/button";
-import { MentionTextarea } from "@/components/mention-textarea";
-import { feedApi, networkApi, eventsApi, profileApi, ApiError } from "@/lib/api";
-import type { PostView } from "@/lib/api";
 
 export const Route = createFileRoute("/feed")({
   beforeLoad: requireAuth,
@@ -77,8 +82,12 @@ function Home() {
   const upload = useMediaUpload();
 
   const createPost = useMutation({
-    mutationFn: (data: { content: string; type: PostView["type"]; mediaIds?: string[]; mentionedUserIds?: string[] }) =>
-      feedApi.create(data),
+    mutationFn: (data: {
+      content: string;
+      type: PostView["type"];
+      mediaIds?: string[];
+      mentionedUserIds?: string[];
+    }) => feedApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["feed"] });
     },
@@ -155,7 +164,10 @@ function Home() {
               />
               <MentionTextarea
                 value={draft}
-                onChange={(val, ids) => { setDraft(val); setMentionedUserIds(ids); }}
+                onChange={(val, ids) => {
+                  setDraft(val);
+                  setMentionedUserIds(ids);
+                }}
                 placeholder="Compartilhe algo que aprendeu hoje..."
                 className="min-h-11 flex-1 resize-none rounded-2xl border-border bg-muted/40 px-3 py-2 text-sm"
                 maxLength={600}
@@ -396,7 +408,6 @@ function Home() {
           )}
         </aside>
       </div>
-      
     </AppShell>
   );
 }
