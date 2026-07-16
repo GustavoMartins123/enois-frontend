@@ -14,6 +14,16 @@ import { Button } from "@/components/ui/button";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 
+import { BaseLayout } from '../components/layouts';
+import { Navbar } from '../components/Navbar';
+import { Rodape } from '../components/Rodape';
+import { Hero } from '../components/Hero';
+import { ProblemSection } from '../components/Problema';
+import { OpenLetterSection } from '../components/CartaAberta';
+import { MidCTASection } from '../components/CTAIntermediario';
+import { FAQSection } from '../components/FAQ';
+import { FooterCTASection } from '../components/Rodape';
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
