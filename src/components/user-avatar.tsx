@@ -26,7 +26,6 @@ export function UserAvatar({ src, alt, className, fallback, fallbackClassName }:
   return (
     <Avatar className={className}>
       {resolved && <AvatarImage src={resolved} alt={label} />}
-      {/* <AvatarFallback className="bg-highlight-project text-highlight-project-text"> */}
       <AvatarFallback
         className={
           fallbackClassName ??
