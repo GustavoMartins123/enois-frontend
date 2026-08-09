@@ -307,7 +307,7 @@ function MentorCard({
           </Dialog>
         </div>
       ) : (
-        <Button className="mt-4 w-full rounded-full">Agendar sessão</Button>
+        <Button className="mt-4 w-full rounded-full bg-mentorship-button">Agendar sessão</Button>
       )}
     </article>
   );
