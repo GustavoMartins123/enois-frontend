@@ -57,7 +57,7 @@ function Mentoria() {
           className="surface-card relative overflow-hidden p-5 sm:p-8"
           style={{ background: "var(--gradient-soft)" }}
         >
-          <div className="relative max-w-2xl">
+          <div className="relative">
             <Badge className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft">
               <Sparkles className="mr-1 h-3 w-3" /> Mentoria nativa
             </Badge>
@@ -103,7 +103,7 @@ function Mentoria() {
           <p className="text-sm text-muted-foreground">
             Avaliados pela comunidade nas últimas 8 semanas.
           </p>
-          <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
             {mentors.map((m) => (
               <MentorCard key={m.id} mentor={m} />
             ))}
@@ -204,22 +204,93 @@ function MentorCard({
   });
 
   return (
-    <article className="surface-card flex flex-col p-5">
-      <div className="flex items-start gap-3">
-        <UserAvatar src={user?.avatar} alt={user?.name ?? "Mentor"} className="h-14 w-14" />
-        <div className="min-w-0 flex-1">
+    <article className="surface-card mx-auto w-full max-w-5xl space-y-4 p-5">
+      {/* Seção superior */}
+      <header className="flex flex-wrap">
+        {/* Avatar / imagem de destaque */}
+        <div className="md:col-span-3">
+          <div className="flex h-full items-start justify-center overflow-hidden">
+            <UserAvatar src={user?.avatar} alt={user?.name ?? "Mentor"} className="h-14 w-14 shrink-0" />
+          </div>
+        </div>
+
+        {/* Conteúdo principal */}
+        <div className="space-y-4 px-4 md:col-span-6 flex-1 overflow-hidden">
           <Link
             to="/perfil/$username"
             params={{ username: user?.username ?? mentor.userId }}
-            className="block truncate font-semibold hover:underline"
+            className="block truncate font-semibold hover:underline m-0"
           >
             {user?.name ?? "Mentor"}
           </Link>
-          <p className="line-clamp-2 text-xs text-muted-foreground">{user?.headline ?? ""}</p>
-        </div>
-      </div>
+          <p className="line-clamp-2 text-xs text-muted-foreground ">{user?.headline ?? ""}</p>
 
-      <div className="mt-3 flex flex-wrap gap-1.5">
+
+
+        </div>
+
+        {/* Sidebar de estatísticas */}
+        <div className="flex flex-col gap-4 md:col-span-3 text-[13px]">
+          {!isOwner &&
+            // <div className="flex flex-col gap-2 shrink-0 self-center">
+            //   <Dialog open={editOpen} onOpenChange={setEditOpen}>
+            //     <DialogTrigger asChild>
+            //       <Button className="flex-1 rounded-full gap-1.5 mentoria bg-mentorship-button">
+            //         <Pencil className="h-4 w-4" />
+            //       </Button>
+            //     </DialogTrigger>
+            //     <DialogContent>
+            //       <DialogHeader>
+            //         <DialogTitle>Editar mentoria</DialogTitle>
+            //       </DialogHeader>
+            //       <EditMentorForm
+            //         mentor={mentor}
+            //         onSave={(data) => updateMentor.mutate(data)}
+            //         isPending={updateMentor.isPending}
+            //       />
+            //     </DialogContent>
+            //   </Dialog>
+            //   <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+            //     <DialogTrigger asChild>
+            //       <Button variant="destructive" className="rounded-full gap-1.5">
+            //         <Trash2 className="h-4 w-4" />
+            //       </Button>
+            //     </DialogTrigger>
+            //     <DialogContent>
+            //       <DialogHeader>
+            //         <DialogTitle>Excluir mentoria</DialogTitle>
+            //       </DialogHeader>
+            //       <p className="text-sm text-muted-foreground">
+            //         Tem certeza que deseja excluir sua mentoria? Esta ação não pode ser desfeita.
+            //       </p>
+            //       <div className="flex gap-2 pt-2">
+            //         <Button
+            //           variant="outline"
+            //           className="flex-1 rounded-full"
+            //           onClick={() => setDeleteOpen(false)}
+            //         >
+            //           Cancelar
+            //         </Button>
+            //         <Button
+            //           variant="destructive"
+            //           className="flex-1 rounded-full"
+            //           disabled={deleteMentor.isPending}
+            //           onClick={() => deleteMentor.mutate()}
+            //         >
+            //           {deleteMentor.isPending ? "Excluindo..." : "Excluir"}
+            //         </Button>
+            //       </div>
+            //     </DialogContent>
+            //   </Dialog>
+            // </div>
+            (
+              <Button className="shrink-0 self-center rounded-lg bg-mentorship-button py-2 px-[14px]">Agendar</Button>
+            )}
+
+        </div>
+      </header>
+
+      <section >
         {mentor.expertise.map((e) => (
           <Badge
             key={e}
@@ -229,87 +300,34 @@ function MentorCard({
             {e}
           </Badge>
         ))}
-      </div>
 
-      <dl className="mt-4 grid grid-cols-2 gap-2 rounded-xl bg-muted/50 p-3 text-xs">
-        <div>
-          <dt className="text-muted-foreground">Avaliação</dt>
-          <dd className="mt-0.5 inline-flex items-center gap-1 font-semibold">
-            <Star className="h-3.5 w-3.5 fill-opportunity text-opportunity" /> {mentor.rating}
-          </dd>
-        </div>
-        <div>
-          <dt className="text-muted-foreground">Sessões</dt>
-          <dd className="mt-0.5 font-semibold">{mentor.sessions}</dd>
-        </div>
-        <div>
-          <dt className="text-muted-foreground">Investimento</dt>
-          <dd className="mt-0.5 font-medium">{mentor.price}</dd>
-        </div>
-        <div>
-          <dt className="text-muted-foreground">Próxima vaga</dt>
-          <dd className="mt-0.5 inline-flex items-center gap-1 font-medium">
-            <Calendar className="h-3.5 w-3.5" /> {mentor.nextSlot}
-          </dd>
-        </div>
-      </dl>
-
-      {isOwner ? (
-        <div className="mt-4 flex gap-2">
-          <Dialog open={editOpen} onOpenChange={setEditOpen}>
-            <DialogTrigger asChild>
-              <Button className="flex-1 rounded-full gap-1.5">
-                <Pencil className="h-4 w-4" /> Editar
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Editar mentoria</DialogTitle>
-              </DialogHeader>
-              <EditMentorForm
-                mentor={mentor}
-                onSave={(data) => updateMentor.mutate(data)}
-                isPending={updateMentor.isPending}
-              />
-            </DialogContent>
-          </Dialog>
-          <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-            <DialogTrigger asChild>
-              <Button variant="destructive" className="rounded-full gap-1.5">
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Excluir mentoria</DialogTitle>
-              </DialogHeader>
-              <p className="text-sm text-muted-foreground">
-                Tem certeza que deseja excluir sua mentoria? Esta ação não pode ser desfeita.
-              </p>
-              <div className="flex gap-2 pt-2">
-                <Button
-                  variant="outline"
-                  className="flex-1 rounded-full"
-                  onClick={() => setDeleteOpen(false)}
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  variant="destructive"
-                  className="flex-1 rounded-full"
-                  disabled={deleteMentor.isPending}
-                  onClick={() => deleteMentor.mutate()}
-                >
-                  {deleteMentor.isPending ? "Excluindo..." : "Excluir"}
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-      ) : (
-        <Button className="mt-4 w-full rounded-full bg-mentorship-button">Agendar sessão</Button>
-      )}
-    </article>
+      </section>
+      {/* Seção inferior */}
+      <footer className="grid grid-cols-1 gap-8 rounded-2xl">
+        <dl className=" grid grid-cols-2 gap-2 rounded-xl bg-muted/50 p-3 text-xs">
+          <div>
+            <dt className="text-muted-foreground">Avaliação</dt>
+            <dd className="mt-0.5 inline-flex items-center gap-1 font-semibold">
+              <Star className="h-3.5 w-3.5 fill-opportunity text-opportunity" /> {mentor.rating}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">Sessões</dt>
+            <dd className="mt-0.5 font-semibold">{mentor.sessions}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">Investimento</dt>
+            <dd className="mt-0.5 font-medium">{mentor.price}</dd>
+          </div>
+          <div>
+            <dt className="text-muted-foreground">Próxima vaga</dt>
+            <dd className="mt-0.5 inline-flex items-center gap-1 font-medium">
+              <Calendar className="h-3.5 w-3.5" /> {mentor.nextSlot}
+            </dd>
+          </div>
+        </dl>
+      </footer>
+    </article >
   );
 }
 

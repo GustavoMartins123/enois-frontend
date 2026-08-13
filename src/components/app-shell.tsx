@@ -175,7 +175,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Sparkles className="h-4 w-4" />
             </div>
             <span className="text-lg font-semibold tracking-tight">
-              Conex<span className="gradient-text">ão</span>
+              É<span className="gradient-text">nóis</span>
             </span>
           </Link>
 
@@ -298,7 +298,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                                       </button>
                                     )}
                                     {notification.ctaLabel === "Aceitar" &&
-                                    !!notification.actorId ? (
+                                      !!notification.actorId ? (
                                       <button
                                         type="button"
                                         onClick={async () => {
@@ -309,7 +309,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                                             queryClient.invalidateQueries({
                                               queryKey: ["network"],
                                             });
-                                          } catch {}
+                                          } catch { }
                                         }}
                                         className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground transition hover:bg-primary/90"
                                       >
