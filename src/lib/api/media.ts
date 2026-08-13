@@ -35,12 +35,8 @@ export function resolveCdnUrl(url: string | null | undefined): string | undefine
 }
 
 export const mediaApi = {
-  requestUpload: (data: {
-    fileName: string;
-    mimeType: string;
-    size: number;
-    purpose: string;
-  }) => api.post<MediaUploadResponse>("/media/uploads", data),
+  requestUpload: (data: { fileName: string; mimeType: string; size: number; purpose: string }) =>
+    api.post<MediaUploadResponse>("/media/uploads", data),
 
   get: (mediaId: string) => api.get<MediaAsset>(`/media/${mediaId}`),
 

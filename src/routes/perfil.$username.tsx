@@ -1,23 +1,36 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback, useRef, useState } from "react";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
+
 import {
-  MapPin,
   Briefcase,
-  Link as LinkIcon,
-  MessageCircle,
-  UserPlus,
-  Sparkles,
-  Target,
-  Clock,
   Camera,
+  Clock,
+  Link as LinkIcon,
+  MapPin,
+  MessageCircle,
   Settings,
-  ThumbsUp,
+  Sparkles,
   Star,
+  Target,
+  ThumbsUp,
   Trophy,
+  UserPlus,
 } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
-import { PostCard } from "@/components/post-card";
-import { UserAvatar } from "@/components/user-avatar";
+
+import {
+  ApiError,
+  feedApi,
+  networkApi,
+  profileApi,
+  rankingApi,
+  recommendationsApi,
+} from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
+import { useAuth } from "@/lib/use-auth";
+import { useMediaUpload } from "@/lib/use-media-upload";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,20 +41,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  profileApi,
-  feedApi,
-  networkApi,
-  ApiError,
-  rankingApi,
-  recommendationsApi,
-} from "@/lib/api";
-import { resolveCdnUrl } from "@/lib/api/media";
-import { useAuth } from "@/lib/use-auth";
-import { useMediaUpload } from "@/lib/use-media-upload";
+
+import { AppShell } from "@/components/app-shell";
 import { EditProfileDialog } from "@/components/edit-profile-dialog";
-import { useState, useRef, useCallback } from "react";
 import { ImageCropDialog } from "@/components/image-crop-dialog";
+import { PostCard } from "@/components/post-card";
+import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/perfil/$username")({
   loader: async ({ params }) => {
@@ -313,7 +318,9 @@ function Profile() {
             </div>
             <div className="mt-4">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="break-words text-xl font-semibold tracking-tight sm:text-2xl">{user.name}</h1>
+                <h1 className="break-words text-xl font-semibold tracking-tight sm:text-2xl">
+                  {user.name}
+                </h1>
                 {user.openToWork && (
                   <span className="rounded-full bg-growth/15 px-2.5 py-0.5 text-xs font-medium text-growth">
                     Aberto a oportunidades
@@ -352,7 +359,9 @@ function Profile() {
           <div className="space-y-6">
             {user.bio && (
               <Section title="Sobre">
-                <p className="break-words text-[15px] leading-relaxed text-foreground">{user.bio}</p>
+                <p className="break-words text-[15px] leading-relaxed text-foreground">
+                  {user.bio}
+                </p>
               </Section>
             )}
 
@@ -548,7 +557,9 @@ function RecommendationItem({
         <UserAvatar src={recommender?.avatar} alt={recommender?.name} className="h-6 w-6" />
         <span className="text-xs font-medium">{recommender?.name ?? "Usuário"}</span>
       </div>
-      <p className="break-words text-sm leading-relaxed text-muted-foreground">"{recommendation.comment}"</p>
+      <p className="break-words text-sm leading-relaxed text-muted-foreground">
+        "{recommendation.comment}"
+      </p>
     </div>
   );
 }

@@ -1,13 +1,16 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { requireAuth } from "@/lib/require-auth";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Calendar, Users, MapPin, Video, Plus } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+
+import { Calendar, MapPin, Plus, Users, Video } from "lucide-react";
+
+import { eventsApi } from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
+import { requireAuth } from "@/lib/require-auth";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -15,8 +18,10 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { eventsApi } from "@/lib/api";
-import { resolveCdnUrl } from "@/lib/api/media";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+import { AppShell } from "@/components/app-shell";
 
 const formatLabels: Record<string, string> = {
   ONLINE: "Online",
@@ -24,7 +29,21 @@ const formatLabels: Record<string, string> = {
   HYBRID: "Híbrido",
 };
 
-const MONTHS = ["", "JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
+const MONTHS = [
+  "",
+  "JAN",
+  "FEV",
+  "MAR",
+  "ABR",
+  "MAI",
+  "JUN",
+  "JUL",
+  "AGO",
+  "SET",
+  "OUT",
+  "NOV",
+  "DEZ",
+];
 
 export const Route = createFileRoute("/eventos")({
   beforeLoad: requireAuth,
@@ -138,7 +157,6 @@ function Eventos() {
           })}
         </div>
       </div>
-      
     </AppShell>
   );
 }
@@ -147,7 +165,13 @@ function CreateEventForm({
   onSave,
   isPending,
 }: {
-  onSave: (data: { title: string; date: string; time: string; format: string; host: string }) => void;
+  onSave: (data: {
+    title: string;
+    date: string;
+    time: string;
+    format: string;
+    host: string;
+  }) => void;
   isPending: boolean;
 }) {
   const [title, setTitle] = useState("");
@@ -159,24 +183,43 @@ function CreateEventForm({
   return (
     <div className="space-y-4 pt-2">
       <Field label="Título">
-        <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+        <Input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="h-10 border-transparent bg-muted"
+        />
       </Field>
       <div className="grid grid-cols-2 gap-3">
         <Field label="Data">
-          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          <Input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="h-10 border-transparent bg-muted"
+          />
         </Field>
         <Field label="Horário">
-          <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+          <Input
+            type="time"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            className="h-10 border-transparent bg-muted"
+          />
         </Field>
       </div>
       <Field label="Realizador">
-        <Input value={host} onChange={(e) => setHost(e.target.value)} placeholder="Comunidade X" />
+        <Input
+          value={host}
+          onChange={(e) => setHost(e.target.value)}
+          placeholder="Comunidade X"
+          className="h-10 border-transparent bg-muted"
+        />
       </Field>
       <Field label="Formato">
         <select
           value={format}
           onChange={(e) => setFormat(e.target.value)}
-          className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-10 border-transparent bg-muted"
         >
           <option value="ONLINE">Online</option>
           <option value="IN_PERSON">Presencial</option>

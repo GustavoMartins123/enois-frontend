@@ -4,28 +4,29 @@
 
 ## Sumário
 
-- [X] 1. [Convenções Gerais](#1-convencoes-gerais)
-- [X] 2. [Autenticação](#2-autenticacao)
-- [X] 3. [Perfil](#3-perfil)
-- [X] 4. [Feed e Posts](#4-feed-e-posts)
-- [X] 5. [Comentários](#5-comentarios)
-- [X] 6. [Reações, Salvamentos e Compartilhamentos](#6-acoes-em-posts)
-- [X] 7. [Rede de Conexões](#7-rede-de-conexoes)
-- [X] 8. [Mídias](#8-midias)
-- [X] 9. [Comunidades](#9-comunidades)
-- [X] 10. [Vagas](#10-vagas)
-- [X] 11. [Eventos](#11-eventos)
-- [X] 12. [Mentoria](#12-mentoria)
-- [X] 13. [Mensagens](#13-mensagens)
-- [X] 14. [Notificações](#14-notificacoes)
-- [X] 15. [Busca Global](#15-busca-global)
-- [X] 16. [Migração Gradual](#16-migracao-gradual)
+- [x] 1. [Convenções Gerais](#1-convencoes-gerais)
+- [x] 2. [Autenticação](#2-autenticacao)
+- [x] 3. [Perfil](#3-perfil)
+- [x] 4. [Feed e Posts](#4-feed-e-posts)
+- [x] 5. [Comentários](#5-comentarios)
+- [x] 6. [Reações, Salvamentos e Compartilhamentos](#6-acoes-em-posts)
+- [x] 7. [Rede de Conexões](#7-rede-de-conexoes)
+- [x] 8. [Mídias](#8-midias)
+- [x] 9. [Comunidades](#9-comunidades)
+- [x] 10. [Vagas](#10-vagas)
+- [x] 11. [Eventos](#11-eventos)
+- [x] 12. [Mentoria](#12-mentoria)
+- [x] 13. [Mensagens](#13-mensagens)
+- [x] 14. [Notificações](#14-notificacoes)
+- [x] 15. [Busca Global](#15-busca-global)
+- [x] 16. [Migração Gradual](#16-migracao-gradual)
 
 ---
 
 <!-- ============================================================
      ✅ IMPLEMENTADO — src/lib/api-client.ts
      ============================================================ -->
+
 ## 1. Convenções Gerais ✅
 
 `src/lib/api-client.ts` implementa:
@@ -47,12 +48,12 @@ http://localhost:8080/api
 
 ### Headers Comuns
 
-| Header | Obrigatório | Descrição |
-|--------|-------------|-----------|
-| `Content-Type` | Sempre | `application/json` |
-| `X-Session-Token` | Leituras | Token recebido no login/signup |
-| `X-User-Id` | Alternativo | ID do usuário (para testes) |
-| `Idempotency-Key` | Escritas POST/PUT/PATCH/DELETE | UUID para idempotência |
+| Header            | Obrigatório                    | Descrição                      |
+| ----------------- | ------------------------------ | ------------------------------ |
+| `Content-Type`    | Sempre                         | `application/json`             |
+| `X-Session-Token` | Leituras                       | Token recebido no login/signup |
+| `X-User-Id`       | Alternativo                    | ID do usuário (para testes)    |
+| `Idempotency-Key` | Escritas POST/PUT/PATCH/DELETE | UUID para idempotência         |
 
 ### Autenticação
 
@@ -68,10 +69,11 @@ Toda requisição de escrita (POST, PUT, PATCH, DELETE) **deve** enviar um heade
 ```javascript
 const idempotencyKey = crypto.randomUUID();
 // ou gerar manualmente
-const idempotencyKey = 'idem_' + Date.now() + '_' + Math.random().toString(36);
+const idempotencyKey = "idem_" + Date.now() + "_" + Math.random().toString(36);
 ```
 
 Regras:
+
 - Gerar **antes** da chamada e reutilizar em retries
 - Se a mesma chave + payload repetir, backend reaplica sem duplicar
 - Se a mesma chave com payload diferente, retorna `409 Conflict`
@@ -113,29 +115,29 @@ Se `nextCursor` for `null`, não há mais páginas.
 }
 ```
 
-| Código | Significado |
-|--------|-------------|
-| `INVALID_CREDENTIALS` | Email ou senha inválidos |
-| `EMAIL_ALREADY_REGISTERED` | Email já cadastrado |
-| `UNAUTHENTICATED` | Sessão inválida ou expirada |
-| `POST_NOT_FOUND` | Post não encontrado |
-| `RATE_LIMITED` | Muitas requisições (429) |
-| `DEPENDENCY_UNAVAILABLE` | Serviço temporariamente indisponível (503) |
-| `CONFLICT` | Conflito de idempotência (409) |
+| Código                     | Significado                                |
+| -------------------------- | ------------------------------------------ |
+| `INVALID_CREDENTIALS`      | Email ou senha inválidos                   |
+| `EMAIL_ALREADY_REGISTERED` | Email já cadastrado                        |
+| `UNAUTHENTICATED`          | Sessão inválida ou expirada                |
+| `POST_NOT_FOUND`           | Post não encontrado                        |
+| `RATE_LIMITED`             | Muitas requisições (429)                   |
+| `DEPENDENCY_UNAVAILABLE`   | Serviço temporariamente indisponível (503) |
+| `CONFLICT`                 | Conflito de idempotência (409)             |
 
 ### Paginação por Cursor
 
 ```javascript
 async function fetchFeed(cursor = null, limit = 20) {
   const params = new URLSearchParams();
-  if (cursor) params.append('cursor', cursor);
-  params.append('limit', limit);
-  
+  if (cursor) params.append("cursor", cursor);
+  params.append("limit", limit);
+
   const response = await fetch(`/api/feed?${params}`, {
-    headers: { 'X-Session-Token': token }
+    headers: { "X-Session-Token": token },
   });
   const data = await response.json();
-  
+
   // data.items -> array de posts
   // data.nextCursor -> string ISO ou null
   return data;
@@ -147,6 +149,7 @@ async function fetchFeed(cursor = null, limit = 20) {
 <!-- ============================================================
      ✅ IMPLEMENTADO — src/lib/api/auth.ts + routes/entrar.tsx
      ============================================================ -->
+
 ## 2. Autenticação ✅
 
 ### 2.1 Cadastro
@@ -184,6 +187,7 @@ Resposta (201):
 ```
 
 **Ações do frontend:**
+
 - Salvar `token` em localStorage/sessionStorage
 - Salvar `user` para exibição imediata
 - Redirecionar para feed
@@ -212,6 +216,7 @@ Idempotency-Key: <uuid>
 ```
 
 Resposta (200):
+
 ```json
 { "status": "LOGGED_OUT" }
 ```
@@ -224,6 +229,7 @@ X-Session-Token: <token>
 ```
 
 Resposta (200): Objeto `AuthUserView`:
+
 ```json
 {
   "id": "user_abc123",
@@ -245,6 +251,7 @@ Content-Type: application/json
 ```
 
 Resposta (202):
+
 ```json
 { "status": "RESET_REQUEST_ACCEPTED" }
 ```
@@ -265,6 +272,7 @@ Content-Type: application/json
 ```
 
 Resposta (200):
+
 ```json
 { "status": "PASSWORD_RESET_ACCEPTED" }
 ```
@@ -274,11 +282,13 @@ Resposta (200):
 ```http
 GET /api/auth/oauth/{provider}/start
 ```
+
 Retorna URL de autorização.
 
 ```http
 GET /api/auth/oauth/{provider}/callback?code=...&state=...
 ```
+
 Retorna status `NOT_CONFIGURED` até integração real.
 
 ### Fluxo de Sessão
@@ -287,34 +297,34 @@ Retorna status `NOT_CONFIGURED` até integração real.
 // login.service.js
 export async function login(email, password) {
   const key = crypto.randomUUID();
-  const response = await fetch('/api/auth/login', {
-    method: 'POST',
+  const response = await fetch("/api/auth/login", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      'Idempotency-Key': key
+      "Content-Type": "application/json",
+      "Idempotency-Key": key,
     },
-    body: JSON.stringify({ email, password })
+    body: JSON.stringify({ email, password }),
   });
-  
+
   if (!response.ok) {
     const error = await response.json();
     throw new Error(error.message);
   }
-  
+
   const { body } = await response.json();
-  localStorage.setItem('session_token', body.token);
-  localStorage.setItem('current_user', JSON.stringify(body.user));
+  localStorage.setItem("session_token", body.token);
+  localStorage.setItem("current_user", JSON.stringify(body.user));
   return body;
 }
 
 // api.client.js
 export function authHeaders() {
-  const token = localStorage.getItem('session_token');
-  return token ? { 'X-Session-Token': token } : {};
+  const token = localStorage.getItem("session_token");
+  return token ? { "X-Session-Token": token } : {};
 }
 
 export function idempotentHeaders() {
-  return { 'Idempotency-Key': crypto.randomUUID() };
+  return { "Idempotency-Key": crypto.randomUUID() };
 }
 ```
 
@@ -323,6 +333,7 @@ export function idempotentHeaders() {
 <!-- ============================================================
      ✅ IMPLEMENTADO — src/lib/api/profile.ts + routes/perfil.$username.tsx
      ============================================================ -->
+
 ## 3. Perfil ✅
 
 ### 3.1 Meu Perfil
@@ -403,6 +414,7 @@ Gerenciadas via endpoints específicos (consultar OpenAPI para detalhes).
 <!-- ============================================================
      ✅ IMPLEMENTADO — src/lib/api/feed.ts + routes/feed.tsx
      ============================================================ -->
+
 ## 4. Feed e Posts ✅
 
 ### 4.1 Listar Feed
@@ -453,6 +465,7 @@ Content-Type: application/json
 ```
 
 Validações:
+
 - `type` obrigatório
 - `content` 1-1024 caracteres
 - `tags` máximo 5
@@ -477,6 +490,7 @@ Idempotency-Key: <uuid>
 ```
 
 Resposta (200):
+
 ```json
 {
   "postId": "post_abc",
@@ -501,6 +515,7 @@ Content-Type: application/json
 ```
 
 Resposta (200):
+
 ```json
 {
   "status": "COMPLETED",
@@ -516,6 +531,7 @@ Resposta (200):
 <!-- ============================================================
      ✅ IMPLEMENTADO — src/lib/api/comments.ts + post-card.tsx
      ============================================================ -->
+
 ## 5. Comentários ✅
 
 ### 5.1 Comentar em Post
@@ -535,6 +551,7 @@ Content-Type: application/json
 `parentCommentId` para respostas a comentários existentes.
 
 Resposta (201):
+
 ```json
 {
   "id": "comment_abc",
@@ -560,6 +577,7 @@ Resposta: `PageResponse` de comentários.
 <!-- ============================================================
      ✅ IMPLEMENTADO — src/lib/api/reactions.ts + post-card.tsx
      ============================================================ -->
+
 ## 6. Ações em Posts ✅
 
 ### 6.1 Reagir
@@ -606,6 +624,7 @@ Idempotency-Key: <uuid>
 ```
 
 Todas as ações retornam (200):
+
 ```json
 {
   "postId": "post_abc",
@@ -619,6 +638,7 @@ Todas as ações retornam (200):
 <!-- ============================================================
      ✅ IMPLEMENTADO — src/lib/api/network.ts + routes/rede.tsx
      ============================================================ -->
+
 ## 7. Rede de Conexões ✅
 
 ### 7.1 Usuários Conectados
@@ -629,6 +649,7 @@ X-Session-Token: <token>
 ```
 
 Resposta:
+
 ```json
 {
   "items": [
@@ -664,6 +685,7 @@ X-Session-Token: <token>
 ```
 
 Resposta:
+
 ```json
 {
   "userId": "user_abc",
@@ -681,6 +703,7 @@ X-Session-Token: <token>
 ```
 
 Resposta:
+
 ```json
 {
   "items": [
@@ -705,6 +728,7 @@ Idempotency-Key: <uuid>
 ```
 
 Resposta (202):
+
 ```json
 { "id": "targetUserId", "status": "REQUESTED" }
 ```
@@ -718,6 +742,7 @@ Idempotency-Key: <uuid>
 ```
 
 Resposta (200):
+
 ```json
 { "id": "targetUserId", "status": "ACCEPTED" }
 ```
@@ -731,6 +756,7 @@ Idempotency-Key: <uuid>
 ```
 
 Resposta (200):
+
 ```json
 { "id": "targetUserId", "status": "REMOVED" }
 ```
@@ -740,6 +766,7 @@ Resposta (200):
 <!-- ============================================================
      ✅ IMPLEMENTADO — src/lib/api/media.ts
      ============================================================ -->
+
 ## 8. Mídias ✅
 
 ### 8.1 Solicitar Upload
@@ -759,10 +786,11 @@ Content-Type: application/json
 ```
 
 Resposta (201):
+
 ```json
 {
   "id": "media_abc",
-  "uploadUrl": "http://localhost:8080/api/media/{id}/upload",  // simulada em dev
+  "uploadUrl": "http://localhost:8080/api/media/{id}/upload", // simulada em dev
   "cdnUrl": "http://localhost:8080/api/media/{id}",
   "status": "PENDING"
 }
@@ -785,6 +813,7 @@ Idempotency-Key: <uuid>
 ```
 
 Resposta (200):
+
 ```json
 { "id": "mediaId", "status": "DELETION_REQUESTED" }
 ```
@@ -793,18 +822,23 @@ Resposta (200):
 
 ```javascript
 // 1. Solicitar URL de upload
-const uploadRes = await fetch('/api/media/uploads', {
-  method: 'POST',
-  headers: { ...authHeaders(), ...idempotentHeaders(), 'Content-Type': 'application/json' },
-  body: JSON.stringify({ fileName: file.name, mimeType: file.type, sizeBytes: file.size, purpose: 'POST_IMAGE' })
+const uploadRes = await fetch("/api/media/uploads", {
+  method: "POST",
+  headers: { ...authHeaders(), ...idempotentHeaders(), "Content-Type": "application/json" },
+  body: JSON.stringify({
+    fileName: file.name,
+    mimeType: file.type,
+    sizeBytes: file.size,
+    purpose: "POST_IMAGE",
+  }),
 });
 const { body } = await uploadRes.json();
 
 // 2. Fazer upload do arquivo (em dev, é um PUT simulado; em prod, é presigned URL S3)
 await fetch(body.uploadUrl, {
-  method: 'PUT',
+  method: "PUT",
   body: file,
-  headers: { 'Content-Type': file.type }
+  headers: { "Content-Type": file.type },
 });
 
 // 3. Usar mediaId ao publicar post
@@ -816,6 +850,7 @@ await fetch(body.uploadUrl, {
 <!-- ============================================================
      ✅ IMPLEMENTADO — src/lib/api/communities.ts + routes/comunidades.tsx
      ============================================================ -->
+
 ## 9. Comunidades ✅
 
 ### 9.1 Listar
@@ -866,6 +901,7 @@ Idempotency-Key: <uuid>
 <!-- ============================================================
      ✅ IMPLEMENTADO — src/lib/api/jobs.ts + routes/vagas.tsx
      ============================================================ -->
+
 ## 10. Vagas ✅
 
 ### 10.1 Listar
@@ -899,6 +935,7 @@ DELETE /api/jobs/{jobId}/saves
 <!-- ============================================================
      ✅ IMPLEMENTADO — src/lib/api/events.ts + routes/eventos.tsx
      ============================================================ -->
+
 ## 11. Eventos ✅
 
 ### 11.1 Listar
@@ -925,6 +962,7 @@ DELETE /api/events/{eventId}/attendees
 <!-- ============================================================
      ✅ IMPLEMENTADO — src/lib/api/mentors.ts + routes/mentoria.tsx
      ============================================================ -->
+
 ## 12. Mentoria ✅
 
 ### 12.1 Listar Mentores
@@ -960,6 +998,7 @@ Content-Type: application/json
 <!-- ============================================================
      ✅ IMPLEMENTADO — src/lib/api/messages.ts + routes/mensagens.tsx
      ============================================================ -->
+
 ## 13. Mensagens ✅
 
 ### 13.1 Listar Conversas
@@ -1024,6 +1063,7 @@ GET /api/conversations/search?q=...&limit=20
 <!-- ============================================================
      ✅ IMPLEMENTADO — src/lib/api/notifications.ts + app-shell.tsx
      ============================================================ -->
+
 ## 14. Notificações ✅
 
 ### 14.1 Listar
@@ -1034,6 +1074,7 @@ X-Session-Token: <token>
 ```
 
 Resposta:
+
 ```json
 {
   "items": [
@@ -1072,6 +1113,7 @@ Idempotency-Key: <uuid>
 <!-- ============================================================
      ✅ IMPLEMENTADO — src/lib/api/search.ts + app-shell.tsx (SearchBox)
      ============================================================ -->
+
 ## 15. Busca Global ✅
 
 ```http
@@ -1079,6 +1121,7 @@ GET /api/search?q=design&types=users,communities,jobs&limit=10
 ```
 
 Resposta:
+
 ```json
 {
   "items": [
@@ -1109,22 +1152,22 @@ Resposta:
 
 ### Status da Migração
 
-| Fase | Módulo | API | Rota | Status |
-|------|--------|-----|------|--------|
-| 1 | Autenticação | `src/lib/api/auth.ts` | `routes/entrar.tsx` | ✅ |
-| 2 | Perfil | `src/lib/api/profile.ts` | `routes/perfil.$username.tsx` | ✅ |
-| 3 | Feed + Posts | `src/lib/api/feed.ts` | `routes/feed.tsx` | ✅ |
-| 4 | Comentários | `src/lib/api/comments.ts` | `components/post-card.tsx` | ✅ |
-| 5 | Reações/Salvos | `src/lib/api/reactions.ts` | `components/post-card.tsx` | ✅ |
-| 6 | Rede | `src/lib/api/network.ts` | `routes/rede.tsx` | ✅ |
-| 7 | Mídias | `src/lib/api/media.ts` | — (upload via composer futuro) | ✅ |
-| 8 | Comunidades | `src/lib/api/communities.ts` | `routes/comunidades.tsx` | ✅ |
-| 9 | Vagas | `src/lib/api/jobs.ts` | `routes/vagas.tsx` | ✅ |
-| 10 | Eventos | `src/lib/api/events.ts` | `routes/eventos.tsx` | ✅ |
-| 11 | Mentoria | `src/lib/api/mentors.ts` | `routes/mentoria.tsx` | ✅ |
-| 12 | Mensagens | `src/lib/api/messages.ts` | `routes/mensagens.tsx` | ✅ |
-| 13 | Notificações | `src/lib/api/notifications.ts` | `components/app-shell.tsx` | ✅ |
-| — | Busca Global | `src/lib/api/search.ts` | `components/app-shell.tsx` (SearchBox) | ✅ |
+| Fase | Módulo         | API                            | Rota                                   | Status |
+| ---- | -------------- | ------------------------------ | -------------------------------------- | ------ |
+| 1    | Autenticação   | `src/lib/api/auth.ts`          | `routes/entrar.tsx`                    | ✅     |
+| 2    | Perfil         | `src/lib/api/profile.ts`       | `routes/perfil.$username.tsx`          | ✅     |
+| 3    | Feed + Posts   | `src/lib/api/feed.ts`          | `routes/feed.tsx`                      | ✅     |
+| 4    | Comentários    | `src/lib/api/comments.ts`      | `components/post-card.tsx`             | ✅     |
+| 5    | Reações/Salvos | `src/lib/api/reactions.ts`     | `components/post-card.tsx`             | ✅     |
+| 6    | Rede           | `src/lib/api/network.ts`       | `routes/rede.tsx`                      | ✅     |
+| 7    | Mídias         | `src/lib/api/media.ts`         | — (upload via composer futuro)         | ✅     |
+| 8    | Comunidades    | `src/lib/api/communities.ts`   | `routes/comunidades.tsx`               | ✅     |
+| 9    | Vagas          | `src/lib/api/jobs.ts`          | `routes/vagas.tsx`                     | ✅     |
+| 10   | Eventos        | `src/lib/api/events.ts`        | `routes/eventos.tsx`                   | ✅     |
+| 11   | Mentoria       | `src/lib/api/mentors.ts`       | `routes/mentoria.tsx`                  | ✅     |
+| 12   | Mensagens      | `src/lib/api/messages.ts`      | `routes/mensagens.tsx`                 | ✅     |
+| 13   | Notificações   | `src/lib/api/notifications.ts` | `components/app-shell.tsx`             | ✅     |
+| —    | Busca Global   | `src/lib/api/search.ts`        | `components/app-shell.tsx` (SearchBox) | ✅     |
 
 ### Estratégia aplicada
 
