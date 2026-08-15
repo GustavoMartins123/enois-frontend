@@ -134,7 +134,9 @@ export function EditProfileDialog({ profile, children }: Props) {
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto p-0">
         <DialogHeader className="sticky top-0 z-10 border-b border-border-soft bg-surface-card px-6 pb-4 pt-6">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-[18px] font-light text-text-strong">Editar perfil</DialogTitle>
+            <DialogTitle className="text-[18px] font-light text-text-strong">
+              Editar perfil
+            </DialogTitle>
             <div className="flex items-center gap-2">
               <Button size="sm" variant="outline" onClick={() => setOpen(false)}>
                 Cancelar
@@ -149,8 +151,11 @@ export function EditProfileDialog({ profile, children }: Props) {
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-                className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-light transition ${tab === t.key ? "bg-surface-2 text-primary" : "text-text-subtle hover:bg-surface-3 hover:text-text-strong"
-                  }`}
+                className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-light transition ${
+                  tab === t.key
+                    ? "bg-surface-2 text-primary"
+                    : "text-text-subtle hover:bg-surface-3 hover:text-text-strong"
+                }`}
               >
                 {t.label}
               </button>
@@ -162,39 +167,92 @@ export function EditProfileDialog({ profile, children }: Props) {
           {tab === "info" && (
             <div className="space-y-5">
               <Field label="Nome">
-<Input value={name} onChange={(e) => setName(e.target.value)} className="h-10 border-border-soft bg-surface-1" />
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="h-10 border-border-soft bg-surface-1"
+                />
               </Field>
               <Field label="Username (URL do perfil)" error={usernameError}>
-                <Input value={username} onChange={(e) => { setUsername(e.target.value); setUsernameError(""); }} placeholder="seu-username" className="h-10 border-border-soft bg-surface-1" />
+                <Input
+                  value={username}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    setUsernameError("");
+                  }}
+                  placeholder="seu-username"
+                  className="h-10 border-border-soft bg-surface-1"
+                />
               </Field>
               <Field label="Headline">
-                <Input value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="Cargo ou frase de destaque" className="h-10 border-border-soft bg-surface-1" />
+                <Input
+                  value={headline}
+                  onChange={(e) => setHeadline(e.target.value)}
+                  placeholder="Cargo ou frase de destaque"
+                  className="h-10 border-border-soft bg-surface-1"
+                />
               </Field>
               <Field label="Bio">
-                <Textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="h-10 border-border-soft bg-surface-1 pl-9" />
+                <Textarea
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  rows={3}
+                  className="h-10 border-border-soft bg-surface-1 pl-9"
+                />
               </Field>
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Empresa">
-                  <Input value={company} onChange={(e) => setCompany(e.target.value)} className="h-10 border-border-soft bg-surface-1" />
+                  <Input
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    className="h-10 border-border-soft bg-surface-1"
+                  />
                 </Field>
                 <Field label="Localização">
-                  <Input value={location} onChange={(e) => setLocation(e.target.value)} className="h-10 border-border-soft bg-surface-1" />
+                  <Input
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    className="h-10 border-border-soft bg-surface-1"
+                  />
                 </Field>
               </div>
               <Field label="Disponibilidade">
-                <Input value={availability} onChange={(e) => setAvailability(e.target.value)} placeholder="Ex: Disponível para freelas" className="h-10 border-border-soft bg-surface-1" />
+                <Input
+                  value={availability}
+                  onChange={(e) => setAvailability(e.target.value)}
+                  placeholder="Ex: Disponível para freelas"
+                  className="h-10 border-border-soft bg-surface-1"
+                />
               </Field>
               <Field label="Portfólio">
-                <Input value={portfolio} onChange={(e) => setPortfolio(e.target.value)} placeholder="https://..." className="h-10 border-border-soft bg-surface-1" />
+                <Input
+                  value={portfolio}
+                  onChange={(e) => setPortfolio(e.target.value)}
+                  placeholder="https://..."
+                  className="h-10 border-border-soft bg-surface-1"
+                />
               </Field>
               <Field label="Links externos (um por linha)">
-                <Textarea value={linksText} onChange={(e) => setLinksText(e.target.value)} rows={3} className="h-10 border-border-soft bg-surface-1" />
+                <Textarea
+                  value={linksText}
+                  onChange={(e) => setLinksText(e.target.value)}
+                  rows={3}
+                  className="h-10 border-border-soft bg-surface-1"
+                />
               </Field>
               <Field label="Habilidades (separadas por vírgula)">
-                <Input value={skillsText} onChange={(e) => setSkillsText(e.target.value)} className="h-10 border-border-soft bg-surface-1" />
+                <Input
+                  value={skillsText}
+                  onChange={(e) => setSkillsText(e.target.value)}
+                  className="h-10 border-border-soft bg-surface-1"
+                />
               </Field>
               <Field label="Objetivos (separados por vírgula)">
-                <Input value={goalsText} onChange={(e) => setGoalsText(e.target.value)} className="h-10 border-border-soft bg-surface-1" />
+                <Input
+                  value={goalsText}
+                  onChange={(e) => setGoalsText(e.target.value)}
+                  className="h-10 border-border-soft bg-surface-1"
+                />
               </Field>
               <div className="flex items-center gap-8">
                 <label className="flex items-center gap-3 text-[13px] font-light text-text-strong">
@@ -210,7 +268,7 @@ export function EditProfileDialog({ profile, children }: Props) {
           )}
 
           {tab === "experiences" && (
-            <SubList
+            <SubList<Experience, ExperienceRequest>
               items={experiences}
               fields={[
                 { key: "title", label: "Cargo", required: true },
@@ -221,8 +279,8 @@ export function EditProfileDialog({ profile, children }: Props) {
                 { key: "endDate", label: "Fim", type: "date" },
               ]}
               currentlyHereKey="currentlyHere"
-              createApi={(data) => profileApi.experiences.create(data as any)}
-              updateApi={(id, data) => profileApi.experiences.update(id, data as any)}
+              createApi={(data) => profileApi.experiences.create(data)}
+              updateApi={(id, data) => profileApi.experiences.update(id, data)}
               deleteApi={(id) => profileApi.experiences.delete(id)}
               queryKey={["me", "experiences"]}
               emptyMessage="Nenhuma experiência adicionada"
@@ -238,7 +296,7 @@ export function EditProfileDialog({ profile, children }: Props) {
           )}
 
           {tab === "education" && (
-            <SubList
+            <SubList<Education, EducationRequest>
               items={education}
               fields={[
                 { key: "school", label: "Instituição", required: true },
@@ -249,8 +307,8 @@ export function EditProfileDialog({ profile, children }: Props) {
                 { key: "endDate", label: "Fim", type: "date" },
               ]}
               currentlyHereKey="currentlyHere"
-              createApi={(data) => profileApi.education.create(data as any)}
-              updateApi={(id, data) => profileApi.education.update(id, data as any)}
+              createApi={(data) => profileApi.education.create(data)}
+              updateApi={(id, data) => profileApi.education.update(id, data)}
               deleteApi={(id) => profileApi.education.delete(id)}
               queryKey={["me", "education"]}
               emptyMessage="Nenhuma formação adicionada"
@@ -266,7 +324,7 @@ export function EditProfileDialog({ profile, children }: Props) {
           )}
 
           {tab === "certifications" && (
-            <SubList
+            <SubList<Certification, CertificationRequest>
               items={certifications}
               fields={[
                 { key: "name", label: "Nome", required: true },
@@ -276,8 +334,8 @@ export function EditProfileDialog({ profile, children }: Props) {
                 { key: "expirationDate", label: "Data de expiração", type: "date" },
                 { key: "credentialUrl", label: "URL do credencial" },
               ]}
-              createApi={(data) => profileApi.certifications.create(data as any)}
-              updateApi={(id, data) => profileApi.certifications.update(id, data as any)}
+              createApi={(data) => profileApi.certifications.create(data)}
+              updateApi={(id, data) => profileApi.certifications.update(id, data)}
               deleteApi={(id) => profileApi.certifications.delete(id)}
               queryKey={["me", "certifications"]}
               emptyMessage="Nenhuma certificação adicionada"
@@ -323,7 +381,10 @@ interface SubField {
   type?: string;
 }
 
-function SubList<T extends { id: string }>({
+function SubList<
+  T extends { id: string },
+  TData extends Record<string, unknown> = Record<string, string>,
+>({
   items,
   fields,
   currentlyHereKey,
@@ -337,8 +398,8 @@ function SubList<T extends { id: string }>({
   items: T[];
   fields: SubField[];
   currentlyHereKey?: string;
-  createApi: (data: Record<string, unknown>) => Promise<T>;
-  updateApi: (id: string, data: Record<string, unknown>) => Promise<T>;
+  createApi: (data: TData) => Promise<T>;
+  updateApi: (id: string, data: TData) => Promise<T>;
   deleteApi: (id: string) => Promise<void>;
   queryKey: string[];
   emptyMessage: string;
@@ -350,7 +411,7 @@ function SubList<T extends { id: string }>({
   const [currentlyHere, setCurrentlyHere] = useState(false);
 
   const create = useMutation({
-    mutationFn: (data: Record<string, unknown>) => createApi(data),
+    mutationFn: (data: TData) => createApi(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
       setForm({ ...newItem });
@@ -360,8 +421,7 @@ function SubList<T extends { id: string }>({
   });
 
   const update = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
-      updateApi(id, data),
+    mutationFn: ({ id, data }: { id: string; data: TData }) => updateApi(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
       setEditingId(null);
@@ -394,9 +454,9 @@ function SubList<T extends { id: string }>({
       if (currentlyHere) data.endDate = null;
     }
     if (editingId && editingId !== "__new__") {
-      await update.mutateAsync({ id: editingId, data });
+      await update.mutateAsync({ id: editingId, data: data as TData });
     } else {
-      await create.mutateAsync(data);
+      await create.mutateAsync(data as TData);
     }
   };
 
@@ -452,17 +512,26 @@ function SubList<T extends { id: string }>({
       ) : (
         <>
           {items.length === 0 ? (
-            <p className="py-8 text-center text-[13px] font-light text-text-subtle">{emptyMessage}</p>
+            <p className="py-8 text-center text-[13px] font-light text-text-subtle">
+              {emptyMessage}
+            </p>
           ) : (
             items.map((item) => (
               <div key={item.id} className="rounded-xl border border-border-soft p-4">
                 <div className="flex items-start justify-between gap-3">
-<div className="min-w-0 flex-1 text-[13px] font-light">
-                    <p className="break-words text-text-strong">{String((item as Record<string, unknown>)[fields[0].key] ?? "")}</p>
-                    <p className="break-words text-text-subtle">{String((item as Record<string, unknown>)[fields[1]?.key] ?? "")}</p>
+                  <div className="min-w-0 flex-1 text-[13px] font-light">
+                    <p className="break-words text-text-strong">
+                      {String((item as Record<string, unknown>)[fields[0].key] ?? "")}
+                    </p>
+                    <p className="break-words text-text-subtle">
+                      {String((item as Record<string, unknown>)[fields[1]?.key] ?? "")}
+                    </p>
                   </div>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => startEdit(item)} className="grid h-8 w-8 place-items-center rounded-lg hover:bg-surface-2">
+                    <button
+                      onClick={() => startEdit(item)}
+                      className="grid h-8 w-8 place-items-center rounded-lg hover:bg-surface-2"
+                    >
                       <Pencil className="h-4 w-4 text-text-subtle" />
                     </button>
                     <button
@@ -476,7 +545,16 @@ function SubList<T extends { id: string }>({
               </div>
             ))
           )}
-<Button size="sm" variant="outline" className="w-full gap-1.5" onClick={() => { setEditingId("__new__"); setForm({ ...newItem }); setCurrentlyHere(false); }}>
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full gap-1.5"
+            onClick={() => {
+              setEditingId("__new__");
+              setForm({ ...newItem });
+              setCurrentlyHere(false);
+            }}
+          >
             <Plus className="h-4 w-4" /> Adicionar
           </Button>
         </>

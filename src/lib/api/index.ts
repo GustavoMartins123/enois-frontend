@@ -51,7 +51,7 @@ export type { Notification } from "./notifications";
 export { searchApi } from "./search";
 export type { SearchResult, SearchResponse } from "./search";
 
-export { reportsApi } from "./reports";
+export { reportsApi, REPORT_REASONS } from "./reports";
 export type { ReportReason, ReportInput } from "./reports";
 
 export { rankingApi } from "./ranking";

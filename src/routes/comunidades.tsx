@@ -6,6 +6,7 @@ import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-ro
 import { Loader2, Plus, Users } from "lucide-react";
 
 import { communitiesApi } from "@/lib/api";
+import type { Community } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { requireAuth } from "@/lib/require-auth";
 
@@ -46,7 +47,7 @@ function Comunidades() {
   const [topic, setTopic] = useState<string | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const [cursor, setCursor] = useState<string | undefined>(undefined);
-  const [allItems, setAllItems] = useState<any[]>([]);
+  const [allItems, setAllItems] = useState<Community[]>([]);
   const cursorRef = useRef(cursor);
   cursorRef.current = cursor;
   const isDetail = matchRoute({ to: "/comunidades/$communityId" });
@@ -63,8 +64,8 @@ function Comunidades() {
     if (!communitiesData?.items) return;
     setAllItems((prev) => {
       if (cursorRef.current) {
-        const existing = new Set(prev.map((c: any) => c.id));
-        const newItems = communitiesData.items.filter((c: any) => !existing.has(c.id));
+        const existing = new Set(prev.map((c) => c.id));
+        const newItems = communitiesData.items.filter((c) => !existing.has(c.id));
         return newItems.length > 0 ? [...prev, ...newItems] : prev;
       }
       return communitiesData.items;
@@ -131,7 +132,7 @@ function Comunidades() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {allItems.map((c: any) => (
+          {allItems.map((c) => (
             <Link key={c.id} to="/comunidades/$communityId" params={{ communityId: c.id }}>
               <article className="surface-card overflow-hidden cursor-pointer transition hover:shadow-[var(--shadow-card)]">
                 {c.cover ? (
@@ -170,7 +171,11 @@ function Comunidades() {
                       disabled={join.isPending || leave.isPending}
                       onClick={(e) => {
                         e.preventDefault();
-                        c.joined ? leave.mutate(c.id) : join.mutate(c.id);
+                        if (c.joined) {
+                          leave.mutate(c.id);
+                        } else {
+                          join.mutate(c.id);
+                        }
                       }}
                     >
                       {c.joined ? "Participando" : "Entrar"}

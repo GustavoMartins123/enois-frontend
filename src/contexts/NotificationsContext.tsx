@@ -33,7 +33,9 @@ function loadStored(): AppNotification[] {
 function persist(list: AppNotification[]) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(list.slice(0, 50)));
-  } catch {}
+  } catch {
+    /* ignore */
+  }
 }
 
 export function NotificationsProvider({ children }: { children: ReactNode }) {

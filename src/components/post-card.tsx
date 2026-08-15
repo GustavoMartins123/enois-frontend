@@ -19,6 +19,7 @@ import {
 
 import {
   REACTION_EMOJIS,
+  REPORT_REASONS,
   commentsApi,
   feedApi,
   mediaApi,
@@ -168,19 +169,6 @@ function ReactionsDialog({
   );
 }
 
-const REPORT_REASONS = [
-  "AI_GENERATED",
-  "FAKE_CONTENT",
-  "SCAM",
-  "DISCRIMINATION",
-  "PREJUDICE",
-  "HARASSMENT",
-  "SPAM",
-  "VIOLENCE",
-  "COPYRIGHT",
-  "OTHER",
-];
-
 function ReportDialog({
   postId,
   open,
@@ -198,7 +186,7 @@ function ReportDialog({
       await reportsApi.create({
         targetId: postId,
         targetType: "POST",
-        reason: reason as any,
+        reason: reason as ReportReason,
         description: description || undefined,
       });
       onOpenChange(false);
@@ -304,11 +292,11 @@ export function PostCard({ post }: { post: PostView }) {
       if (reactionStatus === type) {
         const result = await reactionsApi.removeReaction(post.id);
         setReactionStatus(null);
-        if ("counters" in result) setPostCounters((result as any).counters);
+        if ("counters" in result) setPostCounters(result.counters!);
       } else {
         const result = await reactionsApi.react(post.id, type);
         setReactionStatus(type);
-        if ("counters" in result) setPostCounters((result as any).counters);
+        if ("counters" in result) setPostCounters(result.counters!);
       }
     } catch {
       // silently fail
@@ -615,7 +603,9 @@ function CommentItem({
         await reactionsApi.reactComment(comment.postId, comment.id, type);
         setCommentReaction(type);
       }
-    } catch {}
+    } catch {
+      /* ignore */
+    }
   };
 
   return (

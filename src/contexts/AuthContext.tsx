@@ -46,7 +46,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const profile = await profileApi.me();
       if (profile.avatar) u.avatar = profile.avatar;
-    } catch {}
+    } catch {
+      /* ignore */
+    }
     localStorage.setItem("current_user", JSON.stringify(u));
     setUser(u);
   };
@@ -59,7 +61,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const profile = await profileApi.me();
       if (profile.avatar) u.avatar = profile.avatar;
-    } catch {}
+    } catch {
+      /* ignore */
+    }
     localStorage.setItem("current_user", JSON.stringify(u));
     setUser(u);
   };
@@ -80,7 +84,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = async () => {
     try {
       await authApi.logout();
-    } catch {}
+    } catch {
+      /* ignore */
+    }
     localStorage.removeItem("session_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("current_user");

@@ -345,7 +345,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                                             queryClient.invalidateQueries({
                                               queryKey: ["network"],
                                             });
-                                          } catch {}
+                                          } catch {
+                                            /* ignore */
+                                          }
                                         }}
                                         className="rounded-full bg-primary px-3 py-1 text-[11px] font-light text-primary-foreground transition hover:bg-primary/90"
                                       >

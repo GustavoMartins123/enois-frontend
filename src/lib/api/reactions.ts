@@ -31,11 +31,11 @@ export interface ReactionItem {
 }
 
 function postReaction(path: string, type: ReactionType) {
-  return api.post<{ status: string }>(path, { type });
+  return api.post<Partial<ActionResponse>>(path, { type });
 }
 
 function removeReaction(path: string) {
-  return api.delete<{ status: string }>(path);
+  return api.delete<Partial<ActionResponse>>(path);
 }
 
 export interface ReactionsListResponse {
