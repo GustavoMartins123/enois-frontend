@@ -67,7 +67,10 @@ export const Route = createFileRoute("/perfil/$username")({
     <AppShell>
       <div className="rounded-2xl border border-border-soft bg-surface-card p-10 text-center">
         <p className="text-[16px] font-light text-text-strong">Pessoa não encontrada</p>
-        <Link to="/" className="mt-2 inline-block text-[13px] font-light text-primary hover:underline">
+        <Link
+          to="/"
+          className="mt-2 inline-block text-[13px] font-light text-primary hover:underline"
+        >
           Voltar para o início
         </Link>
       </div>
@@ -76,7 +79,9 @@ export const Route = createFileRoute("/perfil/$username")({
   errorComponent: () => (
     <AppShell>
       <div className="rounded-2xl border border-border-soft bg-surface-card p-10 text-center">
-        <p className="text-[13px] font-light text-text-subtle">Não foi possível carregar este perfil.</p>
+        <p className="text-[13px] font-light text-text-subtle">
+          Não foi possível carregar este perfil.
+        </p>
       </div>
     </AppShell>
   ),
@@ -221,7 +226,10 @@ function Profile() {
                 className="h-40 w-full object-cover sm:h-52"
               />
             ) : (
-              <div className="h-40 w-full sm:h-52" style={{ background: "var(--gradient-primary)" }} />
+              <div
+                className="h-40 w-full sm:h-52"
+                style={{ background: "var(--gradient-primary)" }}
+              />
             )}
             {isOwnProfile && hoveringBanner && (
               <button
@@ -320,7 +328,9 @@ function Profile() {
             </div>
             <div className="mt-4">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="break-words text-[22px] font-light tracking-tight text-text-strong">{user.name}</h1>
+                <h1 className="break-words text-[22px] font-light tracking-tight text-text-strong">
+                  {user.name}
+                </h1>
                 {user.openToWork && (
                   <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-[11px] font-light text-growth">
                     Aberto a oportunidades
@@ -332,7 +342,9 @@ function Profile() {
                   </span>
                 )}
               </div>
-              <p className="mt-1 break-words text-[14px] font-light text-primary">{user.headline}</p>
+              <p className="mt-1 break-words text-[14px] font-light text-primary">
+                {user.headline}
+              </p>
               <p className="mt-3 flex flex-wrap items-center gap-4 text-[13px] font-light text-text-subtle">
                 {user.company && (
                   <span className="inline-flex items-center gap-1.5">
@@ -359,7 +371,9 @@ function Profile() {
           <div className="space-y-6">
             {user.bio && (
               <Section title="Sobre">
-                <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">{user.bio}</p>
+                <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">
+                  {user.bio}
+                </p>
               </Section>
             )}
 
@@ -559,9 +573,13 @@ function RecommendationItem({
     <div className="rounded-xl bg-surface-1 p-3">
       <div className="flex items-center gap-2 mb-2">
         <UserAvatar src={recommender?.avatar} alt={recommender?.name} className="h-6 w-6" />
-        <span className="text-[12px] font-medium text-text-strong">{recommender?.name ?? "Usuário"}</span>
+        <span className="text-[12px] font-medium text-text-strong">
+          {recommender?.name ?? "Usuário"}
+        </span>
       </div>
-      <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">"{recommendation.comment}"</p>
+      <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">
+        "{recommendation.comment}"
+      </p>
     </div>
   );
 }

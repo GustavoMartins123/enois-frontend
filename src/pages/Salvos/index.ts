@@ -1,1 +1,1 @@
-export { SalvosPage } from './Salvos.page';
+export { SalvosPage } from "./Salvos.page";

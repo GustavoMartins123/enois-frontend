@@ -1,1 +1,1 @@
-export { AppShell, Avatar } from './AppShell.component';
+export { AppShell, Avatar } from "./AppShell.component";

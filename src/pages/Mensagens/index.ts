@@ -1,1 +1,1 @@
-export { MensagensPage } from './Mensagens.page';
+export { MensagensPage } from "./Mensagens.page";

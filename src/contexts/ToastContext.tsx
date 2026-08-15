@@ -1,7 +1,8 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
-import { CheckCircle, AlertCircle, AlertTriangle, Info, X } from 'lucide-react';
+import { type ReactNode, createContext, useCallback, useContext, useState } from "react";
 
-export type ToastType = 'success' | 'error' | 'warning' | 'info';
+import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from "lucide-react";
+
+export type ToastType = "success" | "error" | "warning" | "info";
 
 interface AppToast {
   id: string;
@@ -16,24 +17,24 @@ interface ToastContextType {
 const ToastContext = createContext<ToastContextType | null>(null);
 
 const STYLES: Record<ToastType, { card: string; icon: string; Icon: React.ElementType }> = {
-  success: { card: 'border-[#C4B5FD] bg-[#EDE8F5]',  icon: 'text-[#7C3AED]', Icon: CheckCircle  },
-  error:   { card: 'border-red-200 bg-red-50',         icon: 'text-red-500',   Icon: AlertCircle  },
-  warning: { card: 'border-amber-200 bg-amber-50',     icon: 'text-amber-500', Icon: AlertTriangle },
-  info:    { card: 'border-[#E5E0EB] bg-white',        icon: 'text-[#9CA3AF]', Icon: Info         },
+  success: { card: "border-[#C4B5FD] bg-[#EDE8F5]", icon: "text-[#7C3AED]", Icon: CheckCircle },
+  error: { card: "border-red-200 bg-red-50", icon: "text-red-500", Icon: AlertCircle },
+  warning: { card: "border-amber-200 bg-amber-50", icon: "text-amber-500", Icon: AlertTriangle },
+  info: { card: "border-[#E5E0EB] bg-white", icon: "text-[#9CA3AF]", Icon: Info },
 };
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<AppToast[]>([]);
 
   const remove = useCallback((id: string) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
+    setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
   const addToast = useCallback(
-    (message: string, type: ToastType = 'success', duration = 120000) => {
+    (message: string, type: ToastType = "success", duration = 120000) => {
       const id = `toast-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
       // mantém no máximo 3 toasts visíveis
-      setToasts(prev => [...prev.slice(-2), { id, message, type }]);
+      setToasts((prev) => [...prev.slice(-2), { id, message, type }]);
       setTimeout(() => remove(id), duration);
     },
     [remove],
@@ -48,7 +49,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           aria-label="Alertas do sistema"
           className="pointer-events-none fixed right-4 top-5 z-[60] flex flex-col gap-2"
         >
-          {toasts.map(t => {
+          {toasts.map((t) => {
             const { card, icon, Icon } = STYLES[t.type];
             return (
               <div
@@ -76,6 +77,6 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
 export function useToast() {
   const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error('useToast must be used within ToastProvider');
+  if (!ctx) throw new Error("useToast must be used within ToastProvider");
   return ctx;
 }

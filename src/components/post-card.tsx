@@ -1,27 +1,37 @@
+import { type FormEvent, useEffect, useMemo, useState } from "react";
+
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+
 import {
-  Heart,
-  MessageCircle,
-  Bookmark,
-  Share2,
-  Lightbulb,
-  HelpCircle,
-  Briefcase,
-  FolderGit2,
   BookOpen,
+  Bookmark,
+  Briefcase,
   Flag,
+  FolderGit2,
+  Heart,
+  HelpCircle,
+  Lightbulb,
+  MessageCircle,
   Send,
+  Share2,
 } from "lucide-react";
-import { useMemo, useState, useEffect, type FormEvent } from "react";
-import { useQuery, useQueries } from "@tanstack/react-query";
+
+import {
+  REACTION_EMOJIS,
+  commentsApi,
+  feedApi,
+  mediaApi,
+  profileApi,
+  reactionsApi,
+  reportsApi,
+} from "@/lib/api";
+import type { CommentView, PostView, ReactionType } from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
 import { useAuth } from "@/lib/use-auth";
-import { UserAvatar } from "@/components/user-avatar";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { MentionTextarea } from "@/components/mention-textarea";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -29,19 +39,15 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { commentsApi, reactionsApi, mediaApi, profileApi, reportsApi, feedApi, REACTION_EMOJIS } from "@/lib/api";
-import type { PostView, CommentView, ReactionType } from "@/lib/api";
-import { resolveCdnUrl } from "@/lib/api/media";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
 
-const typeMeta: Record<
-  PostView["type"],
-  { label: string; icon: React.ElementType }
-> = {
+import { MentionTextarea } from "@/components/mention-textarea";
+import { UserAvatar } from "@/components/user-avatar";
+
+const typeMeta: Record<PostView["type"], { label: string; icon: React.ElementType }> = {
   INSIGHT: { label: "Insight", icon: Lightbulb },
   QUESTION: { label: "Pergunta", icon: HelpCircle },
   PROJECT: { label: "Projeto", icon: FolderGit2 },
@@ -49,7 +55,13 @@ const typeMeta: Record<
   ARTICLE: { label: "Artigo", icon: BookOpen },
 };
 
-function ReactionsSummary({ postId, reactionStatus }: { postId: string; reactionStatus: string | null }) {
+function ReactionsSummary({
+  postId,
+  reactionStatus,
+}: {
+  postId: string;
+  reactionStatus: string | null;
+}) {
   const { data } = useQuery({
     queryKey: ["reactions-summary", postId],
     queryFn: () => reactionsApi.listReactions(postId),
@@ -68,7 +80,9 @@ function ReactionsSummary({ postId, reactionStatus }: { postId: string; reaction
         <span
           key={type}
           className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-light tabular-nums ${
-            reactionStatus === type ? "bg-surface-2 text-primary" : "border border-border-soft text-text-subtle"
+            reactionStatus === type
+              ? "bg-surface-2 text-primary"
+              : "border border-border-soft text-text-subtle"
           }`}
         >
           {REACTION_EMOJIS[type] ?? type} {count}
@@ -98,9 +112,13 @@ function ReactionsDialog({
   });
 
   const apiReactions = data?.reactions ?? [];
-  const reactions = currentUserReaction && currentUserId && !apiReactions.some((r) => r.userId === currentUserId)
-    ? [{ userId: currentUserId, type: currentUserReaction, createdAt: new Date().toISOString() }, ...apiReactions]
-    : apiReactions;
+  const reactions =
+    currentUserReaction && currentUserId && !apiReactions.some((r) => r.userId === currentUserId)
+      ? [
+          { userId: currentUserId, type: currentUserReaction, createdAt: new Date().toISOString() },
+          ...apiReactions,
+        ]
+      : apiReactions;
 
   const uniqueUserIds = [...new Set(reactions.map((r) => r.userId))];
   const { data: users } = useQuery({
@@ -109,9 +127,7 @@ function ReactionsDialog({
       const results = await Promise.all(
         uniqueUserIds.map((id) => profileApi.getById(id).catch(() => null)),
       );
-      return Object.fromEntries(
-        results.filter(Boolean).map((u) => [u!.id, u!]),
-      );
+      return Object.fromEntries(results.filter(Boolean).map((u) => [u!.id, u!]));
     },
     enabled: open && uniqueUserIds.length > 0,
   });
@@ -123,16 +139,23 @@ function ReactionsDialog({
           <DialogTitle className="font-light">Reações</DialogTitle>
         </DialogHeader>
         {reactions.length === 0 ? (
-          <p className="py-8 text-center text-[13px] font-light text-text-subtle">Nenhuma reação ainda</p>
+          <p className="py-8 text-center text-[13px] font-light text-text-subtle">
+            Nenhuma reação ainda
+          </p>
         ) : (
           <div className="space-y-2 pt-2">
             {reactions.map((r) => {
               const user = users?.[r.userId];
               return (
-                <div key={`${r.userId}-${r.type}`} className="flex items-center gap-3 rounded-xl bg-surface-1 p-3">
+                <div
+                  key={`${r.userId}-${r.type}`}
+                  className="flex items-center gap-3 rounded-xl bg-surface-1 p-3"
+                >
                   <UserAvatar src={user?.avatar} alt={user?.name} className="h-9 w-9 shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-light text-text-strong">{user?.name ?? "Carregando..."}</p>
+                    <p className="truncate text-[13px] font-light text-text-strong">
+                      {user?.name ?? "Carregando..."}
+                    </p>
                   </div>
                   <span className="text-xl">{REACTION_EMOJIS[r.type] ?? r.type}</span>
                 </div>
@@ -344,7 +367,12 @@ export function PostCard({ post }: { post: PostView }) {
   return (
     <article className="min-w-0 rounded-2xl border border-border-soft bg-surface-card p-4 transition sm:p-5">
       <header className="flex items-start gap-3">
-        <AuthorInfo authorUsername={post.authorUsername} authorName={post.authorName} authorAvatar={post.authorAvatar} createdAt={post.createdAt} />
+        <AuthorInfo
+          authorUsername={post.authorUsername}
+          authorName={post.authorName}
+          authorAvatar={post.authorAvatar}
+          createdAt={post.createdAt}
+        />
         <span className="inline-flex items-center gap-1 rounded-full border border-border-soft px-2.5 py-1 text-[11px] font-light text-text-subtle">
           <Icon className="h-3 w-3" />
           {meta.label}
@@ -396,20 +424,26 @@ export function PostCard({ post }: { post: PostView }) {
               <span className="tabular-nums">{postCounters.reactions}</span>
             </button>
           </PopoverTrigger>
-          <PopoverContent align="start" side="top" className="w-fit rounded-2xl border-border-soft bg-surface-card p-1.5">
+          <PopoverContent
+            align="start"
+            side="top"
+            className="w-fit rounded-2xl border-border-soft bg-surface-card p-1.5"
+          >
             <div className="flex gap-1">
-              {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(([type, emoji]) => (
-                <button
-                  key={type}
-                  onClick={() => handleReaction(type)}
-                  className={`rounded-lg px-2 py-1 text-xl transition hover:bg-surface-2 ${
-                    reactionStatus === type ? "bg-surface-2 ring-1 ring-primary" : ""
-                  }`}
-                  title={type.toLowerCase()}
-                >
-                  {emoji}
-                </button>
-              ))}
+              {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(
+                ([type, emoji]) => (
+                  <button
+                    key={type}
+                    onClick={() => handleReaction(type)}
+                    className={`rounded-lg px-2 py-1 text-xl transition hover:bg-surface-2 ${
+                      reactionStatus === type ? "bg-surface-2 ring-1 ring-primary" : ""
+                    }`}
+                    title={type.toLowerCase()}
+                  >
+                    {emoji}
+                  </button>
+                ),
+              )}
             </div>
           </PopoverContent>
         </Popover>
@@ -447,7 +481,13 @@ export function PostCard({ post }: { post: PostView }) {
         </button>
       </footer>
 
-      <ReactionsDialog postId={post.id} currentUserReaction={reactionStatus} currentUserId={currentUser?.id} open={showReactions} onOpenChange={setShowReactions} />
+      <ReactionsDialog
+        postId={post.id}
+        currentUserReaction={reactionStatus}
+        currentUserId={currentUser?.id}
+        open={showReactions}
+        onOpenChange={setShowReactions}
+      />
       <ReportDialog postId={post.id} open={showReport} onOpenChange={setShowReport} />
 
       {showComments && (
@@ -479,7 +519,9 @@ export function PostCard({ post }: { post: PostView }) {
                     {replies.length > 0 && (
                       <div className="ml-10 mt-2 space-y-2 border-l-2 border-border-soft pl-4">
                         {replies.map((reply) => {
-                          const parentAuthor = localComments.find((c) => c.id === reply.parentCommentId)?.authorName;
+                          const parentAuthor = localComments.find(
+                            (c) => c.id === reply.parentCommentId,
+                          )?.authorName;
                           return (
                             <CommentItem
                               key={reply.id}
@@ -515,11 +557,18 @@ export function PostCard({ post }: { post: PostView }) {
           </div>
 
           <form onSubmit={submitComment} className="mt-4 flex items-center gap-2.5">
-            <UserAvatar src={currentUser?.avatar} alt={currentUser?.name} className="h-8 w-8 shrink-0" />
+            <UserAvatar
+              src={currentUser?.avatar}
+              alt={currentUser?.name}
+              className="h-8 w-8 shrink-0"
+            />
             <div className="flex flex-1 items-center gap-2 rounded-full border border-border-soft bg-surface-1 py-1.5 pl-4 pr-1.5">
               <MentionTextarea
                 value={draft}
-                onChange={(val, ids) => { setDraft(val); setCommentMentions(ids); }}
+                onChange={(val, ids) => {
+                  setDraft(val);
+                  setCommentMentions(ids);
+                }}
                 placeholder="Comente com contexto, dúvida ou referência..."
                 className="h-6 min-h-6 flex-1 resize-none border-0 bg-transparent p-0 text-[13px] font-light outline-none"
                 maxLength={280}
@@ -571,7 +620,11 @@ function CommentItem({
 
   return (
     <div className="flex gap-2.5">
-      <UserAvatar src={comment.authorAvatar} alt={comment.authorName} className="h-8 w-8 shrink-0" />
+      <UserAvatar
+        src={comment.authorAvatar}
+        alt={comment.authorName}
+        className="h-8 w-8 shrink-0"
+      />
       <div className="min-w-0 flex-1">
         <div className="rounded-xl bg-surface-1 px-3 py-2">
           <div className="flex flex-wrap items-center gap-2">
@@ -585,7 +638,9 @@ function CommentItem({
               {formatTime(comment.createdAt)}
             </span>
           </div>
-          <p className="mt-0.5 break-words text-[13px] font-light leading-relaxed text-text-strong">{linkifyText(comment.content)}</p>
+          <p className="mt-0.5 break-words text-[13px] font-light leading-relaxed text-text-strong">
+            {linkifyText(comment.content)}
+          </p>
         </div>
         <div className="mt-1 flex items-center gap-3 px-3 text-[11px] font-light text-text-subtle">
           <button
@@ -600,19 +655,25 @@ function CommentItem({
                 {commentReaction ? REACTION_EMOJIS[commentReaction] : "Reagir"}
               </button>
             </PopoverTrigger>
-            <PopoverContent align="start" side="top" className="w-fit rounded-2xl border-border-soft bg-surface-card p-1.5">
+            <PopoverContent
+              align="start"
+              side="top"
+              className="w-fit rounded-2xl border-border-soft bg-surface-card p-1.5"
+            >
               <div className="flex gap-1">
-                {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(([type, emoji]) => (
-                  <button
-                    key={type}
-                    onClick={() => handleCommentReaction(type)}
-                    className={`rounded-lg px-2 py-1 text-lg transition hover:bg-surface-2 ${
-                      commentReaction === type ? "bg-surface-2 ring-1 ring-primary" : ""
-                    }`}
-                  >
-                    {emoji}
-                  </button>
-                ))}
+                {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(
+                  ([type, emoji]) => (
+                    <button
+                      key={type}
+                      onClick={() => handleCommentReaction(type)}
+                      className={`rounded-lg px-2 py-1 text-lg transition hover:bg-surface-2 ${
+                        commentReaction === type ? "bg-surface-2 ring-1 ring-primary" : ""
+                      }`}
+                    >
+                      {emoji}
+                    </button>
+                  ),
+                )}
               </div>
             </PopoverContent>
           </Popover>
@@ -745,11 +806,23 @@ function LinkPreviews({ content }: { content: string }) {
             className="mt-2 flex items-center gap-3 rounded-xl border border-border-soft bg-surface-1 px-4 py-3 text-[13px] font-light transition hover:bg-surface-3"
           >
             <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-surface-2 text-xs font-bold text-primary">
-              {(() => { try { return new URL(url).hostname.slice(0, 2).toUpperCase(); } catch { return "🌐"; } })()}
+              {(() => {
+                try {
+                  return new URL(url).hostname.slice(0, 2).toUpperCase();
+                } catch {
+                  return "🌐";
+                }
+              })()}
             </div>
             <div className="min-w-0">
               <p className="truncate font-normal text-text-strong">
-                {(() => { try { return new URL(url).hostname; } catch { return url; } })()}
+                {(() => {
+                  try {
+                    return new URL(url).hostname;
+                  } catch {
+                    return url;
+                  }
+                })()}
               </p>
               <p className="truncate text-[11px] font-light text-text-subtle">{url}</p>
             </div>
@@ -855,7 +928,11 @@ function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
   if (isVideo) {
     return (
       <div className="overflow-hidden rounded-xl border border-border-soft">
-        <video src={resolveCdnUrl(items[0].cdnUrl)} controls className="max-h-96 w-full bg-surface-1" />
+        <video
+          src={resolveCdnUrl(items[0].cdnUrl)}
+          controls
+          className="max-h-96 w-full bg-surface-1"
+        />
       </div>
     );
   }
@@ -870,7 +947,11 @@ function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
             onClick={() => setFullscreenUrl(resolveCdnUrl(m.cdnUrl) ?? null)}
             className="overflow-hidden rounded-xl border border-border-soft text-left"
           >
-            <img src={resolveCdnUrl(m.cdnUrl)} alt="" className="h-48 w-full object-cover bg-surface-1 transition hover:scale-105" />
+            <img
+              src={resolveCdnUrl(m.cdnUrl)}
+              alt=""
+              className="h-48 w-full object-cover bg-surface-1 transition hover:scale-105"
+            />
           </button>
         ))}
       </div>

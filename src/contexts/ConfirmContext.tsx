@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
-import { AlertTriangle, X } from 'lucide-react';
+import { type ReactNode, createContext, useCallback, useContext, useState } from "react";
+
+import { AlertTriangle, X } from "lucide-react";
 
 export interface ConfirmOptions {
   title: string;
@@ -7,7 +8,7 @@ export interface ConfirmOptions {
   confirmLabel?: string;
   cancelLabel?: string;
   /** 'danger' usa vermelho; 'primary' usa roxo. Default: 'danger' */
-  variant?: 'danger' | 'primary';
+  variant?: "danger" | "primary";
   onConfirm: () => Promise<void> | void;
 }
 
@@ -41,7 +42,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
     setPending(null);
   };
 
-  const isDanger = !pending?.variant || pending.variant === 'danger';
+  const isDanger = !pending?.variant || pending.variant === "danger";
 
   return (
     <ConfirmContext.Provider value={{ confirm }}>
@@ -59,11 +60,11 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
             <div className="flex items-start justify-between">
               <div
                 className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                  isDanger ? 'bg-red-50' : 'bg-[#EDE8F5]'
+                  isDanger ? "bg-red-50" : "bg-[#EDE8F5]"
                 }`}
               >
                 <AlertTriangle
-                  className={`h-5 w-5 ${isDanger ? 'text-red-500' : 'text-[#7C3AED]'}`}
+                  className={`h-5 w-5 ${isDanger ? "text-red-500" : "text-[#7C3AED]"}`}
                 />
               </div>
               <button
@@ -77,10 +78,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
             </div>
 
             {/* Conteúdo */}
-            <h2
-              id="confirm-modal-title"
-              className="mt-4 text-[15px] font-light text-[#0f0f14]"
-            >
+            <h2 id="confirm-modal-title" className="mt-4 text-[15px] font-light text-[#0f0f14]">
               {pending.title}
             </h2>
             <p className="mt-1 text-[13px] font-light text-[#6B7280]">{pending.message}</p>
@@ -92,21 +90,19 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                 disabled={loading}
                 className="rounded-full border border-[#E5E0EB] px-5 py-2 text-[13px] font-light text-[#6B7280] transition hover:border-[#7C3AED] hover:text-[#7C3AED] disabled:opacity-40"
               >
-                {pending.cancelLabel ?? 'Cancelar'}
+                {pending.cancelLabel ?? "Cancelar"}
               </button>
               <button
                 onClick={handleConfirm}
                 disabled={loading}
                 className={`flex min-w-[90px] items-center justify-center gap-2 rounded-full px-5 py-2 text-[13px] font-light text-white transition disabled:opacity-60 ${
-                  isDanger
-                    ? 'bg-red-500 hover:bg-red-600'
-                    : 'bg-[#7C3AED] hover:bg-[#6D28D9]'
+                  isDanger ? "bg-red-500 hover:bg-red-600" : "bg-[#7C3AED] hover:bg-[#6D28D9]"
                 }`}
               >
                 {loading ? (
                   <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 ) : (
-                  pending.confirmLabel ?? 'Confirmar'
+                  (pending.confirmLabel ?? "Confirmar")
                 )}
               </button>
             </div>
@@ -119,6 +115,6 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
 
 export function useConfirm() {
   const ctx = useContext(ConfirmContext);
-  if (!ctx) throw new Error('useConfirm must be used within ConfirmProvider');
+  if (!ctx) throw new Error("useConfirm must be used within ConfirmProvider");
   return ctx;
 }

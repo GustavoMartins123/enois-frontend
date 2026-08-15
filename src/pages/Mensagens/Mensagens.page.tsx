@@ -1,41 +1,44 @@
-import { useState, useEffect, useRef } from 'react';
-import { MessageCircle, Send } from 'lucide-react';
-import { AppShell, Avatar } from '../../components/AppShell';
-import { messagesApi, type Conversation, type Message } from '../../lib/api/messages';
+import { useEffect, useRef, useState } from "react";
+
+import { MessageCircle, Send } from "lucide-react";
+
+import { AppShell, Avatar } from "../../components/AppShell";
+import { type Conversation, type Message, messagesApi } from "../../lib/api/messages";
 
 function timeLabel(iso: string | null) {
-  if (!iso) return '';
+  if (!iso) return "";
   const d = new Date(iso);
   const diff = Math.floor((Date.now() - d.getTime()) / 60000);
-  if (diff < 1) return 'agora';
+  if (diff < 1) return "agora";
   if (diff < 60) return `${diff}min`;
   const h = Math.floor(diff / 60);
   if (h < 24) return `${h}h`;
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
 }
 
 export function MensagensPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selected, setSelected] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    messagesApi.listConversations()
-      .then(r => setConversations(r.items))
+    messagesApi
+      .listConversations()
+      .then((r) => setConversations(r.items))
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
   /* Auto-select conversation requested by another page (e.g. Mentoria) */
   useEffect(() => {
-    const pendingId = localStorage.getItem('pending_open_conv');
+    const pendingId = localStorage.getItem("pending_open_conv");
     if (!pendingId) return;
-    localStorage.removeItem('pending_open_conv');
-    setConversations(prev => {
-      const conv = prev.find(c => c.id === pendingId);
+    localStorage.removeItem("pending_open_conv");
+    setConversations((prev) => {
+      const conv = prev.find((c) => c.id === pendingId);
       if (conv) setSelected(conv);
       return prev;
     });
@@ -44,37 +47,43 @@ export function MensagensPage() {
   /* Load messages when conversation selected */
   useEffect(() => {
     if (!selected) return;
-    messagesApi.listMessages(selected.id)
-      .then(r => setMessages(r.items))
+    messagesApi
+      .listMessages(selected.id)
+      .then((r) => setMessages(r.items))
       .catch(() => {});
     messagesApi.markAsRead(selected.id).catch(() => {});
   }, [selected]);
 
   /* Scroll to bottom on new message */
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSend = async () => {
     if (!selected || !input.trim()) return;
     const text = input.trim();
-    setInput('');
+    setInput("");
     const msg = await messagesApi.sendMessage(selected.id, text).catch(() => null);
-    if (msg) setMessages(prev => [...prev, msg]);
+    if (msg) setMessages((prev) => [...prev, msg]);
   };
 
   return (
     <AppShell>
       <div className="flex h-[calc(100vh-120px)] overflow-hidden rounded-2xl border border-[#E5E0EB] bg-white dark:border-[#2a2a3d] dark:bg-[#13131f]">
         {/* Conversations list */}
-        <div className={`flex w-full flex-col border-r border-[#E5E0EB] dark:border-[#2a2a3d] sm:w-72 ${selected ? 'hidden sm:flex' : ''}`}>
+        <div
+          className={`flex w-full flex-col border-r border-[#E5E0EB] dark:border-[#2a2a3d] sm:w-72 ${selected ? "hidden sm:flex" : ""}`}
+        >
           <div className="border-b border-[#E5E0EB] px-4 py-3 dark:border-[#2a2a3d]">
             <p className="text-[16px] font-light text-[#0f0f14] dark:text-[#e8e6ff]">Mensagens</p>
           </div>
           {loading ? (
             <div className="flex-1 space-y-3 p-4">
               {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="h-14 animate-pulse rounded-xl bg-[#F9F8FF] dark:bg-[#1c1c2e]" />
+                <div
+                  key={i}
+                  className="h-14 animate-pulse rounded-xl bg-[#F9F8FF] dark:bg-[#1c1c2e]"
+                />
               ))}
             </div>
           ) : conversations.length === 0 ? (
@@ -84,23 +93,29 @@ export function MensagensPage() {
             </div>
           ) : (
             <ul className="flex-1 overflow-y-auto">
-              {conversations.map(c => (
+              {conversations.map((c) => (
                 <li key={c.id}>
                   <button
                     onClick={() => setSelected(c)}
                     className={`flex w-full items-center gap-3 px-4 py-3 text-left transition ${
                       selected?.id === c.id
-                        ? 'bg-[#EDE8F5] dark:bg-[#2a1a4e]'
-                        : 'hover:bg-[#F9F8FF] dark:hover:bg-[#1c1c2e]'
+                        ? "bg-[#EDE8F5] dark:bg-[#2a1a4e]"
+                        : "hover:bg-[#F9F8FF] dark:hover:bg-[#1c1c2e]"
                     }`}
                   >
-                    <Avatar name={c.title ?? 'Conversa'} size="lg" />
+                    <Avatar name={c.title ?? "Conversa"} size="lg" />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline justify-between gap-1">
-                        <p className="truncate text-[13px] font-light text-[#0f0f14] dark:text-[#e8e6ff]">{c.title ?? 'Conversa'}</p>
-                        <span className="shrink-0 text-[11px] text-[#9CA3AF]">{timeLabel(c.time)}</span>
+                        <p className="truncate text-[13px] font-light text-[#0f0f14] dark:text-[#e8e6ff]">
+                          {c.title ?? "Conversa"}
+                        </p>
+                        <span className="shrink-0 text-[11px] text-[#9CA3AF]">
+                          {timeLabel(c.time)}
+                        </span>
                       </div>
-                      <p className="truncate text-[12px] text-[#9CA3AF]">{c.lastMessage ?? 'Sem mensagens'}</p>
+                      <p className="truncate text-[12px] text-[#9CA3AF]">
+                        {c.lastMessage ?? "Sem mensagens"}
+                      </p>
                     </div>
                     {c.unread > 0 && (
                       <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#7C3AED] px-1 text-[10px] text-white">
@@ -118,21 +133,38 @@ export function MensagensPage() {
         {selected ? (
           <div className="flex flex-1 flex-col">
             <div className="flex items-center gap-3 border-b border-[#E5E0EB] px-4 py-3 dark:border-[#2a2a3d]">
-              <button onClick={() => setSelected(null)} className="text-[#6B7280] sm:hidden">←</button>
-              <Avatar name={selected.title ?? 'Conversa'} size="lg" />
-              <p className="text-[14px] font-light text-[#0f0f14] dark:text-[#e8e6ff]">{selected.title ?? 'Conversa'}</p>
+              <button onClick={() => setSelected(null)} className="text-[#6B7280] sm:hidden">
+                ←
+              </button>
+              <Avatar name={selected.title ?? "Conversa"} size="lg" />
+              <p className="text-[14px] font-light text-[#0f0f14] dark:text-[#e8e6ff]">
+                {selected.title ?? "Conversa"}
+              </p>
             </div>
             <div className="flex-1 space-y-3 overflow-y-auto p-4">
-              {messages.map(m => (
-                <div key={m.id} className={`flex gap-2 ${m.from === 'Você' ? 'flex-row-reverse' : ''}`}>
-                  {m.from !== 'Você' && <Avatar name={m.from} size="sm" />}
-                  <div className={`max-w-xs rounded-2xl px-3 py-2 ${
-                    m.from === 'Você'
-                      ? 'rounded-tr-none bg-[#7C3AED] text-white'
-                      : 'rounded-tl-none bg-[#F5F3FF] dark:bg-[#2a1a4e]'
-                  }`}>
-                    <p className={`text-[13px] font-light ${m.from === 'Você' ? 'text-white' : 'text-[#0f0f14] dark:text-[#e8e6ff]'}`}>{m.text}</p>
-                    <p className={`mt-0.5 text-[10px] ${m.from === 'Você' ? 'text-white/60' : 'text-[#9CA3AF]'}`}>{timeLabel(m.time)}</p>
+              {messages.map((m) => (
+                <div
+                  key={m.id}
+                  className={`flex gap-2 ${m.from === "Você" ? "flex-row-reverse" : ""}`}
+                >
+                  {m.from !== "Você" && <Avatar name={m.from} size="sm" />}
+                  <div
+                    className={`max-w-xs rounded-2xl px-3 py-2 ${
+                      m.from === "Você"
+                        ? "rounded-tr-none bg-[#7C3AED] text-white"
+                        : "rounded-tl-none bg-[#F5F3FF] dark:bg-[#2a1a4e]"
+                    }`}
+                  >
+                    <p
+                      className={`text-[13px] font-light ${m.from === "Você" ? "text-white" : "text-[#0f0f14] dark:text-[#e8e6ff]"}`}
+                    >
+                      {m.text}
+                    </p>
+                    <p
+                      className={`mt-0.5 text-[10px] ${m.from === "Você" ? "text-white/60" : "text-[#9CA3AF]"}`}
+                    >
+                      {timeLabel(m.time)}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -141,8 +173,8 @@ export function MensagensPage() {
             <div className="flex items-center gap-2 border-t border-[#E5E0EB] p-3 dark:border-[#2a2a3d]">
               <input
                 value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSend()}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSend()}
                 placeholder="Escreva uma mensagem..."
                 className="flex-1 rounded-full border border-[#E5E0EB] bg-white px-4 py-2 text-[14px] font-light outline-none focus:border-[#7C3AED] dark:border-[#2a2a3d] dark:bg-[#1c1c2e] dark:text-[#e8e6ff]"
               />
@@ -157,7 +189,9 @@ export function MensagensPage() {
         ) : (
           <div className="hidden flex-1 flex-col items-center justify-center gap-3 text-center sm:flex">
             <MessageCircle className="h-10 w-10 text-[#9CA3AF]" />
-            <p className="text-[15px] font-light text-[#6B7280] dark:text-[#9CA3AF]">Selecione uma conversa</p>
+            <p className="text-[15px] font-light text-[#6B7280] dark:text-[#9CA3AF]">
+              Selecione uma conversa
+            </p>
           </div>
         )}
       </div>

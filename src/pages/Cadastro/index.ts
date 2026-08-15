@@ -1,1 +1,1 @@
-export { CadastroPage } from './Cadastro.page';
+export { CadastroPage } from "./Cadastro.page";

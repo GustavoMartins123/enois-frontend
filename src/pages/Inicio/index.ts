@@ -1,1 +1,1 @@
-export { InicioPage } from './Inicio.page';
+export { InicioPage } from "./Inicio.page";

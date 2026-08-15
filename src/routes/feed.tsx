@@ -3,7 +3,17 @@ import { type FormEvent, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
-import { BarChart3, Calendar, FileText, Film, Image, Loader2, TrendingUp, UserPlus, X } from "lucide-react";
+import {
+  BarChart3,
+  Calendar,
+  FileText,
+  Film,
+  Image,
+  Loader2,
+  TrendingUp,
+  UserPlus,
+  X,
+} from "lucide-react";
 
 import { ApiError, eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
 import type { PostView } from "@/lib/api";
@@ -157,7 +167,10 @@ function Home() {
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-4">
           {/* Composer */}
-          <form onSubmit={publishPost} className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-5">
+          <form
+            onSubmit={publishPost}
+            className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-5"
+          >
             <div className="flex items-center gap-3">
               <UserAvatar
                 src={profileUser?.avatar}
@@ -210,7 +223,11 @@ function Home() {
                   </div>
                 ) : (
                   <div className="relative overflow-hidden rounded-xl border border-border-soft">
-                    <video src={media[0].preview} controls className="max-h-64 w-full bg-surface-1" />
+                    <video
+                      src={media[0].preview}
+                      controls
+                      className="max-h-64 w-full bg-surface-1"
+                    />
                     <button
                       type="button"
                       onClick={() => removeMedia(0)}
@@ -273,7 +290,9 @@ function Home() {
               </div>
               <div className="flex items-center gap-2">
                 {publishError && (
-                  <p className="max-w-[200px] truncate text-[12px] font-light text-destructive">{publishError}</p>
+                  <p className="max-w-[200px] truncate text-[12px] font-light text-destructive">
+                    {publishError}
+                  </p>
                 )}
                 {!publishError && upload.status === "uploading" && (
                   <span className="text-[12px] font-light text-text-subtle">
@@ -286,8 +305,13 @@ function Home() {
                   disabled={!draft.trim() || createPost.isPending || upload.status === "uploading"}
                 >
                   {createPost.isPending || upload.status === "uploading" ? (
-                    <><Loader2 className="h-3.5 w-3.5 animate-spin" /> {upload.status === "uploading" ? "Enviando..." : "Publicando..."}</>
-                  ) : "Publicar"}
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />{" "}
+                      {upload.status === "uploading" ? "Enviando..." : "Publicando..."}
+                    </>
+                  ) : (
+                    "Publicar"
+                  )}
                 </Button>
               </div>
             </div>
@@ -337,7 +361,9 @@ function Home() {
                 >
                   {profileUser.name}
                 </Link>
-                <p className="line-clamp-2 text-[12px] font-light text-text-subtle">{profileUser.headline}</p>
+                <p className="line-clamp-2 text-[12px] font-light text-text-subtle">
+                  {profileUser.headline}
+                </p>
                 <div className="mt-3 grid grid-cols-2 gap-1 border-t border-border-soft pt-3 text-[12px]">
                   <div>
                     <p className="font-light text-text-strong">{profileUser.connectionsCount}</p>
@@ -373,7 +399,9 @@ function Home() {
                       >
                         {u.name}
                       </Link>
-                      <p className="truncate text-[11px] font-light text-text-subtle">{u.headline}</p>
+                      <p className="truncate text-[11px] font-light text-text-subtle">
+                        {u.headline}
+                      </p>
                     </div>
                     <button
                       type="button"

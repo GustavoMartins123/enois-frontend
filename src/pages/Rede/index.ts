@@ -1,1 +1,1 @@
-export { RedePage } from './Rede.page';
+export { RedePage } from "./Rede.page";

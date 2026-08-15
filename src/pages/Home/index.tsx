@@ -1,9 +1,9 @@
-import { Hero } from '../../components/Hero';
-import { ProblemSection } from '../../components/Problema';
-import { OpenLetterSection } from '../../components/CartaAberta';
-import { MidCTASection } from '../../components/CTAIntermediario';
-import { FAQSection } from '../../components/FAQ';
-import { FooterCTASection } from '../../components/Rodape';
+import { MidCTASection } from "../../components/CTAIntermediario";
+import { OpenLetterSection } from "../../components/CartaAberta";
+import { FAQSection } from "../../components/FAQ";
+import { Hero } from "../../components/Hero";
+import { ProblemSection } from "../../components/Problema";
+import { FooterCTASection } from "../../components/Rodape";
 
 export const Home = () => {
   return (

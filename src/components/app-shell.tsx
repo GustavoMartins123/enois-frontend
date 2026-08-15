@@ -1,34 +1,39 @@
-import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+
 import {
-  Home,
-  Users,
-  MessageCircle,
-  Briefcase,
-  GraduationCap,
-  Calendar,
-  Bell,
-  Search,
-  Sparkles,
-  Compass,
-  CheckCheck,
   AtSign,
-  UserPlus,
+  Bell,
+  Bookmark,
+  Briefcase,
+  Calendar,
+  CheckCheck,
+  Compass,
+  GraduationCap,
+  Heart,
+  Home,
   Loader2,
   LogIn,
-  Bookmark,
-  Heart,
+  MessageCircle,
+  Search,
+  Sparkles,
+  UserPlus,
+  Users,
 } from "lucide-react";
-import { useMemo, useState, useRef, useEffect, type ReactNode } from "react";
-import { Input } from "@/components/ui/input";
-import { UserAvatar } from "@/components/user-avatar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ThemeToggle } from "@/components/theme-toggle";
-import { Button } from "@/components/ui/button";
-import { profileApi, notificationsApi, searchApi, networkApi } from "@/lib/api";
-import { isAuthenticated } from "@/lib/use-auth";
+
+import { networkApi, notificationsApi, profileApi, searchApi } from "@/lib/api";
 import type { Notification } from "@/lib/api";
+import { isAuthenticated } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+
+import { ThemeToggle } from "@/components/theme-toggle";
+import { UserAvatar } from "@/components/user-avatar";
 
 function navigateToHref(
   href: string,
@@ -78,7 +83,15 @@ function navigateToHref(
       return;
     }
   }
-  const listRoutes = ["/feed", "/rede", "/mensagens", "/vagas", "/comunidades", "/eventos", "/mentoria"] as const;
+  const listRoutes = [
+    "/feed",
+    "/rede",
+    "/mensagens",
+    "/vagas",
+    "/comunidades",
+    "/eventos",
+    "/mentoria",
+  ] as const;
   for (const route of listRoutes) {
     if (href === route || href.startsWith(route + "/")) {
       navigate({ to: route });
@@ -166,9 +179,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               <Sparkles className="h-4 w-4" />
             </div>
-            <span className="text-[17px] font-light tracking-tight text-text-strong">
-              Conexão
-            </span>
+            <span className="text-[17px] font-light tracking-tight text-text-strong">Conexão</span>
           </Link>
 
           {authenticated && <SearchBox />}
@@ -246,12 +257,15 @@ export function AppShell({ children }: { children: ReactNode }) {
                     <div className="max-h-[28rem] overflow-y-auto">
                       {displayedNotifications.length === 0 && (
                         <p className="px-4 py-8 text-center text-[13px] font-light text-text-subtle">
-                          {notifTab === "novas" ? "Nenhuma notificação nova." : "Nenhum histórico ainda."}
+                          {notifTab === "novas"
+                            ? "Nenhuma notificação nova."
+                            : "Nenhum histórico ainda."}
                         </p>
                       )}
                       {displayedNotifications.map((notification) => {
                         const meta =
-                          notificationMeta[notification.kind.toLowerCase()] ?? notificationMeta.connection;
+                          notificationMeta[notification.kind.toLowerCase()] ??
+                          notificationMeta.connection;
                         const Icon = meta.icon;
 
                         return (
@@ -319,7 +333,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                                         Lida
                                       </button>
                                     )}
-                                    {notification.ctaLabel === "Aceitar" && !!notification.actorId ? (
+                                    {notification.ctaLabel === "Aceitar" &&
+                                    !!notification.actorId ? (
                                       <button
                                         type="button"
                                         onClick={async () => {
@@ -327,14 +342,17 @@ export function AppShell({ children }: { children: ReactNode }) {
                                             markAsRead.mutate(notification.id);
                                           try {
                                             await networkApi.accept(notification.actorId!);
-                                            queryClient.invalidateQueries({ queryKey: ["network"] });
+                                            queryClient.invalidateQueries({
+                                              queryKey: ["network"],
+                                            });
                                           } catch {}
                                         }}
                                         className="rounded-full bg-primary px-3 py-1 text-[11px] font-light text-primary-foreground transition hover:bg-primary/90"
                                       >
                                         Aceitar
                                       </button>
-                                    ) : notification.ctaLabel && notification.ctaLabel !== "Aceitar" ? (
+                                    ) : notification.ctaLabel &&
+                                      notification.ctaLabel !== "Aceitar" ? (
                                       <button
                                         type="button"
                                         onClick={() => {
@@ -365,7 +383,9 @@ export function AppShell({ children }: { children: ReactNode }) {
                     className="flex items-center gap-2 rounded-full p-1 pr-3 transition hover:bg-surface-2"
                   >
                     <UserAvatar src={profile.avatar} alt={profile.name} className="h-8 w-8" />
-                    <span className="hidden text-[13px] font-light text-text-strong sm:inline">Perfil</span>
+                    <span className="hidden text-[13px] font-light text-text-strong sm:inline">
+                      Perfil
+                    </span>
                   </Link>
                 )}
               </>
@@ -524,12 +544,17 @@ function SearchBox() {
                     return (
                       <li key={`${item.type}-${item.id}`}>
                         <button
-                          onClick={() => { close(); navigateToHref(item.href, navigate); }}
+                          onClick={() => {
+                            close();
+                            navigateToHref(item.href, navigate);
+                          }}
                           className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-surface-3"
                         >
                           <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-[13px] font-light text-text-strong">{item.title}</p>
+                            <p className="truncate text-[13px] font-light text-text-strong">
+                              {item.title}
+                            </p>
                             <p className="truncate text-xs text-text-subtle">{item.subtitle}</p>
                           </div>
                         </button>
@@ -573,12 +598,17 @@ function SearchBox() {
                 return (
                   <li key={`${item.type}-${item.id}`}>
                     <button
-                      onClick={() => { close(); navigateToHref(item.href, navigate); }}
+                      onClick={() => {
+                        close();
+                        navigateToHref(item.href, navigate);
+                      }}
                       className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-surface-3"
                     >
                       <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-[13px] font-light text-text-strong">{item.title}</p>
+                        <p className="truncate text-[13px] font-light text-text-strong">
+                          {item.title}
+                        </p>
                         <p className="truncate text-xs text-text-subtle">{item.subtitle}</p>
                       </div>
                     </button>

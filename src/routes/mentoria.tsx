@@ -210,7 +210,11 @@ function MentorCard({
         {/* Avatar / imagem de destaque */}
         <div className="md:col-span-3">
           <div className="flex h-full items-start justify-center overflow-hidden">
-            <UserAvatar src={user?.avatar} alt={user?.name ?? "Mentor"} className="h-14 w-14 shrink-0" />
+            <UserAvatar
+              src={user?.avatar}
+              alt={user?.name ?? "Mentor"}
+              className="h-14 w-14 shrink-0"
+            />
           </div>
         </div>
 
@@ -224,14 +228,11 @@ function MentorCard({
             {user?.name ?? "Mentor"}
           </Link>
           <p className="line-clamp-2 text-xs text-muted-foreground ">{user?.headline ?? ""}</p>
-
-
-
         </div>
 
         {/* Sidebar de estatísticas */}
         <div className="flex flex-col gap-4 md:col-span-3 text-[13px]">
-          {!isOwner &&
+          {!isOwner && (
             // <div className="flex flex-col gap-2 shrink-0 self-center">
             //   <Dialog open={editOpen} onOpenChange={setEditOpen}>
             //     <DialogTrigger asChild>
@@ -283,14 +284,14 @@ function MentorCard({
             //     </DialogContent>
             //   </Dialog>
             // </div>
-            (
-              <Button className="shrink-0 self-center rounded-lg bg-mentorship-button py-2 px-[14px]">Agendar</Button>
-            )}
-
+            <Button className="shrink-0 self-center rounded-lg bg-mentorship-button py-2 px-[14px]">
+              Agendar
+            </Button>
+          )}
         </div>
       </header>
 
-      <section >
+      <section>
         {mentor.expertise.map((e) => (
           <Badge
             key={e}
@@ -300,7 +301,6 @@ function MentorCard({
             {e}
           </Badge>
         ))}
-
       </section>
       {/* Seção inferior */}
       <footer className="grid grid-cols-1 gap-8 rounded-2xl">
@@ -327,7 +327,7 @@ function MentorCard({
           </div>
         </dl>
       </footer>
-    </article >
+    </article>
   );
 }
 

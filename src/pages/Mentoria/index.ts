@@ -1,1 +1,1 @@
-export { MentoriaPage } from './Mentoria.page';
+export { MentoriaPage } from "./Mentoria.page";
