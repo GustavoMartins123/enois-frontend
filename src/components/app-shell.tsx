@@ -179,7 +179,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             >
               <Sparkles className="h-4 w-4" />
             </div>
-            <span className="text-[17px] font-light tracking-tight text-text-strong">Conexão</span>
+            <span className="text-lg font-semibold tracking-tight">
+              É<span className="gradient-text">nóis</span>
+            </span>
           </Link>
 
           {authenticated && <SearchBox />}
