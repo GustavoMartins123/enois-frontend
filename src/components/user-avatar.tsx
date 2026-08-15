@@ -22,20 +22,10 @@ export function UserAvatar({ src, alt, className, fallback, fallbackClassName }:
   const resolved = resolveCdnUrl(src);
   return (
     <Avatar className={className}>
-<<<<<<< HEAD
       {resolved && (
         <AvatarImage src={resolved} alt={label} />
       )}
       <AvatarFallback className={fallbackClassName ?? "bg-violet-300 text-violet-900 font-bold text-xl leading-[30px] tracking-normal"}>
-=======
-      {resolved && <AvatarImage src={resolved} alt={label} />}
-      <AvatarFallback
-        className={
-          fallbackClassName ??
-          "bg-highlight-project text-highlight-project-text font-semibold bg-violet-300 text-violet-900 font-bold text-xl leading-[30px] tracking-normal"
-        }
-      >
->>>>>>> origin/chore/fase-6-cleanup-qa
         {fallback ?? getInitials(label)}
       </AvatarFallback>
     </Avatar>

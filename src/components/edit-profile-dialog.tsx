@@ -149,16 +149,8 @@ export function EditProfileDialog({ profile, children }: Props) {
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-<<<<<<< HEAD
-                className={`rounded-full px-4 py-1.5 font-medium transition ${
-                  tab === t.key
-                    ? "bg-card text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-=======
                 className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-light transition ${tab === t.key ? "bg-surface-2 text-primary" : "text-text-subtle hover:bg-surface-3 hover:text-text-strong"
                   }`}
->>>>>>> origin/feature/fase-4
               >
                 {t.label}
               </button>
@@ -170,95 +162,7 @@ export function EditProfileDialog({ profile, children }: Props) {
           {tab === "info" && (
             <div className="space-y-5">
               <Field label="Nome">
-<<<<<<< HEAD
-                <Input
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="h-10 border-transparent bg-muted"
-                />
-              </Field>
-              <Field label="Username (URL do perfil)" error={usernameError}>
-                <Input
-                  value={username}
-                  onChange={(e) => {
-                    setUsername(e.target.value);
-                    setUsernameError("");
-                  }}
-                  placeholder="seu-username"
-                  className="h-10 border-transparent bg-muted"
-                />
-              </Field>
-              <Field label="Headline">
-                <Input
-                  value={headline}
-                  onChange={(e) => setHeadline(e.target.value)}
-                  placeholder="Cargo ou frase de destaque"
-                  className="h-10 border-transparent bg-muted"
-                />
-              </Field>
-              <Field label="Bio">
-                <Textarea
-                  value={bio}
-                  onChange={(e) => setBio(e.target.value)}
-                  rows={3}
-                  className="h-10 border-transparent bg-muted pl-9"
-                />
-              </Field>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Empresa">
-                  <Input
-                    value={company}
-                    onChange={(e) => setCompany(e.target.value)}
-                    className="h-10 border-transparent bg-muted"
-                  />
-                </Field>
-                <Field label="Localização">
-                  <Input
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    className="h-10 border-transparent bg-muted"
-                  />
-                </Field>
-              </div>
-              <Field label="Disponibilidade">
-                <Input
-                  value={availability}
-                  onChange={(e) => setAvailability(e.target.value)}
-                  placeholder="Ex: Disponível para freelas"
-                  className="h-10 border-transparent bg-muted"
-                />
-              </Field>
-              <Field label="Portfólio">
-                <Input
-                  value={portfolio}
-                  onChange={(e) => setPortfolio(e.target.value)}
-                  placeholder="https://..."
-                  className="h-10 border-transparent bg-muted"
-                />
-              </Field>
-              <Field label="Links externos (um por linha)">
-                <Textarea
-                  value={linksText}
-                  onChange={(e) => setLinksText(e.target.value)}
-                  rows={3}
-                  className="h-10 border-transparent bg-muted"
-                />
-              </Field>
-              <Field label="Habilidades (separadas por vírgula)">
-                <Input
-                  value={skillsText}
-                  onChange={(e) => setSkillsText(e.target.value)}
-                  className="h-10 border-transparent bg-muted"
-                />
-              </Field>
-              <Field label="Objetivos (separados por vírgula)">
-                <Input
-                  value={goalsText}
-                  onChange={(e) => setGoalsText(e.target.value)}
-                  className="h-10 border-transparent bg-muted"
-                />
-=======
-                <Input value={name} onChange={(e) => setName(e.target.value)} className="h-10 border-border-soft bg-surface-1" />
+<Input value={name} onChange={(e) => setName(e.target.value)} className="h-10 border-border-soft bg-surface-1" />
               </Field>
               <Field label="Username (URL do perfil)" error={usernameError}>
                 <Input value={username} onChange={(e) => { setUsername(e.target.value); setUsernameError(""); }} placeholder="seu-username" className="h-10 border-border-soft bg-surface-1" />
@@ -291,7 +195,6 @@ export function EditProfileDialog({ profile, children }: Props) {
               </Field>
               <Field label="Objetivos (separados por vírgula)">
                 <Input value={goalsText} onChange={(e) => setGoalsText(e.target.value)} className="h-10 border-border-soft bg-surface-1" />
->>>>>>> origin/feature/fase-4
               </Field>
               <div className="flex items-center gap-8">
                 <label className="flex items-center gap-3 text-[13px] font-light text-text-strong">
@@ -554,30 +457,13 @@ function SubList<T extends { id: string }>({
             items.map((item) => (
               <div key={item.id} className="rounded-xl border border-border-soft p-4">
                 <div className="flex items-start justify-between gap-3">
-<<<<<<< HEAD
-                  <div className="min-w-0 flex-1 text-sm">
-                    <p className="break-words font-medium">
-                      {String((item as Record<string, unknown>)[fields[0].key] ?? "")}
-                    </p>
-                    <p className="break-words text-muted-foreground">
-                      {String((item as Record<string, unknown>)[fields[1]?.key] ?? "")}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => startEdit(item)}
-                      className="grid h-8 w-8 place-items-center rounded-lg hover:bg-muted"
-                    >
-                      <Pencil className="h-4 w-4 text-muted-foreground" />
-=======
-                  <div className="min-w-0 flex-1 text-[13px] font-light">
+<div className="min-w-0 flex-1 text-[13px] font-light">
                     <p className="break-words text-text-strong">{String((item as Record<string, unknown>)[fields[0].key] ?? "")}</p>
                     <p className="break-words text-text-subtle">{String((item as Record<string, unknown>)[fields[1]?.key] ?? "")}</p>
                   </div>
                   <div className="flex items-center gap-1">
                     <button onClick={() => startEdit(item)} className="grid h-8 w-8 place-items-center rounded-lg hover:bg-surface-2">
                       <Pencil className="h-4 w-4 text-text-subtle" />
->>>>>>> origin/feature/fase-4
                     </button>
                     <button
                       onClick={() => remove.mutate(item.id)}
@@ -590,19 +476,7 @@ function SubList<T extends { id: string }>({
               </div>
             ))
           )}
-<<<<<<< HEAD
-          <Button
-            variant="outline"
-            className="w-full gap-1.5"
-            onClick={() => {
-              setEditingId("__new__");
-              setForm({ ...newItem });
-              setCurrentlyHere(false);
-            }}
-          >
-=======
-          <Button size="sm" variant="outline" className="w-full gap-1.5" onClick={() => { setEditingId("__new__"); setForm({ ...newItem }); setCurrentlyHere(false); }}>
->>>>>>> origin/feature/fase-4
+<Button size="sm" variant="outline" className="w-full gap-1.5" onClick={() => { setEditingId("__new__"); setForm({ ...newItem }); setCurrentlyHere(false); }}>
             <Plus className="h-4 w-4" /> Adicionar
           </Button>
         </>
