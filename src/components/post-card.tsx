@@ -1,36 +1,27 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
-
-import { useQueries, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-
 import {
-  BookOpen,
-  Bookmark,
-  Briefcase,
-  Flag,
-  FolderGit2,
   Heart,
-  HelpCircle,
-  Lightbulb,
-  MessageSquare,
+  MessageCircle,
+  Bookmark,
   Share2,
+  Lightbulb,
+  HelpCircle,
+  Briefcase,
+  FolderGit2,
+  BookOpen,
+  Flag,
+  Send,
 } from "lucide-react";
-
-import {
-  REACTION_EMOJIS,
-  commentsApi,
-  feedApi,
-  mediaApi,
-  profileApi,
-  reactionsApi,
-  reportsApi,
-} from "@/lib/api";
-import type { CommentView, PostView, ReactionType } from "@/lib/api";
-import { resolveCdnUrl } from "@/lib/api/media";
+import { useMemo, useState, useEffect, type FormEvent } from "react";
+import { useQuery, useQueries } from "@tanstack/react-query";
 import { useAuth } from "@/lib/use-auth";
-
+import { UserAvatar } from "@/components/user-avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { MentionTextarea } from "@/components/mention-textarea";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -38,51 +29,27 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
-
-import { MentionTextarea } from "@/components/mention-textarea";
-import { UserAvatar } from "@/components/user-avatar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { commentsApi, reactionsApi, mediaApi, profileApi, reportsApi, feedApi, REACTION_EMOJIS } from "@/lib/api";
+import type { PostView, CommentView, ReactionType } from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
 
 const typeMeta: Record<
   PostView["type"],
-  { label: string; icon: React.ElementType; className: string }
+  { label: string; icon: React.ElementType }
 > = {
-  INSIGHT: {
-    label: "Insight",
-    icon: Lightbulb,
-    className: "bg-highlight-insight text-highlight-insight-text",
-  },
-  QUESTION: {
-    label: "Pergunta",
-    icon: HelpCircle,
-    className: "bg-secondary/30 text-secondary-foreground",
-  },
-  PROJECT: {
-    label: "Projeto",
-    icon: FolderGit2,
-    className: "bg-highlight-project text-highlight-project-text",
-  },
-  OPPORTUNITY: {
-    label: "Oportunidade",
-    icon: Briefcase,
-    className: "bg-opportunity/20 text-opportunity-foreground",
-  },
-  ARTICLE: {
-    label: "Artigo",
-    icon: BookOpen,
-    className: "bg-highlight-article text-highlight-article-text",
-  },
+  INSIGHT: { label: "Insight", icon: Lightbulb },
+  QUESTION: { label: "Pergunta", icon: HelpCircle },
+  PROJECT: { label: "Projeto", icon: FolderGit2 },
+  OPPORTUNITY: { label: "Oportunidade", icon: Briefcase },
+  ARTICLE: { label: "Artigo", icon: BookOpen },
 };
 
-function ReactionsSummary({
-  postId,
-  reactionStatus,
-}: {
-  postId: string;
-  reactionStatus: string | null;
-}) {
+function ReactionsSummary({ postId, reactionStatus }: { postId: string; reactionStatus: string | null }) {
   const { data } = useQuery({
     queryKey: ["reactions-summary", postId],
     queryFn: () => reactionsApi.listReactions(postId),
@@ -100,10 +67,8 @@ function ReactionsSummary({
       {entries.map(([type, count]) => (
         <span
           key={type}
-          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs tabular-nums ${
-            reactionStatus === type
-              ? "bg-primary-soft text-primary"
-              : "bg-muted text-muted-foreground"
+          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-light tabular-nums ${
+            reactionStatus === type ? "bg-surface-2 text-primary" : "border border-border-soft text-text-subtle"
           }`}
         >
           {REACTION_EMOJIS[type] ?? type} {count}
@@ -133,13 +98,9 @@ function ReactionsDialog({
   });
 
   const apiReactions = data?.reactions ?? [];
-  const reactions =
-    currentUserReaction && currentUserId && !apiReactions.some((r) => r.userId === currentUserId)
-      ? [
-          { userId: currentUserId, type: currentUserReaction, createdAt: new Date().toISOString() },
-          ...apiReactions,
-        ]
-      : apiReactions;
+  const reactions = currentUserReaction && currentUserId && !apiReactions.some((r) => r.userId === currentUserId)
+    ? [{ userId: currentUserId, type: currentUserReaction, createdAt: new Date().toISOString() }, ...apiReactions]
+    : apiReactions;
 
   const uniqueUserIds = [...new Set(reactions.map((r) => r.userId))];
   const { data: users } = useQuery({
@@ -148,7 +109,9 @@ function ReactionsDialog({
       const results = await Promise.all(
         uniqueUserIds.map((id) => profileApi.getById(id).catch(() => null)),
       );
-      return Object.fromEntries(results.filter(Boolean).map((u) => [u!.id, u!]));
+      return Object.fromEntries(
+        results.filter(Boolean).map((u) => [u!.id, u!]),
+      );
     },
     enabled: open && uniqueUserIds.length > 0,
   });
@@ -157,22 +120,19 @@ function ReactionsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Reações</DialogTitle>
+          <DialogTitle className="font-light">Reações</DialogTitle>
         </DialogHeader>
         {reactions.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">Nenhuma reação ainda</p>
+          <p className="py-8 text-center text-[13px] font-light text-text-subtle">Nenhuma reação ainda</p>
         ) : (
           <div className="space-y-2 pt-2">
             {reactions.map((r) => {
               const user = users?.[r.userId];
               return (
-                <div
-                  key={`${r.userId}-${r.type}`}
-                  className="flex items-center gap-3 rounded-xl bg-muted/30 p-3"
-                >
+                <div key={`${r.userId}-${r.type}`} className="flex items-center gap-3 rounded-xl bg-surface-1 p-3">
                   <UserAvatar src={user?.avatar} alt={user?.name} className="h-9 w-9 shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{user?.name ?? "Carregando..."}</p>
+                    <p className="truncate text-[13px] font-light text-text-strong">{user?.name ?? "Carregando..."}</p>
                   </div>
                   <span className="text-xl">{REACTION_EMOJIS[r.type] ?? r.type}</span>
                 </div>
@@ -229,15 +189,15 @@ function ReportDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Denunciar post</DialogTitle>
+          <DialogTitle className="font-light">Denunciar post</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Motivo</Label>
+            <Label className="text-[11px] font-light text-text-subtle">Motivo</Label>
             <select
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-10 border-transparent bg-muted"
+              className="flex h-10 w-full rounded-xl border border-border-soft bg-surface-1 px-3 py-2 text-[13px] font-light text-text-strong"
             >
               {REPORT_REASONS.map((r) => (
                 <option key={r} value={r}>
@@ -247,12 +207,12 @@ function ReportDialog({
             </select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Descrição (opcional)</Label>
+            <Label className="text-[11px] font-light text-text-subtle">Descrição (opcional)</Label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="h-10 border-transparent bg-muted"
+              className="border-border-soft bg-surface-1 text-[13px] font-light"
             />
           </div>
           <Button className="w-full rounded-full" onClick={submit}>
@@ -267,6 +227,7 @@ function ReportDialog({
 export function PostCard({ post }: { post: PostView }) {
   const { user: currentUser } = useAuth();
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
+  const Icon = meta.icon;
   const [showComments, setShowComments] = useState(false);
   const [draft, setDraft] = useState("");
   const [commentMentions, setCommentMentions] = useState<string[]>([]);
@@ -381,23 +342,16 @@ export function PostCard({ post }: { post: PostView }) {
   };
 
   return (
-    <article className="min-w-0 surface-card p-4 transition hover:shadow-[var(--shadow-card)] sm:p-5">
-      <header className="flex justify-between items-start gap-3 ">
-        <AuthorInfo
-          authorUsername={post.authorUsername}
-          authorName={post.authorName}
-          authorAvatar={post.authorAvatar}
-          createdAt={post.createdAt}
-          fallbackClassName={meta.className}
-        />
-        <span
-          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${meta.className}`}
-        >
+    <article className="min-w-0 rounded-2xl border border-border-soft bg-surface-card p-4 transition sm:p-5">
+      <header className="flex items-start gap-3">
+        <AuthorInfo authorUsername={post.authorUsername} authorName={post.authorName} authorAvatar={post.authorAvatar} createdAt={post.createdAt} />
+        <span className="inline-flex items-center gap-1 rounded-full border border-border-soft px-2.5 py-1 text-[11px] font-light text-text-subtle">
+          <Icon className="h-3 w-3" />
           {meta.label}
         </span>
       </header>
 
-      <p className="mt-4 whitespace-pre-line break-words text-[15px] leading-relaxed text-foreground">
+      <p className="mt-4 whitespace-pre-line break-words text-[15px] font-light leading-relaxed text-text-strong">
         {linkifyText(post.content)}
       </p>
 
@@ -417,7 +371,7 @@ export function PostCard({ post }: { post: PostView }) {
             <Badge
               key={t}
               variant="secondary"
-              className="rounded-full bg-muted font-normal text-muted-foreground"
+              className="rounded-full border border-border-soft bg-transparent font-light text-text-subtle"
             >
               #{t}
             </Badge>
@@ -425,94 +379,79 @@ export function PostCard({ post }: { post: PostView }) {
         </div>
       )}
 
-      <footer className="mt-4 flex justify-between flex-wrap items-center gap-1 border-t border-border pt-3 text-sm text-muted-foreground">
-        <div className="flex">
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
-                  reactionStatus ? "text-primary" : ""
-                }`}
-                title={reactionStatus ? `Reagiu com ${REACTION_EMOJIS[reactionStatus]}` : "Reagir"}
-              >
-                {reactionStatus ? (
-                  <span className="text-base leading-none">{REACTION_EMOJIS[reactionStatus]}</span>
-                ) : (
-                  <Heart className="h-4 w-4" />
-                )}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent
-              align="start"
-              side="top"
-              className="w-fit rounded-2xl border-border p-1.5"
+      <footer className="mt-4 flex flex-wrap items-center gap-4 border-t border-border-soft pt-3 text-[13px] font-light text-text-subtle">
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              className={`flex items-center gap-1.5 transition hover:text-primary ${
+                reactionStatus ? "text-primary" : ""
+              }`}
+              title={reactionStatus ? `Reagiu com ${REACTION_EMOJIS[reactionStatus]}` : "Reagir"}
             >
-              <div className="flex gap-1">
-                {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(
-                  ([type, emoji]) => (
-                    <button
-                      key={type}
-                      onClick={() => handleReaction(type)}
-                      className={`rounded-lg px-2 py-1 text-xl transition hover:bg-muted ${
-                        reactionStatus === type ? "bg-muted ring-1 ring-primary" : ""
-                      }`}
-                      title={type.toLowerCase()}
-                    >
-                      {emoji}
-                    </button>
-                  ),
-                )}
-              </div>
-            </PopoverContent>
-          </Popover>
-          <button
-            onClick={() => setShowReactions(true)}
-            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs tabular-nums transition hover:bg-muted hover:text-foreground text-muted-foreground"
-          >
-            {postCounters.reactions}
-          </button>
-          <button
-            onClick={loadComments}
-            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
-          >
-            <MessageSquare className="h-4 w-4" /> {totalComments}
-          </button>
-
-          <button
-            onClick={handleShare}
-            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
-          >
-            <Share2 className="h-4 w-4" /> Compartilhar
-          </button>
-          <button
-            onClick={() => setShowReport(true)}
-            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
-          >
-            <Flag className="h-4 w-4" />
-          </button>
-        </div>
-
+              {reactionStatus ? (
+                <span className="text-base leading-none">{REACTION_EMOJIS[reactionStatus]}</span>
+              ) : (
+                <Heart className="h-4 w-4" />
+              )}
+              <span className="tabular-nums">{postCounters.reactions}</span>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent align="start" side="top" className="w-fit rounded-2xl border-border-soft bg-surface-card p-1.5">
+            <div className="flex gap-1">
+              {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(([type, emoji]) => (
+                <button
+                  key={type}
+                  onClick={() => handleReaction(type)}
+                  className={`rounded-lg px-2 py-1 text-xl transition hover:bg-surface-2 ${
+                    reactionStatus === type ? "bg-surface-2 ring-1 ring-primary" : ""
+                  }`}
+                  title={type.toLowerCase()}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
+        <button
+          onClick={() => setShowReactions(true)}
+          className="tabular-nums transition hover:text-primary"
+        >
+          ver reações
+        </button>
+        <button
+          onClick={loadComments}
+          className="flex items-center gap-1.5 transition hover:text-primary"
+        >
+          <MessageCircle className="h-4 w-4" /> {totalComments}
+        </button>
         <button
           onClick={handleSave}
-          className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
+          className={`flex items-center gap-1.5 transition hover:text-primary ${
             saved ? "text-primary" : ""
           }`}
         >
-          <Bookmark className={`h-4 w-4`} /> {postCounters.saves}
+          <Bookmark className="h-4 w-4" /> {postCounters.saves}
+        </button>
+        <button
+          onClick={handleShare}
+          className="flex items-center gap-1.5 transition hover:text-primary"
+        >
+          <Share2 className="h-4 w-4" /> Compartilhar
+        </button>
+        <button
+          onClick={() => setShowReport(true)}
+          className="ml-auto flex items-center gap-1.5 transition hover:text-amber-500"
+        >
+          <Flag className="h-4 w-4" />
         </button>
       </footer>
 
-      <ReactionsDialog
-        postId={post.id}
-        currentUserReaction={reactionStatus}
-        currentUserId={currentUser?.id}
-        open={showReactions}
-        onOpenChange={setShowReactions}
-      />
+      <ReactionsDialog postId={post.id} currentUserReaction={reactionStatus} currentUserId={currentUser?.id} open={showReactions} onOpenChange={setShowReactions} />
       <ReportDialog postId={post.id} open={showReport} onOpenChange={setShowReport} />
 
       {showComments && (
-        <section className="mt-4 border-t border-border pt-4">
+        <section className="mt-4 border-t border-border-soft pt-4">
           <div className="space-y-3">
             {localComments
               .filter((c) => !c.parentCommentId)
@@ -538,11 +477,9 @@ export function PostCard({ post }: { post: PostView }) {
                       }}
                     />
                     {replies.length > 0 && (
-                      <div className="ml-10 mt-2 space-y-2 border-l-2 border-border pl-4">
+                      <div className="ml-10 mt-2 space-y-2 border-l-2 border-border-soft pl-4">
                         {replies.map((reply) => {
-                          const parentAuthor = localComments.find(
-                            (c) => c.id === reply.parentCommentId,
-                          )?.authorName;
+                          const parentAuthor = localComments.find((c) => c.id === reply.parentCommentId)?.authorName;
                           return (
                             <CommentItem
                               key={reply.id}
@@ -571,31 +508,32 @@ export function PostCard({ post }: { post: PostView }) {
                 );
               })}
             {localComments.filter((c) => !c.parentCommentId).length === 0 && (
-              <p className="py-4 text-center text-sm text-muted-foreground">
+              <p className="py-4 text-center text-[13px] font-light text-text-subtle">
                 Nenhum comentário ainda. Seja o primeiro a comentar.
               </p>
             )}
           </div>
 
-          <form onSubmit={submitComment} className="mt-4 flex items-center gap-2">
-            <UserAvatar
-              src={currentUser?.avatar}
-              alt={currentUser?.name}
-              className="h-8 w-8 shrink-0"
-            />
-            <MentionTextarea
-              value={draft}
-              onChange={(val, ids) => {
-                setDraft(val);
-                setCommentMentions(ids);
-              }}
-              placeholder="Comente com contexto, dúvida ou referência..."
-              className="h-10 resize-none rounded-full bg-muted px-4 py-2 text-sm outline-none"
-              maxLength={280}
-            />
-            <Button type="submit" size="sm" className="rounded-full" disabled={!draft.trim()}>
-              Enviar
-            </Button>
+          <form onSubmit={submitComment} className="mt-4 flex items-center gap-2.5">
+            <UserAvatar src={currentUser?.avatar} alt={currentUser?.name} className="h-8 w-8 shrink-0" />
+            <div className="flex flex-1 items-center gap-2 rounded-full border border-border-soft bg-surface-1 py-1.5 pl-4 pr-1.5">
+              <MentionTextarea
+                value={draft}
+                onChange={(val, ids) => { setDraft(val); setCommentMentions(ids); }}
+                placeholder="Comente com contexto, dúvida ou referência..."
+                className="h-6 min-h-6 flex-1 resize-none border-0 bg-transparent p-0 text-[13px] font-light outline-none"
+                maxLength={280}
+              />
+              <Button
+                type="submit"
+                size="icon"
+                className="h-7 w-7 shrink-0 rounded-full"
+                disabled={!draft.trim()}
+                aria-label="Enviar comentário"
+              >
+                <Send className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </form>
         </section>
       )}
@@ -632,57 +570,49 @@ function CommentItem({
   };
 
   return (
-    <div className="flex gap-3">
-      <UserAvatar
-        src={comment.authorAvatar}
-        alt={comment.authorName}
-        className="h-8 w-8 shrink-0"
-      />
+    <div className="flex gap-2.5">
+      <UserAvatar src={comment.authorAvatar} alt={comment.authorName} className="h-8 w-8 shrink-0" />
       <div className="min-w-0 flex-1">
-        <div className="rounded-2xl bg-muted/60 px-3 py-2">
+        <div className="rounded-xl bg-surface-1 px-3 py-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-semibold">{comment.authorName}</span>
+            <span className="text-[12px] font-medium text-text-strong">{comment.authorName}</span>
             {replyingTo && (
-              <span className="text-[11px] text-muted-foreground">respondendo a {replyingTo}</span>
+              <span className="text-[11px] font-light text-text-subtle">
+                respondendo a {replyingTo}
+              </span>
             )}
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-[11px] font-light text-text-subtle">
               {formatTime(comment.createdAt)}
             </span>
           </div>
-          <p className="mt-1 break-words text-sm leading-relaxed">{linkifyText(comment.content)}</p>
+          <p className="mt-0.5 break-words text-[13px] font-light leading-relaxed text-text-strong">{linkifyText(comment.content)}</p>
         </div>
-        <div className="mt-1 flex items-center gap-2 px-3 text-[11px] font-medium text-muted-foreground">
+        <div className="mt-1 flex items-center gap-3 px-3 text-[11px] font-light text-text-subtle">
           <button
             onClick={() => onReply?.(comment)}
-            className="transition-colors hover:text-foreground"
+            className="transition-colors hover:text-primary"
           >
             Responder
           </button>
           <Popover>
             <PopoverTrigger asChild>
-              <button className="transition-colors hover:text-foreground">
+              <button className="transition-colors hover:text-primary">
                 {commentReaction ? REACTION_EMOJIS[commentReaction] : "Reagir"}
               </button>
             </PopoverTrigger>
-            <PopoverContent
-              align="start"
-              side="top"
-              className="w-fit rounded-2xl border-border p-1.5"
-            >
+            <PopoverContent align="start" side="top" className="w-fit rounded-2xl border-border-soft bg-surface-card p-1.5">
               <div className="flex gap-1">
-                {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(
-                  ([type, emoji]) => (
-                    <button
-                      key={type}
-                      onClick={() => handleCommentReaction(type)}
-                      className={`rounded-lg px-2 py-1 text-lg transition hover:bg-muted ${
-                        commentReaction === type ? "bg-muted ring-1 ring-primary" : ""
-                      }`}
-                    >
-                      {emoji}
-                    </button>
-                  ),
-                )}
+                {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(([type, emoji]) => (
+                  <button
+                    key={type}
+                    onClick={() => handleCommentReaction(type)}
+                    className={`rounded-lg px-2 py-1 text-lg transition hover:bg-surface-2 ${
+                      commentReaction === type ? "bg-surface-2 ring-1 ring-primary" : ""
+                    }`}
+                  >
+                    {emoji}
+                  </button>
+                ))}
               </div>
             </PopoverContent>
           </Popover>
@@ -705,34 +635,27 @@ function AuthorInfo({
   authorName,
   authorAvatar,
   createdAt,
-  fallbackClassName,
 }: {
   authorUsername: string;
   authorName: string;
   authorAvatar: string | null;
   createdAt: string;
-  fallbackClassName?: string;
 }) {
   return (
     <div className="flex items-start gap-3">
       <Link to="/perfil/$username" params={{ username: authorUsername }}>
-        <UserAvatar
-          src={authorAvatar}
-          alt={authorName}
-          className="h-11 w-11"
-          fallbackClassName={fallbackClassName}
-        />
+        <UserAvatar src={authorAvatar} alt={authorName} className="h-11 w-11" />
       </Link>
       <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
           <Link
             to="/perfil/$username"
             params={{ username: authorUsername }}
-            className="font-semibold hover:underline"
+            className="text-[14px] font-light text-text-strong hover:underline"
           >
             {authorName}
           </Link>
-          <span className="text-xs text-muted-foreground">· {formatTime(createdAt)}</span>
+          <span className="text-[12px] font-light text-text-subtle">· {formatTime(createdAt)}</span>
         </div>
       </div>
     </div>
@@ -751,17 +674,17 @@ function EmbedPlayer({ type, id, url }: { type: string; id: string; url: string 
       <button
         type="button"
         onClick={() => setPlaying(true)}
-        className="relative mt-3 block w-full overflow-hidden rounded-xl border border-border text-left transition hover:opacity-90"
+        className="relative mt-3 block w-full overflow-hidden rounded-xl border border-border-soft text-left transition hover:opacity-90"
       >
         {thumbnail ? (
-          <img src={thumbnail} alt="" className="aspect-video w-full bg-muted object-cover" />
+          <img src={thumbnail} alt="" className="aspect-video w-full bg-surface-1 object-cover" />
         ) : (
-          <div className="flex aspect-video w-full items-center justify-center bg-muted">
+          <div className="flex aspect-video w-full items-center justify-center bg-surface-1">
             <div className="text-center">
               <p className="text-2xl">
                 {type === "vimeo" ? "🎬" : type === "twitch" ? "📺" : "▶️"}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-[12px] font-light text-text-subtle">
                 Clique para assistir no {type === "youtube" ? "YouTube" : type}
               </p>
             </div>
@@ -786,7 +709,7 @@ function EmbedPlayer({ type, id, url }: { type: string; id: string; url: string 
   };
 
   return (
-    <div className="mt-3 overflow-hidden rounded-xl border border-border bg-muted">
+    <div className="mt-3 overflow-hidden rounded-xl border border-border-soft bg-surface-1">
       <iframe
         src={srcs[type] ?? ""}
         className="aspect-video w-full"
@@ -819,28 +742,16 @@ function LinkPreviews({ content }: { content: string }) {
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-2 flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm transition hover:bg-muted"
+            className="mt-2 flex items-center gap-3 rounded-xl border border-border-soft bg-surface-1 px-4 py-3 text-[13px] font-light transition hover:bg-surface-3"
           >
-            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary-soft text-xs font-bold text-primary">
-              {(() => {
-                try {
-                  return new URL(url).hostname.slice(0, 2).toUpperCase();
-                } catch {
-                  return "🌐";
-                }
-              })()}
+            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-surface-2 text-xs font-bold text-primary">
+              {(() => { try { return new URL(url).hostname.slice(0, 2).toUpperCase(); } catch { return "🌐"; } })()}
             </div>
             <div className="min-w-0">
-              <p className="truncate font-medium text-foreground">
-                {(() => {
-                  try {
-                    return new URL(url).hostname;
-                  } catch {
-                    return url;
-                  }
-                })()}
+              <p className="truncate font-normal text-text-strong">
+                {(() => { try { return new URL(url).hostname; } catch { return url; } })()}
               </p>
-              <p className="truncate text-xs text-muted-foreground">{url}</p>
+              <p className="truncate text-[11px] font-light text-text-subtle">{url}</p>
             </div>
           </a>
         );
@@ -943,8 +854,8 @@ function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
 
   if (isVideo) {
     return (
-      <div className="overflow-hidden rounded-xl border border-border">
-        <video src={resolveCdnUrl(items[0].cdnUrl)} controls className="max-h-96 w-full bg-muted" />
+      <div className="overflow-hidden rounded-xl border border-border-soft">
+        <video src={resolveCdnUrl(items[0].cdnUrl)} controls className="max-h-96 w-full bg-surface-1" />
       </div>
     );
   }
@@ -957,13 +868,9 @@ function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
             key={m.id}
             type="button"
             onClick={() => setFullscreenUrl(resolveCdnUrl(m.cdnUrl) ?? null)}
-            className="overflow-hidden rounded-xl border border-border text-left"
+            className="overflow-hidden rounded-xl border border-border-soft text-left"
           >
-            <img
-              src={resolveCdnUrl(m.cdnUrl)}
-              alt=""
-              className="h-48 w-full object-cover bg-muted transition hover:scale-105"
-            />
+            <img src={resolveCdnUrl(m.cdnUrl)} alt="" className="h-48 w-full object-cover bg-surface-1 transition hover:scale-105" />
           </button>
         ))}
       </div>

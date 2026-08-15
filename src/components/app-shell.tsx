@@ -1,39 +1,34 @@
-import { type ReactNode, useEffect, useMemo, useRef, useState } from "react";
-
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
-  AtSign,
-  Bell,
-  Bookmark,
-  Briefcase,
-  Calendar,
-  CheckCheck,
-  Compass,
-  GraduationCap,
-  Heart,
   Home,
-  Loader2,
-  LogIn,
+  Users,
   MessageCircle,
+  Briefcase,
+  GraduationCap,
+  Calendar,
+  Bell,
   Search,
   Sparkles,
+  Compass,
+  CheckCheck,
+  AtSign,
   UserPlus,
-  Users,
+  Loader2,
+  LogIn,
+  Bookmark,
+  Heart,
 } from "lucide-react";
-
-import { networkApi, notificationsApi, profileApi, searchApi } from "@/lib/api";
-import type { Notification } from "@/lib/api";
-import { isAuthenticated } from "@/lib/use-auth";
-import { cn } from "@/lib/utils";
-
-import { Button } from "@/components/ui/button";
+import { useMemo, useState, useRef, useEffect, type ReactNode } from "react";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-
-import { ThemeToggle } from "@/components/theme-toggle";
 import { UserAvatar } from "@/components/user-avatar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
+import { profileApi, notificationsApi, searchApi, networkApi } from "@/lib/api";
+import { isAuthenticated } from "@/lib/use-auth";
+import type { Notification } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
 function navigateToHref(
   href: string,
@@ -83,15 +78,7 @@ function navigateToHref(
       return;
     }
   }
-  const listRoutes = [
-    "/feed",
-    "/rede",
-    "/mensagens",
-    "/vagas",
-    "/comunidades",
-    "/eventos",
-    "/mentoria",
-  ] as const;
+  const listRoutes = ["/feed", "/rede", "/mensagens", "/vagas", "/comunidades", "/eventos", "/mentoria"] as const;
   for (const route of listRoutes) {
     if (href === route || href.startsWith(route + "/")) {
       navigate({ to: route });
@@ -130,6 +117,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const authenticated = isAuthenticated();
+  const [notifTab, setNotifTab] = useState<"novas" | "historico">("novas");
 
   const { data: profile } = useQuery({
     queryKey: ["me"],
@@ -162,20 +150,24 @@ export function AppShell({ children }: { children: ReactNode }) {
     () => notificationList.filter((n) => !n.read).length,
     [notificationList],
   );
+  const displayedNotifications = useMemo(
+    () => notificationList.filter((n) => (notifTab === "novas" ? !n.read : n.read)),
+    [notificationList, notifTab],
+  );
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-40 border-b border-border bg-background/85 backdrop-blur-xl">
+      <header className="sticky top-0 z-40 border-b border-border-soft bg-surface-card/90 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-3 sm:h-16 sm:gap-4 sm:px-6">
-          <Link to="/feed" className="flex items-center gap-2">
+          <Link to="/feed" className="flex shrink-0 items-center gap-2">
             <div
-              className="grid h-9 w-9 place-items-center rounded-xl text-primary-foreground"
+              className="grid h-8 w-8 place-items-center rounded-xl text-primary-foreground sm:h-9 sm:w-9"
               style={{ background: "var(--gradient-primary)" }}
             >
               <Sparkles className="h-4 w-4" />
             </div>
-            <span className="text-lg font-semibold tracking-tight">
-              É<span className="gradient-text">nóis</span>
+            <span className="text-[17px] font-light tracking-tight text-text-strong">
+              Conexão
             </span>
           </Link>
 
@@ -188,56 +180,86 @@ export function AppShell({ children }: { children: ReactNode }) {
                 <Popover>
                   <PopoverTrigger asChild>
                     <button
-                      className="relative grid h-10 w-10 place-items-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                      className="relative grid h-10 w-10 place-items-center rounded-full text-text-subtle transition hover:bg-surface-2 hover:text-primary"
                       aria-label={
                         unreadCount > 0 ? `${unreadCount} notificações não lidas` : "Notificações"
                       }
                     >
                       <Bell className="h-5 w-5" />
                       {unreadCount > 0 && (
-                        <span className="absolute right-1.5 top-1.5 grid min-h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-semibold leading-none text-primary-foreground ring-2 ring-background">
-                          {unreadCount}
+                        <span className="absolute right-1.5 top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-[8px] font-medium leading-none text-primary-foreground">
+                          {unreadCount > 9 ? "9+" : unreadCount}
                         </span>
                       )}
                     </button>
                   </PopoverTrigger>
                   <PopoverContent
                     align="end"
-                    className="w-[min(calc(100vw-2rem),24rem)] overflow-hidden rounded-2xl p-0"
+                    className="w-[min(calc(100vw-2rem),24rem)] overflow-hidden rounded-2xl border-border-soft bg-surface-card p-0 shadow-card"
                   >
-                    <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
-                      <div>
-                        <p className="text-sm font-semibold">Notificações</p>
-                        <p className="text-xs text-muted-foreground">
-                          {unreadCount > 0
-                            ? `${unreadCount} pendente${unreadCount > 1 ? "s" : ""}`
-                            : "Tudo lido por aqui"}
-                        </p>
-                      </div>
+                    <div className="flex items-center justify-between gap-3 border-b border-border-soft px-4 py-3">
+                      <span className="text-[14px] font-light text-text-strong">Notificações</span>
+                      {unreadCount > 0 && notifTab === "novas" && (
+                        <button
+                          type="button"
+                          onClick={() => markAllAsRead.mutate()}
+                          className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-light text-text-subtle transition hover:text-primary"
+                        >
+                          <CheckCheck className="h-3 w-3" />
+                          Ler tudo
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="flex border-b border-border-soft">
                       <button
                         type="button"
-                        onClick={() => markAllAsRead.mutate()}
-                        disabled={unreadCount === 0}
-                        className="inline-flex h-8 items-center gap-1.5 rounded-full px-2.5 text-xs font-medium text-primary transition hover:bg-primary-soft disabled:pointer-events-none disabled:text-muted-foreground"
+                        onClick={() => setNotifTab("novas")}
+                        className={cn(
+                          "flex flex-1 items-center justify-center gap-1.5 py-2.5 text-[12px] font-light transition",
+                          notifTab === "novas"
+                            ? "border-b-2 border-primary text-primary"
+                            : "text-text-subtle hover:text-text-strong",
+                        )}
                       >
-                        <CheckCheck className="h-3.5 w-3.5" />
-                        Marcar lidas
+                        Novas
+                        {unreadCount > 0 && (
+                          <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] text-primary-foreground">
+                            {unreadCount}
+                          </span>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setNotifTab("historico")}
+                        className={cn(
+                          "flex-1 py-2.5 text-[12px] font-light transition",
+                          notifTab === "historico"
+                            ? "border-b-2 border-primary text-primary"
+                            : "text-text-subtle hover:text-text-strong",
+                        )}
+                      >
+                        Histórico
                       </button>
                     </div>
 
                     <div className="max-h-[28rem] overflow-y-auto">
-                      {notificationList.map((notification) => {
+                      {displayedNotifications.length === 0 && (
+                        <p className="px-4 py-8 text-center text-[13px] font-light text-text-subtle">
+                          {notifTab === "novas" ? "Nenhuma notificação nova." : "Nenhum histórico ainda."}
+                        </p>
+                      )}
+                      {displayedNotifications.map((notification) => {
                         const meta =
-                          notificationMeta[notification.kind.toLowerCase()] ??
-                          notificationMeta.connection;
+                          notificationMeta[notification.kind.toLowerCase()] ?? notificationMeta.connection;
                         const Icon = meta.icon;
 
                         return (
                           <div
                             key={notification.id}
                             className={cn(
-                              "border-b border-border px-4 py-3 last:border-b-0",
-                              notification.read ? "bg-popover" : "bg-primary-soft/40",
+                              "border-b border-border-soft px-4 py-3 last:border-b-0",
+                              notification.read ? "bg-surface-card" : "bg-surface-3",
                             )}
                           >
                             <div className="flex items-start gap-3">
@@ -268,11 +290,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                               </button>
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-start justify-between gap-2">
-                                  <p className="text-sm font-semibold leading-tight">
+                                  <p className="text-[13px] font-light leading-tight text-text-strong">
                                     {notification.actorName && (
                                       <span>{notification.actorName} </span>
                                     )}
-                                    <span className="font-normal text-muted-foreground">
+                                    <span className="text-text-subtle">
                                       {notification.title.toLowerCase()}
                                     </span>
                                   </p>
@@ -280,11 +302,11 @@ export function AppShell({ children }: { children: ReactNode }) {
                                     <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />
                                   )}
                                 </div>
-                                <p className="mt-1 break-words text-sm leading-snug text-muted-foreground">
+                                <p className="mt-1 break-words text-[13px] font-light leading-snug text-text-subtle">
                                   {notification.body}
                                 </p>
                                 <div className="mt-3 flex items-center justify-between gap-2">
-                                  <span className="text-xs text-muted-foreground">
+                                  <span className="text-[11px] font-light text-text-subtle">
                                     {formatTime(notification.createdAt)}
                                   </span>
                                   <div className="flex items-center gap-2">
@@ -292,13 +314,12 @@ export function AppShell({ children }: { children: ReactNode }) {
                                       <button
                                         type="button"
                                         onClick={() => markAsRead.mutate(notification.id)}
-                                        className="rounded-full px-2 py-1 text-xs font-medium text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                                        className="rounded-full px-2 py-1 text-[11px] font-light text-text-subtle transition hover:bg-surface-2 hover:text-text-strong"
                                       >
                                         Lida
                                       </button>
                                     )}
-                                    {notification.ctaLabel === "Aceitar" &&
-                                      !!notification.actorId ? (
+                                    {notification.ctaLabel === "Aceitar" && !!notification.actorId ? (
                                       <button
                                         type="button"
                                         onClick={async () => {
@@ -306,17 +327,14 @@ export function AppShell({ children }: { children: ReactNode }) {
                                             markAsRead.mutate(notification.id);
                                           try {
                                             await networkApi.accept(notification.actorId!);
-                                            queryClient.invalidateQueries({
-                                              queryKey: ["network"],
-                                            });
-                                          } catch { }
+                                            queryClient.invalidateQueries({ queryKey: ["network"] });
+                                          } catch {}
                                         }}
-                                        className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground transition hover:bg-primary/90"
+                                        className="rounded-full bg-primary px-3 py-1 text-[11px] font-light text-primary-foreground transition hover:bg-primary/90"
                                       >
                                         Aceitar
                                       </button>
-                                    ) : notification.ctaLabel &&
-                                      notification.ctaLabel !== "Aceitar" ? (
+                                    ) : notification.ctaLabel && notification.ctaLabel !== "Aceitar" ? (
                                       <button
                                         type="button"
                                         onClick={() => {
@@ -324,7 +342,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                                             markAsRead.mutate(notification.id);
                                           navigateToHref(notification.href, navigate);
                                         }}
-                                        className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground transition hover:bg-primary/90"
+                                        className="rounded-full bg-primary px-3 py-1 text-[11px] font-light text-primary-foreground transition hover:bg-primary/90"
                                       >
                                         {notification.ctaLabel}
                                       </button>
@@ -344,10 +362,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <Link
                     to="/perfil/$username"
                     params={{ username: profile.username }}
-                    className="flex items-center gap-2 rounded-full p-1 pr-3 transition hover:bg-muted"
+                    className="flex items-center gap-2 rounded-full p-1 pr-3 transition hover:bg-surface-2"
                   >
                     <UserAvatar src={profile.avatar} alt={profile.name} className="h-8 w-8" />
-                    <span className="hidden text-sm font-medium sm:inline">Perfil</span>
+                    <span className="hidden text-[13px] font-light text-text-strong sm:inline">Perfil</span>
                   </Link>
                 )}
               </>
@@ -376,10 +394,10 @@ export function AppShell({ children }: { children: ReactNode }) {
                     key={item.to}
                     to={item.to}
                     className={cn(
-                      "group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition",
+                      "group flex items-center gap-3 rounded-xl border-l-2 py-3 pl-3 pr-3 text-[14px] font-light transition",
                       active
-                        ? "bg-primary-soft text-primary"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                        ? "border-primary bg-surface-2 text-primary"
+                        : "border-transparent text-text-subtle hover:bg-surface-3 hover:text-text-strong",
                     )}
                   >
                     <Icon className={cn("h-4 w-4", active ? "text-primary" : "")} />
@@ -395,7 +413,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       {authenticated && (
-        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
+        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border-soft bg-surface-card/95 backdrop-blur lg:hidden">
           <div className="mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {nav.map((item) => {
               const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
@@ -405,8 +423,8 @@ export function AppShell({ children }: { children: ReactNode }) {
                   key={item.to}
                   to={item.to}
                   className={cn(
-                    "flex min-w-[64px] shrink-0 flex-col items-center gap-0.5 whitespace-nowrap px-2 py-2 text-[10px] font-medium",
-                    active ? "text-primary" : "text-muted-foreground",
+                    "flex min-w-[64px] shrink-0 flex-col items-center gap-0.5 whitespace-nowrap px-2 py-2 text-[10px] font-light",
+                    active ? "text-primary" : "text-text-subtle",
                   )}
                 >
                   <Icon className="h-5 w-5" />
@@ -457,7 +475,7 @@ function SearchBox() {
     <>
       <button
         onClick={() => setMobileOpen(true)}
-        className="ml-auto grid h-9 w-9 place-items-center rounded-full text-muted-foreground transition hover:bg-muted hover:text-foreground md:hidden"
+        className="ml-auto grid h-9 w-9 place-items-center rounded-full text-text-subtle transition hover:bg-surface-2 hover:text-primary md:hidden"
         aria-label="Buscar"
       >
         <Search className="h-4 w-4" />
@@ -474,7 +492,7 @@ function SearchBox() {
           }}
         >
           <div ref={mobileRef} className="relative w-full max-w-md px-4">
-            <Search className="pointer-events-none absolute left-7 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-7 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-text-subtle" />
             <Input
               value={query}
               onChange={(e) => {
@@ -483,16 +501,16 @@ function SearchBox() {
               }}
               onFocus={() => setOpen(true)}
               placeholder="Buscar pessoas, comunidades, vagas..."
-              className="h-12 rounded-full border-border bg-card pl-10 pr-4"
+              className="h-12 rounded-full border-border-soft bg-surface-card pl-10 pr-4 focus-visible:border-primary"
               autoFocus
             />
             {isFetching && (
-              <Loader2 className="absolute right-7 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+              <Loader2 className="absolute right-7 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-text-subtle" />
             )}
             {open && debounced.length >= 2 && (
-              <div className="absolute left-4 right-4 top-full mt-2 overflow-hidden rounded-2xl border border-border bg-popover shadow-lg">
+              <div className="absolute left-4 right-4 top-full mt-2 overflow-hidden rounded-2xl border border-border-soft bg-surface-card shadow-card">
                 {items.length === 0 && !isFetching && (
-                  <p className="px-4 py-6 text-center text-sm text-muted-foreground">
+                  <p className="px-4 py-6 text-center text-sm text-text-subtle">
                     Nenhum resultado para "{debounced}"
                   </p>
                 )}
@@ -506,18 +524,13 @@ function SearchBox() {
                     return (
                       <li key={`${item.type}-${item.id}`}>
                         <button
-                          onClick={() => {
-                            close();
-                            navigateToHref(item.href, navigate);
-                          }}
-                          className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted"
+                          onClick={() => { close(); navigateToHref(item.href, navigate); }}
+                          className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-surface-3"
                         >
                           <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium">{item.title}</p>
-                            <p className="truncate text-xs text-muted-foreground">
-                              {item.subtitle}
-                            </p>
+                            <p className="truncate text-[13px] font-light text-text-strong">{item.title}</p>
+                            <p className="truncate text-xs text-text-subtle">{item.subtitle}</p>
                           </div>
                         </button>
                       </li>
@@ -530,7 +543,7 @@ function SearchBox() {
         </div>
       )}
       <div ref={desktopRef} className="relative ml-2 hidden flex-1 max-w-md md:block">
-        <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-text-subtle" />
         <Input
           value={query}
           onChange={(e) => {
@@ -539,15 +552,15 @@ function SearchBox() {
           }}
           onFocus={() => setOpen(true)}
           placeholder="Buscar pessoas, comunidades, vagas..."
-          className="h-10 rounded-full border-transparent bg-muted pl-9"
+          className="h-10 rounded-full border-border-soft bg-surface-1 pl-9 focus-visible:border-primary"
         />
         {isFetching && (
-          <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+          <Loader2 className="absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-text-subtle" />
         )}
         {open && debounced.length >= 2 && (
-          <div className="absolute left-0 right-0 top-full mt-2 overflow-hidden rounded-2xl border border-border bg-popover shadow-lg">
+          <div className="absolute left-0 right-0 top-full mt-2 overflow-hidden rounded-2xl border border-border-soft bg-surface-card shadow-card">
             {items.length === 0 && !isFetching && (
-              <p className="px-4 py-6 text-center text-sm text-muted-foreground">
+              <p className="px-4 py-6 text-center text-sm text-text-subtle">
                 Nenhum resultado para "{debounced}"
               </p>
             )}
@@ -560,16 +573,13 @@ function SearchBox() {
                 return (
                   <li key={`${item.type}-${item.id}`}>
                     <button
-                      onClick={() => {
-                        close();
-                        navigateToHref(item.href, navigate);
-                      }}
-                      className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-muted"
+                      onClick={() => { close(); navigateToHref(item.href, navigate); }}
+                      className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-surface-3"
                     >
                       <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium">{item.title}</p>
-                        <p className="truncate text-xs text-muted-foreground">{item.subtitle}</p>
+                        <p className="truncate text-[13px] font-light text-text-strong">{item.title}</p>
+                        <p className="truncate text-xs text-text-subtle">{item.subtitle}</p>
                       </div>
                     </button>
                   </li>

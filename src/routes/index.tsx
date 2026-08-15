@@ -1,28 +1,15 @@
-import { Link, createFileRoute } from "@tanstack/react-router";
-
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  ArrowRight,
-  GraduationCap,
-  Heart,
-  MessageCircle,
-  ShieldCheck,
   Sparkles,
   Users,
+  GraduationCap,
+  MessageCircle,
+  ArrowRight,
+  Heart,
+  ShieldCheck,
 } from "lucide-react";
-
 import { Button } from "@/components/ui/button";
-
 import { ThemeToggle } from "@/components/theme-toggle";
-
-import { BaseLayout } from '../components/layouts';
-import { Navbar } from '../components/Navbar';
-import { Rodape } from '../components/Rodape';
-import { Hero } from '../components/Hero';
-import { ProblemSection } from '../components/Problema';
-import { OpenLetterSection } from '../components/CartaAberta';
-import { MidCTASection } from '../components/CTAIntermediario';
-import { FAQSection } from '../components/FAQ';
-import { FooterCTASection } from '../components/Rodape';
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -78,18 +65,16 @@ function Landing() {
               </Button>
             </Link>
             <Link to="/entrar" search={{ tab: "signup" }}>
-              <Button className="h-8 rounded-full px-4 text-sm">Criar conta</Button>
+              <Button className="h-8 rounded-full px-4 text-sm">
+                Criar conta
+              </Button>
             </Link>
           </div>
         </div>
       </header>
 
       <section className="relative overflow-hidden">
-        <div
-          aria-hidden
-          className="absolute inset-0 -z-10"
-          style={{ background: "var(--gradient-soft)" }}
-        />
+        <div aria-hidden className="absolute inset-0 -z-10" style={{ background: "var(--gradient-soft)" }} />
         <div
           aria-hidden
           className="absolute -top-24 left-1/2 -z-10 h-[400px] w-[600px] -translate-x-1/2 rounded-full opacity-30 blur-3xl"
@@ -108,9 +93,7 @@ function Landing() {
             Conexão conecta profissionais por conhecimento, mentoria e propósito, não por métricas
             de popularidade.
           </p>
-          <p className="mt-1 text-sm font-medium text-foreground">
-            100% gratuito. Sem anúncios. Sem planos pagos.
-          </p>
+          <p className="mt-1 text-sm font-medium text-foreground">100% gratuito. Sem anúncios. Sem planos pagos.</p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link to="/entrar" search={{ tab: "signup" }}>
               <Button size="lg" className="gap-2 rounded-full px-6">
@@ -140,15 +123,13 @@ function Landing() {
       <section id="filosofia" className="border-y border-border bg-muted/30">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
           <div className="mx-auto max-w-2xl text-center">
-            <p className="text-xs font-medium uppercase tracking-widest text-primary">
-              Nossa filosofia
-            </p>
+            <p className="text-xs font-medium uppercase tracking-widest text-primary">Nossa filosofia</p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
               Profissionalismo com <span className="gradient-text">coração</span>
             </h2>
             <p className="mt-4 text-muted-foreground">
-              Acreditamos que o crescimento profissional acontece quando pessoas se conectam de
-              forma autêntica, sem barreiras, sem ruído, sem custo.
+              Acreditamos que o crescimento profissional acontece quando pessoas se conectam de forma
+              autêntica, sem barreiras, sem ruído, sem custo.
             </p>
           </div>
           <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -177,8 +158,7 @@ function Landing() {
             O que você encontra aqui
           </h2>
           <p className="mt-4 text-muted-foreground">
-            Tudo o que você precisa para crescer profissionalmente, sem os excessos das redes
-            tradicionais.
+            Tudo o que você precisa para crescer profissionalmente, sem os excessos das redes tradicionais.
           </p>
         </div>
         <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
@@ -220,8 +200,7 @@ function Landing() {
               </Link>
             </div>
             <p className="mt-4 text-xs text-muted-foreground/60">
-              Sem cartão de crédito · Sem anúncios · Sem plano premium ·{" "}
-              <strong>Para sempre grátis</strong>
+              Sem cartão de crédito · Sem anúncios · Sem plano premium · <strong>Para sempre grátis</strong>
             </p>
           </div>
         </div>
@@ -229,9 +208,7 @@ function Landing() {
 
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-6 text-xs text-muted-foreground sm:px-6">
-          <p>
-            © {new Date().getFullYear()} Conexão · Feito com cuidado para profissionais como você.
-          </p>
+          <p>© {new Date().getFullYear()} Conexão · Feito com cuidado para profissionais como você.</p>
           <div className="flex gap-5">
             <a href="#" className="transition-colors hover:text-foreground">
               Privacidade
