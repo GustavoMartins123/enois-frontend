@@ -2,12 +2,13 @@ import { type FormEvent, useState } from "react";
 
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
-import { ArrowRight, Eye, EyeOff, Loader2, Sparkles } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Loader2, MailCheck, Sparkles } from "lucide-react";
 import { z } from "zod";
 
 import { ApiError, authApi } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
@@ -48,6 +49,7 @@ function Auth() {
   const initial = Route.useSearch().tab as Tab;
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>(initial);
+  const [forgotOpen, setForgotOpen] = useState(false);
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
@@ -131,9 +133,14 @@ function Auth() {
             {tab === "signup" ? (
               <SignupForm onDone={() => navigate({ to: "/feed" })} />
             ) : (
-              <LoginForm onDone={() => navigate({ to: "/feed" })} />
+              <LoginForm
+                onDone={() => navigate({ to: "/feed" })}
+                onForgot={() => setForgotOpen(true)}
+              />
             )}
           </div>
+
+          <ForgotPasswordDialog open={forgotOpen} onOpenChange={setForgotOpen} />
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
             Ao continuar, você concorda com nossos{" "}
@@ -340,7 +347,7 @@ function SignupForm({ onDone }: { onDone: () => void }) {
   );
 }
 
-function LoginForm({ onDone }: { onDone: () => void }) {
+function LoginForm({ onDone, onForgot }: { onDone: () => void; onForgot: () => void }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
@@ -407,9 +414,13 @@ function LoginForm({ onDone }: { onDone: () => void }) {
           label="Senha"
           error={errors.password}
           right={
-            <a href="#" className="text-xs font-medium text-primary hover:underline">
+            <button
+              type="button"
+              onClick={onForgot}
+              className="text-xs font-medium text-primary hover:underline"
+            >
               Esqueci minha senha
-            </a>
+            </button>
           }
         >
           <div className="relative">
@@ -471,6 +482,106 @@ function Field({
       {children}
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
+  );
+}
+
+function ForgotPasswordDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const email = String(fd.get("email") ?? "").trim();
+    if (!z.string().email().safeParse(email).success) {
+      setErrors({ email: "E-mail inválido" });
+      return;
+    }
+    setErrors({});
+    setLoading(true);
+    try {
+      await authApi.forgotPassword(email);
+      setSent(true);
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setErrors({ form: err.message });
+      } else {
+        setErrors({ form: "Erro inesperado. Tente novamente." });
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const close = () => {
+    setSent(false);
+    setErrors({});
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => (v ? onOpenChange(v) : close())}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-semibold tracking-tight">Recuperar senha</DialogTitle>
+        </DialogHeader>
+        {sent ? (
+          <div className="space-y-4 pb-2 pt-2">
+            <div className="flex items-start gap-3 rounded-xl bg-primary/10 p-4">
+              <MailCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+              <div>
+                <p className="text-sm font-medium">Verifique seu e-mail</p>
+                <p className="mt-1 text-[13px] text-muted-foreground">
+                  Se existir uma conta com esse e-mail, enviaremos um link para redefinir sua senha.
+                </p>
+              </div>
+            </div>
+            <Button className="w-full rounded-full" onClick={close}>
+              Entendi
+            </Button>
+          </div>
+        ) : (
+          <form onSubmit={submit} className="space-y-4 pb-2 pt-2" noValidate>
+            <p className="text-sm text-muted-foreground">
+              Informe o e-mail da sua conta e enviaremos um link de redefinição.
+            </p>
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">E-mail</Label>
+              <Input
+                name="email"
+                type="email"
+                placeholder="voce@exemplo.com"
+                autoComplete="email"
+                required
+                maxLength={255}
+              />
+              {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+            </div>
+            {errors.form && (
+              <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
+                {errors.form}
+              </p>
+            )}
+            <Button type="submit" className="w-full gap-2 rounded-full" disabled={loading}>
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  Enviar link <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </form>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 

@@ -21,6 +21,7 @@ import { Route as ComunidadesRouteImport } from './routes/comunidades'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as PerfilUsernameRouteImport } from './routes/perfil.$username'
 import { Route as ComunidadesCommunityIdRouteImport } from './routes/comunidades.$communityId'
+import { Route as AuthResetRouteImport } from './routes/auth.reset'
 
 const VagasRoute = VagasRouteImport.update({
   id: '/vagas',
@@ -82,6 +83,11 @@ const ComunidadesCommunityIdRoute = ComunidadesCommunityIdRouteImport.update({
   path: '/$communityId',
   getParentRoute: () => ComunidadesRoute,
 } as any)
+const AuthResetRoute = AuthResetRouteImport.update({
+  id: '/auth/reset',
+  path: '/auth/reset',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
   '/vagas': typeof VagasRoute
+  '/auth/reset': typeof AuthResetRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
 }
@@ -108,6 +115,7 @@ export interface FileRoutesByTo {
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
   '/vagas': typeof VagasRoute
+  '/auth/reset': typeof AuthResetRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
 }
@@ -123,6 +131,7 @@ export interface FileRoutesById {
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
   '/vagas': typeof VagasRoute
+  '/auth/reset': typeof AuthResetRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
 }
@@ -139,6 +148,7 @@ export interface FileRouteTypes {
     | '/rede'
     | '/salvos'
     | '/vagas'
+    | '/auth/reset'
     | '/comunidades/$communityId'
     | '/perfil/$username'
   fileRoutesByTo: FileRoutesByTo
@@ -153,6 +163,7 @@ export interface FileRouteTypes {
     | '/rede'
     | '/salvos'
     | '/vagas'
+    | '/auth/reset'
     | '/comunidades/$communityId'
     | '/perfil/$username'
   id:
@@ -167,6 +178,7 @@ export interface FileRouteTypes {
     | '/rede'
     | '/salvos'
     | '/vagas'
+    | '/auth/reset'
     | '/comunidades/$communityId'
     | '/perfil/$username'
   fileRoutesById: FileRoutesById
@@ -182,6 +194,7 @@ export interface RootRouteChildren {
   RedeRoute: typeof RedeRoute
   SalvosRoute: typeof SalvosRoute
   VagasRoute: typeof VagasRoute
+  AuthResetRoute: typeof AuthResetRoute
   PerfilUsernameRoute: typeof PerfilUsernameRoute
 }
 
@@ -271,6 +284,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ComunidadesCommunityIdRouteImport
       parentRoute: typeof ComunidadesRoute
     }
+    '/auth/reset': {
+      id: '/auth/reset'
+      path: '/auth/reset'
+      fullPath: '/auth/reset'
+      preLoaderRoute: typeof AuthResetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -297,6 +317,7 @@ const rootRouteChildren: RootRouteChildren = {
   RedeRoute: RedeRoute,
   SalvosRoute: SalvosRoute,
   VagasRoute: VagasRoute,
+  AuthResetRoute: AuthResetRoute,
   PerfilUsernameRoute: PerfilUsernameRoute,
 }
 export const routeTree = rootRouteImport
