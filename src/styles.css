@@ -104,15 +104,12 @@
 
   /* Novos tokens (Fase 0) */
   --surface-card: #ffffff;
-  --surface-card-90: rgba(255, 255, 255, 0.9);
-  --surface-card-95: rgba(255, 255, 255, 0.95);
   --surface-1: #f9f8ff;
   --surface-2: #ede8f5;
   --surface-3: #f5f3ff;
   --border-soft: #e5e0eb;
   --text-strong: #0f0f14;
   --text-subtle: #6b7280;
-  --placeholder-color: #9ca3af;
 }
 
 .dark {
@@ -147,25 +144,12 @@
 
   /* Novos tokens (Fase 0) */
   --surface-card: #13131f;
-  /* antigo bg-white */
-  --surface-card-90: rgba(19, 19, 31, 0.9);
-  /* antigo bg-white\/90 */
-  --surface-card-95: rgba(19, 19, 31, 0.95);
-  /* antigo bg-white\/95 */
   --surface-1: #1c1c2e;
-  /* antigo bg-white */
   --surface-2: #2d1f4e;
-  /* antigo bg-[#F9F8FF] */
   --surface-3: #1e1829;
-  /* antigo bg-[#F5F3FF] */
   --border-soft: #2a2a3d;
-  /* antigo border-[#E5E0EB] border-[#F5F3FF] */
   --text-strong: #e8e6ff;
-  /* antigo text-[#0f0f14] */
   --text-subtle: #9ca3af;
-  /* antigo text-[#6B7280] */
-  --placeholder-color: #6b7280;
-  /* antigo placeholder:text-[#9CA3AF] */
 }
 
 @layer base {
