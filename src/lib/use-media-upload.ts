@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react";
 
+import { randomUUID } from "@/lib/api-client";
 import { mediaApi } from "@/lib/api/media";
 
 export interface UploadState {
@@ -18,7 +19,7 @@ function sanitizeName(name: string): string {
 }
 
 function genFileName(file: File): string {
-  const key = crypto.randomUUID();
+  const key = randomUUID();
   return `media/${key}/${sanitizeName(file.name)}`;
 }
 

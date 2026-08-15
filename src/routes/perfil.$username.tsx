@@ -59,7 +59,7 @@ export const Route = createFileRoute("/perfil/$username")({
   },
   head: ({ loaderData }) => ({
     meta: [
-      { title: `${loaderData?.user.name ?? "Perfil"} · Conexão` },
+      { title: `${loaderData?.user.name ?? "Perfil"} · Énóis` },
       { name: "description", content: loaderData?.user.headline ?? "Perfil profissional" },
     ],
   }),

@@ -17,13 +17,13 @@ import { ThemeToggle } from "@/components/theme-toggle";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Conexão · Rede profissional gratuita e humana" },
+      { title: "Énóis · Rede profissional gratuita e humana" },
       {
         name: "description",
         content:
           "Uma rede profissional diferente. Sem paywalls, sem métricas de vaidade. Apenas conexões reais, mentoria e conhecimento compartilhado, gratuito para sempre.",
       },
-      { property: "og:title", content: "Conexão · Rede profissional gratuita e humana" },
+      { property: "og:title", content: "Énóis · Rede profissional gratuita e humana" },
       {
         property: "og:description",
         content: "Sua carreira merece um lugar seguro e gratuito para crescer.",
@@ -46,7 +46,7 @@ function Landing() {
               <Sparkles className="h-3.5 w-3.5" />
             </div>
             <span className="text-base font-semibold tracking-tight">
-              Conex<span className="gradient-text">ão</span>
+              É<span className="gradient-text">nóis</span>
             </span>
           </Link>
           <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
@@ -95,8 +95,8 @@ function Landing() {
             <span className="gradient-text">em um lugar seguro e gratuito</span>
           </h1>
           <p className="mx-auto mt-5 max-w-lg text-base text-muted-foreground">
-            Conexão conecta profissionais por conhecimento, mentoria e propósito, não por métricas
-            de popularidade.
+            Énóis conecta profissionais por conhecimento, mentoria e propósito, não por métricas de
+            popularidade.
           </p>
           <p className="mt-1 text-sm font-medium text-foreground">
             100% gratuito. Sem anúncios. Sem planos pagos.
@@ -220,15 +220,15 @@ function Landing() {
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-6 text-xs text-muted-foreground sm:px-6">
           <p>
-            © {new Date().getFullYear()} Conexão · Feito com cuidado para profissionais como você.
+            © {new Date().getFullYear()} Énóis · Feito com cuidado para profissionais como você.
           </p>
           <div className="flex gap-5">
-            <a href="#" className="transition-colors hover:text-foreground">
+            <Link to="/privacidade" className="transition-colors hover:text-foreground">
               Privacidade
-            </a>
-            <a href="#" className="transition-colors hover:text-foreground">
+            </Link>
+            <Link to="/termos" className="transition-colors hover:text-foreground">
               Termos
-            </a>
+            </Link>
             <a href="#" className="transition-colors hover:text-foreground">
               Contato
             </a>

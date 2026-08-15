@@ -37,7 +37,7 @@ const TOPICS = [
 
 export const Route = createFileRoute("/comunidades")({
   beforeLoad: requireAuth,
-  head: () => ({ meta: [{ title: "Comunidades · Conexão" }] }),
+  head: () => ({ meta: [{ title: "Comunidades · Énóis" }] }),
   component: Comunidades,
 });
 

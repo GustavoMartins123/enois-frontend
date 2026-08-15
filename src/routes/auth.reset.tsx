@@ -19,8 +19,8 @@ export const Route = createFileRoute("/auth/reset")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Redefinir senha · Conexão" },
-      { name: "description", content: "Defina uma nova senha para sua conta na Conexão." },
+      { title: "Redefinir senha · Énóis" },
+      { name: "description", content: "Defina uma nova senha para sua conta na Énóis." },
     ],
   }),
   component: ResetPassword,
@@ -89,7 +89,9 @@ function ResetPassword() {
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary-foreground/20 backdrop-blur">
             <Sparkles className="h-4 w-4" />
           </div>
-          <span className="text-lg font-semibold tracking-tight">Conexão</span>
+          <span className="text-lg font-semibold tracking-tight">
+            É<span className="gradient-text">nóis</span>
+          </span>
         </Link>
 
         <div className="relative max-w-md">
@@ -132,7 +134,9 @@ function ResetPassword() {
             >
               <Sparkles className="h-4 w-4" />
             </div>
-            <span className="font-semibold tracking-tight">Conexão</span>
+            <span className="font-semibold tracking-tight">
+              É<span className="gradient-text">nóis</span>
+            </span>
           </Link>
         </div>
 

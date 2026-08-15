@@ -79,13 +79,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Conexão · Networking profissional humano" },
+      { title: "Énóis · Networking profissional humano" },
       {
         name: "description",
         content:
           "Plataforma de networking profissional com foco em conexões genuínas, mentoria, comunidades e desenvolvimento de carreira.",
       },
-      { property: "og:title", content: "Conexão · Networking profissional humano" },
+      { property: "og:title", content: "Énóis · Networking profissional humano" },
       {
         property: "og:description",
         content: "Construa relacionamentos profissionais reais — não apenas conexões.",

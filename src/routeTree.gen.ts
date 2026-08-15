@@ -10,8 +10,10 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VagasRouteImport } from './routes/vagas'
+import { Route as TermosRouteImport } from './routes/termos'
 import { Route as SalvosRouteImport } from './routes/salvos'
 import { Route as RedeRouteImport } from './routes/rede'
+import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as MentoriaRouteImport } from './routes/mentoria'
 import { Route as MensagensRouteImport } from './routes/mensagens'
 import { Route as FeedRouteImport } from './routes/feed'
@@ -28,6 +30,11 @@ const VagasRoute = VagasRouteImport.update({
   path: '/vagas',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TermosRoute = TermosRouteImport.update({
+  id: '/termos',
+  path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SalvosRoute = SalvosRouteImport.update({
   id: '/salvos',
   path: '/salvos',
@@ -36,6 +43,11 @@ const SalvosRoute = SalvosRouteImport.update({
 const RedeRoute = RedeRouteImport.update({
   id: '/rede',
   path: '/rede',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacidadeRoute = PrivacidadeRouteImport.update({
+  id: '/privacidade',
+  path: '/privacidade',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MentoriaRoute = MentoriaRouteImport.update({
@@ -97,8 +109,10 @@ export interface FileRoutesByFullPath {
   '/feed': typeof FeedRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
+  '/termos': typeof TermosRoute
   '/vagas': typeof VagasRoute
   '/auth/reset': typeof AuthResetRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
@@ -112,8 +126,10 @@ export interface FileRoutesByTo {
   '/feed': typeof FeedRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
+  '/termos': typeof TermosRoute
   '/vagas': typeof VagasRoute
   '/auth/reset': typeof AuthResetRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
@@ -128,8 +144,10 @@ export interface FileRoutesById {
   '/feed': typeof FeedRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
+  '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
+  '/termos': typeof TermosRoute
   '/vagas': typeof VagasRoute
   '/auth/reset': typeof AuthResetRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
@@ -145,8 +163,10 @@ export interface FileRouteTypes {
     | '/feed'
     | '/mensagens'
     | '/mentoria'
+    | '/privacidade'
     | '/rede'
     | '/salvos'
+    | '/termos'
     | '/vagas'
     | '/auth/reset'
     | '/comunidades/$communityId'
@@ -160,8 +180,10 @@ export interface FileRouteTypes {
     | '/feed'
     | '/mensagens'
     | '/mentoria'
+    | '/privacidade'
     | '/rede'
     | '/salvos'
+    | '/termos'
     | '/vagas'
     | '/auth/reset'
     | '/comunidades/$communityId'
@@ -175,8 +197,10 @@ export interface FileRouteTypes {
     | '/feed'
     | '/mensagens'
     | '/mentoria'
+    | '/privacidade'
     | '/rede'
     | '/salvos'
+    | '/termos'
     | '/vagas'
     | '/auth/reset'
     | '/comunidades/$communityId'
@@ -191,8 +215,10 @@ export interface RootRouteChildren {
   FeedRoute: typeof FeedRoute
   MensagensRoute: typeof MensagensRoute
   MentoriaRoute: typeof MentoriaRoute
+  PrivacidadeRoute: typeof PrivacidadeRoute
   RedeRoute: typeof RedeRoute
   SalvosRoute: typeof SalvosRoute
+  TermosRoute: typeof TermosRoute
   VagasRoute: typeof VagasRoute
   AuthResetRoute: typeof AuthResetRoute
   PerfilUsernameRoute: typeof PerfilUsernameRoute
@@ -207,6 +233,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VagasRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/termos': {
+      id: '/termos'
+      path: '/termos'
+      fullPath: '/termos'
+      preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/salvos': {
       id: '/salvos'
       path: '/salvos'
@@ -219,6 +252,13 @@ declare module '@tanstack/react-router' {
       path: '/rede'
       fullPath: '/rede'
       preLoaderRoute: typeof RedeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacidade': {
+      id: '/privacidade'
+      path: '/privacidade'
+      fullPath: '/privacidade'
+      preLoaderRoute: typeof PrivacidadeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mentoria': {
@@ -314,8 +354,10 @@ const rootRouteChildren: RootRouteChildren = {
   FeedRoute: FeedRoute,
   MensagensRoute: MensagensRoute,
   MentoriaRoute: MentoriaRoute,
+  PrivacidadeRoute: PrivacidadeRoute,
   RedeRoute: RedeRoute,
   SalvosRoute: SalvosRoute,
+  TermosRoute: TermosRoute,
   VagasRoute: VagasRoute,
   AuthResetRoute: AuthResetRoute,
   PerfilUsernameRoute: PerfilUsernameRoute,

@@ -11,7 +11,7 @@ import { PostCard } from "@/components/post-card";
 
 export const Route = createFileRoute("/salvos")({
   beforeLoad: requireAuth,
-  head: () => ({ meta: [{ title: "Posts salvos · Conexão" }] }),
+  head: () => ({ meta: [{ title: "Posts salvos · Énóis" }] }),
   component: SavedPosts,
 });
 

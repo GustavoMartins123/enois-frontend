@@ -15,7 +15,7 @@ import { AppShell } from "@/components/app-shell";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/mensagens")({
-  head: () => ({ meta: [{ title: "Mensagens · Conexão" }] }),
+  head: () => ({ meta: [{ title: "Mensagens · Énóis" }] }),
   component: Mensagens,
 });
 

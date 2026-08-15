@@ -47,7 +47,7 @@ const MONTHS = [
 
 export const Route = createFileRoute("/eventos")({
   beforeLoad: requireAuth,
-  head: () => ({ meta: [{ title: "Eventos · Conexão" }] }),
+  head: () => ({ meta: [{ title: "Eventos · Énóis" }] }),
   component: Eventos,
 });
 

@@ -16,7 +16,7 @@ import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/rede")({
   beforeLoad: requireAuth,
-  head: () => ({ meta: [{ title: "Rede · Conexão" }] }),
+  head: () => ({ meta: [{ title: "Rede · Énóis" }] }),
   component: Rede,
 });
 

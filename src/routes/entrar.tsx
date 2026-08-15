@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
+import { ErrorBanner } from "@/components/error-banner";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 type Tab = "login" | "signup";
@@ -24,10 +25,10 @@ export const Route = createFileRoute("/entrar")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Entrar ou criar conta · Conexão" },
+      { title: "Entrar ou criar conta · Énóis" },
       {
         name: "description",
-        content: "Acesse sua conta ou comece sua jornada profissional na Conexão.",
+        content: "Acesse sua conta ou comece sua jornada profissional na Énóis.",
       },
     ],
   }),
@@ -71,7 +72,9 @@ function Auth() {
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary-foreground/20 backdrop-blur">
             <Sparkles className="h-4 w-4" />
           </div>
-          <span className="text-lg font-semibold tracking-tight">Conexão</span>
+          <span className="text-lg font-semibold tracking-tight">
+            É<span className="gradient-text">nóis</span>
+          </span>
         </Link>
 
         <div className="relative max-w-md">
@@ -114,7 +117,9 @@ function Auth() {
             >
               <Sparkles className="h-4 w-4" />
             </div>
-            <span className="font-semibold tracking-tight">Conexão</span>
+            <span className="font-semibold tracking-tight">
+              É<span className="gradient-text">nóis</span>
+            </span>
           </Link>
           <ThemeToggle />
         </div>
@@ -144,13 +149,13 @@ function Auth() {
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
             Ao continuar, você concorda com nossos{" "}
-            <a href="#" className="text-primary hover:underline">
+            <Link to="/termos" className="text-primary hover:underline">
               Termos
-            </a>{" "}
+            </Link>{" "}
             e{" "}
-            <a href="#" className="text-primary hover:underline">
+            <Link to="/privacidade" className="text-primary hover:underline">
               Política de Privacidade
-            </a>
+            </Link>
             .
           </p>
         </div>
@@ -236,6 +241,7 @@ function Divider() {
 
 function SignupForm({ onDone }: { onDone: () => void }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
 
@@ -250,6 +256,7 @@ function SignupForm({ onDone }: { onDone: () => void }) {
       return;
     }
     setErrors({});
+    setFormError(null);
     setLoading(true);
     localStorage.removeItem("session_token");
     localStorage.removeItem("refresh_token");
@@ -267,11 +274,7 @@ function SignupForm({ onDone }: { onDone: () => void }) {
       localStorage.setItem("current_user", JSON.stringify(result.user));
       onDone();
     } catch (err) {
-      if (err instanceof ApiError) {
-        setErrors({ form: err.message });
-      } else {
-        setErrors({ form: "Erro inesperado. Tente novamente." });
-      }
+      setFormError(err);
     } finally {
       setLoading(false);
     }
@@ -328,11 +331,7 @@ function SignupForm({ onDone }: { onDone: () => void }) {
           </div>
         </Field>
 
-        {errors.form && (
-          <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
-            {errors.form}
-          </p>
-        )}
+        {formError && <ErrorBanner error={formError} />}
         <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -349,6 +348,7 @@ function SignupForm({ onDone }: { onDone: () => void }) {
 
 function LoginForm({ onDone, onForgot }: { onDone: () => void; onForgot: () => void }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
 
@@ -363,6 +363,7 @@ function LoginForm({ onDone, onForgot }: { onDone: () => void; onForgot: () => v
       return;
     }
     setErrors({});
+    setFormError(null);
     setLoading(true);
     localStorage.removeItem("session_token");
     localStorage.removeItem("refresh_token");
@@ -379,11 +380,7 @@ function LoginForm({ onDone, onForgot }: { onDone: () => void; onForgot: () => v
       localStorage.setItem("current_user", JSON.stringify(result.user));
       onDone();
     } catch (err) {
-      if (err instanceof ApiError) {
-        setErrors({ form: err.message });
-      } else {
-        setErrors({ form: "Erro inesperado. Tente novamente." });
-      }
+      setFormError(err);
     } finally {
       setLoading(false);
     }
@@ -443,11 +440,7 @@ function LoginForm({ onDone, onForgot }: { onDone: () => void; onForgot: () => v
           </div>
         </Field>
 
-        {errors.form && (
-          <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
-            {errors.form}
-          </p>
-        )}
+        {formError && <ErrorBanner error={formError} />}
         <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -493,6 +486,7 @@ function ForgotPasswordDialog({
   onOpenChange: (v: boolean) => void;
 }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
 
@@ -505,16 +499,13 @@ function ForgotPasswordDialog({
       return;
     }
     setErrors({});
+    setFormError(null);
     setLoading(true);
     try {
       await authApi.forgotPassword(email);
       setSent(true);
     } catch (err) {
-      if (err instanceof ApiError) {
-        setErrors({ form: err.message });
-      } else {
-        setErrors({ form: "Erro inesperado. Tente novamente." });
-      }
+      setFormError(err);
     } finally {
       setLoading(false);
     }
@@ -564,11 +555,7 @@ function ForgotPasswordDialog({
               />
               {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
             </div>
-            {errors.form && (
-              <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
-                {errors.form}
-              </p>
-            )}
+            {formError && <ErrorBanner error={formError} />}
             <Button type="submit" className="w-full gap-2 rounded-full" disabled={loading}>
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

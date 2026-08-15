@@ -38,7 +38,7 @@ export const Route = createFileRoute("/feed")({
   beforeLoad: requireAuth,
   head: () => ({
     meta: [
-      { title: "Conexão · Início" },
+      { title: "Énóis · Início" },
       {
         name: "description",
         content: "Seu feed de insights, perguntas e projetos da comunidade profissional.",

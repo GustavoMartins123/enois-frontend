@@ -27,7 +27,7 @@ import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/mentoria")({
   beforeLoad: requireAuth,
-  head: () => ({ meta: [{ title: "Mentoria · Conexão" }] }),
+  head: () => ({ meta: [{ title: "Mentoria · Énóis" }] }),
   component: Mentoria,
 });
 

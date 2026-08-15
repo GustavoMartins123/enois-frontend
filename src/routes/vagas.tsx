@@ -18,7 +18,7 @@ import { AppShell } from "@/components/app-shell";
 
 export const Route = createFileRoute("/vagas")({
   beforeLoad: requireAuth,
-  head: () => ({ meta: [{ title: "Vagas · Conexão" }] }),
+  head: () => ({ meta: [{ title: "Vagas · Énóis" }] }),
   component: Vagas,
 });
 

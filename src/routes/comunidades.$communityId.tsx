@@ -39,7 +39,7 @@ export const Route = createFileRoute("/comunidades/$communityId")({
     }
   },
   head: ({ loaderData }) => ({
-    meta: [{ title: `${loaderData?.name ?? "Comunidade"} · Conexão` }],
+    meta: [{ title: `${loaderData?.name ?? "Comunidade"} · Énóis` }],
   }),
   component: CommunityDetail,
 });
