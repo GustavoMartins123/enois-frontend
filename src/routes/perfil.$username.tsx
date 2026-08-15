@@ -65,9 +65,9 @@ export const Route = createFileRoute("/perfil/$username")({
   }),
   notFoundComponent: () => (
     <AppShell>
-      <div className="surface-card p-10 text-center">
-        <p className="text-lg font-semibold">Pessoa não encontrada</p>
-        <Link to="/" className="mt-2 inline-block text-sm text-primary hover:underline">
+      <div className="rounded-2xl border border-border-soft bg-surface-card p-10 text-center">
+        <p className="text-[16px] font-light text-text-strong">Pessoa não encontrada</p>
+        <Link to="/" className="mt-2 inline-block text-[13px] font-light text-primary hover:underline">
           Voltar para o início
         </Link>
       </div>
@@ -75,8 +75,8 @@ export const Route = createFileRoute("/perfil/$username")({
   ),
   errorComponent: () => (
     <AppShell>
-      <div className="surface-card p-10 text-center">
-        <p>Não foi possível carregar este perfil.</p>
+      <div className="rounded-2xl border border-border-soft bg-surface-card p-10 text-center">
+        <p className="text-[13px] font-light text-text-subtle">Não foi possível carregar este perfil.</p>
       </div>
     </AppShell>
   ),
@@ -208,7 +208,7 @@ function Profile() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <div className="surface-card overflow-hidden">
+        <div className="rounded-2xl border border-border-soft bg-surface-card overflow-hidden">
           <div
             className="relative"
             onMouseEnter={() => setHoveringBanner(true)}
@@ -221,7 +221,7 @@ function Profile() {
                 className="h-40 w-full object-cover sm:h-52"
               />
             ) : (
-              <div className="h-40 w-full bg-gradient-to-r from-primary/20 to-primary/5 sm:h-52" />
+              <div className="h-40 w-full sm:h-52" style={{ background: "var(--gradient-primary)" }} />
             )}
             {isOwnProfile && hoveringBanner && (
               <button
@@ -255,7 +255,7 @@ function Profile() {
                 <UserAvatar
                   src={resolveCdnUrl(user.avatar)}
                   alt={user.name}
-                  className="h-24 w-24 ring-4 ring-card sm:h-28 sm:w-28"
+                  className="h-24 w-24 ring-4 ring-surface-card sm:h-28 sm:w-28"
                 />
                 {isOwnProfile && hoveringAvatar && (
                   <button
@@ -278,7 +278,7 @@ function Profile() {
               <div className="flex flex-wrap gap-2">
                 {isOwnProfile ? (
                   <EditProfileDialog profile={user}>
-                    <Button variant="outline" className="rounded-full gap-1.5">
+                    <Button variant="outline" size="sm" className="rounded-full gap-1.5">
                       <Settings className="h-4 w-4" /> Editar perfil
                     </Button>
                   </EditProfileDialog>
@@ -286,6 +286,7 @@ function Profile() {
                   <>
                     <Button
                       variant="outline"
+                      size="sm"
                       className="rounded-full gap-1.5"
                       onClick={() => {
                         if (!requireAuth()) return;
@@ -295,6 +296,7 @@ function Profile() {
                       <MessageCircle className="h-4 w-4" /> Mensagem
                     </Button>
                     <Button
+                      size="sm"
                       className="rounded-full gap-1.5"
                       onClick={() => {
                         if (!requireAuth()) return;
@@ -318,22 +320,20 @@ function Profile() {
             </div>
             <div className="mt-4">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="break-words text-xl font-semibold tracking-tight sm:text-2xl">
-                  {user.name}
-                </h1>
+                <h1 className="break-words text-[22px] font-light tracking-tight text-text-strong">{user.name}</h1>
                 {user.openToWork && (
-                  <span className="rounded-full bg-growth/15 px-2.5 py-0.5 text-xs font-medium text-growth">
+                  <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-[11px] font-light text-growth">
                     Aberto a oportunidades
                   </span>
                 )}
                 {user.isMentor && (
-                  <span className="rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary">
+                  <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-[11px] font-light text-primary">
                     Mentor disponível
                   </span>
                 )}
               </div>
-              <p className="mt-1 break-words text-foreground">{user.headline}</p>
-              <p className="mt-3 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              <p className="mt-1 break-words text-[14px] font-light text-primary">{user.headline}</p>
+              <p className="mt-3 flex flex-wrap items-center gap-4 text-[13px] font-light text-text-subtle">
                 {user.company && (
                   <span className="inline-flex items-center gap-1.5">
                     <Briefcase className="h-4 w-4" /> {user.company}
@@ -346,7 +346,7 @@ function Profile() {
                 )}
                 <span>· {user.connectionsCount} conexões</span>
                 {(user.reputation ?? 0) > 0 && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-opportunity/15 px-2 py-0.5 text-xs font-medium text-opportunity-foreground">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-opportunity/15 px-2 py-0.5 text-[11px] font-light text-opportunity-foreground">
                     ★ {user.reputation ?? 0} reputação
                   </span>
                 )}
@@ -359,22 +359,20 @@ function Profile() {
           <div className="space-y-6">
             {user.bio && (
               <Section title="Sobre">
-                <p className="break-words text-[15px] leading-relaxed text-foreground">
-                  {user.bio}
-                </p>
+                <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">{user.bio}</p>
               </Section>
             )}
 
             {user.skills.length > 0 && (
               <Section title="Habilidades">
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-1.5">
                   {user.skills.map((s: string) => (
-                    <Badge
+                    <span
                       key={s}
-                      className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft"
+                      className="rounded-full bg-surface-2 px-2.5 py-0.5 text-[11px] font-light text-primary"
                     >
                       {s}
-                    </Badge>
+                    </span>
                   ))}
                 </div>
               </Section>
@@ -384,8 +382,8 @@ function Profile() {
               <Section title="Objetivos profissionais" icon={Target}>
                 <div className="grid gap-3 sm:grid-cols-3">
                   {user.goals.map((goal: string) => (
-                    <div key={goal} className="rounded-xl border border-border bg-muted/40 p-4">
-                      <p className="break-words text-sm font-medium">{goal}</p>
+                    <div key={goal} className="rounded-xl border border-border-soft p-4">
+                      <p className="break-words text-[13px] font-light text-text-strong">{goal}</p>
                     </div>
                   ))}
                 </div>
@@ -394,7 +392,7 @@ function Profile() {
 
             <Section title="Publicações recentes">
               {userPosts.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Ainda não há publicações.</p>
+                <p className="text-[13px] font-light text-text-subtle">Ainda não há publicações.</p>
               ) : (
                 <div className="space-y-4">
                   {userPosts.map((p) => (
@@ -407,25 +405,25 @@ function Profile() {
 
           <aside className="space-y-6">
             <Section title="Disponibilidade" icon={Clock}>
-              <p className="break-words text-sm leading-relaxed text-foreground">
+              <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">
                 {user.availability ?? "Não informada"}
               </p>
             </Section>
 
             {!isOwnProfile && (
               <Section title="Recomendar" icon={ThumbsUp}>
-                <p className="mb-3 text-sm text-muted-foreground">
+                <p className="mb-3 text-[13px] font-light text-text-subtle">
                   Recomende este perfil para ajudar a comunidade.
                 </p>
                 <Dialog open={recommendOpen} onOpenChange={setRecommendOpen}>
                   <DialogTrigger asChild>
-                    <Button className="w-full rounded-full gap-1.5">
+                    <Button size="sm" className="w-full rounded-full gap-1.5">
                       <ThumbsUp className="h-4 w-4" /> Recomendar
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Recomendar {user.name}</DialogTitle>
+                      <DialogTitle className="font-light">Recomendar {user.name}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 pt-2">
                       <Textarea
@@ -433,8 +431,10 @@ function Profile() {
                         onChange={(e) => setRecommendComment(e.target.value)}
                         placeholder="Descreva como conhece este profissional..."
                         rows={3}
+                        className="border-border-soft bg-surface-1 text-[13px] font-light"
                       />
                       <Button
+                        size="sm"
                         className="w-full rounded-full"
                         disabled={!recommendComment.trim() || recommend.isPending}
                         onClick={() => recommend.mutate()}
@@ -463,7 +463,7 @@ function Profile() {
                   {rankingData.slice(0, 5).map((u, i) => (
                     <div key={u.id} className="flex items-center gap-3">
                       <span
-                        className={`w-5 text-center text-sm font-bold ${i < 3 ? "text-opportunity" : "text-muted-foreground"}`}
+                        className={`w-5 text-center text-[13px] font-light ${i < 3 ? "text-opportunity" : "text-text-subtle"}`}
                       >
                         {i + 1}º
                       </span>
@@ -474,12 +474,12 @@ function Profile() {
                         <Link
                           to="/perfil/$username"
                           params={{ username: u.username }}
-                          className="truncate text-sm font-medium hover:underline"
+                          className="truncate text-[13px] font-light text-text-strong hover:underline"
                         >
                           {u.name}
                         </Link>
                       </div>
-                      <span className="text-xs font-semibold text-opportunity-foreground">
+                      <span className="text-[11px] font-light text-opportunity-foreground">
                         {u.reputation}
                       </span>
                     </div>
@@ -490,11 +490,11 @@ function Profile() {
 
             {user.externalLinks.length > 0 && (
               <Section title="Links">
-                <ul className="space-y-2 text-sm">
+                <ul className="space-y-2 text-[13px] font-light">
                   {user.externalLinks.map((link: string) => (
-                    <li key={link} className="flex items-center gap-2 text-muted-foreground">
+                    <li key={link} className="flex items-center gap-2 text-text-subtle">
                       <LinkIcon className="h-4 w-4" />
-                      <span className="truncate text-foreground">{link}</span>
+                      <span className="truncate text-text-strong">{link}</span>
                     </li>
                   ))}
                 </ul>
@@ -531,9 +531,13 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="surface-card p-4 sm:p-6">
-      <h2 className="mb-4 flex items-center gap-2 text-base font-semibold">
-        {Icon && <Icon className="h-4 w-4 text-primary" />}
+    <section className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-6">
+      <h2 className="mb-4 flex items-center gap-2 text-[15px] font-light text-text-strong">
+        {Icon && (
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-surface-2">
+            <Icon className="h-4 w-4 text-primary" />
+          </span>
+        )}
         {title}
       </h2>
       {children}
@@ -552,14 +556,12 @@ function RecommendationItem({
   });
 
   return (
-    <div className="rounded-xl bg-muted/50 p-3">
+    <div className="rounded-xl bg-surface-1 p-3">
       <div className="flex items-center gap-2 mb-2">
         <UserAvatar src={recommender?.avatar} alt={recommender?.name} className="h-6 w-6" />
-        <span className="text-xs font-medium">{recommender?.name ?? "Usuário"}</span>
+        <span className="text-[12px] font-medium text-text-strong">{recommender?.name ?? "Usuário"}</span>
       </div>
-      <p className="break-words text-sm leading-relaxed text-muted-foreground">
-        "{recommendation.comment}"
-      </p>
+      <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">"{recommendation.comment}"</p>
     </div>
   );
 }

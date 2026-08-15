@@ -132,9 +132,9 @@ export function EditProfileDialog({ profile, children }: Props) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto p-0">
-        <DialogHeader className="sticky top-0 z-10 border-b border-border bg-card px-6 pb-4 pt-6">
+        <DialogHeader className="sticky top-0 z-10 border-b border-border-soft bg-surface-card px-6 pb-4 pt-6">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl">Editar perfil</DialogTitle>
+            <DialogTitle className="text-[18px] font-light text-text-strong">Editar perfil</DialogTitle>
             <div className="flex items-center gap-2">
               <Button size="sm" variant="outline" onClick={() => setOpen(false)}>
                 Cancelar
@@ -144,16 +144,21 @@ export function EditProfileDialog({ profile, children }: Props) {
               </Button>
             </div>
           </div>
-          <div className="mt-4 flex gap-1 rounded-full border border-border bg-muted p-1 text-sm">
+          <div className="mt-4 flex gap-1 overflow-x-auto text-sm">
             {tabs.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
+<<<<<<< HEAD
                 className={`rounded-full px-4 py-1.5 font-medium transition ${
                   tab === t.key
                     ? "bg-card text-foreground shadow-sm"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
+=======
+                className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-light transition ${tab === t.key ? "bg-surface-2 text-primary" : "text-text-subtle hover:bg-surface-3 hover:text-text-strong"
+                  }`}
+>>>>>>> origin/feature/fase-4
               >
                 {t.label}
               </button>
@@ -165,6 +170,7 @@ export function EditProfileDialog({ profile, children }: Props) {
           {tab === "info" && (
             <div className="space-y-5">
               <Field label="Nome">
+<<<<<<< HEAD
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -251,13 +257,48 @@ export function EditProfileDialog({ profile, children }: Props) {
                   onChange={(e) => setGoalsText(e.target.value)}
                   className="h-10 border-transparent bg-muted"
                 />
+=======
+                <Input value={name} onChange={(e) => setName(e.target.value)} className="h-10 border-border-soft bg-surface-1" />
+              </Field>
+              <Field label="Username (URL do perfil)" error={usernameError}>
+                <Input value={username} onChange={(e) => { setUsername(e.target.value); setUsernameError(""); }} placeholder="seu-username" className="h-10 border-border-soft bg-surface-1" />
+              </Field>
+              <Field label="Headline">
+                <Input value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="Cargo ou frase de destaque" className="h-10 border-border-soft bg-surface-1" />
+              </Field>
+              <Field label="Bio">
+                <Textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} className="h-10 border-border-soft bg-surface-1 pl-9" />
+              </Field>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Empresa">
+                  <Input value={company} onChange={(e) => setCompany(e.target.value)} className="h-10 border-border-soft bg-surface-1" />
+                </Field>
+                <Field label="Localização">
+                  <Input value={location} onChange={(e) => setLocation(e.target.value)} className="h-10 border-border-soft bg-surface-1" />
+                </Field>
+              </div>
+              <Field label="Disponibilidade">
+                <Input value={availability} onChange={(e) => setAvailability(e.target.value)} placeholder="Ex: Disponível para freelas" className="h-10 border-border-soft bg-surface-1" />
+              </Field>
+              <Field label="Portfólio">
+                <Input value={portfolio} onChange={(e) => setPortfolio(e.target.value)} placeholder="https://..." className="h-10 border-border-soft bg-surface-1" />
+              </Field>
+              <Field label="Links externos (um por linha)">
+                <Textarea value={linksText} onChange={(e) => setLinksText(e.target.value)} rows={3} className="h-10 border-border-soft bg-surface-1" />
+              </Field>
+              <Field label="Habilidades (separadas por vírgula)">
+                <Input value={skillsText} onChange={(e) => setSkillsText(e.target.value)} className="h-10 border-border-soft bg-surface-1" />
+              </Field>
+              <Field label="Objetivos (separados por vírgula)">
+                <Input value={goalsText} onChange={(e) => setGoalsText(e.target.value)} className="h-10 border-border-soft bg-surface-1" />
+>>>>>>> origin/feature/fase-4
               </Field>
               <div className="flex items-center gap-8">
-                <label className="flex items-center gap-3 text-sm">
+                <label className="flex items-center gap-3 text-[13px] font-light text-text-strong">
                   <Switch checked={openToWork} onCheckedChange={setOpenToWork} />
                   Aberto a oportunidades
                 </label>
-                <label className="flex items-center gap-3 text-sm">
+                <label className="flex items-center gap-3 text-[13px] font-light text-text-strong">
                   <Switch checked={isMentor} onCheckedChange={setIsMentor} />
                   Mentor disponível
                 </label>
@@ -364,7 +405,7 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
+      <Label className="text-[13px] font-light text-text-subtle">{label}</Label>
       {children}
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
@@ -462,7 +503,7 @@ function SubList<T extends { id: string }>({
   return (
     <div className="space-y-4">
       {showForm ? (
-        <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
+        <div className="space-y-3 rounded-xl border border-border-soft p-4">
           {fields.map((f) => (
             <Field key={f.key} label={f.label}>
               {f.multiline ? (
@@ -470,20 +511,20 @@ function SubList<T extends { id: string }>({
                   value={form[f.key] ?? ""}
                   onChange={(e) => setForm((p) => ({ ...p, [f.key]: e.target.value }))}
                   rows={2}
-                  className="h-10 border-transparent bg-muted"
+                  className="h-10 border-border-soft bg-surface-1"
                 />
               ) : (
                 <Input
                   type={f.type ?? "text"}
                   value={form[f.key] ?? ""}
                   onChange={(e) => setForm((p) => ({ ...p, [f.key]: e.target.value }))}
-                  className="h-10 border-transparent bg-muted"
+                  className="h-10 border-border-soft bg-surface-1"
                 />
               )}
             </Field>
           ))}
           {currentlyHereKey && (
-            <label className="flex items-center gap-2 text-sm">
+            <label className="flex items-center gap-2 text-[13px] font-light text-text-strong">
               <Switch checked={currentlyHere} onCheckedChange={setCurrentlyHere} />
               Atualmente aqui
             </label>
@@ -508,11 +549,12 @@ function SubList<T extends { id: string }>({
       ) : (
         <>
           {items.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">{emptyMessage}</p>
+            <p className="py-8 text-center text-[13px] font-light text-text-subtle">{emptyMessage}</p>
           ) : (
             items.map((item) => (
-              <div key={item.id} className="rounded-xl border border-border bg-muted/30 p-4">
+              <div key={item.id} className="rounded-xl border border-border-soft p-4">
                 <div className="flex items-start justify-between gap-3">
+<<<<<<< HEAD
                   <div className="min-w-0 flex-1 text-sm">
                     <p className="break-words font-medium">
                       {String((item as Record<string, unknown>)[fields[0].key] ?? "")}
@@ -527,10 +569,19 @@ function SubList<T extends { id: string }>({
                       className="grid h-8 w-8 place-items-center rounded-lg hover:bg-muted"
                     >
                       <Pencil className="h-4 w-4 text-muted-foreground" />
+=======
+                  <div className="min-w-0 flex-1 text-[13px] font-light">
+                    <p className="break-words text-text-strong">{String((item as Record<string, unknown>)[fields[0].key] ?? "")}</p>
+                    <p className="break-words text-text-subtle">{String((item as Record<string, unknown>)[fields[1]?.key] ?? "")}</p>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => startEdit(item)} className="grid h-8 w-8 place-items-center rounded-lg hover:bg-surface-2">
+                      <Pencil className="h-4 w-4 text-text-subtle" />
+>>>>>>> origin/feature/fase-4
                     </button>
                     <button
                       onClick={() => remove.mutate(item.id)}
-                      className="grid h-8 w-8 place-items-center rounded-lg hover:bg-muted hover:text-destructive"
+                      className="grid h-8 w-8 place-items-center rounded-lg hover:bg-surface-2 hover:text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -539,6 +590,7 @@ function SubList<T extends { id: string }>({
               </div>
             ))
           )}
+<<<<<<< HEAD
           <Button
             variant="outline"
             className="w-full gap-1.5"
@@ -548,6 +600,9 @@ function SubList<T extends { id: string }>({
               setCurrentlyHere(false);
             }}
           >
+=======
+          <Button size="sm" variant="outline" className="w-full gap-1.5" onClick={() => { setEditingId("__new__"); setForm({ ...newItem }); setCurrentlyHere(false); }}>
+>>>>>>> origin/feature/fase-4
             <Plus className="h-4 w-4" /> Adicionar
           </Button>
         </>
