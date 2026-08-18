@@ -56,9 +56,9 @@
   --color-highlight-insight-text: var(--highlight-insight-text);
   --color-highlight-project: var(--highlight-project);
   --color-highlight-project-text: var(--highlight-project-text);
-  --color-mentorship-button: var(--mentorship-button);
   --color-highlight-article: var(--highlight-article);
   --color-highlight-article-text: var(--highlight-article-text);
+  --color-mentorship-button: var(--mentorship-button);
 }
 
 :root {
@@ -96,11 +96,11 @@
   /* badge project */
   --highlight-project: #ddd6fe;
   --highlight-project-text: #6d28d9;
-  /* mentoria button */
-  --mentorship-button: #7c3aed;
   /* highlight article */
   --highlight-article: #e0f2fe;
   --highlight-article-text: #0369a1;
+  /* mentoria button */
+  --mentorship-button: #7c3aed;
 
   /* Novos tokens (Fase 0) */
   --surface-card: #ffffff;
@@ -222,6 +222,7 @@ img {
 }
 
 @keyframes chama {
+
   0%,
   100% {
     transform: translateY(0) scaleX(1);
