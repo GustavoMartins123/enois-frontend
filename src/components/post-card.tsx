@@ -12,7 +12,7 @@ import {
   Heart,
   HelpCircle,
   Lightbulb,
-  MessageCircle,
+  MessageSquare,
   Send,
   Share2,
 } from "lucide-react";
@@ -48,12 +48,36 @@ import { Textarea } from "@/components/ui/textarea";
 import { MentionTextarea } from "@/components/mention-textarea";
 import { UserAvatar } from "@/components/user-avatar";
 
-const typeMeta: Record<PostView["type"], { label: string; icon: React.ElementType }> = {
-  INSIGHT: { label: "Insight", icon: Lightbulb },
-  QUESTION: { label: "Pergunta", icon: HelpCircle },
-  PROJECT: { label: "Projeto", icon: FolderGit2 },
-  OPPORTUNITY: { label: "Oportunidade", icon: Briefcase },
-  ARTICLE: { label: "Artigo", icon: BookOpen },
+const typeMeta: Record<
+  PostView["type"],
+  { label: string; icon: React.ElementType; className: string }
+> = {
+  INSIGHT: {
+    label: "Insight",
+    icon: Lightbulb,
+    className: "bg-highlight-insight text-highlight-insight-text",
+  },
+  // INSIGHT: { label: "Insight", icon: Lightbulb, className: "bg-highlight-insight text-highlight-insight-text" },
+  QUESTION: {
+    label: "Pergunta",
+    icon: HelpCircle,
+    className: "bg-secondary/30 text-secondary-foreground",
+  },
+  PROJECT: {
+    label: "Projeto",
+    icon: FolderGit2,
+    className: "bg-highlight-project text-highlight-project-text",
+  },
+  OPPORTUNITY: {
+    label: "Oportunidade",
+    icon: Briefcase,
+    className: "bg-opportunity/20 text-opportunity-foreground",
+  },
+  ARTICLE: {
+    label: "Artigo",
+    icon: BookOpen,
+    className: "bg-highlight-article text-highlight-article-text",
+  },
 };
 
 function ReactionsSummary({
@@ -208,7 +232,7 @@ function ReportDialog({
             <select
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="flex h-10 w-full rounded-xl border border-border-soft bg-surface-1 px-3 py-2 text-[13px] font-light text-text-strong"
+              className="flex h-10 w-full rounded-md border border-border-soft bg-surface-1 px-3 py-2 text-[13px] font-light text-text-strong"
             >
               {REPORT_REASONS.map((r) => (
                 <option key={r} value={r}>
@@ -445,7 +469,7 @@ export function PostCard({ post }: { post: PostView }) {
           onClick={loadComments}
           className="flex items-center gap-1.5 transition hover:text-primary"
         >
-          <MessageCircle className="h-4 w-4" /> {totalComments}
+          <MessageSquare className="h-4 w-4" /> {totalComments}
         </button>
         <button
           onClick={handleSave}

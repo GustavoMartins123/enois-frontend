@@ -97,7 +97,7 @@
   --highlight-project: #ddd6fe;
   --highlight-project-text: #6d28d9;
   /* mentoria button */
-  --mentorship-button: #7C3AED;
+  --mentorship-button: #7c3aed;
   /* highlight article */
   --highlight-article: #e0f2fe;
   --highlight-article-text: #0369a1;
@@ -144,12 +144,15 @@
 
   /* Novos tokens (Fase 0) */
   --surface-card: #13131f;
+  --surface-card-90: rgba(19, 19, 31, 0.9);
+  --surface-card-95: rgba(19, 19, 31, 0.95);
   --surface-1: #1c1c2e;
   --surface-2: #2d1f4e;
   --surface-3: #1e1829;
   --border-soft: #2a2a3d;
   --text-strong: #e8e6ff;
   --text-subtle: #9ca3af;
+  --placeholder-color: #6b7280;
 }
 
 @layer base {
@@ -192,7 +195,6 @@
   color: transparent;
 }
 
-
 input,
 textarea,
 select {
@@ -220,7 +222,6 @@ img {
 }
 
 @keyframes chama {
-
   0%,
   100% {
     transform: translateY(0) scaleX(1);
