@@ -3,19 +3,7 @@ import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
-import {
-  BookOpen,
-  Bookmark,
-  Briefcase,
-  Flag,
-  FolderGit2,
-  Heart,
-  HelpCircle,
-  Lightbulb,
-  MessageSquare,
-  Send,
-  Share2,
-} from "lucide-react";
+import { Bookmark, Flag, Heart, MessageSquare, Send, Share2 } from "lucide-react";
 
 import {
   REACTION_EMOJIS,
@@ -33,13 +21,7 @@ import { useAuth } from "@/lib/use-auth";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -50,33 +32,32 @@ import { UserAvatar } from "@/components/user-avatar";
 
 const typeMeta: Record<
   PostView["type"],
-  { label: string; icon: React.ElementType; className: string }
+  { label: string; className: string; classAvatar: string }
 > = {
   INSIGHT: {
     label: "Insight",
-    icon: Lightbulb,
     className: "bg-highlight-insight text-highlight-insight-text",
+    classAvatar: "bg-user-insight text-highlight-insight-text",
   },
-  // INSIGHT: { label: "Insight", icon: Lightbulb, className: "bg-highlight-insight text-highlight-insight-text" },
   QUESTION: {
     label: "Pergunta",
-    icon: HelpCircle,
     className: "bg-secondary/30 text-secondary-foreground",
+    classAvatar: "",
   },
   PROJECT: {
     label: "Projeto",
-    icon: FolderGit2,
     className: "bg-highlight-project text-highlight-project-text",
+    classAvatar: "bg-user-project text-user-project-text",
   },
   OPPORTUNITY: {
     label: "Oportunidade",
-    icon: Briefcase,
     className: "bg-opportunity/20 text-opportunity-foreground",
+    classAvatar: "",
   },
   ARTICLE: {
     label: "Artigo",
-    icon: BookOpen,
     className: "bg-highlight-article text-highlight-article-text",
+    classAvatar: "bg-user-article text-user-article-text",
   },
 };
 
@@ -104,10 +85,11 @@ function ReactionsSummary({
       {entries.map(([type, count]) => (
         <span
           key={type}
-          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-light tabular-nums ${reactionStatus === type
-            ? "bg-surface-2 text-primary"
-            : "border border-border-soft text-text-subtle"
-            }`}
+          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-light tabular-nums ${
+            reactionStatus === type
+              ? "bg-surface-2 text-primary"
+              : "border border-border-soft text-text-subtle"
+          }`}
         >
           {REACTION_EMOJIS[type] ?? type} {count}
         </span>
@@ -139,9 +121,9 @@ function ReactionsDialog({
   const reactions =
     currentUserReaction && currentUserId && !apiReactions.some((r) => r.userId === currentUserId)
       ? [
-        { userId: currentUserId, type: currentUserReaction, createdAt: new Date().toISOString() },
-        ...apiReactions,
-      ]
+          { userId: currentUserId, type: currentUserReaction, createdAt: new Date().toISOString() },
+          ...apiReactions,
+        ]
       : apiReactions;
 
   const uniqueUserIds = [...new Set(reactions.map((r) => r.userId))];
@@ -261,7 +243,6 @@ function ReportDialog({
 export function PostCard({ post }: { post: PostView }) {
   const { user: currentUser } = useAuth();
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
-  const Icon = meta.icon;
   const [showComments, setShowComments] = useState(false);
   const [draft, setDraft] = useState("");
   const [commentMentions, setCommentMentions] = useState<string[]>([]);
@@ -383,9 +364,11 @@ export function PostCard({ post }: { post: PostView }) {
           authorName={post.authorName}
           authorAvatar={post.authorAvatar}
           createdAt={post.createdAt}
-          fallbackClassName={meta.className}
+          fallbackClassName={meta.classAvatar}
         />
-        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${meta.className}`}>
+        <span
+          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${meta.className}`}
+        >
           {meta.label}
         </span>
       </header>
@@ -423,8 +406,9 @@ export function PostCard({ post }: { post: PostView }) {
           <Popover>
             <PopoverTrigger asChild>
               <button
-                className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${reactionStatus ? "text-primary" : ""
-                  }`}
+                className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
+                  reactionStatus ? "text-primary" : ""
+                }`}
                 title={reactionStatus ? `Reagiu com ${REACTION_EMOJIS[reactionStatus]}` : "Reagir"}
               >
                 {reactionStatus ? (
@@ -445,8 +429,9 @@ export function PostCard({ post }: { post: PostView }) {
                     <button
                       key={type}
                       onClick={() => handleReaction(type)}
-                      className={`rounded-lg px-2 py-1 text-xl transition hover:bg-muted ${reactionStatus === type ? "bg-muted ring-1 ring-primary" : ""
-                        }`}
+                      className={`rounded-lg px-2 py-1 text-xl transition hover:bg-muted ${
+                        reactionStatus === type ? "bg-muted ring-1 ring-primary" : ""
+                      }`}
                       title={type.toLowerCase()}
                     >
                       {emoji}
@@ -484,8 +469,9 @@ export function PostCard({ post }: { post: PostView }) {
         </div>
         <button
           onClick={handleSave}
-          className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${saved ? "text-primary" : ""
-            }`}
+          className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
+            saved ? "text-primary" : ""
+          }`}
         >
           <Bookmark className="h-4 w-4" /> {postCounters.saves}
         </button>
@@ -678,8 +664,9 @@ function CommentItem({
                     <button
                       key={type}
                       onClick={() => handleCommentReaction(type)}
-                      className={`rounded-lg px-2 py-1 text-lg transition hover:bg-surface-2 ${commentReaction === type ? "bg-surface-2 ring-1 ring-primary" : ""
-                        }`}
+                      className={`rounded-lg px-2 py-1 text-lg transition hover:bg-surface-2 ${
+                        commentReaction === type ? "bg-surface-2 ring-1 ring-primary" : ""
+                      }`}
                     >
                       {emoji}
                     </button>
@@ -730,11 +717,11 @@ function AuthorInfo({
           <Link
             to="/perfil/$username"
             params={{ username: authorUsername }}
-            className="text-[14px] font-light text-text-strong hover:underline"
+            className="font-bold hover:underline text-[14px]"
           >
             {authorName}
           </Link>
-          <span className="text-[12px] font-light text-text-subtle">· {formatTime(createdAt)}</span>
+          <span className="text-[12px] font-light text-text-date">· {formatTime(createdAt)}</span>
         </div>
       </div>
     </div>
