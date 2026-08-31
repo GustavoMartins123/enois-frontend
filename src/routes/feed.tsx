@@ -193,13 +193,12 @@ function Home() {
               <div className="relative mt-3">
                 {mediaType === "image" ? (
                   <div
-                    className={`grid gap-2 ${
-                      media.length === 1
-                        ? "grid-cols-1"
-                        : media.length === 2
-                          ? "grid-cols-2"
-                          : "grid-cols-2"
-                    }`}
+                    className={`grid gap-2 ${media.length === 1
+                      ? "grid-cols-1"
+                      : media.length === 2
+                        ? "grid-cols-2"
+                        : "grid-cols-2"
+                      }`}
                   >
                     {media.map((item, i) => (
                       <div
@@ -344,7 +343,7 @@ function Home() {
         </div>
 
         {/* Right rail */}
-        <aside className="hidden space-y-4 lg:block">
+        <aside className="sticky top-20 hidden max-h-[calc(100vh-6rem)] space-y-4 overflow-y-auto lg:block">
           {profileUser && (
             <div className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
               <div className="h-14" style={{ background: "var(--gradient-primary)" }} />
@@ -461,11 +460,10 @@ function ComposerAction({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-light transition ${
-        active
-          ? "bg-primary text-primary-foreground"
-          : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
-      }`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-light transition ${active
+        ? "bg-primary text-primary-foreground"
+        : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
+        }`}
     >
       <Icon className="h-3.5 w-3.5" />
       {label}
@@ -485,11 +483,10 @@ function TabPill({
   return (
     <button
       onClick={onClick}
-      className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-light transition ${
-        active
-          ? "bg-primary text-primary-foreground"
-          : "border border-border-soft bg-surface-card text-text-subtle hover:border-primary hover:text-primary"
-      }`}
+      className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-light transition ${active
+        ? "bg-primary text-primary-foreground"
+        : "border border-border-soft bg-surface-card text-text-subtle hover:border-primary hover:text-primary"
+        }`}
     >
       {children}
     </button>
