@@ -10,17 +10,21 @@ import {
   Briefcase,
   Calendar,
   CheckCheck,
+  ChevronsLeft,
+  ChevronsRight,
   Compass,
   GraduationCap,
   Heart,
   Home,
   Loader2,
   LogIn,
+  Menu,
   MessageCircle,
   Search,
   Sparkles,
   UserPlus,
   Users,
+  X,
 } from "lucide-react";
 
 import { networkApi, notificationsApi, profileApi, searchApi } from "@/lib/api";
@@ -131,6 +135,21 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   const authenticated = isAuthenticated();
   const [notifTab, setNotifTab] = useState<"novas" | "historico">("novas");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    () => localStorage.getItem("sidebar-collapsed") === "true",
+  );
+
+  useEffect(() => {
+    localStorage.setItem("sidebar-collapsed", String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
+
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileMenuOpen]);
 
   const { data: profile } = useQuery({
     queryKey: ["me"],
@@ -172,6 +191,15 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b border-border-soft bg-surface-card/90 backdrop-blur-md">
         <div className="mx-auto flex h-14 max-w-7xl items-center gap-2 px-3 sm:h-16 sm:gap-4 sm:px-6">
+          {authenticated && (
+            <button
+              onClick={() => setMobileMenuOpen(true)}
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-text-subtle transition hover:bg-surface-2 hover:text-primary md:hidden"
+              aria-label="Abrir menu"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          )}
           <Link to="/feed" className="flex shrink-0 items-center gap-2">
             <div
               className="grid h-8 w-8 place-items-center rounded-xl text-primary-foreground sm:h-9 sm:w-9"
@@ -406,10 +434,30 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-7xl gap-6 px-3 py-4 pb-24 sm:px-6 sm:py-6 lg:pb-6">
+      <div className="mx-auto flex max-w-7xl gap-6 px-3 py-4 sm:px-6 sm:py-6 lg:pb-6">
         {authenticated && (
-          <aside className="sticky top-20 hidden h-fit w-60 shrink-0 lg:block">
+          <aside
+            className={cn(
+              "sticky top-20 hidden h-fit shrink-0 lg:block",
+              sidebarCollapsed ? "w-16" : "w-60",
+            )}
+            style={{ transition: "width 0.3s cubic-bezier(0.4, 0, 0.2, 1)" }}
+          >
             <nav className="flex flex-col gap-1">
+              <button
+                onClick={() => setSidebarCollapsed((c) => !c)}
+                className={cn(
+                  "mb-1 grid h-8 w-8 place-items-center self-end rounded-lg text-text-subtle transition hover:bg-surface-2 hover:text-primary",
+                )}
+                aria-label={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}
+                title={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}
+              >
+                {sidebarCollapsed ? (
+                  <ChevronsRight className="h-4 w-4" />
+                ) : (
+                  <ChevronsLeft className="h-4 w-4" />
+                )}
+              </button>
               {nav.map((item) => {
                 const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
                 const Icon = item.icon;
@@ -417,15 +465,27 @@ export function AppShell({ children }: { children: ReactNode }) {
                   <Link
                     key={item.to}
                     to={item.to}
+                    title={sidebarCollapsed ? item.label : undefined}
                     className={cn(
-                      "group flex items-center gap-3 rounded-xl border-l-2 py-3 pl-3 pr-3 text-[14px] font-light transition",
+                      "group flex items-center rounded-xl border-l-2 py-3 text-[14px] font-light transition",
+                      sidebarCollapsed ? "justify-center px-0" : "gap-3 pl-3 pr-3",
                       active
                         ? "border-primary bg-surface-2 text-primary"
                         : "border-transparent text-text-subtle hover:bg-surface-3 hover:text-text-strong",
                     )}
+                    style={{ transition: "gap 0.3s ease" }}
                   >
-                    <Icon className={cn("h-4 w-4", active ? "text-primary" : "")} />
-                    {item.label}
+                    <Icon
+                      className={cn(
+                        "h-4 w-4 shrink-0 transition-colors",
+                        active ? "text-primary" : "",
+                      )}
+                    />
+                    {!sidebarCollapsed && (
+                      <span className="opacity-100 transition-opacity duration-300">
+                        {item.label}
+                      </span>
+                    )}
                   </Link>
                 );
               })}
@@ -437,27 +497,75 @@ export function AppShell({ children }: { children: ReactNode }) {
       </div>
 
       {authenticated && (
-        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border-soft bg-surface-card/95 backdrop-blur lg:hidden">
-          <div className="mx-auto flex max-w-7xl items-center gap-1 overflow-x-auto px-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            {nav.map((item) => {
-              const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
-              const Icon = item.icon;
-              return (
-                <Link
-                  key={item.to}
-                  to={item.to}
-                  className={cn(
-                    "flex min-w-[64px] shrink-0 flex-col items-center gap-0.5 whitespace-nowrap px-2 py-2 text-[10px] font-light",
-                    active ? "text-primary" : "text-text-subtle",
-                  )}
+        <div
+          className={cn(
+            "fixed inset-0 z-50 md:hidden",
+            mobileMenuOpen ? "pointer-events-auto" : "pointer-events-none",
+          )}
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setMobileMenuOpen(false);
+          }}
+        >
+          <div
+            className={cn(
+              "absolute inset-0 bg-black/50 backdrop-blur-sm transition-opacity duration-300",
+              mobileMenuOpen ? "opacity-100" : "opacity-0",
+            )}
+          />
+          <div
+            className={cn(
+              "absolute inset-y-0 left-0 flex w-72 flex-col border-r border-border-soft bg-surface-card shadow-card transition-transform duration-300 ease-out",
+              mobileMenuOpen ? "translate-x-0" : "-translate-x-full",
+            )}
+          >
+            <div className="flex h-14 items-center justify-between border-b border-border-soft px-3 sm:h-16">
+              <Link
+                to="/feed"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2"
+              >
+                <div
+                  className="grid h-8 w-8 place-items-center rounded-xl text-primary-foreground sm:h-9 sm:w-9"
+                  style={{ background: "var(--gradient-primary)" }}
                 >
-                  <Icon className="h-5 w-5" />
-                  {item.label}
-                </Link>
-              );
-            })}
+                  <Sparkles className="h-4 w-4" />
+                </div>
+                <span className="text-lg font-semibold tracking-tight">
+                  É<span className="gradient-text">nóis</span>
+                </span>
+              </Link>
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="grid h-9 w-9 place-items-center rounded-full text-text-subtle transition hover:bg-surface-2 hover:text-primary"
+                aria-label="Fechar menu"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <nav className="flex flex-col gap-1 overflow-y-auto p-3">
+              {nav.map((item) => {
+                const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+                const Icon = item.icon;
+                return (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 rounded-xl border-l-2 py-3 pl-3 pr-3 text-[14px] font-light transition",
+                      active
+                        ? "border-primary bg-surface-2 text-primary"
+                        : "border-transparent text-text-subtle hover:bg-surface-3 hover:text-text-strong",
+                    )}
+                  >
+                    <Icon className={cn("h-5 w-5", active ? "text-primary" : "")} />
+                    {item.label}
+                  </Link>
+                );
+              })}
+            </nav>
           </div>
-        </nav>
+        </div>
       )}
     </div>
   );

@@ -112,7 +112,7 @@ function Vagas() {
             {hasFilters && (
               <Button
                 size="sm"
-                variant="ghost"
+                variant="secondary"
                 className="rounded-full gap-1.5 text-muted-foreground"
                 onClick={clearFilters}
               >
@@ -128,11 +128,10 @@ function Vagas() {
                 <button
                   key={l}
                   onClick={() => setLevel(level === l ? "" : l)}
-                  className={`rounded-full border px-3 py-1 text-xs transition ${
-                    level === l
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-card text-muted-foreground hover:text-foreground"
-                  }`}
+                  className={`rounded-full border px-3 py-1 text-xs transition ${level === l
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card text-muted-foreground hover:text-foreground"
+                    }`}
                 >
                   {l.charAt(0) + l.slice(1).toLowerCase()}
                 </button>
@@ -147,11 +146,10 @@ function Vagas() {
                 <button
                   key={l}
                   onClick={() => setLocation(location === l ? "" : l)}
-                  className={`rounded-full border px-3 py-1 text-xs transition ${
-                    location === l
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-card text-muted-foreground hover:text-foreground"
-                  }`}
+                  className={`rounded-full border px-3 py-1 text-xs transition ${location === l
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card text-muted-foreground hover:text-foreground"
+                    }`}
                 >
                   {l}
                 </button>
@@ -166,11 +164,10 @@ function Vagas() {
                 <button
                   key={t}
                   onClick={() => setType(type === t ? "" : t)}
-                  className={`rounded-full border px-3 py-1 text-xs transition ${
-                    type === t
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-card text-muted-foreground hover:text-foreground"
-                  }`}
+                  className={`rounded-full border px-3 py-1 text-xs transition ${type === t
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card text-muted-foreground hover:text-foreground"
+                    }`}
                 >
                   {t}
                 </button>
