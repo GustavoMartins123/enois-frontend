@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 import { notificationMeta } from "./notification-meta";
-import { formatTime } from "./utils/format-time";
+import { formatNotificationTime } from "./utils/format-time";
 import { navigateToHref } from "./utils/navigation";
 
 export function NotificationsPopover() {
@@ -176,7 +176,7 @@ export function NotificationsPopover() {
                     </p>
                     <div className="mt-3 flex items-center justify-between gap-2">
                       <span className="text-[11px] font-light text-text-subtle">
-                        {formatTime(notification.createdAt)}
+                        {formatNotificationTime(notification.createdAt)}
                       </span>
                       <div className="flex items-center gap-2">
                         {!notification.read && (
