@@ -1,12 +1,12 @@
 import { useEffect } from "react";
 
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 
 import { Sparkles, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-import { nav } from "./navigation";
+import { NavigationLinks } from "./navigation-links";
 
 type MobileNavigationProps = {
   open: boolean;
@@ -14,8 +14,6 @@ type MobileNavigationProps = {
 };
 
 export function MobileNavigation({ open, onClose }: MobileNavigationProps) {
-  const pathname = useRouterState({ select: (state) => state.location.pathname });
-
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
     return () => {
@@ -65,28 +63,8 @@ export function MobileNavigation({ open, onClose }: MobileNavigationProps) {
             <X className="h-5 w-5" />
           </button>
         </div>
-        <nav className="flex flex-col gap-1 overflow-y-auto p-3">
-          {nav.map((item) => {
-            const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                onClick={onClose}
-                className={cn(
-                  "flex items-center gap-3 rounded-xl border-l-2 py-3 pl-3 pr-3 text-[14px] font-light transition",
-                  active
-                    ? "border-primary bg-surface-2 text-primary"
-                    : "border-transparent text-text-subtle hover:bg-surface-3 hover:text-text-strong",
-                )}
-              >
-                <Icon className={cn("h-5 w-5", active ? "text-primary" : "")} />
-                {item.label}
-              </Link>
-            );
-          })}
-        </nav>
+
+        <NavigationLinks onNavigate={onClose} className="overflow-y-auto p-3" />
       </div>
     </div>
   );
