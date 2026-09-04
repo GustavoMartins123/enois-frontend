@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -13,7 +13,7 @@ import { NotificationItem } from "./notification-item";
 
 export function NotificationsPopover() {
   const queryClient = useQueryClient();
-  const [notifTab, setNotifTab] = useState<"novas" | "historico">("novas");
+  const [notificationTab, setNotificationTab] = useState<"novas" | "historico">("novas");
 
   const { data: notificationsData } = useQuery({
     queryKey: ["notifications"],
@@ -41,17 +41,10 @@ export function NotificationsPopover() {
     },
   });
 
-  const notificationList = useMemo(() => notificationsData?.items ?? [], [notificationsData]);
-  const unreadCount = useMemo(
-    () => notificationList.filter((notification) => !notification.read).length,
-    [notificationList],
-  );
-  const displayedNotifications = useMemo(
-    () =>
-      notificationList.filter((notification) =>
-        notifTab === "novas" ? !notification.read : notification.read,
-      ),
-    [notificationList, notifTab],
+  const notificationList = notificationsData?.items ?? [];
+  const unreadCount = notificationList.filter((notification) => !notification.read).length;
+  const displayedNotifications = notificationList.filter((notification) =>
+    notificationTab === "novas" ? !notification.read : notification.read,
   );
 
   return (
@@ -76,7 +69,7 @@ export function NotificationsPopover() {
       >
         <div className="flex items-center justify-between gap-3 border-b border-border-soft px-4 py-3">
           <span className="text-[14px] font-light text-text-strong">Notificações</span>
-          {unreadCount > 0 && notifTab === "novas" && (
+          {unreadCount > 0 && notificationTab === "novas" && (
             <button
               type="button"
               onClick={() => markAllAsRead.mutate()}
@@ -91,10 +84,10 @@ export function NotificationsPopover() {
         <div className="flex border-b border-border-soft">
           <button
             type="button"
-            onClick={() => setNotifTab("novas")}
+            onClick={() => setNotificationTab("novas")}
             className={cn(
               "flex flex-1 items-center justify-center gap-1.5 py-2.5 text-[12px] font-light transition",
-              notifTab === "novas"
+              notificationTab === "novas"
                 ? "border-b-2 border-primary text-primary"
                 : "text-text-subtle hover:text-text-strong",
             )}
@@ -109,10 +102,10 @@ export function NotificationsPopover() {
 
           <button
             type="button"
-            onClick={() => setNotifTab("historico")}
+            onClick={() => setNotificationTab("historico")}
             className={cn(
               "flex-1 py-2.5 text-[12px] font-light transition",
-              notifTab === "historico"
+              notificationTab === "historico"
                 ? "border-b-2 border-primary text-primary"
                 : "text-text-subtle hover:text-text-strong",
             )}
@@ -124,7 +117,7 @@ export function NotificationsPopover() {
         <div className="max-h-[28rem] overflow-y-auto">
           {displayedNotifications.length === 0 ? (
             <p className="px-4 py-8 text-center text-[13px] font-light text-text-subtle">
-              {notifTab === "novas" ? "Nenhuma notificação nova." : "Nenhum histórico ainda."}
+              {notificationTab === "novas" ? "Nenhuma notificação nova." : "Nenhum histórico ainda."}
             </p>
           ) : (
             displayedNotifications.map((notification) => (
