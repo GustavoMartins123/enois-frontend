@@ -11,7 +11,8 @@ import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 import { notificationMeta } from "./notification-meta";
-import { formatTime, navigateToHref } from "./utils";
+import { formatTime } from "./utils/format-time";
+import { navigateToHref } from "./utils/navigation";
 
 export function NotificationsPopover() {
   const queryClient = useQueryClient();

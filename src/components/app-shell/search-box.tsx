@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 
 import { UserAvatar } from "@/components/user-avatar";
 
-import { navigateToHref } from "./utils";
+import { navigateToHref } from "./utils/navigation";
 
 export function SearchBox() {
   const navigate = useNavigate();
