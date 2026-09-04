@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 
-import { LogIn, Menu, Sparkles } from "lucide-react";
+import { LogIn, Menu } from "lucide-react";
 
 import { profileApi } from "@/lib/api";
 
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserAvatar } from "@/components/user-avatar";
 
+import { AppBrand } from "./app-brand";
 import { NotificationsPopover } from "./notifications-popover";
 import { SearchBox } from "./search-box";
 
@@ -38,17 +39,8 @@ export function AppHeader({ authenticated, onOpenMobileMenu }: AppHeaderProps) {
             <Menu className="h-5 w-5" />
           </button>
         )}
-        <Link to="/feed" className="flex shrink-0 items-center gap-2">
-          <div
-            className="grid h-8 w-8 place-items-center rounded-xl text-primary-foreground sm:h-9 sm:w-9"
-            style={{ background: "var(--gradient-primary)" }}
-          >
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <span className="text-lg font-semibold tracking-tight">
-            É<span className="gradient-text">nóis</span>
-          </span>
-        </Link>
+
+        <AppBrand />
 
         {authenticated && <SearchBox />}
 
