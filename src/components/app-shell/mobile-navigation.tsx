@@ -1,11 +1,10 @@
 import { useEffect } from "react";
 
-import { Link } from "@tanstack/react-router";
-
-import { Sparkles, X } from "lucide-react";
+import { X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
+import { AppBrand } from "./app-brand";
 import { NavigationLinks } from "./navigation-links";
 
 type MobileNavigationProps = {
@@ -44,17 +43,7 @@ export function MobileNavigation({ open, onClose }: MobileNavigationProps) {
         )}
       >
         <div className="flex h-14 items-center justify-between border-b border-border-soft px-3 sm:h-16">
-          <Link to="/feed" onClick={onClose} className="flex items-center gap-2">
-            <div
-              className="grid h-8 w-8 place-items-center rounded-xl text-primary-foreground sm:h-9 sm:w-9"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              <Sparkles className="h-4 w-4" />
-            </div>
-            <span className="text-lg font-semibold tracking-tight">
-              É<span className="gradient-text">nóis</span>
-            </span>
-          </Link>
+          <AppBrand onClick={onClose} />
           <button
             onClick={onClose}
             className="grid h-9 w-9 place-items-center rounded-full text-text-subtle transition hover:bg-surface-2 hover:text-primary"
