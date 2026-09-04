@@ -79,7 +79,7 @@ function useEvents() {
 function Home() {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<string | undefined>("FOR_YOU");
-  const { data: feedData } = useFeed(tab);
+  const { data: feedData, isFetching: feedLoading } = useFeed(tab);
   const { data: profile } = useProfile();
   const { data: suggestions } = useSuggestions();
   const { data: eventsData } = useEvents();
@@ -336,9 +336,15 @@ function Home() {
           </div>
 
           <div className="space-y-4">
-            {feedPosts.map((p) => (
-              <PostCard key={p.id} post={p} />
-            ))}
+            {feedLoading && (
+              <div className="flex items-center justify-center py-8 text-text-subtle">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
+            )}
+            {!feedLoading &&
+              feedPosts.map((p) => (
+                <PostCard key={p.id} post={p} />
+              ))}
           </div>
         </div>
 
