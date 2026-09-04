@@ -11,9 +11,9 @@ import { navigateToHref } from "@/utils/navigation";
 
 import { Input } from "@/components/ui/input";
 
-import { SearchResults } from "./search-results";
+import { GlobalSearchResults } from "./global-search-results";
 
-export function SearchBox() {
+export function GlobalSearch() {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [debounced, setDebounced] = useState("");
@@ -104,7 +104,7 @@ export function SearchBox() {
           )}
           {open && debounced.length >= 2 && (
             <div className="absolute left-4 right-4 top-full mt-2 overflow-hidden rounded-2xl border border-border-soft bg-surface-card shadow-card md:left-0 md:right-0">
-              <SearchResults
+              <GlobalSearchResults
                 items={items}
                 query={debounced}
                 isFetching={isFetching}

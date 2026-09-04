@@ -2,14 +2,19 @@ import type { SearchResult } from "@/lib/api";
 
 import { UserAvatar } from "@/components/user-avatar";
 
-type SearchResultsProps = {
+type GlobalSearchResultsProps = {
   items: SearchResult[];
   query: string;
   isFetching: boolean;
   onSelect: (item: SearchResult) => void;
 };
 
-export function SearchResults({ items, query, isFetching, onSelect }: SearchResultsProps) {
+export function GlobalSearchResults({
+  items,
+  query,
+  isFetching,
+  onSelect,
+}: GlobalSearchResultsProps) {
   return (
     <>
       {items.length === 0 && !isFetching && (

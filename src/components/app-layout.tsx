@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
 
-type ShellLayoutProps = {
+type AppLayoutProps = {
   header: ReactNode;
   sidebar?: ReactNode;
   navigation?: ReactNode;
   children: ReactNode;
 };
 
-export function ShellLayout({ header, sidebar, navigation, children }: ShellLayoutProps) {
+export function AppLayout({ header, sidebar, navigation, children }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       {header}

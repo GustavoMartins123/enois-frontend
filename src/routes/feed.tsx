@@ -23,7 +23,7 @@ import type { UploadResult } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
 
-import { AppShell } from "@/components/app-shell";
+import { AppContainer } from "@/components/app-container";
 import { MentionTextarea } from "@/components/mention-textarea";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
@@ -163,7 +163,7 @@ function Home() {
   const eventList = eventsData?.items ?? [];
 
   return (
-    <AppShell>
+    <AppContainer>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-4">
           {/* Composer */}
@@ -447,7 +447,7 @@ function Home() {
           )}
         </aside>
       </div>
-    </AppShell>
+    </AppContainer>
   );
 }
 

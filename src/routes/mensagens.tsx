@@ -11,7 +11,7 @@ import { useAuth } from "@/lib/use-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import { AppShell } from "@/components/app-shell";
+import { AppContainer } from "@/components/app-container";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/mensagens")({
@@ -105,7 +105,7 @@ function Mensagens() {
   }, [activeMessages.length]);
 
   return (
-    <AppShell>
+    <AppContainer>
       <div className="surface-card grid h-[calc(100dvh-11rem)] md:h-[calc(100vh-9rem)] grid-cols-1 overflow-hidden md:grid-cols-[320px_1fr]">
         <div
           className={`flex flex-col border-r border-border ${activeConversation ? "hidden md:flex" : "flex"}`}
@@ -271,7 +271,7 @@ function Mensagens() {
           )}
         </div>
       </div>
-    </AppShell>
+    </AppContainer>
   );
 }
 

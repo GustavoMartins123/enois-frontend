@@ -1,6 +1,6 @@
 import { Link, createFileRoute } from "@tanstack/react-router";
 
-import { LegalLayout, LegalSection, LegalUpdated } from "@/components/legal-layout";
+import { LegalLastUpdated, LegalLayout, LegalSection } from "@/components/legal-layout";
 
 export const Route = createFileRoute("/termos")({
   head: () => ({
@@ -21,7 +21,7 @@ function Termos() {
     <LegalLayout>
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">Termos de Uso</h1>
-        <LegalUpdated date="15 de agosto de 2026" />
+        <LegalLastUpdated date="15 de agosto de 2026" />
       </header>
 
       <LegalSection title="1. Aceitação dos termos">

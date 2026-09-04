@@ -3,12 +3,12 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { AppBrand } from "./app-brand";
 import { NavigationLinks } from "./navigation-links";
 
-type MobileNavigationProps = {
+type NavigationDrawerProps = {
   open: boolean;
   onClose: () => void;
 };
 
-export function MobileNavigation({ open, onClose }: MobileNavigationProps) {
+export function NavigationDrawer({ open, onClose }: NavigationDrawerProps) {
   return (
     <Sheet
       open={open}

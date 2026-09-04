@@ -6,11 +6,11 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 import { AppBrand } from "./app-brand";
-import { HeaderLayout } from "./header-layout";
+import { AppHeaderLayout } from "./app-header-layout";
 
-export function GuestHeader() {
+export function GuestAppHeader() {
   return (
-    <HeaderLayout>
+    <AppHeaderLayout>
       <AppBrand />
 
       <div className="ml-auto flex items-center gap-2">
@@ -21,6 +21,6 @@ export function GuestHeader() {
           </Link>
         </Button>
       </div>
-    </HeaderLayout>
+    </AppHeaderLayout>
   );
 }

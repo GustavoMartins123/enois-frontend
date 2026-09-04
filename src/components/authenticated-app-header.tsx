@@ -9,22 +9,22 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { UserAvatar } from "@/components/user-avatar";
 
 import { AppBrand } from "./app-brand";
-import { HeaderLayout } from "./header-layout";
+import { AppHeaderLayout } from "./app-header-layout";
 import { NotificationsPopover } from "./notifications-popover";
-import { SearchBox } from "./search-box";
+import { GlobalSearch } from "./global-search";
 
-type AuthenticatedHeaderProps = {
+type AuthenticatedAppHeaderProps = {
   onOpenMobileMenu: () => void;
 };
 
-export function AuthenticatedHeader({ onOpenMobileMenu }: AuthenticatedHeaderProps) {
+export function AuthenticatedAppHeader({ onOpenMobileMenu }: AuthenticatedAppHeaderProps) {
   const { data: profile } = useQuery({
     queryKey: ["me"],
     queryFn: () => profileApi.me(),
   });
 
   return (
-    <HeaderLayout>
+    <AppHeaderLayout>
       <button
         onClick={onOpenMobileMenu}
         className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-text-subtle transition hover:bg-surface-2 hover:text-primary md:hidden"
@@ -34,7 +34,7 @@ export function AuthenticatedHeader({ onOpenMobileMenu }: AuthenticatedHeaderPro
       </button>
 
       <AppBrand />
-      <SearchBox />
+      <GlobalSearch />
 
       <div className="ml-auto flex items-center gap-2">
         <ThemeToggle />
@@ -50,6 +50,6 @@ export function AuthenticatedHeader({ onOpenMobileMenu }: AuthenticatedHeaderPro
           </Link>
         )}
       </div>
-    </HeaderLayout>
+    </AppHeaderLayout>
   );
 }

@@ -22,7 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-import { AppShell } from "@/components/app-shell";
+import { AppContainer } from "@/components/app-container";
 
 const TOPICS = [
   "Todas",
@@ -99,7 +99,7 @@ function Comunidades() {
   }
 
   return (
-    <AppShell>
+    <AppContainer>
       <div className="space-y-6">
         <div className="surface-card flex flex-wrap items-center justify-between gap-3 p-4 sm:gap-4 sm:p-6">
           <div>
@@ -200,7 +200,7 @@ function Comunidades() {
           </div>
         )}
       </div>
-    </AppShell>
+    </AppContainer>
   );
 }
 

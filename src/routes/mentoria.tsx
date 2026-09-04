@@ -22,7 +22,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { AppShell } from "@/components/app-shell";
+import { AppContainer } from "@/components/app-container";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/mentoria")({
@@ -51,7 +51,7 @@ function Mentoria() {
   });
 
   return (
-    <AppShell>
+    <AppContainer>
       <div className="space-y-6">
         <div
           className="surface-card relative overflow-hidden p-5 sm:p-8"
@@ -110,7 +110,7 @@ function Mentoria() {
           </div>
         </div>
       </div>
-    </AppShell>
+    </AppContainer>
   );
 }
 

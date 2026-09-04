@@ -42,7 +42,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 
-import { AppShell } from "@/components/app-shell";
+import { AppContainer } from "@/components/app-container";
 import { EditProfileDialog } from "@/components/edit-profile-dialog";
 import { ImageCropDialog } from "@/components/image-crop-dialog";
 import { PostCard } from "@/components/post-card";
@@ -64,7 +64,7 @@ export const Route = createFileRoute("/perfil/$username")({
     ],
   }),
   notFoundComponent: () => (
-    <AppShell>
+    <AppContainer>
       <div className="rounded-2xl border border-border-soft bg-surface-card p-10 text-center">
         <p className="text-[16px] font-light text-text-strong">Pessoa não encontrada</p>
         <Link
@@ -74,16 +74,16 @@ export const Route = createFileRoute("/perfil/$username")({
           Voltar para o início
         </Link>
       </div>
-    </AppShell>
+    </AppContainer>
   ),
   errorComponent: () => (
-    <AppShell>
+    <AppContainer>
       <div className="rounded-2xl border border-border-soft bg-surface-card p-10 text-center">
         <p className="text-[13px] font-light text-text-subtle">
           Não foi possível carregar este perfil.
         </p>
       </div>
-    </AppShell>
+    </AppContainer>
   ),
   component: Profile,
 });
@@ -211,7 +211,7 @@ function Profile() {
   }, [cropImageSrc]);
 
   return (
-    <AppShell>
+    <AppContainer>
       <div className="space-y-6">
         <div className="rounded-2xl border border-border-soft bg-surface-card overflow-hidden">
           <div
@@ -531,7 +531,7 @@ function Profile() {
           onCropComplete={handleCropComplete}
         />
       )}
-    </AppShell>
+    </AppContainer>
   );
 }
 
