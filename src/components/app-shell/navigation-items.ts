@@ -9,7 +9,7 @@ import {
   Users,
 } from "lucide-react";
 
-export const nav = [
+export const navigationItems = [
   { to: "/feed", label: "Início", icon: Home },
   { to: "/rede", label: "Rede", icon: Users },
   { to: "/comunidades", label: "Comunidades", icon: Compass },

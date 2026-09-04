@@ -2,7 +2,7 @@ import { Link, useRouterState } from "@tanstack/react-router";
 
 import { cn } from "@/lib/utils";
 
-import { nav } from "./navigation";
+import { navigationItems } from "./navigation-items";
 
 type NavigationLinksProps = {
   collapsed?: boolean;
@@ -22,7 +22,7 @@ export function NavigationLinks({
       data-collapsed={collapsed}
       className={cn("group/navigation flex flex-col gap-1", className)}
     >
-      {nav.map((item) => {
+      {navigationItems.map((item) => {
         const active = pathname === item.to || pathname.startsWith(`${item.to}/`);
         const Icon = item.icon;
 
