@@ -6,11 +6,11 @@ import { useNavigate } from "@tanstack/react-router";
 import { Loader2, Search } from "lucide-react";
 
 import { searchApi } from "@/lib/api";
+import type { SearchResult } from "@/lib/api";
 
 import { Input } from "@/components/ui/input";
 
-import { UserAvatar } from "@/components/user-avatar";
-
+import { SearchResults } from "./search-results";
 import { navigateToHref } from "./utils/navigation";
 
 export function SearchBox() {
@@ -20,7 +20,6 @@ export function SearchBox() {
   const [open, setOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const desktopRef = useRef<HTMLDivElement>(null);
-  const mobileRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => setDebounced(query), 250);
@@ -33,6 +32,7 @@ export function SearchBox() {
         setOpen(false);
       }
     }
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
@@ -45,6 +45,17 @@ export function SearchBox() {
 
   const items = results?.items ?? [];
 
+  const closeSearch = () => {
+    setOpen(false);
+    setQuery("");
+  };
+
+  const handleSelect = (item: SearchResult, closeMobile = false) => {
+    closeSearch();
+    if (closeMobile) setMobileOpen(false);
+    navigateToHref(item.href, navigate);
+  };
+
   return (
     <>
       <button
@@ -54,23 +65,23 @@ export function SearchBox() {
       >
         <Search className="h-4 w-4" />
       </button>
+
       {mobileOpen && (
         <div
           className="fixed inset-0 z-50 flex items-start justify-center bg-background/80 pt-4 backdrop-blur-sm md:hidden"
-          onMouseDown={(e) => {
-            if (e.target === e.currentTarget) {
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
               setMobileOpen(false);
-              setOpen(false);
-              setQuery("");
+              closeSearch();
             }
           }}
         >
-          <div ref={mobileRef} className="relative w-full max-w-md px-4">
+          <div className="relative w-full max-w-md px-4">
             <Search className="pointer-events-none absolute left-7 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-text-subtle" />
             <Input
               value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
+              onChange={(event) => {
+                setQuery(event.target.value);
                 setOpen(true);
               }}
               onFocus={() => setOpen(true)}
@@ -83,50 +94,24 @@ export function SearchBox() {
             )}
             {open && debounced.length >= 2 && (
               <div className="absolute left-4 right-4 top-full mt-2 overflow-hidden rounded-2xl border border-border-soft bg-surface-card shadow-card">
-                {items.length === 0 && !isFetching && (
-                  <p className="px-4 py-6 text-center text-sm text-text-subtle">
-                    Nenhum resultado para "{debounced}"
-                  </p>
-                )}
-                <ul className="max-h-80 overflow-y-auto">
-                  {items.map((item) => {
-                    const close = () => {
-                      setOpen(false);
-                      setQuery("");
-                      setMobileOpen(false);
-                    };
-                    return (
-                      <li key={`${item.type}-${item.id}`}>
-                        <button
-                          onClick={() => {
-                            close();
-                            navigateToHref(item.href, navigate);
-                          }}
-                          className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-surface-3"
-                        >
-                          <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-[13px] font-light text-text-strong">
-                              {item.title}
-                            </p>
-                            <p className="truncate text-xs text-text-subtle">{item.subtitle}</p>
-                          </div>
-                        </button>
-                      </li>
-                    );
-                  })}
-                </ul>
+                <SearchResults
+                  items={items}
+                  query={debounced}
+                  isFetching={isFetching}
+                  onSelect={(item) => handleSelect(item, true)}
+                />
               </div>
             )}
           </div>
         </div>
       )}
+
       <div ref={desktopRef} className="relative ml-2 hidden flex-1 max-w-md md:block">
         <Search className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-text-subtle" />
         <Input
           value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
+          onChange={(event) => {
+            setQuery(event.target.value);
             setOpen(true);
           }}
           onFocus={() => setOpen(true)}
@@ -138,38 +123,12 @@ export function SearchBox() {
         )}
         {open && debounced.length >= 2 && (
           <div className="absolute left-0 right-0 top-full mt-2 overflow-hidden rounded-2xl border border-border-soft bg-surface-card shadow-card">
-            {items.length === 0 && !isFetching && (
-              <p className="px-4 py-6 text-center text-sm text-text-subtle">
-                Nenhum resultado para "{debounced}"
-              </p>
-            )}
-            <ul className="max-h-80 overflow-y-auto">
-              {items.map((item) => {
-                const close = () => {
-                  setOpen(false);
-                  setQuery("");
-                };
-                return (
-                  <li key={`${item.type}-${item.id}`}>
-                    <button
-                      onClick={() => {
-                        close();
-                        navigateToHref(item.href, navigate);
-                      }}
-                      className="flex w-full items-center gap-3 px-4 py-3 text-left transition hover:bg-surface-3"
-                    >
-                      <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-[13px] font-light text-text-strong">
-                          {item.title}
-                        </p>
-                        <p className="truncate text-xs text-text-subtle">{item.subtitle}</p>
-                      </div>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
+            <SearchResults
+              items={items}
+              query={debounced}
+              isFetching={isFetching}
+              onSelect={handleSelect}
+            />
           </div>
         )}
       </div>
