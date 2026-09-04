@@ -12,10 +12,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader
-        authenticated={authenticated}
-        onOpenMobileMenu={() => setMobileMenuOpen(true)}
-      />
+      <AppHeader authenticated={authenticated} onOpenMobileMenu={() => setMobileMenuOpen(true)} />
 
       <div className="mx-auto flex max-w-7xl gap-6 px-3 py-4 sm:px-6 sm:py-6 lg:pb-6">
         {authenticated && <AppSidebar />}

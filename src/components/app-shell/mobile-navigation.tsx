@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 
 import { Link, useRouterState } from "@tanstack/react-router";
+
 import { Sparkles, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";

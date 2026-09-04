@@ -1,6 +1,14 @@
 import type { ElementType } from "react";
 
-import { AtSign, Briefcase, Calendar, GraduationCap, Heart, MessageCircle, UserPlus } from "lucide-react";
+import {
+  AtSign,
+  Briefcase,
+  Calendar,
+  GraduationCap,
+  Heart,
+  MessageCircle,
+  UserPlus,
+} from "lucide-react";
 
 export const notificationMeta: Record<string, { icon: ElementType; className: string }> = {
   connection: { icon: UserPlus, className: "bg-primary-soft text-primary" },

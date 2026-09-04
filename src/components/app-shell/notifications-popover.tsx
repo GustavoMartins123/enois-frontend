@@ -2,11 +2,13 @@ import { useMemo, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+
 import { Bell, CheckCheck } from "lucide-react";
 
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { networkApi, notificationsApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
+
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 import { notificationMeta } from "./notification-meta";
 import { formatTime, navigateToHref } from "./utils";
@@ -41,7 +43,10 @@ export function NotificationsPopover() {
     [notificationList],
   );
   const displayedNotifications = useMemo(
-    () => notificationList.filter((notification) => (notifTab === "novas" ? !notification.read : notification.read)),
+    () =>
+      notificationList.filter((notification) =>
+        notifTab === "novas" ? !notification.read : notification.read,
+      ),
     [notificationList, notifTab],
   );
 

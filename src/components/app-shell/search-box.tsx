@@ -2,11 +2,14 @@ import { useEffect, useRef, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
+
 import { Loader2, Search } from "lucide-react";
 
-import { Input } from "@/components/ui/input";
-import { UserAvatar } from "@/components/user-avatar";
 import { searchApi } from "@/lib/api";
+
+import { Input } from "@/components/ui/input";
+
+import { UserAvatar } from "@/components/user-avatar";
 
 import { navigateToHref } from "./utils";
 

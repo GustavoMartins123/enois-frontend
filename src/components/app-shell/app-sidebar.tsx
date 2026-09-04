@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { Link, useRouterState } from "@tanstack/react-router";
+
 import { ChevronsLeft, ChevronsRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -56,10 +57,7 @@ export function AppSidebar() {
               style={{ transition: "gap 0.3s ease" }}
             >
               <Icon
-                className={cn(
-                  "h-4 w-4 shrink-0 transition-colors",
-                  active ? "text-primary" : "",
-                )}
+                className={cn("h-4 w-4 shrink-0 transition-colors", active ? "text-primary" : "")}
               />
               {!sidebarCollapsed && (
                 <span className="opacity-100 transition-opacity duration-300">{item.label}</span>

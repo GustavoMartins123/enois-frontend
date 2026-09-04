@@ -1,11 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
+
 import { LogIn, Menu, Sparkles } from "lucide-react";
 
+import { profileApi } from "@/lib/api";
+
 import { Button } from "@/components/ui/button";
+
 import { ThemeToggle } from "@/components/theme-toggle";
 import { UserAvatar } from "@/components/user-avatar";
-import { profileApi } from "@/lib/api";
 
 import { NotificationsPopover } from "./notifications-popover";
 import { SearchBox } from "./search-box";
