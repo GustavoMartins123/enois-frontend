@@ -23,7 +23,7 @@ export function NavigationLinks({
       className={cn("group/navigation flex flex-col gap-1", className)}
     >
       {nav.map((item) => {
-        const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
+        const active = pathname === item.to || pathname.startsWith(`${item.to}/`);
         const Icon = item.icon;
 
         return (

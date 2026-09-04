@@ -19,8 +19,10 @@ export function NotificationItem({
   onAcceptConnection,
 }: NotificationItemProps) {
   const navigate = useNavigate();
-  const meta = notificationMeta[notification.kind.toLowerCase()] ?? notificationMeta.connection;
+  const kind = notification.kind.toLowerCase();
+  const meta = notificationMeta[kind] ?? notificationMeta.connection;
   const Icon = meta.icon;
+  const canAcceptConnection = kind === "connection_request" && Boolean(notification.actorId);
 
   const markAsRead = () => {
     if (!notification.read) onMarkAsRead(notification.id);
@@ -93,15 +95,15 @@ export function NotificationItem({
                 </button>
               )}
 
-              {notification.ctaLabel === "Aceitar" && notification.actorId ? (
+              {canAcceptConnection ? (
                 <button
                   type="button"
                   onClick={handleAcceptConnection}
                   className="rounded-full bg-primary px-3 py-1 text-[11px] font-light text-primary-foreground transition hover:bg-primary/90"
                 >
-                  Aceitar
+                  {notification.ctaLabel || "Aceitar"}
                 </button>
-              ) : notification.ctaLabel && notification.ctaLabel !== "Aceitar" ? (
+              ) : notification.ctaLabel ? (
                 <button
                   type="button"
                   onClick={handleNavigate}
