@@ -7,11 +7,11 @@ import { Loader2, Search } from "lucide-react";
 
 import { searchApi } from "@/lib/api";
 import type { SearchResult } from "@/lib/api";
+import { navigateToHref } from "@/utils/navigation";
 
 import { Input } from "@/components/ui/input";
 
 import { SearchResults } from "./search-results";
-import { navigateToHref } from "./utils/navigation";
 
 export function SearchBox() {
   const navigate = useNavigate();
