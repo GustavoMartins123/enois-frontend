@@ -2,8 +2,9 @@ import { type ReactNode, useState } from "react";
 
 import { isAuthenticated } from "@/lib/use-auth";
 
-import { AppHeader } from "./app-shell/app-header";
 import { AppSidebar } from "./app-shell/app-sidebar";
+import { AuthenticatedHeader } from "./app-shell/authenticated-header";
+import { GuestHeader } from "./app-shell/guest-header";
 import { MobileNavigation } from "./app-shell/mobile-navigation";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -12,7 +13,11 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader authenticated={authenticated} onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+      {authenticated ? (
+        <AuthenticatedHeader onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+      ) : (
+        <GuestHeader />
+      )}
 
       <div className="mx-auto flex max-w-7xl gap-6 px-3 py-4 sm:px-6 sm:py-6 lg:pb-6">
         {authenticated && <AppSidebar />}
