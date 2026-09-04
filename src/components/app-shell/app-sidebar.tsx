@@ -6,14 +6,22 @@ import { cn } from "@/lib/utils";
 
 import { NavigationLinks } from "./navigation-links";
 
+const SIDEBAR_COLLAPSED_KEY = "sidebar-collapsed";
+
 export function AppSidebar() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(
-    () => localStorage.getItem("sidebar-collapsed") === "true",
-  );
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
-    localStorage.setItem("sidebar-collapsed", String(sidebarCollapsed));
-  }, [sidebarCollapsed]);
+    setSidebarCollapsed(localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "true");
+  }, []);
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed((collapsed) => {
+      const nextCollapsed = !collapsed;
+      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(nextCollapsed));
+      return nextCollapsed;
+    });
+  };
 
   return (
     <aside
@@ -25,7 +33,7 @@ export function AppSidebar() {
     >
       <div className="flex flex-col gap-1">
         <button
-          onClick={() => setSidebarCollapsed((collapsed) => !collapsed)}
+          onClick={toggleSidebar}
           className="mb-1 grid h-8 w-8 place-items-center self-end rounded-lg text-text-subtle transition hover:bg-surface-2 hover:text-primary"
           aria-label={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}
           title={sidebarCollapsed ? "Expandir menu" : "Recolher menu"}
