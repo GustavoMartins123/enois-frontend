@@ -356,11 +356,17 @@ function EditMentorForm({
           value={skillsText}
           onChange={(e) => setSkillsText(e.target.value)}
           placeholder="Java, Spring, React"
+          className="h-10 border-transparent bg-muted"
         />
       </div>
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">Investimento</Label>
-        <Input value={price} onChange={(e) => setPrice(e.target.value)} placeholder="Gratuito" />
+        <Input
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          placeholder="Gratuito"
+          className="h-10 border-transparent bg-muted"
+        />
       </div>
       <Button
         className="w-full rounded-full"

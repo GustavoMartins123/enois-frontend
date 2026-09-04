@@ -3,19 +3,7 @@ import { type FormEvent, useEffect, useMemo, useState } from "react";
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
-import {
-  BookOpen,
-  Bookmark,
-  Briefcase,
-  Flag,
-  FolderGit2,
-  Heart,
-  HelpCircle,
-  Lightbulb,
-  MessageCircle,
-  Send,
-  Share2,
-} from "lucide-react";
+import { Bookmark, Flag, Heart, MessageSquare, Send, Share2 } from "lucide-react";
 
 import {
   REACTION_EMOJIS,
@@ -27,19 +15,13 @@ import {
   reactionsApi,
   reportsApi,
 } from "@/lib/api";
-import type { CommentView, PostView, ReactionType } from "@/lib/api";
+import type { CommentView, PostView, ReactionType, ReportReason } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { useAuth } from "@/lib/use-auth";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -48,12 +30,35 @@ import { Textarea } from "@/components/ui/textarea";
 import { MentionTextarea } from "@/components/mention-textarea";
 import { UserAvatar } from "@/components/user-avatar";
 
-const typeMeta: Record<PostView["type"], { label: string; icon: React.ElementType }> = {
-  INSIGHT: { label: "Insight", icon: Lightbulb },
-  QUESTION: { label: "Pergunta", icon: HelpCircle },
-  PROJECT: { label: "Projeto", icon: FolderGit2 },
-  OPPORTUNITY: { label: "Oportunidade", icon: Briefcase },
-  ARTICLE: { label: "Artigo", icon: BookOpen },
+const typeMeta: Record<
+  PostView["type"],
+  { label: string; className: string; classAvatar: string }
+> = {
+  INSIGHT: {
+    label: "Insight",
+    className: "bg-highlight-insight text-highlight-insight-text",
+    classAvatar: "bg-user-insight text-highlight-insight-text",
+  },
+  QUESTION: {
+    label: "Pergunta",
+    className: "bg-secondary/30 text-secondary-foreground",
+    classAvatar: "",
+  },
+  PROJECT: {
+    label: "Projeto",
+    className: "bg-highlight-project text-highlight-project-text",
+    classAvatar: "bg-user-project text-user-project-text",
+  },
+  OPPORTUNITY: {
+    label: "Oportunidade",
+    className: "bg-opportunity/20 text-opportunity-foreground",
+    classAvatar: "",
+  },
+  ARTICLE: {
+    label: "Artigo",
+    className: "bg-highlight-article text-highlight-article-text",
+    classAvatar: "bg-user-article text-user-article-text",
+  },
 };
 
 function ReactionsSummary({
@@ -178,7 +183,7 @@ function ReportDialog({
   open: boolean;
   onOpenChange: (v: boolean) => void;
 }) {
-  const [reason, setReason] = useState("SPAM");
+  const [reason, setReason] = useState<ReportReason>("SPAM");
   const [description, setDescription] = useState("");
 
   const submit = async () => {
@@ -186,7 +191,7 @@ function ReportDialog({
       await reportsApi.create({
         targetId: postId,
         targetType: "POST",
-        reason: reason as ReportReason,
+        reason,
         description: description || undefined,
       });
       onOpenChange(false);
@@ -207,11 +212,11 @@ function ReportDialog({
             <Label className="text-[11px] font-light text-text-subtle">Motivo</Label>
             <select
               value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              className="flex h-10 w-full rounded-xl border border-border-soft bg-surface-1 px-3 py-2 text-[13px] font-light text-text-strong"
+              onChange={(e) => setReason(e.target.value as ReportReason)}
+              className="flex h-10 w-full rounded-md border border-border-soft bg-background px-3 py-2 text-[13px] font-light text-text-strong border-transparent bg-muted"
             >
               {REPORT_REASONS.map((r) => (
-                <option key={r} value={r}>
+                <option key={r} value={r} className="h-10 border-transparent bg-muted">
                   {r.replace(/_/g, " ").toLowerCase()}
                 </option>
               ))}
@@ -223,7 +228,7 @@ function ReportDialog({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="border-border-soft bg-surface-1 text-[13px] font-light"
+              className="border-border-soft bg-surface-1 text-[13px] font-light h-10 border-transparent bg-muted"
             />
           </div>
           <Button className="w-full rounded-full" onClick={submit}>
@@ -238,7 +243,6 @@ function ReportDialog({
 export function PostCard({ post }: { post: PostView }) {
   const { user: currentUser } = useAuth();
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
-  const Icon = meta.icon;
   const [showComments, setShowComments] = useState(false);
   const [draft, setDraft] = useState("");
   const [commentMentions, setCommentMentions] = useState<string[]>([]);
@@ -354,15 +358,17 @@ export function PostCard({ post }: { post: PostView }) {
 
   return (
     <article className="min-w-0 rounded-2xl border border-border-soft bg-surface-card p-4 transition sm:p-5">
-      <header className="flex items-start gap-3">
+      <header className="flex justify-between items-start gap-3">
         <AuthorInfo
           authorUsername={post.authorUsername}
           authorName={post.authorName}
           authorAvatar={post.authorAvatar}
           createdAt={post.createdAt}
+          fallbackClassName={meta.classAvatar}
         />
-        <span className="inline-flex items-center gap-1 rounded-full border border-border-soft px-2.5 py-1 text-[11px] font-light text-text-subtle">
-          <Icon className="h-3 w-3" />
+        <span
+          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${meta.className}`}
+        >
           {meta.label}
         </span>
       </header>
@@ -395,77 +401,79 @@ export function PostCard({ post }: { post: PostView }) {
         </div>
       )}
 
-      <footer className="mt-4 flex flex-wrap items-center gap-4 border-t border-border-soft pt-3 text-[13px] font-light text-text-subtle">
-        <Popover>
-          <PopoverTrigger asChild>
-            <button
-              className={`flex items-center gap-1.5 transition hover:text-primary ${
-                reactionStatus ? "text-primary" : ""
-              }`}
-              title={reactionStatus ? `Reagiu com ${REACTION_EMOJIS[reactionStatus]}` : "Reagir"}
+      <footer className="mt-4 flex justify-between flex-wrap items-center gap-1 border-t border-border pt-3 text-sm text-muted-foreground">
+        <div className="flex">
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
+                  reactionStatus ? "text-primary" : ""
+                }`}
+                title={reactionStatus ? `Reagiu com ${REACTION_EMOJIS[reactionStatus]}` : "Reagir"}
+              >
+                {reactionStatus ? (
+                  <span className="text-base leading-none">{REACTION_EMOJIS[reactionStatus]}</span>
+                ) : (
+                  <Heart className="h-4 w-4" />
+                )}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              align="start"
+              side="top"
+              className="w-fit rounded-2xl border-border p-1.5"
             >
-              {reactionStatus ? (
-                <span className="text-base leading-none">{REACTION_EMOJIS[reactionStatus]}</span>
-              ) : (
-                <Heart className="h-4 w-4" />
-              )}
-              <span className="tabular-nums">{postCounters.reactions}</span>
-            </button>
-          </PopoverTrigger>
-          <PopoverContent
-            align="start"
-            side="top"
-            className="w-fit rounded-2xl border-border-soft bg-surface-card p-1.5"
+              <div className="flex gap-1">
+                {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(
+                  ([type, emoji]) => (
+                    <button
+                      key={type}
+                      onClick={() => handleReaction(type)}
+                      className={`rounded-lg px-2 py-1 text-xl transition hover:bg-muted ${
+                        reactionStatus === type ? "bg-muted ring-1 ring-primary" : ""
+                      }`}
+                      title={type.toLowerCase()}
+                    >
+                      {emoji}
+                    </button>
+                  ),
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+          <button
+            onClick={() => setShowReactions(true)}
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs tabular-nums transition hover:bg-muted hover:text-foreground text-muted-foreground"
           >
-            <div className="flex gap-1">
-              {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(
-                ([type, emoji]) => (
-                  <button
-                    key={type}
-                    onClick={() => handleReaction(type)}
-                    className={`rounded-lg px-2 py-1 text-xl transition hover:bg-surface-2 ${
-                      reactionStatus === type ? "bg-surface-2 ring-1 ring-primary" : ""
-                    }`}
-                    title={type.toLowerCase()}
-                  >
-                    {emoji}
-                  </button>
-                ),
-              )}
-            </div>
-          </PopoverContent>
-        </Popover>
-        <button
-          onClick={() => setShowReactions(true)}
-          className="tabular-nums transition hover:text-primary"
-        >
-          ver reações
-        </button>
-        <button
-          onClick={loadComments}
-          className="flex items-center gap-1.5 transition hover:text-primary"
-        >
-          <MessageCircle className="h-4 w-4" /> {totalComments}
-        </button>
+            {postCounters.reactions}
+          </button>
+          <button
+            onClick={loadComments}
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
+          >
+            <MessageSquare className="h-4 w-4" /> {totalComments}
+          </button>
+
+          <button
+            onClick={handleShare}
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
+          >
+            <Share2 className="h-4 w-4" /> Compartilhar
+          </button>
+          <button
+            onClick={() => setShowReport(true)}
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
+          >
+            <Flag className="h-4 w-4" />
+          </button>
+        </div>
         <button
           onClick={handleSave}
-          className={`flex items-center gap-1.5 transition hover:text-primary ${
+          className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
             saved ? "text-primary" : ""
           }`}
         >
           <Bookmark className="h-4 w-4" /> {postCounters.saves}
-        </button>
-        <button
-          onClick={handleShare}
-          className="flex items-center gap-1.5 transition hover:text-primary"
-        >
-          <Share2 className="h-4 w-4" /> Compartilhar
-        </button>
-        <button
-          onClick={() => setShowReport(true)}
-          className="ml-auto flex items-center gap-1.5 transition hover:text-amber-500"
-        >
-          <Flag className="h-4 w-4" />
         </button>
       </footer>
 
@@ -686,27 +694,34 @@ function AuthorInfo({
   authorName,
   authorAvatar,
   createdAt,
+  fallbackClassName,
 }: {
   authorUsername: string;
   authorName: string;
   authorAvatar: string | null;
   createdAt: string;
+  fallbackClassName?: string;
 }) {
   return (
     <div className="flex items-start gap-3">
       <Link to="/perfil/$username" params={{ username: authorUsername }}>
-        <UserAvatar src={authorAvatar} alt={authorName} className="h-11 w-11" />
+        <UserAvatar
+          src={authorAvatar}
+          alt={authorName}
+          fallbackClassName={fallbackClassName}
+          className="h-11 w-11"
+        />
       </Link>
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
           <Link
             to="/perfil/$username"
             params={{ username: authorUsername }}
-            className="text-[14px] font-light text-text-strong hover:underline"
+            className="font-bold hover:underline text-[14px]"
           >
             {authorName}
           </Link>
-          <span className="text-[12px] font-light text-text-subtle">· {formatTime(createdAt)}</span>
+          <span className="text-[12px] font-light text-text-date">· {formatTime(createdAt)}</span>
         </div>
       </div>
     </div>

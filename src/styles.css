@@ -12,6 +12,7 @@
   --color-border-soft: var(--border-soft);
   --color-text-strong: var(--text-strong);
   --color-text-subtle: var(--text-subtle);
+  --color-text-date: var(--text-date);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -56,9 +57,16 @@
   --color-highlight-insight-text: var(--highlight-insight-text);
   --color-highlight-project: var(--highlight-project);
   --color-highlight-project-text: var(--highlight-project-text);
-  --color-mentorship-button: var(--mentorship-button);
   --color-highlight-article: var(--highlight-article);
   --color-highlight-article-text: var(--highlight-article-text);
+  --color-mentorship-button: var(--mentorship-button);
+
+  /* avatar */
+  --color-user-insight: var(--background-user-insight);
+  --color-user-project: var(--background-user-project);
+  --color-user-project-text: var(--project-text);
+  --color-user-article: var(--background-user-article);
+  --color-user-article-text: var(--article-text);
 }
 
 :root {
@@ -96,11 +104,17 @@
   /* badge project */
   --highlight-project: #ddd6fe;
   --highlight-project-text: #6d28d9;
-  /* mentoria button */
-  --mentorship-button: #7C3AED;
+  /* background and text color user-avatar */
+  --background-user-project: #c4b5fd;
+  --project-text: #4c1d95;
+  --background-user-insight: #fde68a;
+  --background-user-article: #bfdbfe;
+  --article-text: #1e40af;
   /* highlight article */
   --highlight-article: #e0f2fe;
   --highlight-article-text: #0369a1;
+  /* mentoria button */
+  --mentorship-button: #7c3aed;
 
   /* Novos tokens (Fase 0) */
   --surface-card: #ffffff;
@@ -110,6 +124,7 @@
   --border-soft: #e5e0eb;
   --text-strong: #0f0f14;
   --text-subtle: #6b7280;
+  --text-date: #a1a1aa;
 }
 
 .dark {
@@ -144,12 +159,15 @@
 
   /* Novos tokens (Fase 0) */
   --surface-card: #13131f;
+  --surface-card-90: rgba(19, 19, 31, 0.9);
+  --surface-card-95: rgba(19, 19, 31, 0.95);
   --surface-1: #1c1c2e;
   --surface-2: #2d1f4e;
   --surface-3: #1e1829;
   --border-soft: #2a2a3d;
   --text-strong: #e8e6ff;
   --text-subtle: #9ca3af;
+  --placeholder-color: #6b7280;
 }
 
 @layer base {
@@ -192,7 +210,6 @@
   color: transparent;
 }
 
-
 input,
 textarea,
 select {
@@ -220,7 +237,6 @@ img {
 }
 
 @keyframes chama {
-
   0%,
   100% {
     transform: translateY(0) scaleX(1);
