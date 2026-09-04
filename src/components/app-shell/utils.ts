@@ -1,67 +1,57 @@
-export function navigateToHref(
-  href: string,
-  navigate: (opts: { to: string; params?: Record<string, string> }) => void,
-) {
-  if (href.startsWith("/api/feed/posts/")) {
-    navigate({ to: "/feed" });
-    return;
-  }
-  if (href.startsWith("/api/users/")) {
-    const username = href.replace("/api/users/", "");
-    if (username) {
-      navigate({ to: "/perfil/$username", params: { username } });
-      return;
-    }
-  }
-  if (href.startsWith("/api/communities/")) {
-    const id = href.replace("/api/communities/", "");
-    if (id) {
-      navigate({ to: "/comunidades/$communityId", params: { communityId: id } });
-      return;
-    }
-  }
-  if (href.startsWith("/api/jobs/")) {
-    navigate({ to: "/vagas" });
-    return;
-  }
-  if (href.startsWith("/api/events/")) {
-    navigate({ to: "/eventos" });
-    return;
-  }
-  if (href.startsWith("/api/mentors/")) {
-    navigate({ to: "/mentoria" });
-    return;
-  }
-  if (href.startsWith("/perfil/")) {
-    const username = href.replace("/perfil/", "");
-    if (username) {
-      navigate({ to: "/perfil/$username", params: { username } });
-      return;
-    }
-  }
-  if (href.startsWith("/comunidades/")) {
-    const communityId = href.replace("/comunidades/", "");
-    if (communityId) {
-      navigate({ to: "/comunidades/$communityId", params: { communityId } });
-      return;
-    }
-  }
-  const listRoutes = [
-    "/feed",
-    "/rede",
-    "/mensagens",
-    "/vagas",
-    "/comunidades",
-    "/eventos",
-    "/mentoria",
-  ] as const;
-  for (const route of listRoutes) {
-    if (href === route || href.startsWith(route + "/")) {
-      navigate({ to: route });
-      return;
-    }
-  }
-  navigate({ to: "/feed" });
+type Navigate = (opts: { to: string; params?: Record<string, string> }) => void;
+
+type RouteDefinition = {
+  source: string;
+  to: string;
+  params?: readonly string[];
+};
+
+const routeDefinitions = [
+  { source: "feed/posts", to: "/feed" },
+  { source: "users", to: "/perfil/$username", params: ["username"] },
+  {
+    source: "communities",
+    to: "/comunidades/$communityId",
+    params: ["communityId"],
+  },
+  { source: "jobs", to: "/vagas" },
+  { source: "events", to: "/eventos" },
+  { source: "mentors", to: "/mentoria" },
+  { source: "perfil", to: "/perfil/$username", params: ["username"] },
+  {
+    source: "comunidades",
+    to: "/comunidades/$communityId",
+    params: ["communityId"],
+  },
+  { source: "feed", to: "/feed" },
+  { source: "rede", to: "/rede" },
+  { source: "mensagens", to: "/mensagens" },
+  { source: "vagas", to: "/vagas" },
+  { source: "eventos", to: "/eventos" },
+  { source: "mentoria", to: "/mentoria" },
+] as const satisfies readonly RouteDefinition[];
+
+const routes = [...routeDefinitions].sort((a, b) => b.source.length - a.source.length);
+
+export function navigateToHref(href: string, navigate: Navigate) {
+  const path = href.replace(/^\/api\//, "").replace(/^\/+|\/+$/g, "");
+  const route = routes.find(
+    ({ source }) => path === source || path.startsWith(`${source}/`),
+  );
+
+  if (!route) return;
+
+  const values = path.slice(route.source.length).split("/").filter(Boolean);
+  const paramNames = "params" in route ? route.params : [];
+
+  if (values.length < paramNames.length) return;
+
+  const params = Object.fromEntries(paramNames.map((name, index) => [name, values[index]]));
+
+  navigate({
+    to: route.to,
+    ...(paramNames.length > 0 ? { params } : {}),
+  });
 }
 
 export function formatTime(iso: string | null | undefined): string {
