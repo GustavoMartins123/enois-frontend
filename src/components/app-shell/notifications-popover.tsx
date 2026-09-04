@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 import { notificationMeta } from "./notification-meta";
-import { formatNotificationTime } from "./utils/format-time";
+import { formatNotificationTime } from "./utils/notification-time";
 import { navigateToHref } from "./utils/navigation";
 
 export function NotificationsPopover() {
