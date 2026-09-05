@@ -13,14 +13,22 @@ export function AuthenticatedAppContainer({ children }: AuthenticatedAppContaine
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <AppLayout
-      header={<AuthenticatedAppHeader onOpenMobileMenu={() => setMobileMenuOpen(true)} />}
-      sidebar={<AppSidebar />}
-      navigation={
+    <AppLayout>
+      <AppLayout.Header>
+        <AuthenticatedAppHeader onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+      </AppLayout.Header>
+
+      <AppLayout.Content>
+        <AppLayout.Sidebar>
+          <AppSidebar />
+        </AppLayout.Sidebar>
+
+        <AppLayout.Main>{children}</AppLayout.Main>
+      </AppLayout.Content>
+
+      <AppLayout.Navigation>
         <NavigationDrawer open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
-      }
-    >
-      {children}
+      </AppLayout.Navigation>
     </AppLayout>
   );
 }

@@ -8,5 +8,15 @@ type GuestAppContainerProps = {
 };
 
 export function GuestAppContainer({ children }: GuestAppContainerProps) {
-  return <AppLayout header={<GuestAppHeader />}>{children}</AppLayout>;
+  return (
+    <AppLayout>
+      <AppLayout.Header>
+        <GuestAppHeader />
+      </AppLayout.Header>
+
+      <AppLayout.Content>
+        <AppLayout.Main>{children}</AppLayout.Main>
+      </AppLayout.Content>
+    </AppLayout>
+  );
 }
