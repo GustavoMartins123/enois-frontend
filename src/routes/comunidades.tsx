@@ -9,6 +9,7 @@ import { communitiesApi } from "@/lib/api";
 import type { Community } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { requireAuth } from "@/lib/require-auth";
+import { texts } from "@/texts";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -25,7 +26,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { AppContainer } from "@/components/app-container";
 
 const TOPICS = [
-  "Todas",
   "TECNOLOGIA",
   "ENGENHARIA",
   "DESIGN",
@@ -33,11 +33,13 @@ const TOPICS = [
   "LIDERANCA",
   "CARREIRA",
   "FREELANCE",
-];
+] as const;
+
+type Topic = (typeof TOPICS)[number];
 
 export const Route = createFileRoute("/comunidades")({
   beforeLoad: requireAuth,
-  head: () => ({ meta: [{ title: "Comunidades · Énóis" }] }),
+  head: () => ({ meta: [{ title: texts.communities.seoTitle }] }),
   component: Comunidades,
 });
 
@@ -73,13 +75,11 @@ function Comunidades() {
   }, [communitiesData]);
 
   const loadMore = () => {
-    if (nextCursor && !isFetching) {
-      setCursor(nextCursor);
-    }
+    if (nextCursor && !isFetching) setCursor(nextCursor);
   };
 
-  const handleTopicChange = (t: string) => {
-    setTopic(t === "Todas" ? undefined : t);
+  const handleTopicChange = (nextTopic?: Topic) => {
+    setTopic(nextTopic);
     setCursor(undefined);
     setAllItems([]);
   };
@@ -94,39 +94,45 @@ function Comunidades() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["communities"] }),
   });
 
-  if (isDetail) {
-    return <Outlet />;
-  }
+  if (isDetail) return <Outlet />;
 
   return (
     <AppContainer>
       <div className="space-y-6">
         <div className="surface-card flex flex-wrap items-center justify-between gap-3 p-4 sm:gap-4 sm:p-6">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Comunidades</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Encontre grupos profissionais, fóruns temáticos e círculos de mentoria.
-            </p>
+            <h1 className="text-2xl font-semibold tracking-tight">{texts.communities.title}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">{texts.communities.description}</p>
           </div>
           <CreateCommunityDialog open={open} onOpenChange={setOpen}>
             <Button className="rounded-full gap-1.5">
-              <Plus className="h-4 w-4" /> Criar comunidade
+              <Plus className="h-4 w-4" /> {texts.communities.createCommunity}
             </Button>
           </CreateCommunityDialog>
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {TOPICS.map((t) => (
+          <button
+            onClick={() => handleTopicChange(undefined)}
+            className={`rounded-full border px-3.5 py-1.5 text-sm transition ${
+              !topic
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border bg-card text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {texts.communities.topics.all}
+          </button>
+          {TOPICS.map((value) => (
             <button
-              key={t}
-              onClick={() => handleTopicChange(t)}
+              key={value}
+              onClick={() => handleTopicChange(value)}
               className={`rounded-full border px-3.5 py-1.5 text-sm transition ${
-                (t === "Todas" && !topic) || t === topic
+                value === topic
                   ? "border-primary bg-primary text-primary-foreground"
                   : "border-border bg-card text-muted-foreground hover:text-foreground"
               }`}
             >
-              {t.charAt(0) + t.slice(1).toLowerCase()}
+              {texts.communities.topics[value]}
             </button>
           ))}
         </div>
@@ -150,19 +156,15 @@ function Comunidades() {
                       />
                     )}
                     <div className="min-w-0">
-                      <p className="text-xs font-medium uppercase tracking-wider text-primary">
-                        {c.topic}
-                      </p>
+                      <p className="text-xs font-medium uppercase tracking-wider text-primary">{c.topic}</p>
                       <h3 className="font-semibold truncate">{c.name}</h3>
                     </div>
                   </div>
-                  <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">
-                    {c.description}
-                  </p>
+                  <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">{c.description}</p>
                   <div className="mt-4 flex items-center justify-between">
                     <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Users className="h-3.5 w-3.5" />
-                      {(c.members ?? 0).toLocaleString("pt-BR")} membros
+                      {texts.communities.members(c.members ?? 0)}
                     </span>
                     <Button
                       size="sm"
@@ -171,14 +173,11 @@ function Comunidades() {
                       disabled={join.isPending || leave.isPending}
                       onClick={(e) => {
                         e.preventDefault();
-                        if (c.joined) {
-                          leave.mutate(c.id);
-                        } else {
-                          join.mutate(c.id);
-                        }
+                        if (c.joined) leave.mutate(c.id);
+                        else join.mutate(c.id);
                       }}
                     >
-                      {c.joined ? "Participando" : "Entrar"}
+                      {c.joined ? texts.communities.participating : texts.communities.enter}
                     </Button>
                   </div>
                 </div>
@@ -195,7 +194,7 @@ function Comunidades() {
               onClick={loadMore}
               disabled={isFetching}
             >
-              {isFetching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Carregar mais"}
+              {isFetching ? <Loader2 className="h-4 w-4 animate-spin" /> : texts.communities.loadMore}
             </Button>
           </div>
         )}
@@ -216,7 +215,7 @@ function CreateCommunityDialog({
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [topic, setTopic] = useState("TECNOLOGIA");
+  const [topic, setTopic] = useState<Topic>("TECNOLOGIA");
 
   const create = useMutation({
     mutationFn: () => communitiesApi.create({ name, description, topic }),
@@ -234,19 +233,15 @@ function CreateCommunityDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Criar comunidade</DialogTitle>
+          <DialogTitle>{texts.communities.create.title}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Nome</Label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="h-10 border-transparent bg-muted"
-            />
+            <Label className="text-xs text-muted-foreground">{texts.communities.create.name}</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} className="h-10 border-transparent bg-muted" />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Descrição</Label>
+            <Label className="text-xs text-muted-foreground">{texts.communities.create.description}</Label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -255,15 +250,15 @@ function CreateCommunityDialog({
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Tópico</Label>
+            <Label className="text-xs text-muted-foreground">{texts.communities.create.topic}</Label>
             <select
               value={topic}
-              onChange={(e) => setTopic(e.target.value)}
+              onChange={(e) => setTopic(e.target.value as Topic)}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 border-transparent bg-muted"
             >
-              {TOPICS.filter((t) => t !== "Todas").map((t) => (
-                <option key={t} value={t}>
-                  {t.charAt(0) + t.slice(1).toLowerCase()}
+              {TOPICS.map((value) => (
+                <option key={value} value={value}>
+                  {texts.communities.topics[value]}
                 </option>
               ))}
             </select>
@@ -273,7 +268,7 @@ function CreateCommunityDialog({
             disabled={!name.trim() || !description.trim() || create.isPending}
             onClick={() => create.mutate()}
           >
-            {create.isPending ? "Criando..." : "Criar"}
+            {create.isPending ? texts.common.creating : texts.common.create}
           </Button>
         </div>
       </DialogContent>

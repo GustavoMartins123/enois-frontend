@@ -1,4 +1,5 @@
 import type { SearchResult } from "@/lib/api";
+import { texts } from "@/texts";
 
 import { UserAvatar } from "@/components/user-avatar";
 
@@ -19,7 +20,7 @@ export function GlobalSearchResults({
     <>
       {items.length === 0 && !isFetching && (
         <p className="px-4 py-6 text-center text-sm text-text-subtle">
-          Nenhum resultado para "{query}"
+          {texts.search.noResults(query)}
         </p>
       )}
 

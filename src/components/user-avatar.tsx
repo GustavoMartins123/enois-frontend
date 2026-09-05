@@ -1,4 +1,5 @@
 import { resolveCdnUrl } from "@/lib/api/media";
+import { texts } from "@/texts";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -19,7 +20,7 @@ function getInitials(name: string): string {
 }
 
 export function UserAvatar({ src, alt, className, fallback, fallbackClassName }: UserAvatarProps) {
-  const label = alt ?? "Avatar";
+  const label = alt ?? texts.profile.avatarFallback;
   const resolved = resolveCdnUrl(src);
   return (
     <Avatar className={className}>

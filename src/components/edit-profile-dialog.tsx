@@ -7,6 +7,7 @@ import { Pencil, Plus, Trash2, X } from "lucide-react";
 
 import { ApiError, profileApi } from "@/lib/api";
 import type { Certification, Education, Experience, Profile } from "@/lib/api";
+import { texts } from "@/texts";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -64,7 +65,7 @@ export function EditProfileDialog({ profile, children }: Props) {
     },
     onError: (err) => {
       if (err instanceof ApiError && err.status === 409) {
-        setUsernameError("Este username já está em uso");
+        setUsernameError(texts.profile.edit.usernameTaken);
       }
     },
   });
@@ -122,10 +123,10 @@ export function EditProfileDialog({ profile, children }: Props) {
   };
 
   const tabs = [
-    { key: "info" as const, label: "Informações" },
-    { key: "experiences" as const, label: "Experiências" },
-    { key: "education" as const, label: "Educação" },
-    { key: "certifications" as const, label: "Certificações" },
+    { key: "info" as const, label: texts.profile.edit.tabs.info },
+    { key: "experiences" as const, label: texts.profile.edit.tabs.experiences },
+    { key: "education" as const, label: texts.profile.edit.tabs.education },
+    { key: "certifications" as const, label: texts.profile.edit.tabs.certifications },
   ];
 
   return (
@@ -135,14 +136,14 @@ export function EditProfileDialog({ profile, children }: Props) {
         <DialogHeader className="sticky top-0 z-10 border-b border-border-soft bg-surface-card px-6 pb-4 pt-6">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-[18px] font-light text-text-strong">
-              Editar perfil
+              {texts.profile.edit.title}
             </DialogTitle>
             <div className="flex items-center gap-2">
               <Button size="sm" variant="outline" onClick={() => setOpen(false)}>
-                Cancelar
+                {texts.common.cancel}
               </Button>
               <Button size="sm" onClick={handleSave} disabled={updateProfile.isPending}>
-                {updateProfile.isPending ? "Salvando..." : "Salvar"}
+                {updateProfile.isPending ? texts.common.saving : texts.common.save}
               </Button>
             </div>
           </div>
@@ -166,33 +167,33 @@ export function EditProfileDialog({ profile, children }: Props) {
         <div className="space-y-6 px-6 pb-6 pt-4">
           {tab === "info" && (
             <div className="space-y-5">
-              <Field label="Nome">
+              <Field label={texts.profile.edit.fields.name}>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
-              <Field label="Username (URL do perfil)" error={usernameError}>
+              <Field label={texts.profile.edit.fields.username} error={usernameError}>
                 <Input
                   value={username}
                   onChange={(e) => {
                     setUsername(e.target.value);
                     setUsernameError("");
                   }}
-                  placeholder="seu-username"
+                  placeholder={texts.profile.edit.placeholders.username}
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
-              <Field label="Headline">
+              <Field label={texts.profile.edit.fields.headline}>
                 <Input
                   value={headline}
                   onChange={(e) => setHeadline(e.target.value)}
-                  placeholder="Cargo ou frase de destaque"
+                  placeholder={texts.profile.edit.placeholders.headline}
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
-              <Field label="Bio">
+              <Field label={texts.profile.edit.fields.bio}>
                 <Textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
@@ -201,14 +202,14 @@ export function EditProfileDialog({ profile, children }: Props) {
                 />
               </Field>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Empresa">
+                <Field label={texts.profile.edit.fields.company}>
                   <Input
                     value={company}
                     onChange={(e) => setCompany(e.target.value)}
                     className="h-10 border-border-soft bg-surface-1"
                   />
                 </Field>
-                <Field label="Localização">
+                <Field label={texts.profile.edit.fields.location}>
                   <Input
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
@@ -216,23 +217,23 @@ export function EditProfileDialog({ profile, children }: Props) {
                   />
                 </Field>
               </div>
-              <Field label="Disponibilidade">
+              <Field label={texts.profile.edit.fields.availability}>
                 <Input
                   value={availability}
                   onChange={(e) => setAvailability(e.target.value)}
-                  placeholder="Ex: Disponível para freelas"
+                  placeholder={texts.profile.edit.placeholders.availability}
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
-              <Field label="Portfólio">
+              <Field label={texts.profile.edit.fields.portfolio}>
                 <Input
                   value={portfolio}
                   onChange={(e) => setPortfolio(e.target.value)}
-                  placeholder="https://..."
+                  placeholder={texts.profile.edit.placeholders.portfolio}
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
-              <Field label="Links externos (um por linha)">
+              <Field label={texts.profile.edit.fields.externalLinks}>
                 <Textarea
                   value={linksText}
                   onChange={(e) => setLinksText(e.target.value)}
@@ -240,14 +241,14 @@ export function EditProfileDialog({ profile, children }: Props) {
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
-              <Field label="Habilidades (separadas por vírgula)">
+              <Field label={texts.profile.edit.fields.skills}>
                 <Input
                   value={skillsText}
                   onChange={(e) => setSkillsText(e.target.value)}
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
-              <Field label="Objetivos (separados por vírgula)">
+              <Field label={texts.profile.edit.fields.goals}>
                 <Input
                   value={goalsText}
                   onChange={(e) => setGoalsText(e.target.value)}
@@ -257,11 +258,11 @@ export function EditProfileDialog({ profile, children }: Props) {
               <div className="flex items-center gap-8">
                 <label className="flex items-center gap-3 text-[13px] font-light text-text-strong">
                   <Switch checked={openToWork} onCheckedChange={setOpenToWork} />
-                  Aberto a oportunidades
+                  {texts.profile.edit.openToWork}
                 </label>
                 <label className="flex items-center gap-3 text-[13px] font-light text-text-strong">
                   <Switch checked={isMentor} onCheckedChange={setIsMentor} />
-                  Mentor disponível
+                  {texts.profile.edit.mentorAvailable}
                 </label>
               </div>
             </div>
@@ -271,19 +272,19 @@ export function EditProfileDialog({ profile, children }: Props) {
             <SubList<Experience, ExperienceRequest>
               items={experiences}
               fields={[
-                { key: "title", label: "Cargo", required: true },
-                { key: "company", label: "Empresa", required: true },
-                { key: "location", label: "Local" },
-                { key: "description", label: "Descrição", multiline: true },
-                { key: "startDate", label: "Início", type: "date" },
-                { key: "endDate", label: "Fim", type: "date" },
+                { key: "title", label: texts.profile.edit.experienceFields.title, required: true },
+                { key: "company", label: texts.profile.edit.experienceFields.company, required: true },
+                { key: "location", label: texts.profile.edit.experienceFields.location },
+                { key: "description", label: texts.profile.edit.experienceFields.description, multiline: true },
+                { key: "startDate", label: texts.profile.edit.experienceFields.startDate, type: "date" },
+                { key: "endDate", label: texts.profile.edit.experienceFields.endDate, type: "date" },
               ]}
               currentlyHereKey="currentlyHere"
               createApi={(data) => profileApi.experiences.create(data)}
               updateApi={(id, data) => profileApi.experiences.update(id, data)}
               deleteApi={(id) => profileApi.experiences.delete(id)}
               queryKey={["me", "experiences"]}
-              emptyMessage="Nenhuma experiência adicionada"
+              emptyMessage={texts.profile.edit.emptyExperience}
               newItem={{
                 title: "",
                 company: "",
@@ -299,19 +300,19 @@ export function EditProfileDialog({ profile, children }: Props) {
             <SubList<Education, EducationRequest>
               items={education}
               fields={[
-                { key: "school", label: "Instituição", required: true },
-                { key: "degree", label: "Grau", required: true },
-                { key: "field", label: "Campo" },
-                { key: "description", label: "Descrição", multiline: true },
-                { key: "startDate", label: "Início", type: "date" },
-                { key: "endDate", label: "Fim", type: "date" },
+                { key: "school", label: texts.profile.edit.educationFields.school, required: true },
+                { key: "degree", label: texts.profile.edit.educationFields.degree, required: true },
+                { key: "field", label: texts.profile.edit.educationFields.field },
+                { key: "description", label: texts.profile.edit.educationFields.description, multiline: true },
+                { key: "startDate", label: texts.profile.edit.educationFields.startDate, type: "date" },
+                { key: "endDate", label: texts.profile.edit.educationFields.endDate, type: "date" },
               ]}
               currentlyHereKey="currentlyHere"
               createApi={(data) => profileApi.education.create(data)}
               updateApi={(id, data) => profileApi.education.update(id, data)}
               deleteApi={(id) => profileApi.education.delete(id)}
               queryKey={["me", "education"]}
-              emptyMessage="Nenhuma formação adicionada"
+              emptyMessage={texts.profile.edit.emptyEducation}
               newItem={{
                 school: "",
                 degree: "",
@@ -327,18 +328,18 @@ export function EditProfileDialog({ profile, children }: Props) {
             <SubList<Certification, CertificationRequest>
               items={certifications}
               fields={[
-                { key: "name", label: "Nome", required: true },
-                { key: "issuer", label: "Emissor", required: true },
-                { key: "description", label: "Descrição", multiline: true },
-                { key: "issueDate", label: "Data de emissão", type: "date" },
-                { key: "expirationDate", label: "Data de expiração", type: "date" },
-                { key: "credentialUrl", label: "URL do credencial" },
+                { key: "name", label: texts.profile.edit.certificationFields.name, required: true },
+                { key: "issuer", label: texts.profile.edit.certificationFields.issuer, required: true },
+                { key: "description", label: texts.profile.edit.certificationFields.description, multiline: true },
+                { key: "issueDate", label: texts.profile.edit.certificationFields.issueDate, type: "date" },
+                { key: "expirationDate", label: texts.profile.edit.certificationFields.expirationDate, type: "date" },
+                { key: "credentialUrl", label: texts.profile.edit.certificationFields.credentialUrl },
               ]}
               createApi={(data) => profileApi.certifications.create(data)}
               updateApi={(id, data) => profileApi.certifications.update(id, data)}
               deleteApi={(id) => profileApi.certifications.delete(id)}
               queryKey={["me", "certifications"]}
-              emptyMessage="Nenhuma certificação adicionada"
+              emptyMessage={texts.profile.edit.emptyCertification}
               newItem={{
                 name: "",
                 issuer: "",
@@ -489,12 +490,12 @@ function SubList<
           {currentlyHereKey && (
             <label className="flex items-center gap-2 text-[13px] font-light text-text-strong">
               <Switch checked={currentlyHere} onCheckedChange={setCurrentlyHere} />
-              Atualmente aqui
+              {texts.profile.edit.currentlyHere}
             </label>
           )}
           <div className="flex gap-2">
             <Button size="sm" onClick={handleSubmit} disabled={isPending}>
-              {isPending ? "Salvando..." : "Salvar"}
+              {isPending ? texts.common.saving : texts.common.save}
             </Button>
             <Button
               size="sm"
@@ -505,7 +506,7 @@ function SubList<
                 setCurrentlyHere(false);
               }}
             >
-              Cancelar
+              {texts.common.cancel}
             </Button>
           </div>
         </div>
@@ -555,7 +556,7 @@ function SubList<
               setCurrentlyHere(false);
             }}
           >
-            <Plus className="h-4 w-4" /> Adicionar
+            <Plus className="h-4 w-4" /> {texts.common.add}
           </Button>
         </>
       )}

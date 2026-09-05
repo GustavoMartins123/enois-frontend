@@ -10,6 +10,8 @@ import {
   Users,
 } from "lucide-react";
 
+import { texts } from "@/texts";
+
 import { Button } from "@/components/ui/button";
 
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -17,17 +19,10 @@ import { ThemeToggle } from "@/components/theme-toggle";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Énóis · Rede profissional gratuita e humana" },
-      {
-        name: "description",
-        content:
-          "Uma rede profissional diferente. Sem paywalls, sem métricas de vaidade. Apenas conexões reais, mentoria e conhecimento compartilhado, gratuito para sempre.",
-      },
-      { property: "og:title", content: "Énóis · Rede profissional gratuita e humana" },
-      {
-        property: "og:description",
-        content: "Sua carreira merece um lugar seguro e gratuito para crescer.",
-      },
+      { title: texts.landing.seo.title },
+      { name: "description", content: texts.landing.seo.description },
+      { property: "og:title", content: texts.landing.seo.title },
+      { property: "og:description", content: texts.landing.seo.ogDescription },
     ],
   }),
   component: Landing,
@@ -46,40 +41,36 @@ function Landing() {
               <Sparkles className="h-3.5 w-3.5" />
             </div>
             <span className="text-base font-semibold tracking-tight">
-              É<span className="gradient-text">nóis</span>
+              {texts.brand.prefix}<span className="gradient-text">{texts.brand.accent}</span>
             </span>
           </Link>
           <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
             <a href="#filosofia" className="transition-colors hover:text-foreground">
-              Filosofia
+              {texts.landing.nav.philosophy}
             </a>
             <a href="#recursos" className="transition-colors hover:text-foreground">
-              Recursos
+              {texts.landing.nav.features}
             </a>
             <a href="#comunidade" className="transition-colors hover:text-foreground">
-              Comunidade
+              {texts.landing.nav.community}
             </a>
           </nav>
           <div className="flex items-center gap-1">
             <ThemeToggle />
             <Link to="/entrar" search={{ tab: "login" }}>
               <Button variant="ghost" className="h-8 rounded-full px-3 text-sm">
-                Entrar
+                {texts.common.enter}
               </Button>
             </Link>
             <Link to="/entrar" search={{ tab: "signup" }}>
-              <Button className="h-8 rounded-full px-4 text-sm">Criar conta</Button>
+              <Button className="h-8 rounded-full px-4 text-sm">{texts.common.createAccount}</Button>
             </Link>
           </div>
         </div>
       </header>
 
       <section className="relative overflow-hidden">
-        <div
-          aria-hidden
-          className="absolute inset-0 -z-10"
-          style={{ background: "var(--gradient-soft)" }}
-        />
+        <div aria-hidden className="absolute inset-0 -z-10" style={{ background: "var(--gradient-soft)" }} />
         <div
           aria-hidden
           className="absolute -top-24 left-1/2 -z-10 h-[400px] w-[600px] -translate-x-1/2 rounded-full opacity-30 blur-3xl"
@@ -87,41 +78,38 @@ function Landing() {
         />
         <div className="mx-auto max-w-4xl px-4 pb-24 pt-20 text-center sm:pb-32 sm:pt-28">
           <div className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-card/70 px-3 py-1 text-xs font-medium text-primary backdrop-blur">
-            <Sparkles className="h-3 w-3" /> Uma rede profissional feita para pessoas
+            <Sparkles className="h-3 w-3" /> {texts.landing.hero.badge}
           </div>
           <h1 className="text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
-            Cresça na sua carreira
+            {texts.landing.hero.title}
             <br />
-            <span className="gradient-text">em um lugar seguro e gratuito</span>
+            <span className="gradient-text">{texts.landing.hero.titleAccent}</span>
           </h1>
           <p className="mx-auto mt-5 max-w-lg text-base text-muted-foreground">
-            Énóis conecta profissionais por conhecimento, mentoria e propósito, não por métricas de
-            popularidade.
+            {texts.landing.hero.description}
           </p>
-          <p className="mt-1 text-sm font-medium text-foreground">
-            100% gratuito. Sem anúncios. Sem planos pagos.
-          </p>
+          <p className="mt-1 text-sm font-medium text-foreground">{texts.landing.hero.free}</p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link to="/entrar" search={{ tab: "signup" }}>
               <Button size="lg" className="gap-2 rounded-full px-6">
-                Entrar na comunidade <ArrowRight className="h-4 w-4" />
+                {texts.landing.hero.join} <ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
             <Link to="/feed">
               <Button size="lg" variant="outline" className="rounded-full px-6">
-                Explorar a plataforma
+                {texts.landing.hero.explore}
               </Button>
             </Link>
           </div>
           <div className="mt-14 flex flex-wrap justify-center gap-x-8 gap-y-2 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
-              <Heart className="h-3.5 w-3.5 text-primary/60" /> Sem métricas de vaidade
+              <Heart className="h-3.5 w-3.5 text-primary/60" /> {texts.landing.hero.benefits.noVanity}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck className="h-3.5 w-3.5 text-primary/60" /> Ambiente moderado e seguro
+              <ShieldCheck className="h-3.5 w-3.5 text-primary/60" /> {texts.landing.hero.benefits.safe}
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-primary/60" /> Para sempre gratuito
+              <Sparkles className="h-3.5 w-3.5 text-primary/60" /> {texts.landing.hero.benefits.freeForever}
             </span>
           </div>
         </div>
@@ -131,15 +119,13 @@ function Landing() {
         <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
           <div className="mx-auto max-w-2xl text-center">
             <p className="text-xs font-medium uppercase tracking-widest text-primary">
-              Nossa filosofia
+              {texts.landing.philosophy.eyebrow}
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Profissionalismo com <span className="gradient-text">coração</span>
+              {texts.landing.philosophy.titlePrefix}{" "}
+              <span className="gradient-text">{texts.landing.philosophy.titleAccent}</span>
             </h2>
-            <p className="mt-4 text-muted-foreground">
-              Acreditamos que o crescimento profissional acontece quando pessoas se conectam de
-              forma autêntica, sem barreiras, sem ruído, sem custo.
-            </p>
+            <p className="mt-4 text-muted-foreground">{texts.landing.philosophy.description}</p>
           </div>
           <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {values.map((v) => (
@@ -154,7 +140,7 @@ function Landing() {
           </div>
           <div className="mt-12 text-center">
             <p className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-4 py-1.5 text-sm font-medium text-primary">
-              <ShieldCheck className="h-4 w-4" /> Sempre gratuito para todos os profissionais
+              <ShieldCheck className="h-4 w-4" /> {texts.landing.philosophy.alwaysFree}
             </p>
           </div>
         </div>
@@ -162,14 +148,13 @@ function Landing() {
 
       <section id="recursos" className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-xs font-medium uppercase tracking-widest text-primary">Na prática</p>
-          <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-            O que você encontra aqui
-          </h2>
-          <p className="mt-4 text-muted-foreground">
-            Tudo o que você precisa para crescer profissionalmente, sem os excessos das redes
-            tradicionais.
+          <p className="text-xs font-medium uppercase tracking-widest text-primary">
+            {texts.landing.features.eyebrow}
           </p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
+            {texts.landing.features.title}
+          </h2>
+          <p className="mt-4 text-muted-foreground">{texts.landing.features.description}</p>
         </div>
         <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
@@ -190,28 +175,22 @@ function Landing() {
             <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-primary-soft text-primary">
               <Heart className="h-6 w-6" />
             </div>
-            <h2 className="mt-5 text-3xl font-semibold tracking-tight sm:text-4xl">
-              Sua carreira merece um espaço melhor
-            </h2>
-            <p className="mt-4 text-muted-foreground">
-              Entre para uma comunidade que valoriza autenticidade, colaboração e aprendizado, sem
-              pagar nada por isso. Sem planos, sem anúncios, sem surpresas.
-            </p>
+            <h2 className="mt-5 text-3xl font-semibold tracking-tight sm:text-4xl">{texts.landing.cta.title}</h2>
+            <p className="mt-4 text-muted-foreground">{texts.landing.cta.description}</p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link to="/entrar" search={{ tab: "signup" }}>
                 <Button size="lg" className="gap-2 rounded-full px-6">
-                  Criar conta gratuita <ArrowRight className="h-4 w-4" />
+                  {texts.landing.cta.createAccount} <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Link to="/entrar" search={{ tab: "login" }}>
                 <Button size="lg" variant="outline" className="rounded-full px-6">
-                  Já tenho conta
+                  {texts.landing.cta.existingAccount}
                 </Button>
               </Link>
             </div>
             <p className="mt-4 text-xs text-muted-foreground/60">
-              Sem cartão de crédito · Sem anúncios · Sem plano premium ·{" "}
-              <strong>Para sempre grátis</strong>
+              {texts.landing.cta.finePrint}{" "}<strong>{texts.landing.cta.freeForever}</strong>
             </p>
           </div>
         </div>
@@ -219,18 +198,16 @@ function Landing() {
 
       <footer className="border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-6 text-xs text-muted-foreground sm:px-6">
-          <p>
-            © {new Date().getFullYear()} Énóis · Feito com cuidado para profissionais como você.
-          </p>
+          <p>{texts.landing.footer.copyright(new Date().getFullYear())}</p>
           <div className="flex gap-5">
             <Link to="/privacidade" className="transition-colors hover:text-foreground">
-              Privacidade
+              {texts.landing.footer.privacy}
             </Link>
             <Link to="/termos" className="transition-colors hover:text-foreground">
-              Termos
+              {texts.landing.footer.terms}
             </Link>
             <a href="#" className="transition-colors hover:text-foreground">
-              Contato
+              {texts.landing.footer.contact}
             </a>
           </div>
         </div>
@@ -240,57 +217,17 @@ function Landing() {
 }
 
 const values = [
-  {
-    icon: Heart,
-    title: "Autenticidade",
-    desc: "Perfis baseados em competências reais, não em palavras-chave ou conexões vazias.",
-  },
-  {
-    icon: Users,
-    title: "Colaboração",
-    desc: "Um ambiente onde o sucesso é construído em conjunto, não às custas de outros.",
-  },
-  {
-    icon: GraduationCap,
-    title: "Aprendizado",
-    desc: "Conhecimento compartilhado é a verdadeira moeda da plataforma.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Segurança",
-    desc: "Espaço moderado, livre de assédio, spam e autopromoção.",
-  },
+  { icon: Heart, title: texts.landing.philosophy.values.authenticity.title, desc: texts.landing.philosophy.values.authenticity.description },
+  { icon: Users, title: texts.landing.philosophy.values.collaboration.title, desc: texts.landing.philosophy.values.collaboration.description },
+  { icon: GraduationCap, title: texts.landing.philosophy.values.learning.title, desc: texts.landing.philosophy.values.learning.description },
+  { icon: ShieldCheck, title: texts.landing.philosophy.values.safety.title, desc: texts.landing.philosophy.values.safety.description },
 ];
 
 const features = [
-  {
-    icon: MessageCircle,
-    title: "Discussões com profundidade",
-    desc: "Conteúdo relevante e conversas significativas, sem algoritmo de engajamento vazio.",
-  },
-  {
-    icon: GraduationCap,
-    title: "Mentoria nativa",
-    desc: "Encontre mentores verificados, agende sessões e acompanhe sua trilha de aprendizado.",
-  },
-  {
-    icon: Heart,
-    title: "Comunidades fortes",
-    desc: "Grupos profissionais e fóruns temáticos para troca contínua entre pares.",
-  },
-  {
-    icon: Users,
-    title: "Conexões por afinidade",
-    desc: "Sugestões baseadas em habilidades, objetivos e interesses, não em volume.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Recrutamento honesto",
-    desc: "Match entre empresas e candidatos com transparência sobre faixa salarial e cultura.",
-  },
-  {
-    icon: Sparkles,
-    title: "Bem-estar digital",
-    desc: "Notificações respeitosas e um ambiente que valoriza o seu tempo e atenção.",
-  },
+  { icon: MessageCircle, title: texts.landing.features.items.discussions.title, desc: texts.landing.features.items.discussions.description },
+  { icon: GraduationCap, title: texts.landing.features.items.mentoring.title, desc: texts.landing.features.items.mentoring.description },
+  { icon: Heart, title: texts.landing.features.items.communities.title, desc: texts.landing.features.items.communities.description },
+  { icon: Users, title: texts.landing.features.items.connections.title, desc: texts.landing.features.items.connections.description },
+  { icon: ShieldCheck, title: texts.landing.features.items.recruiting.title, desc: texts.landing.features.items.recruiting.description },
+  { icon: Sparkles, title: texts.landing.features.items.wellbeing.title, desc: texts.landing.features.items.wellbeing.description },
 ];

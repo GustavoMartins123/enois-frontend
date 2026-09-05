@@ -8,6 +8,7 @@ import { Briefcase, Loader2, MapPin, Sparkles, X } from "lucide-react";
 import { jobsApi } from "@/lib/api";
 import type { Job } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
+import { texts } from "@/texts";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -16,14 +17,7 @@ import { Input } from "@/components/ui/input";
 
 import { AppContainer } from "@/components/app-container";
 
-export const Route = createFileRoute("/vagas")({
-  beforeLoad: requireAuth,
-  head: () => ({ meta: [{ title: "Vagas · Énóis" }] }),
-  component: Vagas,
-});
-
 const LEVELS = ["JUNIOR", "MID", "SENIOR", "LEAD"];
-const LOCATIONS = ["Remoto", "Híbrido", "Presencial"];
 const TYPES = ["CLT", "PJ", "FREELANCE", "INTERN"];
 
 function formatPostedAt(dateStr: string | null | undefined): string {
@@ -32,8 +26,8 @@ function formatPostedAt(dateStr: string | null | undefined): string {
   if (isNaN(date.getTime())) return dateStr;
   const now = new Date();
   const diffD = Math.floor((now.getTime() - date.getTime()) / 86400000);
-  if (diffD < 1) return "Hoje";
-  if (diffD < 30) return `Há ${diffD} dias`;
+  if (diffD < 1) return texts.jobs.today;
+  if (diffD < 30) return texts.jobs.daysAgo(diffD);
   return date.toLocaleDateString("pt-BR");
 }
 
@@ -63,7 +57,6 @@ function Vagas() {
   const jobs = jobsData?.items ?? [];
   const nextCursor = jobsData?.nextCursor ?? null;
 
-  // Reset list when filters change
   const filtersKey = JSON.stringify(filters);
   const prevKey = useRef(filtersKey);
   useEffect(() => {
@@ -74,7 +67,6 @@ function Vagas() {
     }
   }, [filtersKey]);
 
-  // Append new page to accumulated list
   useEffect(() => {
     if (cursor === null && jobs.length > 0) {
       setAllJobs(jobs);
@@ -104,10 +96,8 @@ function Vagas() {
         <div className="surface-card p-4 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight">Oportunidades</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Vagas filtradas por nível, localização, tipo e habilidades.
-              </p>
+              <h1 className="text-2xl font-semibold tracking-tight">{texts.jobs.title}</h1>
+              <p className="mt-1 text-sm text-muted-foreground">{texts.jobs.description}</p>
             </div>
             {hasFilters && (
               <Button
@@ -116,14 +106,14 @@ function Vagas() {
                 className="rounded-full gap-1.5 text-muted-foreground"
                 onClick={clearFilters}
               >
-                <X className="h-4 w-4" /> Limpar filtros
+                <X className="h-4 w-4" /> {texts.jobs.clearFilters}
               </Button>
             )}
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-xs font-medium text-muted-foreground mr-1">Nível:</span>
+              <span className="text-xs font-medium text-muted-foreground mr-1">{texts.jobs.filters.level}</span>
               {LEVELS.map((l) => (
                 <button
                   key={l}
@@ -141,8 +131,8 @@ function Vagas() {
 
           <div className="mt-3 flex flex-wrap gap-2">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-xs font-medium text-muted-foreground mr-1">Local:</span>
-              {LOCATIONS.map((l) => (
+              <span className="text-xs font-medium text-muted-foreground mr-1">{texts.jobs.filters.location}</span>
+              {texts.jobs.filters.locations.map((l) => (
                 <button
                   key={l}
                   onClick={() => setLocation(location === l ? "" : l)}
@@ -159,7 +149,7 @@ function Vagas() {
 
           <div className="mt-3 flex flex-wrap gap-2">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-xs font-medium text-muted-foreground mr-1">Tipo:</span>
+              <span className="text-xs font-medium text-muted-foreground mr-1">{texts.jobs.filters.type}</span>
               {TYPES.map((t) => (
                 <button
                   key={t}
@@ -181,14 +171,14 @@ function Vagas() {
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar por título ou empresa..."
+                placeholder={texts.jobs.searchPlaceholder}
                 className="h-9 rounded-full bg-muted pl-9"
               />
             </div>
             <Input
               value={skills}
               onChange={(e) => setSkills(e.target.value)}
-              placeholder="Habilidades (ex: Java,Spring)"
+              placeholder={texts.jobs.skillsPlaceholder}
               className="h-9 rounded-full bg-muted max-w-xs"
             />
           </div>
@@ -214,19 +204,13 @@ function Vagas() {
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                 {j.matchScore && (
                   <span className="rounded-full bg-primary-soft px-2.5 py-1 font-medium text-primary inline-flex items-center gap-1">
-                    <Sparkles className="h-3 w-3" /> {j.matchScore}% match
+                    <Sparkles className="h-3 w-3" /> {texts.jobs.match(j.matchScore)}
                   </span>
                 )}
-                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
-                  {j.type}
-                </span>
-                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
-                  {j.level}
-                </span>
+                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">{j.type}</span>
+                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">{j.level}</span>
                 {j.salary && (
-                  <span className="rounded-full bg-growth/15 px-2.5 py-1 font-medium text-growth">
-                    {j.salary}
-                  </span>
+                  <span className="rounded-full bg-growth/15 px-2.5 py-1 font-medium text-growth">{j.salary}</span>
                 )}
               </div>
 
@@ -246,7 +230,7 @@ function Vagas() {
                 <span>{formatPostedAt(j.postedAt)}</span>
                 <div className="flex gap-2">
                   <Button size="sm" variant="outline" className="rounded-full">
-                    Ver detalhes
+                    {texts.jobs.details}
                   </Button>
                   <Button
                     size="sm"
@@ -254,7 +238,7 @@ function Vagas() {
                     disabled={apply.isPending}
                     onClick={() => apply.mutate(j.id)}
                   >
-                    Candidatar
+                    {texts.jobs.apply}
                   </Button>
                 </div>
               </div>
@@ -277,14 +261,18 @@ function Vagas() {
         />
 
         {!isFetching && allJobs.length === 0 && (
-          <p className="py-12 text-center text-sm text-muted-foreground">
-            Nenhuma vaga encontrada com os filtros selecionados.
-          </p>
+          <p className="py-12 text-center text-sm text-muted-foreground">{texts.jobs.empty}</p>
         )}
       </div>
     </AppContainer>
   );
 }
+
+export const Route = createFileRoute("/vagas")({
+  beforeLoad: requireAuth,
+  head: () => ({ meta: [{ title: texts.jobs.seoTitle }] }),
+  component: Vagas,
+});
 
 function InfiniteScroll({
   hasMore,

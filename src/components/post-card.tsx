@@ -18,6 +18,7 @@ import {
 import type { CommentView, PostView, ReactionType, ReportReason } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { useAuth } from "@/lib/use-auth";
+import { texts } from "@/texts";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,27 +36,27 @@ const typeMeta: Record<
   { label: string; className: string; classAvatar: string }
 > = {
   INSIGHT: {
-    label: "Insight",
+    label: texts.posts.types.insight,
     className: "bg-highlight-insight text-highlight-insight-text",
     classAvatar: "bg-user-insight text-highlight-insight-text",
   },
   QUESTION: {
-    label: "Pergunta",
+    label: texts.posts.types.question,
     className: "bg-secondary/30 text-secondary-foreground",
     classAvatar: "",
   },
   PROJECT: {
-    label: "Projeto",
+    label: texts.posts.types.project,
     className: "bg-highlight-project text-highlight-project-text",
     classAvatar: "bg-user-project text-user-project-text",
   },
   OPPORTUNITY: {
-    label: "Oportunidade",
+    label: texts.posts.types.opportunity,
     className: "bg-opportunity/20 text-opportunity-foreground",
     classAvatar: "",
   },
   ARTICLE: {
-    label: "Artigo",
+    label: texts.posts.types.article,
     className: "bg-highlight-article text-highlight-article-text",
     classAvatar: "bg-user-article text-user-article-text",
   },
@@ -142,11 +143,11 @@ function ReactionsDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="font-light">Reações</DialogTitle>
+          <DialogTitle className="font-light">{texts.posts.reactions.title}</DialogTitle>
         </DialogHeader>
         {reactions.length === 0 ? (
           <p className="py-8 text-center text-[13px] font-light text-text-subtle">
-            Nenhuma reação ainda
+            {texts.posts.reactions.empty}
           </p>
         ) : (
           <div className="space-y-2 pt-2">
@@ -160,7 +161,7 @@ function ReactionsDialog({
                   <UserAvatar src={user?.avatar} alt={user?.name} className="h-9 w-9 shrink-0" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[13px] font-light text-text-strong">
-                      {user?.name ?? "Carregando..."}
+                      {user?.name ?? texts.common.loading}
                     </p>
                   </div>
                   <span className="text-xl">{REACTION_EMOJIS[r.type] ?? r.type}</span>
@@ -205,11 +206,11 @@ function ReportDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="font-light">Denunciar post</DialogTitle>
+          <DialogTitle className="font-light">{texts.posts.report.title}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label className="text-[11px] font-light text-text-subtle">Motivo</Label>
+            <Label className="text-[11px] font-light text-text-subtle">{texts.posts.report.reason}</Label>
             <select
               value={reason}
               onChange={(e) => setReason(e.target.value as ReportReason)}
@@ -223,7 +224,7 @@ function ReportDialog({
             </select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[11px] font-light text-text-subtle">Descrição (opcional)</Label>
+            <Label className="text-[11px] font-light text-text-subtle">{texts.posts.report.description}</Label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -232,7 +233,7 @@ function ReportDialog({
             />
           </div>
           <Button className="w-full rounded-full" onClick={submit}>
-            Denunciar
+            {texts.posts.report.action}
           </Button>
         </div>
       </DialogContent>
@@ -409,7 +410,11 @@ export function PostCard({ post }: { post: PostView }) {
                 className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
                   reactionStatus ? "text-primary" : ""
                 }`}
-                title={reactionStatus ? `Reagiu com ${REACTION_EMOJIS[reactionStatus]}` : "Reagir"}
+                title={
+                  reactionStatus
+                    ? texts.posts.reactions.reactedWith(REACTION_EMOJIS[reactionStatus])
+                    : texts.posts.reactions.react
+                }
               >
                 {reactionStatus ? (
                   <span className="text-base leading-none">{REACTION_EMOJIS[reactionStatus]}</span>
@@ -458,7 +463,7 @@ export function PostCard({ post }: { post: PostView }) {
             onClick={handleShare}
             className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
           >
-            <Share2 className="h-4 w-4" /> Compartilhar
+            <Share2 className="h-4 w-4" /> {texts.posts.share}
           </button>
           <button
             onClick={() => setShowReport(true)}
@@ -547,7 +552,7 @@ export function PostCard({ post }: { post: PostView }) {
               })}
             {localComments.filter((c) => !c.parentCommentId).length === 0 && (
               <p className="py-4 text-center text-[13px] font-light text-text-subtle">
-                Nenhum comentário ainda. Seja o primeiro a comentar.
+                {texts.posts.comments.empty}
               </p>
             )}
           </div>
@@ -565,7 +570,7 @@ export function PostCard({ post }: { post: PostView }) {
                   setDraft(val);
                   setCommentMentions(ids);
                 }}
-                placeholder="Comente com contexto, dúvida ou referência..."
+                placeholder={texts.posts.comments.placeholder}
                 className="h-6 min-h-6 flex-1 resize-none border-0 bg-transparent p-0 text-[13px] font-light outline-none"
                 maxLength={280}
               />
@@ -574,7 +579,7 @@ export function PostCard({ post }: { post: PostView }) {
                 size="icon"
                 className="h-7 w-7 shrink-0 rounded-full"
                 disabled={!draft.trim()}
-                aria-label="Enviar comentário"
+                aria-label={texts.posts.comments.send}
               >
                 <Send className="h-3.5 w-3.5" />
               </Button>
@@ -629,7 +634,7 @@ function CommentItem({
             <span className="text-[12px] font-medium text-text-strong">{comment.authorName}</span>
             {replyingTo && (
               <span className="text-[11px] font-light text-text-subtle">
-                respondendo a {replyingTo}
+                {texts.posts.comments.replyingTo(replyingTo)}
               </span>
             )}
             <span className="text-[11px] font-light text-text-subtle">
@@ -645,12 +650,12 @@ function CommentItem({
             onClick={() => onReply?.(comment)}
             className="transition-colors hover:text-primary"
           >
-            Responder
+            {texts.posts.comments.reply}
           </button>
           <Popover>
             <PopoverTrigger asChild>
               <button className="transition-colors hover:text-primary">
-                {commentReaction ? REACTION_EMOJIS[commentReaction] : "Reagir"}
+                {commentReaction ? REACTION_EMOJIS[commentReaction] : texts.posts.reactions.react}
               </button>
             </PopoverTrigger>
             <PopoverContent
@@ -680,7 +685,7 @@ function CommentItem({
               onClick={() => onDelete(comment.id)}
               className="text-destructive transition-colors hover:text-destructive/80"
             >
-              Excluir
+              {texts.posts.comments.delete}
             </button>
           )}
         </div>
@@ -751,7 +756,7 @@ function EmbedPlayer({ type, id, url }: { type: string; id: string; url: string 
                 {type === "vimeo" ? "🎬" : type === "twitch" ? "📺" : "▶️"}
               </p>
               <p className="mt-1 text-[12px] font-light text-text-subtle">
-                Clique para assistir no {type === "youtube" ? "YouTube" : type}
+                {texts.posts.video.watchOn(type === "youtube" ? "YouTube" : type)}
               </p>
             </div>
           </div>
@@ -905,12 +910,12 @@ function formatTime(iso: string | null | undefined): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "agora";
-  if (diffMin < 60) return `há ${diffMin}min`;
+  if (diffMin < 1) return texts.time.now;
+  if (diffMin < 60) return texts.time.minutesAgo(diffMin);
   const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `há ${diffH}h`;
+  if (diffH < 24) return texts.time.hoursAgo(diffH);
   const diffD = Math.floor(diffH / 24);
-  if (diffD < 7) return `há ${diffD} dias`;
+  if (diffD < 7) return texts.time.daysAgo(diffD);
   return date.toLocaleDateString("pt-BR");
 }
 

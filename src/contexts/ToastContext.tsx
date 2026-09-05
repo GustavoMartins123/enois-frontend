@@ -2,6 +2,8 @@ import { type ReactNode, createContext, useCallback, useContext, useState } from
 
 import { AlertCircle, AlertTriangle, CheckCircle, Info, X } from "lucide-react";
 
+import { texts } from "@/texts";
+
 export type ToastType = "success" | "error" | "warning" | "info";
 
 interface AppToast {
@@ -46,7 +48,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {toasts.length > 0 && (
         <div
           aria-live="polite"
-          aria-label="Alertas do sistema"
+          aria-label={texts.accessibility.systemAlerts}
           className="pointer-events-none fixed right-4 top-5 z-[60] flex flex-col gap-2"
         >
           {toasts.map((t) => {
@@ -61,7 +63,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
                 <p className="flex-1 text-[13px] font-light text-[#0f0f14]">{t.message}</p>
                 <button
                   onClick={() => remove(t.id)}
-                  aria-label="Fechar alerta"
+                  aria-label={texts.accessibility.closeAlert}
                   className="shrink-0 text-[#9CA3AF] transition hover:text-[#6B7280]"
                 >
                   <X className="h-3.5 w-3.5" />

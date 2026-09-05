@@ -2,8 +2,9 @@ import { useNavigate } from "@tanstack/react-router";
 
 import type { Notification } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { formatNotificationTime } from "@/utils/notification-time";
+import { texts } from "@/texts";
 import { navigateToHref } from "@/utils/navigation";
+import { formatNotificationTime } from "@/utils/notification-time";
 
 import { notificationMeta } from "./notification-meta";
 
@@ -91,7 +92,7 @@ export function NotificationItem({
                   onClick={markAsRead}
                   className="rounded-full px-2 py-1 text-[11px] font-light text-text-subtle transition hover:bg-surface-2 hover:text-text-strong"
                 >
-                  Lida
+                  {texts.notifications.markRead}
                 </button>
               )}
 
@@ -101,7 +102,7 @@ export function NotificationItem({
                   onClick={handleAcceptConnection}
                   className="rounded-full bg-primary px-3 py-1 text-[11px] font-light text-primary-foreground transition hover:bg-primary/90"
                 >
-                  {notification.ctaLabel || "Aceitar"}
+                  {notification.ctaLabel || texts.notifications.accept}
                 </button>
               ) : notification.ctaLabel ? (
                 <button

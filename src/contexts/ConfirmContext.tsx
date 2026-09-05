@@ -2,6 +2,8 @@ import { type ReactNode, createContext, useCallback, useContext, useState } from
 
 import { AlertTriangle, X } from "lucide-react";
 
+import { texts } from "@/texts";
+
 export interface ConfirmOptions {
   title: string;
   message: string;
@@ -70,7 +72,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
               <button
                 onClick={handleCancel}
                 disabled={loading}
-                aria-label="Fechar"
+                aria-label={texts.accessibility.close}
                 className="rounded-full p-1 text-[#9CA3AF] transition hover:bg-[#F5F3FF] hover:text-[#6B7280] disabled:opacity-40"
               >
                 <X className="h-4 w-4" />
@@ -90,7 +92,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                 disabled={loading}
                 className="rounded-full border border-[#E5E0EB] px-5 py-2 text-[13px] font-light text-[#6B7280] transition hover:border-[#7C3AED] hover:text-[#7C3AED] disabled:opacity-40"
               >
-                {pending.cancelLabel ?? "Cancelar"}
+                {pending.cancelLabel ?? texts.common.cancel}
               </button>
               <button
                 onClick={handleConfirm}
@@ -102,7 +104,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                 {loading ? (
                   <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                 ) : (
-                  (pending.confirmLabel ?? "Confirmar")
+                  (pending.confirmLabel ?? texts.common.confirm)
                 )}
               </button>
             </div>
