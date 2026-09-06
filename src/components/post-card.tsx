@@ -1,4 +1,4 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
 
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -15,11 +15,19 @@ import {
   reactionsApi,
   reportsApi,
 } from "@/lib/api";
-import type { CommentView, PostView, ReactionType, ReportReason } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { getCurrentUser, getCurrentUserId } from "@/lib/current-user";
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
+import type { PostView } from "@/types/application/feed/post-view";
+import type { ReactionType } from "@/types/application/reaction/reaction-type";
+import type { ReportReason } from "@/types/application/report/report-reason";
+import type { AuthorInfoProps } from "@/types/components/post/author-info-props";
+import type { CommentItemProps } from "@/types/components/post/comment-item-props";
+import type { EmbedPlayerProps } from "@/types/components/post/embed-player-props";
+import type { PostCardProps } from "@/types/components/post/post-card-props";
+import type { PostIdProps } from "@/types/components/post/post-id-props";
+import type { PostTypeMeta } from "@/types/components/post/post-type-meta";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,10 +39,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { MentionTextarea } from "@/components/mention-textarea";
 import { UserAvatar } from "@/components/user-avatar";
 
-const typeMeta: Record<
-  PostView["type"],
-  { label: string; className: string; classAvatar: string }
-> = {
+const typeMeta: Record<PostView["type"], PostTypeMeta> = {
   INSIGHT: {
     label: texts.posts.types.insight,
     className: "bg-highlight-insight text-highlight-insight-text",
@@ -62,7 +67,7 @@ const typeMeta: Record<
   },
 };
 
-function ReactionsSummary({ postId }: { postId: string }) {
+function ReactionsSummary({ postId }: PostIdProps) {
   const reactionStatus = usePostCardStore((state) => state.cards[postId]?.reactionStatus ?? null);
 
   const { data } = useQuery({
@@ -95,7 +100,7 @@ function ReactionsSummary({ postId }: { postId: string }) {
   );
 }
 
-function ReactionsDialog({ postId }: { postId: string }) {
+function ReactionsDialog({ postId }: PostIdProps) {
   const currentUserId = getCurrentUserId();
   const currentUserReaction = usePostCardStore(
     (state) => state.cards[postId]?.reactionStatus ?? null,
@@ -166,7 +171,7 @@ function ReactionsDialog({ postId }: { postId: string }) {
   );
 }
 
-function ReportDialog({ postId }: { postId: string }) {
+function ReportDialog({ postId }: PostIdProps) {
   const open = usePostCardStore((state) => state.cards[postId]?.showReport ?? false);
   const setShowReport = usePostCardStore((state) => state.setShowReport);
   const [reason, setReason] = useState<ReportReason>("SPAM");
@@ -226,7 +231,7 @@ function ReportDialog({ postId }: { postId: string }) {
   );
 }
 
-export function PostCard({ post }: { post: PostView }) {
+export function PostCard({ post }: PostCardProps) {
   const currentUser = getCurrentUser();
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
   const [showComments, setShowComments] = useState(false);
@@ -545,13 +550,7 @@ export function PostCard({ post }: { post: PostView }) {
   );
 }
 
-function CommentItem({
-  comment,
-  replyingTo,
-}: {
-  comment: CommentView;
-  replyingTo?: string;
-}) {
+function CommentItem({ comment, replyingTo }: CommentItemProps) {
   const currentUserId = getCurrentUserId();
   const postId = comment.postId;
   const setDraft = usePostCardStore((state) => state.setDraft);
@@ -675,13 +674,7 @@ function AuthorInfo({
   authorAvatar,
   createdAt,
   fallbackClassName,
-}: {
-  authorUsername: string;
-  authorName: string;
-  authorAvatar: string | null;
-  createdAt: string;
-  fallbackClassName?: string;
-}) {
+}: AuthorInfoProps) {
   return (
     <div className="flex items-start gap-3">
       <Link to="/perfil/$username" params={{ username: authorUsername }}>
@@ -710,7 +703,7 @@ function AuthorInfo({
   );
 }
 
-function EmbedPlayer({ type, id }: { type: string; id: string }) {
+function EmbedPlayer({ type, id }: EmbedPlayerProps) {
   const [playing, setPlaying] = useState(false);
 
   if (!playing) {
@@ -772,7 +765,7 @@ function EmbedPlayer({ type, id }: { type: string; id: string }) {
   );
 }
 
-function LinkPreviews({ content }: { content: string }) {
+function LinkPreviews({ content }: Pick<PostView, "content">) {
   const urlRegex = /https?:\/\/[^\s]+/g;
   const urls = content.match(urlRegex) ?? [];
   const seen = new Set<string>();
@@ -824,8 +817,8 @@ function LinkPreviews({ content }: { content: string }) {
   );
 }
 
-function extractVideoId(url: string): { type: string; id: string } | null {
-  const patterns: [RegExp, string][] = [
+function extractVideoId(url: string): EmbedPlayerProps | null {
+  const patterns: [RegExp, EmbedPlayerProps["type"]][] = [
     [/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/, "youtube"],
     [/(?:dailymotion\.com\/video\/|dai\.ly\/)([a-zA-Z0-9]+)/, "dailymotion"],
     [/(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(\d+)/, "vimeo"],
@@ -840,7 +833,7 @@ function extractVideoId(url: string): { type: string; id: string } | null {
 }
 
 function linkifyText(text: string) {
-  const parts: React.ReactNode[] = [];
+  const parts: ReactNode[] = [];
   const regex = /(@\w+|https?:\/\/[^\s]+)/g;
   let last = 0;
   let match: RegExpExecArray | null;
@@ -900,7 +893,7 @@ function formatTime(iso: string | null | undefined): string {
   return date.toLocaleDateString("pt-BR");
 }
 
-function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
+function MediaGrid({ mediaIds }: Pick<PostView, "mediaIds">) {
   const queryResults = useQueries({
     queries: mediaIds.map((id) => ({
       queryKey: ["media", id],

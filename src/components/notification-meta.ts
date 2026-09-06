@@ -1,5 +1,3 @@
-import type { ElementType } from "react";
-
 import {
   AtSign,
   Briefcase,
@@ -10,7 +8,9 @@ import {
   UserPlus,
 } from "lucide-react";
 
-export const notificationMeta: Record<string, { icon: ElementType; className: string }> = {
+import type { NotificationMeta } from "@/types/components/notification/notification-meta";
+
+export const notificationMeta: Record<string, NotificationMeta> = {
   connection: { icon: UserPlus, className: "bg-primary-soft text-primary" },
   connection_request: { icon: UserPlus, className: "bg-primary-soft text-primary" },
   connection_accepted: { icon: UserPlus, className: "bg-growth/15 text-growth" },

@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { type ChangeEvent, useCallback, useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
@@ -29,6 +29,10 @@ import { resolveCdnUrl } from "@/lib/api/media";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 import { texts } from "@/texts";
+import type { UpdateProfileRequest } from "@/types/application/profile/update-profile-request";
+import type { ProfileCropPurpose } from "@/types/routes/profile/profile-crop-purpose";
+import type { RecommendationItemProps } from "@/types/routes/profile/recommendation-item-props";
+import type { SectionProps } from "@/types/routes/profile/section-props";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -98,7 +102,7 @@ function Profile() {
   const [hoveringAvatar, setHoveringAvatar] = useState(false);
   const [hoveringBanner, setHoveringBanner] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
-  const [cropPurpose, setCropPurpose] = useState<"AVATAR" | "BANNER" | null>(null);
+  const [cropPurpose, setCropPurpose] = useState<ProfileCropPurpose | null>(null);
   const [recommendOpen, setRecommendOpen] = useState(false);
   const [recommendComment, setRecommendComment] = useState("");
 
@@ -120,7 +124,8 @@ function Profile() {
   const connectionStatus = connectionData?.status ?? null;
 
   const updateProfile = useMutation({
-    mutationFn: (data: { avatar?: string; banner?: string }) => profileApi.update(data),
+    mutationFn: (data: Pick<UpdateProfileRequest, "avatar" | "banner">) =>
+      profileApi.update(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["me"] });
       queryClient.invalidateQueries({ queryKey: ["profile", user.username] });
@@ -165,7 +170,7 @@ function Profile() {
     },
   });
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const src = URL.createObjectURL(file);
@@ -173,7 +178,7 @@ function Profile() {
     setCropPurpose("AVATAR");
   };
 
-  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBannerUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const src = URL.createObjectURL(file);
@@ -532,15 +537,7 @@ function Profile() {
   );
 }
 
-function Section({
-  title,
-  icon: Icon,
-  children,
-}: {
-  title: string;
-  icon?: React.ElementType;
-  children: React.ReactNode;
-}) {
+function Section({ title, icon: Icon, children }: SectionProps) {
   return (
     <section className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-6">
       <h2 className="mb-4 flex items-center gap-2 text-[15px] font-light text-text-strong">
@@ -556,11 +553,7 @@ function Section({
   );
 }
 
-function RecommendationItem({
-  recommendation,
-}: {
-  recommendation: { recommenderId: string; comment: string };
-}) {
+function RecommendationItem({ recommendation }: RecommendationItemProps) {
   const { data: recommender } = useQuery({
     queryKey: ["profile", "by-id", recommendation.recommenderId],
     queryFn: () => profileApi.getById(recommendation.recommenderId),

@@ -1,14 +1,12 @@
+import type { ComponentProps } from "react";
+
 import { Link } from "@tanstack/react-router";
 
 import { Sparkles } from "lucide-react";
 
 import { texts } from "@/texts";
 
-type AppBrandProps = {
-  onClick?: () => void;
-};
-
-export function AppBrand({ onClick }: AppBrandProps) {
+export function AppBrand({ onClick }: Pick<ComponentProps<"a">, "onClick">) {
   return (
     <Link to="/feed" onClick={onClick} className="flex shrink-0 items-center gap-2">
       <div

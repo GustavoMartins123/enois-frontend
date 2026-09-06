@@ -1,15 +1,8 @@
 import { resolveCdnUrl } from "@/lib/api/media";
 import { texts } from "@/texts";
+import type { UserAvatarProps } from "@/types/components/user-avatar/user-avatar-props";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-interface UserAvatarProps {
-  src?: string | null;
-  alt?: string | null;
-  className?: string;
-  fallback?: string;
-  fallbackClassName?: string;
-}
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);

@@ -1,13 +1,9 @@
-import type { ReactNode } from "react";
+import type { WithRequiredChildren } from "@/types/components/with-required-children";
 
 import { GuestAppHeader } from "./guest-app-header";
 import { AppLayout } from "./app-layout";
 
-type GuestAppContainerProps = {
-  children: ReactNode;
-};
-
-export function GuestAppContainer({ children }: GuestAppContainerProps) {
+export function GuestAppContainer({ children }: WithRequiredChildren) {
   return (
     <AppLayout>
       <AppLayout.Header>

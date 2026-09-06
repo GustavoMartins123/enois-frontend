@@ -1,4 +1,4 @@
-import { type FormEvent, useRef, useState } from "react";
+import { type ChangeEvent, type FormEvent, useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
@@ -16,10 +16,15 @@ import {
 } from "lucide-react";
 
 import { eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
-import type { PostView } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 import { texts } from "@/texts";
+import type { CreatePostInput } from "@/types/application/feed/create-post-input";
+import type { FeedTab } from "@/types/application/feed/feed-tab";
+import type { PostView } from "@/types/application/feed/post-view";
+import type { ComposerActionProps } from "@/types/routes/feed/composer-action-props";
+import type { MediaItem } from "@/types/routes/feed/media-item";
+import type { TabPillProps } from "@/types/routes/feed/tab-pill-props";
 
 import { Button } from "@/components/ui/button";
 
@@ -27,12 +32,6 @@ import { AppContainer } from "@/components/app-container";
 import { MentionTextarea } from "@/components/mention-textarea";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
-
-interface MediaItem {
-  type: "image" | "video";
-  file: File;
-  preview: string;
-}
 
 export const Route = createFileRoute("/feed")({
   beforeLoad: requireAuth,
@@ -48,7 +47,7 @@ export const Route = createFileRoute("/feed")({
   component: Home,
 });
 
-function useFeed(tab: string | undefined) {
+function useFeed(tab: FeedTab) {
   return useQuery({
     queryKey: ["feed", tab],
     queryFn: () => feedApi.list(null, 20, tab),
@@ -78,7 +77,7 @@ function useEvents() {
 
 function Home() {
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<string | undefined>("FOR_YOU");
+  const [tab, setTab] = useState<FeedTab>("FOR_YOU");
   const { data: feedData, isFetching: feedLoading } = useFeed(tab);
   const { data: profile } = useProfile();
   const { data: suggestions } = useSuggestions();
@@ -93,12 +92,7 @@ function Home() {
   const upload = useMediaUpload();
 
   const createPost = useMutation({
-    mutationFn: (data: {
-      content: string;
-      type: PostView["type"];
-      mediaIds?: string[];
-      mentionedUserIds?: string[];
-    }) => feedApi.create(data),
+    mutationFn: (data: CreatePostInput) => feedApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["feed"] });
     },
@@ -126,7 +120,7 @@ function Home() {
     }
   };
 
-  const handleMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMediaSelect = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
@@ -455,17 +449,7 @@ function Home() {
   );
 }
 
-function ComposerAction({
-  icon: Icon,
-  label,
-  active,
-  onClick,
-}: {
-  icon: React.ElementType;
-  label: string;
-  active?: boolean;
-  onClick: () => void;
-}) {
+function ComposerAction({ icon: Icon, label, active, onClick }: ComposerActionProps) {
   return (
     <button
       type="button"
@@ -481,15 +465,7 @@ function ComposerAction({
   );
 }
 
-function TabPill({
-  children,
-  active,
-  onClick,
-}: {
-  children: React.ReactNode;
-  active?: boolean;
-  onClick?: () => void;
-}) {
+function TabPill({ children, active, onClick }: TabPillProps) {
   return (
     <button
       onClick={onClick}

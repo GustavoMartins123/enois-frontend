@@ -7,6 +7,7 @@ import { Bell, CheckCheck } from "lucide-react";
 import { networkApi, notificationsApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { texts } from "@/texts";
+import type { NotificationTab } from "@/types/components/notification/notification-tab";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
@@ -14,7 +15,7 @@ import { NotificationItem } from "./notification-item";
 
 export function NotificationsPopover() {
   const queryClient = useQueryClient();
-  const [notificationTab, setNotificationTab] = useState<"novas" | "historico">("novas");
+  const [notificationTab, setNotificationTab] = useState<NotificationTab>("novas");
 
   const { data: notificationsData } = useQuery({
     queryKey: ["notifications"],

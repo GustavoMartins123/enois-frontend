@@ -1,10 +1,5 @@
-type Navigate = (opts: { to: string; params?: Record<string, string> }) => void;
-
-type RouteDefinition = {
-  source: string;
-  to: string;
-  params?: readonly string[];
-};
+import type { Navigate } from "@/types/navigation/navigate";
+import type { RouteDefinition } from "@/types/navigation/route-definition";
 
 const routeDefinitions = [
   { source: "feed/posts", to: "/feed" },

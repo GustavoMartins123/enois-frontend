@@ -6,9 +6,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Briefcase, Loader2, MapPin, Sparkles, X } from "lucide-react";
 
 import { jobsApi } from "@/lib/api";
-import type { Job } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
 import { texts } from "@/texts";
+import type { Job } from "@/types/application/job/job";
+import type { InfiniteScrollProps } from "@/types/routes/jobs/infinite-scroll-props";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -287,15 +288,7 @@ function Vagas() {
   );
 }
 
-function InfiniteScroll({
-  hasMore,
-  loading,
-  onLoadMore,
-}: {
-  hasMore: boolean;
-  loading: boolean;
-  onLoadMore: () => void;
-}) {
+function InfiniteScroll({ hasMore, loading, onLoadMore }: InfiniteScrollProps) {
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

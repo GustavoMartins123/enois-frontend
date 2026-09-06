@@ -2,17 +2,9 @@ import { useCallback, useState } from "react";
 
 import { randomUUID } from "@/lib/api-client";
 import { mediaApi } from "@/lib/api/media";
-
-export interface UploadState {
-  status: "idle" | "uploading" | "done" | "error";
-  progress: number;
-  error?: string;
-}
-
-export interface UploadResult {
-  mediaId: string;
-  cdnUrl: string;
-}
+import type { UploadInput } from "@/types/media-upload/upload-input";
+import type { UploadResult } from "@/types/media-upload/upload-result";
+import type { UploadState } from "@/types/media-upload/upload-state";
 
 function sanitizeName(name: string): string {
   return name.replace(/[^a-zA-Z0-9.-]/g, "_");
@@ -50,7 +42,7 @@ export function useMediaUpload() {
   }, []);
 
   const uploadAll = useCallback(
-    async (files: { file: File; purpose?: string }[]): Promise<UploadResult[]> => {
+    async (files: UploadInput[]): Promise<UploadResult[]> => {
       if (files.length === 0) return [];
       setState({ status: "uploading", progress: 0 });
 

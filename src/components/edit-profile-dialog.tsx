@@ -6,8 +6,17 @@ import { useRouter } from "@tanstack/react-router";
 import { Pencil, Plus, Trash2, X } from "lucide-react";
 
 import { ApiError, profileApi } from "@/lib/api";
-import type { Certification, Education, Experience, Profile } from "@/lib/api";
 import { texts } from "@/texts";
+import type { CertificationRequest } from "@/types/application/profile/certification-request";
+import type { Certification } from "@/types/application/profile/certification";
+import type { EducationRequest } from "@/types/application/profile/education-request";
+import type { Education } from "@/types/application/profile/education";
+import type { ExperienceRequest } from "@/types/application/profile/experience-request";
+import type { Experience } from "@/types/application/profile/experience";
+import type { FieldProps } from "@/types/components/profile/edit-profile-dialog/field-props";
+import type { Props } from "@/types/components/profile/edit-profile-dialog/props";
+import type { SubListProps } from "@/types/components/profile/edit-profile-dialog/sub-list-props";
+import type { SubListUpdate } from "@/types/components/profile/edit-profile-dialog/sub-list-update";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -21,11 +30,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-
-interface Props {
-  profile: Profile;
-  children: React.ReactNode;
-}
 
 export function EditProfileDialog({ profile, children }: Props) {
   const queryClient = useQueryClient();
@@ -356,15 +360,7 @@ export function EditProfileDialog({ profile, children }: Props) {
   );
 }
 
-function Field({
-  label,
-  error,
-  children,
-}: {
-  label: string;
-  error?: string;
-  children: React.ReactNode;
-}) {
+function Field({ label, error, children }: FieldProps) {
   return (
     <div className="space-y-1.5">
       <Label className="text-[13px] font-light text-text-subtle">{label}</Label>
@@ -374,16 +370,8 @@ function Field({
   );
 }
 
-interface SubField {
-  key: string;
-  label: string;
-  required?: boolean;
-  multiline?: boolean;
-  type?: string;
-}
-
 function SubList<
-  T extends { id: string },
+  T extends Record<"id", string>,
   TData extends Record<string, unknown> = Record<string, string>,
 >({
   items,
@@ -395,17 +383,7 @@ function SubList<
   queryKey,
   emptyMessage,
   newItem,
-}: {
-  items: T[];
-  fields: SubField[];
-  currentlyHereKey?: string;
-  createApi: (data: TData) => Promise<T>;
-  updateApi: (id: string, data: TData) => Promise<T>;
-  deleteApi: (id: string) => Promise<void>;
-  queryKey: string[];
-  emptyMessage: string;
-  newItem: Record<string, string>;
-}) {
+}: SubListProps<T, TData>) {
   const queryClient = useQueryClient();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<Record<string, string>>({ ...newItem });
@@ -422,7 +400,7 @@ function SubList<
   });
 
   const update = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: TData }) => updateApi(id, data),
+    mutationFn: ({ id, data }: SubListUpdate<TData>) => updateApi(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
       setEditingId(null);

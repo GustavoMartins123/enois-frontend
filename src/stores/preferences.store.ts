@@ -1,21 +1,19 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+import type { Theme } from "@/types/preferences/theme";
+import type { PreferencesStorageValue } from "@/types/stores/preferences-storage-value";
+
 const PREFERENCES_STORAGE_KEY = "connect-grow-preferences";
 const LEGACY_THEME_STORAGE_KEY = "connect-grow-theme";
 const LEGACY_SIDEBAR_STORAGE_KEY = "sidebar-collapsed";
-
-type Theme = "light" | "dark";
 
 const preferencesStorage = {
   getItem: (name: string) => {
     const stored = localStorage.getItem(name);
     if (stored !== null) {
       try {
-        const parsed = JSON.parse(stored) as {
-          state?: { theme?: string; sidebarCollapsed?: boolean };
-          version?: number;
-        };
+        const parsed = JSON.parse(stored) as PreferencesStorageValue;
 
         if (parsed.state) {
           parsed.state.theme = parsed.state.theme === "dark" ? "dark" : "light";

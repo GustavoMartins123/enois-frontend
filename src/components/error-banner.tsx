@@ -4,8 +4,10 @@ import { AlertTriangle, ChevronDown, Copy } from "lucide-react";
 
 import { ApiError } from "@/lib/api-client";
 import { texts } from "@/texts";
+import type { ErrorBannerProps } from "@/types/components/error-banner/error-banner-props";
+import type { ErrorDescription } from "@/types/components/error-banner/error-description";
 
-function describe(err: unknown): { message: string; details: string[] } {
+function describe(err: unknown): ErrorDescription {
   if (err instanceof ApiError) {
     const details: string[] = [];
     if (err.status) details.push(texts.errors.details.http(err.status));
@@ -24,7 +26,7 @@ function describe(err: unknown): { message: string; details: string[] } {
 
 const KNOWN_CODES: Record<string, string> = texts.errors.knownCodes;
 
-export function ErrorBanner({ error, className }: { error: unknown; className?: string }) {
+export function ErrorBanner({ error, className }: ErrorBannerProps) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 

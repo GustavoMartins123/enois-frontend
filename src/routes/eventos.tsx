@@ -9,6 +9,9 @@ import { eventsApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { requireAuth } from "@/lib/require-auth";
 import { texts } from "@/texts";
+import type { CreateEventRequest } from "@/types/application/event/create-event-request";
+import type { CreateEventFormProps } from "@/types/routes/events/create-event-form-props";
+import type { FieldProps } from "@/types/routes/events/field-props";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,14 +50,7 @@ function Eventos() {
   });
 
   const createEvent = useMutation({
-    mutationFn: (data: {
-      title: string;
-      date: string;
-      time: string;
-      format: string;
-      host: string;
-      cover?: string | null;
-    }) => eventsApi.create(data),
+    mutationFn: (data: CreateEventRequest) => eventsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
       setOpen(false);
@@ -91,8 +87,7 @@ function Eventos() {
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {events.map((e) => {
-            const formatLabel =
-              texts.events.formats[e.format as keyof typeof texts.events.formats] ?? e.format;
+            const formatLabel = texts.events.formats[e.format] ?? e.format;
             const Icon = e.format === "ONLINE" ? Video : MapPin;
             const [, month, day] = (e.date ?? "").split("-");
             return (
@@ -141,23 +136,11 @@ function Eventos() {
   );
 }
 
-function CreateEventForm({
-  onSave,
-  isPending,
-}: {
-  onSave: (data: {
-    title: string;
-    date: string;
-    time: string;
-    format: string;
-    host: string;
-  }) => void;
-  isPending: boolean;
-}) {
+function CreateEventForm({ onSave, isPending }: CreateEventFormProps) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [format, setFormat] = useState("ONLINE");
+  const [format, setFormat] = useState<CreateEventRequest["format"]>("ONLINE");
   const [host, setHost] = useState("");
 
   return (
@@ -198,7 +181,7 @@ function CreateEventForm({
       <Field label={texts.events.form.format}>
         <select
           value={format}
-          onChange={(e) => setFormat(e.target.value)}
+          onChange={(e) => setFormat(e.target.value as CreateEventRequest["format"])}
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-10 border-transparent bg-muted"
         >
           <option value="ONLINE">{texts.events.formats.ONLINE}</option>
@@ -217,7 +200,7 @@ function CreateEventForm({
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children }: FieldProps) {
   return (
     <div className="space-y-1.5">
       <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
