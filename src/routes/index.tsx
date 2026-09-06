@@ -48,7 +48,7 @@ function Landing() {
               <Sparkles className="h-3.5 w-3.5" />
             </div>
             <span className="text-base font-semibold tracking-tight">
-              {texts.brand.prefix}<span className="gradient-text">{texts.brand.accent}</span>
+              <>{texts.brand.prefix}</><span className="gradient-text">{texts.brand.accent}</span>
             </span>
           </Link>
           <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
@@ -89,7 +89,7 @@ function Landing() {
         />
         <div className="mx-auto max-w-4xl px-4 pb-24 pt-20 text-center sm:pb-32 sm:pt-28">
           <div className="mb-5 inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-card/70 px-3 py-1 text-xs font-medium text-primary backdrop-blur">
-            <Sparkles className="h-3 w-3" /> {texts.landing.hero.badge}
+            <Sparkles className="h-3 w-3" /><>{texts.landing.hero.badge}</>
           </div>
           <h1 className="text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
             {texts.landing.hero.title}
@@ -105,7 +105,7 @@ function Landing() {
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link to="/entrar" search={{ tab: "signup" }}>
               <Button size="lg" className="gap-2 rounded-full px-6">
-                {texts.landing.hero.join} <ArrowRight className="h-4 w-4" />
+                <>{texts.landing.hero.join} </><ArrowRight className="h-4 w-4" />
               </Button>
             </Link>
             <Link to="/feed">
@@ -116,13 +116,13 @@ function Landing() {
           </div>
           <div className="mt-14 flex flex-wrap justify-center gap-x-8 gap-y-2 text-xs text-muted-foreground">
             <span className="inline-flex items-center gap-1.5">
-              <Heart className="h-3.5 w-3.5 text-primary/60" /> {texts.landing.hero.benefits.noVanity}
+              <Heart className="h-3.5 w-3.5 text-primary/60" /><>{texts.landing.hero.benefits.noVanity}</>
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <ShieldCheck className="h-3.5 w-3.5 text-primary/60" /> {texts.landing.hero.benefits.safe}
+              <ShieldCheck className="h-3.5 w-3.5 text-primary/60" /><>{texts.landing.hero.benefits.safe}</>
             </span>
             <span className="inline-flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-primary/60" /> {texts.landing.hero.benefits.freeForever}
+              <Sparkles className="h-3.5 w-3.5 text-primary/60" /><>{texts.landing.hero.benefits.freeForever}</>
             </span>
           </div>
         </div>
@@ -135,8 +135,7 @@ function Landing() {
               {texts.landing.philosophy.eyebrow}
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-              {texts.landing.philosophy.titlePrefix}{" "}
-              <span className="gradient-text">{texts.landing.philosophy.titleAccent}</span>
+              <>{texts.landing.philosophy.titlePrefix} </><span className="gradient-text">{texts.landing.philosophy.titleAccent}</span>
             </h2>
             <p className="mt-4 text-muted-foreground">
               {texts.landing.philosophy.description}
@@ -155,7 +154,7 @@ function Landing() {
           </div>
           <div className="mt-12 text-center">
             <p className="inline-flex items-center gap-2 rounded-full bg-primary-soft px-4 py-1.5 text-sm font-medium text-primary">
-              <ShieldCheck className="h-4 w-4" /> {texts.landing.philosophy.alwaysFree}
+              <ShieldCheck className="h-4 w-4" /><>{texts.landing.philosophy.alwaysFree}</>
             </p>
           </div>
         </div>
@@ -199,7 +198,7 @@ function Landing() {
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link to="/entrar" search={{ tab: "signup" }}>
                 <Button size="lg" className="gap-2 rounded-full px-6">
-                  {texts.landing.cta.createAccount} <ArrowRight className="h-4 w-4" />
+                  <>{texts.landing.cta.createAccount} </><ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
               <Link to="/entrar" search={{ tab: "login" }}>
@@ -209,8 +208,7 @@ function Landing() {
               </Link>
             </div>
             <p className="mt-4 text-xs text-muted-foreground/60">
-              {texts.landing.cta.finePrint}{" "}
-              <strong>{texts.landing.cta.freeForever}</strong>
+              <>{texts.landing.cta.finePrint} </><strong>{texts.landing.cta.freeForever}</strong>
             </p>
           </div>
         </div>
