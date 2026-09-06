@@ -40,7 +40,10 @@ export const Route = createFileRoute("/feed")({
   head: () => ({
     meta: [
       { title: texts.feed.seo.title },
-      { name: "description", content: texts.feed.seo.description },
+      {
+        name: "description",
+        content: texts.feed.seo.description,
+      },
     ],
   }),
   component: Home,
@@ -164,6 +167,7 @@ function Home() {
     <AppContainer>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-4">
+          {/* Composer */}
           <form
             onSubmit={publishPost}
             className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-5"
@@ -190,13 +194,12 @@ function Home() {
               <div className="relative mt-3">
                 {mediaType === "image" ? (
                   <div
-                    className={`grid gap-2 ${
-                      media.length === 1
-                        ? "grid-cols-1"
-                        : media.length === 2
-                          ? "grid-cols-2"
-                          : "grid-cols-2"
-                    }`}
+                    className={`grid gap-2 ${media.length === 1
+                      ? "grid-cols-1"
+                      : media.length === 2
+                        ? "grid-cols-2"
+                        : "grid-cols-2"
+                      }`}
                   >
                     {media.map((item, i) => (
                       <div
@@ -316,6 +319,7 @@ function Home() {
             </div>
           </form>
 
+          {/* Tabs */}
           <div className="flex flex-wrap items-center gap-1.5">
             <TabPill active={tab === "FOR_YOU"} onClick={() => setTab("FOR_YOU")}>
               {texts.feed.tabs.forYou}
@@ -340,10 +344,14 @@ function Home() {
                 <Loader2 className="h-6 w-6 animate-spin" />
               </div>
             )}
-            {!feedLoading && feedPosts.map((p) => <PostCard key={p.id} post={p} />)}
+            {!feedLoading &&
+              feedPosts.map((p) => (
+                <PostCard key={p.id} post={p} />
+              ))}
           </div>
         </div>
 
+        {/* Right rail */}
         <aside className="sticky top-20 hidden max-h-[calc(100vh-6rem)] space-y-4 overflow-y-auto lg:block">
           {profileUser && (
             <div className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
@@ -382,9 +390,7 @@ function Home() {
             <div className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-5">
               <div className="flex items-center gap-2">
                 <UserPlus className="h-4 w-4 text-primary" />
-                <h3 className="text-[14px] font-light text-text-strong">
-                  {texts.feed.sidebar.suggestions}
-                </h3>
+                <h3 className="text-[14px] font-light text-text-strong">{texts.feed.sidebar.suggestions}</h3>
               </div>
               <p className="mt-0.5 text-[12px] font-light text-text-subtle">
                 {texts.feed.sidebar.suggestionsDescription}
@@ -412,9 +418,7 @@ function Home() {
                         networkApi
                           .connect(u.id)
                           .then(() =>
-                            queryClient.invalidateQueries({
-                              queryKey: ["network", "suggestions"],
-                            }),
+                            queryClient.invalidateQueries({ queryKey: ["network", "suggestions"] }),
                           );
                       }}
                     >
@@ -430,9 +434,7 @@ function Home() {
             <div className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-5">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary" />
-                <h3 className="text-[14px] font-light text-text-strong">
-                  {texts.feed.sidebar.happeningNow}
-                </h3>
+                <h3 className="text-[14px] font-light text-text-strong">{texts.feed.sidebar.happeningNow}</h3>
               </div>
               <ul className="mt-3 space-y-3">
                 {eventList.slice(0, 3).map((e) => (
@@ -467,11 +469,10 @@ function ComposerAction({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-light transition ${
-        active
-          ? "bg-primary text-primary-foreground"
-          : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
-      }`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-light transition ${active
+        ? "bg-primary text-primary-foreground"
+        : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
+        }`}
     >
       <Icon className="h-3.5 w-3.5" />
       {label}
@@ -491,11 +492,10 @@ function TabPill({
   return (
     <button
       onClick={onClick}
-      className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-light transition ${
-        active
-          ? "bg-primary text-primary-foreground"
-          : "border border-border-soft bg-surface-card text-text-subtle hover:border-primary hover:text-primary"
-      }`}
+      className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-light transition ${active
+        ? "bg-primary text-primary-foreground"
+        : "border border-border-soft bg-surface-card text-text-subtle hover:border-primary hover:text-primary"
+        }`}
     >
       {children}
     </button>
