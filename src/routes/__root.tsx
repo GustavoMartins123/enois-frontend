@@ -1,6 +1,6 @@
-import { type ReactNode, useEffect } from "react";
+import { useEffect } from "react";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import {
   HeadContent,
   Link,
@@ -12,6 +12,9 @@ import {
 } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import type { ErrorComponentProps } from "@/types/routes/root/error-component-props";
+import type { RootRouteContext } from "@/types/routes/root/root-route-context";
+import type { RootShellProps } from "@/types/routes/root/root-shell-props";
 
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import appCss from "../styles.css?url";
@@ -38,7 +41,7 @@ function NotFoundComponent() {
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
@@ -76,7 +79,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+export const Route = createRootRouteWithContext<RootRouteContext>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -84,8 +87,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: texts.root.seo.title },
       {
         name: "description",
-        content:
-          texts.root.seo.description,
+        content: texts.root.seo.description,
       },
       { property: "og:title", content: texts.root.seo.title },
       {
@@ -111,7 +113,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
-function RootShell({ children }: { children: ReactNode }) {
+function RootShell({ children }: RootShellProps) {
   return (
     <html lang="en">
       <head>
