@@ -253,8 +253,26 @@ const values = [
     desc: texts.landing.philosophy.values.learning.description,
   },
   {
+    icon: ShieldCheck,
+    title: texts.landing.philosophy.values.safety.title,
+    desc: texts.landing.philosophy.values.safety.description,
+  },
+];
+
+const features = [
+  {
+    icon: MessageCircle,
+    title: texts.landing.features.items.discussions.title,
+    desc: texts.landing.features.items.discussions.description,
+  },
+  {
+    icon: GraduationCap,
+    title: texts.landing.features.items.mentoring.title,
+    desc: texts.landing.features.items.mentoring.description,
+  },
+  {
     icon: Heart,
-    title: texts.landing.philosophy.values.communities.title,
+    title: texts.landing.features.items.communities.title,
     desc: texts.landing.features.items.communities.description,
   },
   {
