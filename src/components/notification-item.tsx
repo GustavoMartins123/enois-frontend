@@ -3,8 +3,8 @@ import { useNavigate } from "@tanstack/react-router";
 import type { Notification } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { texts } from "@/texts";
-import { navigateToHref } from "@/utils/navigation";
 import { formatNotificationTime } from "@/utils/notification-time";
+import { navigateToHref } from "@/utils/navigation";
 
 import { notificationMeta } from "./notification-meta";
 
