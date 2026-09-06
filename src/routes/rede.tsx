@@ -6,8 +6,8 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { Check, Send, UserMinus, UserPlus, X } from "lucide-react";
 
 import { type ConnectionRequest, networkApi, profileApi } from "@/lib/api";
+import { getCurrentUserId } from "@/lib/current-user";
 import { requireAuth } from "@/lib/require-auth";
-import { useAuth } from "@/lib/use-auth";
 import { texts } from "@/texts";
 
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,7 @@ export const Route = createFileRoute("/rede")({
 
 function Rede() {
   const queryClient = useQueryClient();
-  const { user: currentUser } = useAuth();
+  const currentUserId = getCurrentUserId();
   const [localStatus, setLocalStatus] = useState<Record<string, string>>({});
 
   const { data: usersData } = useQuery({
@@ -42,8 +42,8 @@ function Rede() {
 
   const users = usersData?.items ?? [];
   const pendingRequests = (requestsData?.items ?? []).filter((r) => r.status === "PENDING");
-  const incomingRequests = pendingRequests.filter((r) => r.fromUserId !== currentUser?.id);
-  const outgoingRequests = pendingRequests.filter((r) => r.fromUserId === currentUser?.id);
+  const incomingRequests = pendingRequests.filter((r) => r.fromUserId !== currentUserId);
+  const outgoingRequests = pendingRequests.filter((r) => r.fromUserId === currentUserId);
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["network"] });
 
@@ -94,7 +94,6 @@ function Rede() {
                     <RequestCard
                       key={req.id}
                       request={req}
-                      currentUserId={currentUser?.id ?? ""}
                       onAccept={acceptRequest.mutate}
                       onCancel={remove.mutate}
                     />
@@ -112,7 +111,6 @@ function Rede() {
                     <RequestCard
                       key={req.id}
                       request={req}
-                      currentUserId={currentUser?.id ?? ""}
                       onAccept={acceptRequest.mutate}
                       onCancel={remove.mutate}
                     />
@@ -197,15 +195,14 @@ function Rede() {
 
 function RequestCard({
   request,
-  currentUserId,
   onAccept,
   onCancel,
 }: {
   request: ConnectionRequest;
-  currentUserId: string;
   onAccept: (id: string) => void;
   onCancel: (id: string) => void;
 }) {
+  const currentUserId = getCurrentUserId();
   const isOutgoing = request.fromUserId === currentUserId;
   const targetUserId = isOutgoing ? request.toUserId : request.fromUserId;
 
