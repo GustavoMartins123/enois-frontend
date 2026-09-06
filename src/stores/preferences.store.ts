@@ -5,24 +5,36 @@ const PREFERENCES_STORAGE_KEY = "connect-grow-preferences";
 const LEGACY_THEME_STORAGE_KEY = "connect-grow-theme";
 const LEGACY_SIDEBAR_STORAGE_KEY = "sidebar-collapsed";
 
+type Theme = "light" | "dark";
+
 const preferencesStorage = {
   getItem: (name: string) => {
     const stored = localStorage.getItem(name);
-    if (stored !== null) return stored;
+    if (stored !== null) {
+      try {
+        const parsed = JSON.parse(stored) as {
+          state?: { theme?: string; sidebarCollapsed?: boolean };
+          version?: number;
+        };
+
+        if (parsed.state) {
+          parsed.state.theme = parsed.state.theme === "dark" ? "dark" : "light";
+        }
+
+        return JSON.stringify(parsed);
+      } catch {
+        return stored;
+      }
+    }
 
     const legacyTheme = localStorage.getItem(LEGACY_THEME_STORAGE_KEY);
     const legacySidebarCollapsed = localStorage.getItem(LEGACY_SIDEBAR_STORAGE_KEY);
 
     if (legacyTheme === null && legacySidebarCollapsed === null) return null;
 
-    const theme =
-      legacyTheme === "light" || legacyTheme === "dark" || legacyTheme === "system"
-        ? legacyTheme
-        : "system";
-
     return JSON.stringify({
       state: {
-        theme,
+        theme: legacyTheme === "dark" ? "dark" : "light",
         sidebarCollapsed: legacySidebarCollapsed === "true",
       },
       version: 0,
@@ -41,10 +53,10 @@ const preferencesStorage = {
 export const usePreferencesStore = create()(
   persist(
     (set) => ({
-      theme: "system" as "light" | "dark" | "system",
+      theme: "light" as Theme,
       sidebarCollapsed: false,
 
-      setTheme: (theme: "light" | "dark" | "system") => set({ theme }),
+      setTheme: (theme: Theme) => set({ theme }),
       toggleSidebar: () =>
         set((state) => ({
           sidebarCollapsed: !state.sidebarCollapsed,
