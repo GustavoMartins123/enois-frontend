@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { AppContainer } from "@/components/app-container";
 
 const TOPICS = [
+  "Todas",
   "TECNOLOGIA",
   "ENGENHARIA",
   "DESIGN",
@@ -33,9 +34,18 @@ const TOPICS = [
   "LIDERANCA",
   "CARREIRA",
   "FREELANCE",
-] as const;
+];
 
-type Topic = (typeof TOPICS)[number];
+const TOPIC_LABELS: Record<string, string> = {
+  Todas: texts.communities.topics.all,
+  TECNOLOGIA: texts.communities.topics.TECNOLOGIA,
+  ENGENHARIA: texts.communities.topics.ENGENHARIA,
+  DESIGN: texts.communities.topics.DESIGN,
+  PRODUTO: texts.communities.topics.PRODUTO,
+  LIDERANCA: texts.communities.topics.LIDERANCA,
+  CARREIRA: texts.communities.topics.CARREIRA,
+  FREELANCE: texts.communities.topics.FREELANCE,
+};
 
 export const Route = createFileRoute("/comunidades")({
   beforeLoad: requireAuth,
@@ -80,8 +90,8 @@ function Comunidades() {
     }
   };
 
-  const handleTopicChange = (nextTopic?: Topic) => {
-    setTopic(nextTopic);
+  const handleTopicChange = (t: string) => {
+    setTopic(t === "Todas" ? undefined : t);
     setCursor(undefined);
     setAllItems([]);
   };
@@ -118,27 +128,17 @@ function Comunidades() {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          <button
-            onClick={() => handleTopicChange(undefined)}
-            className={`rounded-full border px-3.5 py-1.5 text-sm transition ${
-              !topic
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border bg-card text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {texts.communities.topics.all}
-          </button>
-          {TOPICS.map((value) => (
+          {TOPICS.map((t) => (
             <button
-              key={value}
-              onClick={() => handleTopicChange(value)}
+              key={t}
+              onClick={() => handleTopicChange(t)}
               className={`rounded-full border px-3.5 py-1.5 text-sm transition ${
-                value === topic
+                (t === "Todas" && !topic) || t === topic
                   ? "border-primary bg-primary text-primary-foreground"
                   : "border-border bg-card text-muted-foreground hover:text-foreground"
               }`}
             >
-              {texts.communities.topics[value]}
+              {TOPIC_LABELS[t]}
             </button>
           ))}
         </div>
@@ -228,7 +228,7 @@ function CreateCommunityDialog({
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [topic, setTopic] = useState<Topic>("TECNOLOGIA");
+  const [topic, setTopic] = useState("TECNOLOGIA");
 
   const create = useMutation({
     mutationFn: () => communitiesApi.create({ name, description, topic }),
@@ -270,12 +270,12 @@ function CreateCommunityDialog({
             <Label className="text-xs text-muted-foreground">{texts.communities.create.topic}</Label>
             <select
               value={topic}
-              onChange={(e) => setTopic(e.target.value as Topic)}
+              onChange={(e) => setTopic(e.target.value)}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 border-transparent bg-muted"
             >
-              {TOPICS.map((value) => (
-                <option key={value} value={value}>
-                  {texts.communities.topics[value]}
+              {TOPICS.filter((t) => t !== "Todas").map((t) => (
+                <option key={t} value={t}>
+                  {TOPIC_LABELS[t]}
                 </option>
               ))}
             </select>
