@@ -162,10 +162,7 @@ function Mensagens() {
             ) : (
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder={texts.messages.searchConversations}
-                  className="h-9 rounded-full bg-muted pl-9"
-                />
+                <Input placeholder={texts.messages.searchConversations} className="h-9 rounded-full bg-muted pl-9" />
               </div>
             )}
           </div>
@@ -194,7 +191,9 @@ function Mensagens() {
         <div className={`flex min-h-0 flex-col ${!activeConversation ? "hidden md:flex" : "flex"}`}>
           {!activeConversation ? (
             <div className="flex h-full items-center justify-center">
-              <p className="text-sm text-muted-foreground">{texts.messages.selectConversation}</p>
+              <p className="text-sm text-muted-foreground">
+                {texts.messages.selectConversation}
+              </p>
             </div>
           ) : (
             <>
@@ -323,7 +322,9 @@ function ConversationItem({
             </span>
           </div>
           <div className="flex items-center justify-between gap-2">
-            <p className="truncate text-xs text-muted-foreground">{conversation.lastMessage ?? ""}</p>
+            <p className="truncate text-xs text-muted-foreground">
+              {conversation.lastMessage ?? ""}
+            </p>
             {conversation.unread > 0 && (
               <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
                 {conversation.unread}
