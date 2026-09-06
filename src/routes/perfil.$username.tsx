@@ -60,7 +60,7 @@ export const Route = createFileRoute("/perfil/$username")({
   },
   head: ({ loaderData }) => ({
     meta: [
-      { title: `${loaderData?.user.name ?? texts.profile.seoFallbackTitle} · ${texts.brand.name}` },
+      { title: texts.profile.seoTitle(loaderData?.user.name ?? texts.profile.seoFallbackTitle) },
       { name: "description", content: loaderData?.user.headline ?? texts.profile.seoFallbackDescription },
     ],
   }),
@@ -273,7 +273,11 @@ function Profile() {
                     className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30 text-white transition"
                     disabled={avatarUpload.status === "uploading"}
                   >
-                    {avatarUpload.status === "uploading" ? "..." : <Camera className="h-5 w-5" />}
+                    {avatarUpload.status === "uploading" ? (
+                      texts.profile.uploadingIndicator
+                    ) : (
+                      <Camera className="h-5 w-5" />
+                    )}
                   </button>
                 )}
                 <input
@@ -357,10 +361,10 @@ function Profile() {
                     <MapPin className="h-4 w-4" /><>{user.location}</>
                   </span>
                 )}
-                <span>{`· ${texts.profile.connections(user.connectionsCount)}`}</span>
+                <span>{texts.profile.connectionsMeta(user.connectionsCount)}</span>
                 {(user.reputation ?? 0) > 0 && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-opportunity/15 px-2 py-0.5 text-[11px] font-light text-opportunity-foreground">
-                    {`★ ${texts.profile.reputation(user.reputation ?? 0)}`}
+                    {texts.profile.reputationMeta(user.reputation ?? 0)}
                   </span>
                 )}
               </p>
@@ -480,7 +484,7 @@ function Profile() {
                       <span
                         className={`w-5 text-center text-[13px] font-light ${i < 3 ? "text-opportunity" : "text-text-subtle"}`}
                       >
-                        {`${i + 1}º`}
+                        {texts.profile.rankingPosition(i + 1)}
                       </span>
                       <Link to="/perfil/$username" params={{ username: u.username }}>
                         <UserAvatar src={u.avatar} alt={u.name} className="h-8 w-8 shrink-0" />
@@ -579,7 +583,7 @@ function RecommendationItem({
         </span>
       </div>
       <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">
-        {`"${recommendation.comment}"`}
+        {texts.profile.recommendationQuote(recommendation.comment)}
       </p>
     </div>
   );
