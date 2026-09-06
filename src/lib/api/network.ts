@@ -1,45 +1,18 @@
+import type { PageResponse } from "@/types/application/api/page-response";
+import type { ConnectionRequest } from "@/types/application/network/connection-request";
+import type { ConnectionStatusResult } from "@/types/application/network/connection-status-result";
+import type { ConnectionStatus } from "@/types/application/network/connection-status";
+import type { NetworkSummary } from "@/types/application/network/network-summary";
+import type { NetworkUser } from "@/types/application/network/network-user";
+
 import { api, buildQuery } from "../api-client";
 
-export interface NetworkUser {
-  id: string;
-  username: string;
-  name: string;
-  headline: string;
-  avatar: string | null;
-  connections: number;
-  followers: number;
-  connected: boolean;
-}
-
-export interface PageResponse<T> {
-  items: T[];
-  nextCursor: string | null;
-}
-
-export interface NetworkSummary {
-  userId: string;
-  connections: number;
-  followers: number;
-  pendingRequests: number;
-}
-
-export interface ConnectionRequest {
-  id: string;
-  fromUserId: string;
-  toUserId: string;
-  status: "PENDING" | "ACCEPTED" | "REJECTED";
-  createdAt: string;
-}
-
-export interface ConnectionStatus {
-  id: string;
-  status: string;
-}
-
-export interface ConnectionStatusResult {
-  targetUserId: string;
-  status: "NONE" | "PENDING" | "ACCEPTED" | "REMOVED" | "BLOCKED";
-}
+export type { PageResponse } from "@/types/application/api/page-response";
+export type { ConnectionRequest } from "@/types/application/network/connection-request";
+export type { ConnectionStatusResult } from "@/types/application/network/connection-status-result";
+export type { ConnectionStatus } from "@/types/application/network/connection-status";
+export type { NetworkSummary } from "@/types/application/network/network-summary";
+export type { NetworkUser } from "@/types/application/network/network-user";
 
 export const networkApi = {
   list: (query?: string, cursor?: string | null, limit = 20) =>

@@ -1,4 +1,5 @@
-import type { CommentView, PostView } from "@/lib/api";
+import type { CommentView } from "@/types/application/comment/comment-view";
+import type { PostView } from "@/types/application/feed/post-view";
 
 export type PostCardState = {
   draft: string;

@@ -1,32 +1,14 @@
+import type { PageResponse } from "@/types/application/api/page-response";
+import type { Conversation } from "@/types/application/message/conversation";
+import type { CreateConversationInput } from "@/types/application/message/create-conversation-input";
+import type { Message } from "@/types/application/message/message";
+
 import { api, buildQuery } from "../api-client";
 
-export interface Conversation {
-  id: string;
-  kind: "DIRECT" | "GROUP";
-  title: string | null;
-  participantIds: string[];
-  lastMessage: string | null;
-  time: string | null;
-  unread: number;
-}
-
-export interface Message {
-  id: string;
-  from: string;
-  text: string;
-  time: string;
-}
-
-export interface PageResponse<T> {
-  items: T[];
-  nextCursor: string | null;
-}
-
-export interface CreateConversationInput {
-  kind: "DIRECT" | "GROUP";
-  title?: string | null;
-  participantIds: string[];
-}
+export type { PageResponse } from "@/types/application/api/page-response";
+export type { Conversation } from "@/types/application/message/conversation";
+export type { CreateConversationInput } from "@/types/application/message/create-conversation-input";
+export type { Message } from "@/types/application/message/message";
 
 export const messagesApi = {
   listConversations: (cursor?: string | null, limit = 20) =>

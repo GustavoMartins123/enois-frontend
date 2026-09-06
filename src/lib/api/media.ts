@@ -1,24 +1,11 @@
+import type { MediaAsset } from "@/types/application/media/media-asset";
+import type { MediaUploadResponse } from "@/types/application/media/media-upload-response";
+
 import { api } from "../api-client";
 import { getImageKitAuth } from "./imagekit-auth.fn";
 
-export interface MediaUploadResponse {
-  id: string;
-  uploadUrl: string;
-  cdnUrl: string;
-  status: "PENDING" | "UPLOADED" | "FAILED";
-}
-
-export interface MediaAsset {
-  id: string;
-  fileName: string;
-  mimeType: string;
-  size: number;
-  purpose: string;
-  status: string;
-  uploadUrl: string | null;
-  cdnUrl: string | null;
-  createdAt: string;
-}
+export type { MediaAsset } from "@/types/application/media/media-asset";
+export type { MediaUploadResponse } from "@/types/application/media/media-upload-response";
 
 const IMAGEKIT_PUBLIC_KEY =
   import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY ?? "public_0Y+bnNURFVY+XZuqyCWQGafHo/0=";
@@ -35,12 +22,13 @@ export function resolveCdnUrl(url: string | null | undefined): string | undefine
 }
 
 export const mediaApi = {
-  requestUpload: (data: { fileName: string; mimeType: string; size: number; purpose: string }) =>
+  requestUpload: (data: Pick<MediaAsset, "fileName" | "mimeType" | "size" | "purpose">) =>
     api.post<MediaUploadResponse>("/media/uploads", data),
 
   get: (mediaId: string) => api.get<MediaAsset>(`/media/${mediaId}`),
 
-  delete: (mediaId: string) => api.delete<{ id: string; status: string }>(`/media/${mediaId}`),
+  delete: (mediaId: string) =>
+    api.delete<Pick<MediaAsset, "id" | "status">>(`/media/${mediaId}`),
 
   uploadToImageKit: async (cdnUrl: string, file: File) => {
     const absoluteUrl = resolveCdnUrl(cdnUrl) ?? cdnUrl;
