@@ -258,11 +258,11 @@ export function EditProfileDialog({ profile, children }: Props) {
               <div className="flex items-center gap-8">
                 <label className="flex items-center gap-3 text-[13px] font-light text-text-strong">
                   <Switch checked={openToWork} onCheckedChange={setOpenToWork} />
-                  {texts.profile.edit.openToWork}
+                  <>{texts.profile.edit.openToWork}</>
                 </label>
                 <label className="flex items-center gap-3 text-[13px] font-light text-text-strong">
                   <Switch checked={isMentor} onCheckedChange={setIsMentor} />
-                  {texts.profile.edit.mentorAvailable}
+                  <>{texts.profile.edit.mentorAvailable}</>
                 </label>
               </div>
             </div>
@@ -490,7 +490,7 @@ function SubList<
           {currentlyHereKey && (
             <label className="flex items-center gap-2 text-[13px] font-light text-text-strong">
               <Switch checked={currentlyHere} onCheckedChange={setCurrentlyHere} />
-              {texts.profile.edit.currentlyHere}
+              <>{texts.profile.edit.currentlyHere}</>
             </label>
           )}
           <div className="flex gap-2">
@@ -556,7 +556,7 @@ function SubList<
               setCurrentlyHere(false);
             }}
           >
-            <Plus className="h-4 w-4" /> {texts.common.add}
+            <Plus className="h-4 w-4" /><>{texts.common.add}</>
           </Button>
         </>
       )}
