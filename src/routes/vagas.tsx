@@ -24,6 +24,7 @@ export const Route = createFileRoute("/vagas")({
 });
 
 const LEVELS = ["JUNIOR", "MID", "SENIOR", "LEAD"];
+const LOCATIONS = ["Remoto", "Híbrido", "Presencial"];
 const TYPES = ["CLT", "PJ", "FREELANCE", "INTERN"];
 
 function formatPostedAt(dateStr: string | null | undefined): string {
@@ -142,7 +143,7 @@ function Vagas() {
           <div className="mt-3 flex flex-wrap gap-2">
             <div className="flex flex-wrap items-center gap-1.5">
               <span className="text-xs font-medium text-muted-foreground mr-1">{texts.jobs.filters.location}</span>
-              {texts.jobs.filters.locations.map((l) => (
+              {LOCATIONS.map((l, index) => (
                 <button
                   key={l}
                   onClick={() => setLocation(location === l ? "" : l)}
@@ -151,7 +152,7 @@ function Vagas() {
                     : "border-border bg-card text-muted-foreground hover:text-foreground"
                     }`}
                 >
-                  {l}
+                  {texts.jobs.filters.locations[index]}
                 </button>
               ))}
             </div>
