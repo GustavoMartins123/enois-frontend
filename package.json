@@ -14,6 +14,7 @@
     "prettier": "prettier --write \".\"",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "typecheck": "tsc --noEmit",
     "test:eslint-rules": "node eslint/rules/jsx-content-spacing.test.js",
     "format": "prettier --write ."
   },
