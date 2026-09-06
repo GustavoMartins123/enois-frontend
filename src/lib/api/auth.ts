@@ -7,12 +7,6 @@ import type { SignupInput } from "@/types/application/auth/signup-input";
 
 import { api } from "../api-client";
 
-export type { AuthResponse } from "@/types/application/auth/auth-response";
-export type { AuthUser } from "@/types/application/auth/auth-user";
-export type { LoginInput } from "@/types/application/auth/login-input";
-export type { OAuthStartResponse } from "@/types/application/auth/oauth-start-response";
-export type { SignupInput } from "@/types/application/auth/signup-input";
-
 export const authApi = {
   signup: (data: SignupInput) => api.post<AuthResponse>("/auth/signup", data),
 

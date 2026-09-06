@@ -9,13 +9,6 @@ import type { UpdateMentorInput } from "@/types/application/mentor/update-mentor
 
 import { api, buildQuery } from "../api-client";
 
-export type { PageResponse } from "@/types/application/api/page-response";
-export type { CreateMentorInput } from "@/types/application/mentor/create-mentor-input";
-export type { CreateSlotInput } from "@/types/application/mentor/create-slot-input";
-export type { Mentor } from "@/types/application/mentor/mentor";
-export type { TimeSlot } from "@/types/application/mentor/time-slot";
-export type { UpdateMentorInput } from "@/types/application/mentor/update-mentor-input";
-
 export const mentorsApi = {
   list: (expertise?: string, cursor?: string | null, limit = 20) =>
     api.get<PageResponse<Mentor>>(`/mentors${buildQuery({ expertise, cursor, limit })}`),

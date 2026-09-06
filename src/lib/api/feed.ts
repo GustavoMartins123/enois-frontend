@@ -4,19 +4,9 @@ import type { BulkDeleteResult } from "@/types/application/feed/bulk-delete-resu
 import type { CreatePostInput } from "@/types/application/feed/create-post-input";
 import type { DeleteResult } from "@/types/application/feed/delete-result";
 import type { PostView } from "@/types/application/feed/post-view";
-import type { ReactionUser } from "@/types/application/feed/reaction-user";
 import type { ReactionsResponse } from "@/types/application/feed/reactions-response";
 
 import { api, buildQuery } from "../api-client";
-
-export type { PageResponse } from "@/types/application/api/page-response";
-export type { BulkDeleteInput } from "@/types/application/feed/bulk-delete-input";
-export type { BulkDeleteResult } from "@/types/application/feed/bulk-delete-result";
-export type { CreatePostInput } from "@/types/application/feed/create-post-input";
-export type { DeleteResult } from "@/types/application/feed/delete-result";
-export type { PostView } from "@/types/application/feed/post-view";
-export type { ReactionUser } from "@/types/application/feed/reaction-user";
-export type { ReactionsResponse } from "@/types/application/feed/reactions-response";
 
 export const feedApi = {
   list: (cursor?: string | null, limit = 20, tab?: string) =>

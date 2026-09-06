@@ -43,5 +43,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 );
 Button.displayName = "Button";
 
-export type { ButtonProps } from "@/types/components/ui/button-props";
 export { Button, buttonVariants };

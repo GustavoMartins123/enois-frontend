@@ -4,9 +4,6 @@ import type { CommentView } from "@/types/application/comment/comment-view";
 
 import { api, buildQuery } from "../api-client";
 
-export type { PageResponse } from "@/types/application/api/page-response";
-export type { CommentView } from "@/types/application/comment/comment-view";
-
 export const commentsApi = {
   create: (
     postId: string,

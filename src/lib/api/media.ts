@@ -4,9 +4,6 @@ import type { MediaUploadResponse } from "@/types/application/media/media-upload
 import { api } from "../api-client";
 import { getImageKitAuth } from "./imagekit-auth.fn";
 
-export type { MediaAsset } from "@/types/application/media/media-asset";
-export type { MediaUploadResponse } from "@/types/application/media/media-upload-response";
-
 const IMAGEKIT_PUBLIC_KEY =
   import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY ?? "public_0Y+bnNURFVY+XZuqyCWQGafHo/0=";
 const IMAGEKIT_UPLOAD_URL =

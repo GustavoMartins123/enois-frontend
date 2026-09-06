@@ -6,19 +6,8 @@ import type { ExperienceRequest } from "@/types/application/profile/experience-r
 import type { Experience } from "@/types/application/profile/experience";
 import type { Profile } from "@/types/application/profile/profile";
 import type { UpdateProfileRequest } from "@/types/application/profile/update-profile-request";
-import type { UserProfile } from "@/types/application/profile/user-profile";
 
 import { api } from "../api-client";
-
-export type { CertificationRequest } from "@/types/application/profile/certification-request";
-export type { Certification } from "@/types/application/profile/certification";
-export type { EducationRequest } from "@/types/application/profile/education-request";
-export type { Education } from "@/types/application/profile/education";
-export type { ExperienceRequest } from "@/types/application/profile/experience-request";
-export type { Experience } from "@/types/application/profile/experience";
-export type { Profile } from "@/types/application/profile/profile";
-export type { UpdateProfileRequest } from "@/types/application/profile/update-profile-request";
-export type { UserProfile } from "@/types/application/profile/user-profile";
 
 export const profileApi = {
   me: () => api.get<Profile>("/me"),

@@ -2,8 +2,6 @@ import type { UserSearchResult } from "@/types/application/user/user-search-resu
 
 import { api, buildQuery } from "../api-client";
 
-export type { UserSearchResult } from "@/types/application/user/user-search-result";
-
 export const usersApi = {
   search: (query: string) =>
     api.get<UserSearchResult[]>(`/users/search${buildQuery({ q: query })}`),

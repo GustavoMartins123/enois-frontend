@@ -5,9 +5,6 @@ import type { ListJobsParams } from "@/types/application/job/list-jobs-params";
 
 import { api, buildQuery } from "../api-client";
 
-export type { PageResponse } from "@/types/application/api/page-response";
-export type { Job } from "@/types/application/job/job";
-
 export const jobsApi = {
   list: (params?: ListJobsParams) =>
     api.get<PageResponse<Job>>(

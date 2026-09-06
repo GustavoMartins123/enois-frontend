@@ -3,14 +3,9 @@ import type { StatusResponse } from "@/types/application/api/status-response";
 import type { CommunityMember } from "@/types/application/community/community-member";
 import type { Community } from "@/types/application/community/community";
 import type { CreateCommunityInput } from "@/types/application/community/create-community-input";
+import type { PostView } from "@/types/application/feed/post-view";
 
 import { api, buildQuery } from "../api-client";
-import type { PostView } from "./feed";
-
-export type { PageResponse } from "@/types/application/api/page-response";
-export type { CommunityMember } from "@/types/application/community/community-member";
-export type { Community } from "@/types/application/community/community";
-export type { CreateCommunityInput } from "@/types/application/community/create-community-input";
 
 export const communitiesApi = {
   list: (topic?: string, cursor?: string | null, limit = 20) =>

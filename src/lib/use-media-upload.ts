@@ -6,9 +6,6 @@ import type { UploadInput } from "@/types/media-upload/upload-input";
 import type { UploadResult } from "@/types/media-upload/upload-result";
 import type { UploadState } from "@/types/media-upload/upload-state";
 
-export type { UploadResult } from "@/types/media-upload/upload-result";
-export type { UploadState } from "@/types/media-upload/upload-state";
-
 function sanitizeName(name: string): string {
   return name.replace(/[^a-zA-Z0-9.-]/g, "_");
 }

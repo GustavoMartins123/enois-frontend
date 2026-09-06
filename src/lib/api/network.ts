@@ -7,13 +7,6 @@ import type { NetworkUser } from "@/types/application/network/network-user";
 
 import { api, buildQuery } from "../api-client";
 
-export type { PageResponse } from "@/types/application/api/page-response";
-export type { ConnectionRequest } from "@/types/application/network/connection-request";
-export type { ConnectionStatusResult } from "@/types/application/network/connection-status-result";
-export type { ConnectionStatus } from "@/types/application/network/connection-status";
-export type { NetworkSummary } from "@/types/application/network/network-summary";
-export type { NetworkUser } from "@/types/application/network/network-user";
-
 export const networkApi = {
   list: (query?: string, cursor?: string | null, limit = 20) =>
     api.get<PageResponse<NetworkUser>>(`/network/users${buildQuery({ query, cursor, limit })}`),

@@ -5,10 +5,6 @@ import type { Event } from "@/types/application/event/event";
 
 import { api, buildQuery } from "../api-client";
 
-export type { PageResponse } from "@/types/application/api/page-response";
-export type { CreateEventRequest } from "@/types/application/event/create-event-request";
-export type { Event } from "@/types/application/event/event";
-
 export const eventsApi = {
   list: (format?: string, cursor?: string | null, limit = 20) =>
     api.get<PageResponse<Event>>(`/events${buildQuery({ format, cursor, limit })}`),
