@@ -71,12 +71,15 @@ function CommunityDetail() {
   const members = membersData?.items ?? [];
   const posts = feedData?.items ?? [];
 
-  const invalidate = () => {
-    queryClient.invalidateQueries({ queryKey: ["community", community.id] });
-  };
+  const join = useMutation({
+    mutationFn: () => communitiesApi.join(community.id),
+    onSuccess: () => invalidate(),
+  });
 
-  const join = useMutation({ mutationFn: () => communitiesApi.join(community.id), onSuccess: invalidate });
-  const leave = useMutation({ mutationFn: () => communitiesApi.leave(community.id), onSuccess: invalidate });
+  const leave = useMutation({
+    mutationFn: () => communitiesApi.leave(community.id),
+    onSuccess: () => invalidate(),
+  });
 
   const createPost = useMutation({
     mutationFn: (content: string) =>
@@ -87,6 +90,10 @@ function CommunityDetail() {
       setDraft("");
     },
   });
+
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ["community", community.id] });
+  };
 
   const handlePost = (e: FormEvent) => {
     e.preventDefault();
@@ -126,8 +133,12 @@ function CommunityDetail() {
                   />
                 )}
                 <div className="min-w-0">
-                  <Badge className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft">{live.topic}</Badge>
-                  <h1 className="mt-2 break-words text-2xl font-semibold tracking-tight">{live.name}</h1>
+                  <Badge className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft">
+                    {live.topic}
+                  </Badge>
+                  <h1 className="mt-2 break-words text-2xl font-semibold tracking-tight">
+                    {live.name}
+                  </h1>
                   <p className="mt-1 break-words text-muted-foreground">{live.description}</p>
                   <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
@@ -187,9 +198,12 @@ function CommunityDetail() {
               maxLength={1024}
             />
             <div className="mt-3 flex justify-end">
-              <Button size="sm" className="rounded-full gap-1.5" disabled={!draft.trim() || createPost.isPending}>
-                <Send className="h-4 w-4" />
-                {createPost.isPending ? texts.common.publishing : texts.common.publish}
+              <Button
+                size="sm"
+                className="rounded-full gap-1.5"
+                disabled={!draft.trim() || createPost.isPending}
+              >
+                <Send className="h-4 w-4" /> {createPost.isPending ? texts.common.publishing : texts.common.publish}
               </Button>
             </div>
           </form>
@@ -200,7 +214,9 @@ function CommunityDetail() {
             <h2 className="text-lg font-semibold">{texts.communities.detail.feed}</h2>
             {posts.length === 0 ? (
               <p className="surface-card p-8 text-center text-sm text-muted-foreground">
-                {isMember ? texts.communities.detail.emptyMember : texts.communities.detail.emptyGuest}
+                {isMember
+                  ? texts.communities.detail.emptyMember
+                  : texts.communities.detail.emptyGuest}
               </p>
             ) : (
               posts.map((p) => <PostCard key={p.id} post={p} />)
@@ -225,7 +241,10 @@ function CommunityDetail() {
                         {m.name}
                       </Link>
                       {m.role === "ADMIN" && (
-                        <Badge variant="outline" className="ml-2 rounded-full text-[10px] px-1.5 py-0">
+                        <Badge
+                          variant="outline"
+                          className="ml-2 rounded-full text-[10px] px-1.5 py-0"
+                        >
                           {texts.communities.detail.admin}
                         </Badge>
                       )}
@@ -326,43 +345,97 @@ function EditCommunityForm({
           <div className="relative overflow-hidden rounded-xl border border-border">
             <img src={cover} alt="" className="h-24 w-full object-cover" />
             <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition hover:opacity-100">
-              <Button type="button" variant="secondary" size="sm" className="rounded-full gap-1.5" onClick={() => coverRef.current?.click()}>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className="rounded-full gap-1.5"
+                onClick={() => coverRef.current?.click()}
+              >
                 <Camera className="h-4 w-4" /> {texts.communities.detail.change}
               </Button>
-              <Button type="button" variant="destructive" size="sm" className="rounded-full" onClick={() => setCover("")}>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="rounded-full"
+                onClick={() => setCover("")}
+              >
                 {texts.communities.detail.remove}
               </Button>
             </div>
           </div>
         ) : (
-          <Button type="button" variant="outline" className="w-full rounded-full gap-1.5" onClick={() => coverRef.current?.click()}>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full rounded-full gap-1.5"
+            onClick={() => coverRef.current?.click()}
+          >
             <Camera className="h-4 w-4" /> {texts.communities.detail.addCover}
           </Button>
         )}
-        <input ref={coverRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect("COVER")} />
+        <input
+          ref={coverRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileSelect("COVER")}
+        />
       </div>
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">{texts.communities.detail.avatar}</Label>
         {avatar ? (
           <div className="flex items-center gap-3">
-            <img src={avatar} alt="" className="h-16 w-16 rounded-full object-cover ring-2 ring-border" />
+            <img
+              src={avatar}
+              alt=""
+              className="h-16 w-16 rounded-full object-cover ring-2 ring-border"
+            />
             <div className="flex gap-2">
-              <Button type="button" variant="outline" size="sm" className="rounded-full gap-1.5" onClick={() => avatarRef.current?.click()}>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-full gap-1.5"
+                onClick={() => avatarRef.current?.click()}
+              >
                 <Camera className="h-4 w-4" /> {texts.communities.detail.change}
               </Button>
-              <Button type="button" variant="destructive" size="sm" className="rounded-full" onClick={() => setAvatar("")}>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="rounded-full"
+                onClick={() => setAvatar("")}
+              >
                 {texts.communities.detail.remove}
               </Button>
             </div>
           </div>
         ) : (
-          <Button type="button" variant="outline" className="w-full rounded-full gap-1.5" onClick={() => avatarRef.current?.click()}>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full rounded-full gap-1.5"
+            onClick={() => avatarRef.current?.click()}
+          >
             <Camera className="h-4 w-4" /> {texts.communities.detail.addAvatar}
           </Button>
         )}
-        <input ref={avatarRef} type="file" accept="image/*" className="hidden" onChange={handleFileSelect("AVATAR")} />
+        <input
+          ref={avatarRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={handleFileSelect("AVATAR")}
+        />
       </div>
-      <Button className="w-full rounded-full" disabled={!name.trim() || update.isPending} onClick={() => update.mutate()}>
+      <Button
+        className="w-full rounded-full"
+        disabled={!name.trim() || update.isPending}
+        onClick={() => update.mutate()}
+      >
         {update.isPending ? texts.common.saving : texts.common.save}
       </Button>
 
