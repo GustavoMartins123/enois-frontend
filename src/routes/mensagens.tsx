@@ -6,8 +6,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowLeft, Search, Send } from "lucide-react";
 
 import { messagesApi, networkApi, profileApi } from "@/lib/api";
-import { useAuth } from "@/lib/use-auth";
-import { useMessagesStore } from "@/stores/messages.store";
+import { getCurrentUserId } from "@/lib/current-user";
 import { texts } from "@/texts";
 
 import { Button } from "@/components/ui/button";
@@ -22,20 +21,13 @@ export const Route = createFileRoute("/mensagens")({
 });
 
 function Mensagens() {
-  const { user: currentUser } = useAuth();
+  const currentUserId = getCurrentUserId();
   const queryClient = useQueryClient();
-  const activeConversationId = useMessagesStore((state) => state.activeConversationId);
-  const setActiveConversationId = useMessagesStore((state) => state.setActiveConversationId);
-  const clearActiveConversation = useMessagesStore((state) => state.clearActiveConversation);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [text, setText] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    clearActiveConversation();
-    return clearActiveConversation;
-  }, [clearActiveConversation]);
 
   const { data: conversationsData } = useQuery({
     queryKey: ["conversations"],
@@ -44,9 +36,7 @@ function Mensagens() {
   });
 
   const conversations = conversationsData?.items ?? [];
-  const activeConversation = activeConversationId
-    ? conversations.find((conversation) => conversation.id === activeConversationId)
-    : null;
+  const activeConversation = activeId ? conversations.find((c) => c.id === activeId) : null;
 
   const { data: messagesData } = useQuery({
     queryKey: ["messages", activeConversation?.id],
@@ -65,7 +55,7 @@ function Mensagens() {
     enabled: searchQuery.length > 0,
   });
 
-  const filteredUsers = (searchResults?.items ?? []).filter((user) => user.id !== currentUser?.id);
+  const filteredUsers = (searchResults?.items ?? []).filter((u) => u.id !== currentUserId);
 
   const sendMessage = useMutation({
     mutationFn: ({ conversationId, text }: { conversationId: string; text: string }) =>
@@ -80,16 +70,21 @@ function Mensagens() {
   const createConversation = useMutation({
     mutationFn: (participantId: string) =>
       messagesApi.createConversation({ kind: "DIRECT", participantIds: [participantId] }),
-    onSuccess: (conversation) => {
-      setActiveConversationId(conversation.id);
+    onSuccess: (conv) => {
+      setActiveId(conv.id);
       setShowSearch(false);
       setSearchQuery("");
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
     },
   });
 
-  const handleSubmit = (event: FormEvent) => {
-    event.preventDefault();
+  const markAsRead = useMutation({
+    mutationFn: (conversationId: string) => messagesApi.markAsRead(conversationId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["conversations"] }),
+  });
+
+  const handleSubmit = (e: FormEvent) => {
+    e.preventDefault();
     const content = text.trim();
     if (!content || !activeConversation) return;
     sendMessage.mutate({ conversationId: activeConversation.id, text: content });
@@ -98,7 +93,7 @@ function Mensagens() {
   const activeMessages = activeConversation ? messages : [];
 
   const otherParticipantId = activeConversation?.participantIds.find(
-    (id) => id !== currentUser?.id,
+    (id) => id !== currentUserId,
   );
   const { data: otherUser } = useQuery({
     queryKey: ["profile", "by-id", otherParticipantId],
@@ -134,7 +129,7 @@ function Mensagens() {
                   <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     value={searchQuery}
-                    onChange={(event) => setSearchQuery(event.target.value)}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={texts.messages.searchContacts}
                     className="h-9 rounded-full bg-muted pl-9"
                     autoFocus
@@ -147,16 +142,16 @@ function Mensagens() {
                         {texts.messages.noContact}
                       </p>
                     ) : (
-                      filteredUsers.map((user) => (
+                      filteredUsers.map((u) => (
                         <button
-                          key={user.id}
-                          onClick={() => createConversation.mutate(user.id)}
+                          key={u.id}
+                          onClick={() => createConversation.mutate(u.id)}
                           className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition hover:bg-muted"
                         >
-                          <UserAvatar src={user.avatar} alt={user.name} className="h-10 w-10" />
+                          <UserAvatar src={u.avatar} alt={u.name} className="h-10 w-10" />
                           <div className="min-w-0">
-                            <p className="truncate text-sm font-medium">{user.name}</p>
-                            <p className="truncate text-xs text-muted-foreground">{user.headline}</p>
+                            <p className="truncate text-sm font-medium">{u.name}</p>
+                            <p className="truncate text-xs text-muted-foreground">{u.headline}</p>
                           </div>
                         </button>
                       ))
@@ -177,11 +172,15 @@ function Mensagens() {
                 {texts.messages.noConversations}
               </li>
             ) : (
-              conversations.map((conversation) => (
+              conversations.map((c) => (
                 <ConversationItem
-                  key={conversation.id}
-                  conversation={conversation}
-                  currentUserId={currentUser?.id ?? ""}
+                  key={c.id}
+                  conversation={c}
+                  isActive={c.id === (activeConversation?.id ?? "")}
+                  onSelect={() => {
+                    setActiveId(c.id);
+                    if (c.unread > 0) markAsRead.mutate(c.id);
+                  }}
                 />
               ))
             )}
@@ -199,7 +198,7 @@ function Mensagens() {
             <>
               <ConversationHeader
                 conversation={activeConversation}
-                currentUserId={currentUser?.id ?? ""}
+                onBack={() => setActiveId(null)}
               />
               <div className="flex-1 overflow-y-auto bg-muted/30 p-5">
                 <div className="space-y-3">
@@ -208,11 +207,11 @@ function Mensagens() {
                       {texts.messages.noMessages}
                     </p>
                   ) : (
-                    activeMessages.map((message) => {
-                      const isMe = message.from === currentUser?.id;
+                    activeMessages.map((m) => {
+                      const isMe = m.from === currentUserId;
                       return (
                         <div
-                          key={message.id}
+                          key={m.id}
                           className={`flex items-end gap-2 ${isMe ? "justify-end" : "justify-start"}`}
                         >
                           {!isMe && (
@@ -234,11 +233,11 @@ function Mensagens() {
                                 : "rounded-bl-md bg-card text-foreground"
                             }`}
                           >
-                            <p className="break-words">{message.text}</p>
+                            <p className="break-words">{m.text}</p>
                             <p
                               className={`mt-1 text-[10px] ${isMe ? "text-primary-foreground/70" : "text-muted-foreground"}`}
                             >
-                              {formatTime(message.time)}
+                              {formatTime(m.time)}
                             </p>
                           </div>
                         </div>
@@ -255,7 +254,7 @@ function Mensagens() {
               >
                 <Input
                   value={text}
-                  onChange={(event) => setText(event.target.value)}
+                  onChange={(e) => setText(e.target.value)}
                   placeholder={texts.messages.inputPlaceholder}
                   className="h-10 rounded-full bg-muted"
                 />
@@ -277,7 +276,8 @@ function Mensagens() {
 
 function ConversationItem({
   conversation,
-  currentUserId,
+  isActive,
+  onSelect,
 }: {
   conversation: {
     id: string;
@@ -287,11 +287,10 @@ function ConversationItem({
     time: string | null;
     unread: number;
   };
-  currentUserId: string;
+  isActive: boolean;
+  onSelect: () => void;
 }) {
-  const queryClient = useQueryClient();
-  const activeConversationId = useMessagesStore((state) => state.activeConversationId);
-  const setActiveConversationId = useMessagesStore((state) => state.setActiveConversationId);
+  const currentUserId = getCurrentUserId();
   const otherId = conversation.participantIds.find((id) => id !== currentUserId);
   const { data: otherUser } = useQuery({
     queryKey: ["profile", "by-id", otherId],
@@ -299,23 +298,12 @@ function ConversationItem({
     enabled: !!otherId,
   });
 
-  const markAsRead = useMutation({
-    mutationFn: () => messagesApi.markAsRead(conversation.id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["conversations"] }),
-  });
-
   const title = conversation.title ?? otherUser?.name ?? texts.messages.conversationFallback;
-  const isActive = conversation.id === activeConversationId;
-
-  const handleSelect = () => {
-    setActiveConversationId(conversation.id);
-    if (conversation.unread > 0) markAsRead.mutate();
-  };
 
   return (
     <li>
       <button
-        onClick={handleSelect}
+        onClick={onSelect}
         className={`flex w-full items-center gap-3 px-4 py-3 text-left transition ${
           isActive ? "bg-primary-soft" : "hover:bg-muted"
         }`}
@@ -348,12 +336,12 @@ function ConversationItem({
 
 function ConversationHeader({
   conversation,
-  currentUserId,
+  onBack,
 }: {
   conversation: { id: string; title: string | null; participantIds: string[] };
-  currentUserId: string;
+  onBack?: () => void;
 }) {
-  const clearActiveConversation = useMessagesStore((state) => state.clearActiveConversation);
+  const currentUserId = getCurrentUserId();
   const otherId = conversation.participantIds.find((id) => id !== currentUserId);
   const { data: otherUser } = useQuery({
     queryKey: ["profile", "by-id", otherId],
@@ -366,12 +354,14 @@ function ConversationHeader({
   return (
     <header className="flex items-center gap-3 border-b border-border p-4">
       <div className="flex items-center gap-3 min-w-0">
-        <button
-          onClick={clearActiveConversation}
-          className="grid h-8 w-8 shrink-0 place-items-center rounded-full hover:bg-muted md:hidden"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </button>
+        {onBack && (
+          <button
+            onClick={onBack}
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full hover:bg-muted md:hidden"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </button>
+        )}
         <Link to="/perfil/$username" params={{ username: otherUser?.username ?? otherId ?? "" }}>
           <UserAvatar src={otherUser?.avatar} alt={title} className="h-10 w-10 shrink-0" />
         </Link>
