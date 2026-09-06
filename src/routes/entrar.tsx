@@ -12,7 +12,6 @@ import type { AuthFormProps } from "@/types/routes/auth/auth-form-props";
 import type { FieldProps } from "@/types/routes/auth/field-props";
 import type { ForgotPasswordDialogProps } from "@/types/routes/auth/forgot-password-dialog-props";
 import type { LoginFormProps } from "@/types/routes/auth/login-form-props";
-import type { Tab } from "@/types/routes/auth/tab";
 import type { TabBtnProps } from "@/types/routes/auth/tab-btn-props";
 
 import { Button } from "@/components/ui/button";
@@ -53,9 +52,9 @@ const signupSchema = z.object({
 });
 
 function Auth() {
-  const initial = Route.useSearch().tab as Tab;
+  const initial = Route.useSearch().tab;
   const navigate = useNavigate();
-  const [tab, setTab] = useState<Tab>(initial);
+  const [tab, setTab] = useState(initial);
   const [forgotOpen, setForgotOpen] = useState(false);
 
   return (
