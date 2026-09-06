@@ -111,21 +111,21 @@ function ReactionsDialog({ postId }: { postId: string }) {
 
   const apiReactions = data?.reactions ?? [];
   const reactions =
-    currentUserReaction && currentUserId && !apiReactions.some((reaction) => reaction.userId === currentUserId)
+    currentUserReaction && currentUserId && !apiReactions.some((r) => r.userId === currentUserId)
       ? [
           { userId: currentUserId, type: currentUserReaction, createdAt: new Date().toISOString() },
           ...apiReactions,
         ]
       : apiReactions;
 
-  const uniqueUserIds = [...new Set(reactions.map((reaction) => reaction.userId))];
+  const uniqueUserIds = [...new Set(reactions.map((r) => r.userId))];
   const { data: users } = useQuery({
     queryKey: ["profiles", "by-ids", uniqueUserIds.sort().join(",")],
     queryFn: async () => {
       const results = await Promise.all(
         uniqueUserIds.map((id) => profileApi.getById(id).catch(() => null)),
       );
-      return Object.fromEntries(results.filter(Boolean).map((user) => [user!.id, user!]));
+      return Object.fromEntries(results.filter(Boolean).map((u) => [u!.id, u!]));
     },
     enabled: open && uniqueUserIds.length > 0,
   });
@@ -142,11 +142,11 @@ function ReactionsDialog({ postId }: { postId: string }) {
           </p>
         ) : (
           <div className="space-y-2 pt-2">
-            {reactions.map((reaction) => {
-              const user = users?.[reaction.userId];
+            {reactions.map((r) => {
+              const user = users?.[r.userId];
               return (
                 <div
-                  key={`${reaction.userId}-${reaction.type}`}
+                  key={`${r.userId}-${r.type}`}
                   className="flex items-center gap-3 rounded-xl bg-surface-1 p-3"
                 >
                   <UserAvatar src={user?.avatar} alt={user?.name} className="h-9 w-9 shrink-0" />
@@ -155,9 +155,7 @@ function ReactionsDialog({ postId }: { postId: string }) {
                       {user?.name ?? texts.common.loading}
                     </p>
                   </div>
-                  <span className="text-xl">
-                    {REACTION_EMOJIS[reaction.type] ?? reaction.type}
-                  </span>
+                  <span className="text-xl">{REACTION_EMOJIS[r.type] ?? r.type}</span>
                 </div>
               );
             })}
@@ -200,27 +198,21 @@ function ReportDialog({ postId }: { postId: string }) {
             <Label className="text-[11px] font-light text-text-subtle">{texts.posts.report.reason}</Label>
             <select
               value={reason}
-              onChange={(event) => setReason(event.target.value as ReportReason)}
+              onChange={(e) => setReason(e.target.value as ReportReason)}
               className="flex h-10 w-full rounded-md border border-border-soft bg-background px-3 py-2 text-[13px] font-light text-text-strong border-transparent bg-muted"
             >
-              {REPORT_REASONS.map((reportReason) => (
-                <option
-                  key={reportReason}
-                  value={reportReason}
-                  className="h-10 border-transparent bg-muted"
-                >
-                  {reportReason.replace(/_/g, " ").toLowerCase()}
+              {REPORT_REASONS.map((r) => (
+                <option key={r} value={r} className="h-10 border-transparent bg-muted">
+                  {r.replace(/_/g, " ").toLowerCase()}
                 </option>
               ))}
             </select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[11px] font-light text-text-subtle">
-              {texts.posts.report.description}
-            </Label>
+            <Label className="text-[11px] font-light text-text-subtle">{texts.posts.report.description}</Label>
             <Textarea
               value={description}
-              onChange={(event) => setDescription(event.target.value)}
+              onChange={(e) => setDescription(e.target.value)}
               rows={3}
               className="border-border-soft bg-surface-1 text-[13px] font-light h-10 border-transparent bg-muted"
             />
@@ -277,7 +269,7 @@ export function PostCard({ post }: { post: PostView }) {
 
   useEffect(() => {
     if (savedData) {
-      setSaved(savedData.items.some((savedPost) => savedPost.id === post.id));
+      setSaved(savedData.items.some((p) => p.id === post.id));
     }
   }, [savedData, post.id]);
 
@@ -352,7 +344,7 @@ export function PostCard({ post }: { post: PostView }) {
         // silently fail
       }
     }
-    setShowComments((value) => !value);
+    setShowComments((v) => !v);
   };
 
   return (
@@ -388,13 +380,13 @@ export function PostCard({ post }: { post: PostView }) {
 
       {post.tags.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-1.5">
-          {post.tags.map((tag) => (
+          {post.tags.map((t) => (
             <Badge
-              key={tag}
+              key={t}
               variant="secondary"
               className="rounded-full border border-border-soft bg-transparent font-light text-text-subtle"
             >
-              {texts.posts.tag(tag)}
+              {texts.posts.tag(t)}
             </Badge>
           ))}
         </div>
@@ -487,9 +479,9 @@ export function PostCard({ post }: { post: PostView }) {
         <section className="mt-4 border-t border-border-soft pt-4">
           <div className="space-y-3">
             {localComments
-              .filter((comment) => !comment.parentCommentId)
+              .filter((c) => !c.parentCommentId)
               .map((comment) => {
-                const replies = localComments.filter((reply) => reply.parentCommentId === comment.id);
+                const replies = localComments.filter((r) => r.parentCommentId === comment.id);
                 return (
                   <div key={comment.id}>
                     <CommentItem comment={comment} />
@@ -497,7 +489,7 @@ export function PostCard({ post }: { post: PostView }) {
                       <div className="ml-10 mt-2 space-y-2 border-l-2 border-border-soft pl-4">
                         {replies.map((reply) => {
                           const parentAuthor = localComments.find(
-                            (candidate) => candidate.id === reply.parentCommentId,
+                            (c) => c.id === reply.parentCommentId,
                           )?.authorName;
                           return (
                             <CommentItem
@@ -512,7 +504,7 @@ export function PostCard({ post }: { post: PostView }) {
                   </div>
                 );
               })}
-            {localComments.filter((comment) => !comment.parentCommentId).length === 0 && (
+            {localComments.filter((c) => !c.parentCommentId).length === 0 && (
               <p className="py-4 text-center text-[13px] font-light text-text-subtle">
                 {texts.posts.comments.empty}
               </p>
@@ -528,8 +520,8 @@ export function PostCard({ post }: { post: PostView }) {
             <div className="flex flex-1 items-center gap-2 rounded-full border border-border-soft bg-surface-1 py-1.5 pl-4 pr-1.5">
               <MentionTextarea
                 value={draft}
-                onChange={(value, ids) => {
-                  setDraft(post.id, value);
+                onChange={(val, ids) => {
+                  setDraft(post.id, val);
                   setCommentMentions(post.id, ids);
                 }}
                 placeholder={texts.posts.comments.placeholder}
@@ -841,8 +833,8 @@ function extractVideoId(url: string): { type: string; id: string } | null {
     [/twitch\.tv\/([a-zA-Z0-9_]+)\/?$/, "twitch"],
   ];
   for (const [regex, type] of patterns) {
-    const match = url.match(regex);
-    if (match) return { type, id: match[1] };
+    const m = url.match(regex);
+    if (m) return { type, id: m[1] };
   }
   return null;
 }
@@ -917,12 +909,12 @@ function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
     })),
   });
 
-  const items = queryResults.filter((query) => query.data?.cdnUrl).map((query) => query.data!);
+  const items = queryResults.filter((q) => q.data?.cdnUrl).map((q) => q.data!);
   const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
 
   if (items.length === 0) return null;
 
-  const isVideo = items.some((media) => media.mimeType.startsWith("video/"));
+  const isVideo = items.some((m) => m.mimeType.startsWith("video/"));
 
   if (isVideo) {
     return (
@@ -939,15 +931,15 @@ function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
   return (
     <>
       <div className={`grid gap-2 ${items.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
-        {items.map((media) => (
+        {items.map((m) => (
           <button
-            key={media.id}
+            key={m.id}
             type="button"
-            onClick={() => setFullscreenUrl(resolveCdnUrl(media.cdnUrl) ?? null)}
+            onClick={() => setFullscreenUrl(resolveCdnUrl(m.cdnUrl) ?? null)}
             className="overflow-hidden rounded-xl border border-border-soft text-left"
           >
             <img
-              src={resolveCdnUrl(media.cdnUrl)}
+              src={resolveCdnUrl(m.cdnUrl)}
               alt=""
               className="h-48 w-full object-cover bg-surface-1 transition hover:scale-105"
             />
@@ -963,7 +955,7 @@ function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
             src={fullscreenUrl}
             alt=""
             className="max-h-[90vh] max-w-[90vw] rounded-2xl object-contain"
-            onClick={(event) => event.stopPropagation()}
+            onClick={(e) => e.stopPropagation()}
           />
         </div>
       )}
