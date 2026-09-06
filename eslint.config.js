@@ -5,6 +5,8 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
+import jsxContentSpacing from "./eslint/rules/jsx-content-spacing.js";
+
 export default tseslint.config(
   { ignores: ["dist", ".output", ".vinxi", ".vercel"] },
   {
@@ -17,6 +19,11 @@ export default tseslint.config(
     plugins: {
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
+      local: {
+        rules: {
+          "jsx-content-spacing": jsxContentSpacing,
+        },
+      },
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -34,6 +41,7 @@ export default tseslint.config(
       ],
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
+      "local/jsx-content-spacing": "error",
     },
   },
   eslintPluginPrettier,
