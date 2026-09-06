@@ -40,13 +40,7 @@ export const Route = createFileRoute("/comunidades/$communityId")({
     }
   },
   head: ({ loaderData }) => ({
-    meta: [
-      {
-        title: texts.communities.detail.seoTitle(
-          loaderData?.name ?? texts.communities.detail.seoFallback,
-        ),
-      },
-    ],
+    meta: [{ title: `${loaderData?.name ?? texts.communities.detail.seoFallback} · ${texts.brand.name}` }],
   }),
   component: CommunityDetail,
 });
@@ -152,7 +146,7 @@ function CommunityDetail() {
                     </span>
                     {admins.length > 0 && (
                       <span>
-                        <>{texts.communities.detail.createdBy} </><Link
+                        <>{texts.communities.detail.createdBy}</><Link
                           to="/perfil/$username"
                           params={{ username: admins[0].username }}
                           className="font-medium text-foreground hover:underline"
