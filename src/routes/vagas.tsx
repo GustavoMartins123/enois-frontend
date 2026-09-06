@@ -17,6 +17,12 @@ import { Input } from "@/components/ui/input";
 
 import { AppContainer } from "@/components/app-container";
 
+export const Route = createFileRoute("/vagas")({
+  beforeLoad: requireAuth,
+  head: () => ({ meta: [{ title: texts.jobs.seoTitle }] }),
+  component: Vagas,
+});
+
 const LEVELS = ["JUNIOR", "MID", "SENIOR", "LEAD"];
 const TYPES = ["CLT", "PJ", "FREELANCE", "INTERN"];
 
@@ -57,6 +63,7 @@ function Vagas() {
   const jobs = jobsData?.items ?? [];
   const nextCursor = jobsData?.nextCursor ?? null;
 
+  // Reset list when filters change
   const filtersKey = JSON.stringify(filters);
   const prevKey = useRef(filtersKey);
   useEffect(() => {
@@ -67,6 +74,7 @@ function Vagas() {
     }
   }, [filtersKey]);
 
+  // Append new page to accumulated list
   useEffect(() => {
     if (cursor === null && jobs.length > 0) {
       setAllJobs(jobs);
@@ -97,7 +105,9 @@ function Vagas() {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">{texts.jobs.title}</h1>
-              <p className="mt-1 text-sm text-muted-foreground">{texts.jobs.description}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {texts.jobs.description}
+              </p>
             </div>
             {hasFilters && (
               <Button
@@ -207,10 +217,16 @@ function Vagas() {
                     <Sparkles className="h-3 w-3" /> {texts.jobs.match(j.matchScore)}
                   </span>
                 )}
-                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">{j.type}</span>
-                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">{j.level}</span>
+                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
+                  {j.type}
+                </span>
+                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
+                  {j.level}
+                </span>
                 {j.salary && (
-                  <span className="rounded-full bg-growth/15 px-2.5 py-1 font-medium text-growth">{j.salary}</span>
+                  <span className="rounded-full bg-growth/15 px-2.5 py-1 font-medium text-growth">
+                    {j.salary}
+                  </span>
                 )}
               </div>
 
@@ -261,18 +277,14 @@ function Vagas() {
         />
 
         {!isFetching && allJobs.length === 0 && (
-          <p className="py-12 text-center text-sm text-muted-foreground">{texts.jobs.empty}</p>
+          <p className="py-12 text-center text-sm text-muted-foreground">
+            {texts.jobs.empty}
+          </p>
         )}
       </div>
     </AppContainer>
   );
 }
-
-export const Route = createFileRoute("/vagas")({
-  beforeLoad: requireAuth,
-  head: () => ({ meta: [{ title: texts.jobs.seoTitle }] }),
-  component: Vagas,
-});
 
 function InfiniteScroll({
   hasMore,
