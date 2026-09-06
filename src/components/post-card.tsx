@@ -396,7 +396,7 @@ export function PostCard({ post }: { post: PostView }) {
               variant="secondary"
               className="rounded-full border border-border-soft bg-transparent font-light text-text-subtle"
             >
-              {`#${t}`}
+              {texts.posts.tag(t)}
             </Badge>
           ))}
         </div>
@@ -727,7 +727,7 @@ function AuthorInfo({
             {authorName}
           </Link>
           <span className="text-[12px] font-light text-text-date">
-            {`· ${formatTime(createdAt)}`}
+            {texts.posts.authorTime(formatTime(createdAt))}
           </span>
         </div>
       </div>
@@ -755,7 +755,11 @@ function EmbedPlayer({ type, id, url }: { type: string; id: string; url: string 
           <div className="flex aspect-video w-full items-center justify-center bg-surface-1">
             <div className="text-center">
               <p className="text-2xl">
-                {type === "vimeo" ? "🎬" : type === "twitch" ? "📺" : "▶️"}
+                {type === "vimeo"
+                  ? texts.posts.video.icons.cinema
+                  : type === "twitch"
+                    ? texts.posts.video.icons.television
+                    : texts.posts.video.icons.play}
               </p>
               <p className="mt-1 text-[12px] font-light text-text-subtle">
                 {texts.posts.video.watchOn(type === "youtube" ? "YouTube" : type)}
@@ -822,7 +826,7 @@ function LinkPreviews({ content }: { content: string }) {
                 try {
                   return new URL(url).hostname.slice(0, 2).toUpperCase();
                 } catch {
-                  return "🌐";
+                  return texts.posts.video.icons.web;
                 }
               })()}
             </div>
