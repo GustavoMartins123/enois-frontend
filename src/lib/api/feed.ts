@@ -3,13 +3,14 @@ import type { BulkDeleteInput } from "@/types/application/feed/bulk-delete-input
 import type { BulkDeleteResult } from "@/types/application/feed/bulk-delete-result";
 import type { CreatePostInput } from "@/types/application/feed/create-post-input";
 import type { DeleteResult } from "@/types/application/feed/delete-result";
+import type { FeedTab } from "@/types/application/feed/feed-tab";
 import type { PostView } from "@/types/application/feed/post-view";
 import type { ReactionsResponse } from "@/types/application/feed/reactions-response";
 
 import { api, buildQuery } from "../api-client";
 
 export const feedApi = {
-  list: (cursor?: string | null, limit = 20, tab?: string) =>
+  list: (cursor?: string | null, limit = 20, tab?: FeedTab) =>
     api.get<PageResponse<PostView>>(`/feed${buildQuery({ cursor, limit, tab })}`),
 
   create: (data: CreatePostInput) => api.post<PostView>("/feed/posts", data),
