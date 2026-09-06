@@ -33,7 +33,7 @@ function SavedPosts() {
               to="/feed"
               className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
             >
-              <ArrowLeft className="h-4 w-4" /> {texts.saved.back}
+              <ArrowLeft className="h-4 w-4" /><>{texts.saved.back}</>
             </Link>
           </div>
           <div className="mt-4 flex items-center gap-2">
