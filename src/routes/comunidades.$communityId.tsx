@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
-import { AppShell } from "@/components/app-shell";
+import { AppContainer } from "@/components/app-container";
 import { ImageCropDialog } from "@/components/image-crop-dialog";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
@@ -106,7 +106,7 @@ function CommunityDetail() {
   const isAdmin = currentUser ? admins.some((a) => a.userId === currentUser.id) : false;
 
   return (
-    <AppShell>
+    <AppContainer>
       <div className="space-y-6">
         <Link
           to="/comunidades"
@@ -256,7 +256,7 @@ function CommunityDetail() {
           </aside>
         </div>
       </div>
-    </AppShell>
+    </AppContainer>
   );
 }
 

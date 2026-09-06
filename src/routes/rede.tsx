@@ -11,7 +11,7 @@ import { useAuth } from "@/lib/use-auth";
 
 import { Button } from "@/components/ui/button";
 
-import { AppShell } from "@/components/app-shell";
+import { AppContainer } from "@/components/app-container";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/rede")({
@@ -66,7 +66,7 @@ function Rede() {
   };
 
   return (
-    <AppShell>
+    <AppContainer>
       <div className="space-y-6">
         <div className="surface-card p-4 sm:p-6">
           <h1 className="text-2xl font-semibold tracking-tight">Sua rede</h1>
@@ -198,7 +198,7 @@ function Rede() {
           </div>
         </section>
       </div>
-    </AppShell>
+    </AppContainer>
   );
 }
 

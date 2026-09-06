@@ -56,7 +56,7 @@ export function LegalSection({ title, children }: { title: string; children: Rea
   );
 }
 
-export function LegalUpdated({ date }: { date: string }) {
+export function LegalLastUpdated({ date }: { date: string }) {
   return (
     <p className="text-xs text-muted-foreground">
       Última atualização: <time dateTime={date}>{date}</time>

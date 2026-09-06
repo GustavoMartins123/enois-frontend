@@ -14,7 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-import { AppShell } from "@/components/app-shell";
+import { AppContainer } from "@/components/app-container";
 
 export const Route = createFileRoute("/vagas")({
   beforeLoad: requireAuth,
@@ -99,7 +99,7 @@ function Vagas() {
   };
 
   return (
-    <AppShell>
+    <AppContainer>
       <div className="space-y-6">
         <div className="surface-card p-4 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -282,7 +282,7 @@ function Vagas() {
           </p>
         )}
       </div>
-    </AppShell>
+    </AppContainer>
   );
 }
 

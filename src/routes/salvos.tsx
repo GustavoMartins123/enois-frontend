@@ -6,7 +6,7 @@ import { ArrowLeft, Bookmark } from "lucide-react";
 import { feedApi } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
 
-import { AppShell } from "@/components/app-shell";
+import { AppContainer } from "@/components/app-container";
 import { PostCard } from "@/components/post-card";
 
 export const Route = createFileRoute("/salvos")({
@@ -24,7 +24,7 @@ function SavedPosts() {
   const savedPosts = savedData?.items ?? [];
 
   return (
-    <AppShell>
+    <AppContainer>
       <div className="space-y-6">
         <div className="surface-card p-4 sm:p-6">
           <div className="flex items-center gap-3">
@@ -60,6 +60,6 @@ function SavedPosts() {
           </div>
         )}
       </div>
-    </AppShell>
+    </AppContainer>
   );
 }

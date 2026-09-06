@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-import { AppShell } from "@/components/app-shell";
+import { AppContainer } from "@/components/app-container";
 
 const formatLabels: Record<string, string> = {
   ONLINE: "Online",
@@ -83,7 +83,7 @@ function Eventos() {
   });
 
   return (
-    <AppShell>
+    <AppContainer>
       <div className="space-y-6">
         <div className="surface-card flex flex-wrap items-center justify-between gap-3 p-4 sm:gap-4 sm:p-6">
           <div>
@@ -157,7 +157,7 @@ function Eventos() {
           })}
         </div>
       </div>
-    </AppShell>
+    </AppContainer>
   );
 }
 
