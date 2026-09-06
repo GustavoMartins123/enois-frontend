@@ -23,7 +23,6 @@ import { texts } from "@/texts";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
@@ -735,7 +734,7 @@ function AuthorInfo({
   );
 }
 
-function EmbedPlayer({ type, id, url }: { type: string; id: string; url: string }) {
+function EmbedPlayer({ type, id }: { type: string; id: string }) {
   const [playing, setPlaying] = useState(false);
 
   if (!playing) {
@@ -810,7 +809,7 @@ function LinkPreviews({ content }: { content: string }) {
 
         const video = extractVideoId(url);
         if (video) {
-          return <EmbedPlayer key={url} type={video.type} id={video.id} url={url} />;
+          return <EmbedPlayer key={url} type={video.type} id={video.id} />;
         }
 
         return (

@@ -15,11 +15,10 @@ import {
   X,
 } from "lucide-react";
 
-import { ApiError, eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
+import { eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
 import type { PostView } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
-import type { UploadResult } from "@/lib/use-media-upload";
 import { texts } from "@/texts";
 
 import { Button } from "@/components/ui/button";
