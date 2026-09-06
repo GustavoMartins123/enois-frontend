@@ -396,7 +396,7 @@ export function PostCard({ post }: { post: PostView }) {
               variant="secondary"
               className="rounded-full border border-border-soft bg-transparent font-light text-text-subtle"
             >
-              #{t}
+              {`#${t}`}
             </Badge>
           ))}
         </div>
@@ -726,7 +726,9 @@ function AuthorInfo({
           >
             {authorName}
           </Link>
-          <span className="text-[12px] font-light text-text-date">· {formatTime(createdAt)}</span>
+          <span className="text-[12px] font-light text-text-date">
+            {`· ${formatTime(createdAt)}`}
+          </span>
         </div>
       </div>
     </div>
