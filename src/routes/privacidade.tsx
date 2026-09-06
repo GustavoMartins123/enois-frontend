@@ -38,13 +38,13 @@ function Privacidade() {
       <LegalSection title={collectedData.title}>
         <p>{collectedData.intro}</p>
         <p>
-          <strong>{collectedData.providedLabel}</strong> {collectedData.providedBody}
+          <strong>{collectedData.providedLabel}</strong><>{` ${collectedData.providedBody}`}</>
         </p>
         <p>
-          <strong>{collectedData.usageLabel}</strong> {collectedData.usageBody}
+          <strong>{collectedData.usageLabel}</strong><>{` ${collectedData.usageBody}`}</>
         </p>
         <p>
-          <strong>{collectedData.technicalLabel}</strong> {collectedData.technicalBody}
+          <strong>{collectedData.technicalLabel}</strong><>{` ${collectedData.technicalBody}`}</>
         </p>
       </LegalSection>
 
@@ -110,8 +110,7 @@ function Privacidade() {
 
       <footer className="border-t border-border pt-6 text-sm">
         <p>
-          {texts.legal.footer.backPrefix}{" "}
-          <Link to="/" className="text-primary hover:underline">
+          <>{texts.legal.footer.backPrefix} </><Link to="/" className="text-primary hover:underline">
             {texts.legal.footer.home}
           </Link>
         </p>
