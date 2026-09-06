@@ -94,7 +94,7 @@ function Eventos() {
             const formatLabel =
               texts.events.formats[e.format as keyof typeof texts.events.formats] ?? e.format;
             const Icon = e.format === "ONLINE" ? Video : MapPin;
-            const [year, month, day] = (e.date ?? "").split("-");
+            const [, month, day] = (e.date ?? "").split("-");
             return (
               <article key={e.id} className="surface-card overflow-hidden">
                 <div className="relative">
@@ -118,7 +118,7 @@ function Eventos() {
                   <p className="mt-1 text-xs text-muted-foreground">{texts.events.hostedBy(e.host)}</p>
                   <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
-                      <Calendar className="h-3.5 w-3.5" /><>{e.date ?? ""} · {e.time ?? ""}</>
+                      <Calendar className="h-3.5 w-3.5" /><>{texts.events.dateTime(e.date ?? "", e.time ?? "")}</>
                     </span>
                     <span className="inline-flex items-center gap-1.5">
                       <Users className="h-3.5 w-3.5" /><>{e.attendees ?? 0}</>
