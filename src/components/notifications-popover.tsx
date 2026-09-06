@@ -77,7 +77,7 @@ export function NotificationsPopover() {
               className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-light text-text-subtle transition hover:text-primary"
             >
               <CheckCheck className="h-3 w-3" />
-              {texts.notifications.markAllRead}
+              <>{texts.notifications.markAllRead}</>
             </button>
           )}
         </div>
@@ -93,7 +93,7 @@ export function NotificationsPopover() {
                 : "text-text-subtle hover:text-text-strong",
             )}
           >
-            {texts.notifications.tabs.new}
+            <>{texts.notifications.tabs.new}</>
             {unreadCount > 0 && (
               <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] text-primary-foreground">
                 {unreadCount}
