@@ -117,7 +117,7 @@ function Vagas() {
                 className="rounded-full gap-1.5 text-muted-foreground"
                 onClick={clearFilters}
               >
-                <X className="h-4 w-4" /> {texts.jobs.clearFilters}
+                <X className="h-4 w-4" /><>{texts.jobs.clearFilters}</>
               </Button>
             )}
           </div>
@@ -207,7 +207,7 @@ function Vagas() {
                   <h3 className="break-words font-semibold">{j.title}</h3>
                   <p className="break-words text-sm text-muted-foreground">{j.company}</p>
                   <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3" /> {j.location}
+                    <MapPin className="h-3 w-3" /><>{j.location}</>
                   </p>
                 </div>
               </div>
@@ -215,7 +215,7 @@ function Vagas() {
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                 {j.matchScore && (
                   <span className="rounded-full bg-primary-soft px-2.5 py-1 font-medium text-primary inline-flex items-center gap-1">
-                    <Sparkles className="h-3 w-3" /> {texts.jobs.match(j.matchScore)}
+                    <Sparkles className="h-3 w-3" /><>{texts.jobs.match(j.matchScore)}</>
                   </span>
                 )}
                 <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
