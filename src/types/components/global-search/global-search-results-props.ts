@@ -1,4 +1,4 @@
-import type { SearchResult } from "@/lib/api";
+import type { SearchResult } from "@/types/application/search/search-result";
 
 export type GlobalSearchResultsProps = {
   items: SearchResult[];

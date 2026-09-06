@@ -1,27 +1,16 @@
-import { texts } from "@/texts";
+import { REACTION_EMOJIS } from "@/constants/reaction-emojis";
+import type { ActionResponse } from "@/types/application/reaction/action-response";
+import type { ReactionItem } from "@/types/application/reaction/reaction-item";
+import type { ReactionType } from "@/types/application/reaction/reaction-type";
+import type { ReactionsListResponse } from "@/types/application/reaction/reactions-list-response";
 
 import { api } from "../api-client";
 
-export const REACTION_EMOJIS = texts.posts.reactions.emojis;
-
-export type ReactionType = keyof typeof REACTION_EMOJIS;
-
-export interface ActionResponse {
-  postId: string;
-  status: string;
-  counters: {
-    reactions: number;
-    comments: number;
-    saves: number;
-    shares: number;
-  };
-}
-
-export interface ReactionItem {
-  userId: string;
-  type: string;
-  createdAt: string;
-}
+export { REACTION_EMOJIS } from "@/constants/reaction-emojis";
+export type { ActionResponse } from "@/types/application/reaction/action-response";
+export type { ReactionItem } from "@/types/application/reaction/reaction-item";
+export type { ReactionType } from "@/types/application/reaction/reaction-type";
+export type { ReactionsListResponse } from "@/types/application/reaction/reactions-list-response";
 
 function postReaction(path: string, type: ReactionType) {
   return api.post<Partial<ActionResponse>>(path, { type });
@@ -29,12 +18,6 @@ function postReaction(path: string, type: ReactionType) {
 
 function removeReaction(path: string) {
   return api.delete<Partial<ActionResponse>>(path);
-}
-
-export interface ReactionsListResponse {
-  postId?: string;
-  summary: Record<string, number>;
-  reactions: ReactionItem[];
 }
 
 function listReactions(path: string) {
