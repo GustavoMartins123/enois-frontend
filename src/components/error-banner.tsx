@@ -3,13 +3,14 @@ import { useState } from "react";
 import { AlertTriangle, ChevronDown, Copy } from "lucide-react";
 
 import { ApiError } from "@/lib/api-client";
+import { texts } from "@/texts";
 
 function describe(err: unknown): { message: string; details: string[] } {
   if (err instanceof ApiError) {
     const details: string[] = [];
-    if (err.status) details.push(`HTTP ${err.status}`);
+    if (err.status) details.push(texts.errors.details.http(err.status));
     if (err.code) details.push(err.code);
-    if (err.path) details.push(`POST ${err.path}`);
+    if (err.path) details.push(texts.errors.details.postPath(err.path));
     return { message: err.message, details };
   }
   if (err instanceof Error) {
@@ -18,17 +19,10 @@ function describe(err: unknown): { message: string; details: string[] } {
       details: import.meta.env.DEV ? [err.stack ?? err.name] : [],
     };
   }
-  return { message: "Erro inesperado. Tente novamente.", details: [] };
+  return { message: texts.errors.unexpected, details: [] };
 }
 
-const KNOWN_CODES: Record<string, string> = {
-  NETWORK_ERROR:
-    "O navegador não conseguiu falar com a API. Se você roda localmente, verifique se o backend está de pé (ex.: `docker compose up` ou o servidor Java na porta 8081) e se o VITE_API_BACKEND no .env aponta para ele.",
-  INVALID_CREDENTIALS: "E-mail ou senha incorretos. Confira os dados ou use 'Esqueci minha senha'.",
-  SESSION_EXPIRED: "Sua sessão expirou. Entre novamente.",
-  IDEMPOTENCY_KEY_REQUIRED:
-    "O backend rejeitou a requisição por falta de Idempotency-Key. Recarregue a página; se persistir, é bug do front (src/lib/api-client.ts).",
-};
+const KNOWN_CODES: Record<string, string> = texts.errors.knownCodes;
 
 export function ErrorBanner({ error, className }: { error: unknown; className?: string }) {
   const [open, setOpen] = useState(false);
@@ -40,9 +34,9 @@ export function ErrorBanner({ error, className }: { error: unknown; className?: 
 
   const copy = () => {
     const text = [
-      `Erro: ${message}`,
+      texts.errors.details.error(message),
       ...details.map((d) => `  ${d}`),
-      hint ? `Sugestão: ${hint}` : "",
+      hint ? texts.errors.details.suggestion(hint) : "",
     ]
       .filter(Boolean)
       .join("\n");
@@ -65,7 +59,7 @@ export function ErrorBanner({ error, className }: { error: unknown; className?: 
           type="button"
           onClick={() => setOpen((v) => !v)}
           className="shrink-0 p-0.5 text-destructive/70 transition hover:text-destructive"
-          aria-label={open ? "Ocultar detalhes" : "Mostrar detalhes"}
+          aria-label={open ? texts.errors.details.hide : texts.errors.details.show}
         >
           <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
         </button>
@@ -87,7 +81,7 @@ export function ErrorBanner({ error, className }: { error: unknown; className?: 
               onClick={copy}
               className="inline-flex items-center gap-1 font-medium text-destructive transition hover:underline"
             >
-              <Copy className="h-3 w-3" /> {copied ? "Copiado!" : "Copiar detalhes"}
+              <Copy className="h-3 w-3" /><>{copied ? texts.errors.details.copied : texts.errors.details.copy}</>
             </button>
           )}
         </div>

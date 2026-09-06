@@ -1,4 +1,5 @@
 import { resolveCdnUrl } from "@/lib/api/media";
+import { texts } from "@/texts";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
@@ -12,14 +13,14 @@ interface UserAvatarProps {
 
 function getInitials(name: string): string {
   const parts = name.trim().split(/\s+/);
-  if (parts.length === 1) return parts[0][0]?.toUpperCase() ?? "?";
+  if (parts.length === 1) return parts[0][0]?.toUpperCase() ?? texts.profile.avatarUnknown;
   const first = parts[0][0];
   const last = parts[parts.length - 1][0];
   return `${first}${last}`.toUpperCase();
 }
 
 export function UserAvatar({ src, alt, className, fallback, fallbackClassName }: UserAvatarProps) {
-  const label = alt ?? "Avatar";
+  const label = alt ?? texts.profile.avatarFallback;
   const resolved = resolveCdnUrl(src);
   return (
     <Avatar className={className}>

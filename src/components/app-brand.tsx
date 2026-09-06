@@ -2,6 +2,8 @@ import { Link } from "@tanstack/react-router";
 
 import { Sparkles } from "lucide-react";
 
+import { texts } from "@/texts";
+
 type AppBrandProps = {
   onClick?: () => void;
 };
@@ -16,7 +18,7 @@ export function AppBrand({ onClick }: AppBrandProps) {
         <Sparkles className="h-4 w-4" />
       </div>
       <span className="text-lg font-semibold tracking-tight">
-        É<span className="gradient-text">nóis</span>
+        <>{texts.brand.prefix}</><span className="gradient-text">{texts.brand.accent}</span>
       </span>
     </Link>
   );

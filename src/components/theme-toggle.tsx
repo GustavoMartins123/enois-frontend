@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 
 import { Monitor, Moon, Sun } from "lucide-react";
 
+import { texts } from "@/texts";
+
 type Theme = "light" | "dark" | "system";
 
 const storageKey = "connect-grow-theme";
@@ -45,7 +47,7 @@ export function ThemeToggle() {
 
   const Icon = theme === "light" ? Sun : theme === "dark" ? Moon : Monitor;
   const label =
-    theme === "light" ? "Tema claro" : theme === "dark" ? "Tema escuro" : "Tema do sistema";
+    theme === "light" ? texts.theme.light : theme === "dark" ? texts.theme.dark : texts.theme.system;
 
   return (
     <button

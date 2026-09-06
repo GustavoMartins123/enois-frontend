@@ -4,6 +4,8 @@ import { Link } from "@tanstack/react-router";
 
 import { Sparkles } from "lucide-react";
 
+import { texts } from "@/texts";
+
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export function LegalLayout({ children }: { children: ReactNode }) {
@@ -19,7 +21,7 @@ export function LegalLayout({ children }: { children: ReactNode }) {
               <Sparkles className="h-3.5 w-3.5" />
             </div>
             <span className="text-base font-semibold tracking-tight">
-              É<span className="gradient-text">nóis</span>
+              <>{texts.brand.prefix}</><span className="gradient-text">{texts.brand.accent}</span>
             </span>
           </Link>
           <ThemeToggle />
@@ -32,13 +34,13 @@ export function LegalLayout({ children }: { children: ReactNode }) {
 
       <footer className="border-t border-border py-6">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 px-4 text-xs text-muted-foreground sm:px-6">
-          <p>© {new Date().getFullYear()} Énóis · Rede profissional gratuita e humana</p>
+          <p>{texts.legal.footer.copyright(new Date().getFullYear())}</p>
           <nav className="flex items-center gap-4">
             <Link to="/termos" className="transition-colors hover:text-foreground">
-              Termos de Uso
+              {texts.legal.footer.terms}
             </Link>
             <Link to="/privacidade" className="transition-colors hover:text-foreground">
-              Política de Privacidade
+              {texts.legal.footer.privacy}
             </Link>
           </nav>
         </div>
@@ -51,7 +53,7 @@ export function LegalSection({ title, children }: { title: string; children: Rea
   return (
     <section className="space-y-2">
       <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
-      <div className="space-y-2 text-[14px] leading-relaxed text-muted-foreground">{children}</div>
+      <div className="space-y-2 text-[14px] leading-relaxed text-muted-foreground [&_p]:whitespace-pre-line">{children}</div>
     </section>
   );
 }
@@ -59,7 +61,7 @@ export function LegalSection({ title, children }: { title: string; children: Rea
 export function LegalLastUpdated({ date }: { date: string }) {
   return (
     <p className="text-xs text-muted-foreground">
-      Última atualização: <time dateTime={date}>{date}</time>
+      <>{texts.legal.footer.lastUpdated}</><time dateTime={date}>{date}</time>
     </p>
   );
 }

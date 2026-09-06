@@ -7,6 +7,7 @@ import { ArrowLeft, Search, Send } from "lucide-react";
 
 import { messagesApi, networkApi, profileApi } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
+import { texts } from "@/texts";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +16,7 @@ import { AppContainer } from "@/components/app-container";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/mensagens")({
-  head: () => ({ meta: [{ title: "Mensagens · Énóis" }] }),
+  head: () => ({ meta: [{ title: texts.messages.seoTitle }] }),
   component: Mensagens,
 });
 
@@ -112,14 +113,14 @@ function Mensagens() {
         >
           <div className="border-b border-border p-4">
             <div className="flex items-center justify-between mb-3">
-              <h1 className="text-lg font-semibold">Mensagens</h1>
+              <h1 className="text-lg font-semibold">{texts.messages.title}</h1>
               <Button
                 size="sm"
                 variant="outline"
                 className="rounded-full"
                 onClick={() => setShowSearch(!showSearch)}
               >
-                {showSearch ? "Voltar" : "Nova"}
+                {showSearch ? texts.messages.back : texts.messages.new}
               </Button>
             </div>
             {showSearch ? (
@@ -129,7 +130,7 @@ function Mensagens() {
                   <Input
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Buscar contatos..."
+                    placeholder={texts.messages.searchContacts}
                     className="h-9 rounded-full bg-muted pl-9"
                     autoFocus
                   />
@@ -138,7 +139,7 @@ function Mensagens() {
                   <div className="space-y-1">
                     {filteredUsers.length === 0 ? (
                       <p className="py-4 text-center text-sm text-muted-foreground">
-                        Nenhum contato encontrado
+                        {texts.messages.noContact}
                       </p>
                     ) : (
                       filteredUsers.map((u) => (
@@ -161,14 +162,14 @@ function Mensagens() {
             ) : (
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input placeholder="Buscar conversas" className="h-9 rounded-full bg-muted pl-9" />
+                <Input placeholder={texts.messages.searchConversations} className="h-9 rounded-full bg-muted pl-9" />
               </div>
             )}
           </div>
           <ul className="flex-1 overflow-y-auto">
             {conversations.length === 0 ? (
               <li className="p-4 text-center text-sm text-muted-foreground">
-                Nenhuma conversa ainda
+                {texts.messages.noConversations}
               </li>
             ) : (
               conversations.map((c) => (
@@ -191,7 +192,7 @@ function Mensagens() {
           {!activeConversation ? (
             <div className="flex h-full items-center justify-center">
               <p className="text-sm text-muted-foreground">
-                Selecione ou comece uma mensagem para exibir
+                {texts.messages.selectConversation}
               </p>
             </div>
           ) : (
@@ -205,7 +206,7 @@ function Mensagens() {
                 <div className="space-y-3">
                   {activeMessages.length === 0 ? (
                     <p className="py-16 text-center text-sm text-muted-foreground">
-                      Nenhuma mensagem ainda
+                      {texts.messages.noMessages}
                     </p>
                   ) : (
                     activeMessages.map((m) => {
@@ -256,7 +257,7 @@ function Mensagens() {
                 <Input
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  placeholder="Escreva uma mensagem..."
+                  placeholder={texts.messages.inputPlaceholder}
                   className="h-10 rounded-full bg-muted"
                 />
                 <button
@@ -300,7 +301,7 @@ function ConversationItem({
     enabled: !!otherId,
   });
 
-  const title = conversation.title ?? otherUser?.name ?? "Conversa";
+  const title = conversation.title ?? otherUser?.name ?? texts.messages.conversationFallback;
 
   return (
     <li>
@@ -352,7 +353,7 @@ function ConversationHeader({
     enabled: !!otherId,
   });
 
-  const title = conversation.title ?? otherUser?.name ?? "Conversa";
+  const title = conversation.title ?? otherUser?.name ?? texts.messages.conversationFallback;
 
   return (
     <header className="flex items-center gap-3 border-b border-border p-4">
@@ -386,11 +387,11 @@ function formatTime(iso: string | null | undefined): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "agora";
-  if (diffMin < 60) return `há ${diffMin}min`;
+  if (diffMin < 1) return texts.time.now;
+  if (diffMin < 60) return texts.time.minutesAgo(diffMin);
   const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `há ${diffH}h`;
+  if (diffH < 24) return texts.time.hoursAgo(diffH);
   const diffD = Math.floor(diffH / 24);
-  if (diffD < 7) return `há ${diffD} dias`;
+  if (diffD < 7) return texts.time.daysAgo(diffD);
   return date.toLocaleDateString("pt-BR");
 }

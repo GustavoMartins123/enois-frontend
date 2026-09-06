@@ -7,6 +7,7 @@ import { Loader2, Search } from "lucide-react";
 
 import { searchApi } from "@/lib/api";
 import type { SearchResult } from "@/lib/api";
+import { texts } from "@/texts";
 import { navigateToHref } from "@/utils/navigation";
 
 import { Input } from "@/components/ui/input";
@@ -69,7 +70,7 @@ export function GlobalSearch() {
           setOpen(true);
         }}
         className="ml-auto grid h-9 w-9 place-items-center rounded-full text-text-subtle transition hover:bg-surface-2 hover:text-primary md:hidden"
-        aria-label="Buscar"
+        aria-label={texts.search.action}
       >
         <Search className="h-4 w-4" />
       </button>
@@ -96,7 +97,7 @@ export function GlobalSearch() {
               setOpen(true);
             }}
             onFocus={() => setOpen(true)}
-            placeholder="Buscar pessoas, comunidades, vagas..."
+            placeholder={texts.search.placeholder}
             className="h-12 rounded-full border-border-soft bg-surface-card pl-10 pr-4 focus-visible:border-primary md:h-10 md:bg-surface-1 md:pl-9"
           />
           {isFetching && (

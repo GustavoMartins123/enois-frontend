@@ -81,9 +81,5 @@ export function useMediaUpload() {
     [],
   );
 
-  const reset = useCallback(() => {
-    setState({ status: "idle", progress: 0 });
-  }, []);
-
-  return { ...state, upload, uploadAll, reset };
+  return { ...state, upload, uploadAll };
 }
