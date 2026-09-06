@@ -1,37 +1,16 @@
+import type { PageResponse } from "@/types/application/api/page-response";
+import type { StatusResponse } from "@/types/application/api/status-response";
+import type { CommunityMember } from "@/types/application/community/community-member";
+import type { Community } from "@/types/application/community/community";
+import type { CreateCommunityInput } from "@/types/application/community/create-community-input";
+
 import { api, buildQuery } from "../api-client";
 import type { PostView } from "./feed";
 
-export interface Community {
-  id: string;
-  name: string;
-  description: string;
-  topic: string;
-  members: number;
-  joined: boolean;
-  cover: string | null;
-  avatar: string | null;
-}
-
-export interface CommunityMember {
-  userId: string;
-  username: string;
-  name: string;
-  avatar: string | null;
-  role: "ADMIN" | "MEMBER";
-}
-
-export interface CreateCommunityInput {
-  name: string;
-  description: string;
-  topic: string;
-  cover?: string | null;
-  avatar?: string | null;
-}
-
-export interface PageResponse<T> {
-  items: T[];
-  nextCursor: string | null;
-}
+export type { PageResponse } from "@/types/application/api/page-response";
+export type { CommunityMember } from "@/types/application/community/community-member";
+export type { Community } from "@/types/application/community/community";
+export type { CreateCommunityInput } from "@/types/application/community/create-community-input";
 
 export const communitiesApi = {
   list: (topic?: string, cursor?: string | null, limit = 20) =>
@@ -45,10 +24,10 @@ export const communitiesApi = {
     api.patch<Community>(`/communities/${communityId}`, data),
 
   join: (communityId: string) =>
-    api.post<{ status: string }>(`/communities/${communityId}/members`),
+    api.post<StatusResponse>(`/communities/${communityId}/members`),
 
   leave: (communityId: string) =>
-    api.delete<{ status: string }>(`/communities/${communityId}/members`),
+    api.delete<StatusResponse>(`/communities/${communityId}/members`),
 
   getMembers: (communityId: string) =>
     api.get<{ items: CommunityMember[] }>(`/communities/${communityId}/members`),
