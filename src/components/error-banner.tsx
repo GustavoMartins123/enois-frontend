@@ -22,13 +22,15 @@ function describe(err: unknown): { message: string; details: string[] } {
   return { message: texts.errors.unexpected, details: [] };
 }
 
+const KNOWN_CODES: Record<string, string> = texts.errors.knownCodes;
+
 export function ErrorBanner({ error, className }: { error: unknown; className?: string }) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
   if (!error) return null;
   const { message, details } = describe(error);
-  const hint = error instanceof ApiError && error.code ? texts.errors.knownCodes[error.code as keyof typeof texts.errors.knownCodes] : undefined;
+  const hint = error instanceof ApiError && error.code ? KNOWN_CODES[error.code] : undefined;
 
   const copy = () => {
     const text = [
