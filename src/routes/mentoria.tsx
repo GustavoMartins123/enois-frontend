@@ -60,7 +60,7 @@ function Mentoria() {
         >
           <div className="relative">
             <Badge className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft">
-              <Sparkles className="mr-1 h-3 w-3" /> {texts.mentoring.badge}
+              <Sparkles className="mr-1 h-3 w-3" /><>{texts.mentoring.badge}</>
             </Badge>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight">
               {texts.mentoring.title}
@@ -308,7 +308,7 @@ function MentorCard({
           <div>
             <dt className="text-muted-foreground">{texts.mentoring.rating}</dt>
             <dd className="mt-0.5 inline-flex items-center gap-1 font-semibold">
-              <Star className="h-3.5 w-3.5 fill-opportunity text-opportunity" /> {mentor.rating}
+              <Star className="h-3.5 w-3.5 fill-opportunity text-opportunity" /><>{mentor.rating}</>
             </dd>
           </div>
           <div>
@@ -322,7 +322,7 @@ function MentorCard({
           <div>
             <dt className="text-muted-foreground">{texts.mentoring.nextSlot}</dt>
             <dd className="mt-0.5 inline-flex items-center gap-1 font-medium">
-              <Calendar className="h-3.5 w-3.5" /> {mentor.nextSlot}
+              <Calendar className="h-3.5 w-3.5" /><>{mentor.nextSlot}</>
             </dd>
           </div>
         </dl>
