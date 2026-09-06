@@ -74,7 +74,7 @@ function Eventos() {
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button className="rounded-full gap-1.5">
-                <Plus className="h-4 w-4" /> {texts.events.createEvent}
+                <Plus className="h-4 w-4" /><>{texts.events.createEvent}</>
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -112,16 +112,16 @@ function Eventos() {
                 </div>
                 <div className="p-5">
                   <Badge variant="outline" className="rounded-full bg-card font-normal">
-                    <Icon className="mr-1 h-3 w-3" /> {formatLabel}
+                    <Icon className="mr-1 h-3 w-3" /><>{formatLabel}</>
                   </Badge>
                   <h3 className="mt-2 break-words font-semibold">{e.title}</h3>
                   <p className="mt-1 text-xs text-muted-foreground">{texts.events.hostedBy(e.host)}</p>
                   <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
-                      <Calendar className="h-3.5 w-3.5" /> {e.date ?? ""} · {e.time ?? ""}
+                      <Calendar className="h-3.5 w-3.5" /><>{e.date ?? ""} · {e.time ?? ""}</>
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <Users className="h-3.5 w-3.5" /> {e.attendees ?? 0}
+                      <Users className="h-3.5 w-3.5" /><>{e.attendees ?? 0}</>
                     </span>
                   </div>
                   <Button
