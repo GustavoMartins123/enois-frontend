@@ -149,7 +149,7 @@ function ResetPassword() {
                 className="mt-6 w-full gap-2 rounded-full"
                 onClick={() => navigate({ to: "/entrar", search: { tab: "login" } })}
               >
-                <>{texts.auth.reset.enterNow} </><ArrowRight className="h-4 w-4" />
+                <>{texts.auth.reset.enterNow}</><ArrowRight className="h-4 w-4" />
               </Button>
             </div>
           ) : (
@@ -193,14 +193,14 @@ function ResetPassword() {
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <>
-                      <>{texts.auth.reset.action} </><ArrowRight className="h-4 w-4" />
+                      <>{texts.auth.reset.action}</><ArrowRight className="h-4 w-4" />
                     </>
                   )}
                 </Button>
               </form>
 
               <p className="mt-6 text-center text-xs text-muted-foreground">
-                <>{texts.auth.reset.remembered} </><Link
+                <>{texts.auth.reset.remembered}</><Link
                   to="/entrar"
                   search={{ tab: "login" }}
                   className="text-primary hover:underline"
