@@ -137,7 +137,7 @@ export function MentionTextarea({
               <UserAvatar src={user.avatar} alt={user.name} className="h-8 w-8 shrink-0" />
               <div className="min-w-0">
                 <p className="truncate font-medium">{user.name}</p>
-                <p className="truncate text-xs text-muted-foreground">@{user.username}</p>
+                <p className="truncate text-xs text-muted-foreground">{`@${user.username}`}</p>
               </div>
             </button>
           ))}
