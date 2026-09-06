@@ -149,7 +149,7 @@ function Auth() {
               {texts.auth.terms.terms}
             </Link><>{` ${texts.auth.terms.conjunction} `}</><Link to="/privacidade" className="text-primary hover:underline">
               {texts.auth.terms.privacy}
-            </Link><>.</>
+            </Link><>{texts.auth.terms.end}</>
           </p>
         </div>
       </section>
