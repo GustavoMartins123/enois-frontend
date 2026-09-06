@@ -63,9 +63,14 @@ export const texts = {
     noResults: (query: string) => `Nenhum resultado para "${query}"`,
   },
 
+  mentions: {
+    username: (username: string) => `@${username}`,
+  },
+
   notifications: {
     title: "Notificações",
     markAllRead: "Ler tudo",
+    overflowCount: "9+",
     tabs: {
       new: "Novas",
       history: "Histórico",
@@ -161,6 +166,7 @@ export const texts = {
       terms: "Termos",
       conjunction: "e",
       privacy: "Política de Privacidade",
+      end: ".",
     },
     forgot: {
       title: "Recuperar senha",
@@ -325,6 +331,8 @@ export const texts = {
       connect: "Conectar",
       happeningNow: "Acontecendo agora",
       confirmed: (count: number) => `${count} confirmados`,
+      eventMeta: (date: string, format: string, confirmed: string) =>
+        `${date} · ${format} · ${confirmed}`,
     },
   },
 
@@ -336,6 +344,8 @@ export const texts = {
       opportunity: "Oportunidade",
       article: "Artigo",
     },
+    tag: (tag: string) => `#${tag}`,
+    authorTime: (time: string) => `· ${time}`,
     reactions: {
       title: "Reações",
       empty: "Nenhuma reação ainda",
@@ -359,6 +369,12 @@ export const texts = {
     },
     video: {
       watchOn: (provider: string) => `Clique para assistir no ${provider}`,
+      icons: {
+        cinema: "🎬",
+        television: "📺",
+        play: "▶️",
+        web: "🌐",
+      },
     },
   },
 
@@ -372,6 +388,7 @@ export const texts = {
   profile: {
     seoFallbackTitle: "Perfil",
     seoFallbackDescription: "Perfil profissional",
+    seoTitle: (name: string) => `${name} · Énóis`,
     notFound: "Pessoa não encontrada",
     backHome: "Voltar para o início",
     loadError: "Não foi possível carregar este perfil.",
@@ -383,7 +400,13 @@ export const texts = {
     openToWork: "Aberto a oportunidades",
     mentorAvailable: "Mentor disponível",
     connections: (count: number) => `${count} conexões`,
+    connectionsMeta: (count: number) => `· ${count} conexões`,
     reputation: (value: number) => `${value} reputação`,
+    reputationMeta: (value: number) => `★ ${value} reputação`,
+    rankingPosition: (position: number) => `${position}º`,
+    recommendationQuote: (comment: string) => `"${comment}"`,
+    uploadingIndicator: "...",
+    avatarUnknown: "?",
     sections: {
       about: "Sobre",
       skills: "Habilidades",
@@ -495,6 +518,7 @@ export const texts = {
     },
     detail: {
       seoFallback: "Comunidade",
+      seoTitle: (name: string) => `${name} · Énóis`,
       createdBy: "Criada por",
       edit: "Editar",
       editTitle: "Editar comunidade",
@@ -527,6 +551,7 @@ export const texts = {
     },
     months: ["", "JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"],
     hostedBy: (host: string) => `por ${host}`,
+    dateTime: (date: string, time: string) => `${date} · ${time}`,
     attend: "Confirmar presença",
     form: {
       title: "Título",
@@ -821,6 +846,7 @@ export const texts = {
 
   root: {
     notFound: {
+      code: "404",
       title: "Page not found",
       description: "The page you're looking for doesn't exist or has been moved.",
       home: "Go home",
