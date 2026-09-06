@@ -288,7 +288,7 @@ function Profile() {
                 {isOwnProfile ? (
                   <EditProfileDialog profile={user}>
                     <Button variant="outline" size="sm" className="rounded-full gap-1.5">
-                      <Settings className="h-4 w-4" /> {texts.profile.editProfile}
+                      <Settings className="h-4 w-4" /><>{texts.profile.editProfile}</>
                     </Button>
                   </EditProfileDialog>
                 ) : (
@@ -302,7 +302,7 @@ function Profile() {
                         navigate({ to: "/mensagens" });
                       }}
                     >
-                      <MessageCircle className="h-4 w-4" /> {texts.profile.message}
+                      <MessageCircle className="h-4 w-4" /><>{texts.profile.message}</>
                     </Button>
                     <Button
                       size="sm"
@@ -349,18 +349,18 @@ function Profile() {
               <p className="mt-3 flex flex-wrap items-center gap-4 text-[13px] font-light text-text-subtle">
                 {user.company && (
                   <span className="inline-flex items-center gap-1.5">
-                    <Briefcase className="h-4 w-4" /> {user.company}
+                    <Briefcase className="h-4 w-4" /><>{user.company}</>
                   </span>
                 )}
                 {user.location && (
                   <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4" /> {user.location}
+                    <MapPin className="h-4 w-4" /><>{user.location}</>
                   </span>
                 )}
-                <span>· {texts.profile.connections(user.connectionsCount)}</span>
+                <span>{`· ${texts.profile.connections(user.connectionsCount)}`}</span>
                 {(user.reputation ?? 0) > 0 && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-opportunity/15 px-2 py-0.5 text-[11px] font-light text-opportunity-foreground">
-                    ★ {texts.profile.reputation(user.reputation ?? 0)}
+                    {`★ ${texts.profile.reputation(user.reputation ?? 0)}`}
                   </span>
                 )}
               </p>
@@ -433,7 +433,7 @@ function Profile() {
                 <Dialog open={recommendOpen} onOpenChange={setRecommendOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm" className="w-full rounded-full gap-1.5">
-                      <ThumbsUp className="h-4 w-4" /> {texts.profile.recommendAction}
+                      <ThumbsUp className="h-4 w-4" /><>{texts.profile.recommendAction}</>
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
@@ -480,7 +480,7 @@ function Profile() {
                       <span
                         className={`w-5 text-center text-[13px] font-light ${i < 3 ? "text-opportunity" : "text-text-subtle"}`}
                       >
-                        {i + 1}º
+                        {`${i + 1}º`}
                       </span>
                       <Link to="/perfil/$username" params={{ username: u.username }}>
                         <UserAvatar src={u.avatar} alt={u.name} className="h-8 w-8 shrink-0" />
@@ -553,7 +553,7 @@ function Section({
             <Icon className="h-4 w-4 text-primary" />
           </span>
         )}
-        {title}
+        <>{title}</>
       </h2>
       {children}
     </section>
@@ -579,7 +579,7 @@ function RecommendationItem({
         </span>
       </div>
       <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">
-        "{recommendation.comment}"
+        {`"${recommendation.comment}"`}
       </p>
     </div>
   );
