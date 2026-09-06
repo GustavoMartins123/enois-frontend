@@ -5,12 +5,14 @@ import { Monitor, Moon, Sun } from "lucide-react";
 import { hydratePreferences, usePreferencesStore } from "@/stores/preferences.store";
 import { texts } from "@/texts";
 
+type Theme = "light" | "dark" | "system";
+
 function getSystemTheme() {
   if (typeof window === "undefined") return "light";
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
-function applyTheme(theme: "light" | "dark" | "system") {
+function applyTheme(theme: Theme) {
   const resolved = theme === "system" ? getSystemTheme() : theme;
   document.documentElement.classList.toggle("dark", resolved === "dark");
 }
@@ -38,7 +40,7 @@ export function ThemeToggle() {
   }, [theme]);
 
   const cycleTheme = () => {
-    const next = theme === "light" ? "dark" : theme === "dark" ? "system" : "light";
+    const next: Theme = theme === "light" ? "dark" : theme === "dark" ? "system" : "light";
     setTheme(next);
   };
 
