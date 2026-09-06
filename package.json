@@ -13,6 +13,7 @@
     "preview": "vite preview",
     "prettier": "prettier --write \".\"",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write ."
   },
   "dependencies": {
