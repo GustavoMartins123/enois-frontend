@@ -81,7 +81,7 @@ export function ErrorBanner({ error, className }: { error: unknown; className?: 
               onClick={copy}
               className="inline-flex items-center gap-1 font-medium text-destructive transition hover:underline"
             >
-              <Copy className="h-3 w-3" /> {copied ? texts.errors.details.copied : texts.errors.details.copy}
+              <Copy className="h-3 w-3" /><>{copied ? texts.errors.details.copied : texts.errors.details.copy}</>
             </button>
           )}
         </div>
