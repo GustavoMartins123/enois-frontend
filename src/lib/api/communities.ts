@@ -1,6 +1,7 @@
 import type { PageResponse } from "@/types/application/api/page-response";
 import type { StatusResponse } from "@/types/application/api/status-response";
 import type { CommunityMembersResponse } from "@/types/application/community/community-members-response";
+import type { CommunityTopic } from "@/types/application/community/community-topic";
 import type { Community } from "@/types/application/community/community";
 import type { CreateCommunityInput } from "@/types/application/community/create-community-input";
 import type { PostView } from "@/types/application/feed/post-view";
@@ -8,7 +9,7 @@ import type { PostView } from "@/types/application/feed/post-view";
 import { api, buildQuery } from "../api-client";
 
 export const communitiesApi = {
-  list: (topic?: string, cursor?: string | null, limit = 20) =>
+  list: (topic?: CommunityTopic, cursor?: string | null, limit = 20) =>
     api.get<PageResponse<Community>>(`/communities${buildQuery({ topic, cursor, limit })}`),
 
   get: (communityId: string) => api.get<Community>(`/communities/${communityId}`),
