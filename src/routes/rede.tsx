@@ -5,10 +5,12 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { Check, Send, UserMinus, UserPlus, X } from "lucide-react";
 
-import { type ConnectionRequest, networkApi, profileApi } from "@/lib/api";
+import { networkApi, profileApi } from "@/lib/api";
 import { getCurrentUserId } from "@/lib/current-user";
 import { requireAuth } from "@/lib/require-auth";
 import { texts } from "@/texts";
+import type { RequestCardProps } from "@/types/routes/network/request-card-props";
+import type { StatProps } from "@/types/routes/network/stat-props";
 
 import { Button } from "@/components/ui/button";
 
@@ -193,15 +195,7 @@ function Rede() {
   );
 }
 
-function RequestCard({
-  request,
-  onAccept,
-  onCancel,
-}: {
-  request: ConnectionRequest;
-  onAccept: (id: string) => void;
-  onCancel: (id: string) => void;
-}) {
+function RequestCard({ request, onAccept, onCancel }: RequestCardProps) {
   const currentUserId = getCurrentUserId();
   const isOutgoing = request.fromUserId === currentUserId;
   const targetUserId = isOutgoing ? request.toUserId : request.fromUserId;
@@ -263,7 +257,7 @@ function RequestCard({
   );
 }
 
-function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function Stat({ label, value, highlight }: StatProps) {
   return (
     <div
       className={`rounded-xl border p-4 ${highlight ? "border-primary/30 bg-primary-soft" : "border-border bg-muted/40"}`}
