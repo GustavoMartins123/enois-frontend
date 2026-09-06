@@ -122,7 +122,7 @@ function Comunidades() {
           </div>
           <CreateCommunityDialog open={open} onOpenChange={setOpen}>
             <Button className="rounded-full gap-1.5">
-              <Plus className="h-4 w-4" /> {texts.communities.createCommunity}
+              <Plus className="h-4 w-4" /><>{texts.communities.createCommunity}</>
             </Button>
           </CreateCommunityDialog>
         </div>
@@ -174,7 +174,7 @@ function Comunidades() {
                   <div className="mt-4 flex items-center justify-between">
                     <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Users className="h-3.5 w-3.5" />
-                      {texts.communities.members(c.members ?? 0)}
+                      <>{texts.communities.members(c.members ?? 0)}</>
                     </span>
                     <Button
                       size="sm"
