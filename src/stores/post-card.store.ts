@@ -1,45 +1,14 @@
 import { create } from "zustand";
 
 import type { CommentView, PostView } from "@/lib/api";
+import type { PostCardState } from "@/types/stores/post-card-state";
 
 const pendingDisposals = new Map<string, ReturnType<typeof setTimeout>>();
 
 function updateCard(
-  cards: Record<
-    string,
-    {
-      draft: string;
-      commentMentions: string[];
-      replyToId: string | null;
-      localComments: CommentView[];
-      postCounters: PostView["counters"];
-      reactionStatus: string | null;
-      showReactions: boolean;
-      showReport: boolean;
-    }
-  >,
+  cards: Record<string, PostCardState>,
   postId: string,
-  update: (
-    card: {
-      draft: string;
-      commentMentions: string[];
-      replyToId: string | null;
-      localComments: CommentView[];
-      postCounters: PostView["counters"];
-      reactionStatus: string | null;
-      showReactions: boolean;
-      showReport: boolean;
-    },
-  ) => {
-    draft: string;
-    commentMentions: string[];
-    replyToId: string | null;
-    localComments: CommentView[];
-    postCounters: PostView["counters"];
-    reactionStatus: string | null;
-    showReactions: boolean;
-    showReport: boolean;
-  },
+  update: (card: PostCardState) => PostCardState,
 ) {
   const card = cards[postId];
   if (!card) return cards;
@@ -51,19 +20,7 @@ function updateCard(
 }
 
 export const usePostCardStore = create((set) => ({
-  cards: {} as Record<
-    string,
-    {
-      draft: string;
-      commentMentions: string[];
-      replyToId: string | null;
-      localComments: CommentView[];
-      postCounters: PostView["counters"];
-      reactionStatus: string | null;
-      showReactions: boolean;
-      showReport: boolean;
-    }
-  >,
+  cards: {} as Record<string, PostCardState>,
 
   initializePostCard: (post: PostView) => {
     const pendingDisposal = pendingDisposals.get(post.id);

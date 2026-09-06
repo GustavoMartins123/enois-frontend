@@ -1,11 +1,11 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+import type { Theme } from "@/types/preferences/theme";
+
 const PREFERENCES_STORAGE_KEY = "connect-grow-preferences";
 const LEGACY_THEME_STORAGE_KEY = "connect-grow-theme";
 const LEGACY_SIDEBAR_STORAGE_KEY = "sidebar-collapsed";
-
-type Theme = "light" | "dark";
 
 const preferencesStorage = {
   getItem: (name: string) => {

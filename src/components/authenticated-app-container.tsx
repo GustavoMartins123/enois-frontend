@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import type { PropsWithChildren } from "react";
 
 import { useCurrentUser } from "@/lib/current-user";
 
@@ -7,11 +7,7 @@ import { AppSidebar } from "./app-sidebar";
 import { NavigationDrawer } from "./navigation-drawer";
 import { AppLayout } from "./app-layout";
 
-type AuthenticatedAppContainerProps = {
-  children: ReactNode;
-};
-
-export function AuthenticatedAppContainer({ children }: AuthenticatedAppContainerProps) {
+export function AuthenticatedAppContainer({ children }: PropsWithChildren) {
   useCurrentUser();
 
   return (

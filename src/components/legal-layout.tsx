@@ -1,14 +1,16 @@
-import type { ReactNode } from "react";
+import type { PropsWithChildren } from "react";
 
 import { Link } from "@tanstack/react-router";
 
 import { Sparkles } from "lucide-react";
 
 import { texts } from "@/texts";
+import type { LegalLastUpdatedProps } from "@/types/components/legal/legal-last-updated-props";
+import type { LegalSectionProps } from "@/types/components/legal/legal-section-props";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 
-export function LegalLayout({ children }: { children: ReactNode }) {
+export function LegalLayout({ children }: PropsWithChildren) {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-lg">
@@ -49,7 +51,7 @@ export function LegalLayout({ children }: { children: ReactNode }) {
   );
 }
 
-export function LegalSection({ title, children }: { title: string; children: ReactNode }) {
+export function LegalSection({ title, children }: LegalSectionProps) {
   return (
     <section className="space-y-2">
       <h2 className="text-lg font-semibold tracking-tight">{title}</h2>
@@ -58,7 +60,7 @@ export function LegalSection({ title, children }: { title: string; children: Rea
   );
 }
 
-export function LegalLastUpdated({ date }: { date: string }) {
+export function LegalLastUpdated({ date }: LegalLastUpdatedProps) {
   return (
     <p className="text-xs text-muted-foreground">
       <>{texts.legal.footer.lastUpdated}</><time dateTime={date}>{date}</time>
