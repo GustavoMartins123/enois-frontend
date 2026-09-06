@@ -1,8 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 
-import { profileApi } from "./api";
 import { getSessionToken } from "./api-client";
+import { useCurrentUser } from "./current-user";
 
 export function isAuthenticated(): boolean {
   return !!getSessionToken();
@@ -11,14 +10,7 @@ export function isAuthenticated(): boolean {
 export function useAuth() {
   const navigate = useNavigate();
   const token = getSessionToken();
-
-  const query = useQuery({
-    queryKey: ["me"],
-    queryFn: () => profileApi.me(),
-    enabled: !!token,
-    retry: 1,
-    staleTime: 60_000,
-  });
+  const query = useCurrentUser();
 
   return {
     user: query.data ?? null,

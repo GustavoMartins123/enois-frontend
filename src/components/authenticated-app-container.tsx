@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { useCurrentUser } from "@/lib/current-user";
+
 import { AuthenticatedAppHeader } from "./authenticated-app-header";
 import { AppSidebar } from "./app-sidebar";
 import { NavigationDrawer } from "./navigation-drawer";
@@ -10,6 +12,8 @@ type AuthenticatedAppContainerProps = {
 };
 
 export function AuthenticatedAppContainer({ children }: AuthenticatedAppContainerProps) {
+  useCurrentUser();
+
   return (
     <AppLayout>
       <AppLayout.Header>

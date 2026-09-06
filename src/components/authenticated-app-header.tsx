@@ -1,9 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
 import { Menu } from "lucide-react";
 
-import { profileApi } from "@/lib/api";
+import { getCurrentUser } from "@/lib/current-user";
 import { useAppShellStore } from "@/stores/app-shell.store";
 import { texts } from "@/texts";
 
@@ -17,11 +16,7 @@ import { GlobalSearch } from "./global-search";
 
 export function AuthenticatedAppHeader() {
   const openMobileNavigation = useAppShellStore((state) => state.openMobileNavigation);
-
-  const { data: profile } = useQuery({
-    queryKey: ["me"],
-    queryFn: () => profileApi.me(),
-  });
+  const profile = getCurrentUser();
 
   return (
     <AppHeaderLayout>
