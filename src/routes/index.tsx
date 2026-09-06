@@ -135,7 +135,7 @@ function Landing() {
               {texts.landing.philosophy.eyebrow}
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
-              <>{texts.landing.philosophy.titlePrefix} </><span className="gradient-text">{texts.landing.philosophy.titleAccent}</span>
+              <>{texts.landing.philosophy.titlePrefix}</><span className="gradient-text">{texts.landing.philosophy.titleAccent}</span>
             </h2>
             <p className="mt-4 text-muted-foreground">
               {texts.landing.philosophy.description}
@@ -208,7 +208,7 @@ function Landing() {
               </Link>
             </div>
             <p className="mt-4 text-xs text-muted-foreground/60">
-              <>{texts.landing.cta.finePrint} </><strong>{texts.landing.cta.freeForever}</strong>
+              <>{texts.landing.cta.finePrint}</><strong>{texts.landing.cta.freeForever}</strong>
             </p>
           </div>
         </div>
@@ -253,26 +253,8 @@ const values = [
     desc: texts.landing.philosophy.values.learning.description,
   },
   {
-    icon: ShieldCheck,
-    title: texts.landing.philosophy.values.safety.title,
-    desc: texts.landing.philosophy.values.safety.description,
-  },
-];
-
-const features = [
-  {
-    icon: MessageCircle,
-    title: texts.landing.features.items.discussions.title,
-    desc: texts.landing.features.items.discussions.description,
-  },
-  {
-    icon: GraduationCap,
-    title: texts.landing.features.items.mentoring.title,
-    desc: texts.landing.features.items.mentoring.description,
-  },
-  {
     icon: Heart,
-    title: texts.landing.features.items.communities.title,
+    title: texts.landing.philosophy.values.communities.title,
     desc: texts.landing.features.items.communities.description,
   },
   {
