@@ -92,7 +92,7 @@ function Landing() {
             <Sparkles className="h-3 w-3" /><>{texts.landing.hero.badge}</>
           </div>
           <h1 className="text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl lg:text-6xl">
-            {texts.landing.hero.title}
+            <>{texts.landing.hero.title}</>
             <br />
             <span className="gradient-text">{texts.landing.hero.titleAccent}</span>
           </h1>
