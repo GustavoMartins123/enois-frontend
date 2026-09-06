@@ -21,7 +21,7 @@ export function LegalLayout({ children }: { children: ReactNode }) {
               <Sparkles className="h-3.5 w-3.5" />
             </div>
             <span className="text-base font-semibold tracking-tight">
-              {texts.brand.prefix}<span className="gradient-text">{texts.brand.accent}</span>
+              <>{texts.brand.prefix}</><span className="gradient-text">{texts.brand.accent}</span>
             </span>
           </Link>
           <ThemeToggle />
@@ -61,7 +61,7 @@ export function LegalSection({ title, children }: { title: string; children: Rea
 export function LegalLastUpdated({ date }: { date: string }) {
   return (
     <p className="text-xs text-muted-foreground">
-      {texts.legal.footer.lastUpdated} <time dateTime={date}>{date}</time>
+      <>{texts.legal.footer.lastUpdated} </><time dateTime={date}>{date}</time>
     </p>
   );
 }
