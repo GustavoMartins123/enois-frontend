@@ -42,51 +42,51 @@ function Termos() {
       </header>
 
       <LegalSection title={acceptance.title}>
-        <p className="whitespace-pre-line">{acceptance.text}</p>
+        <p>{acceptance.text}</p>
       </LegalSection>
 
       <LegalSection title={definitions.title}>
-        <p className="whitespace-pre-line">{definitions.text}</p>
+        <p>{definitions.text}</p>
       </LegalSection>
 
       <LegalSection title={registration.title}>
-        <p className="whitespace-pre-line">{registration.text}</p>
+        <p>{registration.text}</p>
       </LegalSection>
 
       <LegalSection title={conduct.title}>
-        <p className="whitespace-pre-line">{conduct.text}</p>
+        <p>{conduct.text}</p>
       </LegalSection>
 
       <LegalSection title={publishedContent.title}>
-        <p className="whitespace-pre-line">{publishedContent.text}</p>
+        <p>{publishedContent.text}</p>
       </LegalSection>
 
       <LegalSection title={jobs.title}>
-        <p className="whitespace-pre-line">{jobs.text}</p>
+        <p>{jobs.text}</p>
       </LegalSection>
 
       <LegalSection title={thirdParty.title}>
-        <p className="whitespace-pre-line">{thirdParty.text}</p>
+        <p>{thirdParty.text}</p>
       </LegalSection>
 
       <LegalSection title={availability.title}>
-        <p className="whitespace-pre-line">{availability.text}</p>
+        <p>{availability.text}</p>
       </LegalSection>
 
       <LegalSection title={liability.title}>
-        <p className="whitespace-pre-line">{liability.text}</p>
+        <p>{liability.text}</p>
       </LegalSection>
 
       <LegalSection title={termination.title}>
-        <p className="whitespace-pre-line">{termination.text}</p>
+        <p>{termination.text}</p>
       </LegalSection>
 
       <LegalSection title={law.title}>
-        <p className="whitespace-pre-line">{law.text}</p>
+        <p>{law.text}</p>
       </LegalSection>
 
       <LegalSection title={contact.title}>
-        <p className="whitespace-pre-line">{contact.text}</p>
+        <p>{contact.text}</p>
       </LegalSection>
 
       <footer className="border-t border-border pt-6 text-sm">
