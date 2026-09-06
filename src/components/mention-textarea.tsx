@@ -3,6 +3,7 @@ import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { type UserSearchResult, usersApi } from "@/lib/api";
+import { texts } from "@/texts";
 
 import { UserAvatar } from "@/components/user-avatar";
 
@@ -137,7 +138,9 @@ export function MentionTextarea({
               <UserAvatar src={user.avatar} alt={user.name} className="h-8 w-8 shrink-0" />
               <div className="min-w-0">
                 <p className="truncate font-medium">{user.name}</p>
-                <p className="truncate text-xs text-muted-foreground">{`@${user.username}`}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {texts.mentions.username(user.username)}
+                </p>
               </div>
             </button>
           ))}
