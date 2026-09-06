@@ -1,3 +1,5 @@
+import type { ReactionType } from "@/types/application/reaction/reaction-type";
+
 export type PostView = {
   id: string;
   authorId: string;
@@ -17,5 +19,5 @@ export type PostView = {
     shares: number;
   };
   status: "ACTIVE" | "DELETED";
-  currentUserReaction?: string | null;
+  currentUserReaction?: ReactionType | null;
 };

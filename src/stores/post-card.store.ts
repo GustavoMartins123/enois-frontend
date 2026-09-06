@@ -2,6 +2,7 @@ import { create } from "zustand";
 
 import type { CommentView } from "@/types/application/comment/comment-view";
 import type { PostView } from "@/types/application/feed/post-view";
+import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { PostCardState } from "@/types/stores/post-card-state";
 
 const pendingDisposals = new Map<string, ReturnType<typeof setTimeout>>();
@@ -104,7 +105,7 @@ export const usePostCardStore = create((set) => ({
     set((state) => ({
       cards: updateCard(state.cards, postId, (card) => ({ ...card, postCounters })),
     })),
-  setReactionStatus: (postId: string, reactionStatus: string | null) =>
+  setReactionStatus: (postId: string, reactionStatus: ReactionType | null) =>
     set((state) => ({
       cards: updateCard(state.cards, postId, (card) => ({ ...card, reactionStatus })),
     })),
