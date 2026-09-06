@@ -487,11 +487,11 @@ function ForgotPasswordDialog({ open, onOpenChange }: ForgotPasswordDialogProps)
   const close = () => {
     setSent(false);
     setErrors({});
-    onOpenChange?.(false);
+    onOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => (v ? onOpenChange?.(v) : close())}>
+    <Dialog open={open} onOpenChange={(v) => (v ? onOpenChange(v) : close())}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="font-semibold tracking-tight">{texts.auth.forgot.title}</DialogTitle>
