@@ -61,7 +61,7 @@ export function LegalSection({ title, children }: { title: string; children: Rea
 export function LegalLastUpdated({ date }: { date: string }) {
   return (
     <p className="text-xs text-muted-foreground">
-      <>{texts.legal.footer.lastUpdated} </><time dateTime={date}>{date}</time>
+      <>{texts.legal.footer.lastUpdated}</><time dateTime={date}>{date}</time>
     </p>
   );
 }
