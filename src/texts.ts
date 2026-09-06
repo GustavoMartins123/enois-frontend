@@ -351,6 +351,16 @@ export const texts = {
       empty: "Nenhuma reação ainda",
       react: "Reagir",
       reactedWith: (emoji: string) => `Reagiu com ${emoji}`,
+      emojis: {
+        LIKE: "👍",
+        LOVE: "❤️",
+        LAUGH: "😂",
+        WOW: "😮",
+        SAD: "😢",
+        CELEBRATE: "🎉",
+        SUPPORT: "💪",
+        INSIGHTFUL: "💡",
+      },
     },
     report: {
       title: "Denunciar post",
