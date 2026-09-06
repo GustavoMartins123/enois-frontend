@@ -439,7 +439,7 @@ function Home() {
                   <li key={e.id}>
                     <p className="text-[13px] font-light text-text-strong">{e.title}</p>
                     <p className="text-[11px] font-light text-text-subtle">
-                      {e.date} · {e.format} · {texts.feed.sidebar.confirmed(e.attendees)}
+                      {`${e.date} · ${e.format} · ${texts.feed.sidebar.confirmed(e.attendees)}`}
                     </p>
                   </li>
                 ))}
