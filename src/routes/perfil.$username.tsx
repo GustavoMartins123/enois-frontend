@@ -11,12 +11,10 @@ import {
   MapPin,
   MessageCircle,
   Settings,
-  Sparkles,
   Star,
   Target,
   ThumbsUp,
   Trophy,
-  UserPlus,
 } from "lucide-react";
 
 import {
@@ -32,7 +30,6 @@ import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 import { texts } from "@/texts";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -102,7 +99,6 @@ function Profile() {
   const [hoveringBanner, setHoveringBanner] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [cropPurpose, setCropPurpose] = useState<"AVATAR" | "BANNER" | null>(null);
-  const [cropFile, setCropFile] = useState<File | null>(null);
   const [recommendOpen, setRecommendOpen] = useState(false);
   const [recommendComment, setRecommendComment] = useState("");
 
@@ -175,7 +171,6 @@ function Profile() {
     const src = URL.createObjectURL(file);
     setCropImageSrc(src);
     setCropPurpose("AVATAR");
-    setCropFile(file);
   };
 
   const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -184,7 +179,6 @@ function Profile() {
     const src = URL.createObjectURL(file);
     setCropImageSrc(src);
     setCropPurpose("BANNER");
-    setCropFile(file);
   };
 
   const handleCropComplete = useCallback(
@@ -199,7 +193,6 @@ function Profile() {
       if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
       setCropImageSrc(null);
       setCropPurpose(null);
-      setCropFile(null);
     },
     [cropPurpose, cropImageSrc, avatarUpload, bannerUpload, updateProfile],
   );
@@ -208,7 +201,6 @@ function Profile() {
     if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
     setCropImageSrc(null);
     setCropPurpose(null);
-    setCropFile(null);
   }, [cropImageSrc]);
 
   return (
