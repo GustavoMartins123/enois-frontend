@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
-import type { CommentView, PostView } from "@/lib/api";
+import type { CommentView } from "@/types/application/comment/comment-view";
+import type { PostView } from "@/types/application/feed/post-view";
 import type { PostCardState } from "@/types/stores/post-card-state";
 
 const pendingDisposals = new Map<string, ReturnType<typeof setTimeout>>();
