@@ -1,7 +1,6 @@
-import type { PropsWithChildren } from "react";
-
 import type { Profile } from "@/types/application/profile/profile";
+import type { WithRequiredChildren } from "@/types/components/with-required-children";
 
-export type Props = PropsWithChildren<{
+export type Props = WithRequiredChildren<{
   profile: Profile;
 }>;

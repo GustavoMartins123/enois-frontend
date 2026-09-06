@@ -1,11 +1,10 @@
-import type { PropsWithChildren } from "react";
-
 import { isAuthenticated } from "@/lib/use-auth";
+import type { WithRequiredChildren } from "@/types/components/with-required-children";
 
 import { AuthenticatedAppContainer } from "./authenticated-app-container";
 import { GuestAppContainer } from "./guest-app-container";
 
-export function AppContainer({ children }: PropsWithChildren) {
+export function AppContainer({ children }: WithRequiredChildren) {
   return isAuthenticated() ? (
     <AuthenticatedAppContainer>{children}</AuthenticatedAppContainer>
   ) : (

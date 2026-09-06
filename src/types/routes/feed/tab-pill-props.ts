@@ -1,6 +1,8 @@
-import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
+import type { ComponentPropsWithoutRef } from "react";
 
-export type TabPillProps = PropsWithChildren<{
+import type { WithRequiredChildren } from "@/types/components/with-required-children";
+
+export type TabPillProps = WithRequiredChildren<{
   active?: boolean;
   onClick?: ComponentPropsWithoutRef<"button">["onClick"];
 }>;

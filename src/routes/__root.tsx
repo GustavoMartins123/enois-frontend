@@ -1,4 +1,4 @@
-import { type PropsWithChildren, useEffect } from "react";
+import { useEffect } from "react";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import {
@@ -12,6 +12,7 @@ import {
 } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import type { WithRequiredChildren } from "@/types/components/with-required-children";
 import type { ErrorComponentProps } from "@/types/routes/root/error-component-props";
 import type { RootRouteContext } from "@/types/routes/root/root-route-context";
 
@@ -109,7 +110,7 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
   errorComponent: ErrorComponent,
 });
 
-function RootShell({ children }: PropsWithChildren) {
+function RootShell({ children }: WithRequiredChildren) {
   return (
     <html lang="en">
       <head>

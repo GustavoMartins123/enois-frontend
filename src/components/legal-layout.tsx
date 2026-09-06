@@ -1,5 +1,3 @@
-import type { PropsWithChildren } from "react";
-
 import { Link } from "@tanstack/react-router";
 
 import { Sparkles } from "lucide-react";
@@ -7,10 +5,11 @@ import { Sparkles } from "lucide-react";
 import { texts } from "@/texts";
 import type { LegalLastUpdatedProps } from "@/types/components/legal/legal-last-updated-props";
 import type { LegalSectionProps } from "@/types/components/legal/legal-section-props";
+import type { WithRequiredChildren } from "@/types/components/with-required-children";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 
-export function LegalLayout({ children }: PropsWithChildren) {
+export function LegalLayout({ children }: WithRequiredChildren) {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-lg">

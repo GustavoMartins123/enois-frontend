@@ -1,6 +1,6 @@
-import type { PropsWithChildren } from "react";
+import type { WithRequiredChildren } from "@/types/components/with-required-children";
 
-export type CreateCommunityDialogProps = PropsWithChildren<{
+export type CreateCommunityDialogProps = WithRequiredChildren<{
   open: boolean;
   onOpenChange: (value: boolean) => void;
 }>;

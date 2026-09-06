@@ -1,6 +1,8 @@
-import type { ElementType, PropsWithChildren } from "react";
+import type { ElementType } from "react";
 
-export type SectionProps = PropsWithChildren<{
+import type { WithRequiredChildren } from "@/types/components/with-required-children";
+
+export type SectionProps = WithRequiredChildren<{
   title: string;
   icon?: ElementType;
 }>;

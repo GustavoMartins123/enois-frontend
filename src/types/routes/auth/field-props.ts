@@ -1,6 +1,8 @@
-import type { PropsWithChildren, ReactNode } from "react";
+import type { ReactNode } from "react";
 
-export type FieldProps = PropsWithChildren<{
+import type { WithRequiredChildren } from "@/types/components/with-required-children";
+
+export type FieldProps = WithRequiredChildren<{
   label: string;
   error?: string;
   right?: ReactNode;

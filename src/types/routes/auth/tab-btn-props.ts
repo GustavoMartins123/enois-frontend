@@ -1,6 +1,8 @@
-import type { ComponentPropsWithoutRef, PropsWithChildren } from "react";
+import type { ComponentPropsWithoutRef } from "react";
 
-export type TabBtnProps = PropsWithChildren<{
+import type { WithRequiredChildren } from "@/types/components/with-required-children";
+
+export type TabBtnProps = WithRequiredChildren<{
   active: boolean;
   onClick: NonNullable<ComponentPropsWithoutRef<"button">["onClick"]>;
 }>;

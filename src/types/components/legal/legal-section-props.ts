@@ -1,5 +1,5 @@
-import type { PropsWithChildren } from "react";
+import type { WithRequiredChildren } from "@/types/components/with-required-children";
 
-export type LegalSectionProps = PropsWithChildren<{
+export type LegalSectionProps = WithRequiredChildren<{
   title: string;
 }>;

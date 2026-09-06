@@ -1,6 +1,6 @@
-import type { PropsWithChildren } from "react";
+import type { WithRequiredChildren } from "@/types/components/with-required-children";
 
-export type FieldProps = PropsWithChildren<{
+export type FieldProps = WithRequiredChildren<{
   label: string;
   error?: string;
 }>;
