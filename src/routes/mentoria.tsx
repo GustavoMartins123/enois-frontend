@@ -6,8 +6,8 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { Calendar, Sparkles, Star } from "lucide-react";
 
 import { mentorsApi, profileApi } from "@/lib/api";
+import { getCurrentUserId } from "@/lib/current-user";
 import { requireAuth } from "@/lib/require-auth";
-import { useAuth } from "@/lib/use-auth";
 import { texts } from "@/texts";
 
 import { Badge } from "@/components/ui/badge";
@@ -175,8 +175,8 @@ function MentorCard({
     nextSlot: string;
   };
 }) {
-  const { user: currentUser } = useAuth();
-  const isOwner = currentUser?.id === mentor.userId;
+  const currentUserId = getCurrentUserId();
+  const isOwner = currentUserId === mentor.userId;
 
   const { data: user } = useQuery({
     queryKey: ["profile", mentor.userId],

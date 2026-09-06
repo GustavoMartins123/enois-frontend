@@ -1,9 +1,9 @@
-import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
 import { Menu } from "lucide-react";
 
-import { profileApi } from "@/lib/api";
+import { getCurrentUser } from "@/lib/current-user";
+import { useAppShellStore } from "@/stores/app-shell.store";
 import { texts } from "@/texts";
 
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -14,20 +14,14 @@ import { AppHeaderLayout } from "./app-header-layout";
 import { NotificationsPopover } from "./notifications-popover";
 import { GlobalSearch } from "./global-search";
 
-type AuthenticatedAppHeaderProps = {
-  onOpenMobileMenu: () => void;
-};
-
-export function AuthenticatedAppHeader({ onOpenMobileMenu }: AuthenticatedAppHeaderProps) {
-  const { data: profile } = useQuery({
-    queryKey: ["me"],
-    queryFn: () => profileApi.me(),
-  });
+export function AuthenticatedAppHeader() {
+  const openMobileNavigation = useAppShellStore((state) => state.openMobileNavigation);
+  const profile = getCurrentUser();
 
   return (
     <AppHeaderLayout>
       <button
-        onClick={onOpenMobileMenu}
+        onClick={openMobileNavigation}
         className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-text-subtle transition hover:bg-surface-2 hover:text-primary md:hidden"
         aria-label={texts.navigation.openMenu}
       >

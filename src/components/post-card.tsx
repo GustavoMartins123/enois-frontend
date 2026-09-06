@@ -17,7 +17,8 @@ import {
 } from "@/lib/api";
 import type { CommentView, PostView, ReactionType, ReportReason } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
-import { useAuth } from "@/lib/use-auth";
+import { getCurrentUser, getCurrentUserId } from "@/lib/current-user";
+import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 
 import { Badge } from "@/components/ui/badge";
@@ -61,13 +62,9 @@ const typeMeta: Record<
   },
 };
 
-function ReactionsSummary({
-  postId,
-  reactionStatus,
-}: {
-  postId: string;
-  reactionStatus: string | null;
-}) {
+function ReactionsSummary({ postId }: { postId: string }) {
+  const reactionStatus = usePostCardStore((state) => state.cards[postId]?.reactionStatus ?? null);
+
   const { data } = useQuery({
     queryKey: ["reactions-summary", postId],
     queryFn: () => reactionsApi.listReactions(postId),
@@ -98,19 +95,14 @@ function ReactionsSummary({
   );
 }
 
-function ReactionsDialog({
-  postId,
-  currentUserReaction,
-  currentUserId,
-  open,
-  onOpenChange,
-}: {
-  postId: string;
-  currentUserReaction: string | null;
-  currentUserId?: string;
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-}) {
+function ReactionsDialog({ postId }: { postId: string }) {
+  const currentUserId = getCurrentUserId();
+  const currentUserReaction = usePostCardStore(
+    (state) => state.cards[postId]?.reactionStatus ?? null,
+  );
+  const open = usePostCardStore((state) => state.cards[postId]?.showReactions ?? false);
+  const setShowReactions = usePostCardStore((state) => state.setShowReactions);
+
   const { data } = useQuery({
     queryKey: ["reactions", postId],
     queryFn: () => reactionsApi.listReactions(postId),
@@ -139,7 +131,7 @@ function ReactionsDialog({
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(nextOpen) => setShowReactions(postId, nextOpen)}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="font-light">{texts.posts.reactions.title}</DialogTitle>
@@ -174,15 +166,9 @@ function ReactionsDialog({
   );
 }
 
-function ReportDialog({
-  postId,
-  open,
-  onOpenChange,
-}: {
-  postId: string;
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-}) {
+function ReportDialog({ postId }: { postId: string }) {
+  const open = usePostCardStore((state) => state.cards[postId]?.showReport ?? false);
+  const setShowReport = usePostCardStore((state) => state.setShowReport);
   const [reason, setReason] = useState<ReportReason>("SPAM");
   const [description, setDescription] = useState("");
 
@@ -194,7 +180,7 @@ function ReportDialog({
         reason,
         description: description || undefined,
       });
-      onOpenChange(false);
+      setShowReport(postId, false);
       setDescription("");
     } catch {
       /* silent */
@@ -202,7 +188,7 @@ function ReportDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(nextOpen) => setShowReport(postId, nextOpen)}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="font-light">{texts.posts.report.title}</DialogTitle>
@@ -241,24 +227,39 @@ function ReportDialog({
 }
 
 export function PostCard({ post }: { post: PostView }) {
-  const { user: currentUser } = useAuth();
+  const currentUser = getCurrentUser();
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
   const [showComments, setShowComments] = useState(false);
-  const [draft, setDraft] = useState("");
-  const [commentMentions, setCommentMentions] = useState<string[]>([]);
-  const [replyToId, setReplyToId] = useState<string | null>(null);
-  const [localComments, setLocalComments] = useState<CommentView[]>([]);
-  const [postCounters, setPostCounters] = useState(post.counters);
-  const [reactionStatus, setReactionStatus] = useState<string | null>(
-    post.currentUserReaction ?? null,
-  );
   const [saved, setSaved] = useState(false);
-  const [showReactions, setShowReactions] = useState(false);
-  const [showReport, setShowReport] = useState(false);
+  const initializePostCard = usePostCardStore((state) => state.initializePostCard);
+  const disposePostCard = usePostCardStore((state) => state.disposePostCard);
+  const card = usePostCardStore((state) => state.cards[post.id]);
+  const setDraft = usePostCardStore((state) => state.setDraft);
+  const setCommentMentions = usePostCardStore((state) => state.setCommentMentions);
+  const setReplyToId = usePostCardStore((state) => state.setReplyToId);
+  const setComments = usePostCardStore((state) => state.setComments);
+  const addComment = usePostCardStore((state) => state.addComment);
+  const updateCommentCount = usePostCardStore((state) => state.updateCommentCount);
+  const setPostCounters = usePostCardStore((state) => state.setPostCounters);
+  const setReactionStatus = usePostCardStore((state) => state.setReactionStatus);
+  const setShowReactions = usePostCardStore((state) => state.setShowReactions);
+  const setShowReport = usePostCardStore((state) => state.setShowReport);
+
+  const draft = card?.draft ?? "";
+  const commentMentions = card?.commentMentions ?? [];
+  const replyToId = card?.replyToId ?? null;
+  const localComments = card?.localComments ?? [];
+  const postCounters = card?.postCounters ?? post.counters;
+  const reactionStatus = card?.reactionStatus ?? post.currentUserReaction ?? null;
 
   useEffect(() => {
-    setReactionStatus(post.currentUserReaction ?? null);
-  }, [post.currentUserReaction]);
+    initializePostCard(post);
+    return () => disposePostCard(post.id);
+  }, [disposePostCard, initializePostCard, post]);
+
+  useEffect(() => {
+    setReactionStatus(post.id, post.currentUserReaction ?? null);
+  }, [post.currentUserReaction, post.id, setReactionStatus]);
 
   const { data: savedData } = useQuery({
     queryKey: ["saved-posts"],
@@ -281,11 +282,11 @@ export function PostCard({ post }: { post: PostView }) {
 
     try {
       const newComment = await commentsApi.create(post.id, content, replyToId, commentMentions);
-      setLocalComments((current) => [...current, newComment]);
-      setPostCounters((c) => ({ ...c, comments: c.comments + 1 }));
-      setDraft("");
-      setCommentMentions([]);
-      setReplyToId(null);
+      addComment(post.id, newComment);
+      updateCommentCount(post.id, 1);
+      setDraft(post.id, "");
+      setCommentMentions(post.id, []);
+      setReplyToId(post.id, null);
     } catch {
       // silently fail
     }
@@ -295,12 +296,12 @@ export function PostCard({ post }: { post: PostView }) {
     try {
       if (reactionStatus === type) {
         const result = await reactionsApi.removeReaction(post.id);
-        setReactionStatus(null);
-        if ("counters" in result) setPostCounters(result.counters!);
+        setReactionStatus(post.id, null);
+        if ("counters" in result) setPostCounters(post.id, result.counters!);
       } else {
         const result = await reactionsApi.react(post.id, type);
-        setReactionStatus(type);
-        if ("counters" in result) setPostCounters(result.counters!);
+        setReactionStatus(post.id, type);
+        if ("counters" in result) setPostCounters(post.id, result.counters!);
       }
     } catch {
       // silently fail
@@ -313,7 +314,7 @@ export function PostCard({ post }: { post: PostView }) {
         ? await reactionsApi.removeSave(post.id)
         : await reactionsApi.save(post.id);
       setSaved(!saved);
-      setPostCounters(result.counters);
+      setPostCounters(post.id, result.counters);
     } catch {
       // silently fail
     }
@@ -322,7 +323,7 @@ export function PostCard({ post }: { post: PostView }) {
   const handleShare = async () => {
     try {
       const result = await reactionsApi.share(post.id);
-      setPostCounters(result.counters);
+      setPostCounters(post.id, result.counters);
       const url = `${window.location.origin}/feed/${post.id}`;
       if (navigator.share) {
         await navigator.share({ url });
@@ -334,21 +335,11 @@ export function PostCard({ post }: { post: PostView }) {
     }
   };
 
-  const handleDeleteComment = async (commentId: string) => {
-    try {
-      await commentsApi.remove(post.id, commentId);
-      setLocalComments((prev) => prev.filter((c) => c.id !== commentId));
-      setPostCounters((c) => ({ ...c, comments: c.comments - 1 }));
-    } catch {
-      // silently fail
-    }
-  };
-
   const loadComments = async () => {
     if (!showComments) {
       try {
         const data = await commentsApi.list(post.id);
-        setLocalComments(data.items);
+        setComments(post.id, data.items);
       } catch {
         // silently fail
       }
@@ -383,7 +374,7 @@ export function PostCard({ post }: { post: PostView }) {
         </div>
       )}
 
-      <ReactionsSummary postId={post.id} reactionStatus={reactionStatus} />
+      <ReactionsSummary postId={post.id} />
 
       <LinkPreviews content={post.content} />
 
@@ -446,7 +437,7 @@ export function PostCard({ post }: { post: PostView }) {
             </PopoverContent>
           </Popover>
           <button
-            onClick={() => setShowReactions(true)}
+            onClick={() => setShowReactions(post.id, true)}
             className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs tabular-nums transition hover:bg-muted hover:text-foreground text-muted-foreground"
           >
             {postCounters.reactions}
@@ -465,7 +456,7 @@ export function PostCard({ post }: { post: PostView }) {
             <Share2 className="h-4 w-4" /><>{texts.posts.share}</>
           </button>
           <button
-            onClick={() => setShowReport(true)}
+            onClick={() => setShowReport(post.id, true)}
             className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
           >
             <Flag className="h-4 w-4" />
@@ -481,14 +472,8 @@ export function PostCard({ post }: { post: PostView }) {
         </button>
       </footer>
 
-      <ReactionsDialog
-        postId={post.id}
-        currentUserReaction={reactionStatus}
-        currentUserId={currentUser?.id}
-        open={showReactions}
-        onOpenChange={setShowReactions}
-      />
-      <ReportDialog postId={post.id} open={showReport} onOpenChange={setShowReport} />
+      <ReactionsDialog postId={post.id} />
+      <ReportDialog postId={post.id} />
 
       {showComments && (
         <section className="mt-4 border-t border-border-soft pt-4">
@@ -499,23 +484,7 @@ export function PostCard({ post }: { post: PostView }) {
                 const replies = localComments.filter((r) => r.parentCommentId === comment.id);
                 return (
                   <div key={comment.id}>
-                    <CommentItem
-                      comment={comment}
-                      currentUserId={currentUser?.id}
-                      onDelete={handleDeleteComment}
-                      onReply={async (c) => {
-                        try {
-                          const profile = await profileApi.getById(c.authorId);
-                          if (profile?.username) {
-                            setDraft(`@${profile.username} `);
-                            setCommentMentions([c.authorId]);
-                          }
-                        } catch {
-                          setDraft(`${c.authorName} `);
-                        }
-                        setReplyToId(c.id);
-                      }}
-                    />
+                    <CommentItem comment={comment} />
                     {replies.length > 0 && (
                       <div className="ml-10 mt-2 space-y-2 border-l-2 border-border-soft pl-4">
                         {replies.map((reply) => {
@@ -527,20 +496,6 @@ export function PostCard({ post }: { post: PostView }) {
                               key={reply.id}
                               comment={reply}
                               replyingTo={parentAuthor}
-                              currentUserId={currentUser?.id}
-                              onDelete={handleDeleteComment}
-                              onReply={async (c) => {
-                                try {
-                                  const profile = await profileApi.getById(c.authorId);
-                                  if (profile?.username) {
-                                    setDraft(`@${profile.username} `);
-                                    setCommentMentions([c.authorId]);
-                                  }
-                                } catch {
-                                  setDraft(`${c.authorName} `);
-                                }
-                                setReplyToId(c.id);
-                              }}
                             />
                           );
                         })}
@@ -566,8 +521,8 @@ export function PostCard({ post }: { post: PostView }) {
               <MentionTextarea
                 value={draft}
                 onChange={(val, ids) => {
-                  setDraft(val);
-                  setCommentMentions(ids);
+                  setDraft(post.id, val);
+                  setCommentMentions(post.id, ids);
                 }}
                 placeholder={texts.posts.comments.placeholder}
                 className="h-6 min-h-6 flex-1 resize-none border-0 bg-transparent p-0 text-[13px] font-light outline-none"
@@ -593,18 +548,42 @@ export function PostCard({ post }: { post: PostView }) {
 function CommentItem({
   comment,
   replyingTo,
-  currentUserId,
-  onDelete,
-  onReply,
 }: {
   comment: CommentView;
   replyingTo?: string;
-  currentUserId?: string;
-  onDelete?: (commentId: string) => void;
-  onReply?: (comment: CommentView) => void;
 }) {
+  const currentUserId = getCurrentUserId();
+  const postId = comment.postId;
+  const setDraft = usePostCardStore((state) => state.setDraft);
+  const setCommentMentions = usePostCardStore((state) => state.setCommentMentions);
+  const setReplyToId = usePostCardStore((state) => state.setReplyToId);
+  const removeComment = usePostCardStore((state) => state.removeComment);
+  const updateCommentCount = usePostCardStore((state) => state.updateCommentCount);
   const isOwner = currentUserId === comment.authorId;
   const [commentReaction, setCommentReaction] = useState<string | null>(null);
+
+  const handleReply = async () => {
+    try {
+      const profile = await profileApi.getById(comment.authorId);
+      if (profile?.username) {
+        setDraft(postId, `@${profile.username} `);
+        setCommentMentions(postId, [comment.authorId]);
+      }
+    } catch {
+      setDraft(postId, `${comment.authorName} `);
+    }
+    setReplyToId(postId, comment.id);
+  };
+
+  const handleDelete = async () => {
+    try {
+      await commentsApi.remove(postId, comment.id);
+      removeComment(postId, comment.id);
+      updateCommentCount(postId, -1);
+    } catch {
+      // silently fail
+    }
+  };
 
   const handleCommentReaction = async (type: ReactionType) => {
     try {
@@ -645,10 +624,7 @@ function CommentItem({
           </p>
         </div>
         <div className="mt-1 flex items-center gap-3 px-3 text-[11px] font-light text-text-subtle">
-          <button
-            onClick={() => onReply?.(comment)}
-            className="transition-colors hover:text-primary"
-          >
+          <button onClick={handleReply} className="transition-colors hover:text-primary">
             {texts.posts.comments.reply}
           </button>
           <Popover>
@@ -679,9 +655,9 @@ function CommentItem({
               </div>
             </PopoverContent>
           </Popover>
-          {isOwner && onDelete && (
+          {isOwner && (
             <button
-              onClick={() => onDelete(comment.id)}
+              onClick={handleDelete}
               className="text-destructive transition-colors hover:text-destructive/80"
             >
               {texts.posts.comments.delete}

@@ -1,3 +1,4 @@
+import { useAppShellStore } from "@/stores/app-shell.store";
 import { texts } from "@/texts";
 
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
@@ -5,17 +6,15 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { AppBrand } from "./app-brand";
 import { NavigationLinks } from "./navigation-links";
 
-type NavigationDrawerProps = {
-  open: boolean;
-  onClose: () => void;
-};
+export function NavigationDrawer() {
+  const mobileNavigationOpen = useAppShellStore((state) => state.mobileNavigationOpen);
+  const closeMobileNavigation = useAppShellStore((state) => state.closeMobileNavigation);
 
-export function NavigationDrawer({ open, onClose }: NavigationDrawerProps) {
   return (
     <Sheet
-      open={open}
+      open={mobileNavigationOpen}
       onOpenChange={(nextOpen) => {
-        if (!nextOpen) onClose();
+        if (!nextOpen) closeMobileNavigation();
       }}
     >
       <SheetContent
@@ -26,10 +25,10 @@ export function NavigationDrawer({ open, onClose }: NavigationDrawerProps) {
         <SheetTitle className="sr-only">{texts.navigation.drawerTitle}</SheetTitle>
 
         <div className="flex h-14 items-center border-b border-border-soft px-3 sm:h-16">
-          <AppBrand onClick={onClose} />
+          <AppBrand onClick={closeMobileNavigation} />
         </div>
 
-        <NavigationLinks onNavigate={onClose} className="overflow-y-auto p-3" />
+        <NavigationLinks onNavigate={closeMobileNavigation} className="overflow-y-auto p-3" />
       </SheetContent>
     </Sheet>
   );

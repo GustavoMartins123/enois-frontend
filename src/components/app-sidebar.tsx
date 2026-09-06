@@ -1,28 +1,20 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { ChevronsLeft, ChevronsRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { hydratePreferences, usePreferencesStore } from "@/stores/preferences.store";
 import { texts } from "@/texts";
 
 import { NavigationLinks } from "./navigation-links";
 
-const SIDEBAR_COLLAPSED_KEY = "sidebar-collapsed";
-
 export function AppSidebar() {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const sidebarCollapsed = usePreferencesStore((state) => state.sidebarCollapsed);
+  const toggleSidebar = usePreferencesStore((state) => state.toggleSidebar);
 
   useEffect(() => {
-    setSidebarCollapsed(localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === "true");
+    hydratePreferences();
   }, []);
-
-  const toggleSidebar = () => {
-    setSidebarCollapsed((collapsed) => {
-      const nextCollapsed = !collapsed;
-      localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(nextCollapsed));
-      return nextCollapsed;
-    });
-  };
 
   return (
     <aside

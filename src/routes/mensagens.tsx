@@ -6,7 +6,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { ArrowLeft, Search, Send } from "lucide-react";
 
 import { messagesApi, networkApi, profileApi } from "@/lib/api";
-import { useAuth } from "@/lib/use-auth";
+import { getCurrentUserId } from "@/lib/current-user";
 import { texts } from "@/texts";
 
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ export const Route = createFileRoute("/mensagens")({
 });
 
 function Mensagens() {
-  const { user: currentUser } = useAuth();
+  const currentUserId = getCurrentUserId();
   const queryClient = useQueryClient();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -55,7 +55,7 @@ function Mensagens() {
     enabled: searchQuery.length > 0,
   });
 
-  const filteredUsers = (searchResults?.items ?? []).filter((u) => u.id !== currentUser?.id);
+  const filteredUsers = (searchResults?.items ?? []).filter((u) => u.id !== currentUserId);
 
   const sendMessage = useMutation({
     mutationFn: ({ conversationId, text }: { conversationId: string; text: string }) =>
@@ -93,7 +93,7 @@ function Mensagens() {
   const activeMessages = activeConversation ? messages : [];
 
   const otherParticipantId = activeConversation?.participantIds.find(
-    (id) => id !== currentUser?.id,
+    (id) => id !== currentUserId,
   );
   const { data: otherUser } = useQuery({
     queryKey: ["profile", "by-id", otherParticipantId],
@@ -177,7 +177,6 @@ function Mensagens() {
                   key={c.id}
                   conversation={c}
                   isActive={c.id === (activeConversation?.id ?? "")}
-                  currentUserId={currentUser?.id ?? ""}
                   onSelect={() => {
                     setActiveId(c.id);
                     if (c.unread > 0) markAsRead.mutate(c.id);
@@ -199,7 +198,6 @@ function Mensagens() {
             <>
               <ConversationHeader
                 conversation={activeConversation}
-                currentUserId={currentUser?.id ?? ""}
                 onBack={() => setActiveId(null)}
               />
               <div className="flex-1 overflow-y-auto bg-muted/30 p-5">
@@ -210,7 +208,7 @@ function Mensagens() {
                     </p>
                   ) : (
                     activeMessages.map((m) => {
-                      const isMe = m.from === currentUser?.id;
+                      const isMe = m.from === currentUserId;
                       return (
                         <div
                           key={m.id}
@@ -279,7 +277,6 @@ function Mensagens() {
 function ConversationItem({
   conversation,
   isActive,
-  currentUserId,
   onSelect,
 }: {
   conversation: {
@@ -291,9 +288,9 @@ function ConversationItem({
     unread: number;
   };
   isActive: boolean;
-  currentUserId: string;
   onSelect: () => void;
 }) {
+  const currentUserId = getCurrentUserId();
   const otherId = conversation.participantIds.find((id) => id !== currentUserId);
   const { data: otherUser } = useQuery({
     queryKey: ["profile", "by-id", otherId],
@@ -339,13 +336,12 @@ function ConversationItem({
 
 function ConversationHeader({
   conversation,
-  currentUserId,
   onBack,
 }: {
   conversation: { id: string; title: string | null; participantIds: string[] };
-  currentUserId: string;
   onBack?: () => void;
 }) {
+  const currentUserId = getCurrentUserId();
   const otherId = conversation.participantIds.find((id) => id !== currentUserId);
   const { data: otherUser } = useQuery({
     queryKey: ["profile", "by-id", otherId],
