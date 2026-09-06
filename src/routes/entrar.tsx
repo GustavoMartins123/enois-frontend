@@ -27,7 +27,10 @@ export const Route = createFileRoute("/entrar")({
   head: () => ({
     meta: [
       { title: texts.auth.seo.authTitle },
-      { name: "description", content: texts.auth.seo.authDescription },
+      {
+        name: "description",
+        content: texts.auth.seo.authDescription,
+      },
     ],
   }),
   component: Auth,
@@ -52,12 +55,19 @@ function Auth() {
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
+      {/* Brand side */}
       <aside
         className="relative hidden flex-col justify-between overflow-hidden p-10 text-primary-foreground lg:flex"
         style={{ background: "var(--gradient-primary)" }}
       >
-        <div aria-hidden className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-primary-foreground/10 blur-3xl" />
-        <div aria-hidden className="absolute -bottom-32 -left-20 h-96 w-96 rounded-full bg-primary-foreground/10 blur-3xl" />
+        <div
+          aria-hidden
+          className="absolute -right-20 -top-20 h-96 w-96 rounded-full bg-primary-foreground/10 blur-3xl"
+        />
+        <div
+          aria-hidden
+          className="absolute -bottom-32 -left-20 h-96 w-96 rounded-full bg-primary-foreground/10 blur-3xl"
+        />
 
         <Link to="/" className="relative flex items-center gap-2">
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary-foreground/20 backdrop-blur">
@@ -72,7 +82,9 @@ function Auth() {
           <p className="text-sm font-medium uppercase tracking-wider text-primary-foreground/80">
             {texts.auth.hero.eyebrow}
           </p>
-          <h2 className="mt-3 text-4xl font-semibold leading-tight tracking-tight">{texts.auth.hero.quote}</h2>
+          <h2 className="mt-3 text-4xl font-semibold leading-tight tracking-tight">
+            {texts.auth.hero.quote}
+          </h2>
           <div className="mt-6 flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-primary-foreground/25" />
             <div>
@@ -92,6 +104,7 @@ function Auth() {
         </div>
       </aside>
 
+      {/* Form side */}
       <section className="flex flex-col px-6 py-10 sm:px-12">
         <div className="flex items-center justify-between lg:hidden">
           <Link to="/" className="flex items-center gap-2">
@@ -148,7 +161,15 @@ function Auth() {
   );
 }
 
-function TabBtn({ active, children, onClick }: { active: boolean; children: React.ReactNode; onClick: () => void }) {
+function TabBtn({
+  active,
+  children,
+  onClick,
+}: {
+  active: boolean;
+  children: React.ReactNode;
+  onClick: () => void;
+}) {
   return (
     <button
       onClick={onClick}
@@ -170,6 +191,7 @@ function SocialButtons() {
   const startOAuth = async (provider: "GOOGLE" | "APPLE") => {
     setLoading(provider);
     setError(null);
+    // Simulate attempt then fail — SSO não configurado neste ambiente.
     await new Promise((r) => setTimeout(r, 400));
     const providerName = provider === "GOOGLE" ? "Google" : "Apple";
     setError(texts.auth.social.unavailable(providerName));
@@ -196,7 +218,9 @@ function SocialButtons() {
         {loading === "APPLE" ? <Loader2 className="h-4 w-4 animate-spin" /> : <AppleIcon />}
         {texts.auth.social.apple}
       </button>
-      {error && <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p>}
+      {error && (
+        <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p>
+      )}
     </div>
   );
 }
@@ -264,7 +288,13 @@ function SignupForm({ onDone }: { onDone: () => void }) {
 
       <form onSubmit={submit} className="space-y-4" noValidate>
         <Field label={texts.auth.fields.fullName} error={errors.name}>
-          <Input name="name" placeholder={texts.auth.placeholders.name} autoComplete="name" required maxLength={80} />
+          <Input
+            name="name"
+            placeholder={texts.auth.placeholders.name}
+            autoComplete="name"
+            required
+            maxLength={80}
+          />
         </Field>
         <Field label={texts.auth.fields.email} error={errors.email}>
           <Input
@@ -335,7 +365,10 @@ function LoginForm({ onDone, onForgot }: { onDone: () => void; onForgot: () => v
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("current_user");
     try {
-      const result = await authApi.login({ email: parsed.data.email, password: parsed.data.password });
+      const result = await authApi.login({
+        email: parsed.data.email,
+        password: parsed.data.password,
+      });
       localStorage.setItem("session_token", result.token);
       localStorage.setItem("refresh_token", result.refreshToken);
       localStorage.setItem("session_expires_at", result.expiresAt);
@@ -374,7 +407,11 @@ function LoginForm({ onDone, onForgot }: { onDone: () => void; onForgot: () => v
           label={texts.auth.fields.password}
           error={errors.password}
           right={
-            <button type="button" onClick={onForgot} className="text-xs font-medium text-primary hover:underline">
+            <button
+              type="button"
+              onClick={onForgot}
+              className="text-xs font-medium text-primary hover:underline"
+            >
               {texts.auth.password.forgot}
             </button>
           }
@@ -437,7 +474,13 @@ function Field({
   );
 }
 
-function ForgotPasswordDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v: boolean) => void }) {
+function ForgotPasswordDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+}) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
@@ -482,7 +525,9 @@ function ForgotPasswordDialog({ open, onOpenChange }: { open: boolean; onOpenCha
               <MailCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
               <div>
                 <p className="text-sm font-medium">{texts.auth.forgot.checkEmail}</p>
-                <p className="mt-1 text-[13px] text-muted-foreground">{texts.auth.forgot.sentDescription}</p>
+                <p className="mt-1 text-[13px] text-muted-foreground">
+                  {texts.auth.forgot.sentDescription}
+                </p>
               </div>
             </div>
             <Button className="w-full rounded-full" onClick={close}>
@@ -491,7 +536,9 @@ function ForgotPasswordDialog({ open, onOpenChange }: { open: boolean; onOpenCha
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-4 pb-2 pt-2" noValidate>
-            <p className="text-sm text-muted-foreground">{texts.auth.forgot.description}</p>
+            <p className="text-sm text-muted-foreground">
+              {texts.auth.forgot.description}
+            </p>
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">{texts.auth.fields.email}</Label>
               <Input
