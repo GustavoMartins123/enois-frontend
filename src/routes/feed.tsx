@@ -306,10 +306,8 @@ function Home() {
                 >
                   {createPost.isPending || upload.status === "uploading" ? (
                     <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />{" "}
-                      {upload.status === "uploading"
-                        ? texts.common.sending
-                        : texts.common.publishing}
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <>{upload.status === "uploading" ? texts.common.sending : texts.common.publishing}</>
                     </>
                   ) : (
                     texts.common.publish
@@ -475,7 +473,7 @@ function ComposerAction({
         }`}
     >
       <Icon className="h-3.5 w-3.5" />
-      {label}
+      <>{label}</>
     </button>
   );
 }
