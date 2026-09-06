@@ -8,6 +8,9 @@ import { ArrowLeft, Search, Send } from "lucide-react";
 import { messagesApi, networkApi, profileApi } from "@/lib/api";
 import { getCurrentUserId } from "@/lib/current-user";
 import { texts } from "@/texts";
+import type { ConversationHeaderProps } from "@/types/routes/messages/conversation-header-props";
+import type { ConversationItemProps } from "@/types/routes/messages/conversation-item-props";
+import type { SendMessageInput } from "@/types/routes/messages/send-message-input";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -58,7 +61,7 @@ function Mensagens() {
   const filteredUsers = (searchResults?.items ?? []).filter((u) => u.id !== currentUserId);
 
   const sendMessage = useMutation({
-    mutationFn: ({ conversationId, text }: { conversationId: string; text: string }) =>
+    mutationFn: ({ conversationId, text }: SendMessageInput) =>
       messagesApi.sendMessage(conversationId, text),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["messages", activeConversation?.id] });
@@ -274,22 +277,7 @@ function Mensagens() {
   );
 }
 
-function ConversationItem({
-  conversation,
-  isActive,
-  onSelect,
-}: {
-  conversation: {
-    id: string;
-    title: string | null;
-    participantIds: string[];
-    lastMessage: string | null;
-    time: string | null;
-    unread: number;
-  };
-  isActive: boolean;
-  onSelect: () => void;
-}) {
+function ConversationItem({ conversation, isActive, onSelect }: ConversationItemProps) {
   const currentUserId = getCurrentUserId();
   const otherId = conversation.participantIds.find((id) => id !== currentUserId);
   const { data: otherUser } = useQuery({
@@ -334,13 +322,7 @@ function ConversationItem({
   );
 }
 
-function ConversationHeader({
-  conversation,
-  onBack,
-}: {
-  conversation: { id: string; title: string | null; participantIds: string[] };
-  onBack?: () => void;
-}) {
+function ConversationHeader({ conversation, onBack }: ConversationHeaderProps) {
   const currentUserId = getCurrentUserId();
   const otherId = conversation.participantIds.find((id) => id !== currentUserId);
   const { data: otherUser } = useQuery({
