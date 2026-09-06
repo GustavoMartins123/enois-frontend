@@ -1,7 +1,4 @@
-export type CreateCommunityInput = {
-  name: string;
-  description: string;
-  topic: string;
-  cover?: string | null;
-  avatar?: string | null;
-};
+import type { Community } from "./community";
+
+export type CreateCommunityInput = Pick<Community, "name" | "description" | "topic"> &
+  Partial<Pick<Community, "cover" | "avatar">>;

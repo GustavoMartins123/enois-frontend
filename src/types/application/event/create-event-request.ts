@@ -1,8 +1,4 @@
-export type CreateEventRequest = {
-  title: string;
-  date: string;
-  time: string;
-  format: string;
-  host: string;
-  cover?: string | null;
-};
+import type { Event } from "./event";
+
+export type CreateEventRequest = Pick<Event, "title" | "date" | "time" | "format" | "host"> &
+  Partial<Pick<Event, "cover">>;

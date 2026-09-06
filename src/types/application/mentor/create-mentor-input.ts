@@ -1,4 +1,3 @@
-export type CreateMentorInput = {
-  expertise: string[];
-  price: string;
-};
+import type { Mentor } from "./mentor";
+
+export type CreateMentorInput = Pick<Mentor, "expertise" | "price">;

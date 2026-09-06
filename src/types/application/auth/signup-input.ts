@@ -1,5 +1,5 @@
-export type SignupInput = {
+import type { LoginInput } from "./login-input";
+
+export type SignupInput = LoginInput & {
   name: string;
-  email: string;
-  password: string;
 };

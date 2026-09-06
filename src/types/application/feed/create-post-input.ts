@@ -1,10 +1,7 @@
 import type { PostView } from "./post-view";
 
-export type CreatePostInput = {
-  type: PostView["type"];
-  content: string;
-  tags?: string[];
-  mediaIds?: string[];
-  mentionedUserIds?: string[];
-  communityId?: string;
-};
+export type CreatePostInput = Pick<PostView, "type" | "content"> &
+  Partial<Pick<PostView, "tags" | "mediaIds">> & {
+    mentionedUserIds?: string[];
+    communityId?: string;
+  };

@@ -1,7 +1,10 @@
 import type { Conversation } from "@/types/application/message/conversation";
 
 export type ConversationItemProps = {
-  conversation: Conversation;
+  conversation: Pick<
+    Conversation,
+    "participantIds" | "title" | "time" | "lastMessage" | "unread"
+  >;
   isActive: boolean;
   onSelect: () => void;
 };

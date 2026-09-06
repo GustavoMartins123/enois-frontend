@@ -1,6 +1,6 @@
-import type { CreateEventFormData } from "./create-event-form-data";
+import type { CreateEventRequest } from "@/types/application/event/create-event-request";
 
 export type CreateEventFormProps = {
-  onSave: (data: CreateEventFormData) => void;
+  onSave: (data: Omit<CreateEventRequest, "cover">) => void;
   isPending: boolean;
 };
