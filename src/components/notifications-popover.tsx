@@ -53,11 +53,7 @@ export function NotificationsPopover() {
       <PopoverTrigger asChild>
         <button
           className="relative grid h-10 w-10 place-items-center rounded-full text-text-subtle transition hover:bg-surface-2 hover:text-primary"
-          aria-label={
-            unreadCount > 0
-              ? texts.notifications.unreadLabel(unreadCount)
-              : texts.notifications.title
-          }
+          aria-label={unreadCount > 0 ? texts.notifications.unreadLabel(unreadCount) : texts.notifications.title}
         >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
@@ -122,9 +118,7 @@ export function NotificationsPopover() {
         <div className="max-h-[28rem] overflow-y-auto">
           {displayedNotifications.length === 0 ? (
             <p className="px-4 py-8 text-center text-[13px] font-light text-text-subtle">
-              {notificationTab === "novas"
-                ? texts.notifications.emptyNew
-                : texts.notifications.emptyHistory}
+              {notificationTab === "novas" ? texts.notifications.emptyNew : texts.notifications.emptyHistory}
             </p>
           ) : (
             displayedNotifications.map((notification) => (
