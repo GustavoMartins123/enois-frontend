@@ -1,18 +1,12 @@
 import { useNavigate } from "@tanstack/react-router";
 
-import type { Notification } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { texts } from "@/texts";
+import type { NotificationItemProps } from "@/types/components/notification/notification-item-props";
 import { formatNotificationTime } from "@/utils/notification-time";
 import { navigateToHref } from "@/utils/navigation";
 
 import { notificationMeta } from "./notification-meta";
-
-type NotificationItemProps = {
-  notification: Notification;
-  onMarkAsRead: (id: string) => void;
-  onAcceptConnection: (actorId: string) => void;
-};
 
 export function NotificationItem({
   notification,

@@ -1,20 +1,13 @@
-import { type KeyboardEvent, useEffect, useRef, useState } from "react";
+import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 
-import { type UserSearchResult, usersApi } from "@/lib/api";
+import { usersApi } from "@/lib/api";
 import { texts } from "@/texts";
+import type { UserSearchResult } from "@/types/application/user/user-search-result";
+import type { Props } from "@/types/components/mention-textarea/props";
 
 import { UserAvatar } from "@/components/user-avatar";
-
-interface Props {
-  value: string;
-  onChange: (value: string, mentionedUserIds: string[]) => void;
-  placeholder?: string;
-  className?: string;
-  maxLength?: number;
-  rows?: number;
-}
 
 export function MentionTextarea({
   value,
@@ -58,7 +51,7 @@ export function MentionTextarea({
     setMentionIndex(at);
   };
 
-  const handleInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
+  const handleInput = (e: FormEvent<HTMLTextAreaElement>) => {
     const el = e.currentTarget;
     const next = el.value;
     const cursor = el.selectionStart;

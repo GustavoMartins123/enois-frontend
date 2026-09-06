@@ -1,14 +1,9 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 
 import { cn } from "@/lib/utils";
+import type { NavigationLinksProps } from "@/types/components/navigation/navigation-links-props";
 
 import { navigationItems } from "./navigation-items";
-
-type NavigationLinksProps = {
-  collapsed?: boolean;
-  onNavigate?: () => void;
-  className?: string;
-};
 
 export function NavigationLinks({
   collapsed = false,
