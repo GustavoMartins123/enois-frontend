@@ -28,6 +28,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Textarea } from "@/components/ui/textarea";
 
 import { MentionTextarea } from "@/components/mention-textarea";
+import { PostCardStoreProvider, usePostCardStore } from "@/components/post-card-store-provider";
 import { UserAvatar } from "@/components/user-avatar";
 
 const typeMeta: Record<
@@ -61,13 +62,10 @@ const typeMeta: Record<
   },
 };
 
-function ReactionsSummary({
-  postId,
-  reactionStatus,
-}: {
-  postId: string;
-  reactionStatus: string | null;
-}) {
+function ReactionsSummary() {
+  const postId = usePostCardStore((state) => state.postId);
+  const reactionStatus = usePostCardStore((state) => state.reactionStatus);
+
   const { data } = useQuery({
     queryKey: ["reactions-summary", postId],
     queryFn: () => reactionsApi.listReactions(postId),
@@ -98,19 +96,12 @@ function ReactionsSummary({
   );
 }
 
-function ReactionsDialog({
-  postId,
-  currentUserReaction,
-  currentUserId,
-  open,
-  onOpenChange,
-}: {
-  postId: string;
-  currentUserReaction: string | null;
-  currentUserId?: string;
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-}) {
+function ReactionsDialog({ currentUserId }: { currentUserId?: string }) {
+  const postId = usePostCardStore((state) => state.postId);
+  const currentUserReaction = usePostCardStore((state) => state.reactionStatus);
+  const open = usePostCardStore((state) => state.showReactions);
+  const onOpenChange = usePostCardStore((state) => state.setShowReactions);
+
   const { data } = useQuery({
     queryKey: ["reactions", postId],
     queryFn: () => reactionsApi.listReactions(postId),
@@ -174,15 +165,10 @@ function ReactionsDialog({
   );
 }
 
-function ReportDialog({
-  postId,
-  open,
-  onOpenChange,
-}: {
-  postId: string;
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-}) {
+function ReportDialog() {
+  const postId = usePostCardStore((state) => state.postId);
+  const open = usePostCardStore((state) => state.showReport);
+  const onOpenChange = usePostCardStore((state) => state.setShowReport);
   const [reason, setReason] = useState<ReportReason>("SPAM");
   const [description, setDescription] = useState("");
 
@@ -241,24 +227,40 @@ function ReportDialog({
 }
 
 export function PostCard({ post }: { post: PostView }) {
+  return (
+    <PostCardStoreProvider post={post}>
+      <PostCardContent post={post} />
+    </PostCardStoreProvider>
+  );
+}
+
+function PostCardContent({ post }: { post: PostView }) {
   const { user: currentUser } = useAuth();
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
   const [showComments, setShowComments] = useState(false);
-  const [draft, setDraft] = useState("");
-  const [commentMentions, setCommentMentions] = useState<string[]>([]);
-  const [replyToId, setReplyToId] = useState<string | null>(null);
-  const [localComments, setLocalComments] = useState<CommentView[]>([]);
-  const [postCounters, setPostCounters] = useState(post.counters);
-  const [reactionStatus, setReactionStatus] = useState<string | null>(
-    post.currentUserReaction ?? null,
-  );
   const [saved, setSaved] = useState(false);
-  const [showReactions, setShowReactions] = useState(false);
-  const [showReport, setShowReport] = useState(false);
+  const {
+    draft,
+    commentMentions,
+    replyToId,
+    localComments,
+    postCounters,
+    reactionStatus,
+    setDraft,
+    setCommentMentions,
+    setReplyToId,
+    setComments,
+    addComment,
+    updateCommentCount,
+    setPostCounters,
+    setReactionStatus,
+    setShowReactions,
+    setShowReport,
+  } = usePostCardStore((state) => state);
 
   useEffect(() => {
     setReactionStatus(post.currentUserReaction ?? null);
-  }, [post.currentUserReaction]);
+  }, [post.currentUserReaction, setReactionStatus]);
 
   const { data: savedData } = useQuery({
     queryKey: ["saved-posts"],
@@ -281,8 +283,8 @@ export function PostCard({ post }: { post: PostView }) {
 
     try {
       const newComment = await commentsApi.create(post.id, content, replyToId, commentMentions);
-      setLocalComments((current) => [...current, newComment]);
-      setPostCounters((c) => ({ ...c, comments: c.comments + 1 }));
+      addComment(newComment);
+      updateCommentCount(1);
       setDraft("");
       setCommentMentions([]);
       setReplyToId(null);
@@ -334,26 +336,16 @@ export function PostCard({ post }: { post: PostView }) {
     }
   };
 
-  const handleDeleteComment = async (commentId: string) => {
-    try {
-      await commentsApi.remove(post.id, commentId);
-      setLocalComments((prev) => prev.filter((c) => c.id !== commentId));
-      setPostCounters((c) => ({ ...c, comments: c.comments - 1 }));
-    } catch {
-      // silently fail
-    }
-  };
-
   const loadComments = async () => {
     if (!showComments) {
       try {
         const data = await commentsApi.list(post.id);
-        setLocalComments(data.items);
+        setComments(data.items);
       } catch {
         // silently fail
       }
     }
-    setShowComments((v) => !v);
+    setShowComments((value) => !value);
   };
 
   return (
@@ -383,7 +375,7 @@ export function PostCard({ post }: { post: PostView }) {
         </div>
       )}
 
-      <ReactionsSummary postId={post.id} reactionStatus={reactionStatus} />
+      <ReactionsSummary />
 
       <LinkPreviews content={post.content} />
 
@@ -481,14 +473,8 @@ export function PostCard({ post }: { post: PostView }) {
         </button>
       </footer>
 
-      <ReactionsDialog
-        postId={post.id}
-        currentUserReaction={reactionStatus}
-        currentUserId={currentUser?.id}
-        open={showReactions}
-        onOpenChange={setShowReactions}
-      />
-      <ReportDialog postId={post.id} open={showReport} onOpenChange={setShowReport} />
+      <ReactionsDialog currentUserId={currentUser?.id} />
+      <ReportDialog />
 
       {showComments && (
         <section className="mt-4 border-t border-border-soft pt-4">
@@ -499,23 +485,7 @@ export function PostCard({ post }: { post: PostView }) {
                 const replies = localComments.filter((r) => r.parentCommentId === comment.id);
                 return (
                   <div key={comment.id}>
-                    <CommentItem
-                      comment={comment}
-                      currentUserId={currentUser?.id}
-                      onDelete={handleDeleteComment}
-                      onReply={async (c) => {
-                        try {
-                          const profile = await profileApi.getById(c.authorId);
-                          if (profile?.username) {
-                            setDraft(`@${profile.username} `);
-                            setCommentMentions([c.authorId]);
-                          }
-                        } catch {
-                          setDraft(`${c.authorName} `);
-                        }
-                        setReplyToId(c.id);
-                      }}
-                    />
+                    <CommentItem comment={comment} currentUserId={currentUser?.id} />
                     {replies.length > 0 && (
                       <div className="ml-10 mt-2 space-y-2 border-l-2 border-border-soft pl-4">
                         {replies.map((reply) => {
@@ -528,19 +498,6 @@ export function PostCard({ post }: { post: PostView }) {
                               comment={reply}
                               replyingTo={parentAuthor}
                               currentUserId={currentUser?.id}
-                              onDelete={handleDeleteComment}
-                              onReply={async (c) => {
-                                try {
-                                  const profile = await profileApi.getById(c.authorId);
-                                  if (profile?.username) {
-                                    setDraft(`@${profile.username} `);
-                                    setCommentMentions([c.authorId]);
-                                  }
-                                } catch {
-                                  setDraft(`${c.authorName} `);
-                                }
-                                setReplyToId(c.id);
-                              }}
                             />
                           );
                         })}
@@ -594,17 +551,42 @@ function CommentItem({
   comment,
   replyingTo,
   currentUserId,
-  onDelete,
-  onReply,
 }: {
   comment: CommentView;
   replyingTo?: string;
   currentUserId?: string;
-  onDelete?: (commentId: string) => void;
-  onReply?: (comment: CommentView) => void;
 }) {
+  const postId = usePostCardStore((state) => state.postId);
+  const setDraft = usePostCardStore((state) => state.setDraft);
+  const setCommentMentions = usePostCardStore((state) => state.setCommentMentions);
+  const setReplyToId = usePostCardStore((state) => state.setReplyToId);
+  const removeComment = usePostCardStore((state) => state.removeComment);
+  const updateCommentCount = usePostCardStore((state) => state.updateCommentCount);
   const isOwner = currentUserId === comment.authorId;
   const [commentReaction, setCommentReaction] = useState<string | null>(null);
+
+  const handleReply = async () => {
+    try {
+      const profile = await profileApi.getById(comment.authorId);
+      if (profile?.username) {
+        setDraft(`@${profile.username} `);
+        setCommentMentions([comment.authorId]);
+      }
+    } catch {
+      setDraft(`${comment.authorName} `);
+    }
+    setReplyToId(comment.id);
+  };
+
+  const handleDelete = async () => {
+    try {
+      await commentsApi.remove(postId, comment.id);
+      removeComment(comment.id);
+      updateCommentCount(-1);
+    } catch {
+      // silently fail
+    }
+  };
 
   const handleCommentReaction = async (type: ReactionType) => {
     try {
@@ -645,10 +627,7 @@ function CommentItem({
           </p>
         </div>
         <div className="mt-1 flex items-center gap-3 px-3 text-[11px] font-light text-text-subtle">
-          <button
-            onClick={() => onReply?.(comment)}
-            className="transition-colors hover:text-primary"
-          >
+          <button onClick={handleReply} className="transition-colors hover:text-primary">
             {texts.posts.comments.reply}
           </button>
           <Popover>
@@ -679,9 +658,9 @@ function CommentItem({
               </div>
             </PopoverContent>
           </Popover>
-          {isOwner && onDelete && (
+          {isOwner && (
             <button
-              onClick={() => onDelete(comment.id)}
+              onClick={handleDelete}
               className="text-destructive transition-colors hover:text-destructive/80"
             >
               {texts.posts.comments.delete}
