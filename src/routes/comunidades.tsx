@@ -9,6 +9,7 @@ import { communitiesApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { requireAuth } from "@/lib/require-auth";
 import { texts } from "@/texts";
+import type { CommunityTopic } from "@/types/application/community/community-topic";
 import type { Community } from "@/types/application/community/community";
 import type { CreateCommunityDialogProps } from "@/types/routes/communities/create-community-dialog-props";
 
@@ -35,9 +36,9 @@ const TOPICS = [
   "LIDERANCA",
   "CARREIRA",
   "FREELANCE",
-];
+] as const;
 
-const TOPIC_LABELS: Record<string, string> = {
+const TOPIC_LABELS: Record<(typeof TOPICS)[number], string> = {
   Todas: texts.communities.topics.all,
   TECNOLOGIA: texts.communities.topics.TECNOLOGIA,
   ENGENHARIA: texts.communities.topics.ENGENHARIA,
@@ -57,7 +58,7 @@ export const Route = createFileRoute("/comunidades")({
 function Comunidades() {
   const queryClient = useQueryClient();
   const matchRoute = useMatchRoute();
-  const [topic, setTopic] = useState<string | undefined>(undefined);
+  const [topic, setTopic] = useState<CommunityTopic | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [allItems, setAllItems] = useState<Community[]>([]);
@@ -91,7 +92,7 @@ function Comunidades() {
     }
   };
 
-  const handleTopicChange = (t: string) => {
+  const handleTopicChange = (t: (typeof TOPICS)[number]) => {
     setTopic(t === "Todas" ? undefined : t);
     setCursor(undefined);
     setAllItems([]);
@@ -225,7 +226,7 @@ function CreateCommunityDialog({
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [topic, setTopic] = useState("TECNOLOGIA");
+  const [topic, setTopic] = useState<CommunityTopic>("TECNOLOGIA");
 
   const create = useMutation({
     mutationFn: () => communitiesApi.create({ name, description, topic }),
@@ -267,7 +268,7 @@ function CreateCommunityDialog({
             <Label className="text-xs text-muted-foreground">{texts.communities.create.topic}</Label>
             <select
               value={topic}
-              onChange={(e) => setTopic(e.target.value)}
+              onChange={(e) => setTopic(e.target.value as CommunityTopic)}
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 border-transparent bg-muted"
             >
               {TOPICS.filter((t) => t !== "Todas").map((t) => (
