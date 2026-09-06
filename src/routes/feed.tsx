@@ -20,6 +20,7 @@ import { requireAuth } from "@/lib/require-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 import { texts } from "@/texts";
 import type { CreatePostInput } from "@/types/application/feed/create-post-input";
+import type { FeedTab } from "@/types/application/feed/feed-tab";
 import type { PostView } from "@/types/application/feed/post-view";
 import type { ComposerActionProps } from "@/types/routes/feed/composer-action-props";
 import type { MediaItem } from "@/types/routes/feed/media-item";
@@ -46,7 +47,7 @@ export const Route = createFileRoute("/feed")({
   component: Home,
 });
 
-function useFeed(tab: string | undefined) {
+function useFeed(tab: FeedTab) {
   return useQuery({
     queryKey: ["feed", tab],
     queryFn: () => feedApi.list(null, 20, tab),
@@ -76,7 +77,7 @@ function useEvents() {
 
 function Home() {
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<string | undefined>("FOR_YOU");
+  const [tab, setTab] = useState<FeedTab>("FOR_YOU");
   const { data: feedData, isFetching: feedLoading } = useFeed(tab);
   const { data: profile } = useProfile();
   const { data: suggestions } = useSuggestions();
