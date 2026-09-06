@@ -17,7 +17,7 @@ import {
 } from "@/lib/api";
 import type { CommentView, PostView, ReactionType, ReportReason } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
-import { useAuth } from "@/lib/use-auth";
+import { getCurrentUser, getCurrentUserId } from "@/lib/current-user";
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 
@@ -95,7 +95,8 @@ function ReactionsSummary({ postId }: { postId: string }) {
   );
 }
 
-function ReactionsDialog({ postId, currentUserId }: { postId: string; currentUserId?: string }) {
+function ReactionsDialog({ postId }: { postId: string }) {
+  const currentUserId = getCurrentUserId();
   const currentUserReaction = usePostCardStore(
     (state) => state.cards[postId]?.reactionStatus ?? null,
   );
@@ -234,7 +235,7 @@ function ReportDialog({ postId }: { postId: string }) {
 }
 
 export function PostCard({ post }: { post: PostView }) {
-  const { user: currentUser } = useAuth();
+  const currentUser = getCurrentUser();
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
   const [showComments, setShowComments] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -479,7 +480,7 @@ export function PostCard({ post }: { post: PostView }) {
         </button>
       </footer>
 
-      <ReactionsDialog postId={post.id} currentUserId={currentUser?.id} />
+      <ReactionsDialog postId={post.id} />
       <ReportDialog postId={post.id} />
 
       {showComments && (
@@ -491,7 +492,7 @@ export function PostCard({ post }: { post: PostView }) {
                 const replies = localComments.filter((reply) => reply.parentCommentId === comment.id);
                 return (
                   <div key={comment.id}>
-                    <CommentItem comment={comment} currentUserId={currentUser?.id} />
+                    <CommentItem comment={comment} />
                     {replies.length > 0 && (
                       <div className="ml-10 mt-2 space-y-2 border-l-2 border-border-soft pl-4">
                         {replies.map((reply) => {
@@ -503,7 +504,6 @@ export function PostCard({ post }: { post: PostView }) {
                               key={reply.id}
                               comment={reply}
                               replyingTo={parentAuthor}
-                              currentUserId={currentUser?.id}
                             />
                           );
                         })}
@@ -556,12 +556,11 @@ export function PostCard({ post }: { post: PostView }) {
 function CommentItem({
   comment,
   replyingTo,
-  currentUserId,
 }: {
   comment: CommentView;
   replyingTo?: string;
-  currentUserId?: string;
 }) {
+  const currentUserId = getCurrentUserId();
   const postId = comment.postId;
   const setDraft = usePostCardStore((state) => state.setDraft);
   const setCommentMentions = usePostCardStore((state) => state.setCommentMentions);
