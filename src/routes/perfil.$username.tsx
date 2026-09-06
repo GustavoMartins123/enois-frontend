@@ -30,6 +30,7 @@ import {
 import { resolveCdnUrl } from "@/lib/api/media";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
+import { texts } from "@/texts";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -59,19 +60,19 @@ export const Route = createFileRoute("/perfil/$username")({
   },
   head: ({ loaderData }) => ({
     meta: [
-      { title: `${loaderData?.user.name ?? "Perfil"} · Énóis` },
-      { name: "description", content: loaderData?.user.headline ?? "Perfil profissional" },
+      { title: texts.profile.seoTitle(loaderData?.user.name ?? texts.profile.seoFallbackTitle) },
+      { name: "description", content: loaderData?.user.headline ?? texts.profile.seoFallbackDescription },
     ],
   }),
   notFoundComponent: () => (
     <AppContainer>
       <div className="rounded-2xl border border-border-soft bg-surface-card p-10 text-center">
-        <p className="text-[16px] font-light text-text-strong">Pessoa não encontrada</p>
+        <p className="text-[16px] font-light text-text-strong">{texts.profile.notFound}</p>
         <Link
           to="/"
           className="mt-2 inline-block text-[13px] font-light text-primary hover:underline"
         >
-          Voltar para o início
+          {texts.profile.backHome}
         </Link>
       </div>
     </AppContainer>
@@ -80,7 +81,7 @@ export const Route = createFileRoute("/perfil/$username")({
     <AppContainer>
       <div className="rounded-2xl border border-border-soft bg-surface-card p-10 text-center">
         <p className="text-[13px] font-light text-text-subtle">
-          Não foi possível carregar este perfil.
+          {texts.profile.loadError}
         </p>
       </div>
     </AppContainer>
@@ -239,7 +240,7 @@ function Profile() {
                 disabled={bannerUpload.status === "uploading"}
               >
                 {bannerUpload.status === "uploading" ? (
-                  "Enviando..."
+                  texts.common.sending
                 ) : (
                   <Camera className="h-6 w-6" />
                 )}
@@ -272,7 +273,11 @@ function Profile() {
                     className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30 text-white transition"
                     disabled={avatarUpload.status === "uploading"}
                   >
-                    {avatarUpload.status === "uploading" ? "..." : <Camera className="h-5 w-5" />}
+                    {avatarUpload.status === "uploading" ? (
+                      texts.profile.uploadingIndicator
+                    ) : (
+                      <Camera className="h-5 w-5" />
+                    )}
                   </button>
                 )}
                 <input
@@ -287,7 +292,7 @@ function Profile() {
                 {isOwnProfile ? (
                   <EditProfileDialog profile={user}>
                     <Button variant="outline" size="sm" className="rounded-full gap-1.5">
-                      <Settings className="h-4 w-4" /> Editar perfil
+                      <Settings className="h-4 w-4" /><>{texts.profile.editProfile}</>
                     </Button>
                   </EditProfileDialog>
                 ) : (
@@ -301,7 +306,7 @@ function Profile() {
                         navigate({ to: "/mensagens" });
                       }}
                     >
-                      <MessageCircle className="h-4 w-4" /> Mensagem
+                      <MessageCircle className="h-4 w-4" /><>{texts.profile.message}</>
                     </Button>
                     <Button
                       size="sm"
@@ -317,10 +322,10 @@ function Profile() {
                       }
                     >
                       {connectionStatus === "PENDING"
-                        ? "Aguardando resposta"
+                        ? texts.profile.waitingResponse
                         : connectionStatus === "ACCEPTED"
-                          ? "Conectado"
-                          : "Conectar"}
+                          ? texts.profile.connected
+                          : texts.profile.connect}
                     </Button>
                   </>
                 )}
@@ -333,12 +338,12 @@ function Profile() {
                 </h1>
                 {user.openToWork && (
                   <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-[11px] font-light text-growth">
-                    Aberto a oportunidades
+                    {texts.profile.openToWork}
                   </span>
                 )}
                 {user.isMentor && (
                   <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-[11px] font-light text-primary">
-                    Mentor disponível
+                    {texts.profile.mentorAvailable}
                   </span>
                 )}
               </div>
@@ -348,18 +353,18 @@ function Profile() {
               <p className="mt-3 flex flex-wrap items-center gap-4 text-[13px] font-light text-text-subtle">
                 {user.company && (
                   <span className="inline-flex items-center gap-1.5">
-                    <Briefcase className="h-4 w-4" /> {user.company}
+                    <Briefcase className="h-4 w-4" /><>{user.company}</>
                   </span>
                 )}
                 {user.location && (
                   <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4" /> {user.location}
+                    <MapPin className="h-4 w-4" /><>{user.location}</>
                   </span>
                 )}
-                <span>· {user.connectionsCount} conexões</span>
+                <span>{texts.profile.connectionsMeta(user.connectionsCount)}</span>
                 {(user.reputation ?? 0) > 0 && (
                   <span className="inline-flex items-center gap-1 rounded-full bg-opportunity/15 px-2 py-0.5 text-[11px] font-light text-opportunity-foreground">
-                    ★ {user.reputation ?? 0} reputação
+                    {texts.profile.reputationMeta(user.reputation ?? 0)}
                   </span>
                 )}
               </p>
@@ -370,7 +375,7 @@ function Profile() {
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-6">
             {user.bio && (
-              <Section title="Sobre">
+              <Section title={texts.profile.sections.about}>
                 <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">
                   {user.bio}
                 </p>
@@ -378,7 +383,7 @@ function Profile() {
             )}
 
             {user.skills.length > 0 && (
-              <Section title="Habilidades">
+              <Section title={texts.profile.sections.skills}>
                 <div className="flex flex-wrap gap-1.5">
                   {user.skills.map((s: string) => (
                     <span
@@ -393,7 +398,7 @@ function Profile() {
             )}
 
             {user.goals.length > 0 && (
-              <Section title="Objetivos profissionais" icon={Target}>
+              <Section title={texts.profile.sections.goals} icon={Target}>
                 <div className="grid gap-3 sm:grid-cols-3">
                   {user.goals.map((goal: string) => (
                     <div key={goal} className="rounded-xl border border-border-soft p-4">
@@ -404,9 +409,9 @@ function Profile() {
               </Section>
             )}
 
-            <Section title="Publicações recentes">
+            <Section title={texts.profile.sections.recentPosts}>
               {userPosts.length === 0 ? (
-                <p className="text-[13px] font-light text-text-subtle">Ainda não há publicações.</p>
+                <p className="text-[13px] font-light text-text-subtle">{texts.profile.noPosts}</p>
               ) : (
                 <div className="space-y-4">
                   {userPosts.map((p) => (
@@ -418,32 +423,32 @@ function Profile() {
           </div>
 
           <aside className="space-y-6">
-            <Section title="Disponibilidade" icon={Clock}>
+            <Section title={texts.profile.sections.availability} icon={Clock}>
               <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">
-                {user.availability ?? "Não informada"}
+                {user.availability ?? texts.profile.availabilityUnknown}
               </p>
             </Section>
 
             {!isOwnProfile && (
-              <Section title="Recomendar" icon={ThumbsUp}>
+              <Section title={texts.profile.sections.recommend} icon={ThumbsUp}>
                 <p className="mb-3 text-[13px] font-light text-text-subtle">
-                  Recomende este perfil para ajudar a comunidade.
+                  {texts.profile.recommendDescription}
                 </p>
                 <Dialog open={recommendOpen} onOpenChange={setRecommendOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm" className="w-full rounded-full gap-1.5">
-                      <ThumbsUp className="h-4 w-4" /> Recomendar
+                      <ThumbsUp className="h-4 w-4" /><>{texts.profile.recommendAction}</>
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle className="font-light">Recomendar {user.name}</DialogTitle>
+                      <DialogTitle className="font-light">{texts.profile.recommendTitle(user.name)}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 pt-2">
                       <Textarea
                         value={recommendComment}
                         onChange={(e) => setRecommendComment(e.target.value)}
-                        placeholder="Descreva como conhece este profissional..."
+                        placeholder={texts.profile.recommendPlaceholder}
                         rows={3}
                         className="border-border-soft bg-surface-1 text-[13px] font-light"
                       />
@@ -453,7 +458,7 @@ function Profile() {
                         disabled={!recommendComment.trim() || recommend.isPending}
                         onClick={() => recommend.mutate()}
                       >
-                        {recommend.isPending ? "Enviando..." : "Enviar recomendação"}
+                        {recommend.isPending ? texts.common.sending : texts.profile.sendRecommendation}
                       </Button>
                     </div>
                   </DialogContent>
@@ -462,7 +467,7 @@ function Profile() {
             )}
 
             {recommendationsData && recommendationsData.length > 0 && (
-              <Section title="Recomendações" icon={Star}>
+              <Section title={texts.profile.sections.recommendations} icon={Star}>
                 <div className="space-y-3">
                   {recommendationsData.map((rec) => (
                     <RecommendationItem key={rec.id} recommendation={rec} />
@@ -472,14 +477,14 @@ function Profile() {
             )}
 
             {rankingData && rankingData.length > 0 && (
-              <Section title="Ranking" icon={Trophy}>
+              <Section title={texts.profile.sections.ranking} icon={Trophy}>
                 <div className="space-y-2">
                   {rankingData.slice(0, 5).map((u, i) => (
                     <div key={u.id} className="flex items-center gap-3">
                       <span
                         className={`w-5 text-center text-[13px] font-light ${i < 3 ? "text-opportunity" : "text-text-subtle"}`}
                       >
-                        {i + 1}º
+                        {texts.profile.rankingPosition(i + 1)}
                       </span>
                       <Link to="/perfil/$username" params={{ username: u.username }}>
                         <UserAvatar src={u.avatar} alt={u.name} className="h-8 w-8 shrink-0" />
@@ -503,7 +508,7 @@ function Profile() {
             )}
 
             {user.externalLinks.length > 0 && (
-              <Section title="Links">
+              <Section title={texts.profile.sections.links}>
                 <ul className="space-y-2 text-[13px] font-light">
                   {user.externalLinks.map((link: string) => (
                     <li key={link} className="flex items-center gap-2 text-text-subtle">
@@ -527,7 +532,7 @@ function Profile() {
           }}
           imageSrc={cropImageSrc}
           aspect={cropPurpose === "AVATAR" ? 1 : 3}
-          title={cropPurpose === "AVATAR" ? "Ajustar foto de perfil" : "Ajustar foto de capa"}
+          title={cropPurpose === "AVATAR" ? texts.profile.cropAvatar : texts.profile.cropCover}
           onCropComplete={handleCropComplete}
         />
       )}
@@ -552,7 +557,7 @@ function Section({
             <Icon className="h-4 w-4 text-primary" />
           </span>
         )}
-        {title}
+        <>{title}</>
       </h2>
       {children}
     </section>
@@ -574,11 +579,11 @@ function RecommendationItem({
       <div className="flex items-center gap-2 mb-2">
         <UserAvatar src={recommender?.avatar} alt={recommender?.name} className="h-6 w-6" />
         <span className="text-[12px] font-medium text-text-strong">
-          {recommender?.name ?? "Usuário"}
+          {recommender?.name ?? texts.profile.userFallback}
         </span>
       </div>
       <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">
-        "{recommendation.comment}"
+        {texts.profile.recommendationQuote(recommendation.comment)}
       </p>
     </div>
   );

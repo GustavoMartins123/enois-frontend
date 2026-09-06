@@ -1,15 +1,8 @@
+import { texts } from "@/texts";
+
 import { api } from "../api-client";
 
-export const REACTION_EMOJIS: Record<string, string> = {
-  LIKE: "\u{1F44D}",
-  LOVE: "\u{2764}\u{FE0F}",
-  LAUGH: "\u{1F602}",
-  WOW: "\u{1F62E}",
-  SAD: "\u{1F622}",
-  CELEBRATE: "\u{1F389}",
-  SUPPORT: "\u{1F4AA}",
-  INSIGHTFUL: "\u{1F4A1}",
-};
+export const REACTION_EMOJIS = texts.posts.reactions.emojis;
 
 export type ReactionType = keyof typeof REACTION_EMOJIS;
 

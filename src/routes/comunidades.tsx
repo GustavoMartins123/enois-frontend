@@ -9,6 +9,7 @@ import { communitiesApi } from "@/lib/api";
 import type { Community } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { requireAuth } from "@/lib/require-auth";
+import { texts } from "@/texts";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -35,9 +36,20 @@ const TOPICS = [
   "FREELANCE",
 ];
 
+const TOPIC_LABELS: Record<string, string> = {
+  Todas: texts.communities.topics.all,
+  TECNOLOGIA: texts.communities.topics.TECNOLOGIA,
+  ENGENHARIA: texts.communities.topics.ENGENHARIA,
+  DESIGN: texts.communities.topics.DESIGN,
+  PRODUTO: texts.communities.topics.PRODUTO,
+  LIDERANCA: texts.communities.topics.LIDERANCA,
+  CARREIRA: texts.communities.topics.CARREIRA,
+  FREELANCE: texts.communities.topics.FREELANCE,
+};
+
 export const Route = createFileRoute("/comunidades")({
   beforeLoad: requireAuth,
-  head: () => ({ meta: [{ title: "Comunidades · Énóis" }] }),
+  head: () => ({ meta: [{ title: texts.communities.seoTitle }] }),
   component: Comunidades,
 });
 
@@ -103,14 +115,14 @@ function Comunidades() {
       <div className="space-y-6">
         <div className="surface-card flex flex-wrap items-center justify-between gap-3 p-4 sm:gap-4 sm:p-6">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Comunidades</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">{texts.communities.title}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Encontre grupos profissionais, fóruns temáticos e círculos de mentoria.
+              {texts.communities.description}
             </p>
           </div>
           <CreateCommunityDialog open={open} onOpenChange={setOpen}>
             <Button className="rounded-full gap-1.5">
-              <Plus className="h-4 w-4" /> Criar comunidade
+              <Plus className="h-4 w-4" /><>{texts.communities.createCommunity}</>
             </Button>
           </CreateCommunityDialog>
         </div>
@@ -126,7 +138,7 @@ function Comunidades() {
                   : "border-border bg-card text-muted-foreground hover:text-foreground"
               }`}
             >
-              {t.charAt(0) + t.slice(1).toLowerCase()}
+              {TOPIC_LABELS[t]}
             </button>
           ))}
         </div>
@@ -162,7 +174,7 @@ function Comunidades() {
                   <div className="mt-4 flex items-center justify-between">
                     <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Users className="h-3.5 w-3.5" />
-                      {(c.members ?? 0).toLocaleString("pt-BR")} membros
+                      <>{texts.communities.members(c.members ?? 0)}</>
                     </span>
                     <Button
                       size="sm"
@@ -178,7 +190,7 @@ function Comunidades() {
                         }
                       }}
                     >
-                      {c.joined ? "Participando" : "Entrar"}
+                      {c.joined ? texts.communities.participating : texts.communities.enter}
                     </Button>
                   </div>
                 </div>
@@ -195,7 +207,7 @@ function Comunidades() {
               onClick={loadMore}
               disabled={isFetching}
             >
-              {isFetching ? <Loader2 className="h-4 w-4 animate-spin" /> : "Carregar mais"}
+              {isFetching ? <Loader2 className="h-4 w-4 animate-spin" /> : texts.communities.loadMore}
             </Button>
           </div>
         )}
@@ -234,11 +246,11 @@ function CreateCommunityDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Criar comunidade</DialogTitle>
+          <DialogTitle>{texts.communities.create.title}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Nome</Label>
+            <Label className="text-xs text-muted-foreground">{texts.communities.create.name}</Label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -246,7 +258,7 @@ function CreateCommunityDialog({
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Descrição</Label>
+            <Label className="text-xs text-muted-foreground">{texts.communities.create.description}</Label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -255,7 +267,7 @@ function CreateCommunityDialog({
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Tópico</Label>
+            <Label className="text-xs text-muted-foreground">{texts.communities.create.topic}</Label>
             <select
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
@@ -263,7 +275,7 @@ function CreateCommunityDialog({
             >
               {TOPICS.filter((t) => t !== "Todas").map((t) => (
                 <option key={t} value={t}>
-                  {t.charAt(0) + t.slice(1).toLowerCase()}
+                  {TOPIC_LABELS[t]}
                 </option>
               ))}
             </select>
@@ -273,7 +285,7 @@ function CreateCommunityDialog({
             disabled={!name.trim() || !description.trim() || create.isPending}
             onClick={() => create.mutate()}
           >
-            {create.isPending ? "Criando..." : "Criar"}
+            {create.isPending ? texts.common.creating : texts.common.create}
           </Button>
         </div>
       </DialogContent>

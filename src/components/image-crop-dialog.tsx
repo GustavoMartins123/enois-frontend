@@ -2,6 +2,8 @@ import { useCallback, useState } from "react";
 
 import Cropper, { type Area } from "react-easy-crop";
 
+import { texts } from "@/texts";
+
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -119,14 +121,14 @@ export function ImageCropDialog({
             className="flex-1 rounded-full"
             onClick={() => onOpenChange(false)}
           >
-            Cancelar
+            {texts.common.cancel}
           </Button>
           <Button
             className="flex-1 rounded-full"
             disabled={saving || !croppedAreaPixels}
             onClick={handleSave}
           >
-            {saving ? "Salvando..." : "Salvar"}
+            {saving ? texts.common.saving : texts.common.save}
           </Button>
         </div>
       </DialogContent>
