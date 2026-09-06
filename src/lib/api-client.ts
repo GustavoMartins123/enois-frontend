@@ -1,3 +1,5 @@
+import type { RequestOptions } from "@/types/application/api/request-options";
+
 const API_BACKEND = import.meta.env.VITE_API_BACKEND ?? "http://localhost:8081/api";
 
 function baseUrl(): string {
@@ -92,7 +94,7 @@ async function request<T>(
   method: string,
   path: string,
   body?: unknown,
-  opts?: { idempotent?: boolean },
+  opts?: RequestOptions,
 ): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
