@@ -87,8 +87,7 @@ function Eventos() {
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {events.map((e) => {
-            const formatLabel =
-              texts.events.formats[e.format as keyof typeof texts.events.formats] ?? e.format;
+            const formatLabel = texts.events.formats[e.format] ?? e.format;
             const Icon = e.format === "ONLINE" ? Video : MapPin;
             const [, month, day] = (e.date ?? "").split("-");
             return (
@@ -141,7 +140,7 @@ function CreateEventForm({ onSave, isPending }: CreateEventFormProps) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [format, setFormat] = useState("ONLINE");
+  const [format, setFormat] = useState<CreateEventRequest["format"]>("ONLINE");
   const [host, setHost] = useState("");
 
   return (
@@ -182,7 +181,7 @@ function CreateEventForm({ onSave, isPending }: CreateEventFormProps) {
       <Field label={texts.events.form.format}>
         <select
           value={format}
-          onChange={(e) => setFormat(e.target.value)}
+          onChange={(e) => setFormat(e.target.value as CreateEventRequest["format"])}
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-10 border-transparent bg-muted"
         >
           <option value="ONLINE">{texts.events.formats.ONLINE}</option>
