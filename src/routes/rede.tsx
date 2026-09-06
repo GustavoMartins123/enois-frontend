@@ -60,12 +60,6 @@ function Rede() {
     onSuccess: invalidate,
   });
 
-  const statusFor = (userId: string): string => {
-    if (localStatus[userId]) return localStatus[userId];
-    if (pendingRequests.some((r) => r.fromUserId === userId)) return "PENDING_INCOMING";
-    return "NONE";
-  };
-
   return (
     <AppContainer>
       <div className="space-y-6">
