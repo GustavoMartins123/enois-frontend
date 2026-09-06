@@ -13,6 +13,8 @@
     "preview": "vite preview",
     "prettier": "prettier --write \".\"",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test:eslint-rules": "node eslint/rules/jsx-content-spacing.test.js",
     "format": "prettier --write ."
   },
   "dependencies": {
