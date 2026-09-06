@@ -1,20 +1,14 @@
 import { useEffect } from "react";
 
-import { Monitor, Moon, Sun } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 
 import { hydratePreferences, usePreferencesStore } from "@/stores/preferences.store";
 import { texts } from "@/texts";
 
-type Theme = "light" | "dark" | "system";
-
-function getSystemTheme() {
-  if (typeof window === "undefined") return "light";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
+type Theme = "light" | "dark";
 
 function applyTheme(theme: Theme) {
-  const resolved = theme === "system" ? getSystemTheme() : theme;
-  document.documentElement.classList.toggle("dark", resolved === "dark");
+  document.documentElement.classList.toggle("dark", theme === "dark");
 }
 
 export function ThemeToggle() {
@@ -27,26 +21,15 @@ export function ThemeToggle() {
 
   useEffect(() => {
     applyTheme(theme);
-
-    const media = window.matchMedia("(prefers-color-scheme: dark)");
-    const syncSystem = () => {
-      if (usePreferencesStore.getState().theme === "system") {
-        applyTheme("system");
-      }
-    };
-
-    media.addEventListener("change", syncSystem);
-    return () => media.removeEventListener("change", syncSystem);
   }, [theme]);
 
   const cycleTheme = () => {
-    const next: Theme = theme === "light" ? "dark" : theme === "dark" ? "system" : "light";
+    const next: Theme = theme === "light" ? "dark" : "light";
     setTheme(next);
   };
 
-  const Icon = theme === "light" ? Sun : theme === "dark" ? Moon : Monitor;
-  const label =
-    theme === "light" ? texts.theme.light : theme === "dark" ? texts.theme.dark : texts.theme.system;
+  const Icon = theme === "light" ? Sun : Moon;
+  const label = theme === "light" ? texts.theme.light : texts.theme.dark;
 
   return (
     <button
