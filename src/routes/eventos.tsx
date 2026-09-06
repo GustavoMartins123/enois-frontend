@@ -67,7 +67,9 @@ function Eventos() {
         <div className="surface-card flex flex-wrap items-center justify-between gap-3 p-4 sm:gap-4 sm:p-6">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">{texts.events.title}</h1>
-            <p className="mt-1 text-sm text-muted-foreground">{texts.events.description}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {texts.events.description}
+            </p>
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
@@ -92,7 +94,7 @@ function Eventos() {
             const formatLabel =
               texts.events.formats[e.format as keyof typeof texts.events.formats] ?? e.format;
             const Icon = e.format === "ONLINE" ? Video : MapPin;
-            const [, month, day] = (e.date ?? "").split("-");
+            const [year, month, day] = (e.date ?? "").split("-");
             return (
               <article key={e.id} className="surface-card overflow-hidden">
                 <div className="relative">
