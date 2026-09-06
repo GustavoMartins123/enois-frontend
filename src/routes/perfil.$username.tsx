@@ -60,13 +60,8 @@ export const Route = createFileRoute("/perfil/$username")({
   },
   head: ({ loaderData }) => ({
     meta: [
-      {
-        title: `${loaderData?.user.name ?? texts.profile.seoFallbackTitle} · ${texts.brand.name}`,
-      },
-      {
-        name: "description",
-        content: loaderData?.user.headline ?? texts.profile.seoFallbackDescription,
-      },
+      { title: `${loaderData?.user.name ?? texts.profile.seoFallbackTitle} · ${texts.brand.name}` },
+      { name: "description", content: loaderData?.user.headline ?? texts.profile.seoFallbackDescription },
     ],
   }),
   notFoundComponent: () => (
@@ -85,7 +80,9 @@ export const Route = createFileRoute("/perfil/$username")({
   errorComponent: () => (
     <AppContainer>
       <div className="rounded-2xl border border-border-soft bg-surface-card p-10 text-center">
-        <p className="text-[13px] font-light text-text-subtle">{texts.profile.loadError}</p>
+        <p className="text-[13px] font-light text-text-subtle">
+          {texts.profile.loadError}
+        </p>
       </div>
     </AppContainer>
   ),
@@ -441,9 +438,7 @@ function Profile() {
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle className="font-light">
-                        {texts.profile.recommendTitle(user.name)}
-                      </DialogTitle>
+                      <DialogTitle className="font-light">{texts.profile.recommendTitle(user.name)}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 pt-2">
                       <Textarea
@@ -459,9 +454,7 @@ function Profile() {
                         disabled={!recommendComment.trim() || recommend.isPending}
                         onClick={() => recommend.mutate()}
                       >
-                        {recommend.isPending
-                          ? texts.common.sending
-                          : texts.profile.sendRecommendation}
+                        {recommend.isPending ? texts.common.sending : texts.profile.sendRecommendation}
                       </Button>
                     </div>
                   </DialogContent>
@@ -485,9 +478,7 @@ function Profile() {
                   {rankingData.slice(0, 5).map((u, i) => (
                     <div key={u.id} className="flex items-center gap-3">
                       <span
-                        className={`w-5 text-center text-[13px] font-light ${
-                          i < 3 ? "text-opportunity" : "text-text-subtle"
-                        }`}
+                        className={`w-5 text-center text-[13px] font-light ${i < 3 ? "text-opportunity" : "text-text-subtle"}`}
                       >
                         {i + 1}º
                       </span>
@@ -537,9 +528,7 @@ function Profile() {
           }}
           imageSrc={cropImageSrc}
           aspect={cropPurpose === "AVATAR" ? 1 : 3}
-          title={
-            cropPurpose === "AVATAR" ? texts.profile.cropAvatar : texts.profile.cropCover
-          }
+          title={cropPurpose === "AVATAR" ? texts.profile.cropAvatar : texts.profile.cropCover}
           onCropComplete={handleCropComplete}
         />
       )}
