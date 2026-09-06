@@ -161,7 +161,7 @@ function Rede() {
                   </p>
                   <p className="mt-2 text-xs text-primary">
                     <Check className="mr-1 inline h-3 w-3" />
-                    {u.connected ? texts.network.connected : texts.network.commonInterests}
+                    <>{u.connected ? texts.network.connected : texts.network.commonInterests}</>
                   </p>
                   <Button
                     className={`mt-4 w-full rounded-full gap-1.5 ${u.connected ? "text-destructive hover:text-destructive" : ""}`}
@@ -179,15 +179,15 @@ function Rede() {
                   >
                     {u.connected ? (
                       <>
-                        <UserMinus className="h-4 w-4" /> {texts.network.remove}
+                        <UserMinus className="h-4 w-4" /><>{texts.network.remove}</>
                       </>
                     ) : localStatus[u.id] === "REQUESTED" ? (
                       <>
-                        <Send className="h-4 w-4" /> {texts.network.requested}
+                        <Send className="h-4 w-4" /><>{texts.network.requested}</>
                       </>
                     ) : (
                       <>
-                        <UserPlus className="h-4 w-4" /> {texts.network.connect}
+                        <UserPlus className="h-4 w-4" /><>{texts.network.connect}</>
                       </>
                     )}
                   </Button>
@@ -247,7 +247,7 @@ function RequestCard({
           className="rounded-full shrink-0 gap-1.5"
           onClick={() => onCancel(request.toUserId)}
         >
-          <X className="h-4 w-4" /> {texts.network.cancel}
+          <X className="h-4 w-4" /><>{texts.network.cancel}</>
         </Button>
       ) : (
         <div className="flex gap-2 shrink-0">
@@ -257,14 +257,14 @@ function RequestCard({
             className="rounded-full gap-1.5"
             onClick={() => onCancel(request.fromUserId)}
           >
-            <X className="h-4 w-4" /> {texts.network.reject}
+            <X className="h-4 w-4" /><>{texts.network.reject}</>
           </Button>
           <Button
             size="sm"
             className="rounded-full gap-1.5"
             onClick={() => onAccept(request.fromUserId)}
           >
-            <Check className="h-4 w-4" /> {texts.network.accept}
+            <Check className="h-4 w-4" /><>{texts.network.accept}</>
           </Button>
         </div>
       )}
