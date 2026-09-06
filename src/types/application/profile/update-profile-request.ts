@@ -1,8 +1,8 @@
-import type { UserProfile } from "./user-profile";
+import type { Profile } from "./profile";
 
 export type UpdateProfileRequest = Partial<
   Pick<
-    UserProfile,
+    Profile,
     | "username"
     | "name"
     | "headline"

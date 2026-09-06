@@ -1,7 +1,7 @@
-import type { ReactionItem } from "./reaction-item";
+import type { ReactionUser } from "../feed/reaction-user";
 
 export type ReactionsListResponse = {
   postId?: string;
   summary: Record<string, number>;
-  reactions: ReactionItem[];
+  reactions: ReactionUser[];
 };

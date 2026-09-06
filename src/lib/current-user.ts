@@ -1,6 +1,6 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
-import type { CurrentUser } from "@/types/lib/current-user";
+import type { Profile } from "@/types/application/profile/profile";
 
 import { profileApi } from "./api";
 import { getSessionToken } from "./api-client";
@@ -26,10 +26,10 @@ export function useCurrentUser() {
   });
 }
 
-export function getCurrentUser(): CurrentUser | null {
+export function getCurrentUser(): Profile | null {
   if (!getSessionToken()) return null;
 
-  return getBrowserQueryClient()?.getQueryData<CurrentUser>(CURRENT_USER_QUERY_KEY) ?? null;
+  return getBrowserQueryClient()?.getQueryData<Profile>(CURRENT_USER_QUERY_KEY) ?? null;
 }
 
 export function getCurrentUserId() {
