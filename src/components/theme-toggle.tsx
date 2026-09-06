@@ -1,48 +1,45 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { Monitor, Moon, Sun } from "lucide-react";
 
+import { hydratePreferences, usePreferencesStore } from "@/stores/preferences.store";
 import { texts } from "@/texts";
-
-type Theme = "light" | "dark" | "system";
-
-const storageKey = "connect-grow-theme";
 
 function getSystemTheme() {
   if (typeof window === "undefined") return "light";
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
-function applyTheme(theme: Theme) {
+function applyTheme(theme: "light" | "dark" | "system") {
   const resolved = theme === "system" ? getSystemTheme() : theme;
   document.documentElement.classList.toggle("dark", resolved === "dark");
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("system");
+  const theme = usePreferencesStore((state) => state.theme);
+  const setTheme = usePreferencesStore((state) => state.setTheme);
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(storageKey) as Theme | null;
-    const initial = stored ?? "system";
-    setTheme(initial);
-    applyTheme(initial);
+    hydratePreferences();
+  }, []);
+
+  useEffect(() => {
+    applyTheme(theme);
 
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     const syncSystem = () => {
-      if ((window.localStorage.getItem(storageKey) as Theme | null) === "system") {
+      if (usePreferencesStore.getState().theme === "system") {
         applyTheme("system");
       }
     };
 
     media.addEventListener("change", syncSystem);
     return () => media.removeEventListener("change", syncSystem);
-  }, []);
+  }, [theme]);
 
   const cycleTheme = () => {
-    const next: Theme = theme === "light" ? "dark" : theme === "dark" ? "system" : "light";
+    const next = theme === "light" ? "dark" : theme === "dark" ? "system" : "light";
     setTheme(next);
-    window.localStorage.setItem(storageKey, next);
-    applyTheme(next);
   };
 
   const Icon = theme === "light" ? Sun : theme === "dark" ? Moon : Monitor;
