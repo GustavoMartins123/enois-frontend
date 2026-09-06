@@ -8,7 +8,11 @@ export const Route = createFileRoute("/privacidade")({
   head: () => ({
     meta: [
       { title: texts.legal.privacy.seoTitle },
-      { name: "description", content: texts.legal.privacy.seoDescription },
+      {
+        name: "description",
+        content:
+          texts.legal.privacy.seoDescription,
+      },
     ],
   }),
   component: Privacidade,
@@ -16,6 +20,7 @@ export const Route = createFileRoute("/privacidade")({
 
 function Privacidade() {
   const { whoWeAre, collectedData, other } = texts.legal.privacy.sections;
+  const [legalBasis, sharing, storage, retention, rights, cookies, minors, contact, changes] = other;
 
   return (
     <LegalLayout>
@@ -25,9 +30,9 @@ function Privacidade() {
       </header>
 
       <LegalSection title={whoWeAre.title}>
-        {whoWeAre.paragraphs.map((paragraph) => (
-          <p key={paragraph}>{paragraph}</p>
-        ))}
+        <p>
+          {whoWeAre.paragraphs[0]}
+        </p>
       </LegalSection>
 
       <LegalSection title={collectedData.title}>
@@ -43,13 +48,65 @@ function Privacidade() {
         </p>
       </LegalSection>
 
-      {other.map((section) => (
-        <LegalSection key={section.title} title={section.title}>
-          {section.paragraphs.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
-          ))}
-        </LegalSection>
-      ))}
+      <LegalSection title={legalBasis.title}>
+        <p>
+          {legalBasis.paragraphs[0]}
+        </p>
+        <p>
+          {legalBasis.paragraphs[1]}
+        </p>
+      </LegalSection>
+
+      <LegalSection title={sharing.title}>
+        <p>
+          {sharing.paragraphs[0]}
+        </p>
+      </LegalSection>
+
+      <LegalSection title={storage.title}>
+        <p>
+          {storage.paragraphs[0]}
+        </p>
+      </LegalSection>
+
+      <LegalSection title={retention.title}>
+        <p>
+          {retention.paragraphs[0]}
+        </p>
+      </LegalSection>
+
+      <LegalSection title={rights.title}>
+        <p>
+          {rights.paragraphs[0]}
+        </p>
+        <p>
+          {rights.paragraphs[1]}
+        </p>
+      </LegalSection>
+
+      <LegalSection title={cookies.title}>
+        <p>
+          {cookies.paragraphs[0]}
+        </p>
+      </LegalSection>
+
+      <LegalSection title={minors.title}>
+        <p>
+          {minors.paragraphs[0]}
+        </p>
+      </LegalSection>
+
+      <LegalSection title={contact.title}>
+        <p>
+          {contact.paragraphs[0]}
+        </p>
+      </LegalSection>
+
+      <LegalSection title={changes.title}>
+        <p>
+          {changes.paragraphs[0]}
+        </p>
+      </LegalSection>
 
       <footer className="border-t border-border pt-6 text-sm">
         <p>
