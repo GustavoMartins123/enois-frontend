@@ -1,4 +1,4 @@
-import { type ReactNode, useState } from "react";
+import type { ReactNode } from "react";
 
 import { AuthenticatedAppHeader } from "./authenticated-app-header";
 import { AppSidebar } from "./app-sidebar";
@@ -10,12 +10,10 @@ type AuthenticatedAppContainerProps = {
 };
 
 export function AuthenticatedAppContainer({ children }: AuthenticatedAppContainerProps) {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
   return (
     <AppLayout>
       <AppLayout.Header>
-        <AuthenticatedAppHeader onOpenMobileMenu={() => setMobileMenuOpen(true)} />
+        <AuthenticatedAppHeader />
       </AppLayout.Header>
 
       <AppLayout.Content>
@@ -27,7 +25,7 @@ export function AuthenticatedAppContainer({ children }: AuthenticatedAppContaine
       </AppLayout.Content>
 
       <AppLayout.Navigation>
-        <NavigationDrawer open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+        <NavigationDrawer />
       </AppLayout.Navigation>
     </AppLayout>
   );
