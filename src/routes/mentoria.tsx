@@ -62,8 +62,12 @@ function Mentoria() {
             <Badge className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft">
               <Sparkles className="mr-1 h-3 w-3" /> {texts.mentoring.badge}
             </Badge>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight">{texts.mentoring.title}</h1>
-            <p className="mt-2 text-muted-foreground">{texts.mentoring.description}</p>
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight">
+              {texts.mentoring.title}
+            </h1>
+            <p className="mt-2 text-muted-foreground">
+              {texts.mentoring.description}
+            </p>
             <div className="mt-5 flex flex-wrap gap-2">
               <Button
                 className="rounded-full"
@@ -96,7 +100,9 @@ function Mentoria() {
 
         <div id="mentores-lista">
           <h2 className="text-lg font-semibold">{texts.mentoring.featured}</h2>
-          <p className="text-sm text-muted-foreground">{texts.mentoring.featuredDescription}</p>
+          <p className="text-sm text-muted-foreground">
+            {texts.mentoring.featuredDescription}
+          </p>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             {mentors.map((m) => (
               <MentorCard key={m.id} mentor={m} />
@@ -121,7 +127,9 @@ function RegisterMentorForm({
   return (
     <div className="space-y-4 pt-2">
       <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">{texts.mentoring.expertise}</Label>
+        <Label className="text-xs text-muted-foreground">
+          {texts.mentoring.expertise}
+        </Label>
         <Input
           value={skillsText}
           onChange={(e) => setSkillsText(e.target.value)}
@@ -341,7 +349,9 @@ function EditMentorForm({
   return (
     <div className="space-y-4 pt-2">
       <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">{texts.mentoring.expertise}</Label>
+        <Label className="text-xs text-muted-foreground">
+          {texts.mentoring.expertise}
+        </Label>
         <Input
           value={skillsText}
           onChange={(e) => setSkillsText(e.target.value)}
