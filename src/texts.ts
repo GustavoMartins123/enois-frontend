@@ -79,7 +79,8 @@ export const texts = {
     emptyHistory: "Nenhum histórico ainda.",
     markRead: "Lida",
     accept: "Aceitar",
-    unreadLabel: (count: number) => `${count} notificações não lidas`,
+    unreadLabel: (count: number) =>
+      `${count} ${count === 1 ? "notificação não lida" : "notificações não lidas"}`,
   },
 
   errors: {
@@ -96,12 +97,12 @@ export const texts = {
     },
     knownCodes: {
       NETWORK_ERROR:
-        "O navegador não conseguiu falar com a API. Se você roda localmente, verifique se o backend está de pé (ex.: `docker compose up` ou o servidor Java na porta 8081) e se o VITE_API_BACKEND no .env aponta para ele.",
+        "O navegador não conseguiu falar com a API. Se você estiver rodando localmente, verifique se o backend está em execução (ex.: `docker compose up` ou o servidor Java na porta 8081) e se a variável VITE_API_BACKEND no arquivo .env aponta para ele.",
       INVALID_CREDENTIALS:
         "E-mail ou senha incorretos. Confira os dados ou use 'Esqueci minha senha'.",
       SESSION_EXPIRED: "Sua sessão expirou. Entre novamente.",
       IDEMPOTENCY_KEY_REQUIRED:
-        "O backend rejeitou a requisição por falta de Idempotency-Key. Recarregue a página; se persistir, é bug do front (src/lib/api-client.ts).",
+        "O backend rejeitou a requisição por falta de Idempotency-Key. Recarregue a página; se o problema persistir, há um bug no front-end (src/lib/api-client.ts).",
     },
   },
 
@@ -131,7 +132,7 @@ export const texts = {
     },
     validation: {
       invalidEmail: "E-mail inválido",
-      loginPasswordMin: "Senha precisa ter ao menos 6 caracteres",
+      loginPasswordMin: "A senha precisa ter ao menos 6 caracteres",
       signupNameMin: "Como podemos te chamar?",
       passwordMin: "Use ao menos 8 caracteres",
     },
@@ -162,9 +163,9 @@ export const texts = {
         `Função não implementada: login com ${provider} ainda não está configurado.`,
     },
     terms: {
-      prefix: "Ao continuar, você concorda com nossos",
+      prefix: "Ao continuar, você concorda com os ",
       terms: "Termos",
-      conjunction: "e",
+      conjunction: " e com a ",
       privacy: "Política de Privacidade",
       end: ".",
     },
@@ -181,11 +182,11 @@ export const texts = {
       invalidLink: "Link inválido ou expirado. Solicite uma nova redefinição de senha.",
       successTitle: "Senha redefinida!",
       successDescription: "Sua senha foi atualizada com sucesso. Já pode entrar na sua conta.",
-      enterNow: "Entrar agora",
+      enterNow: "Entrar agora ",
       title: "Definir nova senha",
       description: "Escolha uma nova senha para acessar sua conta.",
-      action: "Redefinir senha",
-      remembered: "Já lembrou sua senha?",
+      action: "Redefinir senha ",
+      remembered: "Já lembrou sua senha? ",
     },
   },
 
@@ -193,7 +194,7 @@ export const texts = {
     seo: {
       title: "Énóis · Rede profissional gratuita e humana",
       description:
-        "Uma rede profissional diferente. Sem paywalls, sem métricas de vaidade. Apenas conexões reais, mentoria e conhecimento compartilhado, gratuito para sempre.",
+        "Uma rede profissional diferente. Sem paywalls, sem métricas de vaidade. Apenas conexões reais, mentoria e conhecimento compartilhado — tudo gratuito para sempre.",
       ogDescription: "Sua carreira merece um lugar seguro e gratuito para crescer.",
     },
     nav: {
@@ -218,7 +219,7 @@ export const texts = {
     },
     philosophy: {
       eyebrow: "Nossa filosofia",
-      titlePrefix: "Profissionalismo com",
+      titlePrefix: "Profissionalismo com ",
       titleAccent: "coração",
       description:
         "Acreditamos que o crescimento profissional acontece quando pessoas se conectam de forma autêntica, sem barreiras, sem ruído, sem custo.",
@@ -284,7 +285,7 @@ export const texts = {
         "Entre para uma comunidade que valoriza autenticidade, colaboração e aprendizado, sem pagar nada por isso. Sem planos, sem anúncios, sem surpresas.",
       createAccount: "Criar conta gratuita",
       existingAccount: "Já tenho conta",
-      finePrint: "Sem cartão de crédito · Sem anúncios · Sem plano premium ·",
+      finePrint: "Sem cartão de crédito · Sem anúncios · Sem plano premium · ",
       freeForever: "Para sempre grátis",
     },
     footer: {
@@ -312,7 +313,7 @@ export const texts = {
       },
       media: "Mídia",
       video: "Vídeo",
-      mediaCount: (count: number) => `${count} mídia`,
+      mediaCount: (count: number) => `${count} ${count === 1 ? "mídia" : "mídias"}`,
       uploadProgress: (progress: number) => `Enviando... ${progress}%`,
       publishError: "Erro ao publicar. Tente novamente.",
     },
@@ -330,7 +331,7 @@ export const texts = {
       suggestionsDescription: "Com base em interesses e objetivos em comum.",
       connect: "Conectar",
       happeningNow: "Acontecendo agora",
-      confirmed: (count: number) => `${count} confirmados`,
+      confirmed: (count: number) => `${count} ${count === 1 ? "confirmado" : "confirmados"}`,
       eventMeta: (date: string, format: string, confirmed: string) =>
         `${date} · ${format} · ${confirmed}`,
     },
@@ -390,9 +391,9 @@ export const texts = {
 
   time: {
     now: "agora",
-    minutesAgo: (minutes: number) => `há ${minutes}min`,
-    hoursAgo: (hours: number) => `há ${hours}h`,
-    daysAgo: (days: number) => `há ${days} dias`,
+    minutesAgo: (minutes: number) => `há ${minutes} min`,
+    hoursAgo: (hours: number) => `há ${hours} h`,
+    daysAgo: (days: number) => `há ${days} ${days === 1 ? "dia" : "dias"}`,
   },
 
   profile: {
@@ -409,8 +410,8 @@ export const texts = {
     connect: "Conectar",
     openToWork: "Aberto a oportunidades",
     mentorAvailable: "Mentor disponível",
-    connections: (count: number) => `${count} conexões`,
-    connectionsMeta: (count: number) => `· ${count} conexões`,
+    connections: (count: number) => `${count} ${count === 1 ? "conexão" : "conexões"}`,
+    connectionsMeta: (count: number) => `· ${count} ${count === 1 ? "conexão" : "conexões"}`,
     reputation: (value: number) => `${value} reputação`,
     reputationMeta: (value: number) => `★ ${value} reputação`,
     rankingPosition: (position: number) => `${position}º`,
@@ -464,7 +465,7 @@ export const texts = {
       placeholders: {
         username: "seu-username",
         headline: "Cargo ou frase de destaque",
-        availability: "Ex: Disponível para freelas",
+        availability: "Ex.: Disponível para freelas",
         portfolio: "https://...",
       },
       openToWork: "Aberto a oportunidades",
@@ -491,7 +492,7 @@ export const texts = {
         description: "Descrição",
         issueDate: "Data de emissão",
         expirationDate: "Data de expiração",
-        credentialUrl: "URL do credencial",
+        credentialUrl: "URL da credencial",
       },
       emptyExperience: "Nenhuma experiência adicionada",
       emptyEducation: "Nenhuma formação adicionada",
@@ -515,7 +516,8 @@ export const texts = {
       CARREIRA: "Carreira",
       FREELANCE: "Freelance",
     },
-    members: (count: number) => `${count.toLocaleString("pt-BR")} membros`,
+    members: (count: number) =>
+      `${count.toLocaleString("pt-BR")} ${count === 1 ? "membro" : "membros"}`,
     memberCount: (count: number) => `${count} membro${count === 1 ? "" : "s"}`,
     participating: "Participando",
     enter: "Entrar",
@@ -529,7 +531,7 @@ export const texts = {
     detail: {
       seoFallback: "Comunidade",
       seoTitle: (name: string) => `${name} · Énóis`,
-      createdBy: "Criada por",
+      createdBy: "Criada por ",
       edit: "Editar",
       editTitle: "Editar comunidade",
       composerPlaceholder: "Compartilhe algo com a comunidade...",
@@ -585,12 +587,12 @@ export const texts = {
       locations: ["Remoto", "Híbrido", "Presencial"],
     },
     searchPlaceholder: "Buscar por título ou empresa...",
-    skillsPlaceholder: "Habilidades (ex: Java,Spring)",
+    skillsPlaceholder: "Habilidades (ex.: Java, Spring)",
     today: "Hoje",
-    daysAgo: (days: number) => `Há ${days} dias`,
+    daysAgo: (days: number) => `Há ${days} ${days === 1 ? "dia" : "dias"}`,
     match: (score: number) => `${score}% match`,
     details: "Ver detalhes",
-    apply: "Candidatar",
+    apply: "Candidatar-se",
     empty: "Nenhuma vaga encontrada com os filtros selecionados.",
   },
 
@@ -637,7 +639,7 @@ export const texts = {
     received: "Recebidas",
     sent: "Enviadas por você",
     matchesTitle: "Pessoas que combinam com você",
-    matchesDescription: "Baseado em habilidades, objetivos e comunidades em comum.",
+    matchesDescription: "Com base em habilidades, objetivos e comunidades em comum.",
     connected: "Conectado",
     commonInterests: "3 interesses em comum",
     remove: "Remover",
@@ -659,7 +661,7 @@ export const texts = {
     noContact: "Nenhum contato encontrado",
     searchConversations: "Buscar conversas",
     noConversations: "Nenhuma conversa ainda",
-    selectConversation: "Selecione ou comece uma mensagem para exibir",
+    selectConversation: "Selecione uma conversa ou comece uma nova para exibir as mensagens",
     noMessages: "Nenhuma mensagem ainda",
     inputPlaceholder: "Escreva uma mensagem...",
     conversationFallback: "Conversa",
@@ -678,8 +680,8 @@ export const texts = {
       copyright: (year: number) => `© ${year} Énóis · Rede profissional gratuita e humana`,
       terms: "Termos de Uso",
       privacy: "Política de Privacidade",
-      lastUpdated: "Última atualização:",
-      backPrefix: "Voltar para a",
+      lastUpdated: "Última atualização: ",
+      backPrefix: "Voltar para a ",
       home: "página inicial",
     },
     updatedAt: "15 de agosto de 2026",
@@ -691,79 +693,51 @@ export const texts = {
       sections: [
         {
           title: "1. Aceitação dos termos",
-          paragraphs: [
-            'Ao criar uma conta ou usar qualquer funcionalidade da plataforma Énóis ("plataforma"), você concorda com estes Termos de Uso. Se não concordar com qualquer parte deles, não utilize a plataforma.',
-          ],
+          text: 'Ao criar uma conta ou usar qualquer funcionalidade da plataforma Énóis ("plataforma"), você concorda com estes Termos de Uso. Se não concordar com qualquer parte deles, não utilize a plataforma.',
         },
         {
           title: "2. Definições",
-          paragraphs: [
-            '"Usuário" é qualquer pessoa que crie uma conta na plataforma. "Conteúdo" é todo material publicado por usuários, incluindo posts, comentários, mensagens, fotos, vídeos, vagas e avaliações. "Plataforma" refere-se ao site e aplicativos do Énóis.',
-          ],
+          text: '"Usuário" é qualquer pessoa que crie uma conta na plataforma. "Conteúdo" é todo material publicado por usuários, incluindo posts, comentários, mensagens, fotos, vídeos, vagas e avaliações. "Plataforma" refere-se ao site e aos aplicativos do Énóis.',
         },
         {
           title: "3. Cadastro e conta",
-          paragraphs: [
-            "Para usar a plataforma, você deve fornecer informações verdadeiras, completas e atualizadas. Você é responsável por manter a confidencialidade de suas credenciais de acesso e por todas as atividades realizadas na sua conta.",
-            "É proibido criar contas em nome de terceiros, criar múltiplas contas para burlar restrições ou fornecer informações falsas. Podemos suspender ou encerrar contas que violem estes termos.",
-          ],
+          text: "Para usar a plataforma, você deve fornecer informações verdadeiras, completas e atualizadas. Você é responsável por manter a confidencialidade de suas credenciais de acesso e por todas as atividades realizadas na sua conta.\n\nÉ proibido criar contas em nome de terceiros, criar múltiplas contas para burlar restrições ou fornecer informações falsas. Podemos suspender ou encerrar contas que violem estes Termos.",
         },
         {
           title: "4. Conduta do usuário",
-          paragraphs: [
-            "Você concorda em não usar a plataforma para: (a) publicar conteúdo ilegal, difamatório, discriminatório, assediador ou que incite violência; (b) violar direitos de propriedade intelectual de terceiros; (c) enviar spam, phishing ou conteúdo malicioso; (d) tentar acessar sistemas ou contas de outros usuários sem autorização; (e) coletar dados de usuários sem consentimento.",
-            "Publicações que violem a conduta podem ser removidas e a conta do infrator suspensa ou encerrada, sem prejuízo de medidas legais cabíveis.",
-          ],
+          text: "Você concorda em não usar a plataforma para: (a) publicar conteúdo ilegal, difamatório, discriminatório, assediador ou que incite violência; (b) violar direitos de propriedade intelectual de terceiros; (c) enviar spam, phishing ou conteúdo malicioso; (d) tentar acessar sistemas ou contas de outros usuários sem autorização; (e) coletar dados de usuários sem consentimento.\n\nPublicações que violem estas regras de conduta podem ser removidas, e a conta do infrator pode ser suspensa ou encerrada, sem prejuízo das medidas legais cabíveis.",
         },
         {
           title: "5. Conteúdo publicado",
-          paragraphs: [
-            "Você mantém a titularidade do conteúdo que publica, mas concede à plataforma uma licença mundial, não exclusiva e gratuita para armazenar, processar e exibir esse conteúdo para operar e melhorar o serviço.",
-            "Ao publicar, você declara ter os direitos necessários sobre o conteúdo e que ele não viola direitos de terceiros. Conteúdo denunciado poderá ser analisado e removido pela equipe de moderação.",
-          ],
+          text: "Você mantém a titularidade do conteúdo que publica, mas concede à plataforma uma licença mundial, não exclusiva e gratuita para armazenar, processar e exibir esse conteúdo para operar e melhorar o serviço.\n\nAo publicar, você declara ter os direitos necessários sobre o conteúdo e que ele não viola direitos de terceiros. O conteúdo denunciado poderá ser analisado e removido pela equipe de moderação.",
         },
         {
           title: "6. Vagas e oportunidades",
-          paragraphs: [
-            "As vagas e oportunidades publicadas na plataforma são de responsabilidade de quem as publica. O Énóis não garante a veracidade das ofertas nem realiza intermediação de contratação, atuando apenas como meio de divulgação.",
-          ],
+          text: "As vagas e oportunidades publicadas na plataforma são de responsabilidade de quem as publica. O Énóis não garante a veracidade das ofertas nem realiza intermediação de contratação, atuando apenas como meio de divulgação.",
         },
         {
           title: "7. Serviços de terceiros",
-          paragraphs: [
-            "A plataforma pode integrar serviços de terceiros, como provedores de mídia, hospedagem de arquivos e autenticação. Esses serviços possuem seus próprios termos e políticas, que devem ser consultados diretamente com os respectivos provedores.",
-          ],
+          text: "A plataforma pode integrar serviços de terceiros, como provedores de mídia, hospedagem de arquivos e autenticação. Esses serviços possuem seus próprios termos e políticas, que devem ser consultados diretamente com os respectivos provedores.",
         },
         {
           title: "8. Disponibilidade e alterações",
-          paragraphs: [
-            "Buscamos manter a plataforma disponível, mas não garantimos disponibilidade ininterrupta ou livre de erros. Podemos alterar, suspender ou descontinuar funcionalidades a qualquer momento, com ou sem aviso prévio.",
-            "Estes Termos podem ser atualizados periodicamente. Alterações significativas serão comunicadas pela plataforma. O uso continuado após a publicação de alterações constitui aceitação dos novos termos.",
-          ],
+          text: "Buscamos manter a plataforma disponível, mas não garantimos disponibilidade ininterrupta ou livre de erros. Podemos alterar, suspender ou descontinuar funcionalidades a qualquer momento, com ou sem aviso prévio.\n\nEstes Termos podem ser atualizados periodicamente. Alterações significativas serão comunicadas pela plataforma. O uso continuado da plataforma após a publicação das alterações constitui aceitação dos novos Termos.",
         },
         {
           title: "9. Limitação de responsabilidade",
-          paragraphs: [
-            "Na máxima extensão permitida por lei, o Énóis não se responsabiliza por danos indiretos, incidentais ou consequenciais decorrentes do uso da plataforma, incluindo perda de dados, lucros ou oportunidades profissionais. A plataforma não garante resultados profissionais específicos, como contratações ou conexões.",
-          ],
+          text: "Na máxima extensão permitida por lei, o Énóis não se responsabiliza por danos indiretos, incidentais ou consequenciais decorrentes do uso da plataforma, incluindo perda de dados, lucros ou oportunidades profissionais. A plataforma não garante resultados profissionais específicos, como contratações ou conexões.",
         },
         {
           title: "10. Encerramento",
-          paragraphs: [
-            "Você pode encerrar sua conta a qualquer momento. Podemos suspender ou encerrar sua conta se identificarmos violação destes Termos, conduta prejudicial à comunidade ou risco legal. Ao encerrar, seu perfil deixará de ser exibido, mas conteúdo publicado poderá permanecer conforme permitido por lei.",
-          ],
+          text: "Você pode encerrar sua conta a qualquer momento. Podemos suspender ou encerrar sua conta se identificarmos violação destes Termos, conduta prejudicial à comunidade ou risco legal. Ao encerrar a conta, seu perfil deixará de ser exibido, mas o conteúdo publicado poderá permanecer conforme permitido por lei.",
         },
         {
           title: "11. Legislação aplicável",
-          paragraphs: [
-            "Estes Termos são regidos pelas leis da República Federativa do Brasil. Eventuais disputas serão resolvidas no foro da comarca da sede da plataforma, com preferência por meios alternativos de resolução de conflitos.",
-          ],
+          text: "Estes Termos são regidos pelas leis da República Federativa do Brasil. Eventuais disputas serão resolvidas no foro da comarca da sede da plataforma, com preferência por meios alternativos de resolução de conflitos.",
         },
         {
           title: "12. Contato",
-          paragraphs: [
-            "Dúvidas sobre estes Termos podem ser enviadas pelo e-mail de suporte disponível na plataforma, ou via formulário de contato em nossas comunidades.",
-          ],
+          text: "Dúvidas sobre estes Termos podem ser enviadas pelo e-mail de suporte disponível na plataforma ou pelo formulário de contato em nossas comunidades.",
         },
       ],
     },
@@ -790,7 +764,7 @@ export const texts = {
             "posts, comentários, reações, mensagens, conexões, comunidades, candidaturas a vagas, sessões de mentoria, avaliações, notificações e preferências de tema.",
           technicalLabel: "Dados técnicos:",
           technicalBody:
-            "endereço IP, tipo de navegador e dispositivo, páginas acessadas e registros de atividade, utilizados para segurança e melhorias do serviço.",
+            "endereço IP, tipo de navegador e dispositivo, páginas acessadas e registros de atividade, utilizados para fins de segurança e melhoria do serviço.",
         },
         other: [
           {
@@ -803,7 +777,7 @@ export const texts = {
           {
             title: "4. Compartilhamento de dados",
             paragraphs: [
-              "Não vendemos seus dados pessoais. Compartilhamos dados apenas: (a) com provedores de infraestrutura, hospedagem, armazenamento de mídia e envio de e-mails, que atuam como operadores em nosso nome; (b) com autoridades, quando exigido por lei ou ordem judicial; (c) entre outros usuários, conforme a visibilidade definida pelo próprio recurso (ex.: perfil público).",
+              "Não vendemos seus dados pessoais. Compartilhamos dados apenas: (a) com provedores de infraestrutura, hospedagem, armazenamento de mídia e envio de e-mails, que atuam como operadores em nosso nome; (b) com autoridades, quando exigido por lei ou ordem judicial; (c) com outros usuários, conforme a visibilidade definida pelo próprio recurso (ex.: perfil público).",
             ],
           },
           {
@@ -840,13 +814,13 @@ export const texts = {
           {
             title: "10. Contato e encarregado (DPO)",
             paragraphs: [
-              'Dúvidas sobre esta Política ou para exercer seus direitos, entre em contato pelo e-mail de suporte disponível na plataforma, indicando "LGPD" no assunto. Atenderemos sua solicitação no prazo legal.',
+              'Em caso de dúvidas sobre esta Política ou para exercer seus direitos, entre em contato pelo e-mail de suporte disponível na plataforma, indicando "LGPD" no assunto. Atenderemos sua solicitação no prazo legal.',
             ],
           },
           {
             title: "11. Alterações desta política",
             paragraphs: [
-              "Esta Política pode ser atualizada para refletir mudanças legais ou no serviço. A data de atualização estará sempre indicada no topo da página, e alterações relevantes serão comunicadas pela plataforma.",
+              "Esta Política pode ser atualizada para refletir mudanças legais ou no serviço. A data de atualização estará sempre indicada no topo da página e alterações relevantes serão comunicadas pela plataforma.",
             ],
           },
         ],
