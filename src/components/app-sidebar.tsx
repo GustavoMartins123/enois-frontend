@@ -24,10 +24,6 @@ export function AppSidebar() {
     });
   };
 
-  const toggleLabel = sidebarCollapsed
-    ? texts.navigation.expandMenu
-    : texts.navigation.collapseMenu;
-
   return (
     <aside
       className={cn(
@@ -40,8 +36,8 @@ export function AppSidebar() {
         <button
           onClick={toggleSidebar}
           className="mb-1 grid h-8 w-8 place-items-center self-end rounded-lg text-text-subtle transition hover:bg-surface-2 hover:text-primary"
-          aria-label={toggleLabel}
-          title={toggleLabel}
+          aria-label={sidebarCollapsed ? texts.navigation.expandMenu : texts.navigation.collapseMenu}
+          title={sidebarCollapsed ? texts.navigation.expandMenu : texts.navigation.collapseMenu}
         >
           {sidebarCollapsed ? (
             <ChevronsRight className="h-4 w-4" />
