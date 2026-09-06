@@ -113,7 +113,7 @@ function CommunityDetail() {
           to="/comunidades"
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="h-4 w-4" /> {texts.communities.title}
+          <ArrowLeft className="h-4 w-4" /><>{texts.communities.title}</>
         </Link>
 
         <div className="surface-card overflow-hidden">
@@ -142,12 +142,11 @@ function CommunityDetail() {
                   <p className="mt-1 break-words text-muted-foreground">{live.description}</p>
                   <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
-                      <Users className="h-4 w-4" /> {texts.communities.memberCount(live.members)}
+                      <Users className="h-4 w-4" /><>{texts.communities.memberCount(live.members)}</>
                     </span>
                     {admins.length > 0 && (
                       <span>
-                        {texts.communities.detail.createdBy}{" "}
-                        <Link
+                        <>{texts.communities.detail.createdBy} </><Link
                           to="/perfil/$username"
                           params={{ username: admins[0].username }}
                           className="font-medium text-foreground hover:underline"
@@ -164,7 +163,7 @@ function CommunityDetail() {
                   <Dialog open={editOpen} onOpenChange={setEditOpen}>
                     <DialogTrigger asChild>
                       <Button variant="outline" className="rounded-full gap-1.5">
-                        <Settings className="h-4 w-4" /> {texts.communities.detail.edit}
+                        <Settings className="h-4 w-4" /><>{texts.communities.detail.edit}</>
                       </Button>
                     </DialogTrigger>
                     <DialogContent>
@@ -203,7 +202,7 @@ function CommunityDetail() {
                 className="rounded-full gap-1.5"
                 disabled={!draft.trim() || createPost.isPending}
               >
-                <Send className="h-4 w-4" /> {createPost.isPending ? texts.common.publishing : texts.common.publish}
+                <Send className="h-4 w-4" /><>{createPost.isPending ? texts.common.publishing : texts.common.publish}</>
               </Button>
             </div>
           </form>
@@ -352,7 +351,7 @@ function EditCommunityForm({
                 className="rounded-full gap-1.5"
                 onClick={() => coverRef.current?.click()}
               >
-                <Camera className="h-4 w-4" /> {texts.communities.detail.change}
+                <Camera className="h-4 w-4" /><>{texts.communities.detail.change}</>
               </Button>
               <Button
                 type="button"
@@ -372,7 +371,7 @@ function EditCommunityForm({
             className="w-full rounded-full gap-1.5"
             onClick={() => coverRef.current?.click()}
           >
-            <Camera className="h-4 w-4" /> {texts.communities.detail.addCover}
+            <Camera className="h-4 w-4" /><>{texts.communities.detail.addCover}</>
           </Button>
         )}
         <input
@@ -400,7 +399,7 @@ function EditCommunityForm({
                 className="rounded-full gap-1.5"
                 onClick={() => avatarRef.current?.click()}
               >
-                <Camera className="h-4 w-4" /> {texts.communities.detail.change}
+                <Camera className="h-4 w-4" /><>{texts.communities.detail.change}</>
               </Button>
               <Button
                 type="button"
@@ -420,7 +419,7 @@ function EditCommunityForm({
             className="w-full rounded-full gap-1.5"
             onClick={() => avatarRef.current?.click()}
           >
-            <Camera className="h-4 w-4" /> {texts.communities.detail.addAvatar}
+            <Camera className="h-4 w-4" /><>{texts.communities.detail.addAvatar}</>
           </Button>
         )}
         <input
