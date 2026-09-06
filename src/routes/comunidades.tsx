@@ -75,7 +75,9 @@ function Comunidades() {
   }, [communitiesData]);
 
   const loadMore = () => {
-    if (nextCursor && !isFetching) setCursor(nextCursor);
+    if (nextCursor && !isFetching) {
+      setCursor(nextCursor);
+    }
   };
 
   const handleTopicChange = (nextTopic?: Topic) => {
@@ -94,7 +96,9 @@ function Comunidades() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["communities"] }),
   });
 
-  if (isDetail) return <Outlet />;
+  if (isDetail) {
+    return <Outlet />;
+  }
 
   return (
     <AppContainer>
@@ -102,7 +106,9 @@ function Comunidades() {
         <div className="surface-card flex flex-wrap items-center justify-between gap-3 p-4 sm:gap-4 sm:p-6">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">{texts.communities.title}</h1>
-            <p className="mt-1 text-sm text-muted-foreground">{texts.communities.description}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {texts.communities.description}
+            </p>
           </div>
           <CreateCommunityDialog open={open} onOpenChange={setOpen}>
             <Button className="rounded-full gap-1.5">
@@ -156,11 +162,15 @@ function Comunidades() {
                       />
                     )}
                     <div className="min-w-0">
-                      <p className="text-xs font-medium uppercase tracking-wider text-primary">{c.topic}</p>
+                      <p className="text-xs font-medium uppercase tracking-wider text-primary">
+                        {c.topic}
+                      </p>
                       <h3 className="font-semibold truncate">{c.name}</h3>
                     </div>
                   </div>
-                  <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">{c.description}</p>
+                  <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">
+                    {c.description}
+                  </p>
                   <div className="mt-4 flex items-center justify-between">
                     <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Users className="h-3.5 w-3.5" />
@@ -173,8 +183,11 @@ function Comunidades() {
                       disabled={join.isPending || leave.isPending}
                       onClick={(e) => {
                         e.preventDefault();
-                        if (c.joined) leave.mutate(c.id);
-                        else join.mutate(c.id);
+                        if (c.joined) {
+                          leave.mutate(c.id);
+                        } else {
+                          join.mutate(c.id);
+                        }
                       }}
                     >
                       {c.joined ? texts.communities.participating : texts.communities.enter}
@@ -238,7 +251,11 @@ function CreateCommunityDialog({
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">{texts.communities.create.name}</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} className="h-10 border-transparent bg-muted" />
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="h-10 border-transparent bg-muted"
+            />
           </div>
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">{texts.communities.create.description}</Label>
