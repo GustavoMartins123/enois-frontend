@@ -18,6 +18,7 @@ import {
 import type { CommentView, PostView, ReactionType, ReportReason } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { useAuth } from "@/lib/use-auth";
+import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +29,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Textarea } from "@/components/ui/textarea";
 
 import { MentionTextarea } from "@/components/mention-textarea";
-import { PostCardStoreProvider, usePostCardStore } from "@/components/post-card-store-provider";
 import { UserAvatar } from "@/components/user-avatar";
 
 const typeMeta: Record<
@@ -62,9 +62,8 @@ const typeMeta: Record<
   },
 };
 
-function ReactionsSummary() {
-  const postId = usePostCardStore((state) => state.postId);
-  const reactionStatus = usePostCardStore((state) => state.reactionStatus);
+function ReactionsSummary({ postId }: { postId: string }) {
+  const reactionStatus = usePostCardStore((state) => state.cards[postId]?.reactionStatus ?? null);
 
   const { data } = useQuery({
     queryKey: ["reactions-summary", postId],
@@ -96,11 +95,12 @@ function ReactionsSummary() {
   );
 }
 
-function ReactionsDialog({ currentUserId }: { currentUserId?: string }) {
-  const postId = usePostCardStore((state) => state.postId);
-  const currentUserReaction = usePostCardStore((state) => state.reactionStatus);
-  const open = usePostCardStore((state) => state.showReactions);
-  const onOpenChange = usePostCardStore((state) => state.setShowReactions);
+function ReactionsDialog({ postId, currentUserId }: { postId: string; currentUserId?: string }) {
+  const currentUserReaction = usePostCardStore(
+    (state) => state.cards[postId]?.reactionStatus ?? null,
+  );
+  const open = usePostCardStore((state) => state.cards[postId]?.showReactions ?? false);
+  const setShowReactions = usePostCardStore((state) => state.setShowReactions);
 
   const { data } = useQuery({
     queryKey: ["reactions", postId],
@@ -110,27 +110,27 @@ function ReactionsDialog({ currentUserId }: { currentUserId?: string }) {
 
   const apiReactions = data?.reactions ?? [];
   const reactions =
-    currentUserReaction && currentUserId && !apiReactions.some((r) => r.userId === currentUserId)
+    currentUserReaction && currentUserId && !apiReactions.some((reaction) => reaction.userId === currentUserId)
       ? [
           { userId: currentUserId, type: currentUserReaction, createdAt: new Date().toISOString() },
           ...apiReactions,
         ]
       : apiReactions;
 
-  const uniqueUserIds = [...new Set(reactions.map((r) => r.userId))];
+  const uniqueUserIds = [...new Set(reactions.map((reaction) => reaction.userId))];
   const { data: users } = useQuery({
     queryKey: ["profiles", "by-ids", uniqueUserIds.sort().join(",")],
     queryFn: async () => {
       const results = await Promise.all(
         uniqueUserIds.map((id) => profileApi.getById(id).catch(() => null)),
       );
-      return Object.fromEntries(results.filter(Boolean).map((u) => [u!.id, u!]));
+      return Object.fromEntries(results.filter(Boolean).map((user) => [user!.id, user!]));
     },
     enabled: open && uniqueUserIds.length > 0,
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(nextOpen) => setShowReactions(postId, nextOpen)}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="font-light">{texts.posts.reactions.title}</DialogTitle>
@@ -141,11 +141,11 @@ function ReactionsDialog({ currentUserId }: { currentUserId?: string }) {
           </p>
         ) : (
           <div className="space-y-2 pt-2">
-            {reactions.map((r) => {
-              const user = users?.[r.userId];
+            {reactions.map((reaction) => {
+              const user = users?.[reaction.userId];
               return (
                 <div
-                  key={`${r.userId}-${r.type}`}
+                  key={`${reaction.userId}-${reaction.type}`}
                   className="flex items-center gap-3 rounded-xl bg-surface-1 p-3"
                 >
                   <UserAvatar src={user?.avatar} alt={user?.name} className="h-9 w-9 shrink-0" />
@@ -154,7 +154,9 @@ function ReactionsDialog({ currentUserId }: { currentUserId?: string }) {
                       {user?.name ?? texts.common.loading}
                     </p>
                   </div>
-                  <span className="text-xl">{REACTION_EMOJIS[r.type] ?? r.type}</span>
+                  <span className="text-xl">
+                    {REACTION_EMOJIS[reaction.type] ?? reaction.type}
+                  </span>
                 </div>
               );
             })}
@@ -165,10 +167,9 @@ function ReactionsDialog({ currentUserId }: { currentUserId?: string }) {
   );
 }
 
-function ReportDialog() {
-  const postId = usePostCardStore((state) => state.postId);
-  const open = usePostCardStore((state) => state.showReport);
-  const onOpenChange = usePostCardStore((state) => state.setShowReport);
+function ReportDialog({ postId }: { postId: string }) {
+  const open = usePostCardStore((state) => state.cards[postId]?.showReport ?? false);
+  const setShowReport = usePostCardStore((state) => state.setShowReport);
   const [reason, setReason] = useState<ReportReason>("SPAM");
   const [description, setDescription] = useState("");
 
@@ -180,7 +181,7 @@ function ReportDialog() {
         reason,
         description: description || undefined,
       });
-      onOpenChange(false);
+      setShowReport(postId, false);
       setDescription("");
     } catch {
       /* silent */
@@ -188,7 +189,7 @@ function ReportDialog() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(nextOpen) => setShowReport(postId, nextOpen)}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="font-light">{texts.posts.report.title}</DialogTitle>
@@ -198,21 +199,27 @@ function ReportDialog() {
             <Label className="text-[11px] font-light text-text-subtle">{texts.posts.report.reason}</Label>
             <select
               value={reason}
-              onChange={(e) => setReason(e.target.value as ReportReason)}
+              onChange={(event) => setReason(event.target.value as ReportReason)}
               className="flex h-10 w-full rounded-md border border-border-soft bg-background px-3 py-2 text-[13px] font-light text-text-strong border-transparent bg-muted"
             >
-              {REPORT_REASONS.map((r) => (
-                <option key={r} value={r} className="h-10 border-transparent bg-muted">
-                  {r.replace(/_/g, " ").toLowerCase()}
+              {REPORT_REASONS.map((reportReason) => (
+                <option
+                  key={reportReason}
+                  value={reportReason}
+                  className="h-10 border-transparent bg-muted"
+                >
+                  {reportReason.replace(/_/g, " ").toLowerCase()}
                 </option>
               ))}
             </select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-[11px] font-light text-text-subtle">{texts.posts.report.description}</Label>
+            <Label className="text-[11px] font-light text-text-subtle">
+              {texts.posts.report.description}
+            </Label>
             <Textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={(event) => setDescription(event.target.value)}
               rows={3}
               className="border-border-soft bg-surface-1 text-[13px] font-light h-10 border-transparent bg-muted"
             />
@@ -227,40 +234,39 @@ function ReportDialog() {
 }
 
 export function PostCard({ post }: { post: PostView }) {
-  return (
-    <PostCardStoreProvider post={post}>
-      <PostCardContent post={post} />
-    </PostCardStoreProvider>
-  );
-}
-
-function PostCardContent({ post }: { post: PostView }) {
   const { user: currentUser } = useAuth();
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
   const [showComments, setShowComments] = useState(false);
   const [saved, setSaved] = useState(false);
-  const {
-    draft,
-    commentMentions,
-    replyToId,
-    localComments,
-    postCounters,
-    reactionStatus,
-    setDraft,
-    setCommentMentions,
-    setReplyToId,
-    setComments,
-    addComment,
-    updateCommentCount,
-    setPostCounters,
-    setReactionStatus,
-    setShowReactions,
-    setShowReport,
-  } = usePostCardStore((state) => state);
+  const initializePostCard = usePostCardStore((state) => state.initializePostCard);
+  const disposePostCard = usePostCardStore((state) => state.disposePostCard);
+  const card = usePostCardStore((state) => state.cards[post.id]);
+  const setDraft = usePostCardStore((state) => state.setDraft);
+  const setCommentMentions = usePostCardStore((state) => state.setCommentMentions);
+  const setReplyToId = usePostCardStore((state) => state.setReplyToId);
+  const setComments = usePostCardStore((state) => state.setComments);
+  const addComment = usePostCardStore((state) => state.addComment);
+  const updateCommentCount = usePostCardStore((state) => state.updateCommentCount);
+  const setPostCounters = usePostCardStore((state) => state.setPostCounters);
+  const setReactionStatus = usePostCardStore((state) => state.setReactionStatus);
+  const setShowReactions = usePostCardStore((state) => state.setShowReactions);
+  const setShowReport = usePostCardStore((state) => state.setShowReport);
+
+  const draft = card?.draft ?? "";
+  const commentMentions = card?.commentMentions ?? [];
+  const replyToId = card?.replyToId ?? null;
+  const localComments = card?.localComments ?? [];
+  const postCounters = card?.postCounters ?? post.counters;
+  const reactionStatus = card?.reactionStatus ?? post.currentUserReaction ?? null;
 
   useEffect(() => {
-    setReactionStatus(post.currentUserReaction ?? null);
-  }, [post.currentUserReaction, setReactionStatus]);
+    initializePostCard(post);
+    return () => disposePostCard(post.id);
+  }, [disposePostCard, initializePostCard, post]);
+
+  useEffect(() => {
+    setReactionStatus(post.id, post.currentUserReaction ?? null);
+  }, [post.currentUserReaction, post.id, setReactionStatus]);
 
   const { data: savedData } = useQuery({
     queryKey: ["saved-posts"],
@@ -270,7 +276,7 @@ function PostCardContent({ post }: { post: PostView }) {
 
   useEffect(() => {
     if (savedData) {
-      setSaved(savedData.items.some((p) => p.id === post.id));
+      setSaved(savedData.items.some((savedPost) => savedPost.id === post.id));
     }
   }, [savedData, post.id]);
 
@@ -283,11 +289,11 @@ function PostCardContent({ post }: { post: PostView }) {
 
     try {
       const newComment = await commentsApi.create(post.id, content, replyToId, commentMentions);
-      addComment(newComment);
-      updateCommentCount(1);
-      setDraft("");
-      setCommentMentions([]);
-      setReplyToId(null);
+      addComment(post.id, newComment);
+      updateCommentCount(post.id, 1);
+      setDraft(post.id, "");
+      setCommentMentions(post.id, []);
+      setReplyToId(post.id, null);
     } catch {
       // silently fail
     }
@@ -297,12 +303,12 @@ function PostCardContent({ post }: { post: PostView }) {
     try {
       if (reactionStatus === type) {
         const result = await reactionsApi.removeReaction(post.id);
-        setReactionStatus(null);
-        if ("counters" in result) setPostCounters(result.counters!);
+        setReactionStatus(post.id, null);
+        if ("counters" in result) setPostCounters(post.id, result.counters!);
       } else {
         const result = await reactionsApi.react(post.id, type);
-        setReactionStatus(type);
-        if ("counters" in result) setPostCounters(result.counters!);
+        setReactionStatus(post.id, type);
+        if ("counters" in result) setPostCounters(post.id, result.counters!);
       }
     } catch {
       // silently fail
@@ -315,7 +321,7 @@ function PostCardContent({ post }: { post: PostView }) {
         ? await reactionsApi.removeSave(post.id)
         : await reactionsApi.save(post.id);
       setSaved(!saved);
-      setPostCounters(result.counters);
+      setPostCounters(post.id, result.counters);
     } catch {
       // silently fail
     }
@@ -324,7 +330,7 @@ function PostCardContent({ post }: { post: PostView }) {
   const handleShare = async () => {
     try {
       const result = await reactionsApi.share(post.id);
-      setPostCounters(result.counters);
+      setPostCounters(post.id, result.counters);
       const url = `${window.location.origin}/feed/${post.id}`;
       if (navigator.share) {
         await navigator.share({ url });
@@ -340,7 +346,7 @@ function PostCardContent({ post }: { post: PostView }) {
     if (!showComments) {
       try {
         const data = await commentsApi.list(post.id);
-        setComments(data.items);
+        setComments(post.id, data.items);
       } catch {
         // silently fail
       }
@@ -375,19 +381,19 @@ function PostCardContent({ post }: { post: PostView }) {
         </div>
       )}
 
-      <ReactionsSummary />
+      <ReactionsSummary postId={post.id} />
 
       <LinkPreviews content={post.content} />
 
       {post.tags.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-1.5">
-          {post.tags.map((t) => (
+          {post.tags.map((tag) => (
             <Badge
-              key={t}
+              key={tag}
               variant="secondary"
               className="rounded-full border border-border-soft bg-transparent font-light text-text-subtle"
             >
-              {texts.posts.tag(t)}
+              {texts.posts.tag(tag)}
             </Badge>
           ))}
         </div>
@@ -438,7 +444,7 @@ function PostCardContent({ post }: { post: PostView }) {
             </PopoverContent>
           </Popover>
           <button
-            onClick={() => setShowReactions(true)}
+            onClick={() => setShowReactions(post.id, true)}
             className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs tabular-nums transition hover:bg-muted hover:text-foreground text-muted-foreground"
           >
             {postCounters.reactions}
@@ -457,7 +463,7 @@ function PostCardContent({ post }: { post: PostView }) {
             <Share2 className="h-4 w-4" /><>{texts.posts.share}</>
           </button>
           <button
-            onClick={() => setShowReport(true)}
+            onClick={() => setShowReport(post.id, true)}
             className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
           >
             <Flag className="h-4 w-4" />
@@ -473,16 +479,16 @@ function PostCardContent({ post }: { post: PostView }) {
         </button>
       </footer>
 
-      <ReactionsDialog currentUserId={currentUser?.id} />
-      <ReportDialog />
+      <ReactionsDialog postId={post.id} currentUserId={currentUser?.id} />
+      <ReportDialog postId={post.id} />
 
       {showComments && (
         <section className="mt-4 border-t border-border-soft pt-4">
           <div className="space-y-3">
             {localComments
-              .filter((c) => !c.parentCommentId)
+              .filter((comment) => !comment.parentCommentId)
               .map((comment) => {
-                const replies = localComments.filter((r) => r.parentCommentId === comment.id);
+                const replies = localComments.filter((reply) => reply.parentCommentId === comment.id);
                 return (
                   <div key={comment.id}>
                     <CommentItem comment={comment} currentUserId={currentUser?.id} />
@@ -490,7 +496,7 @@ function PostCardContent({ post }: { post: PostView }) {
                       <div className="ml-10 mt-2 space-y-2 border-l-2 border-border-soft pl-4">
                         {replies.map((reply) => {
                           const parentAuthor = localComments.find(
-                            (c) => c.id === reply.parentCommentId,
+                            (candidate) => candidate.id === reply.parentCommentId,
                           )?.authorName;
                           return (
                             <CommentItem
@@ -506,7 +512,7 @@ function PostCardContent({ post }: { post: PostView }) {
                   </div>
                 );
               })}
-            {localComments.filter((c) => !c.parentCommentId).length === 0 && (
+            {localComments.filter((comment) => !comment.parentCommentId).length === 0 && (
               <p className="py-4 text-center text-[13px] font-light text-text-subtle">
                 {texts.posts.comments.empty}
               </p>
@@ -522,9 +528,9 @@ function PostCardContent({ post }: { post: PostView }) {
             <div className="flex flex-1 items-center gap-2 rounded-full border border-border-soft bg-surface-1 py-1.5 pl-4 pr-1.5">
               <MentionTextarea
                 value={draft}
-                onChange={(val, ids) => {
-                  setDraft(val);
-                  setCommentMentions(ids);
+                onChange={(value, ids) => {
+                  setDraft(post.id, value);
+                  setCommentMentions(post.id, ids);
                 }}
                 placeholder={texts.posts.comments.placeholder}
                 className="h-6 min-h-6 flex-1 resize-none border-0 bg-transparent p-0 text-[13px] font-light outline-none"
@@ -556,7 +562,7 @@ function CommentItem({
   replyingTo?: string;
   currentUserId?: string;
 }) {
-  const postId = usePostCardStore((state) => state.postId);
+  const postId = comment.postId;
   const setDraft = usePostCardStore((state) => state.setDraft);
   const setCommentMentions = usePostCardStore((state) => state.setCommentMentions);
   const setReplyToId = usePostCardStore((state) => state.setReplyToId);
@@ -569,20 +575,20 @@ function CommentItem({
     try {
       const profile = await profileApi.getById(comment.authorId);
       if (profile?.username) {
-        setDraft(`@${profile.username} `);
-        setCommentMentions([comment.authorId]);
+        setDraft(postId, `@${profile.username} `);
+        setCommentMentions(postId, [comment.authorId]);
       }
     } catch {
-      setDraft(`${comment.authorName} `);
+      setDraft(postId, `${comment.authorName} `);
     }
-    setReplyToId(comment.id);
+    setReplyToId(postId, comment.id);
   };
 
   const handleDelete = async () => {
     try {
       await commentsApi.remove(postId, comment.id);
-      removeComment(comment.id);
-      updateCommentCount(-1);
+      removeComment(postId, comment.id);
+      updateCommentCount(postId, -1);
     } catch {
       // silently fail
     }
@@ -836,8 +842,8 @@ function extractVideoId(url: string): { type: string; id: string } | null {
     [/twitch\.tv\/([a-zA-Z0-9_]+)\/?$/, "twitch"],
   ];
   for (const [regex, type] of patterns) {
-    const m = url.match(regex);
-    if (m) return { type, id: m[1] };
+    const match = url.match(regex);
+    if (match) return { type, id: match[1] };
   }
   return null;
 }
@@ -912,12 +918,12 @@ function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
     })),
   });
 
-  const items = queryResults.filter((q) => q.data?.cdnUrl).map((q) => q.data!);
+  const items = queryResults.filter((query) => query.data?.cdnUrl).map((query) => query.data!);
   const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
 
   if (items.length === 0) return null;
 
-  const isVideo = items.some((m) => m.mimeType.startsWith("video/"));
+  const isVideo = items.some((media) => media.mimeType.startsWith("video/"));
 
   if (isVideo) {
     return (
@@ -934,15 +940,15 @@ function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
   return (
     <>
       <div className={`grid gap-2 ${items.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
-        {items.map((m) => (
+        {items.map((media) => (
           <button
-            key={m.id}
+            key={media.id}
             type="button"
-            onClick={() => setFullscreenUrl(resolveCdnUrl(m.cdnUrl) ?? null)}
+            onClick={() => setFullscreenUrl(resolveCdnUrl(media.cdnUrl) ?? null)}
             className="overflow-hidden rounded-xl border border-border-soft text-left"
           >
             <img
-              src={resolveCdnUrl(m.cdnUrl)}
+              src={resolveCdnUrl(media.cdnUrl)}
               alt=""
               className="h-48 w-full object-cover bg-surface-1 transition hover:scale-105"
             />
@@ -958,7 +964,7 @@ function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
             src={fullscreenUrl}
             alt=""
             className="max-h-[90vh] max-w-[90vw] rounded-2xl object-contain"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(event) => event.stopPropagation()}
           />
         </div>
       )}
