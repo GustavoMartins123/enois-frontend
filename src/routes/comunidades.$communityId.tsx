@@ -40,7 +40,13 @@ export const Route = createFileRoute("/comunidades/$communityId")({
     }
   },
   head: ({ loaderData }) => ({
-    meta: [{ title: `${loaderData?.name ?? texts.communities.detail.seoFallback} · ${texts.brand.name}` }],
+    meta: [
+      {
+        title: texts.communities.detail.seoTitle(
+          loaderData?.name ?? texts.communities.detail.seoFallback,
+        ),
+      },
+    ],
   }),
   component: CommunityDetail,
 });
