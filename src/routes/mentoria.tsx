@@ -9,6 +9,9 @@ import { mentorsApi, profileApi } from "@/lib/api";
 import { getCurrentUserId } from "@/lib/current-user";
 import { requireAuth } from "@/lib/require-auth";
 import { texts } from "@/texts";
+import type { CreateMentorInput } from "@/types/application/mentor/create-mentor-input";
+import type { MentorCardProps } from "@/types/routes/mentoring/mentor-card-props";
+import type { RegisterMentorFormProps } from "@/types/routes/mentoring/register-mentor-form-props";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -43,7 +46,7 @@ function Mentoria() {
   const mentors = mentorsData?.items ?? [];
 
   const createMentor = useMutation({
-    mutationFn: (data: { expertise: string[]; price: string }) => mentorsApi.create(data),
+    mutationFn: (data: CreateMentorInput) => mentorsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["mentors"] });
       setOpen(false);
@@ -113,13 +116,7 @@ function Mentoria() {
   );
 }
 
-function RegisterMentorForm({
-  onSave,
-  isPending,
-}: {
-  onSave: (data: { expertise: string[]; price: string }) => void;
-  isPending: boolean;
-}) {
+function RegisterMentorForm({ onSave, isPending }: RegisterMentorFormProps) {
   const [skillsText, setSkillsText] = useState("");
   const [price, setPrice] = useState(texts.mentoring.free);
 
@@ -162,19 +159,7 @@ function RegisterMentorForm({
   );
 }
 
-function MentorCard({
-  mentor,
-}: {
-  mentor: {
-    id: string;
-    userId: string;
-    expertise: string[];
-    rating: number;
-    sessions: number;
-    price: string;
-    nextSlot: string;
-  };
-}) {
+function MentorCard({ mentor }: MentorCardProps) {
   const currentUserId = getCurrentUserId();
   const isOwner = currentUserId === mentor.userId;
 
