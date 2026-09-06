@@ -6,10 +6,11 @@ import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-ro
 import { Loader2, Plus, Users } from "lucide-react";
 
 import { communitiesApi } from "@/lib/api";
-import type { Community } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { requireAuth } from "@/lib/require-auth";
 import { texts } from "@/texts";
+import type { Community } from "@/types/application/community/community";
+import type { CreateCommunityDialogProps } from "@/types/routes/communities/create-community-dialog-props";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -220,11 +221,7 @@ function CreateCommunityDialog({
   children,
   open,
   onOpenChange,
-}: {
-  children: React.ReactNode;
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-}) {
+}: CreateCommunityDialogProps) {
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");

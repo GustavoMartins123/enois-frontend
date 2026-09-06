@@ -9,6 +9,9 @@ import { eventsApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { requireAuth } from "@/lib/require-auth";
 import { texts } from "@/texts";
+import type { CreateEventRequest } from "@/types/application/event/create-event-request";
+import type { CreateEventFormProps } from "@/types/routes/events/create-event-form-props";
+import type { FieldProps } from "@/types/routes/events/field-props";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,14 +50,7 @@ function Eventos() {
   });
 
   const createEvent = useMutation({
-    mutationFn: (data: {
-      title: string;
-      date: string;
-      time: string;
-      format: string;
-      host: string;
-      cover?: string | null;
-    }) => eventsApi.create(data),
+    mutationFn: (data: CreateEventRequest) => eventsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
       setOpen(false);
@@ -141,19 +137,7 @@ function Eventos() {
   );
 }
 
-function CreateEventForm({
-  onSave,
-  isPending,
-}: {
-  onSave: (data: {
-    title: string;
-    date: string;
-    time: string;
-    format: string;
-    host: string;
-  }) => void;
-  isPending: boolean;
-}) {
+function CreateEventForm({ onSave, isPending }: CreateEventFormProps) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
@@ -217,7 +201,7 @@ function CreateEventForm({
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children }: FieldProps) {
   return (
     <div className="space-y-1.5">
       <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
