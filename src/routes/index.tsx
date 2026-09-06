@@ -22,7 +22,8 @@ export const Route = createFileRoute("/")({
       { title: texts.landing.seo.title },
       {
         name: "description",
-        content: texts.landing.seo.description,
+        content:
+          texts.landing.seo.description,
       },
       { property: "og:title", content: texts.landing.seo.title },
       {
@@ -98,7 +99,9 @@ function Landing() {
           <p className="mx-auto mt-5 max-w-lg text-base text-muted-foreground">
             {texts.landing.hero.description}
           </p>
-          <p className="mt-1 text-sm font-medium text-foreground">{texts.landing.hero.free}</p>
+          <p className="mt-1 text-sm font-medium text-foreground">
+            {texts.landing.hero.free}
+          </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link to="/entrar" search={{ tab: "signup" }}>
               <Button size="lg" className="gap-2 rounded-full px-6">
@@ -160,13 +163,13 @@ function Landing() {
 
       <section id="recursos" className="mx-auto max-w-6xl px-4 py-20 sm:px-6 sm:py-28">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="text-xs font-medium uppercase tracking-widest text-primary">
-            {texts.landing.features.eyebrow}
-          </p>
+          <p className="text-xs font-medium uppercase tracking-widest text-primary">{texts.landing.features.eyebrow}</p>
           <h2 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
             {texts.landing.features.title}
           </h2>
-          <p className="mt-4 text-muted-foreground">{texts.landing.features.description}</p>
+          <p className="mt-4 text-muted-foreground">
+            {texts.landing.features.description}
+          </p>
         </div>
         <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
