@@ -91,7 +91,7 @@ function Termos() {
 
       <footer className="border-t border-border pt-6 text-sm">
         <p>
-          <>{texts.legal.footer.backPrefix} </><Link to="/" className="text-primary hover:underline">
+          <>{texts.legal.footer.backPrefix}</><Link to="/" className="text-primary hover:underline">
             {texts.legal.footer.home}
           </Link>
         </p>
