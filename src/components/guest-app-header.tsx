@@ -19,7 +19,7 @@ export function GuestAppHeader() {
         <ThemeToggle />
         <Button asChild className="rounded-full gap-1.5" size="sm">
           <Link to="/entrar" search={{ tab: "login" }}>
-            <LogIn className="h-4 w-4" /> {texts.common.enter}
+            <LogIn className="h-4 w-4" /><>{texts.common.enter}</>
           </Link>
         </Button>
       </div>
