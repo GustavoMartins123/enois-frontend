@@ -84,7 +84,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: texts.root.seo.title },
       {
         name: "description",
-        content: texts.root.seo.description,
+        content:
+          texts.root.seo.description,
       },
       { property: "og:title", content: texts.root.seo.title },
       {
