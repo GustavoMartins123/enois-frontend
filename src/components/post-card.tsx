@@ -92,7 +92,7 @@ function ReactionsSummary({
               : "border border-border-soft text-text-subtle"
           }`}
         >
-          {REACTION_EMOJIS[type] ?? type} {count}
+          <>{REACTION_EMOJIS[type] ?? type} {count}</>
         </span>
       ))}
     </div>
@@ -456,14 +456,14 @@ export function PostCard({ post }: { post: PostView }) {
             onClick={loadComments}
             className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
           >
-            <MessageSquare className="h-4 w-4" /> {totalComments}
+            <MessageSquare className="h-4 w-4" /><>{totalComments}</>
           </button>
 
           <button
             onClick={handleShare}
             className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
           >
-            <Share2 className="h-4 w-4" /> {texts.posts.share}
+            <Share2 className="h-4 w-4" /><>{texts.posts.share}</>
           </button>
           <button
             onClick={() => setShowReport(true)}
@@ -478,7 +478,7 @@ export function PostCard({ post }: { post: PostView }) {
             saved ? "text-primary" : ""
           }`}
         >
-          <Bookmark className="h-4 w-4" /> {postCounters.saves}
+          <Bookmark className="h-4 w-4" /><>{postCounters.saves}</>
         </button>
       </footer>
 
