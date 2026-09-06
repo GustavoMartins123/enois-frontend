@@ -7,6 +7,13 @@ import { z } from "zod";
 
 import { ApiError, authApi } from "@/lib/api";
 import { texts } from "@/texts";
+import type { OAuthStartResponse } from "@/types/application/auth/oauth-start-response";
+import type { AuthFormProps } from "@/types/routes/auth/auth-form-props";
+import type { FieldProps } from "@/types/routes/auth/field-props";
+import type { ForgotPasswordDialogProps } from "@/types/routes/auth/forgot-password-dialog-props";
+import type { LoginFormProps } from "@/types/routes/auth/login-form-props";
+import type { Tab } from "@/types/routes/auth/tab";
+import type { TabBtnProps } from "@/types/routes/auth/tab-btn-props";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -15,8 +22,6 @@ import { Label } from "@/components/ui/label";
 
 import { ErrorBanner } from "@/components/error-banner";
 import { ThemeToggle } from "@/components/theme-toggle";
-
-type Tab = "login" | "signup";
 
 const searchSchema = z.object({
   tab: z.enum(["login", "signup"]).optional().default("signup"),
@@ -157,15 +162,7 @@ function Auth() {
   );
 }
 
-function TabBtn({
-  active,
-  children,
-  onClick,
-}: {
-  active: boolean;
-  children: React.ReactNode;
-  onClick: () => void;
-}) {
+function TabBtn({ active, children, onClick }: TabBtnProps) {
   return (
     <button
       onClick={onClick}
@@ -181,10 +178,10 @@ function TabBtn({
 }
 
 function SocialButtons() {
-  const [loading, setLoading] = useState<"GOOGLE" | "APPLE" | null>(null);
+  const [loading, setLoading] = useState<OAuthStartResponse["provider"] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const startOAuth = async (provider: "GOOGLE" | "APPLE") => {
+  const startOAuth = async (provider: OAuthStartResponse["provider"]) => {
     setLoading(provider);
     setError(null);
     // Simulate attempt then fail — SSO não configurado neste ambiente.
@@ -231,7 +228,7 @@ function Divider() {
   );
 }
 
-function SignupForm({ onDone }: { onDone: () => void }) {
+function SignupForm({ onDone }: AuthFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
@@ -338,7 +335,7 @@ function SignupForm({ onDone }: { onDone: () => void }) {
   );
 }
 
-function LoginForm({ onDone, onForgot }: { onDone: () => void; onForgot: () => void }) {
+function LoginForm({ onDone, onForgot }: LoginFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
@@ -447,17 +444,7 @@ function LoginForm({ onDone, onForgot }: { onDone: () => void; onForgot: () => v
   );
 }
 
-function Field({
-  label,
-  error,
-  right,
-  children,
-}: {
-  label: string;
-  error?: string;
-  right?: React.ReactNode;
-  children: React.ReactNode;
-}) {
+function Field({ label, error, right, children }: FieldProps) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
@@ -470,13 +457,7 @@ function Field({
   );
 }
 
-function ForgotPasswordDialog({
-  open,
-  onOpenChange,
-}: {
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-}) {
+function ForgotPasswordDialog({ open, onOpenChange }: ForgotPasswordDialogProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
@@ -506,11 +487,11 @@ function ForgotPasswordDialog({
   const close = () => {
     setSent(false);
     setErrors({});
-    onOpenChange(false);
+    onOpenChange?.(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => (v ? onOpenChange(v) : close())}>
+    <Dialog open={open} onOpenChange={(v) => (v ? onOpenChange?.(v) : close())}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="font-semibold tracking-tight">{texts.auth.forgot.title}</DialogTitle>
