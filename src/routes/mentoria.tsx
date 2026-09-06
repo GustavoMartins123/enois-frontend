@@ -3,10 +3,9 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
-import { Calendar, Pencil, Sparkles, Star, Trash2 } from "lucide-react";
+import { Calendar, Sparkles, Star } from "lucide-react";
 
 import { mentorsApi, profileApi } from "@/lib/api";
-import type { UpdateMentorInput } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
 import { useAuth } from "@/lib/use-auth";
 import { texts } from "@/texts";
@@ -176,31 +175,12 @@ function MentorCard({
     nextSlot: string;
   };
 }) {
-  const queryClient = useQueryClient();
   const { user: currentUser } = useAuth();
-  const [editOpen, setEditOpen] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
   const isOwner = currentUser?.id === mentor.userId;
 
   const { data: user } = useQuery({
     queryKey: ["profile", mentor.userId],
     queryFn: () => profileApi.getById(mentor.userId),
-  });
-
-  const updateMentor = useMutation({
-    mutationFn: (data: UpdateMentorInput) => mentorsApi.update(mentor.id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["mentors"] });
-      setEditOpen(false);
-    },
-  });
-
-  const deleteMentor = useMutation({
-    mutationFn: () => mentorsApi.remove(mentor.id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["mentors"] });
-      setDeleteOpen(false);
-    },
   });
 
   return (
@@ -233,57 +213,6 @@ function MentorCard({
         {/* Sidebar de estatísticas */}
         <div className="flex flex-col gap-4 md:col-span-3 text-[13px]">
           {!isOwner && (
-            // <div className="flex flex-col gap-2 shrink-0 self-center">
-            //   <Dialog open={editOpen} onOpenChange={setEditOpen}>
-            //     <DialogTrigger asChild>
-            //       <Button className="flex-1 rounded-full gap-1.5 mentoria bg-mentorship-button">
-            //         <Pencil className="h-4 w-4" />
-            //       </Button>
-            //     </DialogTrigger>
-            //     <DialogContent>
-            //       <DialogHeader>
-            //         <DialogTitle>Editar mentoria</DialogTitle>
-            //       </DialogHeader>
-            //       <EditMentorForm
-            //         mentor={mentor}
-            //         onSave={(data) => updateMentor.mutate(data)}
-            //         isPending={updateMentor.isPending}
-            //       />
-            //     </DialogContent>
-            //   </Dialog>
-            //   <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-            //     <DialogTrigger asChild>
-            //       <Button variant="destructive" className="rounded-full gap-1.5">
-            //         <Trash2 className="h-4 w-4" />
-            //       </Button>
-            //     </DialogTrigger>
-            //     <DialogContent>
-            //       <DialogHeader>
-            //         <DialogTitle>Excluir mentoria</DialogTitle>
-            //       </DialogHeader>
-            //       <p className="text-sm text-muted-foreground">
-            //         Tem certeza que deseja excluir sua mentoria? Esta ação não pode ser desfeita.
-            //       </p>
-            //       <div className="flex gap-2 pt-2">
-            //         <Button
-            //           variant="outline"
-            //           className="flex-1 rounded-full"
-            //           onClick={() => setDeleteOpen(false)}
-            //         >
-            //           Cancelar
-            //         </Button>
-            //         <Button
-            //           variant="destructive"
-            //           className="flex-1 rounded-full"
-            //           disabled={deleteMentor.isPending}
-            //           onClick={() => deleteMentor.mutate()}
-            //         >
-            //           {deleteMentor.isPending ? "Excluindo..." : "Excluir"}
-            //         </Button>
-            //       </div>
-            //     </DialogContent>
-            //   </Dialog>
-            // </div>
             <Button className="shrink-0 self-center rounded-lg bg-mentorship-button py-2 px-[14px]">
               {texts.mentoring.schedule}
             </Button>
@@ -328,59 +257,5 @@ function MentorCard({
         </dl>
       </footer>
     </article>
-  );
-}
-
-function EditMentorForm({
-  mentor,
-  onSave,
-  isPending,
-}: {
-  mentor: {
-    expertise: string[];
-    price: string;
-  };
-  onSave: (data: UpdateMentorInput) => void;
-  isPending: boolean;
-}) {
-  const [skillsText, setSkillsText] = useState(mentor.expertise.join(", "));
-  const [price, setPrice] = useState(mentor.price);
-
-  return (
-    <div className="space-y-4 pt-2">
-      <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">
-          {texts.mentoring.expertise}
-        </Label>
-        <Input
-          value={skillsText}
-          onChange={(e) => setSkillsText(e.target.value)}
-          placeholder={texts.mentoring.expertisePlaceholder}
-          className="h-10 border-transparent bg-muted"
-        />
-      </div>
-      <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">{texts.mentoring.investment}</Label>
-        <Input
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
-          placeholder={texts.mentoring.free}
-          className="h-10 border-transparent bg-muted"
-        />
-      </div>
-      <Button
-        className="w-full rounded-full"
-        disabled={!skillsText.trim() || isPending}
-        onClick={() => {
-          const expertise = skillsText
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean);
-          onSave({ expertise, price: price || texts.mentoring.free });
-        }}
-      >
-        {isPending ? texts.common.saving : texts.common.save}
-      </Button>
-    </div>
   );
 }
