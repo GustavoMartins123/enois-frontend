@@ -1,4 +1,4 @@
-import { type ChangeEvent, type FormEvent, useCallback, useRef, useState } from "react";
+import { type FormEvent, useCallback, useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
@@ -11,8 +11,6 @@ import { requireAuth } from "@/lib/require-auth";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 import { texts } from "@/texts";
-import type { CommunityCropPurpose } from "@/types/routes/communities/community-crop-purpose";
-import type { EditCommunityFormProps } from "@/types/routes/communities/edit-community-form-props";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -261,7 +259,19 @@ function CommunityDetail() {
   );
 }
 
-function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
+function EditCommunityForm({
+  community,
+  onClose,
+}: {
+  community: {
+    id: string;
+    name: string;
+    description: string;
+    cover: string | null;
+    avatar: string | null;
+  };
+  onClose: () => void;
+}) {
   const queryClient = useQueryClient();
   const [name, setName] = useState(community.name);
   const [description, setDescription] = useState(community.description);
@@ -272,7 +282,7 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
   const coverRef = useRef<HTMLInputElement>(null);
   const avatarRef = useRef<HTMLInputElement>(null);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
-  const [cropPurpose, setCropPurpose] = useState<CommunityCropPurpose | null>(null);
+  const [cropPurpose, setCropPurpose] = useState<"COVER" | "AVATAR" | null>(null);
 
   const handleCropComplete = useCallback(
     async (blob: Blob) => {
@@ -297,7 +307,7 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
   }, [cropImageSrc]);
 
   const handleFileSelect =
-    (field: CommunityCropPurpose) => (e: ChangeEvent<HTMLInputElement>) => {
+    (field: "COVER" | "AVATAR") => (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
       setCropPurpose(field);
@@ -398,7 +408,7 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
                 className="rounded-full"
                 onClick={() => setAvatar("")}
               >
-                {texts.communities.detail.remove}</>
+                {texts.communities.detail.remove}
               </Button>
             </div>
           </div>

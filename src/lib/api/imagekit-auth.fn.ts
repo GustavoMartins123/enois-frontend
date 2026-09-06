@@ -4,8 +4,6 @@ import crypto from "node:crypto";
 
 import type { ImageKitAuth } from "@/types/application/imagekit/image-kit-auth";
 
-export type { ImageKitAuth } from "@/types/application/imagekit/image-kit-auth";
-
 export const getImageKitAuth = createServerFn({ method: "GET" }).handler(async () => {
   const privateKey = process.env.IMAGEKIT_PRIVATE_KEY;
 
