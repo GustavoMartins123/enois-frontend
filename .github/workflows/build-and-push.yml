@@ -12,7 +12,7 @@ on:
 env:
   AWS_REGION: us-east-1
   ECR_REGISTRY: 818928662779.dkr.ecr.us-east-1.amazonaws.com
-  ECR_REPOSITORY: enois/backend
+  ECR_REPOSITORY: enois/frontend
   GITOPS_REPO: florestaencantada/integration_gitops
   GITOPS_BRANCH: main
   MANIFEST_PATH: gitops/clusters/forest-dev/applications/enois-app.yaml
