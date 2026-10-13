@@ -6,7 +6,7 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-const BACKEND_TARGET = process.env.BACKEND_TARGET ?? "https://rede.fly.dev";
+const BACKEND_TARGET = process.env.BACKEND_TARGET ?? "https://enois.ia.br/api";
 const NITRO_PRESET = process.env.NITRO_PRESET ?? "vercel";
 
 export default defineConfig({
