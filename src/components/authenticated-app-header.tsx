@@ -1,13 +1,11 @@
-import { Link } from "@tanstack/react-router";
-
 import { useAppShellStore } from "@/stores/app-shell.store";
 import { texts } from "@/texts";
 import { Menu } from "lucide-react";
 
 import { getCurrentUser } from "@/lib/current-user";
 
+import { AccountMenu } from "@/components/account-menu";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { UserAvatar } from "@/components/user-avatar";
 
 import { AppBrand } from "./app-brand";
 import { AppHeaderLayout } from "./app-header-layout";
@@ -34,19 +32,7 @@ export function AuthenticatedAppHeader() {
       <div className="ml-auto flex items-center gap-2">
         <ThemeToggle />
         <NotificationsPopover />
-        {profile && (
-          <Link
-            to="/perfil/$username"
-            params={{ username: profile.username }}
-            className="flex items-center gap-2 rounded-full p-1 pr-3 transition hover:bg-surface-2"
-          >
-            <UserAvatar src={profile.avatar} alt={profile.name} className="h-8 w-8" />
-
-            <span className="hidden text-[13px] font-light text-text-strong sm:inline">
-              {texts.common.profile}
-            </span>
-          </Link>
-        )}
+        {profile && <AccountMenu profile={profile} />}
       </div>
     </AppHeaderLayout>
   );

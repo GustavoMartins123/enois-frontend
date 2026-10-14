@@ -1,5 +1,6 @@
 import type { PageResponse } from "@/types/application/api/page-response";
 import type { StatusResponse } from "@/types/application/api/status-response";
+import type { CreateJobInput } from "@/types/application/job/create-job-input";
 import type { Job } from "@/types/application/job/job";
 import type { ListJobsParams } from "@/types/application/job/list-jobs-params";
 
@@ -12,6 +13,8 @@ export const jobsApi = {
     ),
 
   get: (jobId: string) => api.get<Job>(`/jobs/${jobId}`),
+
+  create: (data: CreateJobInput) => api.post<Job>("/jobs", data),
 
   apply: (jobId: string) => api.post<StatusResponse>(`/jobs/${jobId}/applications`),
 

@@ -80,3 +80,59 @@ Já implementado? Precisa retornar:
 ```
 
 O frontend usa `role` pra exibir badge ADMIN e permitir edição da comunidade.
+
+## 4. Criar vaga
+
+**Endpoint:** `POST /api/jobs`
+
+**Regra de negócio:** só pode publicar quem tem reputação `>= 150`. O front já aplica
+esse gate na interface, mas o backend precisa recusar com `403` (ou `422`) quem não
+atinge o mínimo.
+
+**Request:**
+
+```json
+{
+  "title": "Pessoa Desenvolvedora Back-end",
+  "company": "Énóis",
+  "location": "Remoto",
+  "type": "CLT",
+  "level": "SENIOR",
+  "salary": "R$ 12.000",
+  "skills": ["Java", "Spring"],
+  "description": "Responsabilidades e requisitos..."
+}
+```
+
+**Response:** o `Job` criado, com `authorId`, `authorName` e `authorReputation`.
+
+## 5. Denúncia de vaga falsa zera a reputação
+
+**Endpoint:** `POST /api/reports` com `targetType: "JOB"`.
+
+O `ReportInput.targetType` agora aceita `"JOB"` além de `POST`, `COMMENT` e `USER`.
+
+**Regra de negócio:** quando a moderação confirmar que a vaga é falsa
+(`reason: "FAKE_CONTENT"`), o autor perde **toda** a reputação acumulada
+(`reputation = 0`). O front avisa o denunciante sobre essa consequência antes de
+enviar. Enquanto a denúncia não é confirmada, nada muda para o autor.
+
+Sugestão: marcar a vaga com `isFake: true` na resposta (`GET /api/jobs`), o front
+exibe o selo "Vaga marcada como falsa".
+
+## 6. Trocar e-mail
+
+**Endpoint:** `POST /api/auth/email/change`
+
+**Request:**
+
+```json
+{
+  "email": "novo@exemplo.com",
+  "password": "senha-atual"
+}
+```
+
+Valida a senha atual antes de trocar (o front já pede a confirmação). Recusar com
+`409` se o e-mail já estiver em uso por outra conta; o front mostra a mensagem
+retornada pelo backend.

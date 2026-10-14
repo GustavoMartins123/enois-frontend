@@ -190,6 +190,42 @@ export const texts = {
     },
   },
 
+  account: {
+    menu: {
+      trigger: "Menu da conta",
+      profile: "Ver perfil",
+      changeEmail: "Alterar e-mail",
+      resetPassword: "Redefinir senha",
+      logout: "Sair",
+      loggingOut: "Saindo...",
+    },
+    changeEmail: {
+      title: "Alterar e-mail",
+      description: "Depois de trocar, use o novo e-mail para entrar na plataforma.",
+      current: (email: string) => `E-mail atual: ${email}`,
+      newEmail: "Novo e-mail",
+      newEmailPlaceholder: "novo@exemplo.com",
+      password: "Senha atual",
+      passwordHint: "Confirme sua senha para concluir a troca.",
+      action: "Salvar e-mail",
+      success: "E-mail atualizado com sucesso.",
+      invalidEmail: "Digite um e-mail válido.",
+      sameEmail: "Esse já é o seu e-mail atual.",
+      error: "Não foi possível alterar o e-mail. Tente novamente.",
+    },
+    resetPassword: {
+      title: "Redefinir senha",
+      description: (email: string) => `Enviaremos um link de redefinição para ${email}.`,
+      action: "Enviar link",
+      sending: "Enviando...",
+      sentTitle: "Link enviado",
+      sentDescription: (email: string) =>
+        `Confira a caixa de entrada de ${email} e siga as instruções.`,
+      understood: "Entendi",
+      error: "Não foi possível enviar o link. Tente novamente.",
+    },
+  },
+
   landing: {
     seo: {
       title: "Énóis · Rede profissional gratuita e humana",
@@ -609,6 +645,48 @@ export const texts = {
     details: "Ver detalhes",
     apply: "Candidatar-se",
     empty: "Nenhuma vaga encontrada com os filtros selecionados.",
+    createJob: "Criar vaga",
+    createJobTitle: "Publicar vaga",
+    createJobDescription:
+      "Descreva a oportunidade com clareza. Vagas falsas zeram a reputação acumulada do autor.",
+    gate: {
+      title: "Publicação liberada por reputação",
+      requirement: (min: number) =>
+        `É preciso ter pelo menos ${min} de reputação para publicar vagas.`,
+      missing: (missing: number) => `Faltam ${missing} de reputação para desbloquear.`,
+      current: (value: number) => `Sua reputação atual: ${value}.`,
+    },
+    fields: {
+      title: "Título da vaga",
+      titlePlaceholder: "Ex.: Pessoa Desenvolvedora Back-end",
+      company: "Empresa",
+      companyPlaceholder: "Nome da empresa",
+      location: "Local",
+      type: "Tipo",
+      level: "Nível",
+      salary: "Faixa salarial (opcional)",
+      salaryPlaceholder: "Ex.: R$ 8.000 – R$ 12.000",
+      skills: "Habilidades (separadas por vírgula)",
+      skillsPlaceholder: "Java, Spring, AWS",
+      description: "Descrição (opcional)",
+      descriptionPlaceholder: "Responsabilidades, requisitos e diferenciais...",
+    },
+    createAction: "Publicar vaga",
+    createSuccess: "Vaga publicada com sucesso.",
+    createError: "Não foi possível publicar a vaga. Tente novamente.",
+    fakeBadge: "Vaga marcada como falsa",
+    report: {
+      action: "Denunciar",
+      title: "Denunciar vaga",
+      reason: "Motivo",
+      description: "Descrição (opcional)",
+      fakeLabel: "Vaga falsa",
+      fakeHint: "Golpe, vaga inexistente ou empresa que não confere.",
+      fakeWarning:
+        "Confirmada a denúncia, o autor perde toda a reputação acumulada. Denuncie apenas se tiver certeza.",
+      success: "Denúncia enviada. Obrigado por ajudar a manter a comunidade segura.",
+      error: "Não foi possível enviar a denúncia. Tente novamente.",
+    },
   },
 
   mentoring: {
@@ -864,5 +942,13 @@ export const texts = {
         "Plataforma de networking profissional com foco em conexões genuínas, mentoria, comunidades e desenvolvimento de carreira.",
       ogDescription: "Construa relacionamentos profissionais reais — não apenas conexões.",
     },
+  },
+
+  pwa: {
+    themeColor: "#7c38ee",
+    offlineTitle: "Você está offline",
+    offlineDescription:
+      "Não conseguimos falar com o servidor. Verifique sua conexão e tente de novo.",
+    offlineRetry: "Tentar novamente",
   },
 } as const;

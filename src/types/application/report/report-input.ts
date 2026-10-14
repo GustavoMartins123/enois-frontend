@@ -1,8 +1,9 @@
 import type { ReportReason } from "./report-reason";
+import type { ReportTargetType } from "./report-target-type";
 
 export type ReportInput = {
   targetId: string;
-  targetType: "POST" | "COMMENT" | "USER";
+  targetType: ReportTargetType;
   reason: ReportReason;
   description?: string;
 };

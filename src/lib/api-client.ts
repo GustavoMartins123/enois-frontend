@@ -82,7 +82,7 @@ async function tryRefreshToken(): Promise<boolean> {
   }
 }
 
-function clearSession() {
+export function clearSession() {
   localStorage.removeItem("session_token");
   localStorage.removeItem("refresh_token");
   localStorage.removeItem("session_expires_at");
