@@ -1,8 +1,8 @@
 import type { PageResponse } from "@/types/application/api/page-response";
 import type { StatusResponse } from "@/types/application/api/status-response";
+import type { Community } from "@/types/application/community/community";
 import type { CommunityMembersResponse } from "@/types/application/community/community-members-response";
 import type { CommunityTopic } from "@/types/application/community/community-topic";
-import type { Community } from "@/types/application/community/community";
 import type { CreateCommunityInput } from "@/types/application/community/create-community-input";
 import type { PostView } from "@/types/application/feed/post-view";
 
@@ -19,11 +19,9 @@ export const communitiesApi = {
   update: (communityId: string, data: Partial<CreateCommunityInput>) =>
     api.patch<Community>(`/communities/${communityId}`, data),
 
-  join: (communityId: string) =>
-    api.post<StatusResponse>(`/communities/${communityId}/members`),
+  join: (communityId: string) => api.post<StatusResponse>(`/communities/${communityId}/members`),
 
-  leave: (communityId: string) =>
-    api.delete<StatusResponse>(`/communities/${communityId}/members`),
+  leave: (communityId: string) => api.delete<StatusResponse>(`/communities/${communityId}/members`),
 
   getMembers: (communityId: string) =>
     api.get<CommunityMembersResponse>(`/communities/${communityId}/members`),

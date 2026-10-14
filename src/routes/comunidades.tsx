@@ -3,15 +3,15 @@ import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
 
+import { texts } from "@/texts";
+import type { Community } from "@/types/application/community/community";
+import type { CommunityTopic } from "@/types/application/community/community-topic";
+import type { CreateCommunityDialogProps } from "@/types/routes/communities/create-community-dialog-props";
 import { Loader2, Plus, Users } from "lucide-react";
 
 import { communitiesApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { requireAuth } from "@/lib/require-auth";
-import { texts } from "@/texts";
-import type { CommunityTopic } from "@/types/application/community/community-topic";
-import type { Community } from "@/types/application/community/community";
-import type { CreateCommunityDialogProps } from "@/types/routes/communities/create-community-dialog-props";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -118,13 +118,15 @@ function Comunidades() {
         <div className="surface-card flex flex-wrap items-center justify-between gap-3 p-4 sm:gap-4 sm:p-6">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">{texts.communities.title}</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {texts.communities.description}
-            </p>
+
+            <p className="mt-1 text-sm text-muted-foreground">{texts.communities.description}</p>
           </div>
+
           <CreateCommunityDialog open={open} onOpenChange={setOpen}>
             <Button className="rounded-full gap-1.5">
-              <Plus className="h-4 w-4" /><>{texts.communities.createCommunity}</>
+              <Plus className="h-4 w-4" />
+
+              <>{texts.communities.createCommunity}</>
             </Button>
           </CreateCommunityDialog>
         </div>
@@ -167,17 +169,22 @@ function Comunidades() {
                       <p className="text-xs font-medium uppercase tracking-wider text-primary">
                         {c.topic}
                       </p>
+
                       <h3 className="font-semibold truncate">{c.name}</h3>
                     </div>
                   </div>
+
                   <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">
                     {c.description}
                   </p>
+
                   <div className="mt-4 flex items-center justify-between">
                     <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Users className="h-3.5 w-3.5" />
+
                       <>{texts.communities.members(c.members ?? 0)}</>
                     </span>
+
                     <Button
                       size="sm"
                       variant={c.joined ? "secondary" : "default"}
@@ -209,7 +216,11 @@ function Comunidades() {
               onClick={loadMore}
               disabled={isFetching}
             >
-              {isFetching ? <Loader2 className="h-4 w-4 animate-spin" /> : texts.communities.loadMore}
+              {isFetching ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                texts.communities.loadMore
+              )}
             </Button>
           </div>
         )}
@@ -218,11 +229,7 @@ function Comunidades() {
   );
 }
 
-function CreateCommunityDialog({
-  children,
-  open,
-  onOpenChange,
-}: CreateCommunityDialogProps) {
+function CreateCommunityDialog({ children, open, onOpenChange }: CreateCommunityDialogProps) {
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -242,21 +249,28 @@ function CreateCommunityDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
+
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{texts.communities.create.title}</DialogTitle>
         </DialogHeader>
+
         <div className="space-y-4">
           <div className="space-y-1.5">
             <Label className="text-xs text-muted-foreground">{texts.communities.create.name}</Label>
+
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="h-10 border-transparent bg-muted"
             />
           </div>
+
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">{texts.communities.create.description}</Label>
+            <Label className="text-xs text-muted-foreground">
+              {texts.communities.create.description}
+            </Label>
+
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -264,8 +278,12 @@ function CreateCommunityDialog({
               className="h-10 border-transparent bg-muted"
             />
           </div>
+
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">{texts.communities.create.topic}</Label>
+            <Label className="text-xs text-muted-foreground">
+              {texts.communities.create.topic}
+            </Label>
+
             <select
               value={topic}
               onChange={(e) => setTopic(e.target.value as CommunityTopic)}
@@ -278,6 +296,7 @@ function CreateCommunityDialog({
               ))}
             </select>
           </div>
+
           <Button
             className="w-full rounded-full"
             disabled={!name.trim() || !description.trim() || create.isPending}

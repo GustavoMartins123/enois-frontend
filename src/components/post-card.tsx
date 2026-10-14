@@ -3,6 +3,17 @@ import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from "re
 import { useQueries, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
+import { usePostCardStore } from "@/stores/post-card.store";
+import { texts } from "@/texts";
+import type { PostView } from "@/types/application/feed/post-view";
+import type { ReactionType } from "@/types/application/reaction/reaction-type";
+import type { ReportReason } from "@/types/application/report/report-reason";
+import type { AuthorInfoProps } from "@/types/components/post/author-info-props";
+import type { CommentItemProps } from "@/types/components/post/comment-item-props";
+import type { EmbedPlayerProps } from "@/types/components/post/embed-player-props";
+import type { PostCardProps } from "@/types/components/post/post-card-props";
+import type { PostIdProps } from "@/types/components/post/post-id-props";
+import type { PostTypeMeta } from "@/types/components/post/post-type-meta";
 import { Bookmark, Flag, Heart, MessageSquare, Send, Share2 } from "lucide-react";
 
 import {
@@ -17,17 +28,6 @@ import {
 } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { getCurrentUser, getCurrentUserId } from "@/lib/current-user";
-import { usePostCardStore } from "@/stores/post-card.store";
-import { texts } from "@/texts";
-import type { PostView } from "@/types/application/feed/post-view";
-import type { ReactionType } from "@/types/application/reaction/reaction-type";
-import type { ReportReason } from "@/types/application/report/report-reason";
-import type { AuthorInfoProps } from "@/types/components/post/author-info-props";
-import type { CommentItemProps } from "@/types/components/post/comment-item-props";
-import type { EmbedPlayerProps } from "@/types/components/post/embed-player-props";
-import type { PostCardProps } from "@/types/components/post/post-card-props";
-import type { PostIdProps } from "@/types/components/post/post-id-props";
-import type { PostTypeMeta } from "@/types/components/post/post-type-meta";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -93,7 +93,9 @@ function ReactionsSummary({ postId }: PostIdProps) {
               : "border border-border-soft text-text-subtle"
           }`}
         >
-          <>{REACTION_EMOJIS[type] ?? type} {count}</>
+          <>
+            {REACTION_EMOJIS[type] ?? type} {count}
+          </>
         </span>
       ))}
     </div>
@@ -155,11 +157,13 @@ function ReactionsDialog({ postId }: PostIdProps) {
                   className="flex items-center gap-3 rounded-xl bg-surface-1 p-3"
                 >
                   <UserAvatar src={user?.avatar} alt={user?.name} className="h-9 w-9 shrink-0" />
+
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-[13px] font-light text-text-strong">
                       {user?.name ?? texts.common.loading}
                     </p>
                   </div>
+
                   <span className="text-xl">{REACTION_EMOJIS[r.type] ?? r.type}</span>
                 </div>
               );
@@ -198,9 +202,13 @@ function ReportDialog({ postId }: PostIdProps) {
         <DialogHeader>
           <DialogTitle className="font-light">{texts.posts.report.title}</DialogTitle>
         </DialogHeader>
+
         <div className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label className="text-[11px] font-light text-text-subtle">{texts.posts.report.reason}</Label>
+            <Label className="text-[11px] font-light text-text-subtle">
+              {texts.posts.report.reason}
+            </Label>
+
             <select
               value={reason}
               onChange={(e) => setReason(e.target.value as ReportReason)}
@@ -213,8 +221,12 @@ function ReportDialog({ postId }: PostIdProps) {
               ))}
             </select>
           </div>
+
           <div className="space-y-1.5">
-            <Label className="text-[11px] font-light text-text-subtle">{texts.posts.report.description}</Label>
+            <Label className="text-[11px] font-light text-text-subtle">
+              {texts.posts.report.description}
+            </Label>
+
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
@@ -222,6 +234,7 @@ function ReportDialog({ postId }: PostIdProps) {
               className="border-border-soft bg-surface-1 text-[13px] font-light h-10 border-transparent bg-muted"
             />
           </div>
+
           <Button className="w-full rounded-full" onClick={submit}>
             {texts.posts.report.action}
           </Button>
@@ -362,6 +375,7 @@ export function PostCard({ post }: PostCardProps) {
           createdAt={post.createdAt}
           fallbackClassName={meta.classAvatar}
         />
+
         <span
           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${meta.className}`}
         >
@@ -380,7 +394,6 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       <ReactionsSummary postId={post.id} />
-
       <LinkPreviews content={post.content} />
 
       {post.tags.length > 0 && (
@@ -418,6 +431,7 @@ export function PostCard({ post }: PostCardProps) {
                 )}
               </button>
             </PopoverTrigger>
+
             <PopoverContent
               align="start"
               side="top"
@@ -441,25 +455,32 @@ export function PostCard({ post }: PostCardProps) {
               </div>
             </PopoverContent>
           </Popover>
+
           <button
             onClick={() => setShowReactions(post.id, true)}
             className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs tabular-nums transition hover:bg-muted hover:text-foreground text-muted-foreground"
           >
             {postCounters.reactions}
           </button>
+
           <button
             onClick={loadComments}
             className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
           >
-            <MessageSquare className="h-4 w-4" /><>{totalComments}</>
+            <MessageSquare className="h-4 w-4" />
+
+            <>{totalComments}</>
           </button>
 
           <button
             onClick={handleShare}
             className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
           >
-            <Share2 className="h-4 w-4" /><>{texts.posts.share}</>
+            <Share2 className="h-4 w-4" />
+
+            <>{texts.posts.share}</>
           </button>
+
           <button
             onClick={() => setShowReport(post.id, true)}
             className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
@@ -467,13 +488,16 @@ export function PostCard({ post }: PostCardProps) {
             <Flag className="h-4 w-4" />
           </button>
         </div>
+
         <button
           onClick={handleSave}
           className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
             saved ? "text-primary" : ""
           }`}
         >
-          <Bookmark className="h-4 w-4" /><>{postCounters.saves}</>
+          <Bookmark className="h-4 w-4" />
+
+          <>{postCounters.saves}</>
         </button>
       </footer>
 
@@ -497,11 +521,7 @@ export function PostCard({ post }: PostCardProps) {
                             (c) => c.id === reply.parentCommentId,
                           )?.authorName;
                           return (
-                            <CommentItem
-                              key={reply.id}
-                              comment={reply}
-                              replyingTo={parentAuthor}
-                            />
+                            <CommentItem key={reply.id} comment={reply} replyingTo={parentAuthor} />
                           );
                         })}
                       </div>
@@ -522,6 +542,7 @@ export function PostCard({ post }: PostCardProps) {
               alt={currentUser?.name}
               className="h-8 w-8 shrink-0"
             />
+
             <div className="flex flex-1 items-center gap-2 rounded-full border border-border-soft bg-surface-1 py-1.5 pl-4 pr-1.5">
               <MentionTextarea
                 value={draft}
@@ -533,6 +554,7 @@ export function PostCard({ post }: PostCardProps) {
                 className="h-6 min-h-6 flex-1 resize-none border-0 bg-transparent p-0 text-[13px] font-light outline-none"
                 maxLength={280}
               />
+
               <Button
                 type="submit"
                 size="icon"
@@ -605,6 +627,7 @@ function CommentItem({ comment, replyingTo }: CommentItemProps) {
         alt={comment.authorName}
         className="h-8 w-8 shrink-0"
       />
+
       <div className="min-w-0 flex-1">
         <div className="rounded-xl bg-surface-1 px-3 py-2">
           <div className="flex flex-wrap items-center gap-2">
@@ -618,20 +641,24 @@ function CommentItem({ comment, replyingTo }: CommentItemProps) {
               {formatTime(comment.createdAt)}
             </span>
           </div>
+
           <p className="mt-0.5 break-words text-[13px] font-light leading-relaxed text-text-strong">
             {linkifyText(comment.content)}
           </p>
         </div>
+
         <div className="mt-1 flex items-center gap-3 px-3 text-[11px] font-light text-text-subtle">
           <button onClick={handleReply} className="transition-colors hover:text-primary">
             {texts.posts.comments.reply}
           </button>
+
           <Popover>
             <PopoverTrigger asChild>
               <button className="transition-colors hover:text-primary">
                 {commentReaction ? REACTION_EMOJIS[commentReaction] : texts.posts.reactions.react}
               </button>
             </PopoverTrigger>
+
             <PopoverContent
               align="start"
               side="top"
@@ -685,6 +712,7 @@ function AuthorInfo({
           className="h-11 w-11"
         />
       </Link>
+
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
           <Link
@@ -694,6 +722,7 @@ function AuthorInfo({
           >
             {authorName}
           </Link>
+
           <span className="text-[12px] font-light text-text-date">
             {texts.posts.authorTime(formatTime(createdAt))}
           </span>
@@ -729,6 +758,7 @@ function EmbedPlayer({ type, id }: EmbedPlayerProps) {
                     ? texts.posts.video.icons.television
                     : texts.posts.video.icons.play}
               </p>
+
               <p className="mt-1 text-[12px] font-light text-text-subtle">
                 {texts.posts.video.watchOn(type === "youtube" ? "YouTube" : type)}
               </p>
@@ -798,6 +828,7 @@ function LinkPreviews({ content }: Pick<PostView, "content">) {
                 }
               })()}
             </div>
+
             <div className="min-w-0">
               <p className="truncate font-normal text-text-strong">
                 {(() => {
@@ -808,6 +839,7 @@ function LinkPreviews({ content }: Pick<PostView, "content">) {
                   }
                 })()}
               </p>
+
               <p className="truncate text-[11px] font-light text-text-subtle">{url}</p>
             </div>
           </a>

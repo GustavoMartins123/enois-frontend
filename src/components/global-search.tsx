@@ -3,12 +3,12 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 
-import { Loader2, Search } from "lucide-react";
-
-import { searchApi } from "@/lib/api";
 import { texts } from "@/texts";
 import type { SearchResult } from "@/types/application/search/search-result";
 import { navigateToHref } from "@/utils/navigation";
+import { Loader2, Search } from "lucide-react";
+
+import { searchApi } from "@/lib/api";
 
 import { Input } from "@/components/ui/input";
 

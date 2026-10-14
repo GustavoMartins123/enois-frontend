@@ -1,10 +1,11 @@
-import { useCurrentUser } from "@/lib/current-user";
 import type { WithRequiredChildren } from "@/types/components/with-required-children";
 
-import { AuthenticatedAppHeader } from "./authenticated-app-header";
-import { AppSidebar } from "./app-sidebar";
-import { NavigationDrawer } from "./navigation-drawer";
+import { useCurrentUser } from "@/lib/current-user";
+
 import { AppLayout } from "./app-layout";
+import { AppSidebar } from "./app-sidebar";
+import { AuthenticatedAppHeader } from "./authenticated-app-header";
+import { NavigationDrawer } from "./navigation-drawer";
 
 export function AuthenticatedAppContainer({ children }: WithRequiredChildren) {
   useCurrentUser();

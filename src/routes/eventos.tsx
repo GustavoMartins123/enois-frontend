@@ -3,15 +3,15 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
+import { texts } from "@/texts";
+import type { CreateEventRequest } from "@/types/application/event/create-event-request";
+import type { CreateEventFormProps } from "@/types/routes/events/create-event-form-props";
+import type { FieldProps } from "@/types/routes/events/field-props";
 import { Calendar, MapPin, Plus, Users, Video } from "lucide-react";
 
 import { eventsApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { requireAuth } from "@/lib/require-auth";
-import { texts } from "@/texts";
-import type { CreateEventRequest } from "@/types/application/event/create-event-request";
-import type { CreateEventFormProps } from "@/types/routes/events/create-event-form-props";
-import type { FieldProps } from "@/types/routes/events/field-props";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -63,20 +63,24 @@ function Eventos() {
         <div className="surface-card flex flex-wrap items-center justify-between gap-3 p-4 sm:gap-4 sm:p-6">
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">{texts.events.title}</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {texts.events.description}
-            </p>
+
+            <p className="mt-1 text-sm text-muted-foreground">{texts.events.description}</p>
           </div>
+
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button className="rounded-full gap-1.5">
-                <Plus className="h-4 w-4" /><>{texts.events.createEvent}</>
+                <Plus className="h-4 w-4" />
+
+                <>{texts.events.createEvent}</>
               </Button>
             </DialogTrigger>
+
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>{texts.events.createEvent}</DialogTitle>
               </DialogHeader>
+
               <CreateEventForm
                 onSave={(data) => createEvent.mutate(data)}
                 isPending={createEvent.isPending}
@@ -102,23 +106,38 @@ function Eventos() {
                     <p className="text-[10px] font-medium uppercase text-primary">
                       {texts.events.months[Number(month)] ?? month}
                     </p>
+
                     <p className="text-lg font-semibold leading-none">{day ?? ""}</p>
                   </div>
                 </div>
+
                 <div className="p-5">
                   <Badge variant="outline" className="rounded-full bg-card font-normal">
-                    <Icon className="mr-1 h-3 w-3" /><>{formatLabel}</>
+                    <Icon className="mr-1 h-3 w-3" />
+
+                    <>{formatLabel}</>
                   </Badge>
+
                   <h3 className="mt-2 break-words font-semibold">{e.title}</h3>
-                  <p className="mt-1 text-xs text-muted-foreground">{texts.events.hostedBy(e.host)}</p>
+
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {texts.events.hostedBy(e.host)}
+                  </p>
+
                   <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
-                      <Calendar className="h-3.5 w-3.5" /><>{texts.events.dateTime(e.date ?? "", e.time ?? "")}</>
+                      <Calendar className="h-3.5 w-3.5" />
+
+                      <>{texts.events.dateTime(e.date ?? "", e.time ?? "")}</>
                     </span>
+
                     <span className="inline-flex items-center gap-1.5">
-                      <Users className="h-3.5 w-3.5" /><>{e.attendees ?? 0}</>
+                      <Users className="h-3.5 w-3.5" />
+
+                      <>{e.attendees ?? 0}</>
                     </span>
                   </div>
+
                   <Button
                     className="mt-4 w-full rounded-full"
                     disabled={attend.isPending}
@@ -152,6 +171,7 @@ function CreateEventForm({ onSave, isPending }: CreateEventFormProps) {
           className="h-10 border-transparent bg-muted"
         />
       </Field>
+
       <div className="grid grid-cols-2 gap-3">
         <Field label={texts.events.form.date}>
           <Input
@@ -161,6 +181,7 @@ function CreateEventForm({ onSave, isPending }: CreateEventFormProps) {
             className="h-10 border-transparent bg-muted"
           />
         </Field>
+
         <Field label={texts.events.form.time}>
           <Input
             type="time"
@@ -170,6 +191,7 @@ function CreateEventForm({ onSave, isPending }: CreateEventFormProps) {
           />
         </Field>
       </div>
+
       <Field label={texts.events.form.host}>
         <Input
           value={host}
@@ -178,6 +200,7 @@ function CreateEventForm({ onSave, isPending }: CreateEventFormProps) {
           className="h-10 border-transparent bg-muted"
         />
       </Field>
+
       <Field label={texts.events.form.format}>
         <select
           value={format}
@@ -185,10 +208,13 @@ function CreateEventForm({ onSave, isPending }: CreateEventFormProps) {
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-10 border-transparent bg-muted"
         >
           <option value="ONLINE">{texts.events.formats.ONLINE}</option>
+
           <option value="IN_PERSON">{texts.events.formats.IN_PERSON}</option>
+
           <option value="HYBRID">{texts.events.formats.HYBRID}</option>
         </select>
       </Field>
+
       <Button
         className="w-full rounded-full"
         disabled={!title.trim() || !date || !host.trim() || isPending}

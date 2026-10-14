@@ -3,20 +3,20 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 
-import { Pencil, Plus, Trash2, X } from "lucide-react";
-
-import { ApiError, profileApi } from "@/lib/api";
 import { texts } from "@/texts";
-import type { CertificationRequest } from "@/types/application/profile/certification-request";
 import type { Certification } from "@/types/application/profile/certification";
-import type { EducationRequest } from "@/types/application/profile/education-request";
+import type { CertificationRequest } from "@/types/application/profile/certification-request";
 import type { Education } from "@/types/application/profile/education";
-import type { ExperienceRequest } from "@/types/application/profile/experience-request";
+import type { EducationRequest } from "@/types/application/profile/education-request";
 import type { Experience } from "@/types/application/profile/experience";
+import type { ExperienceRequest } from "@/types/application/profile/experience-request";
 import type { FieldProps } from "@/types/components/profile/edit-profile-dialog/field-props";
 import type { Props } from "@/types/components/profile/edit-profile-dialog/props";
 import type { SubListProps } from "@/types/components/profile/edit-profile-dialog/sub-list-props";
 import type { SubListUpdate } from "@/types/components/profile/edit-profile-dialog/sub-list-update";
+import { Pencil, Plus, Trash2, X } from "lucide-react";
+
+import { ApiError, profileApi } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -136,21 +136,25 @@ export function EditProfileDialog({ profile, children }: Props) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
+
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto p-0">
         <DialogHeader className="sticky top-0 z-10 border-b border-border-soft bg-surface-card px-6 pb-4 pt-6">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-[18px] font-light text-text-strong">
               {texts.profile.edit.title}
             </DialogTitle>
+
             <div className="flex items-center gap-2">
               <Button size="sm" variant="outline" onClick={() => setOpen(false)}>
                 {texts.common.cancel}
               </Button>
+
               <Button size="sm" onClick={handleSave} disabled={updateProfile.isPending}>
                 {updateProfile.isPending ? texts.common.saving : texts.common.save}
               </Button>
             </div>
           </div>
+
           <div className="mt-4 flex gap-1 overflow-x-auto text-sm">
             {tabs.map((t) => (
               <button
@@ -178,6 +182,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
+
               <Field label={texts.profile.edit.fields.username} error={usernameError}>
                 <Input
                   value={username}
@@ -189,6 +194,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
+
               <Field label={texts.profile.edit.fields.headline}>
                 <Input
                   value={headline}
@@ -197,6 +203,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
+
               <Field label={texts.profile.edit.fields.bio}>
                 <Textarea
                   value={bio}
@@ -205,6 +212,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                   className="h-10 border-border-soft bg-surface-1 pl-9"
                 />
               </Field>
+
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label={texts.profile.edit.fields.company}>
                   <Input
@@ -213,6 +221,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                     className="h-10 border-border-soft bg-surface-1"
                   />
                 </Field>
+
                 <Field label={texts.profile.edit.fields.location}>
                   <Input
                     value={location}
@@ -221,6 +230,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                   />
                 </Field>
               </div>
+
               <Field label={texts.profile.edit.fields.availability}>
                 <Input
                   value={availability}
@@ -229,6 +239,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
+
               <Field label={texts.profile.edit.fields.portfolio}>
                 <Input
                   value={portfolio}
@@ -237,6 +248,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
+
               <Field label={texts.profile.edit.fields.externalLinks}>
                 <Textarea
                   value={linksText}
@@ -245,6 +257,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
+
               <Field label={texts.profile.edit.fields.skills}>
                 <Input
                   value={skillsText}
@@ -252,6 +265,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
+
               <Field label={texts.profile.edit.fields.goals}>
                 <Input
                   value={goalsText}
@@ -259,13 +273,17 @@ export function EditProfileDialog({ profile, children }: Props) {
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
+
               <div className="flex items-center gap-8">
                 <label className="flex items-center gap-3 text-[13px] font-light text-text-strong">
                   <Switch checked={openToWork} onCheckedChange={setOpenToWork} />
+
                   <>{texts.profile.edit.openToWork}</>
                 </label>
+
                 <label className="flex items-center gap-3 text-[13px] font-light text-text-strong">
                   <Switch checked={isMentor} onCheckedChange={setIsMentor} />
+
                   <>{texts.profile.edit.mentorAvailable}</>
                 </label>
               </div>
@@ -277,11 +295,27 @@ export function EditProfileDialog({ profile, children }: Props) {
               items={experiences}
               fields={[
                 { key: "title", label: texts.profile.edit.experienceFields.title, required: true },
-                { key: "company", label: texts.profile.edit.experienceFields.company, required: true },
+                {
+                  key: "company",
+                  label: texts.profile.edit.experienceFields.company,
+                  required: true,
+                },
                 { key: "location", label: texts.profile.edit.experienceFields.location },
-                { key: "description", label: texts.profile.edit.experienceFields.description, multiline: true },
-                { key: "startDate", label: texts.profile.edit.experienceFields.startDate, type: "date" },
-                { key: "endDate", label: texts.profile.edit.experienceFields.endDate, type: "date" },
+                {
+                  key: "description",
+                  label: texts.profile.edit.experienceFields.description,
+                  multiline: true,
+                },
+                {
+                  key: "startDate",
+                  label: texts.profile.edit.experienceFields.startDate,
+                  type: "date",
+                },
+                {
+                  key: "endDate",
+                  label: texts.profile.edit.experienceFields.endDate,
+                  type: "date",
+                },
               ]}
               currentlyHereKey="currentlyHere"
               createApi={(data) => profileApi.experiences.create(data)}
@@ -307,8 +341,16 @@ export function EditProfileDialog({ profile, children }: Props) {
                 { key: "school", label: texts.profile.edit.educationFields.school, required: true },
                 { key: "degree", label: texts.profile.edit.educationFields.degree, required: true },
                 { key: "field", label: texts.profile.edit.educationFields.field },
-                { key: "description", label: texts.profile.edit.educationFields.description, multiline: true },
-                { key: "startDate", label: texts.profile.edit.educationFields.startDate, type: "date" },
+                {
+                  key: "description",
+                  label: texts.profile.edit.educationFields.description,
+                  multiline: true,
+                },
+                {
+                  key: "startDate",
+                  label: texts.profile.edit.educationFields.startDate,
+                  type: "date",
+                },
                 { key: "endDate", label: texts.profile.edit.educationFields.endDate, type: "date" },
               ]}
               currentlyHereKey="currentlyHere"
@@ -333,11 +375,30 @@ export function EditProfileDialog({ profile, children }: Props) {
               items={certifications}
               fields={[
                 { key: "name", label: texts.profile.edit.certificationFields.name, required: true },
-                { key: "issuer", label: texts.profile.edit.certificationFields.issuer, required: true },
-                { key: "description", label: texts.profile.edit.certificationFields.description, multiline: true },
-                { key: "issueDate", label: texts.profile.edit.certificationFields.issueDate, type: "date" },
-                { key: "expirationDate", label: texts.profile.edit.certificationFields.expirationDate, type: "date" },
-                { key: "credentialUrl", label: texts.profile.edit.certificationFields.credentialUrl },
+                {
+                  key: "issuer",
+                  label: texts.profile.edit.certificationFields.issuer,
+                  required: true,
+                },
+                {
+                  key: "description",
+                  label: texts.profile.edit.certificationFields.description,
+                  multiline: true,
+                },
+                {
+                  key: "issueDate",
+                  label: texts.profile.edit.certificationFields.issueDate,
+                  type: "date",
+                },
+                {
+                  key: "expirationDate",
+                  label: texts.profile.edit.certificationFields.expirationDate,
+                  type: "date",
+                },
+                {
+                  key: "credentialUrl",
+                  label: texts.profile.edit.certificationFields.credentialUrl,
+                },
               ]}
               createApi={(data) => profileApi.certifications.create(data)}
               updateApi={(id, data) => profileApi.certifications.update(id, data)}
@@ -468,6 +529,7 @@ function SubList<
           {currentlyHereKey && (
             <label className="flex items-center gap-2 text-[13px] font-light text-text-strong">
               <Switch checked={currentlyHere} onCheckedChange={setCurrentlyHere} />
+
               <>{texts.profile.edit.currentlyHere}</>
             </label>
           )}
@@ -475,6 +537,7 @@ function SubList<
             <Button size="sm" onClick={handleSubmit} disabled={isPending}>
               {isPending ? texts.common.saving : texts.common.save}
             </Button>
+
             <Button
               size="sm"
               variant="outline"
@@ -502,10 +565,12 @@ function SubList<
                     <p className="break-words text-text-strong">
                       {String((item as Record<string, unknown>)[fields[0].key] ?? "")}
                     </p>
+
                     <p className="break-words text-text-subtle">
                       {String((item as Record<string, unknown>)[fields[1]?.key] ?? "")}
                     </p>
                   </div>
+
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => startEdit(item)}
@@ -513,6 +578,7 @@ function SubList<
                     >
                       <Pencil className="h-4 w-4 text-text-subtle" />
                     </button>
+
                     <button
                       onClick={() => remove.mutate(item.id)}
                       className="grid h-8 w-8 place-items-center rounded-lg hover:bg-surface-2 hover:text-destructive"
@@ -534,7 +600,9 @@ function SubList<
               setCurrentlyHere(false);
             }}
           >
-            <Plus className="h-4 w-4" /><>{texts.common.add}</>
+            <Plus className="h-4 w-4" />
+
+            <>{texts.common.add}</>
           </Button>
         </>
       )}

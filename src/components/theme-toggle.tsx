@@ -1,10 +1,9 @@
 import { useEffect } from "react";
 
-import { Moon, Sun } from "lucide-react";
-
 import { hydratePreferences, usePreferencesStore } from "@/stores/preferences.store";
 import { texts } from "@/texts";
 import type { Theme } from "@/types/preferences/theme";
+import { Moon, Sun } from "lucide-react";
 
 function applyTheme(theme: Theme) {
   document.documentElement.classList.toggle("dark", theme === "dark");

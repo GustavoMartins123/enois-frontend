@@ -1,9 +1,8 @@
 import { useCallback, useState } from "react";
 
-import Cropper, { type Area, type Point } from "react-easy-crop";
-
 import { texts } from "@/texts";
 import type { ImageCropDialogProps } from "@/types/components/image-crop-dialog/image-crop-dialog-props";
+import Cropper, { type Area, type Point } from "react-easy-crop";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -87,6 +86,7 @@ export function ImageCropDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
+
         <div className="relative h-80 w-full overflow-hidden rounded-xl bg-muted">
           <Cropper
             image={imageSrc}
@@ -98,6 +98,7 @@ export function ImageCropDialog({
             onCropComplete={onCropAreaChange}
           />
         </div>
+
         <div className="flex items-center gap-3">
           <input
             type="range"
@@ -109,6 +110,7 @@ export function ImageCropDialog({
             className="flex-1"
           />
         </div>
+
         <div className="flex gap-2">
           <Button
             variant="outline"
@@ -117,6 +119,7 @@ export function ImageCropDialog({
           >
             {texts.common.cancel}
           </Button>
+
           <Button
             className="flex-1 rounded-full"
             disabled={saving || !croppedAreaPixels}

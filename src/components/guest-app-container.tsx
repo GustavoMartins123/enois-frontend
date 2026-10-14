@@ -1,7 +1,7 @@
 import type { WithRequiredChildren } from "@/types/components/with-required-children";
 
-import { GuestAppHeader } from "./guest-app-header";
 import { AppLayout } from "./app-layout";
+import { GuestAppHeader } from "./guest-app-header";
 
 export function GuestAppContainer({ children }: WithRequiredChildren) {
   return (

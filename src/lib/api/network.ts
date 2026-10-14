@@ -1,7 +1,7 @@
 import type { PageResponse } from "@/types/application/api/page-response";
 import type { ConnectionRequest } from "@/types/application/network/connection-request";
-import type { ConnectionStatusResult } from "@/types/application/network/connection-status-result";
 import type { ConnectionStatus } from "@/types/application/network/connection-status";
+import type { ConnectionStatusResult } from "@/types/application/network/connection-status-result";
 import type { NetworkSummary } from "@/types/application/network/network-summary";
 import type { NetworkUser } from "@/types/application/network/network-user";
 

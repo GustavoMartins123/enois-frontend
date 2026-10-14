@@ -24,8 +24,7 @@ export const mediaApi = {
 
   get: (mediaId: string) => api.get<MediaAsset>(`/media/${mediaId}`),
 
-  delete: (mediaId: string) =>
-    api.delete<Pick<MediaAsset, "id" | "status">>(`/media/${mediaId}`),
+  delete: (mediaId: string) => api.delete<Pick<MediaAsset, "id" | "status">>(`/media/${mediaId}`),
 
   uploadToImageKit: async (cdnUrl: string, file: File) => {
     const absoluteUrl = resolveCdnUrl(cdnUrl) ?? cdnUrl;

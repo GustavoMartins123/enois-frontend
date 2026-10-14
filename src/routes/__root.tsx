@@ -23,10 +23,11 @@ function NotFoundComponent() {
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">{texts.root.notFound.code}</h1>
+
         <h2 className="mt-4 text-xl font-semibold text-foreground">{texts.root.notFound.title}</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {texts.root.notFound.description}
-        </p>
+
+        <p className="mt-2 text-sm text-muted-foreground">{texts.root.notFound.description}</p>
+
         <div className="mt-6">
           <Link
             to="/"
@@ -50,9 +51,9 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
           {texts.root.error.title}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {texts.root.error.description}
-        </p>
+
+        <p className="mt-2 text-sm text-muted-foreground">{texts.root.error.description}</p>
+
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
@@ -63,6 +64,7 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
           >
             {texts.root.error.retry}
           </button>
+
           <a
             href="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
@@ -83,8 +85,7 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
       { title: texts.root.seo.title },
       {
         name: "description",
-        content:
-          texts.root.seo.description,
+        content: texts.root.seo.description,
       },
       { property: "og:title", content: texts.root.seo.title },
       {
@@ -116,6 +117,7 @@ function RootShell({ children }: WithRequiredChildren) {
       <head>
         <HeadContent />
       </head>
+
       <body>
         {children}
         <Scripts />

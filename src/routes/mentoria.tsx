@@ -3,15 +3,15 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import { texts } from "@/texts";
+import type { CreateMentorInput } from "@/types/application/mentor/create-mentor-input";
+import type { MentorCardProps } from "@/types/routes/mentoring/mentor-card-props";
+import type { RegisterMentorFormProps } from "@/types/routes/mentoring/register-mentor-form-props";
 import { Calendar, Sparkles, Star } from "lucide-react";
 
 import { mentorsApi, profileApi } from "@/lib/api";
 import { getCurrentUserId } from "@/lib/current-user";
 import { requireAuth } from "@/lib/require-auth";
-import { texts } from "@/texts";
-import type { CreateMentorInput } from "@/types/application/mentor/create-mentor-input";
-import type { MentorCardProps } from "@/types/routes/mentoring/mentor-card-props";
-import type { RegisterMentorFormProps } from "@/types/routes/mentoring/register-mentor-form-props";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -62,14 +62,15 @@ function Mentoria() {
         >
           <div className="relative">
             <Badge className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft">
-              <Sparkles className="mr-1 h-3 w-3" /><>{texts.mentoring.badge}</>
+              <Sparkles className="mr-1 h-3 w-3" />
+
+              <>{texts.mentoring.badge}</>
             </Badge>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight">
-              {texts.mentoring.title}
-            </h1>
-            <p className="mt-2 text-muted-foreground">
-              {texts.mentoring.description}
-            </p>
+
+            <h1 className="mt-3 text-3xl font-semibold tracking-tight">{texts.mentoring.title}</h1>
+
+            <p className="mt-2 text-muted-foreground">{texts.mentoring.description}</p>
+
             <div className="mt-5 flex flex-wrap gap-2">
               <Button
                 className="rounded-full"
@@ -80,16 +81,19 @@ function Mentoria() {
               >
                 {texts.mentoring.findMentor}
               </Button>
+
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" className="rounded-full">
                     {texts.mentoring.becomeMentor}
                   </Button>
                 </DialogTrigger>
+
                 <DialogContent>
                   <DialogHeader>
                     <DialogTitle>{texts.mentoring.becomeMentorTitle}</DialogTitle>
                   </DialogHeader>
+
                   <RegisterMentorForm
                     onSave={(data) => createMentor.mutate(data)}
                     isPending={createMentor.isPending}
@@ -102,9 +106,9 @@ function Mentoria() {
 
         <div id="mentores-lista">
           <h2 className="text-lg font-semibold">{texts.mentoring.featured}</h2>
-          <p className="text-sm text-muted-foreground">
-            {texts.mentoring.featuredDescription}
-          </p>
+
+          <p className="text-sm text-muted-foreground">{texts.mentoring.featuredDescription}</p>
+
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             {mentors.map((m) => (
               <MentorCard key={m.id} mentor={m} />
@@ -123,9 +127,8 @@ function RegisterMentorForm({ onSave, isPending }: RegisterMentorFormProps) {
   return (
     <div className="space-y-4 pt-2">
       <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">
-          {texts.mentoring.expertise}
-        </Label>
+        <Label className="text-xs text-muted-foreground">{texts.mentoring.expertise}</Label>
+
         <Input
           value={skillsText}
           onChange={(e) => setSkillsText(e.target.value)}
@@ -133,8 +136,10 @@ function RegisterMentorForm({ onSave, isPending }: RegisterMentorFormProps) {
           className="h-10 border-transparent bg-muted"
         />
       </div>
+
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">{texts.mentoring.investment}</Label>
+
         <Input
           value={price}
           onChange={(e) => setPrice(e.target.value)}
@@ -142,6 +147,7 @@ function RegisterMentorForm({ onSave, isPending }: RegisterMentorFormProps) {
           className="h-10 border-transparent bg-muted"
         />
       </div>
+
       <Button
         className="w-full rounded-full"
         disabled={!skillsText.trim() || isPending}
@@ -192,6 +198,7 @@ function MentorCard({ mentor }: MentorCardProps) {
           >
             {user?.name ?? texts.mentoring.mentorFallback}
           </Link>
+
           <p className="line-clamp-2 text-xs text-muted-foreground ">{user?.headline ?? ""}</p>
         </div>
 
@@ -221,22 +228,33 @@ function MentorCard({ mentor }: MentorCardProps) {
         <dl className=" grid grid-cols-2 gap-2 rounded-xl bg-muted/50 p-3 text-xs">
           <div>
             <dt className="text-muted-foreground">{texts.mentoring.rating}</dt>
+
             <dd className="mt-0.5 inline-flex items-center gap-1 font-semibold">
-              <Star className="h-3.5 w-3.5 fill-opportunity text-opportunity" /><>{mentor.rating}</>
+              <Star className="h-3.5 w-3.5 fill-opportunity text-opportunity" />
+
+              <>{mentor.rating}</>
             </dd>
           </div>
+
           <div>
             <dt className="text-muted-foreground">{texts.mentoring.sessions}</dt>
+
             <dd className="mt-0.5 font-semibold">{mentor.sessions}</dd>
           </div>
+
           <div>
             <dt className="text-muted-foreground">{texts.mentoring.investment}</dt>
+
             <dd className="mt-0.5 font-medium">{mentor.price}</dd>
           </div>
+
           <div>
             <dt className="text-muted-foreground">{texts.mentoring.nextSlot}</dt>
+
             <dd className="mt-0.5 inline-flex items-center gap-1 font-medium">
-              <Calendar className="h-3.5 w-3.5" /><>{mentor.nextSlot}</>
+              <Calendar className="h-3.5 w-3.5" />
+
+              <>{mentor.nextSlot}</>
             </dd>
           </div>
         </dl>

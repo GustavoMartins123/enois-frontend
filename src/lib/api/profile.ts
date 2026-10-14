@@ -1,9 +1,9 @@
-import type { CertificationRequest } from "@/types/application/profile/certification-request";
 import type { Certification } from "@/types/application/profile/certification";
-import type { EducationRequest } from "@/types/application/profile/education-request";
+import type { CertificationRequest } from "@/types/application/profile/certification-request";
 import type { Education } from "@/types/application/profile/education";
-import type { ExperienceRequest } from "@/types/application/profile/experience-request";
+import type { EducationRequest } from "@/types/application/profile/education-request";
 import type { Experience } from "@/types/application/profile/experience";
+import type { ExperienceRequest } from "@/types/application/profile/experience-request";
 import type { Profile } from "@/types/application/profile/profile";
 import type { UpdateProfileRequest } from "@/types/application/profile/update-profile-request";
 

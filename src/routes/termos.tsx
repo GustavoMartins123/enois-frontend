@@ -10,8 +10,7 @@ export const Route = createFileRoute("/termos")({
       { title: texts.legal.terms.seoTitle },
       {
         name: "description",
-        content:
-          texts.legal.terms.seoDescription,
+        content: texts.legal.terms.seoDescription,
       },
     ],
   }),
@@ -38,6 +37,7 @@ function Termos() {
     <LegalLayout>
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">{texts.legal.terms.title}</h1>
+
         <LegalLastUpdated date={texts.legal.updatedAt} />
       </header>
 
@@ -91,7 +91,9 @@ function Termos() {
 
       <footer className="border-t border-border pt-6 text-sm">
         <p>
-          <>{texts.legal.footer.backPrefix}</><Link to="/" className="text-primary hover:underline">
+          <>{texts.legal.footer.backPrefix}</>
+
+          <Link to="/" className="text-primary hover:underline">
             {texts.legal.footer.home}
           </Link>
         </p>

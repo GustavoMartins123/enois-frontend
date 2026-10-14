@@ -2,9 +2,8 @@ import type { ComponentProps } from "react";
 
 import { Link } from "@tanstack/react-router";
 
-import { Sparkles } from "lucide-react";
-
 import { texts } from "@/texts";
+import { Sparkles } from "lucide-react";
 
 export function AppBrand({ onClick }: Pick<ComponentProps<"a">, "onClick">) {
   return (
@@ -15,8 +14,11 @@ export function AppBrand({ onClick }: Pick<ComponentProps<"a">, "onClick">) {
       >
         <Sparkles className="h-4 w-4" />
       </div>
+
       <span className="text-lg font-semibold tracking-tight">
-        <>{texts.brand.prefix}</><span className="gradient-text">{texts.brand.accent}</span>
+        <>{texts.brand.prefix}</>
+
+        <span className="gradient-text">{texts.brand.accent}</span>
       </span>
     </Link>
   );

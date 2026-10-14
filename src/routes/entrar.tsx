@@ -2,10 +2,6 @@ import { type FormEvent, useState } from "react";
 
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
-import { ArrowRight, Eye, EyeOff, Loader2, MailCheck, Sparkles } from "lucide-react";
-import { z } from "zod";
-
-import { ApiError, authApi } from "@/lib/api";
 import { texts } from "@/texts";
 import type { OAuthStartResponse } from "@/types/application/auth/oauth-start-response";
 import type { AuthFormProps } from "@/types/routes/auth/auth-form-props";
@@ -13,6 +9,10 @@ import type { FieldProps } from "@/types/routes/auth/field-props";
 import type { ForgotPasswordDialogProps } from "@/types/routes/auth/forgot-password-dialog-props";
 import type { LoginFormProps } from "@/types/routes/auth/login-form-props";
 import type { TabBtnProps } from "@/types/routes/auth/tab-btn-props";
+import { ArrowRight, Eye, EyeOff, Loader2, MailCheck, Sparkles } from "lucide-react";
+import { z } from "zod";
+
+import { ApiError, authApi } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -77,8 +77,11 @@ function Auth() {
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary-foreground/20 backdrop-blur">
             <Sparkles className="h-4 w-4" />
           </div>
+
           <span className="text-lg font-semibold tracking-tight">
-            <>{texts.brand.prefix}</><span className="gradient-text">{texts.brand.accent}</span>
+            <>{texts.brand.prefix}</>
+
+            <span className="gradient-text">{texts.brand.accent}</span>
           </span>
         </Link>
 
@@ -86,13 +89,17 @@ function Auth() {
           <p className="text-sm font-medium uppercase tracking-wider text-primary-foreground/80">
             {texts.auth.hero.eyebrow}
           </p>
+
           <h2 className="mt-3 text-4xl font-semibold leading-tight tracking-tight">
             {texts.auth.hero.quote}
           </h2>
+
           <div className="mt-6 flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-primary-foreground/25" />
+
             <div>
               <p className="font-medium">{texts.auth.hero.person}</p>
+
               <p className="text-sm text-primary-foreground/75">{texts.auth.hero.role}</p>
             </div>
           </div>
@@ -102,6 +109,7 @@ function Auth() {
           {texts.auth.hero.stats.map((stat) => (
             <div key={stat.label}>
               <p className="text-2xl font-semibold">{stat.value}</p>
+
               <p className="text-primary-foreground/75">{stat.label}</p>
             </div>
           ))}
@@ -118,10 +126,14 @@ function Auth() {
             >
               <Sparkles className="h-4 w-4" />
             </div>
+
             <span className="font-semibold tracking-tight">
-              <>{texts.brand.prefix}</><span className="gradient-text">{texts.brand.accent}</span>
+              <>{texts.brand.prefix}</>
+
+              <span className="gradient-text">{texts.brand.accent}</span>
             </span>
           </Link>
+
           <ThemeToggle />
         </div>
 
@@ -130,6 +142,7 @@ function Auth() {
             <TabBtn active={tab === "signup"} onClick={() => setTab("signup")}>
               {texts.common.createAccount}
             </TabBtn>
+
             <TabBtn active={tab === "login"} onClick={() => setTab("login")}>
               {texts.common.enter}
             </TabBtn>
@@ -149,11 +162,19 @@ function Auth() {
           <ForgotPasswordDialog open={forgotOpen} onOpenChange={setForgotOpen} />
 
           <p className="mt-6 text-center text-xs text-muted-foreground">
-            <>{texts.auth.terms.prefix}</><Link to="/termos" className="text-primary hover:underline">
+            <>{texts.auth.terms.prefix}</>
+
+            <Link to="/termos" className="text-primary hover:underline">
               {texts.auth.terms.terms}
-            </Link><>{texts.auth.terms.conjunction}</><Link to="/privacidade" className="text-primary hover:underline">
+            </Link>
+
+            <>{texts.auth.terms.conjunction}</>
+
+            <Link to="/privacidade" className="text-primary hover:underline">
               {texts.auth.terms.privacy}
-            </Link><>{texts.auth.terms.end}</>
+            </Link>
+
+            <>{texts.auth.terms.end}</>
           </p>
         </div>
       </section>
@@ -201,6 +222,7 @@ function SocialButtons() {
         {loading === "GOOGLE" ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
         <>{texts.auth.social.google}</>
       </button>
+
       <button
         type="button"
         onClick={() => startOAuth("APPLE")}
@@ -221,7 +243,9 @@ function Divider() {
   return (
     <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
       <div className="h-px flex-1 bg-border" />
+
       <>{texts.auth.social.divider}</>
+
       <div className="h-px flex-1 bg-border" />
     </div>
   );
@@ -271,6 +295,7 @@ function SignupForm({ onDone }: AuthFormProps) {
   return (
     <div>
       <h1 className="text-2xl font-semibold tracking-tight">{texts.auth.signup.title}</h1>
+
       <p className="mt-1 text-sm text-muted-foreground">{texts.auth.signup.subtitle}</p>
 
       <div className="mt-6">
@@ -288,6 +313,7 @@ function SignupForm({ onDone }: AuthFormProps) {
             maxLength={80}
           />
         </Field>
+
         <Field label={texts.auth.fields.email} error={errors.email}>
           <Input
             name="email"
@@ -298,6 +324,7 @@ function SignupForm({ onDone }: AuthFormProps) {
             maxLength={255}
           />
         </Field>
+
         <Field label={texts.auth.fields.password} error={errors.password}>
           <div className="relative">
             <Input
@@ -308,6 +335,7 @@ function SignupForm({ onDone }: AuthFormProps) {
               required
               maxLength={128}
             />
+
             <button
               type="button"
               onClick={() => setShow((s) => !s)}
@@ -325,7 +353,9 @@ function SignupForm({ onDone }: AuthFormProps) {
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <>
-              <>{texts.common.createAccount} </><ArrowRight className="h-4 w-4" />
+              <>{texts.common.createAccount} </>
+
+              <ArrowRight className="h-4 w-4" />
             </>
           )}
         </Button>
@@ -377,6 +407,7 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
   return (
     <div>
       <h1 className="text-2xl font-semibold tracking-tight">{texts.auth.login.title}</h1>
+
       <p className="mt-1 text-sm text-muted-foreground">{texts.auth.login.subtitle}</p>
 
       <div className="mt-6">
@@ -395,6 +426,7 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
             maxLength={255}
           />
         </Field>
+
         <Field
           label={texts.auth.fields.password}
           error={errors.password}
@@ -417,6 +449,7 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
               required
               maxLength={128}
             />
+
             <button
               type="button"
               onClick={() => setShow((s) => !s)}
@@ -434,7 +467,9 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <>
-              <>{texts.common.enter} </><ArrowRight className="h-4 w-4" />
+              <>{texts.common.enter} </>
+
+              <ArrowRight className="h-4 w-4" />
             </>
           )}
         </Button>
@@ -493,30 +528,35 @@ function ForgotPasswordDialog({ open, onOpenChange }: ForgotPasswordDialogProps)
     <Dialog open={open} onOpenChange={(v) => (v ? onOpenChange(v) : close())}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-semibold tracking-tight">{texts.auth.forgot.title}</DialogTitle>
+          <DialogTitle className="font-semibold tracking-tight">
+            {texts.auth.forgot.title}
+          </DialogTitle>
         </DialogHeader>
         {sent ? (
           <div className="space-y-4 pb-2 pt-2">
             <div className="flex items-start gap-3 rounded-xl bg-primary/10 p-4">
               <MailCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+
               <div>
                 <p className="text-sm font-medium">{texts.auth.forgot.checkEmail}</p>
+
                 <p className="mt-1 text-[13px] text-muted-foreground">
                   {texts.auth.forgot.sentDescription}
                 </p>
               </div>
             </div>
+
             <Button className="w-full rounded-full" onClick={close}>
               {texts.auth.forgot.understood}
             </Button>
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-4 pb-2 pt-2" noValidate>
-            <p className="text-sm text-muted-foreground">
-              {texts.auth.forgot.description}
-            </p>
+            <p className="text-sm text-muted-foreground">{texts.auth.forgot.description}</p>
+
             <div className="space-y-1.5">
               <Label className="text-sm font-medium">{texts.auth.fields.email}</Label>
+
               <Input
                 name="email"
                 type="email"
@@ -533,7 +573,9 @@ function ForgotPasswordDialog({ open, onOpenChange }: ForgotPasswordDialogProps)
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
-                  <>{texts.auth.forgot.sendLink} </><ArrowRight className="h-4 w-4" />
+                  <>{texts.auth.forgot.sendLink} </>
+
+                  <ArrowRight className="h-4 w-4" />
                 </>
               )}
             </Button>

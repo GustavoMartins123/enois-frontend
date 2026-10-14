@@ -3,6 +3,9 @@ import { type ChangeEvent, type FormEvent, useCallback, useRef, useState } from 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 
+import { texts } from "@/texts";
+import type { CommunityCropPurpose } from "@/types/routes/communities/community-crop-purpose";
+import type { EditCommunityFormProps } from "@/types/routes/communities/edit-community-form-props";
 import { ArrowLeft, Camera, Send, Settings, Users } from "lucide-react";
 
 import { communitiesApi, feedApi } from "@/lib/api";
@@ -10,9 +13,6 @@ import { resolveCdnUrl } from "@/lib/api/media";
 import { requireAuth } from "@/lib/require-auth";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
-import { texts } from "@/texts";
-import type { CommunityCropPurpose } from "@/types/routes/communities/community-crop-purpose";
-import type { EditCommunityFormProps } from "@/types/routes/communities/edit-community-form-props";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -42,7 +42,11 @@ export const Route = createFileRoute("/comunidades/$communityId")({
     }
   },
   head: ({ loaderData }) => ({
-    meta: [{ title: `${loaderData?.name ?? texts.communities.detail.seoFallback} · ${texts.brand.name}` }],
+    meta: [
+      {
+        title: `${loaderData?.name ?? texts.communities.detail.seoFallback} · ${texts.brand.name}`,
+      },
+    ],
   }),
   component: CommunityDetail,
 });
@@ -115,7 +119,9 @@ function CommunityDetail() {
           to="/comunidades"
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
-          <ArrowLeft className="h-4 w-4" /><>{texts.communities.title}</>
+          <ArrowLeft className="h-4 w-4" />
+
+          <>{texts.communities.title}</>
         </Link>
 
         <div className="surface-card overflow-hidden">
@@ -138,17 +144,24 @@ function CommunityDetail() {
                   <Badge className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft">
                     {live.topic}
                   </Badge>
+
                   <h1 className="mt-2 break-words text-2xl font-semibold tracking-tight">
                     {live.name}
                   </h1>
+
                   <p className="mt-1 break-words text-muted-foreground">{live.description}</p>
+
                   <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
-                      <Users className="h-4 w-4" /><>{texts.communities.memberCount(live.members)}</>
+                      <Users className="h-4 w-4" />
+
+                      <>{texts.communities.memberCount(live.members)}</>
                     </span>
                     {admins.length > 0 && (
                       <span>
-                        <>{texts.communities.detail.createdBy}</><Link
+                        <>{texts.communities.detail.createdBy}</>
+
+                        <Link
                           to="/perfil/$username"
                           params={{ username: admins[0].username }}
                           className="font-medium text-foreground hover:underline"
@@ -160,18 +173,23 @@ function CommunityDetail() {
                   </div>
                 </div>
               </div>
+
               <div className="flex items-center gap-2">
                 {isAdmin && (
                   <Dialog open={editOpen} onOpenChange={setEditOpen}>
                     <DialogTrigger asChild>
                       <Button variant="outline" className="rounded-full gap-1.5">
-                        <Settings className="h-4 w-4" /><>{texts.communities.detail.edit}</>
+                        <Settings className="h-4 w-4" />
+
+                        <>{texts.communities.detail.edit}</>
                       </Button>
                     </DialogTrigger>
+
                     <DialogContent>
                       <DialogHeader>
                         <DialogTitle>{texts.communities.detail.editTitle}</DialogTitle>
                       </DialogHeader>
+
                       <EditCommunityForm community={live} onClose={() => setEditOpen(false)} />
                     </DialogContent>
                   </Dialog>
@@ -198,13 +216,16 @@ function CommunityDetail() {
               className="min-h-20 resize-none rounded-2xl border-border bg-muted/40 text-sm"
               maxLength={1024}
             />
+
             <div className="mt-3 flex justify-end">
               <Button
                 size="sm"
                 className="rounded-full gap-1.5"
                 disabled={!draft.trim() || createPost.isPending}
               >
-                <Send className="h-4 w-4" /><>{createPost.isPending ? texts.common.publishing : texts.common.publish}</>
+                <Send className="h-4 w-4" />
+
+                <>{createPost.isPending ? texts.common.publishing : texts.common.publish}</>
               </Button>
             </div>
           </form>
@@ -226,13 +247,17 @@ function CommunityDetail() {
 
           <aside className="space-y-4">
             <div className="surface-card p-5">
-              <h3 className="mb-3 text-sm font-semibold">{texts.communities.detail.membersTitle(members.length)}</h3>
+              <h3 className="mb-3 text-sm font-semibold">
+                {texts.communities.detail.membersTitle(members.length)}
+              </h3>
+
               <div className="space-y-3">
                 {members.map((m) => (
                   <div key={m.userId} className="flex items-center gap-3">
                     <Link to="/perfil/$username" params={{ username: m.username }}>
                       <UserAvatar src={m.avatar} alt={m.name} className="h-9 w-9 shrink-0" />
                     </Link>
+
                     <div className="min-w-0 flex-1">
                       <Link
                         to="/perfil/$username"
@@ -296,13 +321,12 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
     setCropPurpose(null);
   }, [cropImageSrc]);
 
-  const handleFileSelect =
-    (field: CommunityCropPurpose) => (e: ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-      setCropPurpose(field);
-      setCropImageSrc(URL.createObjectURL(file));
-    };
+  const handleFileSelect = (field: CommunityCropPurpose) => (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setCropPurpose(field);
+    setCropImageSrc(URL.createObjectURL(file));
+  };
 
   const update = useMutation({
     mutationFn: () =>
@@ -322,17 +346,24 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
     <div className="space-y-4 pt-2">
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">{texts.communities.create.name}</Label>
+
         <Input value={name} onChange={(e) => setName(e.target.value)} />
       </div>
+
       <div className="space-y-1.5">
-        <Label className="text-xs text-muted-foreground">{texts.communities.create.description}</Label>
+        <Label className="text-xs text-muted-foreground">
+          {texts.communities.create.description}
+        </Label>
+
         <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
       </div>
+
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">{texts.communities.detail.cover}</Label>
         {cover ? (
           <div className="relative overflow-hidden rounded-xl border border-border">
             <img src={cover} alt="" className="h-24 w-full object-cover" />
+
             <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition hover:opacity-100">
               <Button
                 type="button"
@@ -341,8 +372,11 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
                 className="rounded-full gap-1.5"
                 onClick={() => coverRef.current?.click()}
               >
-                <Camera className="h-4 w-4" /><>{texts.communities.detail.change}</>
+                <Camera className="h-4 w-4" />
+
+                <>{texts.communities.detail.change}</>
               </Button>
+
               <Button
                 type="button"
                 variant="destructive"
@@ -361,7 +395,9 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
             className="w-full rounded-full gap-1.5"
             onClick={() => coverRef.current?.click()}
           >
-            <Camera className="h-4 w-4" /><>{texts.communities.detail.addCover}</>
+            <Camera className="h-4 w-4" />
+
+            <>{texts.communities.detail.addCover}</>
           </Button>
         )}
         <input
@@ -372,6 +408,7 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
           onChange={handleFileSelect("COVER")}
         />
       </div>
+
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">{texts.communities.detail.avatar}</Label>
         {avatar ? (
@@ -381,6 +418,7 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
               alt=""
               className="h-16 w-16 rounded-full object-cover ring-2 ring-border"
             />
+
             <div className="flex gap-2">
               <Button
                 type="button"
@@ -389,8 +427,11 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
                 className="rounded-full gap-1.5"
                 onClick={() => avatarRef.current?.click()}
               >
-                <Camera className="h-4 w-4" /><>{texts.communities.detail.change}</>
+                <Camera className="h-4 w-4" />
+
+                <>{texts.communities.detail.change}</>
               </Button>
+
               <Button
                 type="button"
                 variant="destructive"
@@ -409,7 +450,9 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
             className="w-full rounded-full gap-1.5"
             onClick={() => avatarRef.current?.click()}
           >
-            <Camera className="h-4 w-4" /><>{texts.communities.detail.addAvatar}</>
+            <Camera className="h-4 w-4" />
+
+            <>{texts.communities.detail.addAvatar}</>
           </Button>
         )}
         <input
@@ -420,6 +463,7 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
           onChange={handleFileSelect("AVATAR")}
         />
       </div>
+
       <Button
         className="w-full rounded-full"
         disabled={!name.trim() || update.isPending}
@@ -436,7 +480,11 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
           }}
           imageSrc={cropImageSrc}
           aspect={cropPurpose === "COVER" ? 3 : 1}
-          title={cropPurpose === "COVER" ? texts.communities.detail.cropCover : texts.communities.detail.cropAvatar}
+          title={
+            cropPurpose === "COVER"
+              ? texts.communities.detail.cropCover
+              : texts.communities.detail.cropAvatar
+          }
           onCropComplete={handleCropComplete}
         />
       )}

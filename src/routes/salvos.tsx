@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import { texts } from "@/texts";
 import { ArrowLeft, Bookmark } from "lucide-react";
 
 import { feedApi } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
-import { texts } from "@/texts";
 
 import { AppContainer } from "@/components/app-container";
 import { PostCard } from "@/components/post-card";
@@ -33,13 +33,18 @@ function SavedPosts() {
               to="/feed"
               className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
             >
-              <ArrowLeft className="h-4 w-4" /><>{texts.saved.back}</>
+              <ArrowLeft className="h-4 w-4" />
+
+              <>{texts.saved.back}</>
             </Link>
           </div>
+
           <div className="mt-4 flex items-center gap-2">
             <Bookmark className="h-5 w-5 text-primary" />
+
             <h1 className="text-2xl font-semibold tracking-tight">{texts.saved.title}</h1>
           </div>
+
           <p className="mt-1 text-sm text-muted-foreground">
             {texts.saved.count(savedPosts.length)}
           </p>
@@ -48,9 +53,8 @@ function SavedPosts() {
         {savedPosts.length === 0 ? (
           <div className="surface-card p-8 text-center">
             <Bookmark className="mx-auto h-8 w-8 text-muted-foreground" />
-            <p className="mt-3 text-sm text-muted-foreground">
-              {texts.saved.empty}
-            </p>
+
+            <p className="mt-3 text-sm text-muted-foreground">{texts.saved.empty}</p>
           </div>
         ) : (
           <div className="space-y-4">

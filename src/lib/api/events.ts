@@ -15,6 +15,5 @@ export const eventsApi = {
 
   attend: (eventId: string) => api.post<StatusResponse>(`/events/${eventId}/attendees`),
 
-  cancelAttendance: (eventId: string) =>
-    api.delete<StatusResponse>(`/events/${eventId}/attendees`),
+  cancelAttendance: (eventId: string) => api.delete<StatusResponse>(`/events/${eventId}/attendees`),
 };

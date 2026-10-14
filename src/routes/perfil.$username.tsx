@@ -3,6 +3,11 @@ import { type ChangeEvent, useCallback, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 
+import { texts } from "@/texts";
+import type { UpdateProfileRequest } from "@/types/application/profile/update-profile-request";
+import type { ProfileCropPurpose } from "@/types/routes/profile/profile-crop-purpose";
+import type { RecommendationItemProps } from "@/types/routes/profile/recommendation-item-props";
+import type { SectionProps } from "@/types/routes/profile/section-props";
 import {
   Briefcase,
   Camera,
@@ -28,11 +33,6 @@ import {
 import { resolveCdnUrl } from "@/lib/api/media";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
-import { texts } from "@/texts";
-import type { UpdateProfileRequest } from "@/types/application/profile/update-profile-request";
-import type { ProfileCropPurpose } from "@/types/routes/profile/profile-crop-purpose";
-import type { RecommendationItemProps } from "@/types/routes/profile/recommendation-item-props";
-import type { SectionProps } from "@/types/routes/profile/section-props";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -62,13 +62,17 @@ export const Route = createFileRoute("/perfil/$username")({
   head: ({ loaderData }) => ({
     meta: [
       { title: texts.profile.seoTitle(loaderData?.user.name ?? texts.profile.seoFallbackTitle) },
-      { name: "description", content: loaderData?.user.headline ?? texts.profile.seoFallbackDescription },
+      {
+        name: "description",
+        content: loaderData?.user.headline ?? texts.profile.seoFallbackDescription,
+      },
     ],
   }),
   notFoundComponent: () => (
     <AppContainer>
       <div className="rounded-2xl border border-border-soft bg-surface-card p-10 text-center">
         <p className="text-[16px] font-light text-text-strong">{texts.profile.notFound}</p>
+
         <Link
           to="/"
           className="mt-2 inline-block text-[13px] font-light text-primary hover:underline"
@@ -81,9 +85,7 @@ export const Route = createFileRoute("/perfil/$username")({
   errorComponent: () => (
     <AppContainer>
       <div className="rounded-2xl border border-border-soft bg-surface-card p-10 text-center">
-        <p className="text-[13px] font-light text-text-subtle">
-          {texts.profile.loadError}
-        </p>
+        <p className="text-[13px] font-light text-text-subtle">{texts.profile.loadError}</p>
       </div>
     </AppContainer>
   ),
@@ -124,8 +126,7 @@ function Profile() {
   const connectionStatus = connectionData?.status ?? null;
 
   const updateProfile = useMutation({
-    mutationFn: (data: Pick<UpdateProfileRequest, "avatar" | "banner">) =>
-      profileApi.update(data),
+    mutationFn: (data: Pick<UpdateProfileRequest, "avatar" | "banner">) => profileApi.update(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["me"] });
       queryClient.invalidateQueries({ queryKey: ["profile", user.username] });
@@ -251,6 +252,7 @@ function Profile() {
               onChange={handleBannerUpload}
             />
           </div>
+
           <div className="px-4 pb-5 sm:px-6 sm:pb-6">
             <div className="-mt-12 flex flex-wrap items-end justify-between gap-3 sm:-mt-14 sm:gap-4">
               <div
@@ -285,11 +287,14 @@ function Profile() {
                   onChange={handleAvatarUpload}
                 />
               </div>
+
               <div className="flex flex-wrap gap-2">
                 {isOwnProfile ? (
                   <EditProfileDialog profile={user}>
                     <Button variant="outline" size="sm" className="rounded-full gap-1.5">
-                      <Settings className="h-4 w-4" /><>{texts.profile.editProfile}</>
+                      <Settings className="h-4 w-4" />
+
+                      <>{texts.profile.editProfile}</>
                     </Button>
                   </EditProfileDialog>
                 ) : (
@@ -303,8 +308,11 @@ function Profile() {
                         navigate({ to: "/mensagens" });
                       }}
                     >
-                      <MessageCircle className="h-4 w-4" /><>{texts.profile.message}</>
+                      <MessageCircle className="h-4 w-4" />
+
+                      <>{texts.profile.message}</>
                     </Button>
+
                     <Button
                       size="sm"
                       className="rounded-full gap-1.5"
@@ -328,6 +336,7 @@ function Profile() {
                 )}
               </div>
             </div>
+
             <div className="mt-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="break-words text-[22px] font-light tracking-tight text-text-strong">
@@ -344,18 +353,24 @@ function Profile() {
                   </span>
                 )}
               </div>
+
               <p className="mt-1 break-words text-[14px] font-light text-primary">
                 {user.headline}
               </p>
+
               <p className="mt-3 flex flex-wrap items-center gap-4 text-[13px] font-light text-text-subtle">
                 {user.company && (
                   <span className="inline-flex items-center gap-1.5">
-                    <Briefcase className="h-4 w-4" /><>{user.company}</>
+                    <Briefcase className="h-4 w-4" />
+
+                    <>{user.company}</>
                   </span>
                 )}
                 {user.location && (
                   <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4" /><>{user.location}</>
+                    <MapPin className="h-4 w-4" />
+
+                    <>{user.location}</>
                   </span>
                 )}
                 <span>{texts.profile.connectionsMeta(user.connectionsCount)}</span>
@@ -431,16 +446,23 @@ function Profile() {
                 <p className="mb-3 text-[13px] font-light text-text-subtle">
                   {texts.profile.recommendDescription}
                 </p>
+
                 <Dialog open={recommendOpen} onOpenChange={setRecommendOpen}>
                   <DialogTrigger asChild>
                     <Button size="sm" className="w-full rounded-full gap-1.5">
-                      <ThumbsUp className="h-4 w-4" /><>{texts.profile.recommendAction}</>
+                      <ThumbsUp className="h-4 w-4" />
+
+                      <>{texts.profile.recommendAction}</>
                     </Button>
                   </DialogTrigger>
+
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle className="font-light">{texts.profile.recommendTitle(user.name)}</DialogTitle>
+                      <DialogTitle className="font-light">
+                        {texts.profile.recommendTitle(user.name)}
+                      </DialogTitle>
                     </DialogHeader>
+
                     <div className="space-y-4 pt-2">
                       <Textarea
                         value={recommendComment}
@@ -449,13 +471,16 @@ function Profile() {
                         rows={3}
                         className="border-border-soft bg-surface-1 text-[13px] font-light"
                       />
+
                       <Button
                         size="sm"
                         className="w-full rounded-full"
                         disabled={!recommendComment.trim() || recommend.isPending}
                         onClick={() => recommend.mutate()}
                       >
-                        {recommend.isPending ? texts.common.sending : texts.profile.sendRecommendation}
+                        {recommend.isPending
+                          ? texts.common.sending
+                          : texts.profile.sendRecommendation}
                       </Button>
                     </div>
                   </DialogContent>
@@ -483,9 +508,11 @@ function Profile() {
                       >
                         {texts.profile.rankingPosition(i + 1)}
                       </span>
+
                       <Link to="/perfil/$username" params={{ username: u.username }}>
                         <UserAvatar src={u.avatar} alt={u.name} className="h-8 w-8 shrink-0" />
                       </Link>
+
                       <div className="min-w-0 flex-1">
                         <Link
                           to="/perfil/$username"
@@ -495,6 +522,7 @@ function Profile() {
                           {u.name}
                         </Link>
                       </div>
+
                       <span className="text-[11px] font-light text-opportunity-foreground">
                         {u.reputation}
                       </span>
@@ -510,6 +538,7 @@ function Profile() {
                   {user.externalLinks.map((link: string) => (
                     <li key={link} className="flex items-center gap-2 text-text-subtle">
                       <LinkIcon className="h-4 w-4" />
+
                       <span className="truncate text-text-strong">{link}</span>
                     </li>
                   ))}
@@ -519,6 +548,7 @@ function Profile() {
           </aside>
         </div>
       </div>
+
       <div className="h-4 lg:hidden" />
 
       {cropImageSrc && cropPurpose && (
@@ -563,10 +593,12 @@ function RecommendationItem({ recommendation }: RecommendationItemProps) {
     <div className="rounded-xl bg-surface-1 p-3">
       <div className="flex items-center gap-2 mb-2">
         <UserAvatar src={recommender?.avatar} alt={recommender?.name} className="h-6 w-6" />
+
         <span className="text-[12px] font-medium text-text-strong">
           {recommender?.name ?? texts.profile.userFallback}
         </span>
       </div>
+
       <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">
         {texts.profile.recommendationQuote(recommendation.comment)}
       </p>

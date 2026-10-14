@@ -3,13 +3,13 @@ import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
+import { texts } from "@/texts";
+import type { Job } from "@/types/application/job/job";
+import type { InfiniteScrollProps } from "@/types/routes/jobs/infinite-scroll-props";
 import { Briefcase, Loader2, MapPin, Sparkles, X } from "lucide-react";
 
 import { jobsApi } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
-import { texts } from "@/texts";
-import type { Job } from "@/types/application/job/job";
-import type { InfiniteScrollProps } from "@/types/routes/jobs/infinite-scroll-props";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -107,9 +107,8 @@ function Vagas() {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">{texts.jobs.title}</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {texts.jobs.description}
-              </p>
+
+              <p className="mt-1 text-sm text-muted-foreground">{texts.jobs.description}</p>
             </div>
             {hasFilters && (
               <Button
@@ -118,22 +117,27 @@ function Vagas() {
                 className="rounded-full gap-1.5 text-muted-foreground"
                 onClick={clearFilters}
               >
-                <X className="h-4 w-4" /><>{texts.jobs.clearFilters}</>
+                <X className="h-4 w-4" />
+
+                <>{texts.jobs.clearFilters}</>
               </Button>
             )}
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-xs font-medium text-muted-foreground mr-1">{texts.jobs.filters.level}</span>
+              <span className="text-xs font-medium text-muted-foreground mr-1">
+                {texts.jobs.filters.level}
+              </span>
               {LEVELS.map((l) => (
                 <button
                   key={l}
                   onClick={() => setLevel(level === l ? "" : l)}
-                  className={`rounded-full border px-3 py-1 text-xs transition ${level === l
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-card text-muted-foreground hover:text-foreground"
-                    }`}
+                  className={`rounded-full border px-3 py-1 text-xs transition ${
+                    level === l
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-card text-muted-foreground hover:text-foreground"
+                  }`}
                 >
                   {l.charAt(0) + l.slice(1).toLowerCase()}
                 </button>
@@ -143,15 +147,18 @@ function Vagas() {
 
           <div className="mt-3 flex flex-wrap gap-2">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-xs font-medium text-muted-foreground mr-1">{texts.jobs.filters.location}</span>
+              <span className="text-xs font-medium text-muted-foreground mr-1">
+                {texts.jobs.filters.location}
+              </span>
               {LOCATIONS.map((l, index) => (
                 <button
                   key={l}
                   onClick={() => setLocation(location === l ? "" : l)}
-                  className={`rounded-full border px-3 py-1 text-xs transition ${location === l
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-card text-muted-foreground hover:text-foreground"
-                    }`}
+                  className={`rounded-full border px-3 py-1 text-xs transition ${
+                    location === l
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-card text-muted-foreground hover:text-foreground"
+                  }`}
                 >
                   {texts.jobs.filters.locations[index]}
                 </button>
@@ -161,15 +168,18 @@ function Vagas() {
 
           <div className="mt-3 flex flex-wrap gap-2">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-xs font-medium text-muted-foreground mr-1">{texts.jobs.filters.type}</span>
+              <span className="text-xs font-medium text-muted-foreground mr-1">
+                {texts.jobs.filters.type}
+              </span>
               {TYPES.map((t) => (
                 <button
                   key={t}
                   onClick={() => setType(type === t ? "" : t)}
-                  className={`rounded-full border px-3 py-1 text-xs transition ${type === t
-                    ? "border-primary bg-primary text-primary-foreground"
-                    : "border-border bg-card text-muted-foreground hover:text-foreground"
-                    }`}
+                  className={`rounded-full border px-3 py-1 text-xs transition ${
+                    type === t
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : "border-border bg-card text-muted-foreground hover:text-foreground"
+                  }`}
                 >
                   {t}
                 </button>
@@ -187,6 +197,7 @@ function Vagas() {
                 className="h-9 rounded-full bg-muted pl-9"
               />
             </div>
+
             <Input
               value={skills}
               onChange={(e) => setSkills(e.target.value)}
@@ -204,11 +215,16 @@ function Vagas() {
                   {j.logo && <AvatarImage src={j.logo} alt={j.company} className="rounded-xl" />}
                   <AvatarFallback className="rounded-xl">{j.company[0]}</AvatarFallback>
                 </Avatar>
+
                 <div className="min-w-0 flex-1">
                   <h3 className="break-words font-semibold">{j.title}</h3>
+
                   <p className="break-words text-sm text-muted-foreground">{j.company}</p>
+
                   <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3" /><>{j.location}</>
+                    <MapPin className="h-3 w-3" />
+
+                    <>{j.location}</>
                   </p>
                 </div>
               </div>
@@ -216,12 +232,15 @@ function Vagas() {
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                 {j.matchScore && (
                   <span className="rounded-full bg-primary-soft px-2.5 py-1 font-medium text-primary inline-flex items-center gap-1">
-                    <Sparkles className="h-3 w-3" /><>{texts.jobs.match(j.matchScore)}</>
+                    <Sparkles className="h-3 w-3" />
+
+                    <>{texts.jobs.match(j.matchScore)}</>
                   </span>
                 )}
                 <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
                   {j.type}
                 </span>
+
                 <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
                   {j.level}
                 </span>
@@ -246,10 +265,12 @@ function Vagas() {
 
               <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-xs text-muted-foreground">
                 <span>{formatPostedAt(j.postedAt)}</span>
+
                 <div className="flex gap-2">
                   <Button size="sm" variant="outline" className="rounded-full">
                     {texts.jobs.details}
                   </Button>
+
                   <Button
                     size="sm"
                     className="rounded-full"
@@ -279,9 +300,7 @@ function Vagas() {
         />
 
         {!isFetching && allJobs.length === 0 && (
-          <p className="py-12 text-center text-sm text-muted-foreground">
-            {texts.jobs.empty}
-          </p>
+          <p className="py-12 text-center text-sm text-muted-foreground">{texts.jobs.empty}</p>
         )}
       </div>
     </AppContainer>

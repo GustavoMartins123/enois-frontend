@@ -3,6 +3,13 @@ import { type ChangeEvent, type FormEvent, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import { texts } from "@/texts";
+import type { CreatePostInput } from "@/types/application/feed/create-post-input";
+import type { FeedTab } from "@/types/application/feed/feed-tab";
+import type { PostView } from "@/types/application/feed/post-view";
+import type { ComposerActionProps } from "@/types/routes/feed/composer-action-props";
+import type { MediaItem } from "@/types/routes/feed/media-item";
+import type { TabPillProps } from "@/types/routes/feed/tab-pill-props";
 import {
   BarChart3,
   Calendar,
@@ -18,13 +25,6 @@ import {
 import { eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
-import { texts } from "@/texts";
-import type { CreatePostInput } from "@/types/application/feed/create-post-input";
-import type { FeedTab } from "@/types/application/feed/feed-tab";
-import type { PostView } from "@/types/application/feed/post-view";
-import type { ComposerActionProps } from "@/types/routes/feed/composer-action-props";
-import type { MediaItem } from "@/types/routes/feed/media-item";
-import type { TabPillProps } from "@/types/routes/feed/tab-pill-props";
 
 import { Button } from "@/components/ui/button";
 
@@ -187,12 +187,13 @@ function Home() {
               <div className="relative mt-3">
                 {mediaType === "image" ? (
                   <div
-                    className={`grid gap-2 ${media.length === 1
-                      ? "grid-cols-1"
-                      : media.length === 2
-                        ? "grid-cols-2"
-                        : "grid-cols-2"
-                      }`}
+                    className={`grid gap-2 ${
+                      media.length === 1
+                        ? "grid-cols-1"
+                        : media.length === 2
+                          ? "grid-cols-2"
+                          : "grid-cols-2"
+                    }`}
                   >
                     {media.map((item, i) => (
                       <div
@@ -204,6 +205,7 @@ function Home() {
                           alt=""
                           className="h-48 w-full object-cover bg-surface-1"
                         />
+
                         <button
                           type="button"
                           onClick={() => removeMedia(i)}
@@ -221,6 +223,7 @@ function Home() {
                       controls
                       className="max-h-64 w-full bg-surface-1"
                     />
+
                     <button
                       type="button"
                       onClick={() => removeMedia(0)}
@@ -281,6 +284,7 @@ function Home() {
                   onClick={() => fileRef.current?.click()}
                 />
               </div>
+
               <div className="flex items-center gap-2">
                 {publishError && (
                   <p className="max-w-[200px] truncate text-[12px] font-light text-destructive">
@@ -300,7 +304,12 @@ function Home() {
                   {createPost.isPending || upload.status === "uploading" ? (
                     <>
                       <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      <>{upload.status === "uploading" ? texts.common.sending : texts.common.publishing}</>
+
+                      <>
+                        {upload.status === "uploading"
+                          ? texts.common.sending
+                          : texts.common.publishing}
+                      </>
                     </>
                   ) : (
                     texts.common.publish
@@ -315,15 +324,19 @@ function Home() {
             <TabPill active={tab === "FOR_YOU"} onClick={() => setTab("FOR_YOU")}>
               {texts.feed.tabs.forYou}
             </TabPill>
+
             <TabPill active={tab === "ALL"} onClick={() => setTab("ALL")}>
               {texts.feed.tabs.all}
             </TabPill>
+
             <TabPill active={tab === "FOLLOWING"} onClick={() => setTab("FOLLOWING")}>
               {texts.feed.tabs.following}
             </TabPill>
+
             <TabPill active={tab === "RECENT"} onClick={() => setTab("RECENT")}>
               {texts.feed.tabs.discussions}
             </TabPill>
+
             <TabPill active={tab === "PROJECTS"} onClick={() => setTab("PROJECTS")}>
               {texts.feed.tabs.projects}
             </TabPill>
@@ -335,10 +348,7 @@ function Home() {
                 <Loader2 className="h-6 w-6 animate-spin" />
               </div>
             )}
-            {!feedLoading &&
-              feedPosts.map((p) => (
-                <PostCard key={p.id} post={p} />
-              ))}
+            {!feedLoading && feedPosts.map((p) => <PostCard key={p.id} post={p} />)}
           </div>
         </div>
 
@@ -347,12 +357,14 @@ function Home() {
           {profileUser && (
             <div className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
               <div className="h-14" style={{ background: "var(--gradient-primary)" }} />
+
               <div className="-mt-7 px-4 pb-4 text-center">
                 <UserAvatar
                   src={profileUser.avatar}
                   alt={profileUser.name}
                   className="mx-auto h-16 w-16 ring-4 ring-surface-card"
                 />
+
                 <Link
                   to="/perfil/$username"
                   params={{ username: profileUser.username }}
@@ -360,16 +372,21 @@ function Home() {
                 >
                   {profileUser.name}
                 </Link>
+
                 <p className="line-clamp-2 text-[12px] font-light text-text-subtle">
                   {profileUser.headline}
                 </p>
+
                 <div className="mt-3 grid grid-cols-2 gap-1 border-t border-border-soft pt-3 text-[12px]">
                   <div>
                     <p className="font-light text-text-strong">{profileUser.connectionsCount}</p>
+
                     <p className="text-text-subtle">{texts.feed.sidebar.connections}</p>
                   </div>
+
                   <div>
                     <p className="font-light text-text-strong">{profileUser.followersCount}</p>
+
                     <p className="text-text-subtle">{texts.feed.sidebar.followers}</p>
                   </div>
                 </div>
@@ -381,15 +398,21 @@ function Home() {
             <div className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-5">
               <div className="flex items-center gap-2">
                 <UserPlus className="h-4 w-4 text-primary" />
-                <h3 className="text-[14px] font-light text-text-strong">{texts.feed.sidebar.suggestions}</h3>
+
+                <h3 className="text-[14px] font-light text-text-strong">
+                  {texts.feed.sidebar.suggestions}
+                </h3>
               </div>
+
               <p className="mt-0.5 text-[12px] font-light text-text-subtle">
                 {texts.feed.sidebar.suggestionsDescription}
               </p>
+
               <ul className="mt-4 space-y-3">
                 {suggestionList.map((u) => (
                   <li key={u.id} className="flex items-center gap-3">
                     <UserAvatar src={u.avatar} alt={u.name} className="h-10 w-10" />
+
                     <div className="min-w-0 flex-1">
                       <Link
                         to="/perfil/$username"
@@ -398,10 +421,12 @@ function Home() {
                       >
                         {u.name}
                       </Link>
+
                       <p className="truncate text-[11px] font-light text-text-subtle">
                         {u.headline}
                       </p>
                     </div>
+
                     <button
                       type="button"
                       className="shrink-0 rounded-full border border-border-soft px-3 py-1 text-[12px] font-light text-text-subtle transition hover:border-primary hover:text-primary"
@@ -425,12 +450,17 @@ function Home() {
             <div className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-5">
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary" />
-                <h3 className="text-[14px] font-light text-text-strong">{texts.feed.sidebar.happeningNow}</h3>
+
+                <h3 className="text-[14px] font-light text-text-strong">
+                  {texts.feed.sidebar.happeningNow}
+                </h3>
               </div>
+
               <ul className="mt-3 space-y-3">
                 {eventList.slice(0, 3).map((e) => (
                   <li key={e.id}>
                     <p className="text-[13px] font-light text-text-strong">{e.title}</p>
+
                     <p className="text-[11px] font-light text-text-subtle">
                       {texts.feed.sidebar.eventMeta(
                         e.date,
@@ -454,12 +484,14 @@ function ComposerAction({ icon: Icon, label, active, onClick }: ComposerActionPr
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-light transition ${active
-        ? "bg-primary text-primary-foreground"
-        : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
-        }`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-light transition ${
+        active
+          ? "bg-primary text-primary-foreground"
+          : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
+      }`}
     >
       <Icon className="h-3.5 w-3.5" />
+
       <>{label}</>
     </button>
   );
@@ -469,10 +501,11 @@ function TabPill({ children, active, onClick }: TabPillProps) {
   return (
     <button
       onClick={onClick}
-      className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-light transition ${active
-        ? "bg-primary text-primary-foreground"
-        : "border border-border-soft bg-surface-card text-text-subtle hover:border-primary hover:text-primary"
-        }`}
+      className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-light transition ${
+        active
+          ? "bg-primary text-primary-foreground"
+          : "border border-border-soft bg-surface-card text-text-subtle hover:border-primary hover:text-primary"
+      }`}
     >
       {children}
     </button>

@@ -18,8 +18,7 @@ export const authApi = {
 
   me: () => api.get<AuthUser>("/auth/me"),
 
-  forgotPassword: (email: string) =>
-    api.post<StatusResponse>("/auth/password/forgot", { email }),
+  forgotPassword: (email: string) => api.post<StatusResponse>("/auth/password/forgot", { email }),
 
   resetPassword: (token: string, password: string) =>
     api.post<StatusResponse>("/auth/password/reset", { token, password }),

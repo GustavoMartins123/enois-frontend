@@ -2,12 +2,12 @@ import { useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { texts } from "@/texts";
+import type { NotificationTab } from "@/types/components/notification/notification-tab";
 import { Bell, CheckCheck } from "lucide-react";
 
 import { networkApi, notificationsApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { texts } from "@/texts";
-import type { NotificationTab } from "@/types/components/notification/notification-tab";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
@@ -54,7 +54,11 @@ export function NotificationsPopover() {
       <PopoverTrigger asChild>
         <button
           className="relative grid h-10 w-10 place-items-center rounded-full text-text-subtle transition hover:bg-surface-2 hover:text-primary"
-          aria-label={unreadCount > 0 ? texts.notifications.unreadLabel(unreadCount) : texts.notifications.title}
+          aria-label={
+            unreadCount > 0
+              ? texts.notifications.unreadLabel(unreadCount)
+              : texts.notifications.title
+          }
         >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
@@ -70,7 +74,9 @@ export function NotificationsPopover() {
         className="w-[min(calc(100vw-2rem),24rem)] overflow-hidden rounded-2xl border-border-soft bg-surface-card p-0 shadow-card"
       >
         <div className="flex items-center justify-between gap-3 border-b border-border-soft px-4 py-3">
-          <span className="text-[14px] font-light text-text-strong">{texts.notifications.title}</span>
+          <span className="text-[14px] font-light text-text-strong">
+            {texts.notifications.title}
+          </span>
           {unreadCount > 0 && notificationTab === "novas" && (
             <button
               type="button"
@@ -78,6 +84,7 @@ export function NotificationsPopover() {
               className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-light text-text-subtle transition hover:text-primary"
             >
               <CheckCheck className="h-3 w-3" />
+
               <>{texts.notifications.markAllRead}</>
             </button>
           )}
@@ -119,7 +126,9 @@ export function NotificationsPopover() {
         <div className="max-h-[28rem] overflow-y-auto">
           {displayedNotifications.length === 0 ? (
             <p className="px-4 py-8 text-center text-[13px] font-light text-text-subtle">
-              {notificationTab === "novas" ? texts.notifications.emptyNew : texts.notifications.emptyHistory}
+              {notificationTab === "novas"
+                ? texts.notifications.emptyNew
+                : texts.notifications.emptyHistory}
             </p>
           ) : (
             displayedNotifications.map((notification) => (

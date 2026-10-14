@@ -2,11 +2,11 @@ import { type FormEvent, useState } from "react";
 
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
+import { texts } from "@/texts";
 import { ArrowRight, CheckCircle2, Eye, EyeOff, Loader2, Sparkles } from "lucide-react";
 import { z } from "zod";
 
 import { ApiError, authApi } from "@/lib/api";
-import { texts } from "@/texts";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,8 +90,11 @@ function ResetPassword() {
           <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary-foreground/20 backdrop-blur">
             <Sparkles className="h-4 w-4" />
           </div>
+
           <span className="text-lg font-semibold tracking-tight">
-            <>{texts.brand.prefix}</><span className="gradient-text">{texts.brand.accent}</span>
+            <>{texts.brand.prefix}</>
+
+            <span className="gradient-text">{texts.brand.accent}</span>
           </span>
         </Link>
 
@@ -99,13 +102,17 @@ function ResetPassword() {
           <p className="text-sm font-medium uppercase tracking-wider text-primary-foreground/80">
             {texts.auth.hero.eyebrow}
           </p>
+
           <h2 className="mt-3 text-4xl font-semibold leading-tight tracking-tight">
             {texts.auth.hero.quote}
           </h2>
+
           <div className="mt-6 flex items-center gap-3">
             <div className="h-10 w-10 rounded-full bg-primary-foreground/25" />
+
             <div>
               <p className="font-medium">{texts.auth.hero.person}</p>
+
               <p className="text-sm text-primary-foreground/75">{texts.auth.hero.role}</p>
             </div>
           </div>
@@ -115,6 +122,7 @@ function ResetPassword() {
           {texts.auth.hero.stats.map((stat) => (
             <div key={stat.label}>
               <p className="text-2xl font-semibold">{stat.value}</p>
+
               <p className="text-primary-foreground/75">{stat.label}</p>
             </div>
           ))}
@@ -131,8 +139,11 @@ function ResetPassword() {
             >
               <Sparkles className="h-4 w-4" />
             </div>
+
             <span className="font-semibold tracking-tight">
-              <>{texts.brand.prefix}</><span className="gradient-text">{texts.brand.accent}</span>
+              <>{texts.brand.prefix}</>
+
+              <span className="gradient-text">{texts.brand.accent}</span>
             </span>
           </Link>
         </div>
@@ -141,27 +152,34 @@ function ResetPassword() {
           {done ? (
             <div className="text-center">
               <CheckCircle2 className="mx-auto h-12 w-12 text-primary" />
-              <h1 className="mt-4 text-2xl font-semibold tracking-tight">{texts.auth.reset.successTitle}</h1>
+
+              <h1 className="mt-4 text-2xl font-semibold tracking-tight">
+                {texts.auth.reset.successTitle}
+              </h1>
+
               <p className="mt-2 text-sm text-muted-foreground">
                 {texts.auth.reset.successDescription}
               </p>
+
               <Button
                 className="mt-6 w-full gap-2 rounded-full"
                 onClick={() => navigate({ to: "/entrar", search: { tab: "login" } })}
               >
-                <>{texts.auth.reset.enterNow}</><ArrowRight className="h-4 w-4" />
+                <>{texts.auth.reset.enterNow}</>
+
+                <ArrowRight className="h-4 w-4" />
               </Button>
             </div>
           ) : (
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">{texts.auth.reset.title}</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {texts.auth.reset.description}
-              </p>
+
+              <p className="mt-1 text-sm text-muted-foreground">{texts.auth.reset.description}</p>
 
               <form onSubmit={submit} className="mt-6 space-y-4" noValidate>
                 <div className="space-y-1.5">
                   <Label className="text-sm font-medium">{texts.auth.fields.newPassword}</Label>
+
                   <div className="relative">
                     <Input
                       name="password"
@@ -171,6 +189,7 @@ function ResetPassword() {
                       required
                       maxLength={128}
                     />
+
                     <button
                       type="button"
                       onClick={() => setShow((s) => !s)}
@@ -193,14 +212,18 @@ function ResetPassword() {
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <>
-                      <>{texts.auth.reset.action}</><ArrowRight className="h-4 w-4" />
+                      <>{texts.auth.reset.action}</>
+
+                      <ArrowRight className="h-4 w-4" />
                     </>
                   )}
                 </Button>
               </form>
 
               <p className="mt-6 text-center text-xs text-muted-foreground">
-                <>{texts.auth.reset.remembered}</><Link
+                <>{texts.auth.reset.remembered}</>
+
+                <Link
                   to="/entrar"
                   search={{ tab: "login" }}
                   className="text-primary hover:underline"

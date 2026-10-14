@@ -3,14 +3,14 @@ import { type FormEvent, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
-import { ArrowLeft, Search, Send } from "lucide-react";
-
-import { messagesApi, networkApi, profileApi } from "@/lib/api";
-import { getCurrentUserId } from "@/lib/current-user";
 import { texts } from "@/texts";
 import type { ConversationHeaderProps } from "@/types/routes/messages/conversation-header-props";
 import type { ConversationItemProps } from "@/types/routes/messages/conversation-item-props";
 import type { SendMessageInput } from "@/types/routes/messages/send-message-input";
+import { ArrowLeft, Search, Send } from "lucide-react";
+
+import { messagesApi, networkApi, profileApi } from "@/lib/api";
+import { getCurrentUserId } from "@/lib/current-user";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,9 +95,7 @@ function Mensagens() {
 
   const activeMessages = activeConversation ? messages : [];
 
-  const otherParticipantId = activeConversation?.participantIds.find(
-    (id) => id !== currentUserId,
-  );
+  const otherParticipantId = activeConversation?.participantIds.find((id) => id !== currentUserId);
   const { data: otherUser } = useQuery({
     queryKey: ["profile", "by-id", otherParticipantId],
     queryFn: () => profileApi.getById(otherParticipantId ?? ""),
@@ -117,6 +115,7 @@ function Mensagens() {
           <div className="border-b border-border p-4">
             <div className="flex items-center justify-between mb-3">
               <h1 className="text-lg font-semibold">{texts.messages.title}</h1>
+
               <Button
                 size="sm"
                 variant="outline"
@@ -152,8 +151,10 @@ function Mensagens() {
                           className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition hover:bg-muted"
                         >
                           <UserAvatar src={u.avatar} alt={u.name} className="h-10 w-10" />
+
                           <div className="min-w-0">
                             <p className="truncate text-sm font-medium">{u.name}</p>
+
                             <p className="truncate text-xs text-muted-foreground">{u.headline}</p>
                           </div>
                         </button>
@@ -165,10 +166,14 @@ function Mensagens() {
             ) : (
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input placeholder={texts.messages.searchConversations} className="h-9 rounded-full bg-muted pl-9" />
+                <Input
+                  placeholder={texts.messages.searchConversations}
+                  className="h-9 rounded-full bg-muted pl-9"
+                />
               </div>
             )}
           </div>
+
           <ul className="flex-1 overflow-y-auto">
             {conversations.length === 0 ? (
               <li className="p-4 text-center text-sm text-muted-foreground">
@@ -193,9 +198,7 @@ function Mensagens() {
         <div className={`flex min-h-0 flex-col ${!activeConversation ? "hidden md:flex" : "flex"}`}>
           {!activeConversation ? (
             <div className="flex h-full items-center justify-center">
-              <p className="text-sm text-muted-foreground">
-                {texts.messages.selectConversation}
-              </p>
+              <p className="text-sm text-muted-foreground">{texts.messages.selectConversation}</p>
             </div>
           ) : (
             <>
@@ -203,6 +206,7 @@ function Mensagens() {
                 conversation={activeConversation}
                 onBack={() => setActiveId(null)}
               />
+
               <div className="flex-1 overflow-y-auto bg-muted/30 p-5">
                 <div className="space-y-3">
                   {activeMessages.length === 0 ? (
@@ -237,6 +241,7 @@ function Mensagens() {
                             }`}
                           >
                             <p className="break-words">{m.text}</p>
+
                             <p
                               className={`mt-1 text-[10px] ${isMe ? "text-primary-foreground/70" : "text-muted-foreground"}`}
                             >
@@ -261,6 +266,7 @@ function Mensagens() {
                   placeholder={texts.messages.inputPlaceholder}
                   className="h-10 rounded-full bg-muted"
                 />
+
                 <button
                   type="submit"
                   disabled={!text.trim() || sendMessage.isPending}
@@ -299,13 +305,16 @@ function ConversationItem({ conversation, isActive, onSelect }: ConversationItem
         <Link to="/perfil/$username" params={{ username: otherUser?.username ?? otherId ?? "" }}>
           <UserAvatar src={otherUser?.avatar} alt={title} className="h-11 w-11 shrink-0" />
         </Link>
+
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between">
             <span className="truncate text-sm font-medium">{title}</span>
+
             <span className="text-[11px] text-muted-foreground shrink-0 ml-2">
               {conversation.time ? formatTime(conversation.time) : ""}
             </span>
           </div>
+
           <div className="flex items-center justify-between gap-2">
             <p className="truncate text-xs text-muted-foreground">
               {conversation.lastMessage ?? ""}
@@ -347,6 +356,7 @@ function ConversationHeader({ conversation, onBack }: ConversationHeaderProps) {
         <Link to="/perfil/$username" params={{ username: otherUser?.username ?? otherId ?? "" }}>
           <UserAvatar src={otherUser?.avatar} alt={title} className="h-10 w-10 shrink-0" />
         </Link>
+
         <div className="min-w-0">
           <p className="truncate font-semibold">{title}</p>
           {otherUser?.headline && (

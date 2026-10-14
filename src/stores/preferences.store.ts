@@ -1,8 +1,7 @@
-import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
-
 import type { Theme } from "@/types/preferences/theme";
 import type { PreferencesStorageValue } from "@/types/stores/preferences-storage-value";
+import { create } from "zustand";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 const PREFERENCES_STORAGE_KEY = "connect-grow-preferences";
 const LEGACY_THEME_STORAGE_KEY = "connect-grow-theme";
