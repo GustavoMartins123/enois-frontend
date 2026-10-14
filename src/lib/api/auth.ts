@@ -1,57 +1,30 @@
+import type { StatusResponse } from "@/types/application/api/status-response";
+import type { AuthResponse } from "@/types/application/auth/auth-response";
+import type { AuthUser } from "@/types/application/auth/auth-user";
+import type { LoginInput } from "@/types/application/auth/login-input";
+import type { OAuthStartResponse } from "@/types/application/auth/oauth-start-response";
+import type { SignupInput } from "@/types/application/auth/signup-input";
+
 import { api } from "../api-client";
-
-export interface SignupInput {
-  name: string;
-  email: string;
-  password: string;
-}
-
-export interface LoginInput {
-  email: string;
-  password: string;
-}
-
-export interface AuthUser {
-  id: string;
-  username: string;
-  name: string;
-  headline: string;
-  email: string;
-}
-
-export interface AuthResponse {
-  token: string;
-  refreshToken: string;
-  expiresAt: string;
-  refreshExpiresAt: string;
-  user: AuthUser;
-}
-
-export interface OAuthStartResponse {
-  provider: "GOOGLE" | "APPLE";
-  state: string;
-  authorizationUrl: string;
-}
 
 export const authApi = {
   signup: (data: SignupInput) => api.post<AuthResponse>("/auth/signup", data),
 
   login: (data: LoginInput) => api.post<AuthResponse>("/auth/login", data),
 
-  refresh: (refreshToken: string) =>
-    api.post<AuthResponse>("/auth/refresh", { refreshToken }),
+  refresh: (refreshToken: string) => api.post<AuthResponse>("/auth/refresh", { refreshToken }),
 
   logout: () => api.post<void>("/auth/logout"),
 
   me: () => api.get<AuthUser>("/auth/me"),
 
   forgotPassword: (email: string) =>
-    api.post<{ status: string }>("/auth/password/forgot", { email }),
+    api.post<StatusResponse>("/auth/password/forgot", { email }),
 
   resetPassword: (token: string, password: string) =>
-    api.post<{ status: string }>("/auth/password/reset", { token, password }),
+    api.post<StatusResponse>("/auth/password/reset", { token, password }),
 
-  oauthStart: (provider: "GOOGLE" | "APPLE") =>
+  oauthStart: (provider: OAuthStartResponse["provider"]) =>
     api.get<OAuthStartResponse>(`/auth/oauth/${provider.toLowerCase()}/start`),
 
   oauthCallback: (provider: string, code: string, state: string) =>

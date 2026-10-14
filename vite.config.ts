@@ -23,6 +23,12 @@ export default defineConfig({
         "/api": {
           target: BACKEND_TARGET,
           changeOrigin: true,
+          configure: (proxy) => {
+            proxy.on("proxyReq", (proxyReq) => {
+              proxyReq.removeHeader("origin");
+              proxyReq.removeHeader("referer");
+            });
+          },
         },
       },
     },

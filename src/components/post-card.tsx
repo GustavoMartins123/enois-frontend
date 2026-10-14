@@ -1,62 +1,75 @@
+import { type FormEvent, type ReactNode, useEffect, useMemo, useState } from "react";
+
+import { useQueries, useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+
+import { Bookmark, Flag, Heart, MessageSquare, Send, Share2 } from "lucide-react";
+
 import {
-  Heart,
-  MessageCircle,
-  Bookmark,
-  Share2,
-  Lightbulb,
-  HelpCircle,
-  Briefcase,
-  FolderGit2,
-  BookOpen,
-  Flag,
-} from "lucide-react";
-import { useMemo, useState, useEffect, type FormEvent } from "react";
-import { useQuery, useQueries } from "@tanstack/react-query";
-import { useAuth } from "@/lib/use-auth";
-import { UserAvatar } from "@/components/user-avatar";
+  REACTION_EMOJIS,
+  REPORT_REASONS,
+  commentsApi,
+  feedApi,
+  mediaApi,
+  profileApi,
+  reactionsApi,
+  reportsApi,
+} from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
+import { getCurrentUser, getCurrentUserId } from "@/lib/current-user";
+import { usePostCardStore } from "@/stores/post-card.store";
+import { texts } from "@/texts";
+import type { PostView } from "@/types/application/feed/post-view";
+import type { ReactionType } from "@/types/application/reaction/reaction-type";
+import type { ReportReason } from "@/types/application/report/report-reason";
+import type { AuthorInfoProps } from "@/types/components/post/author-info-props";
+import type { CommentItemProps } from "@/types/components/post/comment-item-props";
+import type { EmbedPlayerProps } from "@/types/components/post/embed-player-props";
+import type { PostCardProps } from "@/types/components/post/post-card-props";
+import type { PostIdProps } from "@/types/components/post/post-id-props";
+import type { PostTypeMeta } from "@/types/components/post/post-type-meta";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { MentionTextarea } from "@/components/mention-textarea";
-import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { commentsApi, reactionsApi, mediaApi, profileApi, reportsApi, feedApi, REACTION_EMOJIS } from "@/lib/api";
-import type { PostView, CommentView, ReactionType } from "@/lib/api";
-import { resolveCdnUrl } from "@/lib/api/media";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
 
-const typeMeta: Record<
-  PostView["type"],
-  { label: string; icon: React.ElementType; className: string }
-> = {
-  INSIGHT: { label: "Insight", icon: Lightbulb, className: "bg-accent text-accent-foreground" },
+import { MentionTextarea } from "@/components/mention-textarea";
+import { UserAvatar } from "@/components/user-avatar";
+
+const typeMeta: Record<PostView["type"], PostTypeMeta> = {
+  INSIGHT: {
+    label: texts.posts.types.insight,
+    className: "bg-highlight-insight text-highlight-insight-text",
+    classAvatar: "bg-user-insight text-highlight-insight-text",
+  },
   QUESTION: {
-    label: "Pergunta",
-    icon: HelpCircle,
+    label: texts.posts.types.question,
     className: "bg-secondary/30 text-secondary-foreground",
+    classAvatar: "",
   },
-  PROJECT: { label: "Projeto", icon: FolderGit2, className: "bg-growth/15 text-growth" },
+  PROJECT: {
+    label: texts.posts.types.project,
+    className: "bg-highlight-project text-highlight-project-text",
+    classAvatar: "bg-user-project text-user-project-text",
+  },
   OPPORTUNITY: {
-    label: "Oportunidade",
-    icon: Briefcase,
+    label: texts.posts.types.opportunity,
     className: "bg-opportunity/20 text-opportunity-foreground",
+    classAvatar: "",
   },
-  ARTICLE: { label: "Artigo", icon: BookOpen, className: "bg-primary-soft text-primary" },
+  ARTICLE: {
+    label: texts.posts.types.article,
+    className: "bg-highlight-article text-highlight-article-text",
+    classAvatar: "bg-user-article text-user-article-text",
+  },
 };
 
-function ReactionsSummary({ postId, reactionStatus }: { postId: string; reactionStatus: string | null }) {
+function ReactionsSummary({ postId }: PostIdProps) {
+  const reactionStatus = usePostCardStore((state) => state.cards[postId]?.reactionStatus ?? null);
+
   const { data } = useQuery({
     queryKey: ["reactions-summary", postId],
     queryFn: () => reactionsApi.listReactions(postId),
@@ -74,30 +87,27 @@ function ReactionsSummary({ postId, reactionStatus }: { postId: string; reaction
       {entries.map(([type, count]) => (
         <span
           key={type}
-          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs tabular-nums ${
-            reactionStatus === type ? "bg-primary-soft text-primary" : "bg-muted text-muted-foreground"
+          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-light tabular-nums ${
+            reactionStatus === type
+              ? "bg-surface-2 text-primary"
+              : "border border-border-soft text-text-subtle"
           }`}
         >
-          {REACTION_EMOJIS[type] ?? type} {count}
+          <>{REACTION_EMOJIS[type] ?? type} {count}</>
         </span>
       ))}
     </div>
   );
 }
 
-function ReactionsDialog({
-  postId,
-  currentUserReaction,
-  currentUserId,
-  open,
-  onOpenChange,
-}: {
-  postId: string;
-  currentUserReaction: string | null;
-  currentUserId?: string;
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-}) {
+function ReactionsDialog({ postId }: PostIdProps) {
+  const currentUserId = getCurrentUserId();
+  const currentUserReaction = usePostCardStore(
+    (state) => state.cards[postId]?.reactionStatus ?? null,
+  );
+  const open = usePostCardStore((state) => state.cards[postId]?.showReactions ?? false);
+  const setShowReactions = usePostCardStore((state) => state.setShowReactions);
+
   const { data } = useQuery({
     queryKey: ["reactions", postId],
     queryFn: () => reactionsApi.listReactions(postId),
@@ -105,9 +115,13 @@ function ReactionsDialog({
   });
 
   const apiReactions = data?.reactions ?? [];
-  const reactions = currentUserReaction && currentUserId && !apiReactions.some((r) => r.userId === currentUserId)
-    ? [{ userId: currentUserId, type: currentUserReaction, createdAt: new Date().toISOString() }, ...apiReactions]
-    : apiReactions;
+  const reactions =
+    currentUserReaction && currentUserId && !apiReactions.some((r) => r.userId === currentUserId)
+      ? [
+          { userId: currentUserId, type: currentUserReaction, createdAt: new Date().toISOString() },
+          ...apiReactions,
+        ]
+      : apiReactions;
 
   const uniqueUserIds = [...new Set(reactions.map((r) => r.userId))];
   const { data: users } = useQuery({
@@ -116,30 +130,35 @@ function ReactionsDialog({
       const results = await Promise.all(
         uniqueUserIds.map((id) => profileApi.getById(id).catch(() => null)),
       );
-      return Object.fromEntries(
-        results.filter(Boolean).map((u) => [u!.id, u!]),
-      );
+      return Object.fromEntries(results.filter(Boolean).map((u) => [u!.id, u!]));
     },
     enabled: open && uniqueUserIds.length > 0,
   });
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(nextOpen) => setShowReactions(postId, nextOpen)}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Reações</DialogTitle>
+          <DialogTitle className="font-light">{texts.posts.reactions.title}</DialogTitle>
         </DialogHeader>
         {reactions.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">Nenhuma reação ainda</p>
+          <p className="py-8 text-center text-[13px] font-light text-text-subtle">
+            {texts.posts.reactions.empty}
+          </p>
         ) : (
           <div className="space-y-2 pt-2">
             {reactions.map((r) => {
               const user = users?.[r.userId];
               return (
-                <div key={`${r.userId}-${r.type}`} className="flex items-center gap-3 rounded-xl bg-muted/30 p-3">
+                <div
+                  key={`${r.userId}-${r.type}`}
+                  className="flex items-center gap-3 rounded-xl bg-surface-1 p-3"
+                >
                   <UserAvatar src={user?.avatar} alt={user?.name} className="h-9 w-9 shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{user?.name ?? "Carregando..."}</p>
+                    <p className="truncate text-[13px] font-light text-text-strong">
+                      {user?.name ?? texts.common.loading}
+                    </p>
                   </div>
                   <span className="text-xl">{REACTION_EMOJIS[r.type] ?? r.type}</span>
                 </div>
@@ -152,29 +171,10 @@ function ReactionsDialog({
   );
 }
 
-const REPORT_REASONS = [
-  "AI_GENERATED",
-  "FAKE_CONTENT",
-  "SCAM",
-  "DISCRIMINATION",
-  "PREJUDICE",
-  "HARASSMENT",
-  "SPAM",
-  "VIOLENCE",
-  "COPYRIGHT",
-  "OTHER",
-];
-
-function ReportDialog({
-  postId,
-  open,
-  onOpenChange,
-}: {
-  postId: string;
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-}) {
-  const [reason, setReason] = useState("SPAM");
+function ReportDialog({ postId }: PostIdProps) {
+  const open = usePostCardStore((state) => state.cards[postId]?.showReport ?? false);
+  const setShowReport = usePostCardStore((state) => state.setShowReport);
+  const [reason, setReason] = useState<ReportReason>("SPAM");
   const [description, setDescription] = useState("");
 
   const submit = async () => {
@@ -182,10 +182,10 @@ function ReportDialog({
       await reportsApi.create({
         targetId: postId,
         targetType: "POST",
-        reason: reason as any,
+        reason,
         description: description || undefined,
       });
-      onOpenChange(false);
+      setShowReport(postId, false);
       setDescription("");
     } catch {
       /* silent */
@@ -193,36 +193,37 @@ function ReportDialog({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(nextOpen) => setShowReport(postId, nextOpen)}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Denunciar post</DialogTitle>
+          <DialogTitle className="font-light">{texts.posts.report.title}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Motivo</Label>
+            <Label className="text-[11px] font-light text-text-subtle">{texts.posts.report.reason}</Label>
             <select
               value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
+              onChange={(e) => setReason(e.target.value as ReportReason)}
+              className="flex h-10 w-full rounded-md border border-border-soft bg-background px-3 py-2 text-[13px] font-light text-text-strong border-transparent bg-muted"
             >
               {REPORT_REASONS.map((r) => (
-                <option key={r} value={r}>
+                <option key={r} value={r} className="h-10 border-transparent bg-muted">
                   {r.replace(/_/g, " ").toLowerCase()}
                 </option>
               ))}
             </select>
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Descrição (opcional)</Label>
+            <Label className="text-[11px] font-light text-text-subtle">{texts.posts.report.description}</Label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
+              className="border-border-soft bg-surface-1 text-[13px] font-light h-10 border-transparent bg-muted"
             />
           </div>
           <Button className="w-full rounded-full" onClick={submit}>
-            Denunciar
+            {texts.posts.report.action}
           </Button>
         </div>
       </DialogContent>
@@ -230,26 +231,40 @@ function ReportDialog({
   );
 }
 
-export function PostCard({ post }: { post: PostView }) {
-  const { user: currentUser } = useAuth();
+export function PostCard({ post }: PostCardProps) {
+  const currentUser = getCurrentUser();
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
-  const Icon = meta.icon;
   const [showComments, setShowComments] = useState(false);
-  const [draft, setDraft] = useState("");
-  const [commentMentions, setCommentMentions] = useState<string[]>([]);
-  const [replyToId, setReplyToId] = useState<string | null>(null);
-  const [localComments, setLocalComments] = useState<CommentView[]>([]);
-  const [postCounters, setPostCounters] = useState(post.counters);
-  const [reactionStatus, setReactionStatus] = useState<string | null>(
-    post.currentUserReaction ?? null,
-  );
   const [saved, setSaved] = useState(false);
-  const [showReactions, setShowReactions] = useState(false);
-  const [showReport, setShowReport] = useState(false);
+  const initializePostCard = usePostCardStore((state) => state.initializePostCard);
+  const disposePostCard = usePostCardStore((state) => state.disposePostCard);
+  const card = usePostCardStore((state) => state.cards[post.id]);
+  const setDraft = usePostCardStore((state) => state.setDraft);
+  const setCommentMentions = usePostCardStore((state) => state.setCommentMentions);
+  const setReplyToId = usePostCardStore((state) => state.setReplyToId);
+  const setComments = usePostCardStore((state) => state.setComments);
+  const addComment = usePostCardStore((state) => state.addComment);
+  const updateCommentCount = usePostCardStore((state) => state.updateCommentCount);
+  const setPostCounters = usePostCardStore((state) => state.setPostCounters);
+  const setReactionStatus = usePostCardStore((state) => state.setReactionStatus);
+  const setShowReactions = usePostCardStore((state) => state.setShowReactions);
+  const setShowReport = usePostCardStore((state) => state.setShowReport);
+
+  const draft = card?.draft ?? "";
+  const commentMentions = card?.commentMentions ?? [];
+  const replyToId = card?.replyToId ?? null;
+  const localComments = card?.localComments ?? [];
+  const postCounters = card?.postCounters ?? post.counters;
+  const reactionStatus = card?.reactionStatus ?? post.currentUserReaction ?? null;
 
   useEffect(() => {
-    setReactionStatus(post.currentUserReaction ?? null);
-  }, [post.currentUserReaction]);
+    initializePostCard(post);
+    return () => disposePostCard(post.id);
+  }, [disposePostCard, initializePostCard, post]);
+
+  useEffect(() => {
+    setReactionStatus(post.id, post.currentUserReaction ?? null);
+  }, [post.currentUserReaction, post.id, setReactionStatus]);
 
   const { data: savedData } = useQuery({
     queryKey: ["saved-posts"],
@@ -272,11 +287,11 @@ export function PostCard({ post }: { post: PostView }) {
 
     try {
       const newComment = await commentsApi.create(post.id, content, replyToId, commentMentions);
-      setLocalComments((current) => [...current, newComment]);
-      setPostCounters((c) => ({ ...c, comments: c.comments + 1 }));
-      setDraft("");
-      setCommentMentions([]);
-      setReplyToId(null);
+      addComment(post.id, newComment);
+      updateCommentCount(post.id, 1);
+      setDraft(post.id, "");
+      setCommentMentions(post.id, []);
+      setReplyToId(post.id, null);
     } catch {
       // silently fail
     }
@@ -286,12 +301,12 @@ export function PostCard({ post }: { post: PostView }) {
     try {
       if (reactionStatus === type) {
         const result = await reactionsApi.removeReaction(post.id);
-        setReactionStatus(null);
-        if ("counters" in result) setPostCounters((result as any).counters);
+        setReactionStatus(post.id, null);
+        if ("counters" in result) setPostCounters(post.id, result.counters!);
       } else {
         const result = await reactionsApi.react(post.id, type);
-        setReactionStatus(type);
-        if ("counters" in result) setPostCounters((result as any).counters);
+        setReactionStatus(post.id, type);
+        if ("counters" in result) setPostCounters(post.id, result.counters!);
       }
     } catch {
       // silently fail
@@ -304,7 +319,7 @@ export function PostCard({ post }: { post: PostView }) {
         ? await reactionsApi.removeSave(post.id)
         : await reactionsApi.save(post.id);
       setSaved(!saved);
-      setPostCounters(result.counters);
+      setPostCounters(post.id, result.counters);
     } catch {
       // silently fail
     }
@@ -313,7 +328,7 @@ export function PostCard({ post }: { post: PostView }) {
   const handleShare = async () => {
     try {
       const result = await reactionsApi.share(post.id);
-      setPostCounters(result.counters);
+      setPostCounters(post.id, result.counters);
       const url = `${window.location.origin}/feed/${post.id}`;
       if (navigator.share) {
         await navigator.share({ url });
@@ -325,21 +340,11 @@ export function PostCard({ post }: { post: PostView }) {
     }
   };
 
-  const handleDeleteComment = async (commentId: string) => {
-    try {
-      await commentsApi.remove(post.id, commentId);
-      setLocalComments((prev) => prev.filter((c) => c.id !== commentId));
-      setPostCounters((c) => ({ ...c, comments: c.comments - 1 }));
-    } catch {
-      // silently fail
-    }
-  };
-
   const loadComments = async () => {
     if (!showComments) {
       try {
         const data = await commentsApi.list(post.id);
-        setLocalComments(data.items);
+        setComments(post.id, data.items);
       } catch {
         // silently fail
       }
@@ -348,18 +353,23 @@ export function PostCard({ post }: { post: PostView }) {
   };
 
   return (
-    <article className="min-w-0 surface-card p-4 transition hover:shadow-[var(--shadow-card)] sm:p-5">
-      <header className="flex items-start gap-3">
-        <AuthorInfo authorUsername={post.authorUsername} authorName={post.authorName} authorAvatar={post.authorAvatar} createdAt={post.createdAt} />
+    <article className="min-w-0 rounded-2xl border border-border-soft bg-surface-card p-4 transition sm:p-5">
+      <header className="flex justify-between items-start gap-3">
+        <AuthorInfo
+          authorUsername={post.authorUsername}
+          authorName={post.authorName}
+          authorAvatar={post.authorAvatar}
+          createdAt={post.createdAt}
+          fallbackClassName={meta.classAvatar}
+        />
         <span
           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${meta.className}`}
         >
-          <Icon className="h-3 w-3" />
           {meta.label}
         </span>
       </header>
 
-      <p className="mt-4 whitespace-pre-line break-words text-[15px] leading-relaxed text-foreground">
+      <p className="mt-4 whitespace-pre-line break-words text-[15px] font-light leading-relaxed text-text-strong">
         {linkifyText(post.content)}
       </p>
 
@@ -369,7 +379,7 @@ export function PostCard({ post }: { post: PostView }) {
         </div>
       )}
 
-      <ReactionsSummary postId={post.id} reactionStatus={reactionStatus} />
+      <ReactionsSummary postId={post.id} />
 
       <LinkPreviews content={post.content} />
 
@@ -379,86 +389,99 @@ export function PostCard({ post }: { post: PostView }) {
             <Badge
               key={t}
               variant="secondary"
-              className="rounded-full bg-muted font-normal text-muted-foreground"
+              className="rounded-full border border-border-soft bg-transparent font-light text-text-subtle"
             >
-              #{t}
+              {texts.posts.tag(t)}
             </Badge>
           ))}
         </div>
       )}
 
-      <footer className="mt-4 flex flex-wrap items-center gap-1 border-t border-border pt-3 text-sm text-muted-foreground">
-        <Popover>
-          <PopoverTrigger asChild>
-            <button
-              className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
-                reactionStatus ? "text-primary" : ""
-              }`}
-              title={reactionStatus ? `Reagiu com ${REACTION_EMOJIS[reactionStatus]}` : "Reagir"}
+      <footer className="mt-4 flex justify-between flex-wrap items-center gap-1 border-t border-border pt-3 text-sm text-muted-foreground">
+        <div className="flex">
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
+                  reactionStatus ? "text-primary" : ""
+                }`}
+                title={
+                  reactionStatus
+                    ? texts.posts.reactions.reactedWith(REACTION_EMOJIS[reactionStatus])
+                    : texts.posts.reactions.react
+                }
+              >
+                {reactionStatus ? (
+                  <span className="text-base leading-none">{REACTION_EMOJIS[reactionStatus]}</span>
+                ) : (
+                  <Heart className="h-4 w-4" />
+                )}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent
+              align="start"
+              side="top"
+              className="w-fit rounded-2xl border-border p-1.5"
             >
-              {reactionStatus ? (
-                <span className="text-base leading-none">{REACTION_EMOJIS[reactionStatus]}</span>
-              ) : (
-                <Heart className="h-4 w-4" />
-              )}
-            </button>
-          </PopoverTrigger>
-          <PopoverContent align="start" side="top" className="w-fit rounded-2xl border-border p-1.5">
-            <div className="flex gap-1">
-              {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(([type, emoji]) => (
-                <button
-                  key={type}
-                  onClick={() => handleReaction(type)}
-                  className={`rounded-lg px-2 py-1 text-xl transition hover:bg-muted ${
-                    reactionStatus === type ? "bg-muted ring-1 ring-primary" : ""
-                  }`}
-                  title={type.toLowerCase()}
-                >
-                  {emoji}
-                </button>
-              ))}
-            </div>
-          </PopoverContent>
-        </Popover>
-        <button
-          onClick={() => setShowReactions(true)}
-          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs tabular-nums transition hover:bg-muted hover:text-foreground text-muted-foreground"
-        >
-          {postCounters.reactions}
-        </button>
-        <button
-          onClick={loadComments}
-          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
-        >
-          <MessageCircle className="h-4 w-4" /> {totalComments}
-        </button>
+              <div className="flex gap-1">
+                {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(
+                  ([type, emoji]) => (
+                    <button
+                      key={type}
+                      onClick={() => handleReaction(type)}
+                      className={`rounded-lg px-2 py-1 text-xl transition hover:bg-muted ${
+                        reactionStatus === type ? "bg-muted ring-1 ring-primary" : ""
+                      }`}
+                      title={type.toLowerCase()}
+                    >
+                      {emoji}
+                    </button>
+                  ),
+                )}
+              </div>
+            </PopoverContent>
+          </Popover>
+          <button
+            onClick={() => setShowReactions(post.id, true)}
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs tabular-nums transition hover:bg-muted hover:text-foreground text-muted-foreground"
+          >
+            {postCounters.reactions}
+          </button>
+          <button
+            onClick={loadComments}
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
+          >
+            <MessageSquare className="h-4 w-4" /><>{totalComments}</>
+          </button>
+
+          <button
+            onClick={handleShare}
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
+          >
+            <Share2 className="h-4 w-4" /><>{texts.posts.share}</>
+          </button>
+          <button
+            onClick={() => setShowReport(post.id, true)}
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
+          >
+            <Flag className="h-4 w-4" />
+          </button>
+        </div>
         <button
           onClick={handleSave}
           className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
             saved ? "text-primary" : ""
           }`}
         >
-          <Bookmark className={`h-4 w-4`} /> {postCounters.saves}
-        </button>
-        <button
-          onClick={handleShare}
-          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
-        >
-          <Share2 className="h-4 w-4" /> Compartilhar
-        </button>
-        <button
-          onClick={() => setShowReport(true)}
-          className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
-        >
-          <Flag className="h-4 w-4" />
+          <Bookmark className="h-4 w-4" /><>{postCounters.saves}</>
         </button>
       </footer>
 
-      <ReactionsDialog postId={post.id} currentUserReaction={reactionStatus} currentUserId={currentUser?.id} open={showReactions} onOpenChange={setShowReactions} />
-      <ReportDialog postId={post.id} open={showReport} onOpenChange={setShowReport} />
+      <ReactionsDialog postId={post.id} />
+      <ReportDialog postId={post.id} />
 
       {showComments && (
-        <section className="mt-4 border-t border-border pt-4">
+        <section className="mt-4 border-t border-border-soft pt-4">
           <div className="space-y-3">
             {localComments
               .filter((c) => !c.parentCommentId)
@@ -466,46 +489,18 @@ export function PostCard({ post }: { post: PostView }) {
                 const replies = localComments.filter((r) => r.parentCommentId === comment.id);
                 return (
                   <div key={comment.id}>
-                    <CommentItem
-                      comment={comment}
-                      currentUserId={currentUser?.id}
-                      onDelete={handleDeleteComment}
-                      onReply={async (c) => {
-                        try {
-                          const profile = await profileApi.getById(c.authorId);
-                          if (profile?.username) {
-                            setDraft(`@${profile.username} `);
-                            setCommentMentions([c.authorId]);
-                          }
-                        } catch {
-                          setDraft(`${c.authorName} `);
-                        }
-                        setReplyToId(c.id);
-                      }}
-                    />
+                    <CommentItem comment={comment} />
                     {replies.length > 0 && (
-                      <div className="ml-10 mt-2 space-y-2 border-l-2 border-border pl-4">
+                      <div className="ml-10 mt-2 space-y-2 border-l-2 border-border-soft pl-4">
                         {replies.map((reply) => {
-                          const parentAuthor = localComments.find((c) => c.id === reply.parentCommentId)?.authorName;
+                          const parentAuthor = localComments.find(
+                            (c) => c.id === reply.parentCommentId,
+                          )?.authorName;
                           return (
                             <CommentItem
                               key={reply.id}
                               comment={reply}
                               replyingTo={parentAuthor}
-                              currentUserId={currentUser?.id}
-                              onDelete={handleDeleteComment}
-                              onReply={async (c) => {
-                                try {
-                                  const profile = await profileApi.getById(c.authorId);
-                                  if (profile?.username) {
-                                    setDraft(`@${profile.username} `);
-                                    setCommentMentions([c.authorId]);
-                                  }
-                                } catch {
-                                  setDraft(`${c.authorName} `);
-                                }
-                                setReplyToId(c.id);
-                              }}
                             />
                           );
                         })}
@@ -515,24 +510,39 @@ export function PostCard({ post }: { post: PostView }) {
                 );
               })}
             {localComments.filter((c) => !c.parentCommentId).length === 0 && (
-              <p className="py-4 text-center text-sm text-muted-foreground">
-                Nenhum comentário ainda. Seja o primeiro a comentar.
+              <p className="py-4 text-center text-[13px] font-light text-text-subtle">
+                {texts.posts.comments.empty}
               </p>
             )}
           </div>
 
-          <form onSubmit={submitComment} className="mt-4 flex items-center gap-2">
-            <UserAvatar src={currentUser?.avatar} alt={currentUser?.name} className="h-8 w-8 shrink-0" />
-            <MentionTextarea
-              value={draft}
-              onChange={(val, ids) => { setDraft(val); setCommentMentions(ids); }}
-              placeholder="Comente com contexto, dúvida ou referência..."
-              className="h-10 resize-none rounded-full bg-muted px-4 py-2 text-sm outline-none"
-              maxLength={280}
+          <form onSubmit={submitComment} className="mt-4 flex items-center gap-2.5">
+            <UserAvatar
+              src={currentUser?.avatar}
+              alt={currentUser?.name}
+              className="h-8 w-8 shrink-0"
             />
-            <Button type="submit" size="sm" className="rounded-full" disabled={!draft.trim()}>
-              Enviar
-            </Button>
+            <div className="flex flex-1 items-center gap-2 rounded-full border border-border-soft bg-surface-1 py-1.5 pl-4 pr-1.5">
+              <MentionTextarea
+                value={draft}
+                onChange={(val, ids) => {
+                  setDraft(post.id, val);
+                  setCommentMentions(post.id, ids);
+                }}
+                placeholder={texts.posts.comments.placeholder}
+                className="h-6 min-h-6 flex-1 resize-none border-0 bg-transparent p-0 text-[13px] font-light outline-none"
+                maxLength={280}
+              />
+              <Button
+                type="submit"
+                size="icon"
+                className="h-7 w-7 shrink-0 rounded-full"
+                disabled={!draft.trim()}
+                aria-label={texts.posts.comments.send}
+              >
+                <Send className="h-3.5 w-3.5" />
+              </Button>
+            </div>
           </form>
         </section>
       )}
@@ -540,21 +550,39 @@ export function PostCard({ post }: { post: PostView }) {
   );
 }
 
-function CommentItem({
-  comment,
-  replyingTo,
-  currentUserId,
-  onDelete,
-  onReply,
-}: {
-  comment: CommentView;
-  replyingTo?: string;
-  currentUserId?: string;
-  onDelete?: (commentId: string) => void;
-  onReply?: (comment: CommentView) => void;
-}) {
+function CommentItem({ comment, replyingTo }: CommentItemProps) {
+  const currentUserId = getCurrentUserId();
+  const postId = comment.postId;
+  const setDraft = usePostCardStore((state) => state.setDraft);
+  const setCommentMentions = usePostCardStore((state) => state.setCommentMentions);
+  const setReplyToId = usePostCardStore((state) => state.setReplyToId);
+  const removeComment = usePostCardStore((state) => state.removeComment);
+  const updateCommentCount = usePostCardStore((state) => state.updateCommentCount);
   const isOwner = currentUserId === comment.authorId;
   const [commentReaction, setCommentReaction] = useState<string | null>(null);
+
+  const handleReply = async () => {
+    try {
+      const profile = await profileApi.getById(comment.authorId);
+      if (profile?.username) {
+        setDraft(postId, `@${profile.username} `);
+        setCommentMentions(postId, [comment.authorId]);
+      }
+    } catch {
+      setDraft(postId, `${comment.authorName} `);
+    }
+    setReplyToId(postId, comment.id);
+  };
+
+  const handleDelete = async () => {
+    try {
+      await commentsApi.remove(postId, comment.id);
+      removeComment(postId, comment.id);
+      updateCommentCount(postId, -1);
+    } catch {
+      // silently fail
+    }
+  };
 
   const handleCommentReaction = async (type: ReactionType) => {
     try {
@@ -565,62 +593,73 @@ function CommentItem({
         await reactionsApi.reactComment(comment.postId, comment.id, type);
         setCommentReaction(type);
       }
-    } catch {}
+    } catch {
+      /* ignore */
+    }
   };
 
   return (
-    <div className="flex gap-3">
-      <UserAvatar src={comment.authorAvatar} alt={comment.authorName} className="h-8 w-8 shrink-0" />
+    <div className="flex gap-2.5">
+      <UserAvatar
+        src={comment.authorAvatar}
+        alt={comment.authorName}
+        className="h-8 w-8 shrink-0"
+      />
       <div className="min-w-0 flex-1">
-        <div className="rounded-2xl bg-muted/60 px-3 py-2">
+        <div className="rounded-xl bg-surface-1 px-3 py-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-semibold">{comment.authorName}</span>
+            <span className="text-[12px] font-medium text-text-strong">{comment.authorName}</span>
             {replyingTo && (
-              <span className="text-[11px] text-muted-foreground">
-                respondendo a {replyingTo}
+              <span className="text-[11px] font-light text-text-subtle">
+                {texts.posts.comments.replyingTo(replyingTo)}
               </span>
             )}
-            <span className="text-[11px] text-muted-foreground">
+            <span className="text-[11px] font-light text-text-subtle">
               {formatTime(comment.createdAt)}
             </span>
           </div>
-          <p className="mt-1 break-words text-sm leading-relaxed">{linkifyText(comment.content)}</p>
+          <p className="mt-0.5 break-words text-[13px] font-light leading-relaxed text-text-strong">
+            {linkifyText(comment.content)}
+          </p>
         </div>
-        <div className="mt-1 flex items-center gap-2 px-3 text-[11px] font-medium text-muted-foreground">
-          <button
-            onClick={() => onReply?.(comment)}
-            className="transition-colors hover:text-foreground"
-          >
-            Responder
+        <div className="mt-1 flex items-center gap-3 px-3 text-[11px] font-light text-text-subtle">
+          <button onClick={handleReply} className="transition-colors hover:text-primary">
+            {texts.posts.comments.reply}
           </button>
           <Popover>
             <PopoverTrigger asChild>
-              <button className="transition-colors hover:text-foreground">
-                {commentReaction ? REACTION_EMOJIS[commentReaction] : "Reagir"}
+              <button className="transition-colors hover:text-primary">
+                {commentReaction ? REACTION_EMOJIS[commentReaction] : texts.posts.reactions.react}
               </button>
             </PopoverTrigger>
-            <PopoverContent align="start" side="top" className="w-fit rounded-2xl border-border p-1.5">
+            <PopoverContent
+              align="start"
+              side="top"
+              className="w-fit rounded-2xl border-border-soft bg-surface-card p-1.5"
+            >
               <div className="flex gap-1">
-                {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(([type, emoji]) => (
-                  <button
-                    key={type}
-                    onClick={() => handleCommentReaction(type)}
-                    className={`rounded-lg px-2 py-1 text-lg transition hover:bg-muted ${
-                      commentReaction === type ? "bg-muted ring-1 ring-primary" : ""
-                    }`}
-                  >
-                    {emoji}
-                  </button>
-                ))}
+                {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(
+                  ([type, emoji]) => (
+                    <button
+                      key={type}
+                      onClick={() => handleCommentReaction(type)}
+                      className={`rounded-lg px-2 py-1 text-lg transition hover:bg-surface-2 ${
+                        commentReaction === type ? "bg-surface-2 ring-1 ring-primary" : ""
+                      }`}
+                    >
+                      {emoji}
+                    </button>
+                  ),
+                )}
               </div>
             </PopoverContent>
           </Popover>
-          {isOwner && onDelete && (
+          {isOwner && (
             <button
-              onClick={() => onDelete(comment.id)}
+              onClick={handleDelete}
               className="text-destructive transition-colors hover:text-destructive/80"
             >
-              Excluir
+              {texts.posts.comments.delete}
             </button>
           )}
         </div>
@@ -634,34 +673,37 @@ function AuthorInfo({
   authorName,
   authorAvatar,
   createdAt,
-}: {
-  authorUsername: string;
-  authorName: string;
-  authorAvatar: string | null;
-  createdAt: string;
-}) {
+  fallbackClassName,
+}: AuthorInfoProps) {
   return (
     <div className="flex items-start gap-3">
       <Link to="/perfil/$username" params={{ username: authorUsername }}>
-        <UserAvatar src={authorAvatar} alt={authorName} className="h-11 w-11" />
+        <UserAvatar
+          src={authorAvatar}
+          alt={authorName}
+          fallbackClassName={fallbackClassName}
+          className="h-11 w-11"
+        />
       </Link>
       <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+        <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
           <Link
             to="/perfil/$username"
             params={{ username: authorUsername }}
-            className="font-semibold hover:underline"
+            className="font-bold hover:underline text-[14px]"
           >
             {authorName}
           </Link>
-          <span className="text-xs text-muted-foreground">· {formatTime(createdAt)}</span>
+          <span className="text-[12px] font-light text-text-date">
+            {texts.posts.authorTime(formatTime(createdAt))}
+          </span>
         </div>
       </div>
     </div>
   );
 }
 
-function EmbedPlayer({ type, id, url }: { type: string; id: string; url: string }) {
+function EmbedPlayer({ type, id }: EmbedPlayerProps) {
   const [playing, setPlaying] = useState(false);
 
   if (!playing) {
@@ -673,18 +715,22 @@ function EmbedPlayer({ type, id, url }: { type: string; id: string; url: string 
       <button
         type="button"
         onClick={() => setPlaying(true)}
-        className="relative mt-3 block w-full overflow-hidden rounded-xl border border-border text-left transition hover:opacity-90"
+        className="relative mt-3 block w-full overflow-hidden rounded-xl border border-border-soft text-left transition hover:opacity-90"
       >
         {thumbnail ? (
-          <img src={thumbnail} alt="" className="aspect-video w-full bg-muted object-cover" />
+          <img src={thumbnail} alt="" className="aspect-video w-full bg-surface-1 object-cover" />
         ) : (
-          <div className="flex aspect-video w-full items-center justify-center bg-muted">
+          <div className="flex aspect-video w-full items-center justify-center bg-surface-1">
             <div className="text-center">
               <p className="text-2xl">
-                {type === "vimeo" ? "🎬" : type === "twitch" ? "📺" : "▶️"}
+                {type === "vimeo"
+                  ? texts.posts.video.icons.cinema
+                  : type === "twitch"
+                    ? texts.posts.video.icons.television
+                    : texts.posts.video.icons.play}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Clique para assistir no {type === "youtube" ? "YouTube" : type}
+              <p className="mt-1 text-[12px] font-light text-text-subtle">
+                {texts.posts.video.watchOn(type === "youtube" ? "YouTube" : type)}
               </p>
             </div>
           </div>
@@ -708,7 +754,7 @@ function EmbedPlayer({ type, id, url }: { type: string; id: string; url: string 
   };
 
   return (
-    <div className="mt-3 overflow-hidden rounded-xl border border-border bg-muted">
+    <div className="mt-3 overflow-hidden rounded-xl border border-border-soft bg-surface-1">
       <iframe
         src={srcs[type] ?? ""}
         className="aspect-video w-full"
@@ -719,7 +765,7 @@ function EmbedPlayer({ type, id, url }: { type: string; id: string; url: string 
   );
 }
 
-function LinkPreviews({ content }: { content: string }) {
+function LinkPreviews({ content }: Pick<PostView, "content">) {
   const urlRegex = /https?:\/\/[^\s]+/g;
   const urls = content.match(urlRegex) ?? [];
   const seen = new Set<string>();
@@ -732,7 +778,7 @@ function LinkPreviews({ content }: { content: string }) {
 
         const video = extractVideoId(url);
         if (video) {
-          return <EmbedPlayer key={url} type={video.type} id={video.id} url={url} />;
+          return <EmbedPlayer key={url} type={video.type} id={video.id} />;
         }
 
         return (
@@ -741,16 +787,28 @@ function LinkPreviews({ content }: { content: string }) {
             href={url}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-2 flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm transition hover:bg-muted"
+            className="mt-2 flex items-center gap-3 rounded-xl border border-border-soft bg-surface-1 px-4 py-3 text-[13px] font-light transition hover:bg-surface-3"
           >
-            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary-soft text-xs font-bold text-primary">
-              {(() => { try { return new URL(url).hostname.slice(0, 2).toUpperCase(); } catch { return "🌐"; } })()}
+            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-surface-2 text-xs font-bold text-primary">
+              {(() => {
+                try {
+                  return new URL(url).hostname.slice(0, 2).toUpperCase();
+                } catch {
+                  return texts.posts.video.icons.web;
+                }
+              })()}
             </div>
             <div className="min-w-0">
-              <p className="truncate font-medium text-foreground">
-                {(() => { try { return new URL(url).hostname; } catch { return url; } })()}
+              <p className="truncate font-normal text-text-strong">
+                {(() => {
+                  try {
+                    return new URL(url).hostname;
+                  } catch {
+                    return url;
+                  }
+                })()}
               </p>
-              <p className="truncate text-xs text-muted-foreground">{url}</p>
+              <p className="truncate text-[11px] font-light text-text-subtle">{url}</p>
             </div>
           </a>
         );
@@ -759,8 +817,8 @@ function LinkPreviews({ content }: { content: string }) {
   );
 }
 
-function extractVideoId(url: string): { type: string; id: string } | null {
-  const patterns: [RegExp, string][] = [
+function extractVideoId(url: string): EmbedPlayerProps | null {
+  const patterns: [RegExp, EmbedPlayerProps["type"]][] = [
     [/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/, "youtube"],
     [/(?:dailymotion\.com\/video\/|dai\.ly\/)([a-zA-Z0-9]+)/, "dailymotion"],
     [/(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(\d+)/, "vimeo"],
@@ -775,7 +833,7 @@ function extractVideoId(url: string): { type: string; id: string } | null {
 }
 
 function linkifyText(text: string) {
-  const parts: React.ReactNode[] = [];
+  const parts: ReactNode[] = [];
   const regex = /(@\w+|https?:\/\/[^\s]+)/g;
   let last = 0;
   let match: RegExpExecArray | null;
@@ -826,16 +884,16 @@ function formatTime(iso: string | null | undefined): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "agora";
-  if (diffMin < 60) return `há ${diffMin}min`;
+  if (diffMin < 1) return texts.time.now;
+  if (diffMin < 60) return texts.time.minutesAgo(diffMin);
   const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `há ${diffH}h`;
+  if (diffH < 24) return texts.time.hoursAgo(diffH);
   const diffD = Math.floor(diffH / 24);
-  if (diffD < 7) return `há ${diffD} dias`;
+  if (diffD < 7) return texts.time.daysAgo(diffD);
   return date.toLocaleDateString("pt-BR");
 }
 
-function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
+function MediaGrid({ mediaIds }: Pick<PostView, "mediaIds">) {
   const queryResults = useQueries({
     queries: mediaIds.map((id) => ({
       queryKey: ["media", id],
@@ -853,8 +911,12 @@ function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
 
   if (isVideo) {
     return (
-      <div className="overflow-hidden rounded-xl border border-border">
-        <video src={resolveCdnUrl(items[0].cdnUrl)} controls className="max-h-96 w-full bg-muted" />
+      <div className="overflow-hidden rounded-xl border border-border-soft">
+        <video
+          src={resolveCdnUrl(items[0].cdnUrl)}
+          controls
+          className="max-h-96 w-full bg-surface-1"
+        />
       </div>
     );
   }
@@ -867,9 +929,13 @@ function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
             key={m.id}
             type="button"
             onClick={() => setFullscreenUrl(resolveCdnUrl(m.cdnUrl) ?? null)}
-            className="overflow-hidden rounded-xl border border-border text-left"
+            className="overflow-hidden rounded-xl border border-border-soft text-left"
           >
-            <img src={resolveCdnUrl(m.cdnUrl)} alt="" className="h-48 w-full object-cover bg-muted transition hover:scale-105" />
+            <img
+              src={resolveCdnUrl(m.cdnUrl)}
+              alt=""
+              className="h-48 w-full object-cover bg-surface-1 transition hover:scale-105"
+            />
           </button>
         ))}
       </div>

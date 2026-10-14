@@ -1,12 +1,6 @@
-import { api, buildQuery } from "../api-client";
+import type { RankingUser } from "@/types/application/ranking/ranking-user";
 
-export interface RankingUser {
-  id: string;
-  username: string;
-  name: string;
-  avatar: string | null;
-  reputation: number;
-}
+import { api, buildQuery } from "../api-client";
 
 export const rankingApi = {
   list: (limit = 20) => api.get<RankingUser[]>(`/profile/ranking${buildQuery({ limit })}`),

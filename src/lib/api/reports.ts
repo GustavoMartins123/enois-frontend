@@ -1,27 +1,11 @@
+import { REPORT_REASONS } from "@/constants/report-reasons";
+import type { CreateReportResponse } from "@/types/application/report/create-report-response";
+import type { ReportInput } from "@/types/application/report/report-input";
+
 import { api } from "../api-client";
 
-export const REPORT_REASONS = [
-  "AI_GENERATED",
-  "FAKE_CONTENT",
-  "SCAM",
-  "DISCRIMINATION",
-  "PREJUDICE",
-  "HARASSMENT",
-  "SPAM",
-  "VIOLENCE",
-  "COPYRIGHT",
-  "OTHER",
-] as const;
-
-export type ReportReason = (typeof REPORT_REASONS)[number];
-
-export interface ReportInput {
-  targetId: string;
-  targetType: "POST" | "COMMENT" | "USER";
-  reason: ReportReason;
-  description?: string;
-}
+export { REPORT_REASONS } from "@/constants/report-reasons";
 
 export const reportsApi = {
-  create: (data: ReportInput) => api.post<{ id: string; status: string }>("/reports", data),
+  create: (data: ReportInput) => api.post<CreateReportResponse>("/reports", data),
 };

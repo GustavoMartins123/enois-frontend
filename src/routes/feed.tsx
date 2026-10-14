@@ -1,39 +1,53 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { requireAuth } from "@/lib/require-auth";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Image, FileText, BarChart3, Calendar, UserPlus, TrendingUp, X, Film } from "lucide-react";
-import { useState, useRef, type FormEvent } from "react";
-import { useMediaUpload } from "@/lib/use-media-upload";
-import type { UploadResult } from "@/lib/use-media-upload";
+import { type ChangeEvent, type FormEvent, useRef, useState } from "react";
 
-interface MediaItem {
-  type: "image" | "video";
-  file: File;
-  preview: string;
-}
-import { AppShell } from "@/components/app-shell";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, createFileRoute } from "@tanstack/react-router";
+
+import {
+  BarChart3,
+  Calendar,
+  FileText,
+  Film,
+  Image,
+  Loader2,
+  TrendingUp,
+  UserPlus,
+  X,
+} from "lucide-react";
+
+import { eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
+import { requireAuth } from "@/lib/require-auth";
+import { useMediaUpload } from "@/lib/use-media-upload";
+import { texts } from "@/texts";
+import type { CreatePostInput } from "@/types/application/feed/create-post-input";
+import type { FeedTab } from "@/types/application/feed/feed-tab";
+import type { PostView } from "@/types/application/feed/post-view";
+import type { ComposerActionProps } from "@/types/routes/feed/composer-action-props";
+import type { MediaItem } from "@/types/routes/feed/media-item";
+import type { TabPillProps } from "@/types/routes/feed/tab-pill-props";
+
+import { Button } from "@/components/ui/button";
+
+import { AppContainer } from "@/components/app-container";
+import { MentionTextarea } from "@/components/mention-textarea";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
-import { Button } from "@/components/ui/button";
-import { MentionTextarea } from "@/components/mention-textarea";
-import { feedApi, networkApi, eventsApi, profileApi, ApiError } from "@/lib/api";
-import type { PostView } from "@/lib/api";
 
 export const Route = createFileRoute("/feed")({
   beforeLoad: requireAuth,
   head: () => ({
     meta: [
-      { title: "Conexão · Início" },
+      { title: texts.feed.seo.title },
       {
         name: "description",
-        content: "Seu feed de insights, perguntas e projetos da comunidade profissional.",
+        content: texts.feed.seo.description,
       },
     ],
   }),
   component: Home,
 });
 
-function useFeed(tab: string | undefined) {
+function useFeed(tab: FeedTab) {
   return useQuery({
     queryKey: ["feed", tab],
     queryFn: () => feedApi.list(null, 20, tab),
@@ -63,8 +77,8 @@ function useEvents() {
 
 function Home() {
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<string | undefined>("FOR_YOU");
-  const { data: feedData } = useFeed(tab);
+  const [tab, setTab] = useState<FeedTab>("FOR_YOU");
+  const { data: feedData, isFetching: feedLoading } = useFeed(tab);
   const { data: profile } = useProfile();
   const { data: suggestions } = useSuggestions();
   const { data: eventsData } = useEvents();
@@ -73,12 +87,12 @@ function Home() {
   const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([]);
   const [postType, setPostType] = useState<PostView["type"]>("INSIGHT");
   const [media, setMedia] = useState<MediaItem[]>([]);
+  const [publishError, setPublishError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const upload = useMediaUpload();
 
   const createPost = useMutation({
-    mutationFn: (data: { content: string; type: PostView["type"]; mediaIds?: string[]; mentionedUserIds?: string[] }) =>
-      feedApi.create(data),
+    mutationFn: (data: CreatePostInput) => feedApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["feed"] });
     },
@@ -89,6 +103,7 @@ function Home() {
     const content = draft.trim();
     if (!content) return;
 
+    setPublishError(null);
     try {
       let mediaIds: string[] = [];
       if (media.length > 0) {
@@ -100,12 +115,12 @@ function Home() {
       setMentionedUserIds([]);
       setPostType("INSIGHT");
       setMedia([]);
-    } catch {
-      // error handled by mutation state
+    } catch (err) {
+      setPublishError(err instanceof Error ? err.message : texts.feed.composer.publishError);
     }
   };
 
-  const handleMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMediaSelect = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
@@ -142,22 +157,28 @@ function Home() {
   const eventList = eventsData?.items ?? [];
 
   return (
-    <AppShell>
+    <AppContainer>
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-4">
           {/* Composer */}
-          <form onSubmit={publishPost} className="surface-card p-4 sm:p-5">
+          <form
+            onSubmit={publishPost}
+            className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-5"
+          >
             <div className="flex items-center gap-3">
               <UserAvatar
                 src={profileUser?.avatar}
-                alt={profileUser?.name ?? "Você"}
+                alt={profileUser?.name ?? texts.feed.you}
                 className="h-11 w-11"
               />
               <MentionTextarea
                 value={draft}
-                onChange={(val, ids) => { setDraft(val); setMentionedUserIds(ids); }}
-                placeholder="Compartilhe algo que aprendeu hoje..."
-                className="min-h-11 flex-1 resize-none rounded-2xl border-border bg-muted/40 px-3 py-2 text-sm"
+                onChange={(val, ids) => {
+                  setDraft(val);
+                  setMentionedUserIds(ids);
+                }}
+                placeholder={texts.feed.composer.placeholder}
+                className="min-h-11 flex-1 resize-none rounded-2xl border-border-soft bg-surface-1 px-3 py-2 text-[14px] font-light"
                 maxLength={600}
               />
             </div>
@@ -166,28 +187,27 @@ function Home() {
               <div className="relative mt-3">
                 {mediaType === "image" ? (
                   <div
-                    className={`grid gap-2 ${
-                      media.length === 1
-                        ? "grid-cols-1"
-                        : media.length === 2
-                          ? "grid-cols-2"
-                          : "grid-cols-2"
-                    }`}
+                    className={`grid gap-2 ${media.length === 1
+                      ? "grid-cols-1"
+                      : media.length === 2
+                        ? "grid-cols-2"
+                        : "grid-cols-2"
+                      }`}
                   >
                     {media.map((item, i) => (
                       <div
                         key={i}
-                        className="relative overflow-hidden rounded-xl border border-border"
+                        className="relative overflow-hidden rounded-xl border border-border-soft"
                       >
                         <img
                           src={item.preview}
                           alt=""
-                          className="h-48 w-full object-cover bg-muted"
+                          className="h-48 w-full object-cover bg-surface-1"
                         />
                         <button
                           type="button"
                           onClick={() => removeMedia(i)}
-                          className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-background/80 text-foreground shadow hover:bg-background"
+                          className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-surface-card/80 text-text-strong shadow hover:bg-surface-card"
                         >
                           <X className="h-4 w-4" />
                         </button>
@@ -195,12 +215,16 @@ function Home() {
                     ))}
                   </div>
                 ) : (
-                  <div className="relative overflow-hidden rounded-xl border border-border">
-                    <video src={media[0].preview} controls className="max-h-64 w-full bg-muted" />
+                  <div className="relative overflow-hidden rounded-xl border border-border-soft">
+                    <video
+                      src={media[0].preview}
+                      controls
+                      className="max-h-64 w-full bg-surface-1"
+                    />
                     <button
                       type="button"
                       onClick={() => removeMedia(0)}
-                      className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-background/80 text-foreground shadow hover:bg-background"
+                      className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-surface-card/80 text-text-strong shadow hover:bg-surface-card"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -218,29 +242,29 @@ function Home() {
               onChange={handleMediaSelect}
             />
 
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-sm text-muted-foreground">
-              <div className="flex flex-wrap gap-1">
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border-soft pt-3 text-[13px] font-light text-text-subtle">
+              <div className="flex flex-wrap gap-1.5">
                 <ComposerAction
                   icon={Image}
-                  label="Insight"
+                  label={texts.feed.composer.types.insight}
                   active={postType === "INSIGHT"}
                   onClick={() => setPostType("INSIGHT")}
                 />
                 <ComposerAction
                   icon={FileText}
-                  label="Artigo"
+                  label={texts.feed.composer.types.article}
                   active={postType === "ARTICLE"}
                   onClick={() => setPostType("ARTICLE")}
                 />
                 <ComposerAction
                   icon={BarChart3}
-                  label="Pergunta"
+                  label={texts.feed.composer.types.question}
                   active={postType === "QUESTION"}
                   onClick={() => setPostType("QUESTION")}
                 />
                 <ComposerAction
                   icon={Calendar}
-                  label="Projeto"
+                  label={texts.feed.composer.types.project}
                   active={postType === "PROJECT"}
                   onClick={() => setPostType("PROJECT")}
                 />
@@ -248,19 +272,24 @@ function Home() {
                   icon={mediaType === "video" ? Film : Image}
                   label={
                     mediaType === "video"
-                      ? "Vídeo"
+                      ? texts.feed.composer.video
                       : media.length > 0
-                        ? `${media.length} mídia`
-                        : "Mídia"
+                        ? texts.feed.composer.mediaCount(media.length)
+                        : texts.feed.composer.media
                   }
                   active={media.length > 0}
                   onClick={() => fileRef.current?.click()}
                 />
               </div>
               <div className="flex items-center gap-2">
-                {upload.status === "uploading" && (
-                  <span className="text-xs text-muted-foreground">
-                    Enviando... {upload.progress}%
+                {publishError && (
+                  <p className="max-w-[200px] truncate text-[12px] font-light text-destructive">
+                    {publishError}
+                  </p>
+                )}
+                {!publishError && upload.status === "uploading" && (
+                  <span className="text-[12px] font-light text-text-subtle">
+                    {texts.feed.composer.uploadProgress(upload.progress)}
                   </span>
                 )}
                 <Button
@@ -268,65 +297,80 @@ function Home() {
                   className="rounded-full"
                   disabled={!draft.trim() || createPost.isPending || upload.status === "uploading"}
                 >
-                  {createPost.isPending ? "Publicando..." : "Publicar"}
+                  {createPost.isPending || upload.status === "uploading" ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      <>{upload.status === "uploading" ? texts.common.sending : texts.common.publishing}</>
+                    </>
+                  ) : (
+                    texts.common.publish
+                  )}
                 </Button>
               </div>
             </div>
           </form>
 
           {/* Tabs */}
-          <div className="flex items-center gap-1 overflow-x-auto rounded-full border border-border bg-card p-1 text-sm">
+          <div className="flex flex-wrap items-center gap-1.5">
             <TabPill active={tab === "FOR_YOU"} onClick={() => setTab("FOR_YOU")}>
-              Para você
+              {texts.feed.tabs.forYou}
             </TabPill>
             <TabPill active={tab === "ALL"} onClick={() => setTab("ALL")}>
-              Tudo
+              {texts.feed.tabs.all}
             </TabPill>
             <TabPill active={tab === "FOLLOWING"} onClick={() => setTab("FOLLOWING")}>
-              Seguindo
+              {texts.feed.tabs.following}
             </TabPill>
             <TabPill active={tab === "RECENT"} onClick={() => setTab("RECENT")}>
-              Discussões
+              {texts.feed.tabs.discussions}
             </TabPill>
             <TabPill active={tab === "PROJECTS"} onClick={() => setTab("PROJECTS")}>
-              Projetos
+              {texts.feed.tabs.projects}
             </TabPill>
           </div>
 
           <div className="space-y-4">
-            {feedPosts.map((p) => (
-              <PostCard key={p.id} post={p} />
-            ))}
+            {feedLoading && (
+              <div className="flex items-center justify-center py-8 text-text-subtle">
+                <Loader2 className="h-6 w-6 animate-spin" />
+              </div>
+            )}
+            {!feedLoading &&
+              feedPosts.map((p) => (
+                <PostCard key={p.id} post={p} />
+              ))}
           </div>
         </div>
 
         {/* Right rail */}
-        <aside className="hidden space-y-4 lg:block">
+        <aside className="sticky top-20 hidden max-h-[calc(100vh-6rem)] space-y-4 overflow-y-auto lg:block">
           {profileUser && (
-            <div className="surface-card overflow-hidden">
-              <div className="h-16" style={{ background: "var(--gradient-primary)" }} />
-              <div className="-mt-8 px-5 pb-5 text-center">
+            <div className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
+              <div className="h-14" style={{ background: "var(--gradient-primary)" }} />
+              <div className="-mt-7 px-4 pb-4 text-center">
                 <UserAvatar
                   src={profileUser.avatar}
                   alt={profileUser.name}
-                  className="mx-auto h-16 w-16 ring-4 ring-card"
+                  className="mx-auto h-16 w-16 ring-4 ring-surface-card"
                 />
                 <Link
                   to="/perfil/$username"
                   params={{ username: profileUser.username }}
-                  className="mt-3 block font-semibold hover:underline"
+                  className="mt-2 block text-[14px] font-light text-text-strong hover:underline"
                 >
                   {profileUser.name}
                 </Link>
-                <p className="line-clamp-2 text-xs text-muted-foreground">{profileUser.headline}</p>
-                <div className="mt-4 grid grid-cols-2 gap-1 border-t border-border pt-3 text-xs">
+                <p className="line-clamp-2 text-[12px] font-light text-text-subtle">
+                  {profileUser.headline}
+                </p>
+                <div className="mt-3 grid grid-cols-2 gap-1 border-t border-border-soft pt-3 text-[12px]">
                   <div>
-                    <p className="font-semibold text-foreground">{profileUser.connectionsCount}</p>
-                    <p className="text-muted-foreground">Conexões</p>
+                    <p className="font-light text-text-strong">{profileUser.connectionsCount}</p>
+                    <p className="text-text-subtle">{texts.feed.sidebar.connections}</p>
                   </div>
                   <div>
-                    <p className="font-semibold text-foreground">{profileUser.followersCount}</p>
-                    <p className="text-muted-foreground">Seguidores</p>
+                    <p className="font-light text-text-strong">{profileUser.followersCount}</p>
+                    <p className="text-text-subtle">{texts.feed.sidebar.followers}</p>
                   </div>
                 </div>
               </div>
@@ -334,13 +378,13 @@ function Home() {
           )}
 
           {suggestionList.length > 0 && (
-            <div className="surface-card p-4 sm:p-5">
+            <div className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-5">
               <div className="flex items-center gap-2">
                 <UserPlus className="h-4 w-4 text-primary" />
-                <h3 className="font-semibold">Sugestões para você</h3>
+                <h3 className="text-[14px] font-light text-text-strong">{texts.feed.sidebar.suggestions}</h3>
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Com base em interesses e objetivos em comum.
+              <p className="mt-0.5 text-[12px] font-light text-text-subtle">
+                {texts.feed.sidebar.suggestionsDescription}
               </p>
               <ul className="mt-4 space-y-3">
                 {suggestionList.map((u) => (
@@ -350,16 +394,17 @@ function Home() {
                       <Link
                         to="/perfil/$username"
                         params={{ username: u.username }}
-                        className="block truncate text-sm font-medium hover:underline"
+                        className="block truncate text-[13px] font-light text-text-strong hover:underline"
                       >
                         {u.name}
                       </Link>
-                      <p className="truncate text-xs text-muted-foreground">{u.headline}</p>
+                      <p className="truncate text-[11px] font-light text-text-subtle">
+                        {u.headline}
+                      </p>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="h-8 rounded-full px-3 text-xs"
+                    <button
+                      type="button"
+                      className="shrink-0 rounded-full border border-border-soft px-3 py-1 text-[12px] font-light text-text-subtle transition hover:border-primary hover:text-primary"
                       onClick={() => {
                         networkApi
                           .connect(u.id)
@@ -368,8 +413,8 @@ function Home() {
                           );
                       }}
                     >
-                      Conectar
-                    </Button>
+                      {texts.feed.sidebar.connect}
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -377,17 +422,21 @@ function Home() {
           )}
 
           {eventList.length > 0 && (
-            <div className="surface-card p-4 sm:p-5">
+            <div className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-5">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-growth" />
-                <h3 className="font-semibold">Acontecendo agora</h3>
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <h3 className="text-[14px] font-light text-text-strong">{texts.feed.sidebar.happeningNow}</h3>
               </div>
-              <ul className="mt-3 space-y-3 text-sm">
+              <ul className="mt-3 space-y-3">
                 {eventList.slice(0, 3).map((e) => (
                   <li key={e.id}>
-                    <p className="font-medium">{e.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {e.date} · {e.format} · {e.attendees} confirmados
+                    <p className="text-[13px] font-light text-text-strong">{e.title}</p>
+                    <p className="text-[11px] font-light text-text-subtle">
+                      {texts.feed.sidebar.eventMeta(
+                        e.date,
+                        e.format,
+                        texts.feed.sidebar.confirmed(e.attendees),
+                      )}
                     </p>
                   </li>
                 ))}
@@ -396,53 +445,34 @@ function Home() {
           )}
         </aside>
       </div>
-      
-    </AppShell>
+    </AppContainer>
   );
 }
 
-function ComposerAction({
-  icon: Icon,
-  label,
-  active,
-  onClick,
-}: {
-  icon: React.ElementType;
-  label: string;
-  active?: boolean;
-  onClick: () => void;
-}) {
+function ComposerAction({ icon: Icon, label, active, onClick }: ComposerActionProps) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 transition ${
-        active ? "bg-primary-soft text-primary" : "hover:bg-muted hover:text-foreground"
-      }`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-light transition ${active
+        ? "bg-primary text-primary-foreground"
+        : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
+        }`}
     >
-      <Icon className="h-4 w-4" />
-      {label}
+      <Icon className="h-3.5 w-3.5" />
+      <>{label}</>
     </button>
   );
 }
 
-function TabPill({
-  children,
-  active,
-  onClick,
-}: {
-  children: React.ReactNode;
-  active?: boolean;
-  onClick?: () => void;
-}) {
+function TabPill({ children, active, onClick }: TabPillProps) {
   return (
     <button
       onClick={onClick}
-      className={`flex-1 whitespace-nowrap rounded-full px-3 py-1.5 text-sm font-medium transition ${
-        active
-          ? "bg-primary text-primary-foreground"
-          : "text-muted-foreground hover:text-foreground"
-      }`}
+      className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-light transition ${active
+        ? "bg-primary text-primary-foreground"
+        : "border border-border-soft bg-surface-card text-text-subtle hover:border-primary hover:text-primary"
+        }`}
     >
       {children}
     </button>

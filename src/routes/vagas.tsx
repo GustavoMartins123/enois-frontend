@@ -1,19 +1,26 @@
+import { useEffect, useRef, useState } from "react";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
+
+import { Briefcase, Loader2, MapPin, Sparkles, X } from "lucide-react";
+
+import { jobsApi } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useRef, useEffect } from "react";
-import { MapPin, Sparkles, Briefcase, X, Loader2 } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { texts } from "@/texts";
+import type { Job } from "@/types/application/job/job";
+import type { InfiniteScrollProps } from "@/types/routes/jobs/infinite-scroll-props";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { jobsApi } from "@/lib/api";
-import type { Job } from "@/lib/api";
+
+import { AppContainer } from "@/components/app-container";
 
 export const Route = createFileRoute("/vagas")({
   beforeLoad: requireAuth,
-  head: () => ({ meta: [{ title: "Vagas · Conexão" }] }),
+  head: () => ({ meta: [{ title: texts.jobs.seoTitle }] }),
   component: Vagas,
 });
 
@@ -27,8 +34,8 @@ function formatPostedAt(dateStr: string | null | undefined): string {
   if (isNaN(date.getTime())) return dateStr;
   const now = new Date();
   const diffD = Math.floor((now.getTime() - date.getTime()) / 86400000);
-  if (diffD < 1) return "Hoje";
-  if (diffD < 30) return `Há ${diffD} dias`;
+  if (diffD < 1) return texts.jobs.today;
+  if (diffD < 30) return texts.jobs.daysAgo(diffD);
   return date.toLocaleDateString("pt-BR");
 }
 
@@ -42,7 +49,13 @@ function Vagas() {
   const [cursor, setCursor] = useState<string | null>(null);
   const [allJobs, setAllJobs] = useState<Job[]>([]);
 
-  const filters = { query: query || undefined, level: level || undefined, location: location || undefined, type: type || undefined, skills: skills || undefined };
+  const filters = {
+    query: query || undefined,
+    level: level || undefined,
+    location: location || undefined,
+    type: type || undefined,
+    skills: skills || undefined,
+  };
 
   const { data: jobsData, isFetching } = useQuery({
     queryKey: ["jobs", filters, cursor],
@@ -88,35 +101,39 @@ function Vagas() {
   };
 
   return (
-    <AppShell>
+    <AppContainer>
       <div className="space-y-6">
         <div className="surface-card p-4 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight">Oportunidades</h1>
+              <h1 className="text-2xl font-semibold tracking-tight">{texts.jobs.title}</h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                Vagas filtradas por nível, localização, tipo e habilidades.
+                {texts.jobs.description}
               </p>
             </div>
             {hasFilters && (
-              <Button size="sm" variant="ghost" className="rounded-full gap-1.5 text-muted-foreground" onClick={clearFilters}>
-                <X className="h-4 w-4" /> Limpar filtros
+              <Button
+                size="sm"
+                variant="secondary"
+                className="rounded-full gap-1.5 text-muted-foreground"
+                onClick={clearFilters}
+              >
+                <X className="h-4 w-4" /><>{texts.jobs.clearFilters}</>
               </Button>
             )}
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-xs font-medium text-muted-foreground mr-1">Nível:</span>
+              <span className="text-xs font-medium text-muted-foreground mr-1">{texts.jobs.filters.level}</span>
               {LEVELS.map((l) => (
                 <button
                   key={l}
                   onClick={() => setLevel(level === l ? "" : l)}
-                  className={`rounded-full border px-3 py-1 text-xs transition ${
-                    level === l
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-card text-muted-foreground hover:text-foreground"
-                  }`}
+                  className={`rounded-full border px-3 py-1 text-xs transition ${level === l
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card text-muted-foreground hover:text-foreground"
+                    }`}
                 >
                   {l.charAt(0) + l.slice(1).toLowerCase()}
                 </button>
@@ -126,18 +143,17 @@ function Vagas() {
 
           <div className="mt-3 flex flex-wrap gap-2">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-xs font-medium text-muted-foreground mr-1">Local:</span>
-              {LOCATIONS.map((l) => (
+              <span className="text-xs font-medium text-muted-foreground mr-1">{texts.jobs.filters.location}</span>
+              {LOCATIONS.map((l, index) => (
                 <button
                   key={l}
                   onClick={() => setLocation(location === l ? "" : l)}
-                  className={`rounded-full border px-3 py-1 text-xs transition ${
-                    location === l
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-card text-muted-foreground hover:text-foreground"
-                  }`}
+                  className={`rounded-full border px-3 py-1 text-xs transition ${location === l
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card text-muted-foreground hover:text-foreground"
+                    }`}
                 >
-                  {l}
+                  {texts.jobs.filters.locations[index]}
                 </button>
               ))}
             </div>
@@ -145,16 +161,15 @@ function Vagas() {
 
           <div className="mt-3 flex flex-wrap gap-2">
             <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-xs font-medium text-muted-foreground mr-1">Tipo:</span>
+              <span className="text-xs font-medium text-muted-foreground mr-1">{texts.jobs.filters.type}</span>
               {TYPES.map((t) => (
                 <button
                   key={t}
                   onClick={() => setType(type === t ? "" : t)}
-                  className={`rounded-full border px-3 py-1 text-xs transition ${
-                    type === t
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-card text-muted-foreground hover:text-foreground"
-                  }`}
+                  className={`rounded-full border px-3 py-1 text-xs transition ${type === t
+                    ? "border-primary bg-primary text-primary-foreground"
+                    : "border-border bg-card text-muted-foreground hover:text-foreground"
+                    }`}
                 >
                   {t}
                 </button>
@@ -168,14 +183,14 @@ function Vagas() {
               <Input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar por título ou empresa..."
+                placeholder={texts.jobs.searchPlaceholder}
                 className="h-9 rounded-full bg-muted pl-9"
               />
             </div>
             <Input
               value={skills}
               onChange={(e) => setSkills(e.target.value)}
-              placeholder="Habilidades (ex: Java,Spring)"
+              placeholder={texts.jobs.skillsPlaceholder}
               className="h-9 rounded-full bg-muted max-w-xs"
             />
           </div>
@@ -193,7 +208,7 @@ function Vagas() {
                   <h3 className="break-words font-semibold">{j.title}</h3>
                   <p className="break-words text-sm text-muted-foreground">{j.company}</p>
                   <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3" /> {j.location}
+                    <MapPin className="h-3 w-3" /><>{j.location}</>
                   </p>
                 </div>
               </div>
@@ -201,19 +216,29 @@ function Vagas() {
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                 {j.matchScore && (
                   <span className="rounded-full bg-primary-soft px-2.5 py-1 font-medium text-primary inline-flex items-center gap-1">
-                    <Sparkles className="h-3 w-3" /> {j.matchScore}% match
+                    <Sparkles className="h-3 w-3" /><>{texts.jobs.match(j.matchScore)}</>
                   </span>
                 )}
-                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">{j.type}</span>
-                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">{j.level}</span>
+                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
+                  {j.type}
+                </span>
+                <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
+                  {j.level}
+                </span>
                 {j.salary && (
-                  <span className="rounded-full bg-growth/15 px-2.5 py-1 font-medium text-growth">{j.salary}</span>
+                  <span className="rounded-full bg-growth/15 px-2.5 py-1 font-medium text-growth">
+                    {j.salary}
+                  </span>
                 )}
               </div>
 
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {j.skills.map((s) => (
-                  <Badge key={s} variant="secondary" className="rounded-full bg-accent font-normal text-accent-foreground">
+                  <Badge
+                    key={s}
+                    variant="secondary"
+                    className="rounded-full bg-accent font-normal text-accent-foreground"
+                  >
                     {s}
                   </Badge>
                 ))}
@@ -223,10 +248,15 @@ function Vagas() {
                 <span>{formatPostedAt(j.postedAt)}</span>
                 <div className="flex gap-2">
                   <Button size="sm" variant="outline" className="rounded-full">
-                    Ver detalhes
+                    {texts.jobs.details}
                   </Button>
-                  <Button size="sm" className="rounded-full" disabled={apply.isPending} onClick={() => apply.mutate(j.id)}>
-                    Candidatar
+                  <Button
+                    size="sm"
+                    className="rounded-full"
+                    disabled={apply.isPending}
+                    onClick={() => apply.mutate(j.id)}
+                  >
+                    {texts.jobs.apply}
                   </Button>
                 </div>
               </div>
@@ -243,29 +273,22 @@ function Vagas() {
         <InfiniteScroll
           hasMore={!!nextCursor}
           loading={isFetching}
-          onLoadMore={() => { if (nextCursor) setCursor(nextCursor); }}
+          onLoadMore={() => {
+            if (nextCursor) setCursor(nextCursor);
+          }}
         />
 
         {!isFetching && allJobs.length === 0 && (
           <p className="py-12 text-center text-sm text-muted-foreground">
-            Nenhuma vaga encontrada com os filtros selecionados.
+            {texts.jobs.empty}
           </p>
         )}
       </div>
-      
-    </AppShell>
+    </AppContainer>
   );
 }
 
-function InfiniteScroll({
-  hasMore,
-  loading,
-  onLoadMore,
-}: {
-  hasMore: boolean;
-  loading: boolean;
-  onLoadMore: () => void;
-}) {
+function InfiniteScroll({ hasMore, loading, onLoadMore }: InfiniteScrollProps) {
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -283,7 +306,5 @@ function InfiniteScroll({
 
   if (!hasMore) return null;
 
-  return (
-    <div ref={sentinelRef} className="h-4" />
-  );
+  return <div ref={sentinelRef} className="h-4" />;
 }

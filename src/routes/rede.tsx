@@ -1,23 +1,31 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { requireAuth } from "@/lib/require-auth";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { UserPlus, UserMinus, Check, Send, X } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
-import { UserAvatar } from "@/components/user-avatar";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, createFileRoute } from "@tanstack/react-router";
+
+import { Check, Send, UserMinus, UserPlus, X } from "lucide-react";
+
+import { networkApi, profileApi } from "@/lib/api";
+import { getCurrentUserId } from "@/lib/current-user";
+import { requireAuth } from "@/lib/require-auth";
+import { texts } from "@/texts";
+import type { RequestCardProps } from "@/types/routes/network/request-card-props";
+import type { StatProps } from "@/types/routes/network/stat-props";
+
 import { Button } from "@/components/ui/button";
-import { networkApi, profileApi, type ConnectionRequest } from "@/lib/api";
-import { useAuth } from "@/lib/use-auth";
+
+import { AppContainer } from "@/components/app-container";
+import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/rede")({
   beforeLoad: requireAuth,
-  head: () => ({ meta: [{ title: "Rede · Conexão" }] }),
+  head: () => ({ meta: [{ title: texts.network.seoTitle }] }),
   component: Rede,
 });
 
 function Rede() {
   const queryClient = useQueryClient();
-  const { user: currentUser } = useAuth();
+  const currentUserId = getCurrentUserId();
   const [localStatus, setLocalStatus] = useState<Record<string, string>>({});
 
   const { data: usersData } = useQuery({
@@ -36,8 +44,8 @@ function Rede() {
 
   const users = usersData?.items ?? [];
   const pendingRequests = (requestsData?.items ?? []).filter((r) => r.status === "PENDING");
-  const incomingRequests = pendingRequests.filter((r) => r.fromUserId !== currentUser?.id);
-  const outgoingRequests = pendingRequests.filter((r) => r.fromUserId === currentUser?.id);
+  const incomingRequests = pendingRequests.filter((r) => r.fromUserId !== currentUserId);
+  const outgoingRequests = pendingRequests.filter((r) => r.fromUserId === currentUserId);
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ["network"] });
 
@@ -54,49 +62,40 @@ function Rede() {
     onSuccess: invalidate,
   });
 
-  const statusFor = (userId: string): string => {
-    if (localStatus[userId]) return localStatus[userId];
-    if (pendingRequests.some((r) => r.fromUserId === userId)) return "PENDING_INCOMING";
-    return "NONE";
-  };
-
   return (
-    <AppShell>
+    <AppContainer>
       <div className="space-y-6">
         <div className="surface-card p-4 sm:p-6">
-          <h1 className="text-2xl font-semibold tracking-tight">Sua rede</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{texts.network.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Construa relacionamentos por afinidade, não por volume.
+            {texts.network.description}
           </p>
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <Stat label="Conexões" value={String(summary?.connections ?? 0)} />
-            <Stat label="Seguindo" value={String(summary?.followers ?? 0)} />
-            <Stat label="Solicitações" value={String(summary?.pendingRequests ?? 0)} highlight />
-            <Stat label="Sugestões" value={String(users.length)} />
+            <Stat label={texts.network.stats.connections} value={String(summary?.connections ?? 0)} />
+            <Stat label={texts.network.stats.following} value={String(summary?.followers ?? 0)} />
+            <Stat label={texts.network.stats.requests} value={String(summary?.pendingRequests ?? 0)} highlight />
+            <Stat label={texts.network.stats.suggestions} value={String(users.length)} />
           </div>
         </div>
 
         {(incomingRequests.length > 0 || outgoingRequests.length > 0) && (
           <section>
             <div className="mb-3">
-              <h2 className="text-lg font-semibold">Solicitações pendentes</h2>
+              <h2 className="text-lg font-semibold">{texts.network.pendingTitle}</h2>
               <p className="text-sm text-muted-foreground">
-                {incomingRequests.length + outgoingRequests.length} solicitação
-                {incomingRequests.length + outgoingRequests.length > 1 ? "ões" : ""} pendente
-                {incomingRequests.length + outgoingRequests.length > 1 ? "s" : ""}
+                {texts.network.pendingCount(incomingRequests.length + outgoingRequests.length)}
               </p>
             </div>
             <div className="space-y-3">
               {incomingRequests.length > 0 && (
                 <>
                   <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    Recebidas
+                    {texts.network.received}
                   </p>
                   {incomingRequests.map((req) => (
                     <RequestCard
                       key={req.id}
                       request={req}
-                      currentUserId={currentUser?.id ?? ""}
                       onAccept={acceptRequest.mutate}
                       onCancel={remove.mutate}
                     />
@@ -107,14 +106,13 @@ function Rede() {
                 <>
                   <div className={incomingRequests.length > 0 ? "pt-3" : ""}>
                     <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                      Enviadas por você
+                      {texts.network.sent}
                     </p>
                   </div>
                   {outgoingRequests.map((req) => (
                     <RequestCard
                       key={req.id}
                       request={req}
-                      currentUserId={currentUser?.id ?? ""}
                       onAccept={acceptRequest.mutate}
                       onCancel={remove.mutate}
                     />
@@ -128,9 +126,9 @@ function Rede() {
         <section>
           <div className="mb-3 flex items-end justify-between">
             <div>
-              <h2 className="text-lg font-semibold">Pessoas que combinam com você</h2>
+              <h2 className="text-lg font-semibold">{texts.network.matchesTitle}</h2>
               <p className="text-sm text-muted-foreground">
-                Baseado em habilidades, objetivos e comunidades em comum.
+                {texts.network.matchesDescription}
               </p>
             </div>
           </div>
@@ -157,7 +155,7 @@ function Rede() {
                   </p>
                   <p className="mt-2 text-xs text-primary">
                     <Check className="mr-1 inline h-3 w-3" />
-                    {u.connected ? "Conectado" : "3 interesses em comum"}
+                    <>{u.connected ? texts.network.connected : texts.network.commonInterests}</>
                   </p>
                   <Button
                     className={`mt-4 w-full rounded-full gap-1.5 ${u.connected ? "text-destructive hover:text-destructive" : ""}`}
@@ -175,15 +173,15 @@ function Rede() {
                   >
                     {u.connected ? (
                       <>
-                        <UserMinus className="h-4 w-4" /> Remover
+                        <UserMinus className="h-4 w-4" /><>{texts.network.remove}</>
                       </>
                     ) : localStatus[u.id] === "REQUESTED" ? (
                       <>
-                        <Send className="h-4 w-4" /> Solicitado
+                        <Send className="h-4 w-4" /><>{texts.network.requested}</>
                       </>
                     ) : (
                       <>
-                        <UserPlus className="h-4 w-4" /> Conectar
+                        <UserPlus className="h-4 w-4" /><>{texts.network.connect}</>
                       </>
                     )}
                   </Button>
@@ -193,22 +191,12 @@ function Rede() {
           </div>
         </section>
       </div>
-      
-    </AppShell>
+    </AppContainer>
   );
 }
 
-function RequestCard({
-  request,
-  currentUserId,
-  onAccept,
-  onCancel,
-}: {
-  request: ConnectionRequest;
-  currentUserId: string;
-  onAccept: (id: string) => void;
-  onCancel: (id: string) => void;
-}) {
+function RequestCard({ request, onAccept, onCancel }: RequestCardProps) {
+  const currentUserId = getCurrentUserId();
   const isOutgoing = request.fromUserId === currentUserId;
   const targetUserId = isOutgoing ? request.toUserId : request.fromUserId;
 
@@ -227,13 +215,13 @@ function RequestCard({
             params={{ username: user?.username ?? targetUserId }}
             className="font-semibold hover:underline"
           >
-            {user?.name ?? "Carregando..."}
+            {user?.name ?? texts.common.loading}
           </Link>
           {user?.headline && (
             <p className="truncate text-xs text-muted-foreground">{user.headline}</p>
           )}
           <p className="text-[11px] text-muted-foreground">
-            {isOutgoing ? "Você enviou a solicitação" : "Quer se conectar com você"}
+            {isOutgoing ? texts.network.requestSent : texts.network.wantsToConnect}
           </p>
         </div>
       </div>
@@ -244,7 +232,7 @@ function RequestCard({
           className="rounded-full shrink-0 gap-1.5"
           onClick={() => onCancel(request.toUserId)}
         >
-          <X className="h-4 w-4" /> Cancelar
+          <X className="h-4 w-4" /><>{texts.network.cancel}</>
         </Button>
       ) : (
         <div className="flex gap-2 shrink-0">
@@ -254,14 +242,14 @@ function RequestCard({
             className="rounded-full gap-1.5"
             onClick={() => onCancel(request.fromUserId)}
           >
-            <X className="h-4 w-4" /> Rejeitar
+            <X className="h-4 w-4" /><>{texts.network.reject}</>
           </Button>
           <Button
             size="sm"
             className="rounded-full gap-1.5"
             onClick={() => onAccept(request.fromUserId)}
           >
-            <Check className="h-4 w-4" /> Aceitar
+            <Check className="h-4 w-4" /><>{texts.network.accept}</>
           </Button>
         </div>
       )}
@@ -269,7 +257,7 @@ function RequestCard({
   );
 }
 
-function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function Stat({ label, value, highlight }: StatProps) {
   return (
     <div
       className={`rounded-xl border p-4 ${highlight ? "border-primary/30 bg-primary-soft" : "border-border bg-muted/40"}`}

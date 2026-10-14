@@ -1,40 +1,21 @@
+import type { PageResponse } from "@/types/application/api/page-response";
+import type { StatusResponse } from "@/types/application/api/status-response";
+import type { Job } from "@/types/application/job/job";
+import type { ListJobsParams } from "@/types/application/job/list-jobs-params";
+
 import { api, buildQuery } from "../api-client";
 
-export interface Job {
-  id: string;
-  title: string;
-  company: string;
-  logo: string | null;
-  location: string;
-  type: string;
-  level: string;
-  salary: string | null;
-  skills: string[];
-  postedAt: string;
-  matchScore: number | null;
-}
-
-export interface PageResponse<T> {
-  items: T[];
-  nextCursor: string | null;
-}
-
 export const jobsApi = {
-  list: (params?: {
-    query?: string;
-    type?: string;
-    level?: string;
-    location?: string;
-    skills?: string;
-    cursor?: string | null;
-    limit?: number;
-  }) => api.get<PageResponse<Job>>(`/jobs${buildQuery({ ...params, cursor: params?.cursor ?? undefined, limit: params?.limit ?? 20 })}`),
+  list: (params?: ListJobsParams) =>
+    api.get<PageResponse<Job>>(
+      `/jobs${buildQuery({ ...params, cursor: params?.cursor ?? undefined, limit: params?.limit ?? 20 })}`,
+    ),
 
   get: (jobId: string) => api.get<Job>(`/jobs/${jobId}`),
 
-  apply: (jobId: string) => api.post<{ status: string }>(`/jobs/${jobId}/applications`),
+  apply: (jobId: string) => api.post<StatusResponse>(`/jobs/${jobId}/applications`),
 
-  save: (jobId: string) => api.post<{ status: string }>(`/jobs/${jobId}/saves`),
+  save: (jobId: string) => api.post<StatusResponse>(`/jobs/${jobId}/saves`),
 
-  removeSave: (jobId: string) => api.delete<{ status: string }>(`/jobs/${jobId}/saves`),
+  removeSave: (jobId: string) => api.delete<StatusResponse>(`/jobs/${jobId}/saves`),
 };

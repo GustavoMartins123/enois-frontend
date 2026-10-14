@@ -1,16 +1,13 @@
-import { useState, useRef, useEffect, type KeyboardEvent } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { usersApi, type UserSearchResult } from "@/lib/api";
-import { UserAvatar } from "@/components/user-avatar";
+import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from "react";
 
-interface Props {
-  value: string;
-  onChange: (value: string, mentionedUserIds: string[]) => void;
-  placeholder?: string;
-  className?: string;
-  maxLength?: number;
-  rows?: number;
-}
+import { useQuery } from "@tanstack/react-query";
+
+import { usersApi } from "@/lib/api";
+import { texts } from "@/texts";
+import type { UserSearchResult } from "@/types/application/user/user-search-result";
+import type { Props } from "@/types/components/mention-textarea/props";
+
+import { UserAvatar } from "@/components/user-avatar";
 
 export function MentionTextarea({
   value,
@@ -54,7 +51,7 @@ export function MentionTextarea({
     setMentionIndex(at);
   };
 
-  const handleInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
+  const handleInput = (e: FormEvent<HTMLTextAreaElement>) => {
     const el = e.currentTarget;
     const next = el.value;
     const cursor = el.selectionStart;
@@ -134,7 +131,9 @@ export function MentionTextarea({
               <UserAvatar src={user.avatar} alt={user.name} className="h-8 w-8 shrink-0" />
               <div className="min-w-0">
                 <p className="truncate font-medium">{user.name}</p>
-                <p className="truncate text-xs text-muted-foreground">@{user.username}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {texts.mentions.username(user.username)}
+                </p>
               </div>
             </button>
           ))}

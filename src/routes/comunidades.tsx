@@ -1,13 +1,19 @@
-import { createFileRoute, Link, Outlet, useMatchRoute } from "@tanstack/react-router";
+import { useEffect, useRef, useState } from "react";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
+
+import { Loader2, Plus, Users } from "lucide-react";
+
+import { communitiesApi } from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
 import { requireAuth } from "@/lib/require-auth";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, useRef, useEffect } from "react";
-import { Users, Plus, Loader2 } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
+import { texts } from "@/texts";
+import type { CommunityTopic } from "@/types/application/community/community-topic";
+import type { Community } from "@/types/application/community/community";
+import type { CreateCommunityDialogProps } from "@/types/routes/communities/create-community-dialog-props";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -15,8 +21,11 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { communitiesApi } from "@/lib/api";
-import { resolveCdnUrl } from "@/lib/api/media";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+
+import { AppContainer } from "@/components/app-container";
 
 const TOPICS = [
   "Todas",
@@ -27,21 +36,32 @@ const TOPICS = [
   "LIDERANCA",
   "CARREIRA",
   "FREELANCE",
-];
+] as const;
+
+const TOPIC_LABELS: Record<(typeof TOPICS)[number], string> = {
+  Todas: texts.communities.topics.all,
+  TECNOLOGIA: texts.communities.topics.TECNOLOGIA,
+  ENGENHARIA: texts.communities.topics.ENGENHARIA,
+  DESIGN: texts.communities.topics.DESIGN,
+  PRODUTO: texts.communities.topics.PRODUTO,
+  LIDERANCA: texts.communities.topics.LIDERANCA,
+  CARREIRA: texts.communities.topics.CARREIRA,
+  FREELANCE: texts.communities.topics.FREELANCE,
+};
 
 export const Route = createFileRoute("/comunidades")({
   beforeLoad: requireAuth,
-  head: () => ({ meta: [{ title: "Comunidades · Conexão" }] }),
+  head: () => ({ meta: [{ title: texts.communities.seoTitle }] }),
   component: Comunidades,
 });
 
 function Comunidades() {
   const queryClient = useQueryClient();
   const matchRoute = useMatchRoute();
-  const [topic, setTopic] = useState<string | undefined>(undefined);
+  const [topic, setTopic] = useState<CommunityTopic | undefined>(undefined);
   const [open, setOpen] = useState(false);
   const [cursor, setCursor] = useState<string | undefined>(undefined);
-  const [allItems, setAllItems] = useState<any[]>([]);
+  const [allItems, setAllItems] = useState<Community[]>([]);
   const cursorRef = useRef(cursor);
   cursorRef.current = cursor;
   const isDetail = matchRoute({ to: "/comunidades/$communityId" });
@@ -58,8 +78,8 @@ function Comunidades() {
     if (!communitiesData?.items) return;
     setAllItems((prev) => {
       if (cursorRef.current) {
-        const existing = new Set(prev.map((c: any) => c.id));
-        const newItems = communitiesData.items.filter((c: any) => !existing.has(c.id));
+        const existing = new Set(prev.map((c) => c.id));
+        const newItems = communitiesData.items.filter((c) => !existing.has(c.id));
         return newItems.length > 0 ? [...prev, ...newItems] : prev;
       }
       return communitiesData.items;
@@ -72,7 +92,7 @@ function Comunidades() {
     }
   };
 
-  const handleTopicChange = (t: string) => {
+  const handleTopicChange = (t: (typeof TOPICS)[number]) => {
     setTopic(t === "Todas" ? undefined : t);
     setCursor(undefined);
     setAllItems([]);
@@ -93,18 +113,18 @@ function Comunidades() {
   }
 
   return (
-    <AppShell>
+    <AppContainer>
       <div className="space-y-6">
         <div className="surface-card flex flex-wrap items-center justify-between gap-3 p-4 sm:gap-4 sm:p-6">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Comunidades</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">{texts.communities.title}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Encontre grupos profissionais, fóruns temáticos e círculos de mentoria.
+              {texts.communities.description}
             </p>
           </div>
           <CreateCommunityDialog open={open} onOpenChange={setOpen}>
             <Button className="rounded-full gap-1.5">
-              <Plus className="h-4 w-4" /> Criar comunidade
+              <Plus className="h-4 w-4" /><>{texts.communities.createCommunity}</>
             </Button>
           </CreateCommunityDialog>
         </div>
@@ -120,13 +140,13 @@ function Comunidades() {
                   : "border-border bg-card text-muted-foreground hover:text-foreground"
               }`}
             >
-              {t.charAt(0) + t.slice(1).toLowerCase()}
+              {TOPIC_LABELS[t]}
             </button>
           ))}
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {allItems.map((c: any) => (
+          {allItems.map((c) => (
             <Link key={c.id} to="/comunidades/$communityId" params={{ communityId: c.id }}>
               <article className="surface-card overflow-hidden cursor-pointer transition hover:shadow-[var(--shadow-card)]">
                 {c.cover ? (
@@ -156,7 +176,7 @@ function Comunidades() {
                   <div className="mt-4 flex items-center justify-between">
                     <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
                       <Users className="h-3.5 w-3.5" />
-                      {(c.members ?? 0).toLocaleString("pt-BR")} membros
+                      <>{texts.communities.members(c.members ?? 0)}</>
                     </span>
                     <Button
                       size="sm"
@@ -165,10 +185,14 @@ function Comunidades() {
                       disabled={join.isPending || leave.isPending}
                       onClick={(e) => {
                         e.preventDefault();
-                        c.joined ? leave.mutate(c.id) : join.mutate(c.id);
+                        if (c.joined) {
+                          leave.mutate(c.id);
+                        } else {
+                          join.mutate(c.id);
+                        }
                       }}
                     >
-                      {c.joined ? "Participando" : "Entrar"}
+                      {c.joined ? texts.communities.participating : texts.communities.enter}
                     </Button>
                   </div>
                 </div>
@@ -185,17 +209,12 @@ function Comunidades() {
               onClick={loadMore}
               disabled={isFetching}
             >
-              {isFetching ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                "Carregar mais"
-              )}
+              {isFetching ? <Loader2 className="h-4 w-4 animate-spin" /> : texts.communities.loadMore}
             </Button>
           </div>
         )}
       </div>
-      
-    </AppShell>
+    </AppContainer>
   );
 }
 
@@ -203,15 +222,11 @@ function CreateCommunityDialog({
   children,
   open,
   onOpenChange,
-}: {
-  children: React.ReactNode;
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-}) {
+}: CreateCommunityDialogProps) {
   const queryClient = useQueryClient();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [topic, setTopic] = useState("TECNOLOGIA");
+  const [topic, setTopic] = useState<CommunityTopic>("TECNOLOGIA");
 
   const create = useMutation({
     mutationFn: () => communitiesApi.create({ name, description, topic }),
@@ -229,31 +244,36 @@ function CreateCommunityDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Criar comunidade</DialogTitle>
+          <DialogTitle>{texts.communities.create.title}</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Nome</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
+            <Label className="text-xs text-muted-foreground">{texts.communities.create.name}</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="h-10 border-transparent bg-muted"
+            />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Descrição</Label>
+            <Label className="text-xs text-muted-foreground">{texts.communities.create.description}</Label>
             <Textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
+              className="h-10 border-transparent bg-muted"
             />
           </div>
           <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Tópico</Label>
+            <Label className="text-xs text-muted-foreground">{texts.communities.create.topic}</Label>
             <select
               value={topic}
-              onChange={(e) => setTopic(e.target.value)}
-              className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              onChange={(e) => setTopic(e.target.value as CommunityTopic)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 h-10 border-transparent bg-muted"
             >
               {TOPICS.filter((t) => t !== "Todas").map((t) => (
                 <option key={t} value={t}>
-                  {t.charAt(0) + t.slice(1).toLowerCase()}
+                  {TOPIC_LABELS[t]}
                 </option>
               ))}
             </select>
@@ -263,7 +283,7 @@ function CreateCommunityDialog({
             disabled={!name.trim() || !description.trim() || create.isPending}
             onClick={() => create.mutate()}
           >
-            {create.isPending ? "Criando..." : "Criar"}
+            {create.isPending ? texts.common.creating : texts.common.create}
           </Button>
         </div>
       </DialogContent>

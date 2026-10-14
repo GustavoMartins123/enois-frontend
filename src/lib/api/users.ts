@@ -1,11 +1,6 @@
-import { api, buildQuery } from "../api-client";
+import type { UserSearchResult } from "@/types/application/user/user-search-result";
 
-export interface UserSearchResult {
-  id: string;
-  username: string;
-  name: string;
-  avatar: string | null;
-}
+import { api, buildQuery } from "../api-client";
 
 export const usersApi = {
   search: (query: string) =>

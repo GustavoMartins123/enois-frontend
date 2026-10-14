@@ -1,21 +1,30 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState, useRef, useEffect, type FormEvent } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Search, Send, ArrowLeft } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
-import { UserAvatar } from "@/components/user-avatar";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { type FormEvent, useEffect, useRef, useState } from "react";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, createFileRoute } from "@tanstack/react-router";
+
+import { ArrowLeft, Search, Send } from "lucide-react";
+
 import { messagesApi, networkApi, profileApi } from "@/lib/api";
-import { useAuth } from "@/lib/use-auth";
+import { getCurrentUserId } from "@/lib/current-user";
+import { texts } from "@/texts";
+import type { ConversationHeaderProps } from "@/types/routes/messages/conversation-header-props";
+import type { ConversationItemProps } from "@/types/routes/messages/conversation-item-props";
+import type { SendMessageInput } from "@/types/routes/messages/send-message-input";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+import { AppContainer } from "@/components/app-container";
+import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/mensagens")({
-  head: () => ({ meta: [{ title: "Mensagens · Conexão" }] }),
+  head: () => ({ meta: [{ title: texts.messages.seoTitle }] }),
   component: Mensagens,
 });
 
 function Mensagens() {
-  const { user: currentUser } = useAuth();
+  const currentUserId = getCurrentUserId();
   const queryClient = useQueryClient();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -30,9 +39,7 @@ function Mensagens() {
   });
 
   const conversations = conversationsData?.items ?? [];
-  const activeConversation = activeId
-    ? conversations.find((c) => c.id === activeId)
-    : null;
+  const activeConversation = activeId ? conversations.find((c) => c.id === activeId) : null;
 
   const { data: messagesData } = useQuery({
     queryKey: ["messages", activeConversation?.id],
@@ -51,10 +58,10 @@ function Mensagens() {
     enabled: searchQuery.length > 0,
   });
 
-  const filteredUsers = (searchResults?.items ?? []).filter((u) => u.id !== currentUser?.id);
+  const filteredUsers = (searchResults?.items ?? []).filter((u) => u.id !== currentUserId);
 
   const sendMessage = useMutation({
-    mutationFn: ({ conversationId, text }: { conversationId: string; text: string }) =>
+    mutationFn: ({ conversationId, text }: SendMessageInput) =>
       messagesApi.sendMessage(conversationId, text),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["messages", activeConversation?.id] });
@@ -89,7 +96,7 @@ function Mensagens() {
   const activeMessages = activeConversation ? messages : [];
 
   const otherParticipantId = activeConversation?.participantIds.find(
-    (id) => id !== currentUser?.id,
+    (id) => id !== currentUserId,
   );
   const { data: otherUser } = useQuery({
     queryKey: ["profile", "by-id", otherParticipantId],
@@ -102,14 +109,21 @@ function Mensagens() {
   }, [activeMessages.length]);
 
   return (
-    <AppShell>
+    <AppContainer>
       <div className="surface-card grid h-[calc(100dvh-11rem)] md:h-[calc(100vh-9rem)] grid-cols-1 overflow-hidden md:grid-cols-[320px_1fr]">
-        <div className={`flex flex-col border-r border-border ${activeConversation ? "hidden md:flex" : "flex"}`}>
+        <div
+          className={`flex flex-col border-r border-border ${activeConversation ? "hidden md:flex" : "flex"}`}
+        >
           <div className="border-b border-border p-4">
             <div className="flex items-center justify-between mb-3">
-              <h1 className="text-lg font-semibold">Mensagens</h1>
-              <Button size="sm" variant="outline" className="rounded-full" onClick={() => setShowSearch(!showSearch)}>
-                {showSearch ? "Voltar" : "Nova"}
+              <h1 className="text-lg font-semibold">{texts.messages.title}</h1>
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-full"
+                onClick={() => setShowSearch(!showSearch)}
+              >
+                {showSearch ? texts.messages.back : texts.messages.new}
               </Button>
             </div>
             {showSearch ? (
@@ -119,7 +133,7 @@ function Mensagens() {
                   <Input
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Buscar contatos..."
+                    placeholder={texts.messages.searchContacts}
                     className="h-9 rounded-full bg-muted pl-9"
                     autoFocus
                   />
@@ -127,7 +141,9 @@ function Mensagens() {
                 {searchQuery && (
                   <div className="space-y-1">
                     {filteredUsers.length === 0 ? (
-                      <p className="py-4 text-center text-sm text-muted-foreground">Nenhum contato encontrado</p>
+                      <p className="py-4 text-center text-sm text-muted-foreground">
+                        {texts.messages.noContact}
+                      </p>
                     ) : (
                       filteredUsers.map((u) => (
                         <button
@@ -149,17 +165,14 @@ function Mensagens() {
             ) : (
               <div className="relative">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  placeholder="Buscar conversas"
-                  className="h-9 rounded-full bg-muted pl-9"
-                />
+                <Input placeholder={texts.messages.searchConversations} className="h-9 rounded-full bg-muted pl-9" />
               </div>
             )}
           </div>
           <ul className="flex-1 overflow-y-auto">
             {conversations.length === 0 ? (
               <li className="p-4 text-center text-sm text-muted-foreground">
-                Nenhuma conversa ainda
+                {texts.messages.noConversations}
               </li>
             ) : (
               conversations.map((c) => (
@@ -167,7 +180,6 @@ function Mensagens() {
                   key={c.id}
                   conversation={c}
                   isActive={c.id === (activeConversation?.id ?? "")}
-                  currentUserId={currentUser?.id ?? ""}
                   onSelect={() => {
                     setActiveId(c.id);
                     if (c.unread > 0) markAsRead.mutate(c.id);
@@ -181,50 +193,63 @@ function Mensagens() {
         <div className={`flex min-h-0 flex-col ${!activeConversation ? "hidden md:flex" : "flex"}`}>
           {!activeConversation ? (
             <div className="flex h-full items-center justify-center">
-              <p className="text-sm text-muted-foreground">Selecione ou comece uma mensagem para exibir</p>
+              <p className="text-sm text-muted-foreground">
+                {texts.messages.selectConversation}
+              </p>
             </div>
           ) : (
             <>
               <ConversationHeader
                 conversation={activeConversation}
-                currentUserId={currentUser?.id ?? ""}
                 onBack={() => setActiveId(null)}
               />
               <div className="flex-1 overflow-y-auto bg-muted/30 p-5">
                 <div className="space-y-3">
                   {activeMessages.length === 0 ? (
-                    <p className="py-16 text-center text-sm text-muted-foreground">Nenhuma mensagem ainda</p>
-                ) : (
-                  activeMessages.map((m) => {
-                    const isMe = m.from === currentUser?.id;
-                    return (
-                      <div key={m.id} className={`flex items-end gap-2 ${isMe ? "justify-end" : "justify-start"}`}>
-                        {!isMe && (
-                          <Link to="/perfil/$username" params={{ username: otherUser?.username ?? otherParticipantId ?? "" }}>
-                            <UserAvatar src={otherUser?.avatar} alt={otherUser?.name} className="h-7 w-7 shrink-0 mb-1" />
-                          </Link>
-                        )}
+                    <p className="py-16 text-center text-sm text-muted-foreground">
+                      {texts.messages.noMessages}
+                    </p>
+                  ) : (
+                    activeMessages.map((m) => {
+                      const isMe = m.from === currentUserId;
+                      return (
                         <div
-                          className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm shadow-sm ${
-                            isMe
-                              ? "rounded-br-md bg-primary text-primary-foreground"
-                              : "rounded-bl-md bg-card text-foreground"
-                          }`}
+                          key={m.id}
+                          className={`flex items-end gap-2 ${isMe ? "justify-end" : "justify-start"}`}
                         >
-                          <p className="break-words">{m.text}</p>
-                          <p
-                            className={`mt-1 text-[10px] ${isMe ? "text-primary-foreground/70" : "text-muted-foreground"}`}
+                          {!isMe && (
+                            <Link
+                              to="/perfil/$username"
+                              params={{ username: otherUser?.username ?? otherParticipantId ?? "" }}
+                            >
+                              <UserAvatar
+                                src={otherUser?.avatar}
+                                alt={otherUser?.name}
+                                className="h-7 w-7 shrink-0 mb-1"
+                              />
+                            </Link>
+                          )}
+                          <div
+                            className={`max-w-[75%] rounded-2xl px-4 py-2.5 text-sm shadow-sm ${
+                              isMe
+                                ? "rounded-br-md bg-primary text-primary-foreground"
+                                : "rounded-bl-md bg-card text-foreground"
+                            }`}
                           >
-                            {formatTime(m.time)}
-                          </p>
+                            <p className="break-words">{m.text}</p>
+                            <p
+                              className={`mt-1 text-[10px] ${isMe ? "text-primary-foreground/70" : "text-muted-foreground"}`}
+                            >
+                              {formatTime(m.time)}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    );
-                  })
-                )}
-                <div ref={messagesEndRef} />
+                      );
+                    })
+                  )}
+                  <div ref={messagesEndRef} />
                 </div>
-                </div>
+              </div>
 
               <form
                 onSubmit={handleSubmit}
@@ -233,7 +258,7 @@ function Mensagens() {
                 <Input
                   value={text}
                   onChange={(e) => setText(e.target.value)}
-                  placeholder="Escreva uma mensagem..."
+                  placeholder={texts.messages.inputPlaceholder}
                   className="h-10 rounded-full bg-muted"
                 />
                 <button
@@ -248,22 +273,12 @@ function Mensagens() {
           )}
         </div>
       </div>
-      
-    </AppShell>
+    </AppContainer>
   );
 }
 
-function ConversationItem({
-  conversation,
-  isActive,
-  currentUserId,
-  onSelect,
-}: {
-  conversation: { id: string; title: string | null; participantIds: string[]; lastMessage: string | null; time: string | null; unread: number };
-  isActive: boolean;
-  currentUserId: string;
-  onSelect: () => void;
-}) {
+function ConversationItem({ conversation, isActive, onSelect }: ConversationItemProps) {
+  const currentUserId = getCurrentUserId();
   const otherId = conversation.participantIds.find((id) => id !== currentUserId);
   const { data: otherUser } = useQuery({
     queryKey: ["profile", "by-id", otherId],
@@ -271,7 +286,7 @@ function ConversationItem({
     enabled: !!otherId,
   });
 
-  const title = conversation.title ?? otherUser?.name ?? "Conversa";
+  const title = conversation.title ?? otherUser?.name ?? texts.messages.conversationFallback;
 
   return (
     <li>
@@ -307,15 +322,8 @@ function ConversationItem({
   );
 }
 
-function ConversationHeader({
-  conversation,
-  currentUserId,
-  onBack,
-}: {
-  conversation: { id: string; title: string | null; participantIds: string[] };
-  currentUserId: string;
-  onBack?: () => void;
-}) {
+function ConversationHeader({ conversation, onBack }: ConversationHeaderProps) {
+  const currentUserId = getCurrentUserId();
   const otherId = conversation.participantIds.find((id) => id !== currentUserId);
   const { data: otherUser } = useQuery({
     queryKey: ["profile", "by-id", otherId],
@@ -323,13 +331,16 @@ function ConversationHeader({
     enabled: !!otherId,
   });
 
-  const title = conversation.title ?? otherUser?.name ?? "Conversa";
+  const title = conversation.title ?? otherUser?.name ?? texts.messages.conversationFallback;
 
   return (
     <header className="flex items-center gap-3 border-b border-border p-4">
       <div className="flex items-center gap-3 min-w-0">
         {onBack && (
-          <button onClick={onBack} className="grid h-8 w-8 shrink-0 place-items-center rounded-full hover:bg-muted md:hidden">
+          <button
+            onClick={onBack}
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-full hover:bg-muted md:hidden"
+          >
             <ArrowLeft className="h-4 w-4" />
           </button>
         )}
@@ -354,11 +365,11 @@ function formatTime(iso: string | null | undefined): string {
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "agora";
-  if (diffMin < 60) return `há ${diffMin}min`;
+  if (diffMin < 1) return texts.time.now;
+  if (diffMin < 60) return texts.time.minutesAgo(diffMin);
   const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `há ${diffH}h`;
+  if (diffH < 24) return texts.time.hoursAgo(diffH);
   const diffD = Math.floor(diffH / 24);
-  if (diffD < 7) return `há ${diffD} dias`;
+  if (diffD < 7) return texts.time.daysAgo(diffD);
   return date.toLocaleDateString("pt-BR");
 }

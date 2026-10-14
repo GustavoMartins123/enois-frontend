@@ -1,3 +1,5 @@
+import type { RequestOptions } from "@/types/application/api/request-options";
+
 const API_BACKEND = import.meta.env.VITE_API_BACKEND ?? "http://localhost:8081/api";
 
 function baseUrl(): string {
@@ -11,6 +13,7 @@ export class ApiError extends Error {
     public status: number,
     public code: string | undefined,
     message: string,
+    public path?: string,
   ) {
     super(message);
     this.name = "ApiError";
@@ -29,8 +32,24 @@ function authHeaders(): Record<string, string> {
   return headers;
 }
 
+export function randomUUID(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  const bytes = new Uint8Array(16);
+  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+    crypto.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+  }
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
 function idemKey(): Record<string, string> {
-  return { "Idempotency-Key": crypto.randomUUID() };
+  return { "Idempotency-Key": randomUUID() };
 }
 
 let isRefreshing = false;
@@ -75,7 +94,7 @@ async function request<T>(
   method: string,
   path: string,
   body?: unknown,
-  opts?: { idempotent?: boolean },
+  opts?: RequestOptions,
 ): Promise<T> {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
@@ -86,13 +105,28 @@ async function request<T>(
     Object.assign(headers, idemKey());
   }
 
-  const response = await fetch(`${baseUrl()}${path}`, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${baseUrl()}${path}`, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch {
+    throw new ApiError(
+      0,
+      "NETWORK_ERROR",
+      "Não foi possível conectar ao servidor. Verifique sua conexão e se o backend está no ar.",
+      path,
+    );
+  }
 
-  if ((response.status === 401 || response.status === 403) && !isRefreshing) {
+  if (
+    (response.status === 401 || response.status === 403) &&
+    !isRefreshing &&
+    headers["X-Session-Token"] &&
+    !path.startsWith("/auth/")
+  ) {
     isRefreshing = true;
     const refreshed = await tryRefreshToken();
     isRefreshing = false;
@@ -123,12 +157,18 @@ async function request<T>(
       response.status,
       "SESSION_EXPIRED",
       "Sessão expirada. Faça login novamente.",
+      path,
     );
   }
 
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
-    throw new ApiError(response.status, errorBody?.code, errorBody?.message ?? response.statusText);
+    throw new ApiError(
+      response.status,
+      errorBody?.code,
+      errorBody?.message ?? response.statusText,
+      path,
+    );
   }
 
   if (response.status === 204 || response.headers.get("content-length") === "0") {

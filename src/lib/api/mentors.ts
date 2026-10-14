@@ -1,41 +1,13 @@
+import type { PageResponse } from "@/types/application/api/page-response";
+import type { StatusResponse } from "@/types/application/api/status-response";
+import type { BookSessionResponse } from "@/types/application/mentor/book-session-response";
+import type { CreateMentorInput } from "@/types/application/mentor/create-mentor-input";
+import type { CreateSlotInput } from "@/types/application/mentor/create-slot-input";
+import type { Mentor } from "@/types/application/mentor/mentor";
+import type { TimeSlot } from "@/types/application/mentor/time-slot";
+import type { UpdateMentorInput } from "@/types/application/mentor/update-mentor-input";
+
 import { api, buildQuery } from "../api-client";
-
-export interface Mentor {
-  id: string;
-  userId: string;
-  expertise: string[];
-  rating: number;
-  sessions: number;
-  price: string;
-  nextSlot: string;
-}
-
-export interface TimeSlot {
-  id: string;
-  startsAt: string;
-  endsAt: string;
-  available: boolean;
-}
-
-export interface CreateMentorInput {
-  expertise: string[];
-  price: string;
-}
-
-export interface UpdateMentorInput {
-  expertise?: string[];
-  price?: string;
-}
-
-export interface CreateSlotInput {
-  startsAt: string;
-  endsAt: string;
-}
-
-export interface PageResponse<T> {
-  items: T[];
-  nextCursor: string | null;
-}
 
 export const mentorsApi = {
   list: (expertise?: string, cursor?: string | null, limit = 20) =>
@@ -48,7 +20,7 @@ export const mentorsApi = {
   update: (mentorId: string, data: UpdateMentorInput) =>
     api.patch<Mentor>(`/mentors/${mentorId}`, data),
 
-  remove: (mentorId: string) => api.delete<{ status: string }>(`/mentors/${mentorId}`),
+  remove: (mentorId: string) => api.delete<StatusResponse>(`/mentors/${mentorId}`),
 
   getSlots: (mentorId: string) => api.get<TimeSlot[]>(`/mentors/${mentorId}/slots`),
 
@@ -56,7 +28,7 @@ export const mentorsApi = {
     api.post<TimeSlot>(`/mentors/${mentorId}/slots`, data),
 
   bookSession: (mentorId: string, slotId: string, message?: string) =>
-    api.post<{ status: string; sessionId: string }>(`/mentors/${mentorId}/sessions`, {
+    api.post<BookSessionResponse>(`/mentors/${mentorId}/sessions`, {
       slotId,
       message,
     }),

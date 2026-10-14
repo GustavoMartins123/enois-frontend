@@ -1,13 +1,20 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { requireAuth } from "@/lib/require-auth";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Calendar, Users, MapPin, Video, Plus } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+
+import { Calendar, MapPin, Plus, Users, Video } from "lucide-react";
+
+import { eventsApi } from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
+import { requireAuth } from "@/lib/require-auth";
+import { texts } from "@/texts";
+import type { CreateEventRequest } from "@/types/application/event/create-event-request";
+import type { CreateEventFormProps } from "@/types/routes/events/create-event-form-props";
+import type { FieldProps } from "@/types/routes/events/field-props";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -15,20 +22,14 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { eventsApi } from "@/lib/api";
-import { resolveCdnUrl } from "@/lib/api/media";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-const formatLabels: Record<string, string> = {
-  ONLINE: "Online",
-  IN_PERSON: "Presencial",
-  HYBRID: "Híbrido",
-};
-
-const MONTHS = ["", "JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"];
+import { AppContainer } from "@/components/app-container";
 
 export const Route = createFileRoute("/eventos")({
   beforeLoad: requireAuth,
-  head: () => ({ meta: [{ title: "Eventos · Conexão" }] }),
+  head: () => ({ meta: [{ title: texts.events.seoTitle }] }),
   component: Eventos,
 });
 
@@ -49,14 +50,7 @@ function Eventos() {
   });
 
   const createEvent = useMutation({
-    mutationFn: (data: {
-      title: string;
-      date: string;
-      time: string;
-      format: string;
-      host: string;
-      cover?: string | null;
-    }) => eventsApi.create(data),
+    mutationFn: (data: CreateEventRequest) => eventsApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["events"] });
       setOpen(false);
@@ -64,24 +58,24 @@ function Eventos() {
   });
 
   return (
-    <AppShell>
+    <AppContainer>
       <div className="space-y-6">
         <div className="surface-card flex flex-wrap items-center justify-between gap-3 p-4 sm:gap-4 sm:p-6">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Eventos da comunidade</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">{texts.events.title}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Webinars, meetups, workshops e encontros — online e presenciais.
+              {texts.events.description}
             </p>
           </div>
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button className="rounded-full gap-1.5">
-                <Plus className="h-4 w-4" /> Criar evento
+                <Plus className="h-4 w-4" /><>{texts.events.createEvent}</>
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>Criar evento</DialogTitle>
+                <DialogTitle>{texts.events.createEvent}</DialogTitle>
               </DialogHeader>
               <CreateEventForm
                 onSave={(data) => createEvent.mutate(data)}
@@ -93,9 +87,9 @@ function Eventos() {
 
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {events.map((e) => {
-            const formatLabel = formatLabels[e.format] ?? e.format;
+            const formatLabel = texts.events.formats[e.format] ?? e.format;
             const Icon = e.format === "ONLINE" ? Video : MapPin;
-            const [year, month, day] = (e.date ?? "").split("-");
+            const [, month, day] = (e.date ?? "").split("-");
             return (
               <article key={e.id} className="surface-card overflow-hidden">
                 <div className="relative">
@@ -106,23 +100,23 @@ function Eventos() {
                   )}
                   <div className="absolute left-4 top-4 rounded-xl bg-card/95 px-3 py-2 text-center shadow-md backdrop-blur">
                     <p className="text-[10px] font-medium uppercase text-primary">
-                      {MONTHS[Number(month)] ?? month}
+                      {texts.events.months[Number(month)] ?? month}
                     </p>
                     <p className="text-lg font-semibold leading-none">{day ?? ""}</p>
                   </div>
                 </div>
                 <div className="p-5">
                   <Badge variant="outline" className="rounded-full bg-card font-normal">
-                    <Icon className="mr-1 h-3 w-3" /> {formatLabel}
+                    <Icon className="mr-1 h-3 w-3" /><>{formatLabel}</>
                   </Badge>
                   <h3 className="mt-2 break-words font-semibold">{e.title}</h3>
-                  <p className="mt-1 text-xs text-muted-foreground">por {e.host}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{texts.events.hostedBy(e.host)}</p>
                   <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
-                      <Calendar className="h-3.5 w-3.5" /> {e.date ?? ""} · {e.time ?? ""}
+                      <Calendar className="h-3.5 w-3.5" /><>{texts.events.dateTime(e.date ?? "", e.time ?? "")}</>
                     </span>
                     <span className="inline-flex items-center gap-1.5">
-                      <Users className="h-3.5 w-3.5" /> {e.attendees ?? 0}
+                      <Users className="h-3.5 w-3.5" /><>{e.attendees ?? 0}</>
                     </span>
                   </div>
                   <Button
@@ -130,7 +124,7 @@ function Eventos() {
                     disabled={attend.isPending}
                     onClick={() => attend.mutate(e.id)}
                   >
-                    Confirmar presença
+                    {texts.events.attend}
                   </Button>
                 </div>
               </article>
@@ -138,49 +132,61 @@ function Eventos() {
           })}
         </div>
       </div>
-      
-    </AppShell>
+    </AppContainer>
   );
 }
 
-function CreateEventForm({
-  onSave,
-  isPending,
-}: {
-  onSave: (data: { title: string; date: string; time: string; format: string; host: string }) => void;
-  isPending: boolean;
-}) {
+function CreateEventForm({ onSave, isPending }: CreateEventFormProps) {
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
-  const [format, setFormat] = useState("ONLINE");
+  const [format, setFormat] = useState<CreateEventRequest["format"]>("ONLINE");
   const [host, setHost] = useState("");
 
   return (
     <div className="space-y-4 pt-2">
-      <Field label="Título">
-        <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+      <Field label={texts.events.form.title}>
+        <Input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="h-10 border-transparent bg-muted"
+        />
       </Field>
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Data">
-          <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        <Field label={texts.events.form.date}>
+          <Input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="h-10 border-transparent bg-muted"
+          />
         </Field>
-        <Field label="Horário">
-          <Input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
+        <Field label={texts.events.form.time}>
+          <Input
+            type="time"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            className="h-10 border-transparent bg-muted"
+          />
         </Field>
       </div>
-      <Field label="Realizador">
-        <Input value={host} onChange={(e) => setHost(e.target.value)} placeholder="Comunidade X" />
+      <Field label={texts.events.form.host}>
+        <Input
+          value={host}
+          onChange={(e) => setHost(e.target.value)}
+          placeholder={texts.events.form.hostPlaceholder}
+          className="h-10 border-transparent bg-muted"
+        />
       </Field>
-      <Field label="Formato">
+      <Field label={texts.events.form.format}>
         <select
           value={format}
-          onChange={(e) => setFormat(e.target.value)}
-          className="flex h-10 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm"
+          onChange={(e) => setFormat(e.target.value as CreateEventRequest["format"])}
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-10 border-transparent bg-muted"
         >
-          <option value="ONLINE">Online</option>
-          <option value="IN_PERSON">Presencial</option>
-          <option value="HYBRID">Híbrido</option>
+          <option value="ONLINE">{texts.events.formats.ONLINE}</option>
+          <option value="IN_PERSON">{texts.events.formats.IN_PERSON}</option>
+          <option value="HYBRID">{texts.events.formats.HYBRID}</option>
         </select>
       </Field>
       <Button
@@ -188,13 +194,13 @@ function CreateEventForm({
         disabled={!title.trim() || !date || !host.trim() || isPending}
         onClick={() => onSave({ title, date, time, format, host })}
       >
-        {isPending ? "Criando..." : "Criar evento"}
+        {isPending ? texts.common.creating : texts.events.createEvent}
       </Button>
     </div>
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children }: FieldProps) {
   return (
     <div className="space-y-1.5">
       <Label className="text-xs font-medium text-muted-foreground">{label}</Label>

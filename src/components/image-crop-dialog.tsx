@@ -1,7 +1,12 @@
-import { useState, useCallback } from "react";
-import Cropper, { type Area } from "react-easy-crop";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useCallback, useState } from "react";
+
+import Cropper, { type Area, type Point } from "react-easy-crop";
+
+import { texts } from "@/texts";
+import type { ImageCropDialogProps } from "@/types/components/image-crop-dialog/image-crop-dialog-props";
+
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 function createImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -49,20 +54,13 @@ export function ImageCropDialog({
   aspect,
   title,
   onCropComplete,
-}: {
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-  imageSrc: string;
-  aspect: number;
-  title: string;
-  onCropComplete: (blob: Blob) => Promise<void>;
-}) {
+}: ImageCropDialogProps) {
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [saving, setSaving] = useState(false);
 
-  const onCropChange = useCallback((location: { x: number; y: number }) => setCrop(location), []);
+  const onCropChange = useCallback((location: Point) => setCrop(location), []);
   const onZoomChange = useCallback((z: number) => setZoom(z), []);
 
   const onCropAreaChange = useCallback((_: Area, croppedAreaPixels: Area) => {
@@ -117,14 +115,14 @@ export function ImageCropDialog({
             className="flex-1 rounded-full"
             onClick={() => onOpenChange(false)}
           >
-            Cancelar
+            {texts.common.cancel}
           </Button>
           <Button
             className="flex-1 rounded-full"
             disabled={saving || !croppedAreaPixels}
             onClick={handleSave}
           >
-            {saving ? "Salvando..." : "Salvar"}
+            {saving ? texts.common.saving : texts.common.save}
           </Button>
         </div>
       </DialogContent>

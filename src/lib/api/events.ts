@@ -1,29 +1,9 @@
+import type { PageResponse } from "@/types/application/api/page-response";
+import type { StatusResponse } from "@/types/application/api/status-response";
+import type { CreateEventRequest } from "@/types/application/event/create-event-request";
+import type { Event } from "@/types/application/event/event";
+
 import { api, buildQuery } from "../api-client";
-
-export interface Event {
-  id: string;
-  title: string;
-  date: string;
-  time: string;
-  format: "ONLINE" | "IN_PERSON" | "HYBRID";
-  host: string;
-  attendees: number;
-  cover: string | null;
-}
-
-export interface CreateEventRequest {
-  title: string;
-  date: string;
-  time: string;
-  format: string;
-  host: string;
-  cover?: string | null;
-}
-
-export interface PageResponse<T> {
-  items: T[];
-  nextCursor: string | null;
-}
 
 export const eventsApi = {
   list: (format?: string, cursor?: string | null, limit = 20) =>
@@ -33,8 +13,8 @@ export const eventsApi = {
 
   create: (data: CreateEventRequest) => api.post<Event>("/events", data),
 
-  attend: (eventId: string) => api.post<{ status: string }>(`/events/${eventId}/attendees`),
+  attend: (eventId: string) => api.post<StatusResponse>(`/events/${eventId}/attendees`),
 
   cancelAttendance: (eventId: string) =>
-    api.delete<{ status: string }>(`/events/${eventId}/attendees`),
+    api.delete<StatusResponse>(`/events/${eventId}/attendees`),
 };

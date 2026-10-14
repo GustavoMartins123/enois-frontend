@@ -1,24 +1,39 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { type ChangeEvent, useCallback, useRef, useState } from "react";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
+
 import {
-  MapPin,
   Briefcase,
-  Link as LinkIcon,
-  MessageCircle,
-  UserPlus,
-  Sparkles,
-  Target,
-  Clock,
   Camera,
+  Clock,
+  Link as LinkIcon,
+  MapPin,
+  MessageCircle,
   Settings,
-  ThumbsUp,
   Star,
+  Target,
+  ThumbsUp,
   Trophy,
 } from "lucide-react";
-import { AppShell } from "@/components/app-shell";
-import { PostCard } from "@/components/post-card";
-import { UserAvatar } from "@/components/user-avatar";
-import { Badge } from "@/components/ui/badge";
+
+import {
+  ApiError,
+  feedApi,
+  networkApi,
+  profileApi,
+  rankingApi,
+  recommendationsApi,
+} from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
+import { useAuth } from "@/lib/use-auth";
+import { useMediaUpload } from "@/lib/use-media-upload";
+import { texts } from "@/texts";
+import type { UpdateProfileRequest } from "@/types/application/profile/update-profile-request";
+import type { ProfileCropPurpose } from "@/types/routes/profile/profile-crop-purpose";
+import type { RecommendationItemProps } from "@/types/routes/profile/recommendation-item-props";
+import type { SectionProps } from "@/types/routes/profile/section-props";
+
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,20 +43,12 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  profileApi,
-  feedApi,
-  networkApi,
-  ApiError,
-  rankingApi,
-  recommendationsApi,
-} from "@/lib/api";
-import { resolveCdnUrl } from "@/lib/api/media";
-import { useAuth } from "@/lib/use-auth";
-import { useMediaUpload } from "@/lib/use-media-upload";
+
+import { AppContainer } from "@/components/app-container";
 import { EditProfileDialog } from "@/components/edit-profile-dialog";
-import { useState, useRef, useCallback } from "react";
 import { ImageCropDialog } from "@/components/image-crop-dialog";
+import { PostCard } from "@/components/post-card";
+import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/perfil/$username")({
   loader: async ({ params }) => {
@@ -54,26 +61,31 @@ export const Route = createFileRoute("/perfil/$username")({
   },
   head: ({ loaderData }) => ({
     meta: [
-      { title: `${loaderData?.user.name ?? "Perfil"} · Conexão` },
-      { name: "description", content: loaderData?.user.headline ?? "Perfil profissional" },
+      { title: texts.profile.seoTitle(loaderData?.user.name ?? texts.profile.seoFallbackTitle) },
+      { name: "description", content: loaderData?.user.headline ?? texts.profile.seoFallbackDescription },
     ],
   }),
   notFoundComponent: () => (
-    <AppShell>
-      <div className="surface-card p-10 text-center">
-        <p className="text-lg font-semibold">Pessoa não encontrada</p>
-        <Link to="/" className="mt-2 inline-block text-sm text-primary hover:underline">
-          Voltar para o início
+    <AppContainer>
+      <div className="rounded-2xl border border-border-soft bg-surface-card p-10 text-center">
+        <p className="text-[16px] font-light text-text-strong">{texts.profile.notFound}</p>
+        <Link
+          to="/"
+          className="mt-2 inline-block text-[13px] font-light text-primary hover:underline"
+        >
+          {texts.profile.backHome}
         </Link>
       </div>
-    </AppShell>
+    </AppContainer>
   ),
   errorComponent: () => (
-    <AppShell>
-      <div className="surface-card p-10 text-center">
-        <p>Não foi possível carregar este perfil.</p>
+    <AppContainer>
+      <div className="rounded-2xl border border-border-soft bg-surface-card p-10 text-center">
+        <p className="text-[13px] font-light text-text-subtle">
+          {texts.profile.loadError}
+        </p>
       </div>
-    </AppShell>
+    </AppContainer>
   ),
   component: Profile,
 });
@@ -90,8 +102,7 @@ function Profile() {
   const [hoveringAvatar, setHoveringAvatar] = useState(false);
   const [hoveringBanner, setHoveringBanner] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
-  const [cropPurpose, setCropPurpose] = useState<"AVATAR" | "BANNER" | null>(null);
-  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [cropPurpose, setCropPurpose] = useState<ProfileCropPurpose | null>(null);
   const [recommendOpen, setRecommendOpen] = useState(false);
   const [recommendComment, setRecommendComment] = useState("");
 
@@ -113,7 +124,8 @@ function Profile() {
   const connectionStatus = connectionData?.status ?? null;
 
   const updateProfile = useMutation({
-    mutationFn: (data: { avatar?: string; banner?: string }) => profileApi.update(data),
+    mutationFn: (data: Pick<UpdateProfileRequest, "avatar" | "banner">) =>
+      profileApi.update(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["me"] });
       queryClient.invalidateQueries({ queryKey: ["profile", user.username] });
@@ -158,22 +170,20 @@ function Profile() {
     },
   });
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const src = URL.createObjectURL(file);
     setCropImageSrc(src);
     setCropPurpose("AVATAR");
-    setCropFile(file);
   };
 
-  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleBannerUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const src = URL.createObjectURL(file);
     setCropImageSrc(src);
     setCropPurpose("BANNER");
-    setCropFile(file);
   };
 
   const handleCropComplete = useCallback(
@@ -188,7 +198,6 @@ function Profile() {
       if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
       setCropImageSrc(null);
       setCropPurpose(null);
-      setCropFile(null);
     },
     [cropPurpose, cropImageSrc, avatarUpload, bannerUpload, updateProfile],
   );
@@ -197,13 +206,12 @@ function Profile() {
     if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
     setCropImageSrc(null);
     setCropPurpose(null);
-    setCropFile(null);
   }, [cropImageSrc]);
 
   return (
-    <AppShell>
+    <AppContainer>
       <div className="space-y-6">
-        <div className="surface-card overflow-hidden">
+        <div className="rounded-2xl border border-border-soft bg-surface-card overflow-hidden">
           <div
             className="relative"
             onMouseEnter={() => setHoveringBanner(true)}
@@ -216,7 +224,10 @@ function Profile() {
                 className="h-40 w-full object-cover sm:h-52"
               />
             ) : (
-              <div className="h-40 w-full bg-gradient-to-r from-primary/20 to-primary/5 sm:h-52" />
+              <div
+                className="h-40 w-full sm:h-52"
+                style={{ background: "var(--gradient-primary)" }}
+              />
             )}
             {isOwnProfile && hoveringBanner && (
               <button
@@ -226,7 +237,7 @@ function Profile() {
                 disabled={bannerUpload.status === "uploading"}
               >
                 {bannerUpload.status === "uploading" ? (
-                  "Enviando..."
+                  texts.common.sending
                 ) : (
                   <Camera className="h-6 w-6" />
                 )}
@@ -250,7 +261,7 @@ function Profile() {
                 <UserAvatar
                   src={resolveCdnUrl(user.avatar)}
                   alt={user.name}
-                  className="h-24 w-24 ring-4 ring-card sm:h-28 sm:w-28"
+                  className="h-24 w-24 ring-4 ring-surface-card sm:h-28 sm:w-28"
                 />
                 {isOwnProfile && hoveringAvatar && (
                   <button
@@ -259,7 +270,11 @@ function Profile() {
                     className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30 text-white transition"
                     disabled={avatarUpload.status === "uploading"}
                   >
-                    {avatarUpload.status === "uploading" ? "..." : <Camera className="h-5 w-5" />}
+                    {avatarUpload.status === "uploading" ? (
+                      texts.profile.uploadingIndicator
+                    ) : (
+                      <Camera className="h-5 w-5" />
+                    )}
                   </button>
                 )}
                 <input
@@ -273,23 +288,25 @@ function Profile() {
               <div className="flex flex-wrap gap-2">
                 {isOwnProfile ? (
                   <EditProfileDialog profile={user}>
-                    <Button variant="outline" className="rounded-full gap-1.5">
-                      <Settings className="h-4 w-4" /> Editar perfil
+                    <Button variant="outline" size="sm" className="rounded-full gap-1.5">
+                      <Settings className="h-4 w-4" /><>{texts.profile.editProfile}</>
                     </Button>
                   </EditProfileDialog>
                 ) : (
                   <>
                     <Button
                       variant="outline"
+                      size="sm"
                       className="rounded-full gap-1.5"
                       onClick={() => {
                         if (!requireAuth()) return;
                         navigate({ to: "/mensagens" });
                       }}
                     >
-                      <MessageCircle className="h-4 w-4" /> Mensagem
+                      <MessageCircle className="h-4 w-4" /><>{texts.profile.message}</>
                     </Button>
                     <Button
+                      size="sm"
                       className="rounded-full gap-1.5"
                       onClick={() => {
                         if (!requireAuth()) return;
@@ -302,10 +319,10 @@ function Profile() {
                       }
                     >
                       {connectionStatus === "PENDING"
-                        ? "Aguardando resposta"
+                        ? texts.profile.waitingResponse
                         : connectionStatus === "ACCEPTED"
-                          ? "Conectado"
-                          : "Conectar"}
+                          ? texts.profile.connected
+                          : texts.profile.connect}
                     </Button>
                   </>
                 )}
@@ -313,34 +330,38 @@ function Profile() {
             </div>
             <div className="mt-4">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="break-words text-xl font-semibold tracking-tight sm:text-2xl">{user.name}</h1>
+                <h1 className="break-words text-[22px] font-light tracking-tight text-text-strong">
+                  {user.name}
+                </h1>
                 {user.openToWork && (
-                  <span className="rounded-full bg-growth/15 px-2.5 py-0.5 text-xs font-medium text-growth">
-                    Aberto a oportunidades
+                  <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-[11px] font-light text-growth">
+                    {texts.profile.openToWork}
                   </span>
                 )}
                 {user.isMentor && (
-                  <span className="rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary">
-                    Mentor disponível
+                  <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-[11px] font-light text-primary">
+                    {texts.profile.mentorAvailable}
                   </span>
                 )}
               </div>
-              <p className="mt-1 break-words text-foreground">{user.headline}</p>
-              <p className="mt-3 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              <p className="mt-1 break-words text-[14px] font-light text-primary">
+                {user.headline}
+              </p>
+              <p className="mt-3 flex flex-wrap items-center gap-4 text-[13px] font-light text-text-subtle">
                 {user.company && (
                   <span className="inline-flex items-center gap-1.5">
-                    <Briefcase className="h-4 w-4" /> {user.company}
+                    <Briefcase className="h-4 w-4" /><>{user.company}</>
                   </span>
                 )}
                 {user.location && (
                   <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4" /> {user.location}
+                    <MapPin className="h-4 w-4" /><>{user.location}</>
                   </span>
                 )}
-                <span>· {user.connectionsCount} conexões</span>
+                <span>{texts.profile.connectionsMeta(user.connectionsCount)}</span>
                 {(user.reputation ?? 0) > 0 && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-opportunity/15 px-2 py-0.5 text-xs font-medium text-opportunity-foreground">
-                    ★ {user.reputation ?? 0} reputação
+                  <span className="inline-flex items-center gap-1 rounded-full bg-opportunity/15 px-2 py-0.5 text-[11px] font-light text-opportunity-foreground">
+                    {texts.profile.reputationMeta(user.reputation ?? 0)}
                   </span>
                 )}
               </p>
@@ -351,41 +372,43 @@ function Profile() {
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-6">
             {user.bio && (
-              <Section title="Sobre">
-                <p className="break-words text-[15px] leading-relaxed text-foreground">{user.bio}</p>
+              <Section title={texts.profile.sections.about}>
+                <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">
+                  {user.bio}
+                </p>
               </Section>
             )}
 
             {user.skills.length > 0 && (
-              <Section title="Habilidades">
-                <div className="flex flex-wrap gap-2">
+              <Section title={texts.profile.sections.skills}>
+                <div className="flex flex-wrap gap-1.5">
                   {user.skills.map((s: string) => (
-                    <Badge
+                    <span
                       key={s}
-                      className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft"
+                      className="rounded-full bg-surface-2 px-2.5 py-0.5 text-[11px] font-light text-primary"
                     >
                       {s}
-                    </Badge>
+                    </span>
                   ))}
                 </div>
               </Section>
             )}
 
             {user.goals.length > 0 && (
-              <Section title="Objetivos profissionais" icon={Target}>
+              <Section title={texts.profile.sections.goals} icon={Target}>
                 <div className="grid gap-3 sm:grid-cols-3">
                   {user.goals.map((goal: string) => (
-                    <div key={goal} className="rounded-xl border border-border bg-muted/40 p-4">
-                      <p className="break-words text-sm font-medium">{goal}</p>
+                    <div key={goal} className="rounded-xl border border-border-soft p-4">
+                      <p className="break-words text-[13px] font-light text-text-strong">{goal}</p>
                     </div>
                   ))}
                 </div>
               </Section>
             )}
 
-            <Section title="Publicações recentes">
+            <Section title={texts.profile.sections.recentPosts}>
               {userPosts.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Ainda não há publicações.</p>
+                <p className="text-[13px] font-light text-text-subtle">{texts.profile.noPosts}</p>
               ) : (
                 <div className="space-y-4">
                   {userPosts.map((p) => (
@@ -397,40 +420,42 @@ function Profile() {
           </div>
 
           <aside className="space-y-6">
-            <Section title="Disponibilidade" icon={Clock}>
-              <p className="break-words text-sm leading-relaxed text-foreground">
-                {user.availability ?? "Não informada"}
+            <Section title={texts.profile.sections.availability} icon={Clock}>
+              <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">
+                {user.availability ?? texts.profile.availabilityUnknown}
               </p>
             </Section>
 
             {!isOwnProfile && (
-              <Section title="Recomendar" icon={ThumbsUp}>
-                <p className="mb-3 text-sm text-muted-foreground">
-                  Recomende este perfil para ajudar a comunidade.
+              <Section title={texts.profile.sections.recommend} icon={ThumbsUp}>
+                <p className="mb-3 text-[13px] font-light text-text-subtle">
+                  {texts.profile.recommendDescription}
                 </p>
                 <Dialog open={recommendOpen} onOpenChange={setRecommendOpen}>
                   <DialogTrigger asChild>
-                    <Button className="w-full rounded-full gap-1.5">
-                      <ThumbsUp className="h-4 w-4" /> Recomendar
+                    <Button size="sm" className="w-full rounded-full gap-1.5">
+                      <ThumbsUp className="h-4 w-4" /><>{texts.profile.recommendAction}</>
                     </Button>
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Recomendar {user.name}</DialogTitle>
+                      <DialogTitle className="font-light">{texts.profile.recommendTitle(user.name)}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4 pt-2">
                       <Textarea
                         value={recommendComment}
                         onChange={(e) => setRecommendComment(e.target.value)}
-                        placeholder="Descreva como conhece este profissional..."
+                        placeholder={texts.profile.recommendPlaceholder}
                         rows={3}
+                        className="border-border-soft bg-surface-1 text-[13px] font-light"
                       />
                       <Button
+                        size="sm"
                         className="w-full rounded-full"
                         disabled={!recommendComment.trim() || recommend.isPending}
                         onClick={() => recommend.mutate()}
                       >
-                        {recommend.isPending ? "Enviando..." : "Enviar recomendação"}
+                        {recommend.isPending ? texts.common.sending : texts.profile.sendRecommendation}
                       </Button>
                     </div>
                   </DialogContent>
@@ -439,7 +464,7 @@ function Profile() {
             )}
 
             {recommendationsData && recommendationsData.length > 0 && (
-              <Section title="Recomendações" icon={Star}>
+              <Section title={texts.profile.sections.recommendations} icon={Star}>
                 <div className="space-y-3">
                   {recommendationsData.map((rec) => (
                     <RecommendationItem key={rec.id} recommendation={rec} />
@@ -449,14 +474,14 @@ function Profile() {
             )}
 
             {rankingData && rankingData.length > 0 && (
-              <Section title="Ranking" icon={Trophy}>
+              <Section title={texts.profile.sections.ranking} icon={Trophy}>
                 <div className="space-y-2">
                   {rankingData.slice(0, 5).map((u, i) => (
                     <div key={u.id} className="flex items-center gap-3">
                       <span
-                        className={`w-5 text-center text-sm font-bold ${i < 3 ? "text-opportunity" : "text-muted-foreground"}`}
+                        className={`w-5 text-center text-[13px] font-light ${i < 3 ? "text-opportunity" : "text-text-subtle"}`}
                       >
-                        {i + 1}º
+                        {texts.profile.rankingPosition(i + 1)}
                       </span>
                       <Link to="/perfil/$username" params={{ username: u.username }}>
                         <UserAvatar src={u.avatar} alt={u.name} className="h-8 w-8 shrink-0" />
@@ -465,12 +490,12 @@ function Profile() {
                         <Link
                           to="/perfil/$username"
                           params={{ username: u.username }}
-                          className="truncate text-sm font-medium hover:underline"
+                          className="truncate text-[13px] font-light text-text-strong hover:underline"
                         >
                           {u.name}
                         </Link>
                       </div>
-                      <span className="text-xs font-semibold text-opportunity-foreground">
+                      <span className="text-[11px] font-light text-opportunity-foreground">
                         {u.reputation}
                       </span>
                     </div>
@@ -480,12 +505,12 @@ function Profile() {
             )}
 
             {user.externalLinks.length > 0 && (
-              <Section title="Links">
-                <ul className="space-y-2 text-sm">
+              <Section title={texts.profile.sections.links}>
+                <ul className="space-y-2 text-[13px] font-light">
                   {user.externalLinks.map((link: string) => (
-                    <li key={link} className="flex items-center gap-2 text-muted-foreground">
+                    <li key={link} className="flex items-center gap-2 text-text-subtle">
                       <LinkIcon className="h-4 w-4" />
-                      <span className="truncate text-foreground">{link}</span>
+                      <span className="truncate text-text-strong">{link}</span>
                     </li>
                   ))}
                 </ul>
@@ -504,51 +529,47 @@ function Profile() {
           }}
           imageSrc={cropImageSrc}
           aspect={cropPurpose === "AVATAR" ? 1 : 3}
-          title={cropPurpose === "AVATAR" ? "Ajustar foto de perfil" : "Ajustar foto de capa"}
+          title={cropPurpose === "AVATAR" ? texts.profile.cropAvatar : texts.profile.cropCover}
           onCropComplete={handleCropComplete}
         />
       )}
-    </AppShell>
+    </AppContainer>
   );
 }
 
-function Section({
-  title,
-  icon: Icon,
-  children,
-}: {
-  title: string;
-  icon?: React.ElementType;
-  children: React.ReactNode;
-}) {
+function Section({ title, icon: Icon, children }: SectionProps) {
   return (
-    <section className="surface-card p-4 sm:p-6">
-      <h2 className="mb-4 flex items-center gap-2 text-base font-semibold">
-        {Icon && <Icon className="h-4 w-4 text-primary" />}
-        {title}
+    <section className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-6">
+      <h2 className="mb-4 flex items-center gap-2 text-[15px] font-light text-text-strong">
+        {Icon && (
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-surface-2">
+            <Icon className="h-4 w-4 text-primary" />
+          </span>
+        )}
+        <>{title}</>
       </h2>
       {children}
     </section>
   );
 }
 
-function RecommendationItem({
-  recommendation,
-}: {
-  recommendation: { recommenderId: string; comment: string };
-}) {
+function RecommendationItem({ recommendation }: RecommendationItemProps) {
   const { data: recommender } = useQuery({
     queryKey: ["profile", "by-id", recommendation.recommenderId],
     queryFn: () => profileApi.getById(recommendation.recommenderId),
   });
 
   return (
-    <div className="rounded-xl bg-muted/50 p-3">
+    <div className="rounded-xl bg-surface-1 p-3">
       <div className="flex items-center gap-2 mb-2">
         <UserAvatar src={recommender?.avatar} alt={recommender?.name} className="h-6 w-6" />
-        <span className="text-xs font-medium">{recommender?.name ?? "Usuário"}</span>
+        <span className="text-[12px] font-medium text-text-strong">
+          {recommender?.name ?? texts.profile.userFallback}
+        </span>
       </div>
-      <p className="break-words text-sm leading-relaxed text-muted-foreground">"{recommendation.comment}"</p>
+      <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">
+        {texts.profile.recommendationQuote(recommendation.comment)}
+      </p>
     </div>
   );
 }

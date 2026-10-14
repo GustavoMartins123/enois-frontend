@@ -1,106 +1,13 @@
+import type { CertificationRequest } from "@/types/application/profile/certification-request";
+import type { Certification } from "@/types/application/profile/certification";
+import type { EducationRequest } from "@/types/application/profile/education-request";
+import type { Education } from "@/types/application/profile/education";
+import type { ExperienceRequest } from "@/types/application/profile/experience-request";
+import type { Experience } from "@/types/application/profile/experience";
+import type { Profile } from "@/types/application/profile/profile";
+import type { UpdateProfileRequest } from "@/types/application/profile/update-profile-request";
+
 import { api } from "../api-client";
-
-export interface UserProfile {
-  id: string;
-  username: string;
-  name: string;
-  headline: string | null;
-  email: string;
-  company: string | null;
-  location: string | null;
-  avatar: string | null;
-  banner: string | null;
-  bio: string | null;
-  skills: string[];
-  goals: string[];
-  availability: string | null;
-  portfolio: string | null;
-  externalLinks: string[];
-  openToWork: boolean;
-  isMentor: boolean;
-  connectionsCount?: number;
-  followersCount?: number;
-  reputation?: number;
-}
-
-export type Profile = UserProfile;
-
-export interface UpdateProfileRequest {
-  username?: string;
-  name?: string;
-  headline?: string | null;
-  company?: string | null;
-  location?: string | null;
-  avatar?: string | null;
-  banner?: string | null;
-  bio?: string | null;
-  skills?: string[];
-  goals?: string[];
-  availability?: string | null;
-  portfolio?: string | null;
-  externalLinks?: string[];
-  openToWork?: boolean;
-  isMentor?: boolean;
-}
-
-export interface Experience {
-  id: string;
-  title: string;
-  company: string;
-  location: string | null;
-  description: string | null;
-  currentlyHere: boolean;
-  startDate: string | null;
-  endDate: string | null;
-}
-
-export interface ExperienceRequest {
-  title: string;
-  company: string;
-  location?: string | null;
-  description?: string | null;
-  startDate?: string | null;
-  endDate?: string | null;
-}
-
-export interface Education {
-  id: string;
-  school: string;
-  degree: string;
-  field: string;
-  description: string | null;
-  currentlyHere: boolean;
-  startDate: string | null;
-  endDate: string | null;
-}
-
-export interface EducationRequest {
-  school: string;
-  degree: string;
-  field: string;
-  description?: string | null;
-  startDate?: string | null;
-  endDate?: string | null;
-}
-
-export interface Certification {
-  id: string;
-  name: string;
-  issuer: string;
-  description: string | null;
-  issueDate: string | null;
-  expirationDate: string | null;
-  credentialUrl: string | null;
-}
-
-export interface CertificationRequest {
-  name: string;
-  issuer: string;
-  description?: string | null;
-  issueDate?: string | null;
-  expirationDate?: string | null;
-  credentialUrl?: string | null;
-}
 
 export const profileApi = {
   me: () => api.get<Profile>("/me"),
@@ -122,8 +29,7 @@ export const profileApi = {
   education: {
     list: () => api.get<Education[]>("/me/education"),
     create: (data: EducationRequest) => api.post<Education>("/me/education", data),
-    update: (id: string, data: EducationRequest) =>
-      api.put<Education>(`/me/education/${id}`, data),
+    update: (id: string, data: EducationRequest) => api.put<Education>(`/me/education/${id}`, data),
     delete: (id: string) => api.delete<void>(`/me/education/${id}`),
   },
 

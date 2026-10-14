@@ -1,20 +1,35 @@
 import { useState } from "react";
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
-import { X, Plus, Pencil, Trash2 } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+
+import { Pencil, Plus, Trash2, X } from "lucide-react";
+
+import { ApiError, profileApi } from "@/lib/api";
+import { texts } from "@/texts";
+import type { CertificationRequest } from "@/types/application/profile/certification-request";
+import type { Certification } from "@/types/application/profile/certification";
+import type { EducationRequest } from "@/types/application/profile/education-request";
+import type { Education } from "@/types/application/profile/education";
+import type { ExperienceRequest } from "@/types/application/profile/experience-request";
+import type { Experience } from "@/types/application/profile/experience";
+import type { FieldProps } from "@/types/components/profile/edit-profile-dialog/field-props";
+import type { Props } from "@/types/components/profile/edit-profile-dialog/props";
+import type { SubListProps } from "@/types/components/profile/edit-profile-dialog/sub-list-props";
+import type { SubListUpdate } from "@/types/components/profile/edit-profile-dialog/sub-list-update";
+
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { profileApi, ApiError } from "@/lib/api";
-import type { Profile, Experience, Education, Certification } from "@/lib/api";
-
-interface Props {
-  profile: Profile;
-  children: React.ReactNode;
-}
+import { Textarea } from "@/components/ui/textarea";
 
 export function EditProfileDialog({ profile, children }: Props) {
   const queryClient = useQueryClient();
@@ -30,9 +45,9 @@ export function EditProfileDialog({ profile, children }: Props) {
   const [location, setLocation] = useState(profile.location ?? "");
   const [availability, setAvailability] = useState(profile.availability ?? "");
   const [portfolio, setPortfolio] = useState(profile.portfolio ?? "");
-  const [linksText, setLinksText] = useState(profile.externalLinks.join("\n"));
-  const [skillsText, setSkillsText] = useState(profile.skills.join(", "));
-  const [goalsText, setGoalsText] = useState(profile.goals.join(", "));
+  const [linksText, setLinksText] = useState((profile.externalLinks ?? []).join("\n"));
+  const [skillsText, setSkillsText] = useState((profile.skills ?? []).join(", "));
+  const [goalsText, setGoalsText] = useState((profile.goals ?? []).join(", "));
   const [openToWork, setOpenToWork] = useState(profile.openToWork);
   const [isMentor, setIsMentor] = useState(profile.isMentor);
   const [usernameError, setUsernameError] = useState("");
@@ -44,13 +59,17 @@ export function EditProfileDialog({ profile, children }: Props) {
       queryClient.invalidateQueries({ queryKey: ["profile", profile.username] });
       if (updated.username && updated.username !== profile.username) {
         queryClient.invalidateQueries({ queryKey: ["profile", updated.username] });
-        router.navigate({ to: "/perfil/$username", params: { username: updated.username }, replace: true });
+        router.navigate({
+          to: "/perfil/$username",
+          params: { username: updated.username },
+          replace: true,
+        });
       }
       setOpen(false);
     },
     onError: (err) => {
       if (err instanceof ApiError && err.status === 409) {
-        setUsernameError("Este username já está em uso");
+        setUsernameError(texts.profile.edit.usernameTaken);
       }
     },
   });
@@ -84,44 +103,63 @@ export function EditProfileDialog({ profile, children }: Props) {
       location: location || null,
       availability: availability || null,
       portfolio: portfolio || null,
-      externalLinks: linksText ? linksText.split("\n").map((s) => s.trim()).filter(Boolean) : [],
-      skills: skillsText ? skillsText.split(",").map((s) => s.trim()).filter(Boolean) : [],
-      goals: goalsText ? goalsText.split(",").map((s) => s.trim()).filter(Boolean) : [],
+      externalLinks: linksText
+        ? linksText
+            .split("\n")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
+      skills: skillsText
+        ? skillsText
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
+      goals: goalsText
+        ? goalsText
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : [],
       openToWork,
       isMentor,
     });
   };
 
   const tabs = [
-    { key: "info" as const, label: "Informações" },
-    { key: "experiences" as const, label: "Experiências" },
-    { key: "education" as const, label: "Educação" },
-    { key: "certifications" as const, label: "Certificações" },
+    { key: "info" as const, label: texts.profile.edit.tabs.info },
+    { key: "experiences" as const, label: texts.profile.edit.tabs.experiences },
+    { key: "education" as const, label: texts.profile.edit.tabs.education },
+    { key: "certifications" as const, label: texts.profile.edit.tabs.certifications },
   ];
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto p-0">
-        <DialogHeader className="sticky top-0 z-10 border-b border-border bg-card px-6 pb-4 pt-6">
+        <DialogHeader className="sticky top-0 z-10 border-b border-border-soft bg-surface-card px-6 pb-4 pt-6">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-xl">Editar perfil</DialogTitle>
+            <DialogTitle className="text-[18px] font-light text-text-strong">
+              {texts.profile.edit.title}
+            </DialogTitle>
             <div className="flex items-center gap-2">
               <Button size="sm" variant="outline" onClick={() => setOpen(false)}>
-                Cancelar
+                {texts.common.cancel}
               </Button>
               <Button size="sm" onClick={handleSave} disabled={updateProfile.isPending}>
-                {updateProfile.isPending ? "Salvando..." : "Salvar"}
+                {updateProfile.isPending ? texts.common.saving : texts.common.save}
               </Button>
             </div>
           </div>
-          <div className="mt-4 flex gap-1 rounded-full border border-border bg-muted p-1 text-sm">
+          <div className="mt-4 flex gap-1 overflow-x-auto text-sm">
             {tabs.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-                className={`rounded-full px-4 py-1.5 font-medium transition ${
-                  tab === t.key ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-light transition ${
+                  tab === t.key
+                    ? "bg-surface-2 text-primary"
+                    : "text-text-subtle hover:bg-surface-3 hover:text-text-strong"
                 }`}
               >
                 {t.label}
@@ -133,113 +171,187 @@ export function EditProfileDialog({ profile, children }: Props) {
         <div className="space-y-6 px-6 pb-6 pt-4">
           {tab === "info" && (
             <div className="space-y-5">
-              <Field label="Nome">
-                <Input value={name} onChange={(e) => setName(e.target.value)} />
+              <Field label={texts.profile.edit.fields.name}>
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="h-10 border-border-soft bg-surface-1"
+                />
               </Field>
-              <Field label="Username (URL do perfil)" error={usernameError}>
-                <Input value={username} onChange={(e) => { setUsername(e.target.value); setUsernameError(""); }} placeholder="seu-username" />
+              <Field label={texts.profile.edit.fields.username} error={usernameError}>
+                <Input
+                  value={username}
+                  onChange={(e) => {
+                    setUsername(e.target.value);
+                    setUsernameError("");
+                  }}
+                  placeholder={texts.profile.edit.placeholders.username}
+                  className="h-10 border-border-soft bg-surface-1"
+                />
               </Field>
-              <Field label="Headline">
-                <Input value={headline} onChange={(e) => setHeadline(e.target.value)} placeholder="Cargo ou frase de destaque" />
+              <Field label={texts.profile.edit.fields.headline}>
+                <Input
+                  value={headline}
+                  onChange={(e) => setHeadline(e.target.value)}
+                  placeholder={texts.profile.edit.placeholders.headline}
+                  className="h-10 border-border-soft bg-surface-1"
+                />
               </Field>
-              <Field label="Bio">
-                <Textarea value={bio} onChange={(e) => setBio(e.target.value)} rows={3} />
+              <Field label={texts.profile.edit.fields.bio}>
+                <Textarea
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  rows={3}
+                  className="h-10 border-border-soft bg-surface-1 pl-9"
+                />
               </Field>
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Empresa">
-                  <Input value={company} onChange={(e) => setCompany(e.target.value)} />
+                <Field label={texts.profile.edit.fields.company}>
+                  <Input
+                    value={company}
+                    onChange={(e) => setCompany(e.target.value)}
+                    className="h-10 border-border-soft bg-surface-1"
+                  />
                 </Field>
-                <Field label="Localização">
-                  <Input value={location} onChange={(e) => setLocation(e.target.value)} />
+                <Field label={texts.profile.edit.fields.location}>
+                  <Input
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    className="h-10 border-border-soft bg-surface-1"
+                  />
                 </Field>
               </div>
-              <Field label="Disponibilidade">
-                <Input value={availability} onChange={(e) => setAvailability(e.target.value)} placeholder="Ex: Disponível para freelas" />
+              <Field label={texts.profile.edit.fields.availability}>
+                <Input
+                  value={availability}
+                  onChange={(e) => setAvailability(e.target.value)}
+                  placeholder={texts.profile.edit.placeholders.availability}
+                  className="h-10 border-border-soft bg-surface-1"
+                />
               </Field>
-              <Field label="Portfólio">
-                <Input value={portfolio} onChange={(e) => setPortfolio(e.target.value)} placeholder="https://..." />
+              <Field label={texts.profile.edit.fields.portfolio}>
+                <Input
+                  value={portfolio}
+                  onChange={(e) => setPortfolio(e.target.value)}
+                  placeholder={texts.profile.edit.placeholders.portfolio}
+                  className="h-10 border-border-soft bg-surface-1"
+                />
               </Field>
-              <Field label="Links externos (um por linha)">
-                <Textarea value={linksText} onChange={(e) => setLinksText(e.target.value)} rows={3} />
+              <Field label={texts.profile.edit.fields.externalLinks}>
+                <Textarea
+                  value={linksText}
+                  onChange={(e) => setLinksText(e.target.value)}
+                  rows={3}
+                  className="h-10 border-border-soft bg-surface-1"
+                />
               </Field>
-              <Field label="Habilidades (separadas por vírgula)">
-                <Input value={skillsText} onChange={(e) => setSkillsText(e.target.value)} />
+              <Field label={texts.profile.edit.fields.skills}>
+                <Input
+                  value={skillsText}
+                  onChange={(e) => setSkillsText(e.target.value)}
+                  className="h-10 border-border-soft bg-surface-1"
+                />
               </Field>
-              <Field label="Objetivos (separados por vírgula)">
-                <Input value={goalsText} onChange={(e) => setGoalsText(e.target.value)} />
+              <Field label={texts.profile.edit.fields.goals}>
+                <Input
+                  value={goalsText}
+                  onChange={(e) => setGoalsText(e.target.value)}
+                  className="h-10 border-border-soft bg-surface-1"
+                />
               </Field>
               <div className="flex items-center gap-8">
-                <label className="flex items-center gap-3 text-sm">
+                <label className="flex items-center gap-3 text-[13px] font-light text-text-strong">
                   <Switch checked={openToWork} onCheckedChange={setOpenToWork} />
-                  Aberto a oportunidades
+                  <>{texts.profile.edit.openToWork}</>
                 </label>
-                <label className="flex items-center gap-3 text-sm">
+                <label className="flex items-center gap-3 text-[13px] font-light text-text-strong">
                   <Switch checked={isMentor} onCheckedChange={setIsMentor} />
-                  Mentor disponível
+                  <>{texts.profile.edit.mentorAvailable}</>
                 </label>
               </div>
             </div>
           )}
 
           {tab === "experiences" && (
-            <SubList
+            <SubList<Experience, ExperienceRequest>
               items={experiences}
               fields={[
-                { key: "title", label: "Cargo", required: true },
-                { key: "company", label: "Empresa", required: true },
-                { key: "location", label: "Local" },
-                { key: "description", label: "Descrição", multiline: true },
-                { key: "startDate", label: "Início", type: "date" },
-                { key: "endDate", label: "Fim", type: "date" },
+                { key: "title", label: texts.profile.edit.experienceFields.title, required: true },
+                { key: "company", label: texts.profile.edit.experienceFields.company, required: true },
+                { key: "location", label: texts.profile.edit.experienceFields.location },
+                { key: "description", label: texts.profile.edit.experienceFields.description, multiline: true },
+                { key: "startDate", label: texts.profile.edit.experienceFields.startDate, type: "date" },
+                { key: "endDate", label: texts.profile.edit.experienceFields.endDate, type: "date" },
               ]}
               currentlyHereKey="currentlyHere"
-              createApi={(data) => profileApi.experiences.create(data as any)}
-              updateApi={(id, data) => profileApi.experiences.update(id, data as any)}
+              createApi={(data) => profileApi.experiences.create(data)}
+              updateApi={(id, data) => profileApi.experiences.update(id, data)}
               deleteApi={(id) => profileApi.experiences.delete(id)}
               queryKey={["me", "experiences"]}
-              emptyMessage="Nenhuma experiência adicionada"
-              newItem={{ title: "", company: "", location: "", description: "", startDate: "", endDate: "" }}
+              emptyMessage={texts.profile.edit.emptyExperience}
+              newItem={{
+                title: "",
+                company: "",
+                location: "",
+                description: "",
+                startDate: "",
+                endDate: "",
+              }}
             />
           )}
 
           {tab === "education" && (
-            <SubList
+            <SubList<Education, EducationRequest>
               items={education}
               fields={[
-                { key: "school", label: "Instituição", required: true },
-                { key: "degree", label: "Grau", required: true },
-                { key: "field", label: "Campo" },
-                { key: "description", label: "Descrição", multiline: true },
-                { key: "startDate", label: "Início", type: "date" },
-                { key: "endDate", label: "Fim", type: "date" },
+                { key: "school", label: texts.profile.edit.educationFields.school, required: true },
+                { key: "degree", label: texts.profile.edit.educationFields.degree, required: true },
+                { key: "field", label: texts.profile.edit.educationFields.field },
+                { key: "description", label: texts.profile.edit.educationFields.description, multiline: true },
+                { key: "startDate", label: texts.profile.edit.educationFields.startDate, type: "date" },
+                { key: "endDate", label: texts.profile.edit.educationFields.endDate, type: "date" },
               ]}
               currentlyHereKey="currentlyHere"
-              createApi={(data) => profileApi.education.create(data as any)}
-              updateApi={(id, data) => profileApi.education.update(id, data as any)}
+              createApi={(data) => profileApi.education.create(data)}
+              updateApi={(id, data) => profileApi.education.update(id, data)}
               deleteApi={(id) => profileApi.education.delete(id)}
               queryKey={["me", "education"]}
-              emptyMessage="Nenhuma formação adicionada"
-              newItem={{ school: "", degree: "", field: "", description: "", startDate: "", endDate: "" }}
+              emptyMessage={texts.profile.edit.emptyEducation}
+              newItem={{
+                school: "",
+                degree: "",
+                field: "",
+                description: "",
+                startDate: "",
+                endDate: "",
+              }}
             />
           )}
 
           {tab === "certifications" && (
-            <SubList
+            <SubList<Certification, CertificationRequest>
               items={certifications}
               fields={[
-                { key: "name", label: "Nome", required: true },
-                { key: "issuer", label: "Emissor", required: true },
-                { key: "description", label: "Descrição", multiline: true },
-                { key: "issueDate", label: "Data de emissão", type: "date" },
-                { key: "expirationDate", label: "Data de expiração", type: "date" },
-                { key: "credentialUrl", label: "URL do credencial" },
+                { key: "name", label: texts.profile.edit.certificationFields.name, required: true },
+                { key: "issuer", label: texts.profile.edit.certificationFields.issuer, required: true },
+                { key: "description", label: texts.profile.edit.certificationFields.description, multiline: true },
+                { key: "issueDate", label: texts.profile.edit.certificationFields.issueDate, type: "date" },
+                { key: "expirationDate", label: texts.profile.edit.certificationFields.expirationDate, type: "date" },
+                { key: "credentialUrl", label: texts.profile.edit.certificationFields.credentialUrl },
               ]}
-              createApi={(data) => profileApi.certifications.create(data as any)}
-              updateApi={(id, data) => profileApi.certifications.update(id, data as any)}
+              createApi={(data) => profileApi.certifications.create(data)}
+              updateApi={(id, data) => profileApi.certifications.update(id, data)}
               deleteApi={(id) => profileApi.certifications.delete(id)}
               queryKey={["me", "certifications"]}
-              emptyMessage="Nenhuma certificação adicionada"
-              newItem={{ name: "", issuer: "", description: "", issueDate: "", expirationDate: "", credentialUrl: "" }}
+              emptyMessage={texts.profile.edit.emptyCertification}
+              newItem={{
+                name: "",
+                issuer: "",
+                description: "",
+                issueDate: "",
+                expirationDate: "",
+                credentialUrl: "",
+              }}
             />
           )}
         </div>
@@ -248,25 +360,20 @@ export function EditProfileDialog({ profile, children }: Props) {
   );
 }
 
-function Field({ label, error, children }: { label: string; error?: string; children: React.ReactNode }) {
+function Field({ label, error, children }: FieldProps) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-xs font-medium text-muted-foreground">{label}</Label>
+      <Label className="text-[13px] font-light text-text-subtle">{label}</Label>
       {children}
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
   );
 }
 
-interface SubField {
-  key: string;
-  label: string;
-  required?: boolean;
-  multiline?: boolean;
-  type?: string;
-}
-
-function SubList<T extends { id: string }>({
+function SubList<
+  T extends Record<"id", string>,
+  TData extends Record<string, unknown> = Record<string, string>,
+>({
   items,
   fields,
   currentlyHereKey,
@@ -276,24 +383,14 @@ function SubList<T extends { id: string }>({
   queryKey,
   emptyMessage,
   newItem,
-}: {
-  items: T[];
-  fields: SubField[];
-  currentlyHereKey?: string;
-  createApi: (data: Record<string, unknown>) => Promise<T>;
-  updateApi: (id: string, data: Record<string, unknown>) => Promise<T>;
-  deleteApi: (id: string) => Promise<void>;
-  queryKey: string[];
-  emptyMessage: string;
-  newItem: Record<string, string>;
-}) {
+}: SubListProps<T, TData>) {
   const queryClient = useQueryClient();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<Record<string, string>>({ ...newItem });
   const [currentlyHere, setCurrentlyHere] = useState(false);
 
   const create = useMutation({
-    mutationFn: (data: Record<string, unknown>) => createApi(data),
+    mutationFn: (data: TData) => createApi(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
       setForm({ ...newItem });
@@ -303,7 +400,7 @@ function SubList<T extends { id: string }>({
   });
 
   const update = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => updateApi(id, data),
+    mutationFn: ({ id, data }: SubListUpdate<TData>) => updateApi(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
       setEditingId(null);
@@ -336,9 +433,9 @@ function SubList<T extends { id: string }>({
       if (currentlyHere) data.endDate = null;
     }
     if (editingId && editingId !== "__new__") {
-      await update.mutateAsync({ id: editingId, data });
+      await update.mutateAsync({ id: editingId, data: data as TData });
     } else {
-      await create.mutateAsync(data);
+      await create.mutateAsync(data as TData);
     }
   };
 
@@ -348,7 +445,7 @@ function SubList<T extends { id: string }>({
   return (
     <div className="space-y-4">
       {showForm ? (
-        <div className="space-y-3 rounded-xl border border-border bg-muted/30 p-4">
+        <div className="space-y-3 rounded-xl border border-border-soft p-4">
           {fields.map((f) => (
             <Field key={f.key} label={f.label}>
               {f.multiline ? (
@@ -356,50 +453,69 @@ function SubList<T extends { id: string }>({
                   value={form[f.key] ?? ""}
                   onChange={(e) => setForm((p) => ({ ...p, [f.key]: e.target.value }))}
                   rows={2}
+                  className="h-10 border-border-soft bg-surface-1"
                 />
               ) : (
                 <Input
                   type={f.type ?? "text"}
                   value={form[f.key] ?? ""}
                   onChange={(e) => setForm((p) => ({ ...p, [f.key]: e.target.value }))}
+                  className="h-10 border-border-soft bg-surface-1"
                 />
               )}
             </Field>
           ))}
           {currentlyHereKey && (
-            <label className="flex items-center gap-2 text-sm">
+            <label className="flex items-center gap-2 text-[13px] font-light text-text-strong">
               <Switch checked={currentlyHere} onCheckedChange={setCurrentlyHere} />
-              Atualmente aqui
+              <>{texts.profile.edit.currentlyHere}</>
             </label>
           )}
           <div className="flex gap-2">
             <Button size="sm" onClick={handleSubmit} disabled={isPending}>
-              {isPending ? "Salvando..." : "Salvar"}
+              {isPending ? texts.common.saving : texts.common.save}
             </Button>
-            <Button size="sm" variant="outline" onClick={() => { setEditingId(null); setForm({ ...newItem }); setCurrentlyHere(false); }}>
-              Cancelar
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setEditingId(null);
+                setForm({ ...newItem });
+                setCurrentlyHere(false);
+              }}
+            >
+              {texts.common.cancel}
             </Button>
           </div>
         </div>
       ) : (
         <>
           {items.length === 0 ? (
-            <p className="py-8 text-center text-sm text-muted-foreground">{emptyMessage}</p>
+            <p className="py-8 text-center text-[13px] font-light text-text-subtle">
+              {emptyMessage}
+            </p>
           ) : (
             items.map((item) => (
-              <div key={item.id} className="rounded-xl border border-border bg-muted/30 p-4">
+              <div key={item.id} className="rounded-xl border border-border-soft p-4">
                 <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1 text-sm">
-                    <p className="break-words font-medium">{String((item as Record<string, unknown>)[fields[0].key] ?? "")}</p>
-                    <p className="break-words text-muted-foreground">{String((item as Record<string, unknown>)[fields[1]?.key] ?? "")}</p>
+                  <div className="min-w-0 flex-1 text-[13px] font-light">
+                    <p className="break-words text-text-strong">
+                      {String((item as Record<string, unknown>)[fields[0].key] ?? "")}
+                    </p>
+                    <p className="break-words text-text-subtle">
+                      {String((item as Record<string, unknown>)[fields[1]?.key] ?? "")}
+                    </p>
                   </div>
                   <div className="flex items-center gap-1">
-                    <button onClick={() => startEdit(item)} className="grid h-8 w-8 place-items-center rounded-lg hover:bg-muted">
-                      <Pencil className="h-4 w-4 text-muted-foreground" />
+                    <button
+                      onClick={() => startEdit(item)}
+                      className="grid h-8 w-8 place-items-center rounded-lg hover:bg-surface-2"
+                    >
+                      <Pencil className="h-4 w-4 text-text-subtle" />
                     </button>
                     <button
                       onClick={() => remove.mutate(item.id)}
-                      className="grid h-8 w-8 place-items-center rounded-lg hover:bg-muted hover:text-destructive"
+                      className="grid h-8 w-8 place-items-center rounded-lg hover:bg-surface-2 hover:text-destructive"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -408,8 +524,17 @@ function SubList<T extends { id: string }>({
               </div>
             ))
           )}
-          <Button variant="outline" className="w-full gap-1.5" onClick={() => { setEditingId("__new__"); setForm({ ...newItem }); setCurrentlyHere(false); }}>
-            <Plus className="h-4 w-4" /> Adicionar
+          <Button
+            size="sm"
+            variant="outline"
+            className="w-full gap-1.5"
+            onClick={() => {
+              setEditingId("__new__");
+              setForm({ ...newItem });
+              setCurrentlyHere(false);
+            }}
+          >
+            <Plus className="h-4 w-4" /><>{texts.common.add}</>
           </Button>
         </>
       )}

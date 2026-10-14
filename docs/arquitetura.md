@@ -19,6 +19,7 @@ Browser → Nitro SSR → Backend Java/Kotlin
 Ponto de entrada do servidor SSR. Importa o módulo `@tanstack/react-start/server-entry`, captura erros catastróficos do h3 e renderiza uma página de erro amigável quando necessário.
 
 **Principais funções:**
+
 - `getServerEntry()` - Lazy-load do módulo server entry do TanStack Start
 - `normalizeCatastrophicSsrResponse()` - Detecta respostas HTTP 500 do h3 que engoliram erros originais e substitui por página de erro
 - `default.fetch()` - Handler principal que orquestra SSR com tratamento de erro
@@ -30,6 +31,7 @@ Cria a instância do TanStack Start com middleware de erro que captura exceçõe
 ### 3. Router (`src/router.tsx`)
 
 Configura o TanStack Router com:
+
 - QueryClient do TanStack Query
 - Restauração de scroll
 - Preload padrão
@@ -37,6 +39,7 @@ Configura o TanStack Router com:
 ### 4. Rota Raiz (`src/routes/__root.tsx`)
 
 Fornece:
+
 - **QueryClientProvider** para toda a aplicação
 - **OAuthCallbackHandler** - captura tokens OAuth da URL e armazena no localStorage
 - **Head meta tags** globais (charset, viewport, SEO, Open Graph)
@@ -46,6 +49,7 @@ Fornece:
 ### 5. Layout Principal (`src/components/app-shell.tsx`)
 
 Layout que envolve todas as páginas autenticadas:
+
 - **Header sticky** com logo, busca global, toggle de tema, notificações e avatar do perfil
 - **Sidebar de navegação** (desktop) com links para feed, rede, comunidades, mensagens, vagas, mentoria, eventos, salvos
 - **Navbar inferior** (mobile) com os mesmos links
@@ -60,6 +64,7 @@ Layout que envolve todas as páginas autenticadas:
 ### 7. Autenticação
 
 Fluxo:
+
 1. Usuário faz login/signup → backend retorna token + refreshToken
 2. Tokens salvos no localStorage
 3. Toda requisição autenticada envia `X-Session-Token` no header
@@ -69,6 +74,7 @@ Fluxo:
 ### 8. Padrão de API
 
 Cada módulo da API (`src/lib/api/*.ts`) segue o padrão:
+
 - Define interfaces TypeScript para request/response
 - Exporta um objeto com métodos que chamam `api.get/post/put/patch/delete`
 - Usa `buildQuery()` para paginação por cursor
@@ -77,6 +83,7 @@ Cada módulo da API (`src/lib/api/*.ts`) segue o padrão:
 ### 9. Upload de Mídia
 
 Fluxo em 3 etapas:
+
 1. Solicita URL de upload via `POST /api/media/uploads`
 2. Obtém autenticação ImageKit via server function (`getImageKitAuth`)
 3. Envia arquivo diretamente para ImageKit CDN
@@ -90,19 +97,19 @@ Fluxo em 3 etapas:
 
 ## Dependências Principais
 
-| Dependência | Uso |
-|---|---|
-| react, react-dom 19 | UI |
-| @tanstack/react-query | Cache server-side |
-| @tanstack/react-router | Roteamento SPA |
-| @tanstack/react-start | SSR + Server Functions |
-| tailwindcss 4 | Estilização |
-| shadcn/ui (Radix) | Componentes de UI |
-| react-hook-form + zod | Formulários e validação |
-| react-easy-crop | Crop de imagens |
-| lucide-react | Ícones |
-| sonner | Toasts |
-| date-fns | Formatação de datas |
-| recharts | Gráficos |
-| vaul | Drawers mobile |
-| embla-carousel-react | Carrosséis |
+| Dependência            | Uso                     |
+| ---------------------- | ----------------------- |
+| react, react-dom 19    | UI                      |
+| @tanstack/react-query  | Cache server-side       |
+| @tanstack/react-router | Roteamento SPA          |
+| @tanstack/react-start  | SSR + Server Functions  |
+| tailwindcss 4          | Estilização             |
+| shadcn/ui (Radix)      | Componentes de UI       |
+| react-hook-form + zod  | Formulários e validação |
+| react-easy-crop        | Crop de imagens         |
+| lucide-react           | Ícones                  |
+| sonner                 | Toasts                  |
+| date-fns               | Formatação de datas     |
+| recharts               | Gráficos                |
+| vaul                   | Drawers mobile          |
+| embla-carousel-react   | Carrosséis              |
