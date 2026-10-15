@@ -32,6 +32,21 @@ npm run dev
 
 O Vite vai mostrar a URL local no terminal, normalmente `http://localhost:8080`.
 
+**Apontando para um backend local**: o proxy do dev recebe `/api/...` e encaminha o caminho **completo** (em
+produção é o gateway que remove o `/api`). Então, para rodar contra um backend na sua máquina, suba-o com o
+context-path ligado e aponte o proxy para ele:
+
+```bash
+# no repositorio do backend
+./mvnw spring-boot:run -Dspring-boot.run.arguments="--server.port=8081 --server.servlet.context-path=/api"
+
+# aqui no front
+BACKEND_TARGET=http://localhost:8081 npm run dev
+```
+
+Sem o `context-path=/api` o backend responde só em `/push/config`, `/notifications`, etc., e o proxy devolve
+404 em tudo.
+
 ## Scripts
 
 - `npm run dev`: inicia o ambiente local
