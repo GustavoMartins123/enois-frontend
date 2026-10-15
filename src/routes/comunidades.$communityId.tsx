@@ -384,18 +384,20 @@ function CommunityDetail() {
                       <UserAvatar src={m.avatar} alt={m.name} className="h-9 w-9 shrink-0" />
                     </Link>
 
-                    <div className="min-w-0 flex-1">
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                      {/* `block` é necessário: truncate não pega em elemento inline (o <a> era inline
+                          e nomes longos vazavam para fora do card). */}
                       <Link
                         to="/perfil/$username"
                         params={{ username: m.username }}
-                        className="truncate text-sm font-medium hover:underline"
+                        className="block min-w-0 truncate text-sm font-medium hover:underline"
                       >
                         {m.name}
                       </Link>
                       {m.role === "ADMIN" && (
                         <Badge
                           variant="outline"
-                          className="ml-2 rounded-full text-[10px] px-1.5 py-0"
+                          className="shrink-0 rounded-full text-[10px] px-1.5 py-0"
                         >
                           {texts.communities.detail.admin}
                         </Badge>
