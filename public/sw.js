@@ -1,13 +1,18 @@
 /**
  * Service worker do Énóis.
  *
- * Estratégia conservadora para não servir HTML autenticado obsoleto:
- * - navegação: network-first, cai para o cache e depois para a página offline;
- * - estáticos (script/style/imagem/fonte): stale-while-revalidate;
+ * Estratégia para não servir bundle antigo depois de um deploy:
+ * - navegação: network-first **com `cache: "no-store"`** (HTML sempre fresco; o cache HTTP do
+ *   navegador não pode segurar o index e forçar os assets antigos);
+ * - estáticos (script/style/imagem/fonte): stale-while-revalidate — são versionados por hash no
+ *   nome, então o cache não fica velho por muito tempo;
  * - API (/api e requisições não-GET): nunca passa pelo cache.
+ *
+ * IMPORTANTE: ao mudar este arquivo, incremente VERSION. O `activate` apaga os caches antigos e o
+ * cliente recarrega sozinho quando o novo SW assume (ver src/lib/pwa.ts).
  */
 
-const VERSION = "enois-v1";
+const VERSION = "enois-v2";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGES_CACHE = `${VERSION}-pages`;
 
@@ -62,7 +67,8 @@ self.addEventListener("fetch", (event) => {
 
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request)
+      // no-store: ignora o cache HTTP para o documento, garantindo o HTML do deploy atual.
+      fetch(request, { cache: "no-store" })
         .then((response) => {
           const copy = response.clone();
           caches.open(PAGES_CACHE).then((cache) => cache.put(request, copy));
