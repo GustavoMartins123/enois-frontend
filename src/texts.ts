@@ -608,6 +608,11 @@ export const texts = {
     },
     tag: (tag: string) => `#${tag}`,
     authorTime: (time: string) => `· ${time}`,
+    community: {
+      publishedIn: "publicou em",
+      follow: "Seguir",
+      followError: "Não foi possível seguir a comunidade. Tente novamente.",
+    },
     reactions: {
       title: "Reações",
       empty: "Nenhuma reação ainda",

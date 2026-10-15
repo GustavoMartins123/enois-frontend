@@ -1,3 +1,4 @@
+import type { PostCommunity } from "@/types/application/community/post-community";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
 
 export type PostView = {
@@ -20,4 +21,7 @@ export type PostView = {
   };
   status: "ACTIVE" | "DELETED";
   currentUserReaction?: ReactionType | null;
+  /** Comunidade do post, quando publicado numa comunidade. */
+  communityId?: string | null;
+  community?: PostCommunity | null;
 };

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
@@ -8,7 +8,7 @@ import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { PostCardProps } from "@/types/components/post/post-card-props";
 import { Bookmark, Flag, Heart, MessageSquare, Share2 } from "lucide-react";
 
-import { REACTION_EMOJIS, feedApi, reactionsApi } from "@/lib/api";
+import { REACTION_EMOJIS, communitiesApi, feedApi, reactionsApi } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
 
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +27,7 @@ import { typeMeta } from "./post/type-meta";
 
 export function PostCard({ post }: PostCardProps) {
   const { requireAuth } = useAuth();
+  const queryClient = useQueryClient();
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
   const [showComments, setShowComments] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -110,6 +111,23 @@ export function PostCard({ post }: PostCardProps) {
     }
   };
 
+  // Seguir a comunidade direto do post: atualiza a lista para esconder o botao e marcar como membro.
+  const followCommunity = useMutation({
+    mutationFn: (communityId: string) => communitiesApi.join(communityId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["post"] });
+      queryClient.invalidateQueries({ queryKey: ["saved-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["community"] });
+    },
+  });
+
+  const handleFollowCommunity = () => {
+    if (!requireAuth()) return;
+    if (!post.community) return;
+    followCommunity.mutate(post.community.id);
+  };
+
   // Os comentarios sao carregados pelo proprio PostComments quando a secao abre.
   const toggleComments = () => setShowComments((value) => !value);
 
@@ -121,7 +139,10 @@ export function PostCard({ post }: PostCardProps) {
           authorName={post.authorName}
           authorAvatar={post.authorAvatar}
           createdAt={post.createdAt}
+          community={post.community}
           fallbackClassName={meta.classAvatar}
+          onFollowCommunity={handleFollowCommunity}
+          followPending={followCommunity.isPending}
         />
 
         <span
