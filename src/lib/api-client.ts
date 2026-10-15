@@ -124,11 +124,23 @@ async function refreshIfNeeded(): Promise<void> {
 
 // Voltar para a aba depois de um tempo era o gatilho do "logout": a proxima chamada vinha 401 e
 // jogava a pessoa para o login. Ao ficar visivel, renova de forma transparente se estiver vencendo.
+//
+// No app instalado (PWA) o `visibilitychange` sozinho nao basta: retomar pelo icone, voltar da
+// bfcache ou recuperar a rede nao disparam esse evento em varias plataformas (iOS principalmente),
+// e a pessoa cai no login sem entender. `pageshow` e `online` fecham essa lacuna.
 if (typeof window !== "undefined") {
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
       void refreshIfNeeded();
     }
+  });
+
+  window.addEventListener("pageshow", () => {
+    void refreshIfNeeded();
+  });
+
+  window.addEventListener("online", () => {
+    void refreshIfNeeded();
   });
 }
 
@@ -221,9 +233,18 @@ async function request<T>(
   // "É necessário entrar para ver isso" — a resposta de 401 ja dizia "Email ou senha invalidos".
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
-    if (!errorBody?.code && !errorBody?.message && (response.status === 401 || response.status === 403)
-        && !hadSession) {
-      throw new ApiError(response.status, "UNAUTHENTICATED", "É necessário entrar para ver isso.", path);
+    if (
+      !errorBody?.code &&
+      !errorBody?.message &&
+      (response.status === 401 || response.status === 403) &&
+      !hadSession
+    ) {
+      throw new ApiError(
+        response.status,
+        "UNAUTHENTICATED",
+        "É necessário entrar para ver isso.",
+        path,
+      );
     }
     throw new ApiError(
       response.status,
