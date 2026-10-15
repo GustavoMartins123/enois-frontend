@@ -763,6 +763,13 @@ export const texts = {
     conversationFallback: "Conversa",
   },
 
+  post: {
+    seoTitle: "Publicação · Énóis",
+    back: "Voltar",
+    loading: "Carregando publicação...",
+    notFound: "Publicação não encontrada.",
+  },
+
   saved: {
     seoTitle: "Posts salvos · Énóis",
     back: "Voltar",

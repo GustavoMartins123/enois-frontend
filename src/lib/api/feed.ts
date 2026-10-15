@@ -15,6 +15,8 @@ export const feedApi = {
 
   create: (data: CreatePostInput) => api.post<PostView>("/feed/posts", data),
 
+  get: (postId: string) => api.get<PostView>(`/feed/posts/${postId}`),
+
   listByUser: (username: string, cursor?: string | null, limit = 20) =>
     api.get<PageResponse<PostView>>(`/users/${username}/posts${buildQuery({ cursor, limit })}`),
 

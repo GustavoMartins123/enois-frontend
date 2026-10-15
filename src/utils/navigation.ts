@@ -2,8 +2,11 @@ import type { Navigate } from "@/types/navigation/navigate";
 import type { RouteDefinition } from "@/types/navigation/route-definition";
 
 const routeDefinitions = [
-  { source: "feed/posts", to: "/feed" },
+  // Notificação de post (comentário/reacção/menção) leva ao post real.
+  { source: "feed/posts", to: "/post/$postId", params: ["postId"] },
   { source: "users", to: "/perfil/$username", params: ["username"] },
+  { source: "network", to: "/rede" },
+  { source: "conversations", to: "/mensagens" },
   {
     source: "communities",
     to: "/comunidades/$communityId",
