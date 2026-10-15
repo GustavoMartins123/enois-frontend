@@ -146,6 +146,12 @@ le `process.env.IMAGEKIT_PRIVATE_KEY`).
 - `/vagas` — busca booleana: `AND`/`E`, `OR`/`OU`, `NOT`/`NÃO`, `"frase"`, `-termo`, `+termo` e `( )`.
   Um popover "Como buscar" explica a sintaxe sem esconder os exemplos, e os filtros de nível/tipo/local/
   habilidades passam a ser combinados com o texto digitado.
+- `/vagas` — candidatura completa: o formulário do anúncio é montado no diálogo "Publicar vaga" (campos com
+  rótulo, tipo e obrigatório/opcional); ao clicar "Candidatar-se" abre um diálogo que mostra **o que vai junto**
+  (perfil, experiências, reputação e verificação), pede as respostas e a mensagem, e exibe o motivo real de
+  falha (já candidatado, campo obrigatório, conta não verificada). O detalhe mostra **quem publicou** (com
+  reputação e selo de verificação) e quem publicou tem `/vagas/{id}/candidaturas` com o perfil congelado do
+  candidato e as respostas.
 - `/mentoria` — agendamento real: o botao "Agendar" abre os horarios publicados (`GET
   /mentors/{id}/slots`, que devolve `PageResponse`), envia a solicitacao e da retorno; quem e o
   mentor ve "Minha agenda" para publicar horarios.

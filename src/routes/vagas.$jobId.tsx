@@ -4,11 +4,13 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { texts } from "@/texts";
 import {
   ArrowLeft,
+  BadgeCheck,
   Bookmark,
   Briefcase,
   CheckCircle2,
   Loader2,
   MapPin,
+  ShieldAlert,
   Trash2,
   Users,
 } from "lucide-react";
@@ -19,6 +21,8 @@ import { formatSalary } from "@/lib/currency";
 import { Button } from "@/components/ui/button";
 
 import { AppContainer } from "@/components/app-container";
+import { ApplyJobDialog } from "@/components/apply-job-dialog";
+import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/vagas/$jobId")({
   head: () => ({ meta: [{ title: texts.jobs.seoTitle }] }),
@@ -113,6 +117,50 @@ function JobDetail() {
               </div>
             </header>
 
+            {job.author && (
+              <div className="mt-4 flex items-center gap-3 rounded-xl border border-border-soft bg-surface-2 p-3">
+                <UserAvatar src={job.author.avatar} alt={job.author.name} className="h-10 w-10 shrink-0" />
+
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-light text-text-subtle">
+                    {texts.jobs.author.label}
+                  </p>
+
+                  {job.author.username ? (
+                    <Link
+                      to="/perfil/$username"
+                      params={{ username: job.author.username }}
+                      className="truncate text-[14px] font-medium text-text-strong hover:underline"
+                    >
+                      {job.author.name}
+                    </Link>
+                  ) : (
+                    <span className="truncate text-[14px] font-medium">{job.author.name}</span>
+                  )}
+
+                  <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px]">
+                    <span className="rounded-full bg-accent px-2 py-0.5">
+                      {texts.jobs.author.reputation(job.author.reputation)}
+                    </span>
+
+                    {job.author.identityVerified ? (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-growth/15 px-2 py-0.5 text-growth">
+                        <BadgeCheck className="h-3 w-3" />
+
+                        <>{texts.jobs.author.verified}</>
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-muted-foreground">
+                        <ShieldAlert className="h-3 w-3" />
+
+                        <>{texts.jobs.author.notVerified}</>
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="mt-4 flex flex-wrap gap-2 text-[12px]">
               <span className="rounded-full border border-border-soft px-2.5 py-1">{job.type}</span>
 
@@ -170,18 +218,28 @@ function JobDetail() {
 
             <footer className="mt-6 flex flex-wrap items-center gap-2 border-t border-border-soft pt-4">
               {job.owner ? (
-                <Button
-                  variant="destructive"
-                  className="rounded-full gap-2"
-                  disabled={remove.isPending}
-                  onClick={() => {
-                    if (window.confirm(texts.jobs.deleteConfirm)) remove.mutate();
-                  }}
-                >
-                  <Trash2 className="h-4 w-4" />
+                <>
+                  <Link to="/vagas/$jobId/candidaturas" params={{ jobId }}>
+                    <Button variant="outline" className="rounded-full gap-2">
+                      <Users className="h-4 w-4" />
 
-                  <>{texts.jobs.deleteJob}</>
-                </Button>
+                      <>{texts.jobs.applications.link}</>
+                    </Button>
+                  </Link>
+
+                  <Button
+                    variant="destructive"
+                    className="rounded-full gap-2"
+                    disabled={remove.isPending}
+                    onClick={() => {
+                      if (window.confirm(texts.jobs.deleteConfirm)) remove.mutate();
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+
+                    <>{texts.jobs.deleteJob}</>
+                  </Button>
+                </>
               ) : job.applied ? (
                 <span className="inline-flex items-center gap-2 rounded-full bg-surface-2 px-4 py-2 text-[13px] font-medium text-primary">
                   <CheckCircle2 className="h-4 w-4" />
@@ -189,17 +247,9 @@ function JobDetail() {
                   <>{texts.jobs.applied}</>
                 </span>
               ) : (
-                <Button
-                  className="rounded-full"
-                  disabled={apply.isPending}
-                  onClick={() => apply.mutate()}
-                >
-                  {apply.isPending ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    texts.jobs.apply
-                  )}
-                </Button>
+                <ApplyJobDialog job={job}>
+                  <Button className="rounded-full">{texts.jobs.apply}</Button>
+                </ApplyJobDialog>
               )}
 
               {!job.owner && (

@@ -1,3 +1,5 @@
+import type { JobApplicationField, JobAuthor } from "./job-application";
+
 export type Job = {
   id: string;
   title: string;
@@ -25,4 +27,8 @@ export type Job = {
   owner: boolean;
   /** Quantas candidaturas a vaga recebeu (exposto apenas para quem publicou). */
   applicationsCount: number;
+  /** Quem publicou a vaga (nome, reputação e verificação) — mostrado no detalhe. */
+  author?: JobAuthor | null;
+  /** Campos personalizados do formulário de candidatura, na ordem definida pelo autor. */
+  applicationFields?: JobApplicationField[];
 };

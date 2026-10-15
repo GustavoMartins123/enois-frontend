@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import { Button } from "@/components/ui/button";
+
 import { texts } from "@/texts";
 import { ArrowLeft, Briefcase, CheckCircle2, Loader2, Users } from "lucide-react";
 
@@ -72,11 +74,19 @@ function MyJobs() {
                         </p>
                       </Link>
 
-                      <p className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-light text-primary">
-                        <Users className="h-3.5 w-3.5" />
+                      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+                        <p className="inline-flex items-center gap-1.5 text-[12px] font-light text-primary">
+                          <Users className="h-3.5 w-3.5" />
 
-                        <>{texts.jobs.applicationsCount(job.applicationsCount ?? 0)}</>
-                      </p>
+                          <>{texts.jobs.applicationsCount(job.applicationsCount ?? 0)}</>
+                        </p>
+
+                        <Link to="/vagas/$jobId/candidaturas" params={{ jobId: job.id }}>
+                          <Button variant="outline" size="sm" className="rounded-full">
+                            {texts.jobs.applications.link}
+                          </Button>
+                        </Link>
+                      </div>
                     </li>
                   ))}
                 </ul>

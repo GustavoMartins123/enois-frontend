@@ -11,6 +11,7 @@ import {
 } from "@/constants/job-rules";
 import { texts } from "@/texts";
 import type { CreateJobInput } from "@/types/application/job/create-job-input";
+import type { JobApplicationFieldInput } from "@/types/application/job/job-application";
 import type { Job } from "@/types/application/job/job";
 import type { JobReportReason } from "@/types/application/job/job-report-reason";
 import type { CreateJobDialogProps } from "@/types/routes/jobs/create-job-dialog-props";
@@ -471,6 +472,7 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
   const [skills, setSkills] = useState("");
   const [description, setDescription] = useState("");
   const [agreed, setAgreed] = useState(false);
+  const [fields, setFields] = useState<JobApplicationFieldInput[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const create = useMutation({
@@ -493,6 +495,7 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
     setSkills("");
     setDescription("");
     setAgreed(false);
+    setFields([]);
     setError(null);
   };
 
@@ -512,6 +515,9 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
         .filter(Boolean),
       description: description.trim() || undefined,
       communityAgreement: agreed,
+      applicationFields: fields
+        .filter((field) => field.label.trim() !== "")
+        .map((field) => ({ label: field.label.trim(), type: field.type, required: field.required })),
     });
   };
 
@@ -682,6 +688,99 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
                 placeholder={texts.jobs.fields.skillsPlaceholder}
                 className="bg-muted"
               />
+            </div>
+
+            <div className="space-y-2 rounded-lg border border-border-soft p-3">
+              <div>
+                <p className="text-[12px] font-medium">{texts.jobs.applicationForm.section}</p>
+
+                <p className="mt-0.5 text-[11px] font-light text-text-subtle">
+                  {texts.jobs.applicationForm.description}
+                </p>
+              </div>
+
+              {fields.length === 0 && (
+                <p className="text-[11px] font-light text-text-subtle">
+                  {texts.jobs.applicationForm.empty}
+                </p>
+              )}
+
+              {fields.map((field, index) => (
+                <div key={index} className="flex flex-wrap items-center gap-2">
+                  <Input
+                    value={field.label}
+                    onChange={(event) =>
+                      setFields((current) =>
+                        current.map((item, position) =>
+                          position === index ? { ...item, label: event.target.value } : item,
+                        ),
+                      )
+                    }
+                    placeholder={texts.jobs.applicationForm.labelPlaceholder}
+                    maxLength={160}
+                    className="min-w-0 flex-1 bg-muted"
+                  />
+
+                  <select
+                    value={field.type}
+                    onChange={(event) =>
+                      setFields((current) =>
+                        current.map((item, position) =>
+                          position === index
+                            ? { ...item, type: event.target.value as JobApplicationFieldInput["type"] }
+                            : item,
+                        ),
+                      )
+                    }
+                    className={cn(SELECT_CLASS, "w-40 shrink-0")}
+                    aria-label={texts.jobs.applicationForm.section}
+                  >
+                    {(["TEXT", "TEXTAREA", "NUMBER", "LINK"] as const).map((type) => (
+                      <option key={type} value={type}>
+                        {texts.jobs.applicationForm.types[type]}
+                      </option>
+                    ))}
+                  </select>
+
+                  <label className="inline-flex shrink-0 items-center gap-1.5 text-[11px] font-light text-text-subtle">
+                    <input
+                      type="checkbox"
+                      checked={field.required}
+                      onChange={(event) =>
+                        setFields((current) =>
+                          current.map((item, position) =>
+                            position === index ? { ...item, required: event.target.checked } : item,
+                          ),
+                        )
+                      }
+                      className="h-3.5 w-3.5 accent-primary"
+                    />
+
+                    <>{texts.jobs.applicationForm.required}</>
+                  </label>
+
+                  <button
+                    type="button"
+                    onClick={() => setFields((current) => current.filter((_, position) => position !== index))}
+                    className="shrink-0 rounded-full p-1.5 text-destructive transition hover:bg-destructive/10"
+                    aria-label={texts.jobs.applicationForm.remove}
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ))}
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="rounded-full gap-1.5"
+                onClick={() => setFields((current) => [...current, { label: "", type: "TEXT", required: false }])}
+              >
+                <Plus className="h-3.5 w-3.5" />
+
+                <>{texts.jobs.applicationForm.add}</>
+              </Button>
             </div>
 
             <div className="space-y-1.5">

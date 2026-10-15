@@ -2,6 +2,7 @@ import type { PageResponse } from "@/types/application/api/page-response";
 import type { StatusResponse } from "@/types/application/api/status-response";
 import type { CreateJobInput } from "@/types/application/job/create-job-input";
 import type { Job } from "@/types/application/job/job";
+import type { JobApplication, JobApplicationInput } from "@/types/application/job/job-application";
 import type { ListJobsParams } from "@/types/application/job/list-jobs-params";
 
 import { api, buildQuery } from "../api-client";
@@ -28,7 +29,13 @@ export const jobsApi = {
 
   remove: (jobId: string) => api.delete<void>(`/jobs/${jobId}`),
 
-  apply: (jobId: string) => api.post<StatusResponse>(`/jobs/${jobId}/applications`),
+  /** Candidatura com a mensagem e as respostas dos campos definidos pelo autor. */
+  apply: (jobId: string, data?: JobApplicationInput) =>
+    api.post<StatusResponse>(`/jobs/${jobId}/applications`, data ?? { answers: [] }),
+
+  /** Candidaturas RECEBIDAS numa vaga (somente quem publicou). */
+  receivedApplications: (jobId: string, limit = 50) =>
+    api.get<JobApplication[]>(`/jobs/${jobId}/applications${buildQuery({ limit })}`),
 
   save: (jobId: string) => api.post<StatusResponse>(`/jobs/${jobId}/saves`),
 

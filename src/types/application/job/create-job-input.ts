@@ -1,3 +1,5 @@
+import type { JobApplicationFieldInput } from "./job-application";
+
 export type CreateJobInput = {
   title: string;
   company: string;
@@ -11,4 +13,6 @@ export type CreateJobInput = {
   description?: string;
   /** Declaração de que a vaga é real e respeita as regras da comunidade. */
   communityAgreement?: boolean;
+  /** Formulário de candidatura definido por quem publica (campos obrigatórios ou opcionais). */
+  applicationFields?: JobApplicationFieldInput[];
 };

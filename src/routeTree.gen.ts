@@ -33,6 +33,7 @@ import { Route as ComunidadesCommunityIdRouteImport } from './routes/comunidades
 import { Route as AuthVerifyRouteImport } from './routes/auth.verify'
 import { Route as AuthResetRouteImport } from './routes/auth.reset'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
+import { Route as VagasJobIdCandidaturasRouteImport } from './routes/vagas.$jobId.candidaturas'
 
 const VagasRoute = VagasRouteImport.update({
   id: '/vagas',
@@ -154,6 +155,11 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
   path: '/auth/callback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VagasJobIdCandidaturasRoute = VagasJobIdCandidaturasRouteImport.update({
+  id: '/candidaturas',
+  path: '/candidaturas',
+  getParentRoute: () => VagasJobIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -178,8 +184,9 @@ export interface FileRoutesByFullPath {
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
-  '/vagas/$jobId': typeof VagasJobIdRoute
+  '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
+  '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -204,8 +211,9 @@ export interface FileRoutesByTo {
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
-  '/vagas/$jobId': typeof VagasJobIdRoute
+  '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
+  '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -231,8 +239,9 @@ export interface FileRoutesById {
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
-  '/vagas/$jobId': typeof VagasJobIdRoute
+  '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
+  '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -261,6 +270,7 @@ export interface FileRouteTypes {
     | '/post/$postId'
     | '/vagas/$jobId'
     | '/vagas/minhas'
+    | '/vagas/$jobId/candidaturas'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -287,6 +297,7 @@ export interface FileRouteTypes {
     | '/post/$postId'
     | '/vagas/$jobId'
     | '/vagas/minhas'
+    | '/vagas/$jobId/candidaturas'
   id:
     | '__root__'
     | '/'
@@ -313,6 +324,7 @@ export interface FileRouteTypes {
     | '/post/$postId'
     | '/vagas/$jobId'
     | '/vagas/minhas'
+    | '/vagas/$jobId/candidaturas'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -509,6 +521,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthCallbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vagas/$jobId/candidaturas': {
+      id: '/vagas/$jobId/candidaturas'
+      path: '/candidaturas'
+      fullPath: '/vagas/$jobId/candidaturas'
+      preLoaderRoute: typeof VagasJobIdCandidaturasRouteImport
+      parentRoute: typeof VagasJobIdRoute
+    }
   }
 }
 
@@ -524,13 +543,25 @@ const ComunidadesRouteWithChildren = ComunidadesRoute._addFileChildren(
   ComunidadesRouteChildren,
 )
 
+interface VagasJobIdRouteChildren {
+  VagasJobIdCandidaturasRoute: typeof VagasJobIdCandidaturasRoute
+}
+
+const VagasJobIdRouteChildren: VagasJobIdRouteChildren = {
+  VagasJobIdCandidaturasRoute: VagasJobIdCandidaturasRoute,
+}
+
+const VagasJobIdRouteWithChildren = VagasJobIdRoute._addFileChildren(
+  VagasJobIdRouteChildren,
+)
+
 interface VagasRouteChildren {
-  VagasJobIdRoute: typeof VagasJobIdRoute
+  VagasJobIdRoute: typeof VagasJobIdRouteWithChildren
   VagasMinhasRoute: typeof VagasMinhasRoute
 }
 
 const VagasRouteChildren: VagasRouteChildren = {
-  VagasJobIdRoute: VagasJobIdRoute,
+  VagasJobIdRoute: VagasJobIdRouteWithChildren,
   VagasMinhasRoute: VagasMinhasRoute,
 }
 
