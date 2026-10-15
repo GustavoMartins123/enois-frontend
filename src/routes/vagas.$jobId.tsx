@@ -17,6 +17,7 @@ import {
 
 import { jobsApi } from "@/lib/api";
 import { formatSalary } from "@/lib/currency";
+import { getCurrentUserId } from "@/lib/current-user";
 
 import { Button } from "@/components/ui/button";
 
@@ -51,6 +52,14 @@ function JobDetail() {
     queryKey: ["job", jobId],
     queryFn: () => jobsApi.get(jobId),
   });
+
+  /**
+   * Dono da vaga. O backend tambem manda `owner`, mas o `viewerId` de la engole qualquer falha de
+   * sessao e devolve null — com isso o autor via a vaga como se fosse de outra pessoa e perdia
+   * editar/excluir. O id do autor e a fonte confiavel aqui: se bate com o usuario logado, e dele.
+   */
+  const currentUserId = getCurrentUserId();
+  const isOwner = Boolean(job?.owner) || (!!job?.author?.id && job.author.id === currentUserId);
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["job", jobId] });
@@ -119,7 +128,11 @@ function JobDetail() {
 
             {job.author && (
               <div className="mt-4 flex items-center gap-3 rounded-xl border border-border-soft bg-surface-2 p-3">
-                <UserAvatar src={job.author.avatar} alt={job.author.name} className="h-10 w-10 shrink-0" />
+                <UserAvatar
+                  src={job.author.avatar}
+                  alt={job.author.name}
+                  className="h-10 w-10 shrink-0"
+                />
 
                 <div className="min-w-0 flex-1">
                   <p className="text-[11px] font-light text-text-subtle">
@@ -175,7 +188,7 @@ function JobDetail() {
               )}
             </div>
 
-            {job.owner && (
+            {isOwner && (
               <div className="mt-4 rounded-xl bg-surface-2 p-3">
                 <p className="text-[13px] font-medium text-text-strong">{texts.jobs.ownerBadge}</p>
 
@@ -217,7 +230,7 @@ function JobDetail() {
             </section>
 
             <footer className="mt-6 flex flex-wrap items-center gap-2 border-t border-border-soft pt-4">
-              {job.owner ? (
+              {isOwner ? (
                 <>
                   <Link to="/vagas/$jobId/candidaturas" params={{ jobId }}>
                     <Button variant="outline" className="rounded-full gap-2">
@@ -252,7 +265,7 @@ function JobDetail() {
                 </ApplyJobDialog>
               )}
 
-              {!job.owner && (
+              {!isOwner && (
                 <Button
                   variant="outline"
                   className="rounded-full gap-2"
@@ -266,7 +279,7 @@ function JobDetail() {
               )}
             </footer>
 
-            {job.applied && !job.owner && (
+            {job.applied && !isOwner && (
               <p className="mt-3 rounded-xl bg-surface-2 px-3 py-2 text-[12px] font-light text-text-subtle">
                 {texts.jobs.appliedHint}
               </p>
