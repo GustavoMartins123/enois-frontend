@@ -83,6 +83,12 @@ le `process.env.IMAGEKIT_PRIVATE_KEY`).
 
 ## Acoes manuais necessarias
 
+0. **Criar o secret `GITOPS_TOKEN` neste repositorio** (`florestaencantada/enois-frontend` →
+   Settings → Secrets and variables → Actions). Sem ele o job "GitOps Update" falha com
+   `Input required and not supplied: token`, o manifesto nao e atualizado e o front **nao sofre
+   rollout** (a imagem ate e publicada no ECR, mas a tag do manifesto nunca muda). Use um PAT
+   fine-grained com leitura/escrita em `florestaencantada/integration_gitops`. O repositorio do
+   backend ja tem esse secret — o valor pode ser o mesmo.
 1. **Rotacionar a `IMAGEKIT_PRIVATE_KEY`.** Ela estava commitada em `.env` e ja foi exposta no historico do
    Git. Gere uma nova no painel do ImageKit, revogue a antiga e configure a nova como variavel de ambiente
    do container (Secret no EKS). Ela foi removida do `.env` do HEAD, mas o historico continua com o valor.
