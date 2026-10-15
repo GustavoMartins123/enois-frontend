@@ -121,10 +121,11 @@ async function request<T>(
     );
   }
 
+  const hadSession = Boolean(headers["X-Session-Token"]);
   if (
     (response.status === 401 || response.status === 403) &&
+    hadSession &&
     !isRefreshing &&
-    headers["X-Session-Token"] &&
     !path.startsWith("/auth/")
   ) {
     isRefreshing = true;
@@ -157,6 +158,17 @@ async function request<T>(
       response.status,
       "SESSION_EXPIRED",
       "Sessão expirada. Faça login novamente.",
+      path,
+    );
+  }
+
+  // Sem sessao: nao redireciona daqui (ha consultas autenticadas em telas publicas, como
+  // "posts salvos" num post compartilhado). Quem barra o acesso e o guard de rota.
+  if ((response.status === 401 || response.status === 403) && !hadSession) {
+    throw new ApiError(
+      response.status,
+      "UNAUTHENTICATED",
+      "É necessário entrar para ver isso.",
       path,
     );
   }

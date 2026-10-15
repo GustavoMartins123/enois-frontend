@@ -9,6 +9,7 @@ import {
   createRootRouteWithContext,
   useNavigate,
   useRouter,
+  useRouterState,
 } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
@@ -17,6 +18,7 @@ import type { ErrorComponentProps } from "@/types/routes/root/error-component-pr
 import type { RootRouteContext } from "@/types/routes/root/root-route-context";
 
 import { registerServiceWorker } from "@/lib/pwa";
+import { hasSession, isProtectedPath } from "@/lib/require-auth";
 
 import appCss from "../styles.css?url";
 
@@ -160,10 +162,22 @@ function OAuthCallbackHandler() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
 
   useEffect(() => {
     registerServiceWorker();
   }, []);
+
+  useEffect(() => {
+    // Fallback de autenticacao: o `beforeLoad` das rotas roda no SSR (sem acesso ao
+    // localStorage) e nao e reexecutado na hidratacao, entao quem abre uma rota protegida
+    // direto sem estar logado veria a UI autenticada e erros nas acoes. Aqui no cliente
+    // mandamos para o login, seja qual for a forma de entrada.
+    if (isProtectedPath(pathname) && !hasSession()) {
+      void router.navigate({ to: "/entrar", search: { tab: "login" }, replace: true });
+    }
+  }, [pathname, router]);
 
   return (
     <QueryClientProvider client={queryClient}>

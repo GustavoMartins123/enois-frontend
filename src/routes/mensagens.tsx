@@ -11,6 +11,7 @@ import { ArrowLeft, Search, Send } from "lucide-react";
 
 import { messagesApi, networkApi, profileApi } from "@/lib/api";
 import { getCurrentUserId } from "@/lib/current-user";
+import { requireAuth } from "@/lib/require-auth";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ import { AppContainer } from "@/components/app-container";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/mensagens")({
+  beforeLoad: requireAuth,
   head: () => ({ meta: [{ title: texts.messages.seoTitle }] }),
   component: Mensagens,
 });
