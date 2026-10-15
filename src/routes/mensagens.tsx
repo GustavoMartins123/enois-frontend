@@ -148,7 +148,7 @@ function Mensagens() {
           do navegador aparece no celular, e aí o compositor ficava escondido atrás do teclado. */}
       <div className="surface-card grid h-[calc(100dvh-11rem)] grid-cols-1 overflow-hidden md:h-[calc(100dvh-9rem)] md:grid-cols-[320px_1fr]">
         <div
-          className={`flex flex-col border-r border-border ${activeConversation ? "hidden md:flex" : "flex"}`}
+          className={`flex min-h-0 flex-col border-r border-border ${activeConversation ? "hidden md:flex" : "flex"}`}
         >
           <div className="border-b border-border p-4">
             <div className="flex items-center justify-between mb-3">
@@ -271,7 +271,9 @@ function Mensagens() {
                       disabled={isLoadingOlder}
                       onClick={() => fetchOlderMessages()}
                     >
-                      {isLoadingOlder ? texts.messages.loadingOlder : texts.messages.loadOlderMessages}
+                      {isLoadingOlder
+                        ? texts.messages.loadingOlder
+                        : texts.messages.loadOlderMessages}
                     </Button>
                   </div>
                 )}
