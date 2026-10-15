@@ -167,9 +167,61 @@ export const texts = {
       apple: "Continuar com Apple",
       divider: "ou com e-mail",
       unavailable: (provider: string) =>
-        `Função não implementada: login com ${provider} ainda não está configurado.`,
+        `Login com ${provider} ainda não está configurado nesta instalação.`,
       callbackError: "Não foi possível concluir o login social. Tente novamente.",
       callbackLoading: "Concluindo o login...",
+      callbackTitle: "Entrando · Énóis",
+      cancelled: "Você cancelou o login. Nada foi alterado na sua conta.",
+      accountExists:
+        "Já existe uma conta com esse e-mail. Entre com e-mail e senha e vincule o provedor no seu perfil.",
+      emailRequired:
+        "O provedor não informou um e-mail. Entre com e-mail e senha e vincule a conta depois.",
+    },
+    /** Estado do cadastro/login com a conta pendente de confirmação de e-mail. */
+    pending: {
+      title: "Confirme seu e-mail",
+      description: (email: string) =>
+        `Enviamos um link de confirmação para ${email}. A conta é ativada quando você abrir o link.`,
+      step1: "O link vale por 24 horas e só pode ser usado uma vez.",
+      step2: "Confira a caixa de spam se não encontrar em alguns minutos.",
+      step3: "O acesso às funcionalidades libera assim que o e-mail for confirmado.",
+      resend: "Reenviar o link",
+      sending: "Enviando...",
+      sent: "Link reenviado. Confira seu e-mail.",
+      failed: "Não foi possível enviar agora. Tente de novo em instantes.",
+      limited: "Muitos reenvios seguidos. Aguarde cerca de uma hora antes de tentar de novo.",
+      wrongEmail: "E-mail errado? Você pode criar outra conta ou falar com o suporte.",
+    },
+    verify: {
+      title: "Confirmando e-mail · Énóis",
+      verifying: "Confirmando seu e-mail...",
+      doneTitle: "E-mail confirmado!",
+      doneDescription: "Sua conta está ativa. Vamos te levar para o app.",
+      goToApp: "Ir para o app",
+      invalidTitle: "Link inválido",
+      invalidDescription:
+        "Este link de confirmação não é válido. Entre com seu e-mail e senha para receber um novo.",
+      usedTitle: "Link já usado",
+      usedDescription:
+        "Este link já foi utilizado para confirmar a conta. Se ainda não conseguiu entrar, peça um novo link.",
+      expiredTitle: "Link expirado",
+      expiredDescription:
+        "O link de confirmação vale por 24 horas. Entre com seu e-mail e senha para receber outro.",
+      resend: "Pedir um novo link",
+    },
+    /** Vínculo de provedores na conta (vincular/desvincular Google e Apple). */
+    links: {
+      title: "Contas vinculadas",
+      description:
+        "Vincule um provedor para entrar com um clique. Nunca vinculamos automaticamente: só a partir de uma conta que já é sua.",
+      linked: "Vinculado",
+      notLinked: "Não vinculado",
+      link: (provider: string) => `Vincular ${provider}`,
+      unlink: "Desvincular",
+      lastMethod:
+        "Este é o único jeito de entrar na sua conta. Defina uma senha (em “Trocar senha”) antes de desvincular.",
+      unlinkError: "Não foi possível desvincular agora. Tente novamente.",
+      linkError: "Não foi possível iniciar a vinculação. Tente novamente.",
     },
     terms: {
       prefix: "Ao continuar, você concorda com os ",
@@ -207,6 +259,7 @@ export const texts = {
       changePassword: "Trocar senha",
       support: "Ajuda e suporte",
       blockedUsers: "Usuários bloqueados",
+      linkedAccounts: "Contas vinculadas",
       deleteAccount: "Excluir conta",
       logout: "Sair",
       loggingOut: "Saindo...",
@@ -376,6 +429,7 @@ export const texts = {
       privacy: "Privacidade",
       terms: "Termos",
       contact: "Contato",
+      home: "Início",
     },
   },
 
@@ -796,6 +850,35 @@ export const texts = {
 
   mentoring: {
     seoTitle: "Mentoria · Énóis",
+    loading: "Carregando mentores...",
+    loadError: "Não foi possível carregar os mentores agora.",
+    retry: "Tentar de novo",
+    empty: "Ainda não há mentores publicados. Se você pode ajudar outras pessoas, torne-se mentor.",
+    createError: "Não foi possível publicar seu perfil de mentor. Tente novamente.",
+    noSlot: "Sem horário publicado",
+    /** Agendamento (mentorado). */
+    bookTitle: (name: string) => `Agendar mentoria com ${name}`,
+    pickSlot: "Escolha um horário",
+    slotsLoading: "Carregando horários...",
+    slotsError: "Não foi possível carregar os horários.",
+    noSlots: "Esta pessoa ainda não publicou horários disponíveis. Tente novamente mais tarde.",
+    message: "Mensagem (opcional)",
+    messagePlaceholder: "Conte o que você quer trabalhar na sessão.",
+    confirmBooking: "Confirmar agendamento",
+    booking: "Agendando...",
+    bookSuccess:
+      "Sessão solicitada! O mentor recebe seu pedido e combina os detalhes com você pela mensagem.",
+    bookError: "Não foi possível agendar este horário. Ele pode ter sido reservado agora.",
+    /** Agenda (mentor). */
+    manageSlots: "Minha agenda",
+    slotTitle: "Publicar horário disponível",
+    slotDate: "Data",
+    slotTime: "Hora de início",
+    slotDuration: "Duração",
+    slotAction: "Publicar horário",
+    slotSuccess: "Horário publicado. Quem quiser agendar já consegue escolher.",
+    slotNew: "Publicar outro",
+    slotError: "Não foi possível publicar o horário. Confira a data e tente de novo.",
     badge: "Mentoria nativa",
     title: "Aprenda com quem já passou por onde você quer chegar.",
     description:
@@ -886,6 +969,16 @@ export const texts = {
     validationMessage: "Descreva o problema com pelo menos 10 caracteres.",
     validationEmail: "Informe um e-mail válido.",
     error: "Não foi possível enviar o pedido. Tente novamente em instantes.",
+    contatoSeoTitle: "Contato · Énóis",
+    contactTitle: "Fale com a gente",
+    contactDescription:
+      "Este é o canal de contato do Énóis. Quem tem conta abre um pedido pelo formulário; quem ainda não tem também consegue falar com o time.",
+    contactAccountTitle: "Com uma conta",
+    contactAccountDescription:
+      "Abra um pedido de ajuda: ele fica registrado no nosso painel de atendimento e uma pessoa do time responde por e-mail.",
+    contactEmailTitle: "Sem conta (ou prefere e-mail)",
+    contactEmailDescription:
+      "Escreva direto para o time de suporte. Conte o que aconteceu e informe o e-mail da sua conta, se tiver.",
   },
 
   post: {
@@ -966,7 +1059,7 @@ export const texts = {
         },
         {
           title: "12. Contato",
-          text: "Dúvidas sobre estes Termos podem ser enviadas pelo e-mail de suporte disponível na plataforma ou pelo formulário de contato em nossas comunidades.",
+          text: "Dúvidas sobre estes Termos podem ser enviadas pela página de contato (enois.ia.br/contato) ou pelo e-mail de suporte informado nela.",
         },
       ],
     },

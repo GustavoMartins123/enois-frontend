@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
@@ -34,6 +36,8 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  useHashScroll();
+
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-lg">
@@ -224,7 +228,8 @@ function Landing() {
         </div>
       </section>
 
-      <section className="border-t border-border bg-muted/30">
+      {/* Alvo da âncora #comunidade do menu (e dos links de fora): é onde a pessoa entra. */}
+      <section id="comunidade" className="scroll-mt-20 border-t border-border bg-muted/30">
         <div className="mx-auto max-w-6xl px-4 py-20 text-center sm:px-6 sm:py-28">
           <div className="mx-auto max-w-xl">
             <div className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-primary-soft text-primary">
@@ -266,6 +271,21 @@ function Landing() {
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-6 text-xs text-muted-foreground sm:px-6">
           <p>{texts.landing.footer.copyright(new Date().getFullYear())}</p>
 
+          {/* O menu de secoes do topo some no mobile; aqui ele continua acessivel. */}
+          <nav className="flex gap-5 md:hidden">
+            <a href="#filosofia" className="transition-colors hover:text-foreground">
+              {texts.landing.nav.philosophy}
+            </a>
+
+            <a href="#recursos" className="transition-colors hover:text-foreground">
+              {texts.landing.nav.features}
+            </a>
+
+            <a href="#comunidade" className="transition-colors hover:text-foreground">
+              {texts.landing.nav.community}
+            </a>
+          </nav>
+
           <div className="flex gap-5">
             <Link to="/privacidade" className="transition-colors hover:text-foreground">
               {texts.landing.footer.privacy}
@@ -275,14 +295,37 @@ function Landing() {
               {texts.landing.footer.terms}
             </Link>
 
-            <a href="#" className="transition-colors hover:text-foreground">
+            <Link to="/contato" className="transition-colors hover:text-foreground">
               {texts.landing.footer.contact}
-            </a>
+            </Link>
           </div>
         </div>
       </footer>
     </div>
   );
+}
+
+/**
+ * Rola até a seção pedida na URL (`/#comunidade`).
+ *
+ * O navegador faz isso sozinho quando a âncora existe no HTML, mas em navegação de SPA (chegar na
+ * landing vindo de outra rota) e ao clicar num link de âncora já dentro da página o scroll não
+ * acontece. Aqui cobrimos os dois casos.
+ */
+function useHashScroll() {
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const scrollToHash = () => {
+      const id = window.location.hash.replace(/^#/, "");
+      if (!id) return;
+      document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
+
+    scrollToHash();
+    window.addEventListener("hashchange", scrollToHash);
+    return () => window.removeEventListener("hashchange", scrollToHash);
+  }, []);
 }
 
 const values = [

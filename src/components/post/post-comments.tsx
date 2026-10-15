@@ -2,6 +2,7 @@ import { type FormEvent, useCallback, useEffect, useRef, useState } from "react"
 
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
+import type { CommentView } from "@/types/application/comment/comment-view";
 import type { PostIdProps } from "@/types/components/post/post-id-props";
 import { Loader2, Send, X } from "lucide-react";
 
@@ -102,7 +103,7 @@ export function PostComments({ postId }: PostIdProps) {
     }
   };
 
-  const byId = new Map(comments.map((comment) => [comment.id, comment]));
+  const byId = new Map<string, CommentView>(comments.map((comment) => [comment.id, comment]));
   // Raizes: sem pai ou com o pai fora do que ja foi carregado (resposta orfa nao pode sumir).
   const roots = comments.filter(
     (comment) => !comment.parentCommentId || !byId.has(comment.parentCommentId),

@@ -1,10 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import { Loader2, Sparkles } from "lucide-react";
 import { z } from "zod";
+
+import { authApi } from "@/lib/api";
+import { storeSession } from "@/lib/session";
 
 import { Button } from "@/components/ui/button";
 
@@ -13,10 +16,14 @@ const searchSchema = z.object({
   refreshToken: z.string().optional(),
   expiresAt: z.string().optional(),
   refreshExpiresAt: z.string().optional(),
+  /** Cancelamento ou falha devolvidos pelo provedor (ver finishOAuthError no backend). */
+  error: z.string().optional(),
+  provider: z.string().optional(),
 });
 
 export const Route = createFileRoute("/auth/callback")({
   validateSearch: searchSchema,
+  head: () => ({ meta: [{ title: texts.auth.social.callbackTitle }] }),
   component: OAuthCallback,
 });
 
@@ -24,18 +31,35 @@ function OAuthCallback() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const handled = useRef(false);
 
   useEffect(() => {
+    // O efeito roda duas vezes em dev (StrictMode); a troca é idempotente, mas evitamos repetir.
+    if (handled.current) return;
+    handled.current = true;
+
+    if (search.error) {
+      setError(errorMessage(search.error));
+      return;
+    }
     if (!search.token) {
       setError(texts.auth.social.callbackError);
       return;
     }
-    localStorage.setItem("session_token", search.token);
-    if (search.refreshToken) localStorage.setItem("refresh_token", search.refreshToken);
-    if (search.expiresAt) localStorage.setItem("session_expires_at", search.expiresAt);
-    if (search.refreshExpiresAt)
-      localStorage.setItem("refresh_expires_at", search.refreshExpiresAt);
-    navigate({ to: "/feed", replace: true });
+
+    storeSession({
+      token: search.token,
+      refreshToken: search.refreshToken,
+      expiresAt: search.expiresAt,
+      refreshExpiresAt: search.refreshExpiresAt,
+    });
+
+    // Busca o usuário para o cabeçalho já mostrar nome/foto (o token já está no storage).
+    void authApi
+      .me()
+      .then((user) => storeSession({ token: search.token!, user }))
+      .catch(() => undefined)
+      .finally(() => navigate({ to: "/feed", replace: true }));
   }, [search, navigate]);
 
   return (
@@ -71,4 +95,19 @@ function OAuthCallback() {
       </div>
     </div>
   );
+}
+
+/** O backend devolve `error` na URL quando o provedor cancela ou recusa o login. */
+function errorMessage(code: string): string {
+  const normalized = code.toUpperCase();
+  if (normalized.includes("ACCESS_DENIED") || normalized.includes("USER_CANCELLED")) {
+    return texts.auth.social.cancelled;
+  }
+  if (normalized.includes("ACCOUNT_EXISTS_LINK_REQUIRED")) {
+    return texts.auth.social.accountExists;
+  }
+  if (normalized.includes("EMAIL_REQUIRED")) {
+    return texts.auth.social.emailRequired;
+  }
+  return texts.auth.social.callbackError;
 }

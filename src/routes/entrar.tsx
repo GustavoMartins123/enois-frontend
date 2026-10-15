@@ -13,6 +13,7 @@ import { ArrowRight, Eye, EyeOff, Loader2, MailCheck, Sparkles } from "lucide-re
 import { z } from "zod";
 
 import { ApiError, authApi } from "@/lib/api";
+import { storeSession } from "@/lib/session";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -211,7 +212,7 @@ function SocialButtons() {
     setError(null);
     const providerName = provider === "GOOGLE" ? "Google" : "Apple";
     try {
-      // O backend devolve a URL de autorização e define o cookie de state (anti-CSRF).
+      // O backend registra state + nonce no servidor e devolve a URL de autorização.
       const start = await authApi.oauthStart(provider);
       window.location.href = start.authorizationUrl;
     } catch (err) {
@@ -260,11 +261,13 @@ function Divider() {
   );
 }
 
-function SignupForm({ onDone }: AuthFormProps) {
+function SignupForm(_props: AuthFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
+  /** Conta criada e pendente de confirmação: o formulário dá lugar à tela "confirme seu e-mail". */
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -283,24 +286,24 @@ function SignupForm({ onDone }: AuthFormProps) {
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("current_user");
     try {
+      // O cadastro não abre sessão: a conta nasce pendente até confirmar o e-mail.
       const result = await authApi.signup({
         name: parsed.data.name,
         email: parsed.data.email,
         password: parsed.data.password,
         acceptedTerms: parsed.data.acceptedTerms === "on",
       });
-      localStorage.setItem("session_token", result.token);
-      localStorage.setItem("refresh_token", result.refreshToken);
-      localStorage.setItem("session_expires_at", result.expiresAt);
-      localStorage.setItem("refresh_expires_at", result.refreshExpiresAt);
-      localStorage.setItem("current_user", JSON.stringify(result.user));
-      onDone();
+      setPendingEmail(result.email);
     } catch (err) {
       setFormError(err);
     } finally {
       setLoading(false);
     }
   };
+
+  if (pendingEmail) {
+    return <EmailPendingScreen email={pendingEmail} />;
+  }
 
   return (
     <div>
@@ -409,11 +412,85 @@ function SignupForm({ onDone }: AuthFormProps) {
   );
 }
 
+/**
+ * Estado "aguardando confirmação": mostrado logo após o cadastro e também quando o login encontra
+ * uma conta pendente. Aqui fica claro o que fazer e há reenvio, com o resultado de cada tentativa.
+ */
+function EmailPendingScreen({ email }: { email: string }) {
+  const [state, setState] = useState<"idle" | "sending" | "sent" | "failed" | "limited">("idle");
+
+  const resend = async () => {
+    setState("sending");
+    try {
+      await authApi.resendVerification(email);
+      setState("sent");
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 429) {
+        setState("limited");
+        return;
+      }
+      setState("failed");
+    }
+  };
+
+  return (
+    <div>
+      <MailCheck className="h-7 w-7 text-primary" />
+
+      <h1 className="mt-3 text-2xl font-semibold tracking-tight">
+        {texts.auth.pending.title}
+      </h1>
+
+      <p className="mt-2 text-sm text-muted-foreground">{texts.auth.pending.description(email)}</p>
+
+      <ul className="mt-4 space-y-1.5 text-[13px] font-light text-muted-foreground">
+        <li>· {texts.auth.pending.step1}</li>
+        <li>· {texts.auth.pending.step2}</li>
+        <li>· {texts.auth.pending.step3}</li>
+      </ul>
+
+      {state === "sent" && (
+        <p className="mt-4 rounded-xl bg-growth/10 px-4 py-2 text-sm text-growth">
+          {texts.auth.pending.sent}
+        </p>
+      )}
+
+      {state === "failed" && (
+        <p className="mt-4 rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
+          {texts.auth.pending.failed}
+        </p>
+      )}
+
+      {state === "limited" && (
+        <p className="mt-4 rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
+          {texts.auth.pending.limited}
+        </p>
+      )}
+
+      <Button
+        className="mt-6 w-full rounded-full gap-2"
+        onClick={resend}
+        disabled={state === "sending"}
+      >
+        {state === "sending" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+
+        <>{state === "sending" ? texts.auth.pending.sending : texts.auth.pending.resend}</>
+      </Button>
+
+      <p className="mt-4 text-center text-xs text-muted-foreground">
+        <>{texts.auth.pending.wrongEmail}</>
+      </p>
+    </div>
+  );
+}
+
 function LoginForm({ onDone, onForgot }: LoginFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
+  /** Conta pendente de confirmação: em vez de "erro", a tela explica e oferece reenviar. */
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -436,18 +513,22 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
         email: parsed.data.email,
         password: parsed.data.password,
       });
-      localStorage.setItem("session_token", result.token);
-      localStorage.setItem("refresh_token", result.refreshToken);
-      localStorage.setItem("session_expires_at", result.expiresAt);
-      localStorage.setItem("refresh_expires_at", result.refreshExpiresAt);
-      localStorage.setItem("current_user", JSON.stringify(result.user));
+      storeSession(result);
       onDone();
     } catch (err) {
+      if (err instanceof ApiError && err.code === "EMAIL_NOT_VERIFIED") {
+        setUnverifiedEmail(parsed.data.email);
+        return;
+      }
       setFormError(err);
     } finally {
       setLoading(false);
     }
   };
+
+  if (unverifiedEmail) {
+    return <EmailPendingScreen email={unverifiedEmail} />;
+  }
 
   return (
     <div>

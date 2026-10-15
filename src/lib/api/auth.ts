@@ -4,14 +4,23 @@ import type { AuthUser } from "@/types/application/auth/auth-user";
 import type { ChangeEmailInput } from "@/types/application/auth/change-email-input";
 import type { ChangePasswordInput } from "@/types/application/auth/change-password-input";
 import type { DeleteAccountInput } from "@/types/application/auth/delete-account-input";
+import type { LinkedProvider } from "@/types/application/auth/linked-provider";
 import type { LoginInput } from "@/types/application/auth/login-input";
 import type { OAuthStartResponse } from "@/types/application/auth/oauth-start-response";
 import type { SignupInput } from "@/types/application/auth/signup-input";
+import type { SignupResult } from "@/types/application/auth/signup-result";
 
 import { api } from "../api-client";
 
 export const authApi = {
-  signup: (data: SignupInput) => api.post<AuthResponse>("/auth/signup", data),
+  /** Cria a conta pendente de confirmação e envia o link para o e-mail. */
+  signup: (data: SignupInput) => api.post<SignupResult>("/auth/signup", data),
+
+  /** Confirma o e-mail pelo token do link e já devolve a sessão. */
+  verifyEmail: (token: string) => api.post<AuthResponse>("/auth/email/verify", { token }),
+
+  /** Reenvia o link de confirmação (sempre 202, sem revelar se o e-mail existe). */
+  resendVerification: (email: string) => api.post<StatusResponse>("/auth/email/resend", { email }),
 
   login: (data: LoginInput) => api.post<AuthResponse>("/auth/login", data),
 
@@ -37,8 +46,13 @@ export const authApi = {
   oauthStart: (provider: OAuthStartResponse["provider"]) =>
     api.get<OAuthStartResponse>(`/auth/oauth/${provider.toLowerCase()}/start`),
 
-  oauthCallback: (provider: string, code: string, state: string) =>
-    api.get<AuthResponse>(
-      `/auth/oauth/${provider.toLowerCase()}/callback?${new URLSearchParams({ code, state }).toString()}`,
-    ),
+  /** Provedores vinculados à conta (para vincular/desvincular). */
+  oauthProviders: () => api.get<LinkedProvider[]>("/auth/oauth/providers"),
+
+  /** Inicia a vinculação do provedor à conta logada (o callback conclui). */
+  oauthLinkStart: (provider: OAuthStartResponse["provider"]) =>
+    api.post<OAuthStartResponse>(`/auth/oauth/${provider.toLowerCase()}/link`),
+
+  oauthUnlink: (provider: string) =>
+    api.delete<StatusResponse>(`/auth/oauth/${provider.toLowerCase()}/link`),
 };

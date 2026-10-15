@@ -110,6 +110,29 @@ le `process.env.IMAGEKIT_PRIVATE_KEY`).
 2. **Conferir/atualizar `VITE_IMAGEKIT_PUBLIC_KEY` / `VITE_IMAGEKIT_URL_ENDPOINT`** em `.env`
    (`.env.example` traz o formato). `VITE_IMAGEKIT_URL_ENDPOINT` nao estava definida antes e caia no
    fallback hard-coded.
+### Telas de autenticacao (contratos com o backend)
+
+- `/entrar` — cadastro e login. O **cadastro nao entra direto**: abre a tela "Confirme seu e-mail"
+  (`EmailPendingScreen`), porque o backend so emite sessao depois do link. Login de conta pendente
+  recebe `403 EMAIL_NOT_VERIFIED` e cai na mesma tela, com botao de reenvio.
+- `/auth/verify?token=...` — link do e-mail de confirmacao. Confirma e ja entra no app. Token
+  expirado (410), ja usado (409) e invalido (404) tem mensagem propria.
+- `/auth/reset?token=...` — redefinicao de senha (inalterado).
+- `/auth/callback` — retorno do login social. Le `token`/`refreshToken` **e** `error` (cancelamento
+  ou falha vem do backend como `?error=...&provider=...`), grava a sessao completa (`storeSession`,
+  inclusive `current_user`) e vai para o feed. Esse tratamento vive **so** aqui: antes havia um
+  handler global em `__root.tsx` que disparava em qualquer URL com `?token=` e sequestrava o link de
+  redefinicao de senha para o feed.
+- `/contato` — canal de contato publico (o link do rodape apontava para `#`). Com sessao mostra o
+  `SupportForm`; sem sessao explica o caminho e oferece o e-mail do time quando o backend expoe
+  (`GET /support/config`).
+- `/#comunidade` — ancora da secao de CTA da landing. O `id` fica na secao e o scroll por hash e
+  tratado em `useHashScroll` (navegacao de SPA e clique no proprio link); no mobile os links de
+  secao aparecem no rodape, ja que o menu do topo e so para desktop.
+- `/mentoria` — agendamento real: o botao "Agendar" abre os horarios publicados (`GET
+  /mentors/{id}/slots`, que devolve `PageResponse`), envia a solicitacao e da retorno; quem e o
+  mentor ve "Minha agenda" para publicar horarios.
+
 3. **Login social**: as credenciais (Google/Apple) ficam no **backend**; aqui nao ha nada a configurar
    alem do callback. O fluxo e: botao → `GET /api/auth/oauth/{provider}/start` → redirect para o provedor
    → volta em `${REDE_FRONTEND_URL}/auth/callback?token=...`, tratado por `src/routes/auth.callback.tsx`.

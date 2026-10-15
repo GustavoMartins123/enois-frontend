@@ -138,28 +138,6 @@ function RootShell({ children }: WithRequiredChildren) {
   );
 }
 
-function OAuthCallbackHandler() {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-    const refreshToken = params.get("refreshToken");
-    const expiresAt = params.get("expiresAt");
-    const refreshExpiresAt = params.get("refreshExpiresAt");
-    if (token) {
-      localStorage.setItem("session_token", token);
-      if (refreshToken) localStorage.setItem("refresh_token", refreshToken);
-      if (expiresAt) localStorage.setItem("session_expires_at", expiresAt);
-      if (refreshExpiresAt) localStorage.setItem("refresh_expires_at", refreshExpiresAt);
-      navigate({ to: "/feed", replace: true });
-    }
-  }, [navigate]);
-
-  return null;
-}
-
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
@@ -181,7 +159,6 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <OAuthCallbackHandler />
       <Outlet />
     </QueryClientProvider>
   );

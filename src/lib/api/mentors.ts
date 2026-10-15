@@ -22,7 +22,8 @@ export const mentorsApi = {
 
   remove: (mentorId: string) => api.delete<StatusResponse>(`/mentors/${mentorId}`),
 
-  getSlots: (mentorId: string) => api.get<TimeSlot[]>(`/mentors/${mentorId}/slots`),
+  /** O backend pagina a agenda (PageResponse), não devolve um array solto. */
+  getSlots: (mentorId: string) => api.get<PageResponse<TimeSlot>>(`/mentors/${mentorId}/slots`),
 
   createSlot: (mentorId: string, data: CreateSlotInput) =>
     api.post<TimeSlot>(`/mentors/${mentorId}/slots`, data),

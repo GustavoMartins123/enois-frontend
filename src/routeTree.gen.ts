@@ -20,6 +20,7 @@ import { Route as MensagensRouteImport } from './routes/mensagens'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as EventosRouteImport } from './routes/eventos'
 import { Route as EntrarRouteImport } from './routes/entrar'
+import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as ComunidadesRouteImport } from './routes/comunidades'
 import { Route as BloqueadosRouteImport } from './routes/bloqueados'
 import { Route as IndexRouteImport } from './routes/index'
@@ -28,6 +29,7 @@ import { Route as VagasJobIdRouteImport } from './routes/vagas.$jobId'
 import { Route as PostPostIdRouteImport } from './routes/post.$postId'
 import { Route as PerfilUsernameRouteImport } from './routes/perfil.$username'
 import { Route as ComunidadesCommunityIdRouteImport } from './routes/comunidades.$communityId'
+import { Route as AuthVerifyRouteImport } from './routes/auth.verify'
 import { Route as AuthResetRouteImport } from './routes/auth.reset'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 
@@ -86,6 +88,11 @@ const EntrarRoute = EntrarRouteImport.update({
   path: '/entrar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContatoRoute = ContatoRouteImport.update({
+  id: '/contato',
+  path: '/contato',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ComunidadesRoute = ComunidadesRouteImport.update({
   id: '/comunidades',
   path: '/comunidades',
@@ -126,6 +133,11 @@ const ComunidadesCommunityIdRoute = ComunidadesCommunityIdRouteImport.update({
   path: '/$communityId',
   getParentRoute: () => ComunidadesRoute,
 } as any)
+const AuthVerifyRoute = AuthVerifyRouteImport.update({
+  id: '/auth/verify',
+  path: '/auth/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthResetRoute = AuthResetRouteImport.update({
   id: '/auth/reset',
   path: '/auth/reset',
@@ -141,6 +153,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/bloqueados': typeof BloqueadosRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
+  '/contato': typeof ContatoRoute
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
@@ -154,6 +167,7 @@ export interface FileRoutesByFullPath {
   '/vagas': typeof VagasRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset': typeof AuthResetRoute
+  '/auth/verify': typeof AuthVerifyRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
@@ -164,6 +178,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/bloqueados': typeof BloqueadosRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
+  '/contato': typeof ContatoRoute
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
@@ -177,6 +192,7 @@ export interface FileRoutesByTo {
   '/vagas': typeof VagasRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset': typeof AuthResetRoute
+  '/auth/verify': typeof AuthVerifyRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
@@ -188,6 +204,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/bloqueados': typeof BloqueadosRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
+  '/contato': typeof ContatoRoute
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
@@ -201,6 +218,7 @@ export interface FileRoutesById {
   '/vagas': typeof VagasRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset': typeof AuthResetRoute
+  '/auth/verify': typeof AuthVerifyRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
@@ -213,6 +231,7 @@ export interface FileRouteTypes {
     | '/'
     | '/bloqueados'
     | '/comunidades'
+    | '/contato'
     | '/entrar'
     | '/eventos'
     | '/feed'
@@ -226,6 +245,7 @@ export interface FileRouteTypes {
     | '/vagas'
     | '/auth/callback'
     | '/auth/reset'
+    | '/auth/verify'
     | '/comunidades/$communityId'
     | '/perfil/$username'
     | '/post/$postId'
@@ -236,6 +256,7 @@ export interface FileRouteTypes {
     | '/'
     | '/bloqueados'
     | '/comunidades'
+    | '/contato'
     | '/entrar'
     | '/eventos'
     | '/feed'
@@ -249,6 +270,7 @@ export interface FileRouteTypes {
     | '/vagas'
     | '/auth/callback'
     | '/auth/reset'
+    | '/auth/verify'
     | '/comunidades/$communityId'
     | '/perfil/$username'
     | '/post/$postId'
@@ -259,6 +281,7 @@ export interface FileRouteTypes {
     | '/'
     | '/bloqueados'
     | '/comunidades'
+    | '/contato'
     | '/entrar'
     | '/eventos'
     | '/feed'
@@ -272,6 +295,7 @@ export interface FileRouteTypes {
     | '/vagas'
     | '/auth/callback'
     | '/auth/reset'
+    | '/auth/verify'
     | '/comunidades/$communityId'
     | '/perfil/$username'
     | '/post/$postId'
@@ -283,6 +307,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BloqueadosRoute: typeof BloqueadosRoute
   ComunidadesRoute: typeof ComunidadesRouteWithChildren
+  ContatoRoute: typeof ContatoRoute
   EntrarRoute: typeof EntrarRoute
   EventosRoute: typeof EventosRoute
   FeedRoute: typeof FeedRoute
@@ -296,6 +321,7 @@ export interface RootRouteChildren {
   VagasRoute: typeof VagasRouteWithChildren
   AuthCallbackRoute: typeof AuthCallbackRoute
   AuthResetRoute: typeof AuthResetRoute
+  AuthVerifyRoute: typeof AuthVerifyRoute
   PerfilUsernameRoute: typeof PerfilUsernameRoute
   PostPostIdRoute: typeof PostPostIdRoute
 }
@@ -379,6 +405,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EntrarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contato': {
+      id: '/contato'
+      path: '/contato'
+      fullPath: '/contato'
+      preLoaderRoute: typeof ContatoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/comunidades': {
       id: '/comunidades'
       path: '/comunidades'
@@ -435,6 +468,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ComunidadesCommunityIdRouteImport
       parentRoute: typeof ComunidadesRoute
     }
+    '/auth/verify': {
+      id: '/auth/verify'
+      path: '/auth/verify'
+      fullPath: '/auth/verify'
+      preLoaderRoute: typeof AuthVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth/reset': {
       id: '/auth/reset'
       path: '/auth/reset'
@@ -480,6 +520,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BloqueadosRoute: BloqueadosRoute,
   ComunidadesRoute: ComunidadesRouteWithChildren,
+  ContatoRoute: ContatoRoute,
   EntrarRoute: EntrarRoute,
   EventosRoute: EventosRoute,
   FeedRoute: FeedRoute,
@@ -493,6 +534,7 @@ const rootRouteChildren: RootRouteChildren = {
   VagasRoute: VagasRouteWithChildren,
   AuthCallbackRoute: AuthCallbackRoute,
   AuthResetRoute: AuthResetRoute,
+  AuthVerifyRoute: AuthVerifyRoute,
   PerfilUsernameRoute: PerfilUsernameRoute,
   PostPostIdRoute: PostPostIdRoute,
 }

@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { AccountMenuProps } from "@/types/components/account/account-menu-props";
-import { KeyRound, LifeBuoy, LogOut, Mail, ShieldOff, Trash2, User } from "lucide-react";
+import { KeyRound, LifeBuoy, Link2, LogOut, Mail, ShieldOff, Trash2, User } from "lucide-react";
 
 import { logout } from "@/lib/logout";
 import { cn } from "@/lib/utils";
@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ChangeEmailDialog } from "./change-email-dialog";
 import { ChangePasswordDialog } from "./change-password-dialog";
 import { DeleteAccountDialog } from "./delete-account-dialog";
+import { LinkedAccountsDialog } from "./linked-accounts-dialog";
 import { PushToggle } from "./push-toggle";
 import { UserAvatar } from "./user-avatar";
 
@@ -25,6 +26,7 @@ export function AccountMenu({ profile }: AccountMenuProps) {
   const [showChangeEmail, setShowChangeEmail] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+  const [showLinkedAccounts, setShowLinkedAccounts] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
   const openChangeEmail = () => {
@@ -35,6 +37,11 @@ export function AccountMenu({ profile }: AccountMenuProps) {
   const openChangePassword = () => {
     setMenuOpen(false);
     setShowChangePassword(true);
+  };
+
+  const openLinkedAccounts = () => {
+    setMenuOpen(false);
+    setShowLinkedAccounts(true);
   };
 
   const openDeleteAccount = () => {
@@ -113,6 +120,12 @@ export function AccountMenu({ profile }: AccountMenuProps) {
               <>{texts.account.menu.changePassword}</>
             </button>
 
+            <button type="button" onClick={openLinkedAccounts} className={ITEM_CLASS}>
+              <Link2 className="h-4 w-4" />
+
+              <>{texts.account.menu.linkedAccounts}</>
+            </button>
+
             <PushToggle onClose={() => setMenuOpen(false)} />
           </div>
 
@@ -150,6 +163,8 @@ export function AccountMenu({ profile }: AccountMenuProps) {
       />
       <ChangePasswordDialog open={showChangePassword} onOpenChange={setShowChangePassword} />
       <DeleteAccountDialog open={showDeleteAccount} onOpenChange={setShowDeleteAccount} />
+
+      <LinkedAccountsDialog open={showLinkedAccounts} onOpenChange={setShowLinkedAccounts} />
     </>
   );
 }
