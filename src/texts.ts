@@ -627,6 +627,7 @@ export const texts = {
       confirmDelete: "Excluir",
       edited: "Publicação atualizada.",
       deleted: "Publicação excluída.",
+      undo: "Desfazer",
       error: "Não foi possível concluir. Tente novamente.",
     },
     reactions: {
@@ -1256,7 +1257,8 @@ export const texts = {
     whoProcesses:
       "Quem processa os dados é o provedor de identidade. O Énóis recebe apenas a confirmação do resultado.",
     badgeLabel: "Identidade verificada",
-    badgeHint: "Identidade confirmada por um provedor. Não significa que a pessoa é confiável em tudo.",
+    badgeHint:
+      "Identidade confirmada por um provedor. Não significa que a pessoa é confiável em tudo.",
     dataNotice:
       "Ao iniciar, você é levado ao provedor para concluir a verificação. Nada é marcado como verificado sem a confirmação dele.",
   },

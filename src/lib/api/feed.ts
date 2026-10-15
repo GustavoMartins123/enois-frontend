@@ -26,6 +26,9 @@ export const feedApi = {
   update: (postId: string, data: { content: string; tags?: string[] }) =>
     api.patch<PostView>(`/feed/posts/${postId}`, data),
 
+  /** Desfaz a exclusão do próprio post (soft delete reversível). */
+  restore: (postId: string) => api.post<PostView>(`/feed/posts/${postId}/restore`),
+
   delete: (postId: string) => api.delete<DeleteResult>(`/feed/posts/${postId}`),
 
   listSaved: (cursor?: string | null, limit = 20) =>

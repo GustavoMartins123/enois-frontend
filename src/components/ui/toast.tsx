@@ -5,20 +5,27 @@ import { CheckCircle2, XCircle, X } from "lucide-react";
 
 type ToastVariant = "success" | "error";
 
+type ToastAction = { label: string; onClick: () => void };
+
 type ToastItem = {
   id: number;
   message: string;
   variant: ToastVariant;
+  action?: ToastAction;
 };
 
 type ToastContextValue = {
-  /** Mostra um aviso curto no rodapé. `variant` padrão é "success". */
-  toast: (message: string, variant?: ToastVariant) => void;
+  /**
+   * Mostra um aviso curto no rodapé. `variant` padrão é "success". `action` habilita o "desfazer"
+   * — só passe uma ação quando a operação for realmente reversível.
+   */
+  toast: (message: string, variant?: ToastVariant, action?: ToastAction) => void;
 };
 
 const ToastContext = React.createContext<ToastContextValue | null>(null);
 
 const AUTO_DISMISS_MS = 4000;
+const ACTION_DISMISS_MS = 8000;
 
 /**
  * Avisos curtos de operação (publicou, salvou, excluiu, falhou). Centraliza o feedback para as
@@ -33,10 +40,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const toast = React.useCallback(
-    (message: string, variant: ToastVariant = "success") => {
+    (message: string, variant: ToastVariant = "success", action?: ToastAction) => {
       const id = nextId.current++;
-      setToasts((current) => [...current, { id, message, variant }]);
-      setTimeout(() => remove(id), AUTO_DISMISS_MS);
+      setToasts((current) => [...current, { id, message, variant, action }]);
+      // Um aviso com ação fica mais tempo: a pessoa precisa de tempo para desfazer.
+      setTimeout(() => remove(id), action ? ACTION_DISMISS_MS : AUTO_DISMISS_MS);
     },
     [remove],
   );
@@ -70,6 +78,19 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             )}
 
             <p className="flex-1 leading-snug">{item.message}</p>
+
+            {item.action && (
+              <button
+                type="button"
+                onClick={() => {
+                  item.action?.onClick();
+                  remove(item.id);
+                }}
+                className="shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold text-primary transition hover:bg-primary/10"
+              >
+                {item.action.label}
+              </button>
+            )}
 
             <button
               type="button"

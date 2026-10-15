@@ -138,7 +138,20 @@ export function PostCard({ post }: PostCardProps) {
     mutationFn: () => feedApi.delete(post.id),
     onSuccess: () => {
       setDeleteOpen(false);
-      toast(texts.posts.owner.deleted);
+      // Exclusão é lógica: dá para desfazer de verdade, então o aviso traz a ação.
+      toast(texts.posts.owner.deleted, "success", {
+        label: texts.posts.owner.undo,
+        onClick: () => {
+          feedApi
+            .restore(post.id)
+            .then(() => {
+              queryClient.invalidateQueries({ queryKey: ["feed"] });
+              queryClient.invalidateQueries({ queryKey: ["post", post.id] });
+              toast(texts.posts.owner.edited);
+            })
+            .catch(() => toast(texts.posts.owner.error, "error"));
+        },
+      });
       queryClient.invalidateQueries({ queryKey: ["feed"] });
       queryClient.invalidateQueries({ queryKey: ["saved-posts"] });
       // Na pagina do post unico, o conteudo some: volta para o feed em vez de ficar num "nao encontrado".
