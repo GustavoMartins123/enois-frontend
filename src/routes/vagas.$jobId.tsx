@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
@@ -8,6 +10,7 @@ import {
   Bookmark,
   Briefcase,
   CheckCircle2,
+  CircleSlash,
   Loader2,
   MapPin,
   ShieldAlert,
@@ -20,6 +23,7 @@ import { formatSalary } from "@/lib/currency";
 import { getCurrentUserId } from "@/lib/current-user";
 
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 import { AppContainer } from "@/components/app-container";
 import { ApplyJobDialog } from "@/components/apply-job-dialog";
@@ -71,6 +75,16 @@ function JobDetail() {
     mutationFn: (saved: boolean) => (saved ? jobsApi.removeSave(jobId) : jobsApi.save(jobId)),
     onSuccess: invalidate,
   });
+  const [closeOpen, setCloseOpen] = useState(false);
+
+  const close = useMutation({
+    mutationFn: () => jobsApi.close(jobId),
+    onSuccess: () => {
+      invalidate();
+      setCloseOpen(false);
+    },
+  });
+
   const remove = useMutation({
     mutationFn: () => jobsApi.remove(jobId),
     onSuccess: () => {
@@ -240,6 +254,19 @@ function JobDetail() {
                     </Button>
                   </Link>
 
+                  {job.status === "OPEN" && (
+                    <Button
+                      variant="outline"
+                      className="rounded-full gap-2"
+                      disabled={close.isPending}
+                      onClick={() => setCloseOpen(true)}
+                    >
+                      <CircleSlash className="h-4 w-4" />
+
+                      <>{texts.jobs.closeJob}</>
+                    </Button>
+                  )}
+
                   <Button
                     variant="destructive"
                     className="rounded-full gap-2"
@@ -258,6 +285,12 @@ function JobDetail() {
                   <CheckCircle2 className="h-4 w-4" />
 
                   <>{texts.jobs.applied}</>
+                </span>
+              ) : job.status === "CLOSED" ? (
+                <span className="inline-flex items-center gap-2 rounded-full bg-muted px-4 py-2 text-[13px] font-medium text-text-subtle">
+                  <CircleSlash className="h-4 w-4" />
+
+                  <>{texts.jobs.closed}</>
                 </span>
               ) : (
                 <ApplyJobDialog job={job}>
@@ -279,13 +312,19 @@ function JobDetail() {
               )}
             </footer>
 
+            {job.status === "CLOSED" && (
+              <p className="mt-3 rounded-xl bg-muted px-3 py-2 text-[12px] font-light text-text-subtle">
+                {texts.jobs.closedHint}
+              </p>
+            )}
+
             {job.applied && !isOwner && (
               <p className="mt-3 rounded-xl bg-surface-2 px-3 py-2 text-[12px] font-light text-text-subtle">
                 {texts.jobs.appliedHint}
               </p>
             )}
 
-            {(apply.isError || toggleSave.isError || remove.isError) && (
+            {(apply.isError || toggleSave.isError || remove.isError || close.isError) && (
               <p className="mt-3 rounded-xl bg-destructive/10 px-3 py-2 text-[12px] text-destructive">
                 {texts.errors.unexpected}
               </p>
@@ -293,6 +332,16 @@ function JobDetail() {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={closeOpen}
+        onOpenChange={setCloseOpen}
+        title={texts.jobs.closeJob}
+        description={texts.jobs.closeConfirm}
+        confirmLabel={texts.jobs.closeJob}
+        pending={close.isPending}
+        onConfirm={() => close.mutate()}
+      />
     </AppContainer>
   );
 }

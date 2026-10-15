@@ -1102,6 +1102,13 @@ export const texts = {
       "Os campos do formulário de candidatura continuam como estão — para mudá-los, publique outra vaga.",
     updateError: "Não foi possível salvar a vaga. Tente novamente.",
     deleted: "Vaga excluída.",
+    closeJob: "Encerrar vaga",
+    closeConfirm:
+      "Encerrar esta vaga? Ela deixa de receber candidaturas — as que já chegaram continuam disponíveis para triagem.",
+    closeError: "Não foi possível encerrar a vaga. Tente novamente.",
+    closed: "Encerrada",
+    open: "Aberta",
+    closedHint: "O processo seletivo desta vaga foi encerrado.",
     loadError: "Não foi possível carregar suas vagas. Tente de novo.",
     identityRequired:
       "Sua conta ainda não está verificada, e publicar/candidatar-se exige verificação. Confirme seu e-mail ou ative a verificação em duas etapas.",

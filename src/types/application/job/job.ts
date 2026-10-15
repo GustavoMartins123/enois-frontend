@@ -25,6 +25,13 @@ export type Job = {
   applied: boolean;
   saved: boolean;
   owner: boolean;
+  /**
+   * Estado do processo seletivo. `CLOSED` (encerrada) para de aceitar candidatura, mas preserva
+   * as que ja chegaram — encerrar nao e excluir.
+   */
+  status: "OPEN" | "CLOSED";
+  /** Quando o autor encerrou (nulo enquanto aberta). */
+  closedAt?: string | null;
   /** Quantas candidaturas a vaga recebeu (exposto apenas para quem publicou). */
   applicationsCount: number;
   /** Quem publicou a vaga (nome, reputação e verificação) — mostrado no detalhe. */

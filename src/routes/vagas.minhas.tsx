@@ -123,6 +123,18 @@ function MyJobs() {
                         </p>
                       </Link>
 
+                      {/* Estado do processo seletivo: quem gerencia precisa ver de longe o que
+                          ainda esta aberto. */}
+                      <span
+                        className={`mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                          job.status === "CLOSED"
+                            ? "bg-muted text-text-subtle"
+                            : "bg-primary-soft text-primary"
+                        }`}
+                      >
+                        {job.status === "CLOSED" ? texts.jobs.closed : texts.jobs.open}
+                      </span>
+
                       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
                         <p className="inline-flex items-center gap-1.5 text-[12px] font-light text-primary">
                           <Users className="h-3.5 w-3.5" />

@@ -29,6 +29,9 @@ export const jobsApi = {
 
   remove: (jobId: string) => api.delete<void>(`/jobs/${jobId}`),
 
+  /** Encerra o processo seletivo: para de aceitar candidatura e preserva as recebidas. */
+  close: (jobId: string) => api.post<Job>(`/jobs/${jobId}/close`),
+
   /** Candidatura com a mensagem e as respostas dos campos definidos pelo autor. */
   apply: (jobId: string, data?: JobApplicationInput) =>
     api.post<StatusResponse>(`/jobs/${jobId}/applications`, data ?? { answers: [] }),
