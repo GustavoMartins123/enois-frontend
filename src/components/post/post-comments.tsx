@@ -8,6 +8,7 @@ import { Loader2, Send, X } from "lucide-react";
 
 import { commentsApi } from "@/lib/api";
 import { getCurrentUser } from "@/lib/current-user";
+import { useAuth } from "@/lib/use-auth";
 
 import { Button } from "@/components/ui/button";
 
@@ -28,6 +29,7 @@ const PAGE_SIZE = 20;
  */
 export function PostComments({ postId }: PostIdProps) {
   const currentUser = getCurrentUser();
+  const { requireAuth } = useAuth();
   const comments = usePostCardStore((state) => state.cards[postId]?.localComments ?? []);
   const draft = usePostCardStore((state) => state.cards[postId]?.draft ?? "");
   const mentions = usePostCardStore((state) => state.cards[postId]?.commentMentions ?? []);
@@ -85,6 +87,8 @@ export function PostComments({ postId }: PostIdProps) {
     event.preventDefault();
     const content = draft.trim();
     if (!content || sending) return;
+    // Comentar e uma acao: sem sessao (link compartilhado aberto por outra pessoa) vai para o login.
+    if (!requireAuth()) return;
 
     setSending(true);
     try {

@@ -15,7 +15,6 @@ const PROTECTED_ROUTES = [
   "/eventos",
   "/mentoria",
   "/perfil",
-  "/post",
   "/suporte",
   "/bloqueados",
   "/seguranca",

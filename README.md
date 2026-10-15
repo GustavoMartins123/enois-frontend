@@ -123,6 +123,9 @@ le `process.env.IMAGEKIT_PRIVATE_KEY`).
   inclusive `current_user`) e vai para o feed. Esse tratamento vive **so** aqui: antes havia um
   handler global em `__root.tsx` que disparava em qualquer URL com `?token=` e sequestrava o link de
   redefinicao de senha para o feed.
+- `/post/:id` — página pública: é o destino do link compartilhado, então abre para quem recebe (antes
+  exigia sessão e o destinatário caía no login). As ações do card (reagir, salvar, compartilhar, comentar)
+  pedem login quando não há sessão, em vez de falhar em silêncio.
 - **Edição de foto e capa**: o botão de trocar aparece sempre no próprio perfil (antes só no *hover*, o que
   deixava a edição impossível no toque); o input de arquivo é limpo depois da escolha, então escolher a
   **mesma** imagem duas vezes volta a abrir o recorte (o navegador não dispara `change` para o mesmo

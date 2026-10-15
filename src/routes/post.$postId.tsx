@@ -5,13 +5,14 @@ import { texts } from "@/texts";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
 import { feedApi } from "@/lib/api";
-import { requireAuth } from "@/lib/require-auth";
 
 import { AppContainer } from "@/components/app-container";
 import { PostCard } from "@/components/post-card";
 
 export const Route = createFileRoute("/post/$postId")({
-  beforeLoad: requireAuth,
+  // Sem `beforeLoad: requireAuth`: o post e o destino do link compartilhado e precisa abrir para
+  // quem recebeu. As acoes (reagir, comentar, salvar, compartilhar) e que pedem login.
+
   head: () => ({ meta: [{ title: texts.post.seoTitle }] }),
   component: PostDetail,
 });

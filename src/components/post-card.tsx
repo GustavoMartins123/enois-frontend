@@ -9,6 +9,7 @@ import type { PostCardProps } from "@/types/components/post/post-card-props";
 import { Bookmark, Flag, Heart, MessageSquare, Share2 } from "lucide-react";
 
 import { REACTION_EMOJIS, feedApi, reactionsApi } from "@/lib/api";
+import { useAuth } from "@/lib/use-auth";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ import { ReportDialog } from "./post/report-dialog";
 import { typeMeta } from "./post/type-meta";
 
 export function PostCard({ post }: PostCardProps) {
+  const { requireAuth } = useAuth();
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
   const [showComments, setShowComments] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -63,6 +65,7 @@ export function PostCard({ post }: PostCardProps) {
   const totalComments = useMemo(() => postCounters.comments, [postCounters.comments]);
 
   const handleReaction = async (type: ReactionType) => {
+    if (!requireAuth()) return;
     try {
       if (reactionStatus === type) {
         const result = await reactionsApi.removeReaction(post.id);
@@ -79,6 +82,7 @@ export function PostCard({ post }: PostCardProps) {
   };
 
   const handleSave = async () => {
+    if (!requireAuth()) return;
     try {
       const result = saved
         ? await reactionsApi.removeSave(post.id)
@@ -91,6 +95,7 @@ export function PostCard({ post }: PostCardProps) {
   };
 
   const handleShare = async () => {
+    if (!requireAuth()) return;
     try {
       const result = await reactionsApi.share(post.id);
       setPostCounters(post.id, result.counters);
