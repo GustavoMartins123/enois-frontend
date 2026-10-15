@@ -331,7 +331,7 @@ function CommunityDetail() {
               onChange={(e) => setDraft(e.target.value)}
               placeholder={texts.communities.detail.composerPlaceholder}
               className="min-h-20 resize-none rounded-2xl border-border bg-muted/40 text-sm"
-              maxLength={1024}
+              maxLength={1200}
             />
 
             <div className="mt-3 flex justify-end">

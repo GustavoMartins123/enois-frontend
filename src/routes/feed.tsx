@@ -199,7 +199,7 @@ function Home() {
                 }}
                 placeholder={texts.feed.composer.placeholder}
                 className="flex-1 resize-none rounded-2xl border-border-soft bg-surface-1 px-3 py-2 text-[14px] font-light"
-                maxLength={600}
+                maxLength={1200}
               />
             </div>
 

@@ -365,7 +365,7 @@ export function PostCard({ post }: PostCardProps) {
 
               <Textarea
                 value={draft}
-                maxLength={1024}
+                maxLength={1200}
                 autoFocus
                 onChange={(event) => setDraft(event.target.value)}
                 placeholder={texts.posts.owner.editDescription}

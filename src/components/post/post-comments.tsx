@@ -223,7 +223,7 @@ export function PostComments({ postId }: PostIdProps) {
               }}
               placeholder={texts.posts.comments.placeholder}
               className="flex-1 resize-none border-0 bg-transparent p-0 text-[13px] font-light outline-none"
-              maxLength={280}
+              maxLength={800}
             />
 
             <Button
