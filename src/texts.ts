@@ -1038,6 +1038,8 @@ export const texts = {
     createAction: "Publicar vaga",
     createSuccess: "Vaga publicada com sucesso.",
     createError: "Não foi possível publicar a vaga. Tente novamente.",
+    loadError: "Não foi possível carregar suas vagas. Tente de novo.",
+    retry: "Tentar de novo",
     fakeBadge: "Vaga marcada como falsa",
     report: {
       action: "Denunciar",

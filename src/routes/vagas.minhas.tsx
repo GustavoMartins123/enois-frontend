@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
-import { Button } from "@/components/ui/button";
-
 import { texts } from "@/texts";
 import { ArrowLeft, Briefcase, CheckCircle2, Loader2, Users } from "lucide-react";
 
 import { jobsApi } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
+
+import { Button } from "@/components/ui/button";
 
 import { AppContainer } from "@/components/app-container";
 
@@ -34,6 +34,14 @@ function MyJobs() {
   });
 
   const loading = mine.isLoading || applications.isLoading;
+  // Sem isso, uma requisição que falha caía no ramo de lista vazia e a tela afirmava
+  // "você ainda não publicou vagas" para quem tem vagas — parecia que a página quebrou.
+  const failed = mine.isError || applications.isError;
+
+  const retry = () => {
+    void mine.refetch();
+    void applications.refetch();
+  };
 
   return (
     <AppContainer>
@@ -50,6 +58,14 @@ function MyJobs() {
         {loading ? (
           <div className="surface-card p-8 text-center">
             <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
+          </div>
+        ) : failed ? (
+          <div className="surface-card p-6 text-center">
+            <p className="text-sm text-muted-foreground">{texts.jobs.loadError}</p>
+
+            <Button variant="outline" size="sm" className="mt-3 rounded-full" onClick={retry}>
+              {texts.jobs.retry}
+            </Button>
           </div>
         ) : (
           <>
