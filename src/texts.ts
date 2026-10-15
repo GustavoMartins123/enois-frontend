@@ -821,6 +821,9 @@ export const texts = {
     hostedBy: (host: string) => `por ${host}`,
     dateTime: (date: string, time: string) => `${date} · ${time}`,
     attend: "Confirmar presença",
+    finished: "Encerrado",
+    finishedHint:
+      "Este evento já aconteceu. As confirmações de presença são removidas depois do vencimento (fica só o total).",
     form: {
       title: "Título",
       date: "Data",

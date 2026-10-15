@@ -112,11 +112,19 @@ function Eventos() {
                 </div>
 
                 <div className="p-5">
-                  <Badge variant="outline" className="rounded-full bg-card font-normal">
-                    <Icon className="mr-1 h-3 w-3" />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge variant="outline" className="rounded-full bg-card font-normal">
+                      <Icon className="mr-1 h-3 w-3" />
 
-                    <>{formatLabel}</>
-                  </Badge>
+                      <>{formatLabel}</>
+                    </Badge>
+
+                    {e.expired && (
+                      <Badge variant="outline" className="rounded-full bg-muted font-normal text-text-subtle">
+                        <>{texts.events.finished}</>
+                      </Badge>
+                    )}
+                  </div>
 
                   <h3 className="mt-2 break-words font-semibold">{e.title}</h3>
 
@@ -138,13 +146,19 @@ function Eventos() {
                     </span>
                   </div>
 
-                  <Button
-                    className="mt-4 w-full rounded-full"
-                    disabled={attend.isPending}
-                    onClick={() => attend.mutate(e.id)}
-                  >
-                    {texts.events.attend}
-                  </Button>
+                  {e.expired ? (
+                    <p className="mt-4 rounded-full bg-muted px-4 py-2 text-center text-[12px] font-light text-text-subtle">
+                      {texts.events.finished}
+                    </p>
+                  ) : (
+                    <Button
+                      className="mt-4 w-full rounded-full"
+                      disabled={attend.isPending}
+                      onClick={() => attend.mutate(e.id)}
+                    >
+                      {texts.events.attend}
+                    </Button>
+                  )}
                 </div>
               </article>
             );
