@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 
+import { ToastProvider } from "@/components/ui/toast";
 import { QueryClientProvider } from "@tanstack/react-query";
 import {
   HeadContent,
@@ -177,7 +178,9 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <ToastProvider>
+        <Outlet />
+      </ToastProvider>
     </QueryClientProvider>
   );
 }

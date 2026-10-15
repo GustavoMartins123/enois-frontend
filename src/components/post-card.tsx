@@ -17,6 +17,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/toast";
 
 import { AuthorInfo } from "./post/author-info";
 import { formatTime } from "./post/format-time";
@@ -31,6 +32,7 @@ import { typeMeta } from "./post/type-meta";
 
 export function PostCard({ post }: PostCardProps) {
   const { requireAuth, user } = useAuth();
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const isOwner = user?.id != null && user.id === post.authorId;
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
@@ -124,16 +126,19 @@ export function PostCard({ post }: PostCardProps) {
     mutationFn: () => feedApi.update(post.id, { content: draft.trim(), tags: post.tags }),
     onSuccess: () => {
       setEditOpen(false);
+      toast(texts.posts.owner.edited);
       queryClient.invalidateQueries({ queryKey: ["feed"] });
       queryClient.invalidateQueries({ queryKey: ["post", post.id] });
       queryClient.invalidateQueries({ queryKey: ["saved-posts"] });
     },
+    onError: () => toast(texts.posts.owner.error, "error"),
   });
 
   const deletePost = useMutation({
     mutationFn: () => feedApi.delete(post.id),
     onSuccess: () => {
       setDeleteOpen(false);
+      toast(texts.posts.owner.deleted);
       queryClient.invalidateQueries({ queryKey: ["feed"] });
       queryClient.invalidateQueries({ queryKey: ["saved-posts"] });
       // Na pagina do post unico, o conteudo some: volta para o feed em vez de ficar num "nao encontrado".
@@ -143,6 +148,7 @@ export function PostCard({ post }: PostCardProps) {
       }
       queryClient.invalidateQueries({ queryKey: ["post", post.id] });
     },
+    onError: () => toast(texts.posts.owner.error, "error"),
   });
 
   const handleSaveEdit = () => {

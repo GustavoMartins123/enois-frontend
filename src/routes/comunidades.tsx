@@ -29,6 +29,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
 import { CommunityFavoriteButton } from "@/components/community-favorite-button";
+import { useToast } from "@/components/ui/toast";
 
 const TOPICS = [
   "Todas",
@@ -60,6 +61,7 @@ export const Route = createFileRoute("/comunidades")({
 
 function Comunidades() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const matchRoute = useMatchRoute();
   const [topic, setTopic] = useState<CommunityTopic | undefined>(undefined);
   const [open, setOpen] = useState(false);
@@ -106,20 +108,24 @@ function Comunidades() {
   const join = useMutation({
     mutationFn: (id: string) => communitiesApi.join(id),
     onSuccess: () => {
+      toast(texts.communities.joined);
       queryClient.invalidateQueries({ queryKey: ["communities"] });
       queryClient.invalidateQueries({ queryKey: ["my-communities"] });
     },
+    onError: () => toast(texts.communities.actionError, "error"),
   });
 
   const leave = useMutation({
     mutationFn: (id: string) => communitiesApi.leave(id),
     onSuccess: () => {
       setLeaveTarget(null);
+      toast(texts.communities.left);
       queryClient.invalidateQueries({ queryKey: ["communities"] });
       queryClient.invalidateQueries({ queryKey: ["my-communities"] });
     },
     onError: () => {
       // Dono não sai sem transferir: orientamos a abrir a comunidade para transferir.
+      toast(texts.communities.actionError, "error");
       setLeaveTarget(null);
       setOwnerBlockedId(leaveTarget?.id ?? null);
     },
@@ -270,6 +276,7 @@ function Comunidades() {
 
 function CreateCommunityDialog({ children, open, onOpenChange }: CreateCommunityDialogProps) {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [topic, setTopic] = useState<CommunityTopic>("TECNOLOGIA");
@@ -277,6 +284,7 @@ function CreateCommunityDialog({ children, open, onOpenChange }: CreateCommunity
   const create = useMutation({
     mutationFn: () => communitiesApi.create({ name, description, topic }),
     onSuccess: () => {
+      toast(texts.communities.created);
       queryClient.invalidateQueries({ queryKey: ["communities"] });
       queryClient.invalidateQueries({ queryKey: ["my-communities"] });
       onOpenChange(false);

@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { CommunityFavoriteButton } from "@/components/community-favorite-button";
+import { useToast } from "@/components/ui/toast";
 import {
   Dialog,
   DialogContent,
@@ -58,6 +59,7 @@ function CommunityDetail() {
   const community = Route.useLoaderData();
   const { user: currentUser } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [draft, setDraft] = useState("");
   const [editOpen, setEditOpen] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);
@@ -86,16 +88,19 @@ function CommunityDetail() {
   const join = useMutation({
     mutationFn: () => communitiesApi.join(community.id),
     onSuccess: () => {
+      toast(texts.communities.joined);
       invalidate();
       queryClient.invalidateQueries({ queryKey: ["community", community.id, "members"] });
       queryClient.invalidateQueries({ queryKey: ["my-communities"] });
     },
+    onError: () => toast(texts.communities.actionError, "error"),
   });
 
   const leave = useMutation({
     mutationFn: () => communitiesApi.leave(community.id),
     onSuccess: () => {
       setLeaveOpen(false);
+      toast(texts.communities.left);
       invalidate();
       queryClient.invalidateQueries({ queryKey: ["my-communities"] });
     },
