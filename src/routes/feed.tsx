@@ -205,13 +205,7 @@ function Home() {
               <div className="relative mt-3">
                 {mediaType === "image" ? (
                   <div
-                    className={`grid gap-2 ${
-                      media.length === 1
-                        ? "grid-cols-1"
-                        : media.length === 2
-                          ? "grid-cols-2"
-                          : "grid-cols-2"
-                    }`}
+                    className={`grid gap-2 ${media.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}
                   >
                     {media.map((item, i) => (
                       <div
