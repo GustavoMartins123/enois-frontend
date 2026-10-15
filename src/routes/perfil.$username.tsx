@@ -15,6 +15,7 @@ import {
   Link as LinkIcon,
   MapPin,
   MessageCircle,
+  Palette,
   Settings,
   ShieldCheck,
   ShieldOff,
@@ -48,6 +49,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
+import { AppearanceDialog } from "@/components/appearance/appearance-dialog";
 import { BlockUserDialog } from "@/components/block-user-dialog";
 import { EditProfileDialog } from "@/components/edit-profile-dialog";
 import { ImageCropDialog } from "@/components/image-crop-dialog";
@@ -110,6 +112,7 @@ function Profile() {
   const [cropPurpose, setCropPurpose] = useState<ProfileCropPurpose | null>(null);
   const [recommendOpen, setRecommendOpen] = useState(false);
   const [recommendComment, setRecommendComment] = useState("");
+  const [appearanceOpen, setAppearanceOpen] = useState(false);
 
   const { data: liveProfile } = useQuery({
     queryKey: ["profile", loaderUser.username],
@@ -227,9 +230,7 @@ function Profile() {
     <AppContainer>
       <div className="space-y-6">
         <div className="rounded-2xl border border-border-soft bg-surface-card overflow-hidden">
-          <div
-            className="group relative"
-          >
+          <div className="group relative">
             {user.banner ? (
               <img
                 src={resolveCdnUrl(user.banner)}
@@ -267,9 +268,7 @@ function Profile() {
 
           <div className="px-4 pb-5 sm:px-6 sm:pb-6">
             <div className="-mt-12 flex flex-wrap items-end justify-between gap-3 sm:-mt-14 sm:gap-4">
-              <div
-                className="group relative"
-              >
+              <div className="group relative">
                 <UserAvatar
                   src={resolveCdnUrl(user.avatar)}
                   alt={user.name}
@@ -308,6 +307,19 @@ function Profile() {
                         <>{texts.profile.editProfile}</>
                       </Button>
                     </EditProfileDialog>
+
+                    {/* Personalização do tema: fica no próprio perfil, que é onde a pessoa
+                        cuida da conta. As cores valem só neste dispositivo. */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full gap-1.5"
+                      onClick={() => setAppearanceOpen(true)}
+                    >
+                      <Palette className="h-4 w-4" />
+
+                      <>{texts.appearance.action}</>
+                    </Button>
 
                     {/* Sem identidade verificada a reputação é multiplicada por zero: o caminho para
                         resolver (confirmar e-mail ou ligar o 2FA) fica aqui, no próprio perfil. */}
@@ -604,6 +616,8 @@ function Profile() {
           onCropComplete={handleCropComplete}
         />
       )}
+
+      <AppearanceDialog open={appearanceOpen} onOpenChange={setAppearanceOpen} />
     </AppContainer>
   );
 }

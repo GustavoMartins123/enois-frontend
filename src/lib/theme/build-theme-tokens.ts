@@ -50,26 +50,61 @@ export function clampThemeSettings(settings: ThemeSettings): ThemeSettings {
   };
 }
 
+/** Compara duas configurações depois de normalizá-las. */
+export function sameThemeSettings(first: ThemeSettings, second: ThemeSettings): boolean {
+  const a = clampThemeSettings(first);
+  const b = clampThemeSettings(second);
+  return (
+    a.accent.hue === b.accent.hue &&
+    a.accent.chroma === b.accent.chroma &&
+    a.accent.lightness === b.accent.lightness &&
+    a.background.hue === b.background.hue &&
+    a.background.chroma === b.background.chroma
+  );
+}
+
 /** Sem personalização, o app usa o CSS de `src/styles.css` (visual atual intacto). */
 export function isDefaultThemeSettings(settings: ThemeSettings): boolean {
-  const current = clampThemeSettings(settings);
-  return (
-    current.accent.hue === DEFAULT_THEME_SETTINGS.accent.hue &&
-    current.accent.chroma === DEFAULT_THEME_SETTINGS.accent.chroma &&
-    current.accent.lightness === DEFAULT_THEME_SETTINGS.accent.lightness &&
-    current.background.hue === DEFAULT_THEME_SETTINGS.background.hue &&
-    current.background.chroma === DEFAULT_THEME_SETTINGS.background.chroma
-  );
+  return sameThemeSettings(settings, DEFAULT_THEME_SETTINGS);
 }
 
 /** No escuro o destaque sobe de brilho para continuar legível sobre o fundo escuro. */
 function accentForMode(accent: ThemeAccent, mode: Theme): ThemeAccent {
   if (mode === "light") return accent;
 
-  return {
-    ...accent,
-    lightness: clamp(accent.lightness + THEME_LIMITS.darkAccentLift, 0.58, 0.8),
-  };
+  const { min, max } = THEME_LIMITS.darkAccentLightness;
+  return { ...accent, lightness: clamp(accent.lightness + THEME_LIMITS.darkAccentLift, min, max) };
+}
+
+/**
+ * O brilho que garante o texto do botão legível.
+ *
+ * Existe uma faixa de luminância média em que NENHUM texto (nem claro nem escuro)
+ * atinge o contraste mínimo da WCAG — é uma propriedade da norma, não um bug. Escolher
+ * o brilho livremente cairia nela, então o valor é empurrado para o lado mais próximo
+ * que passa, mudando o mínimo possível.
+ */
+function fitAccentLightness(lightness: number, chroma: number, hue: number): number {
+  const contrastAt = (value: number) =>
+    readableForeground(oklchToRgb(value, chroma, hue), hue).ratio;
+
+  if (contrastAt(lightness) >= THEME_LIMITS.contrastTarget) return lightness;
+
+  for (let step = 0.01; step <= 0.4; step += 0.01) {
+    const darker = clamp(lightness - step, 0.05, 0.95);
+    if (contrastAt(darker) >= THEME_LIMITS.contrastTarget) return darker;
+
+    const lighter = clamp(lightness + step, 0.05, 0.95);
+    if (contrastAt(lighter) >= THEME_LIMITS.contrastTarget) return lighter;
+  }
+
+  return lightness;
+}
+
+/** Brilho efetivamente aplicado ao destaque, já corrigido para ser legível. */
+function effectiveAccentLightness(accent: ThemeAccent, mode: Theme): number {
+  const { lightness } = accentForMode(accent, mode);
+  return fitAccentLightness(lightness, accent.chroma, accent.hue);
 }
 
 /** Tingimento do fundo: no escuro a intensidade precisa ser um pouco maior para aparecer. */
@@ -81,7 +116,7 @@ function surfaceChroma(chroma: number, mode: Theme, extra = 0): number {
 export function buildThemeTokens(settings: ThemeSettings, mode: Theme): ThemeTokenMap {
   const { accent, background } = clampThemeSettings(settings);
   const { hue } = accent;
-  const lightness = accentForMode(accent, mode).lightness;
+  const lightness = effectiveAccentLightness(accent, mode);
   const chroma = accent.chroma;
   const surfaceHue = background.hue;
   const surface = (extraC: number, lightnessValue: number, hueShift = 0) =>
@@ -172,14 +207,13 @@ export function buildThemeCss(settings: ThemeSettings, mode: Theme): string {
 /** Cor da barra do navegador/instalação — acompanha o destaque escolhido. */
 export function buildThemeColor(settings: ThemeSettings, mode: Theme): string {
   const { accent } = clampThemeSettings(settings);
-  const lightness = accentForMode(accent, mode).lightness;
-  return oklchToHex(lightness, accent.chroma, accent.hue);
+  return oklchToHex(effectiveAccentLightness(accent, mode), accent.chroma, accent.hue);
 }
 
 /** Mede os pares que decidem se o tema é legível e devolve o pior deles. */
 export function reportThemeContrast(settings: ThemeSettings, mode: Theme): ThemeContrastReport {
   const { accent } = clampThemeSettings(settings);
-  const lightness = accentForMode(accent, mode).lightness;
+  const lightness = effectiveAccentLightness(accent, mode);
   const fixed = FIXED_THEME_COLORS[mode];
 
   const primary = oklchToRgb(lightness, accent.chroma, accent.hue);
