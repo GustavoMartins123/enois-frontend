@@ -1,6 +1,6 @@
-import { type ChangeEvent, type FormEvent, useRef, useState } from "react";
+import {type ChangeEvent, type FormEvent, useCallback, useRef, useState} from "react";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
@@ -29,6 +29,7 @@ import { useMediaUpload } from "@/lib/use-media-upload";
 import { Button } from "@/components/ui/button";
 
 import { AppContainer } from "@/components/app-container";
+import { InfiniteScroll } from "@/components/infinite-scroll";
 import { MentionTextarea } from "@/components/mention-textarea";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
@@ -47,10 +48,15 @@ export const Route = createFileRoute("/feed")({
   component: Home,
 });
 
+const FEED_PAGE_SIZE = 20;
+
 function useFeed(tab: FeedTab) {
-  return useQuery({
+  // Pagina por cursor: o backend devolve nextCursor e o scroll infinito busca a proxima pagina.
+  return useInfiniteQuery({
     queryKey: ["feed", tab],
-    queryFn: () => feedApi.list(null, 20, tab),
+    queryFn: ({ pageParam }) => feedApi.list(pageParam ?? null, FEED_PAGE_SIZE, tab),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
 }
 
@@ -78,7 +84,13 @@ function useEvents() {
 function Home() {
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<FeedTab>("FOR_YOU");
-  const { data: feedData, isFetching: feedLoading } = useFeed(tab);
+  const {
+    data: feedData,
+    isFetching: feedLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useFeed(tab);
   const { data: profile } = useProfile();
   const { data: suggestions } = useSuggestions();
   const { data: eventsData } = useEvents();
@@ -151,7 +163,13 @@ function Home() {
 
   const mediaType = media.length > 0 ? (media[0].type === "image" ? "image" : "video") : null;
 
-  const feedPosts = feedData?.items ?? [];
+  const feedPosts = feedData?.pages.flatMap((page) => page.items) ?? [];
+
+  const loadNextPage = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
   const profileUser = profile;
   const suggestionList = suggestions ?? [];
   const eventList = eventsData?.items ?? [];
@@ -349,6 +367,20 @@ function Home() {
               </div>
             )}
             {!feedLoading && feedPosts.map((p) => <PostCard key={p.id} post={p} />)}
+
+            {!feedLoading && feedPosts.length === 0 && (
+              <p className="py-8 text-center text-[13px] font-light text-text-subtle">
+                {texts.feed.empty}
+              </p>
+            )}
+
+            <InfiniteScroll
+              hasMore={Boolean(hasNextPage)}
+              loading={isFetchingNextPage}
+              onLoadMore={loadNextPage}
+              loadingLabel={texts.feed.loadingMore}
+              endLabel={feedPosts.length > 0 ? texts.feed.endOfFeed : undefined}
+            />
           </div>
         </div>
 

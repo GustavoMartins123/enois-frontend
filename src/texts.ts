@@ -376,6 +376,10 @@ export const texts = {
       description: "Seu feed de insights, perguntas e projetos da comunidade profissional.",
     },
     you: "Você",
+    loadingMore: "Carregando mais publicações...",
+    endOfFeed: "Você chegou ao fim do feed.",
+    loadMore: "Carregar mais",
+    empty: "Nada por aqui ainda. Publicações da sua rede aparecem neste feed.",
     composer: {
       placeholder: "Compartilhe algo que aprendeu hoje...",
       types: {
