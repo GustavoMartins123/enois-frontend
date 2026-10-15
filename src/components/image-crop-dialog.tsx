@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { texts } from "@/texts";
 import type { ImageCropDialogProps } from "@/types/components/image-crop-dialog/image-crop-dialog-props";
@@ -58,6 +58,22 @@ export function ImageCropDialog({
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [saving, setSaving] = useState(false);
+  const [imageState, setImageState] = useState<"loading" | "ready" | "error">("loading");
+
+  // Confere se o navegador consegue abrir a imagem antes de mostrar o recorte: formato que ele nao
+  // decodifica (HEIC do iPhone, arquivo corrompido) deixaria a area vazia sem explicar nada.
+  useEffect(() => {
+    setImageState("loading");
+    setCroppedAreaPixels(null);
+    const probe = new Image();
+    probe.onload = () => setImageState("ready");
+    probe.onerror = () => setImageState("error");
+    probe.src = imageSrc;
+    return () => {
+      probe.onload = null;
+      probe.onerror = null;
+    };
+  }, [imageSrc]);
 
   const onCropChange = useCallback((location: Point) => setCrop(location), []);
   const onZoomChange = useCallback((z: number) => setZoom(z), []);
@@ -74,7 +90,8 @@ export function ImageCropDialog({
       await onCropComplete(blob);
       onOpenChange(false);
     } catch {
-      // silently fail
+      // Falha ao gerar o recorte (imagem ilegivel, canvas bloqueado): avisa em vez de fechar calado.
+      setImageState("error");
     } finally {
       setSaving(false);
     }
@@ -88,28 +105,37 @@ export function ImageCropDialog({
         </DialogHeader>
 
         <div className="relative h-80 w-full overflow-hidden rounded-xl bg-muted">
-          <Cropper
-            image={imageSrc}
-            crop={crop}
-            zoom={zoom}
-            aspect={aspect}
-            onCropChange={onCropChange}
-            onZoomChange={onZoomChange}
-            onCropComplete={onCropAreaChange}
-          />
+          {imageState === "ready" ? (
+            <Cropper
+              image={imageSrc}
+              crop={crop}
+              zoom={zoom}
+              aspect={aspect}
+              onCropChange={onCropChange}
+              onZoomChange={onZoomChange}
+              onCropComplete={onCropAreaChange}
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center px-6 text-center text-[13px] text-muted-foreground">
+              {imageState === "loading" ? texts.profile.cropLoading : texts.profile.cropUnsupported}
+            </div>
+          )}
         </div>
 
-        <div className="flex items-center gap-3">
-          <input
-            type="range"
-            min={1}
-            max={3}
-            step={0.1}
-            value={zoom}
-            onChange={(e) => setZoom(Number(e.target.value))}
-            className="flex-1"
-          />
-        </div>
+        {imageState === "ready" && (
+          <div className="flex items-center gap-3">
+            <input
+              type="range"
+              min={1}
+              max={3}
+              step={0.1}
+              value={zoom}
+              onChange={(e) => setZoom(Number(e.target.value))}
+              className="flex-1"
+              aria-label={texts.profile.cropZoom}
+            />
+          </div>
+        )}
 
         <div className="flex gap-2">
           <Button
@@ -122,7 +148,7 @@ export function ImageCropDialog({
 
           <Button
             className="flex-1 rounded-full"
-            disabled={saving || !croppedAreaPixels}
+            disabled={saving || !croppedAreaPixels || imageState !== "ready"}
             onClick={handleSave}
           >
             {saving ? texts.common.saving : texts.common.save}

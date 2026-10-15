@@ -5,6 +5,8 @@ export type TwoFactorStatus = {
   emailVerified: boolean;
   totpEnabled: boolean;
   emailOtpEnabled: boolean;
+  /** Segundo fator garantido pelo provedor (Google/Apple) — veio do vínculo, não foi ativado aqui. */
+  providerSecondFactor: boolean;
   twoFactorEnabled: boolean;
   identityVerified: boolean;
   backupCodesLeft: number;

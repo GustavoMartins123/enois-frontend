@@ -123,6 +123,11 @@ le `process.env.IMAGEKIT_PRIVATE_KEY`).
   inclusive `current_user`) e vai para o feed. Esse tratamento vive **so** aqui: antes havia um
   handler global em `__root.tsx` que disparava em qualquer URL com `?token=` e sequestrava o link de
   redefinicao de senha para o feed.
+- **Edição de foto e capa**: o botão de trocar aparece sempre no próprio perfil (antes só no *hover*, o que
+  deixava a edição impossível no toque); o input de arquivo é limpo depois da escolha, então escolher a
+  **mesma** imagem duas vezes volta a abrir o recorte (o navegador não dispara `change` para o mesmo
+  arquivo); e o recorte avisa quando o navegador não consegue abrir a imagem (HEIC do iPhone, arquivo
+  corrompido) em vez de mostrar a área vazia.
 - `/seguranca` — segurança da conta: estado da verificação (conta verificada × reputação zerada),
   reenvio do link de e-mail, ativação do 2FA por aplicativo authenticator (chave + URI otpauth para digitar
   no app, confirmação por código e códigos de recuperação mostrados uma vez) e ativação do 2FA por código de

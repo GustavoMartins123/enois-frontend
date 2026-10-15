@@ -238,6 +238,9 @@ export const texts = {
       totpBackupDescription:
         "Use um deles se perder o acesso ao aplicativo. Cada código vale uma vez e não serão mostrados de novo.",
       totpDone: "Entendi, guardei meus códigos",
+      providerSection: "Segundo fator pelo provedor",
+      providerActive:
+        "Sua conta entra por Google/Apple, que confirma o e-mail e responde pela segunda etapa. É por isso que a conta já consta como verificada.",
       email2faSection: "Código por e-mail",
       email2faActive: "Ativo: a cada login enviamos um código para o seu e-mail.",
       email2faInactive: "Receba um código de 6 dígitos por e-mail em cada login.",
@@ -672,6 +675,10 @@ export const texts = {
     recommendPlaceholder: "Descreva como conhece este profissional...",
     sendRecommendation: "Enviar recomendação",
     userFallback: "Usuário",
+    cropLoading: "Carregando a imagem...",
+    cropUnsupported:
+      "Não foi possível abrir esta imagem. Use JPG, PNG ou WebP (fotos HEIC do iPhone precisam ser convertidas).",
+    cropZoom: "Zoom do recorte",
     cropAvatar: "Ajustar foto de perfil",
     cropCover: "Ajustar foto de capa",
     avatarFallback: "Avatar",

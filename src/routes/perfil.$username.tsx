@@ -106,8 +106,6 @@ function Profile() {
   const bannerUpload = useMediaUpload();
   const avatarRef = useRef<HTMLInputElement>(null);
   const bannerRef = useRef<HTMLInputElement>(null);
-  const [hoveringAvatar, setHoveringAvatar] = useState(false);
-  const [hoveringBanner, setHoveringBanner] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [cropPurpose, setCropPurpose] = useState<ProfileCropPurpose | null>(null);
   const [recommendOpen, setRecommendOpen] = useState(false);
@@ -185,20 +183,22 @@ function Profile() {
     },
   });
 
-  const handleAvatarUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  // Limpar o input e essencial: o navegador nao dispara `change` quando o usuario escolhe o MESMO
+  // arquivo duas vezes, e a impressao que fica e "a imagem nao carrega".
+  const openCrop = (input: HTMLInputElement, purpose: "AVATAR" | "BANNER") => {
+    const file = input.files?.[0];
+    input.value = "";
     if (!file) return;
-    const src = URL.createObjectURL(file);
-    setCropImageSrc(src);
-    setCropPurpose("AVATAR");
+    setCropImageSrc(URL.createObjectURL(file));
+    setCropPurpose(purpose);
   };
 
-  const handleBannerUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const src = URL.createObjectURL(file);
-    setCropImageSrc(src);
-    setCropPurpose("BANNER");
+  const handleAvatarUpload = (event: ChangeEvent<HTMLInputElement>) => {
+    openCrop(event.target, "AVATAR");
+  };
+
+  const handleBannerUpload = (event: ChangeEvent<HTMLInputElement>) => {
+    openCrop(event.target, "BANNER");
   };
 
   const handleCropComplete = useCallback(
@@ -228,9 +228,7 @@ function Profile() {
       <div className="space-y-6">
         <div className="rounded-2xl border border-border-soft bg-surface-card overflow-hidden">
           <div
-            className="relative"
-            onMouseEnter={() => setHoveringBanner(true)}
-            onMouseLeave={() => setHoveringBanner(false)}
+            className="group relative"
           >
             {user.banner ? (
               <img
@@ -244,11 +242,11 @@ function Profile() {
                 style={{ background: "var(--gradient-primary)" }}
               />
             )}
-            {isOwnProfile && hoveringBanner && (
+            {isOwnProfile && (
               <button
                 type="button"
                 onClick={() => bannerRef.current?.click()}
-                className="absolute inset-0 flex items-center justify-center bg-black/30 text-white transition"
+                className="absolute inset-0 flex items-center justify-center bg-black/30 text-white transition md:opacity-0 md:group-hover:opacity-100"
                 disabled={bannerUpload.status === "uploading"}
               >
                 {bannerUpload.status === "uploading" ? (
@@ -270,20 +268,18 @@ function Profile() {
           <div className="px-4 pb-5 sm:px-6 sm:pb-6">
             <div className="-mt-12 flex flex-wrap items-end justify-between gap-3 sm:-mt-14 sm:gap-4">
               <div
-                className="relative"
-                onMouseEnter={() => setHoveringAvatar(true)}
-                onMouseLeave={() => setHoveringAvatar(false)}
+                className="group relative"
               >
                 <UserAvatar
                   src={resolveCdnUrl(user.avatar)}
                   alt={user.name}
                   className="h-24 w-24 ring-4 ring-surface-card sm:h-28 sm:w-28"
                 />
-                {isOwnProfile && hoveringAvatar && (
+                {isOwnProfile && (
                   <button
                     type="button"
                     onClick={() => avatarRef.current?.click()}
-                    className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30 text-white transition"
+                    className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30 text-white transition md:opacity-0 md:group-hover:opacity-100"
                     disabled={avatarUpload.status === "uploading"}
                   >
                     {avatarUpload.status === "uploading" ? (

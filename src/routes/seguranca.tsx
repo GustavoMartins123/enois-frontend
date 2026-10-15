@@ -108,6 +108,16 @@ function Seguranca() {
               </div>
             </section>
 
+            {status.providerSecondFactor && (
+              <section className="surface-card space-y-2 p-4">
+                <h2 className="text-[15px] font-medium">{texts.auth.twoFactor.providerSection}</h2>
+
+                <p className="text-[13px] text-muted-foreground">
+                  {texts.auth.twoFactor.providerActive}
+                </p>
+              </section>
+            )}
+
             <EmailSection status={status} onError={handleError} onDone={refresh} />
 
             <TotpSection status={status} onError={handleError} onDone={refresh} />
