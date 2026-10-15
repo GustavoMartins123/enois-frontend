@@ -19,7 +19,11 @@ export const Route = createFileRoute("/post/$postId")({
 function PostDetail() {
   const { postId } = Route.useParams();
 
-  const { data: post, isLoading, isError } = useQuery({
+  const {
+    data: post,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ["post", postId],
     queryFn: () => feedApi.get(postId),
   });

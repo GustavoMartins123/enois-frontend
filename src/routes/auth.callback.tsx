@@ -33,7 +33,8 @@ function OAuthCallback() {
     localStorage.setItem("session_token", search.token);
     if (search.refreshToken) localStorage.setItem("refresh_token", search.refreshToken);
     if (search.expiresAt) localStorage.setItem("session_expires_at", search.expiresAt);
-    if (search.refreshExpiresAt) localStorage.setItem("refresh_expires_at", search.refreshExpiresAt);
+    if (search.refreshExpiresAt)
+      localStorage.setItem("refresh_expires_at", search.refreshExpiresAt);
     navigate({ to: "/feed", replace: true });
   }, [search, navigate]);
 
@@ -50,6 +51,7 @@ function OAuthCallback() {
         {error ? (
           <>
             <h1 className="mt-4 text-lg font-semibold tracking-tight">{error}</h1>
+
             <Button
               className="mt-6 w-full gap-2 rounded-full"
               onClick={() => navigate({ to: "/entrar", search: { tab: "login" } })}
@@ -60,6 +62,7 @@ function OAuthCallback() {
         ) : (
           <>
             <Loader2 className="mt-4 h-6 w-6 animate-spin text-primary" />
+
             <p className="mt-2 text-sm text-muted-foreground">
               {texts.auth.social.callbackLoading}
             </p>
