@@ -15,6 +15,7 @@ export function NotificationItem({
   notification,
   onMarkAsRead,
   onAcceptConnection,
+  onNavigate,
 }: NotificationItemProps) {
   const navigate = useNavigate();
   const kind = notification.kind.toLowerCase();
@@ -29,6 +30,9 @@ export function NotificationItem({
   const handleNavigate = () => {
     markAsRead();
     navigateToHref(notification.href, navigate);
+    // Fecha o popover: aberto, ele cobria a pagina e dava a impressao de que o clique
+    // "sumia com a notificacao" sem levar ao destino.
+    onNavigate?.();
   };
 
   const handleAcceptConnection = () => {

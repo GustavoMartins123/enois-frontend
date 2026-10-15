@@ -16,6 +16,7 @@ import { NotificationItem } from "./notification-item";
 export function NotificationsPopover() {
   const queryClient = useQueryClient();
   const [notificationTab, setNotificationTab] = useState<NotificationTab>("novas");
+  const [open, setOpen] = useState(false);
 
   const { data: notificationsData } = useQuery({
     queryKey: ["notifications"],
@@ -50,7 +51,7 @@ export function NotificationsPopover() {
   );
 
   return (
-    <Popover>
+    <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
           className="relative grid h-10 w-10 place-items-center rounded-full text-text-subtle transition hover:bg-surface-2 hover:text-primary"
@@ -137,6 +138,7 @@ export function NotificationsPopover() {
                 notification={notification}
                 onMarkAsRead={(id) => markAsRead.mutate(id)}
                 onAcceptConnection={(actorId) => acceptConnection.mutate(actorId)}
+                onNavigate={() => setOpen(false)}
               />
             ))
           )}

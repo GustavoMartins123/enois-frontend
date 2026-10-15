@@ -88,7 +88,9 @@ function Home() {
   const [tab, setTab] = useState<FeedTab>("FOR_YOU");
   const {
     data: feedData,
-    isFetching: feedLoading,
+    // Somente a PRIMEIRA carga mostra o esqueleto. `isFetching` tambem fica true ao paginar, e
+    // como o feed trocava a lista inteira pelo LoadingState a cada pagina, a tela voltava ao topo.
+    isLoading: feedLoading,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
