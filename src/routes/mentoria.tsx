@@ -109,7 +109,7 @@ function Mentoria() {
 
           <p className="text-sm text-muted-foreground">{texts.mentoring.featuredDescription}</p>
 
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             {mentors.map((m) => (
               <MentorCard key={m.id} mentor={m} />
             ))}

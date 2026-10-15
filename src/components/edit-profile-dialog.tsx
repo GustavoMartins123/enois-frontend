@@ -213,7 +213,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                 />
               </Field>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <Field label={texts.profile.edit.fields.company}>
                   <Input
                     value={company}

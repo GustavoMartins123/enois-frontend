@@ -172,7 +172,7 @@ function Landing() {
             <p className="mt-4 text-muted-foreground">{texts.landing.philosophy.description}</p>
           </div>
 
-          <div className="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-14 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             {values.map((v) => (
               <div key={v.title} className="surface-card p-6 text-center">
                 <div className="mx-auto grid h-11 w-11 place-items-center rounded-xl bg-primary-soft text-primary">
@@ -209,7 +209,7 @@ function Landing() {
           <p className="mt-4 text-muted-foreground">{texts.landing.features.description}</p>
         </div>
 
-        <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-14 grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
             <div key={f.title} className="surface-card p-4 sm:p-6">
               <div className="grid h-10 w-10 place-items-center rounded-xl bg-primary-soft text-primary">

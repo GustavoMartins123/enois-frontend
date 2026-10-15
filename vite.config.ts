@@ -6,7 +6,10 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
-const BACKEND_TARGET = process.env.BACKEND_TARGET ?? "https://enois.ia.br/api";
+// Origem do backend (SEM path): o proxy abaixo recebe "/api/..." e encaminha o path completo.
+// Se BACKEND_TARGET tiver um path (ex.: ".../api"), o proxy concatena e a URL vira "/api/api/...",
+// que o gateway do backend não reconhece (404) — foi o que quebrava o dev local.
+const BACKEND_TARGET = process.env.BACKEND_TARGET ?? "https://enois.ia.br";
 const NITRO_PRESET = process.env.NITRO_PRESET ?? "vercel";
 
 export default defineConfig({

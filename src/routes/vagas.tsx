@@ -264,7 +264,7 @@ function Vagas() {
           </div>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {allJobs.map((j) => (
             <article key={j.id} className="surface-card flex flex-col p-5">
               <div className="flex items-start gap-3">
@@ -500,7 +500,7 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
               />
             </div>
 
-            <div className="grid gap-3 sm:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div className="space-y-1.5">
                 <Label className="text-[11px] font-light text-text-subtle">
                   {texts.jobs.fields.location}

@@ -147,9 +147,14 @@ function Comunidades() {
           ))}
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {allItems.map((c) => (
-            <Link key={c.id} to="/comunidades/$communityId" params={{ communityId: c.id }}>
+            <Link
+              key={c.id}
+              to="/comunidades/$communityId"
+              params={{ communityId: c.id }}
+              className="min-w-0"
+            >
               <article className="surface-card overflow-hidden cursor-pointer transition hover:shadow-[var(--shadow-card)]">
                 {c.cover ? (
                   <img src={resolveCdnUrl(c.cover)} alt="" className="h-32 w-full object-cover" />

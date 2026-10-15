@@ -384,7 +384,7 @@ function Profile() {
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-6">
             {user.bio && (
               <Section title={texts.profile.sections.about}>
@@ -411,7 +411,7 @@ function Profile() {
 
             {user.goals.length > 0 && (
               <Section title={texts.profile.sections.goals} icon={Target}>
-                <div className="grid gap-3 sm:grid-cols-3">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {user.goals.map((goal: string) => (
                     <div key={goal} className="rounded-xl border border-border-soft p-4">
                       <p className="break-words text-[13px] font-light text-text-strong">{goal}</p>

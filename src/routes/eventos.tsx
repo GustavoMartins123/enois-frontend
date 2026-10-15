@@ -89,7 +89,7 @@ function Eventos() {
           </Dialog>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {events.map((e) => {
             const formatLabel = texts.events.formats[e.format] ?? e.format;
             const Icon = e.format === "ONLINE" ? Video : MapPin;

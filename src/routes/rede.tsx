@@ -141,7 +141,7 @@ function Rede() {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {users.map((u) => (
               <article key={u.id} className="surface-card overflow-hidden text-center">
                 <div className="h-16" style={{ background: "var(--gradient-soft)" }} />

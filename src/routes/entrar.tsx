@@ -58,7 +58,7 @@ function Auth() {
   const [forgotOpen, setForgotOpen] = useState(false);
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
+    <div className="grid grid-cols-1 min-h-screen lg:grid-cols-2">
       {/* Brand side */}
       <aside
         className="relative hidden flex-col justify-between overflow-hidden p-10 text-primary-foreground lg:flex"
@@ -216,7 +216,7 @@ function SocialButtons() {
   };
 
   return (
-    <div className="grid gap-2">
+    <div className="grid grid-cols-1 gap-2">
       <button
         type="button"
         onClick={() => startOAuth("GOOGLE")}
