@@ -4,6 +4,11 @@ import { redirect } from "@tanstack/react-router";
  * Rotas que exigem sessao. Precisa espelhar o `beforeLoad: requireAuth` declarado nas rotas:
  * o guard de rota roda no SSR, onde nao existe localStorage, entao quem abre uma URL protegida
  * direto (deep link / aba restaurada) precisa ser barrado no cliente — ver o guard em __root.tsx.
+ *
+ * Ficam de fora, de proposito, as rotas que sao destino de link compartilhado: `/perfil/$username`
+ * e `/post/$postId`. Perfil e publicacao sao conteudo publico — quem recebe o link precisa abrir
+ * como visitante. As acoes que exigem conta (conectar, mensagem, reagir, comentar) ja passam por
+ * `requireAuth()` e mandam para o login.
  */
 const PROTECTED_ROUTES = [
   "/feed",
@@ -14,7 +19,6 @@ const PROTECTED_ROUTES = [
   "/comunidades",
   "/eventos",
   "/mentoria",
-  "/perfil",
   "/suporte",
   "/bloqueados",
   "/seguranca",
