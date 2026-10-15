@@ -1,6 +1,6 @@
 import { type FormEvent, useEffect, useRef, useState } from "react";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
@@ -44,23 +44,39 @@ function Mensagens() {
     if (conversation) setActiveId(conversation);
   }, [conversation]);
 
-  const { data: conversationsData } = useQuery({
+  // Paginado por cursor: a primeira pagina so traz as mais recentes — sem carregar as anteriores
+  // (muitas vindas de vaga) as conversas/mensagens antigas ficavam inalcancaveis.
+  const {
+    data: conversationsData,
+    fetchNextPage: fetchMoreConversations,
+    hasNextPage: hasMoreConversations,
+    isFetchingNextPage: isLoadingMoreConversations,
+  } = useInfiniteQuery({
     queryKey: ["conversations"],
-    queryFn: () => messagesApi.listConversations(),
+    queryFn: ({ pageParam }) => messagesApi.listConversations(pageParam),
+    initialPageParam: null as string | null,
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
     refetchInterval: 15_000,
   });
 
-  const conversations = conversationsData?.items ?? [];
+  const conversations = conversationsData?.pages.flatMap((page) => page.items) ?? [];
   const activeConversation = activeId ? conversations.find((c) => c.id === activeId) : null;
 
-  const { data: messagesData } = useQuery({
+  const {
+    data: messagesData,
+    fetchNextPage: fetchOlderMessages,
+    hasNextPage: hasOlderMessages,
+    isFetchingNextPage: isLoadingOlder,
+  } = useInfiniteQuery({
     queryKey: ["messages", activeConversation?.id],
-    queryFn: () => messagesApi.listMessages(activeConversation!.id),
+    queryFn: ({ pageParam }) => messagesApi.listMessages(activeConversation!.id, pageParam),
+    initialPageParam: null as string | null,
+    getNextPageParam: (last) => last.nextCursor ?? undefined,
     enabled: !!activeConversation,
     refetchInterval: 10_000,
   });
 
-  const messages = (messagesData?.items ?? []).sort(
+  const messages = (messagesData?.pages.flatMap((page) => page.items) ?? []).sort(
     (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
   );
 
@@ -114,9 +130,17 @@ function Mensagens() {
     enabled: !!otherParticipantId,
   });
 
+  // Rola para o fim quando chega mensagem nova — mas NAO quando o usuario carrega mensagens
+  // antigas (senao a lista salta para o fim e ele perde o ponto em que estava lendo).
+  const newestMessageId =
+    activeMessages.length > 0 ? activeMessages[activeMessages.length - 1].id : null;
+  const lastScrolledRef = useRef<string | null>(null);
+
   useEffect(() => {
+    if (!newestMessageId || lastScrolledRef.current === newestMessageId) return;
+    lastScrolledRef.current = newestMessageId;
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [activeMessages.length]);
+  }, [newestMessageId]);
 
   return (
     <AppContainer>
@@ -188,7 +212,7 @@ function Mensagens() {
             )}
           </div>
 
-          <ul className="flex-1 overflow-y-auto">
+          <ul className="flex-1 overflow-y-auto overscroll-contain">
             {conversations.length === 0 ? (
               <li className="p-4 text-center text-sm text-muted-foreground">
                 {texts.messages.noConversations}
@@ -206,6 +230,22 @@ function Mensagens() {
                 />
               ))
             )}
+
+            {hasMoreConversations && (
+              <li className="p-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full rounded-full text-xs"
+                  disabled={isLoadingMoreConversations}
+                  onClick={() => fetchMoreConversations()}
+                >
+                  {isLoadingMoreConversations
+                    ? texts.messages.loadingOlder
+                    : texts.messages.loadMoreConversations}
+                </Button>
+              </li>
+            )}
           </ul>
         </div>
 
@@ -221,7 +261,20 @@ function Mensagens() {
                 onBack={() => setActiveId(null)}
               />
 
-              <div className="flex-1 overflow-y-auto bg-muted/30 p-5">
+              <div className="flex-1 overflow-y-auto overscroll-contain bg-muted/30 p-5">
+                {hasOlderMessages && (
+                  <div className="mb-4 flex justify-center">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full text-xs"
+                      disabled={isLoadingOlder}
+                      onClick={() => fetchOlderMessages()}
+                    >
+                      {isLoadingOlder ? texts.messages.loadingOlder : texts.messages.loadOlderMessages}
+                    </Button>
+                  </div>
+                )}
                 <div className="space-y-3">
                   {activeMessages.length === 0 ? (
                     <p className="py-16 text-center text-sm text-muted-foreground">

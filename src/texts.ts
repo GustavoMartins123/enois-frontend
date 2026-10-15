@@ -1211,6 +1211,9 @@ export const texts = {
     noMessages: "Nenhuma mensagem ainda",
     inputPlaceholder: "Escreva uma mensagem...",
     conversationFallback: "Conversa",
+    loadMoreConversations: "Carregar conversas antigas",
+    loadOlderMessages: "Ver mensagens anteriores",
+    loadingOlder: "Carregando...",
   },
 
   support: {
