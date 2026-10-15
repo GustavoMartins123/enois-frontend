@@ -1,0 +1,117 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { Link, createFileRoute } from "@tanstack/react-router";
+
+import { texts } from "@/texts";
+import { Loader2, ShieldOff, Undo2 } from "lucide-react";
+
+import { networkApi } from "@/lib/api";
+import { requireAuth } from "@/lib/require-auth";
+
+import { Button } from "@/components/ui/button";
+
+import { AppContainer } from "@/components/app-container";
+import { UserAvatar } from "@/components/user-avatar";
+
+export const Route = createFileRoute("/bloqueados")({
+  head: () => ({ meta: [{ title: texts.profile.blockedSeoTitle }] }),
+  component: BlockedUsers,
+});
+
+function BlockedUsers() {
+  const queryClient = useQueryClient();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["blocked-users"],
+    queryFn: () => networkApi.blocked(),
+  });
+
+  const unblock = useMutation({
+    mutationFn: (userId: string) => networkApi.unblock(userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries();
+    },
+  });
+
+  const users = data ?? [];
+
+  return (
+    <AppContainer>
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-[22px] font-light tracking-tight text-text-strong">
+            {texts.profile.blockedTitle}
+          </h1>
+
+          <p className="mt-1 text-[13px] font-light text-text-subtle">
+            {texts.profile.blockedDescription}
+          </p>
+        </div>
+
+        {isLoading ? (
+          <div className="flex justify-center py-10 text-text-subtle">
+            <Loader2 className="h-5 w-5 animate-spin" />
+          </div>
+        ) : users.length === 0 ? (
+          <p className="rounded-2xl border border-border-soft bg-surface-card px-4 py-6 text-center text-[13px] font-light text-text-subtle">
+            {texts.profile.blockedEmpty}
+          </p>
+        ) : (
+          <ul className="divide-y divide-border-soft overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
+            {users.map((user) => (
+              <li key={user.userId} className="flex items-center gap-3 px-4 py-3">
+                <UserAvatar
+                  src={user.avatar}
+                  alt={user.name ?? texts.profile.avatarFallback}
+                  className="h-10 w-10 shrink-0"
+                />
+
+                <div className="min-w-0 flex-1">
+                  {user.username ? (
+                    <Link
+                      to="/perfil/$username"
+                      params={{ username: user.username }}
+                      className="truncate text-[14px] font-light text-text-strong hover:underline"
+                    >
+                      {user.name ?? user.username}
+                    </Link>
+                  ) : (
+                    <span className="truncate text-[14px] font-light text-text-strong">
+                      {user.name ?? texts.profile.avatarUnknown}
+                    </span>
+                  )}
+
+                  <p className="text-[11px] font-light text-text-subtle">
+                    {texts.profile.blockedSince(user.blockedAt)}
+                  </p>
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 rounded-full gap-1.5"
+                  disabled={unblock.isPending}
+                  onClick={() => {
+                    // Sem sessão o requireAuth joga para o login e o desbloqueio não acontece.
+                    requireAuth();
+                    unblock.mutate(user.userId);
+                  }}
+                >
+                  <Undo2 className="h-4 w-4" />
+
+                  <>{texts.profile.unblockUser}</>
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <p className="flex items-center gap-2 text-[12px] font-light text-text-subtle">
+          <ShieldOff className="h-4 w-4 shrink-0" />
+
+          <>{texts.profile.blockedHint}</>
+        </p>
+      </div>
+    </AppContainer>
+  );
+}

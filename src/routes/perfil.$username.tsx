@@ -16,6 +16,7 @@ import {
   MapPin,
   MessageCircle,
   Settings,
+  ShieldOff,
   Star,
   Target,
   ThumbsUp,
@@ -45,6 +46,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
+import { BlockUserDialog } from "@/components/block-user-dialog";
 import { EditProfileDialog } from "@/components/edit-profile-dialog";
 import { ImageCropDialog } from "@/components/image-crop-dialog";
 import { PostCard } from "@/components/post-card";
@@ -124,6 +126,7 @@ function Profile() {
   });
 
   const connectionStatus = connectionData?.status ?? null;
+  const blocked = connectionData?.blocked ?? false;
 
   const updateProfile = useMutation({
     mutationFn: (data: Pick<UpdateProfileRequest, "avatar" | "banner">) => profileApi.update(data),
@@ -332,9 +335,26 @@ function Profile() {
                           ? texts.profile.connected
                           : texts.profile.connect}
                     </Button>
+
+                    <BlockUserDialog
+                      userId={user.id}
+                      name={user.name}
+                      blocked={blocked}
+                      onDone={() =>
+                        queryClient.invalidateQueries({ queryKey: ["connection-status", user.id] })
+                      }
+                    />
                   </>
                 )}
               </div>
+
+              {blocked && (
+                <p className="mt-3 flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-[12px] font-light text-text-subtle">
+                  <ShieldOff className="h-4 w-4 shrink-0" />
+
+                  <>{texts.profile.blockedBadge}</>
+                </p>
+              )}
             </div>
 
             <div className="mt-4">

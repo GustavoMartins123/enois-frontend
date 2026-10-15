@@ -17,6 +17,7 @@ const PROTECTED_ROUTES = [
   "/perfil",
   "/post",
   "/suporte",
+  "/bloqueados",
 ];
 
 export function hasSession(): boolean {

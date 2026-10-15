@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { NotificationItemProps } from "@/types/components/notification/notification-item-props";
@@ -6,6 +6,8 @@ import { navigateToHref } from "@/utils/navigation";
 import { formatNotificationTime } from "@/utils/notification-time";
 
 import { cn } from "@/lib/utils";
+
+import { UserAvatar } from "@/components/user-avatar";
 
 import { notificationMeta } from "./notification-meta";
 
@@ -36,6 +38,42 @@ export function NotificationItem({
     onAcceptConnection(notification.actorId);
   };
 
+  // UserAvatar resolve o caminho do CDN: com <img> cru a foto do usuario nao carregava.
+  const avatar = (
+    <UserAvatar
+      src={notification.actorAvatar}
+      alt={notification.actorName ?? ""}
+      className="h-9 w-9"
+      fallbackClassName={cn("grid h-9 w-9 place-items-center rounded-full", meta.className)}
+    />
+  );
+
+  const actorProfile = notification.actorUsername ? (
+    <Link
+      to="/perfil/$username"
+      params={{ username: notification.actorUsername }}
+      onClick={markAsRead}
+      className="shrink-0 rounded-full transition hover:opacity-80"
+      aria-label={texts.notifications.openActorProfile(notification.actorName ?? "")}
+    >
+      {avatar}
+    </Link>
+  ) : (
+    <button
+      type="button"
+      onClick={handleNavigate}
+      className="shrink-0 rounded-full transition hover:opacity-80"
+    >
+      {notification.actorAvatar ? (
+        avatar
+      ) : (
+        <span className={cn("grid h-9 w-9 place-items-center rounded-full", meta.className)}>
+          <Icon className="h-4 w-4" />
+        </span>
+      )}
+    </button>
+  );
+
   return (
     <div
       className={cn(
@@ -44,28 +82,24 @@ export function NotificationItem({
       )}
     >
       <div className="flex items-start gap-3">
-        <button
-          type="button"
-          onClick={handleNavigate}
-          className="shrink-0 rounded-full transition hover:opacity-80"
-        >
-          {notification.actorAvatar ? (
-            <img
-              src={notification.actorAvatar}
-              alt={notification.actorName ?? ""}
-              className="h-9 w-9 rounded-full object-cover"
-            />
-          ) : (
-            <span className={cn("grid h-9 w-9 place-items-center rounded-full", meta.className)}>
-              <Icon className="h-4 w-4" />
-            </span>
-          )}
-        </button>
+        {actorProfile}
 
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
             <p className="text-[13px] font-light leading-tight text-text-strong">
-              {notification.actorName && <span>{notification.actorName} </span>}
+              {notification.actorName &&
+                (notification.actorUsername ? (
+                  <Link
+                    to="/perfil/$username"
+                    params={{ username: notification.actorUsername }}
+                    onClick={markAsRead}
+                    className="font-medium hover:underline"
+                  >
+                    {notification.actorName}{" "}
+                  </Link>
+                ) : (
+                  <span className="font-medium">{notification.actorName} </span>
+                ))}
               <span className="text-text-subtle">{notification.title.toLowerCase()}</span>
             </p>
             {!notification.read && (
@@ -73,9 +107,13 @@ export function NotificationItem({
             )}
           </div>
 
-          <p className="mt-1 break-words text-[13px] font-light leading-snug text-text-subtle">
+          <button
+            type="button"
+            onClick={handleNavigate}
+            className="mt-1 block w-full break-words text-left text-[13px] font-light leading-snug text-text-subtle transition hover:text-text-strong"
+          >
             {notification.body}
-          </p>
+          </button>
 
           <div className="mt-3 flex items-center justify-between gap-2">
             <span className="text-[11px] font-light text-text-subtle">

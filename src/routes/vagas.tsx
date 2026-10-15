@@ -29,9 +29,12 @@ import {
 } from "lucide-react";
 
 import { jobsApi, reportsApi } from "@/lib/api";
+import { CURRENCIES, currencySymbol, formatSalary } from "@/lib/currency";
+import type { CurrencyCode } from "@/lib/currency";
 import { useCurrentUser } from "@/lib/current-user";
 import { canCreateJob, missingReputationToCreateJob } from "@/lib/job-permissions";
 import { requireAuth } from "@/lib/require-auth";
+import { cn } from "@/lib/utils";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -317,9 +320,9 @@ function Vagas() {
                 <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
                   {j.level}
                 </span>
-                {j.salary && (
+                {formatSalary(j.salary, j.currency) && (
                   <span className="rounded-full bg-growth/15 px-2.5 py-1 font-medium text-growth">
-                    {j.salary}
+                    {formatSalary(j.salary, j.currency)}
                   </span>
                 )}
               </div>
@@ -418,8 +421,10 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
   const [type, setType] = useState<string>(JOB_TYPES[0]);
   const [level, setLevel] = useState<string>(JOB_LEVELS[0]);
   const [salary, setSalary] = useState("");
+  const [currency, setCurrency] = useState<CurrencyCode>("BRL");
   const [skills, setSkills] = useState("");
   const [description, setDescription] = useState("");
+  const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const create = useMutation({
@@ -438,8 +443,10 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
     setType(JOB_TYPES[0]);
     setLevel(JOB_LEVELS[0]);
     setSalary("");
+    setCurrency("BRL");
     setSkills("");
     setDescription("");
+    setAgreed(false);
     setError(null);
   };
 
@@ -452,15 +459,17 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
       type,
       level,
       salary: salary.trim() || undefined,
+      currency,
       skills: skills
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean),
       description: description.trim() || undefined,
+      communityAgreement: agreed,
     });
   };
 
-  const valid = title.trim() !== "" && company.trim() !== "";
+  const valid = title.trim() !== "" && company.trim() !== "" && agreed;
 
   return (
     <Dialog
@@ -474,7 +483,9 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
         <DialogHeader>
           <DialogTitle className="font-light">{texts.jobs.createJobTitle}</DialogTitle>
 
-          <DialogDescription>{texts.jobs.createJobDescription}</DialogDescription>
+          <DialogDescription>
+            {texts.jobs.createJobDescription} {texts.jobs.gate.community}
+          </DialogDescription>
         </DialogHeader>
 
         {!canPublish ? (
@@ -493,6 +504,8 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
                 <p className="mt-1">
                   {texts.jobs.gate.missing(missingReputationToCreateJob(reputation))}
                 </p>
+
+                <p className="mt-1">{texts.jobs.gate.community}</p>
               </div>
             </div>
           </div>
@@ -585,12 +598,31 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
                 {texts.jobs.fields.salary}
               </Label>
 
-              <Input
-                value={salary}
-                onChange={(e) => setSalary(e.target.value)}
-                placeholder={texts.jobs.fields.salaryPlaceholder}
-                className="bg-muted"
-              />
+              <div className="flex gap-2">
+                <select
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
+                  className={cn(SELECT_CLASS, "w-32 shrink-0")}
+                  aria-label={texts.jobs.fields.currency}
+                >
+                  {CURRENCIES.map((c) => (
+                    <option key={c.code} value={c.code}>
+                      {c.label}
+                    </option>
+                  ))}
+                </select>
+
+                <Input
+                  value={salary}
+                  onChange={(e) => setSalary(e.target.value)}
+                  placeholder={texts.jobs.fields.salaryPlaceholder}
+                  className="bg-muted"
+                />
+              </div>
+
+              <p className="text-[11px] font-light text-text-subtle">
+                {texts.jobs.fields.salaryHint(currencySymbol(currency))}
+              </p>
             </div>
 
             <div className="space-y-1.5">
@@ -619,6 +651,17 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
                 className="bg-muted"
               />
             </div>
+
+            <label className="flex items-start gap-2 rounded-lg bg-muted p-3 text-[12px] font-light text-text-subtle">
+              <input
+                type="checkbox"
+                checked={agreed}
+                onChange={(e) => setAgreed(e.target.checked)}
+                className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+              />
+
+              <span>{texts.jobs.communityAgreement}</span>
+            </label>
 
             {error && (
               <p className="text-sm text-destructive" role="alert">

@@ -81,6 +81,7 @@ export const texts = {
     accept: "Aceitar",
     unreadLabel: (count: number) =>
       `${count} ${count === 1 ? "notificação não lida" : "notificações não lidas"}`,
+    openActorProfile: (name: string) => `Abrir o perfil de ${name || "quem interagiu"}`,
   },
 
   errors: {
@@ -205,6 +206,7 @@ export const texts = {
       changeEmail: "Alterar e-mail",
       changePassword: "Trocar senha",
       support: "Ajuda e suporte",
+      blockedUsers: "Usuários bloqueados",
       deleteAccount: "Excluir conta",
       logout: "Sair",
       loggingOut: "Saindo...",
@@ -469,6 +471,7 @@ export const texts = {
       cancelReply: "Cancelar resposta",
       title: "Comentários",
       count: (count: number) => `${count} comentário${count === 1 ? "" : "s"}`,
+      viewProfile: (name: string) => `Abrir o perfil de ${name}`,
     },
     video: {
       watchOn: (provider: string) => `Clique para assistir no ${provider}`,
@@ -500,6 +503,25 @@ export const texts = {
     waitingResponse: "Aguardando resposta",
     connected: "Conectado",
     connect: "Conectar",
+    blockUser: "Bloquear",
+    unblockUser: "Desbloquear",
+    blockTitle: (name: string) => `Bloquear ${name}?`,
+    blockDescription:
+      "A pessoa some para você: os posts, comentários e notificações dela deixam de aparecer, e a conexão é desfeita. Ela não é avisada. Isso vale para sempre, até você desbloquear.",
+    unblockTitle: (name: string) => `Desbloquear ${name}?`,
+    unblockDescription:
+      "O conteúdo dela volta a aparecer para você. Nada é restaurado automaticamente além disso (a conexão precisa ser refeita).",
+    blockError: "Não foi possível concluir. Tente novamente.",
+    blockedBadge: "Você bloqueou esta pessoa. O conteúdo dela está escondido.",
+    blockedTitle: "Usuários bloqueados",
+    blockedSeoTitle: "Usuários bloqueados · Énóis",
+    blockedDescription:
+      "Estas pessoas estão escondidas para você: os posts, comentários e notificações delas não aparecem em lugar nenhum do app.",
+    blockedEmpty: "Você não bloqueou ninguém.",
+    blockedHint:
+      "O bloqueio vale para sempre e os dois lados deixam de se ver. Desbloqueie aqui quando quiser.",
+    blockedSince: (date: string | null) =>
+      date ? `Bloqueado em ${new Date(date).toLocaleDateString("pt-BR")}` : "Bloqueado",
     openToWork: "Aberto a oportunidades",
     mentorAvailable: "Mentor disponível",
     connections: (count: number) => `${count} ${count === 1 ? "conexão" : "conexões"}`,
@@ -726,10 +748,15 @@ export const texts = {
     gate: {
       title: "Publicação liberada por reputação",
       requirement: (min: number) =>
-        `É preciso ter pelo menos ${min} de reputação para publicar vagas.`,
+        `É preciso ter mais de ${min} de reputação para publicar vagas.`,
       missing: (missing: number) => `Faltam ${missing} de reputação para desbloquear.`,
       current: (value: number) => `Sua reputação atual: ${value}.`,
+      community:
+        "A vaga também precisa estar de acordo com as regras da comunidade: nada de vaga falsa, golpe ou empresa que não confere. Denúncia confirmada derruba sua reputação.",
     },
+    /** Só publica quem se declarar de acordo — a declaração fica registrada com data. */
+    communityAgreement:
+      "Declaro que esta vaga é real e que ela está de acordo com as regras da comunidade. Denúncia confirmada de vaga falsa reduz de forma progressiva a minha reputação.",
     fields: {
       title: "Título da vaga",
       titlePlaceholder: "Ex.: Pessoa Desenvolvedora Back-end",
@@ -739,7 +766,11 @@ export const texts = {
       type: "Tipo",
       level: "Nível",
       salary: "Faixa salarial (opcional)",
-      salaryPlaceholder: "Ex.: R$ 8.000 – R$ 12.000",
+      salaryPlaceholder: "Ex.: 8.000 – 12.000",
+      currency: "Moeda",
+      salaryHint: (symbol: string) =>
+        `Informe só os números: a vaga aparece como "${symbol} 8.000 – ${symbol} 12.000".`,
+      currencyRequired: "Escolha a moeda da faixa salarial.",
       skills: "Habilidades (separadas por vírgula)",
       skillsPlaceholder: "Java, Spring, AWS",
       description: "Descrição (opcional)",

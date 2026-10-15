@@ -7,6 +7,8 @@ export type Job = {
   type: string;
   level: string;
   salary: string | null;
+  /** Moeda da faixa salarial: BRL, USD ou EUR. */
+  currency: string | null;
   skills: string[];
   postedAt: string;
   matchScore: number | null;

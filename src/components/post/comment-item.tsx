@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { Link } from "@tanstack/react-router";
+
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
@@ -64,18 +66,42 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
     }
   };
 
+  // Nome e foto levam ao perfil de quem comentou (quando o perfil existe).
+  const profileLink = comment.authorUsername ? (
+    <Link
+      to="/perfil/$username"
+      params={{ username: comment.authorUsername }}
+      className="text-[12px] font-medium text-text-strong hover:underline"
+    >
+      {comment.authorName}
+    </Link>
+  ) : (
+    <span className="text-[12px] font-medium text-text-strong">{comment.authorName}</span>
+  );
+
+  const avatar = (
+    <UserAvatar src={comment.authorAvatar} alt={comment.authorName} className="h-8 w-8 shrink-0" />
+  );
+
   return (
     <div className="flex gap-2.5">
-      <UserAvatar
-        src={comment.authorAvatar}
-        alt={comment.authorName}
-        className="h-8 w-8 shrink-0"
-      />
+      {comment.authorUsername ? (
+        <Link
+          to="/perfil/$username"
+          params={{ username: comment.authorUsername }}
+          className="shrink-0 transition hover:opacity-80"
+          aria-label={texts.posts.comments.viewProfile(comment.authorName)}
+        >
+          {avatar}
+        </Link>
+      ) : (
+        avatar
+      )}
 
       <div className="min-w-0 flex-1">
         <div className="rounded-xl bg-surface-1 px-3 py-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-[12px] font-medium text-text-strong">{comment.authorName}</span>
+            {profileLink}
             {replyingTo && (
               <span className="text-[11px] font-light text-text-subtle">
                 {texts.posts.comments.replyingTo(replyingTo)}

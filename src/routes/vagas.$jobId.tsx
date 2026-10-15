@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { jobsApi } from "@/lib/api";
+import { formatSalary } from "@/lib/currency";
 
 import { Button } from "@/components/ui/button";
 
@@ -119,9 +120,9 @@ function JobDetail() {
                 {job.level}
               </span>
 
-              {job.salary && (
+              {formatSalary(job.salary, job.currency) && (
                 <span className="rounded-full border border-border-soft px-2.5 py-1">
-                  {job.salary}
+                  {formatSalary(job.salary, job.currency)}
                 </span>
               )}
             </div>

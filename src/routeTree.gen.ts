@@ -21,6 +21,7 @@ import { Route as FeedRouteImport } from './routes/feed'
 import { Route as EventosRouteImport } from './routes/eventos'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as ComunidadesRouteImport } from './routes/comunidades'
+import { Route as BloqueadosRouteImport } from './routes/bloqueados'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VagasMinhasRouteImport } from './routes/vagas.minhas'
 import { Route as VagasJobIdRouteImport } from './routes/vagas.$jobId'
@@ -90,6 +91,11 @@ const ComunidadesRoute = ComunidadesRouteImport.update({
   path: '/comunidades',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BloqueadosRoute = BloqueadosRouteImport.update({
+  id: '/bloqueados',
+  path: '/bloqueados',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -133,6 +139,7 @@ const AuthCallbackRoute = AuthCallbackRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/bloqueados': typeof BloqueadosRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/bloqueados': typeof BloqueadosRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
@@ -178,6 +186,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/bloqueados': typeof BloqueadosRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
@@ -202,6 +211,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/bloqueados'
     | '/comunidades'
     | '/entrar'
     | '/eventos'
@@ -224,6 +234,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/bloqueados'
     | '/comunidades'
     | '/entrar'
     | '/eventos'
@@ -246,6 +257,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/bloqueados'
     | '/comunidades'
     | '/entrar'
     | '/eventos'
@@ -269,6 +281,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BloqueadosRoute: typeof BloqueadosRoute
   ComunidadesRoute: typeof ComunidadesRouteWithChildren
   EntrarRoute: typeof EntrarRoute
   EventosRoute: typeof EventosRoute
@@ -373,6 +386,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ComunidadesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bloqueados': {
+      id: '/bloqueados'
+      path: '/bloqueados'
+      fullPath: '/bloqueados'
+      preLoaderRoute: typeof BloqueadosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -458,6 +478,7 @@ const VagasRouteWithChildren = VagasRoute._addFileChildren(VagasRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BloqueadosRoute: BloqueadosRoute,
   ComunidadesRoute: ComunidadesRouteWithChildren,
   EntrarRoute: EntrarRoute,
   EventosRoute: EventosRoute,
