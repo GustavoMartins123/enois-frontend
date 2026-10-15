@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VagasRouteImport } from './routes/vagas'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as SuporteRouteImport } from './routes/suporte'
+import { Route as SegurancaRouteImport } from './routes/seguranca'
 import { Route as SalvosRouteImport } from './routes/salvos'
 import { Route as RedeRouteImport } from './routes/rede'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
@@ -46,6 +47,11 @@ const TermosRoute = TermosRouteImport.update({
 const SuporteRoute = SuporteRouteImport.update({
   id: '/suporte',
   path: '/suporte',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SegurancaRoute = SegurancaRouteImport.update({
+  id: '/seguranca',
+  path: '/seguranca',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SalvosRoute = SalvosRouteImport.update({
@@ -162,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
+  '/seguranca': typeof SegurancaRoute
   '/suporte': typeof SuporteRoute
   '/termos': typeof TermosRoute
   '/vagas': typeof VagasRouteWithChildren
@@ -187,6 +194,7 @@ export interface FileRoutesByTo {
   '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
+  '/seguranca': typeof SegurancaRoute
   '/suporte': typeof SuporteRoute
   '/termos': typeof TermosRoute
   '/vagas': typeof VagasRouteWithChildren
@@ -213,6 +221,7 @@ export interface FileRoutesById {
   '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
+  '/seguranca': typeof SegurancaRoute
   '/suporte': typeof SuporteRoute
   '/termos': typeof TermosRoute
   '/vagas': typeof VagasRouteWithChildren
@@ -240,6 +249,7 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/rede'
     | '/salvos'
+    | '/seguranca'
     | '/suporte'
     | '/termos'
     | '/vagas'
@@ -265,6 +275,7 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/rede'
     | '/salvos'
+    | '/seguranca'
     | '/suporte'
     | '/termos'
     | '/vagas'
@@ -290,6 +301,7 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/rede'
     | '/salvos'
+    | '/seguranca'
     | '/suporte'
     | '/termos'
     | '/vagas'
@@ -316,6 +328,7 @@ export interface RootRouteChildren {
   PrivacidadeRoute: typeof PrivacidadeRoute
   RedeRoute: typeof RedeRoute
   SalvosRoute: typeof SalvosRoute
+  SegurancaRoute: typeof SegurancaRoute
   SuporteRoute: typeof SuporteRoute
   TermosRoute: typeof TermosRoute
   VagasRoute: typeof VagasRouteWithChildren
@@ -347,6 +360,13 @@ declare module '@tanstack/react-router' {
       path: '/suporte'
       fullPath: '/suporte'
       preLoaderRoute: typeof SuporteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/seguranca': {
+      id: '/seguranca'
+      path: '/seguranca'
+      fullPath: '/seguranca'
+      preLoaderRoute: typeof SegurancaRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/salvos': {
@@ -529,6 +549,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacidadeRoute: PrivacidadeRoute,
   RedeRoute: RedeRoute,
   SalvosRoute: SalvosRoute,
+  SegurancaRoute: SegurancaRoute,
   SuporteRoute: SuporteRoute,
   TermosRoute: TermosRoute,
   VagasRoute: VagasRouteWithChildren,

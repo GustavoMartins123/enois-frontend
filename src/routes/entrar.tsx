@@ -9,7 +9,7 @@ import type { FieldProps } from "@/types/routes/auth/field-props";
 import type { ForgotPasswordDialogProps } from "@/types/routes/auth/forgot-password-dialog-props";
 import type { LoginFormProps } from "@/types/routes/auth/login-form-props";
 import type { TabBtnProps } from "@/types/routes/auth/tab-btn-props";
-import { ArrowRight, Eye, EyeOff, Loader2, MailCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Loader2, MailCheck, ShieldCheck, Sparkles } from "lucide-react";
 import { z } from "zod";
 
 import { ApiError, authApi } from "@/lib/api";
@@ -483,6 +483,8 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
   const [show, setShow] = useState(false);
   /** Conta pendente de confirmação: em vez de "erro", a tela explica e oferece reenviar. */
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+  /** Segundo fator pedido pelo backend depois da senha correta. */
+  const [challenge, setChallenge] = useState<TwoFactorChallenge | null>(null);
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -505,6 +507,13 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
         email: parsed.data.email,
         password: parsed.data.password,
       });
+
+      // Conta com segundo fator: a senha levou ao desafio, não à sessão.
+      if ("twoFactorRequired" in result) {
+        setChallenge(result);
+        return;
+      }
+
       storeSession(result);
       onDone();
     } catch (err) {
@@ -520,6 +529,10 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
 
   if (unverifiedEmail) {
     return <EmailPendingScreen email={unverifiedEmail} />;
+  }
+
+  if (challenge) {
+    return <TwoFactorForm challenge={challenge} onDone={onDone} />;
   }
 
   return (
@@ -591,6 +604,99 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
             </>
           )}
         </Button>
+      </form>
+    </div>
+  );
+}
+
+/**
+ * Segundo passo do login: código do aplicativo authenticator ou o código enviado por e-mail.
+ * O backend devolve `method`, então a tela já sabe o que pedir (e oferece reenviar só no caso do e-mail).
+ */
+function TwoFactorForm({
+  challenge,
+  onDone,
+}: {
+  challenge: TwoFactorChallenge;
+  onDone: () => void;
+}) {
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [resent, setResent] = useState(false);
+
+  const byEmail = challenge.method === "EMAIL";
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      const result = await authApi.verifyTwoFactor(challenge.challengeId, code.trim());
+      storeSession(result);
+      onDone();
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error(texts.auth.twoFactor.error));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resend = async () => {
+    setError(null);
+    try {
+      await authApi.resendTwoFactor(challenge.challengeId);
+      setResent(true);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error(texts.auth.twoFactor.error));
+    }
+  };
+
+  return (
+    <div>
+      <ShieldCheck className="h-7 w-7 text-primary" />
+
+      <h1 className="mt-3 text-2xl font-semibold tracking-tight">{texts.auth.twoFactor.title}</h1>
+
+      <p className="mt-1 text-sm text-muted-foreground">
+        {byEmail ? texts.auth.twoFactor.emailHint : texts.auth.twoFactor.totpHint}
+      </p>
+
+      <form onSubmit={submit} className="mt-6 space-y-4" noValidate>
+        <Field label={texts.auth.twoFactor.code}>
+          <Input
+            name="code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            autoFocus
+            maxLength={byEmail ? 6 : 12}
+            value={code}
+            onChange={(event) => setCode(event.target.value)}
+            placeholder={byEmail ? "000000" : texts.auth.twoFactor.codePlaceholder}
+          />
+        </Field>
+
+        {resent && (
+          <p className="rounded-xl bg-growth/10 px-4 py-2 text-sm text-growth">
+            {texts.auth.twoFactor.resent}
+          </p>
+        )}
+
+        {error ? <ErrorBanner error={error} /> : null}
+
+        <Button type="submit" className="w-full rounded-full gap-2" disabled={loading || !code.trim()}>
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+
+          <>{texts.auth.twoFactor.confirm}</>
+        </Button>
+
+        {byEmail && (
+          <Button type="button" variant="ghost" className="w-full rounded-full" onClick={resend}>
+            {texts.auth.twoFactor.resend}
+          </Button>
+        )}
+
+        <p className="text-center text-xs text-muted-foreground">{texts.auth.twoFactor.recoveryHint}</p>
       </form>
     </div>
   );

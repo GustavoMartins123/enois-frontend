@@ -16,6 +16,7 @@ import {
   MapPin,
   MessageCircle,
   Settings,
+  ShieldCheck,
   ShieldOff,
   Star,
   Target,
@@ -31,6 +32,7 @@ import {
   rankingApi,
   recommendationsApi,
 } from "@/lib/api";
+import { authApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
@@ -97,6 +99,7 @@ export const Route = createFileRoute("/perfil/$username")({
 function Profile() {
   const { user: loaderUser } = Route.useLoaderData();
   const { user: me, requireAuth } = useAuth();
+
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const avatarUpload = useMediaUpload();
@@ -118,6 +121,14 @@ function Profile() {
 
   const user = liveProfile ?? loaderUser;
   const isOwnProfile = me?.id === user.id;
+
+  // Estado de verificação da conta (e-mail/2FA): vem de /auth/me, não do perfil público.
+  const { data: authMe } = useQuery({
+    queryKey: ["auth-me"],
+    queryFn: () => authApi.me(),
+    enabled: isOwnProfile,
+    staleTime: 60_000,
+  });
 
   const { data: connectionData } = useQuery({
     queryKey: ["connection-status", user.id],
@@ -293,13 +304,27 @@ function Profile() {
 
               <div className="flex flex-wrap gap-2">
                 {isOwnProfile ? (
-                  <EditProfileDialog profile={user}>
-                    <Button variant="outline" size="sm" className="rounded-full gap-1.5">
-                      <Settings className="h-4 w-4" />
+                  <>
+                    <EditProfileDialog profile={user}>
+                      <Button variant="outline" size="sm" className="rounded-full gap-1.5">
+                        <Settings className="h-4 w-4" />
 
-                      <>{texts.profile.editProfile}</>
-                    </Button>
-                  </EditProfileDialog>
+                        <>{texts.profile.editProfile}</>
+                      </Button>
+                    </EditProfileDialog>
+
+                    {/* Sem identidade verificada a reputação é multiplicada por zero: o caminho para
+                        resolver (confirmar e-mail ou ligar o 2FA) fica aqui, no próprio perfil. */}
+                    {authMe && !authMe.identityVerified && (
+                      <Link to="/seguranca">
+                        <Button size="sm" className="rounded-full gap-1.5">
+                          <ShieldCheck className="h-4 w-4" />
+
+                          <>{texts.auth.twoFactor.verifyIdentity}</>
+                        </Button>
+                      </Link>
+                    )}
+                  </>
                 ) : (
                   <>
                     <Button

@@ -123,6 +123,12 @@ le `process.env.IMAGEKIT_PRIVATE_KEY`).
   inclusive `current_user`) e vai para o feed. Esse tratamento vive **so** aqui: antes havia um
   handler global em `__root.tsx` que disparava em qualquer URL com `?token=` e sequestrava o link de
   redefinicao de senha para o feed.
+- `/seguranca` — segurança da conta: estado da verificação (conta verificada × reputação zerada),
+  reenvio do link de e-mail, ativação do 2FA por aplicativo authenticator (chave + URI otpauth para digitar
+  no app, confirmação por código e códigos de recuperação mostrados uma vez) e ativação do 2FA por código de
+  e-mail. Desativar exige a senha. Atalho no menu da conta e no botão "Verificar identidade" do próprio perfil.
+- `/entrar` com 2FA — quando a conta tem segundo fator, o login por senha responde `twoFactorRequired` e a
+  tela pede o código (do app ou o enviado por e-mail, com reenvio) antes de entregar a sessão.
 - `/contato` — canal de contato publico (o link do rodape apontava para `#`). Com sessao mostra o
   `SupportForm`; sem sessao explica o caminho e oferece o e-mail do time quando o backend expoe
   (`GET /support/config`).
