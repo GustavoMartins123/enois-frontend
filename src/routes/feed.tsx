@@ -1,4 +1,4 @@
-import {type ChangeEvent, type FormEvent, useCallback, useRef, useState} from "react";
+import { type ChangeEvent, type FormEvent, useCallback, useRef, useState } from "react";
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";

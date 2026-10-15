@@ -14,7 +14,6 @@ import type { CreateJobInput } from "@/types/application/job/create-job-input";
 import type { Job } from "@/types/application/job/job";
 import type { JobReportReason } from "@/types/application/job/job-report-reason";
 import type { CreateJobDialogProps } from "@/types/routes/jobs/create-job-dialog-props";
-import type { InfiniteScrollProps } from "@/types/routes/jobs/infinite-scroll-props";
 import type { ReportJobDialogProps } from "@/types/routes/jobs/report-job-dialog-props";
 import {
   AlertTriangle,
@@ -49,6 +48,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
+import { InfiniteScroll } from "@/components/infinite-scroll";
 
 export const Route = createFileRoute("/vagas")({
   beforeLoad: requireAuth,
@@ -749,25 +749,4 @@ function ReportJobDialog({ job, onOpenChange }: ReportJobDialogProps) {
       </DialogContent>
     </Dialog>
   );
-}
-
-function InfiniteScroll({ hasMore, loading, onLoadMore }: InfiniteScrollProps) {
-  const sentinelRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const el = sentinelRef.current;
-    if (!el || !hasMore) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) onLoadMore();
-      },
-      { rootMargin: "300px" },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [hasMore, loading, onLoadMore]);
-
-  if (!hasMore) return null;
-
-  return <div ref={sentinelRef} className="h-4" />;
 }
