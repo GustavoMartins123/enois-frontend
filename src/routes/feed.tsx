@@ -9,7 +9,6 @@ import type { FeedTab } from "@/types/application/feed/feed-tab";
 import type { PostView } from "@/types/application/feed/post-view";
 import type { ComposerActionProps } from "@/types/routes/feed/composer-action-props";
 import type { MediaItem } from "@/types/routes/feed/media-item";
-import type { TabPillProps } from "@/types/routes/feed/tab-pill-props";
 import {
   BarChart3,
   Calendar,
@@ -27,6 +26,9 @@ import { requireAuth } from "@/lib/require-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { LoadingState } from "@/components/ui/loading-state";
+import { Pill } from "@/components/ui/pill";
 
 import { AppContainer } from "@/components/app-container";
 import { InfiniteScroll } from "@/components/infinite-scroll";
@@ -333,40 +335,32 @@ function Home() {
 
           {/* Tabs */}
           <div className="flex flex-wrap items-center gap-1.5">
-            <TabPill active={tab === "FOR_YOU"} onClick={() => setTab("FOR_YOU")}>
+            <Pill active={tab === "FOR_YOU"} onClick={() => setTab("FOR_YOU")}>
               {texts.feed.tabs.forYou}
-            </TabPill>
+            </Pill>
 
-            <TabPill active={tab === "ALL"} onClick={() => setTab("ALL")}>
+            <Pill active={tab === "ALL"} onClick={() => setTab("ALL")}>
               {texts.feed.tabs.all}
-            </TabPill>
+            </Pill>
 
-            <TabPill active={tab === "FOLLOWING"} onClick={() => setTab("FOLLOWING")}>
+            <Pill active={tab === "FOLLOWING"} onClick={() => setTab("FOLLOWING")}>
               {texts.feed.tabs.following}
-            </TabPill>
+            </Pill>
 
-            <TabPill active={tab === "RECENT"} onClick={() => setTab("RECENT")}>
+            <Pill active={tab === "RECENT"} onClick={() => setTab("RECENT")}>
               {texts.feed.tabs.discussions}
-            </TabPill>
+            </Pill>
 
-            <TabPill active={tab === "PROJECTS"} onClick={() => setTab("PROJECTS")}>
+            <Pill active={tab === "PROJECTS"} onClick={() => setTab("PROJECTS")}>
               {texts.feed.tabs.projects}
-            </TabPill>
+            </Pill>
           </div>
 
           <div className="space-y-4">
-            {feedLoading && (
-              <div className="flex items-center justify-center py-8 text-text-subtle">
-                <Loader2 className="h-6 w-6 animate-spin" />
-              </div>
-            )}
+            {feedLoading && <LoadingState />}
             {!feedLoading && feedPosts.map((p) => <PostCard key={p.id} post={p} />)}
 
-            {!feedLoading && feedPosts.length === 0 && (
-              <p className="py-8 text-center text-[13px] font-light text-text-subtle">
-                {texts.feed.empty}
-              </p>
-            )}
+            {!feedLoading && feedPosts.length === 0 && <EmptyState title={texts.feed.empty} />}
 
             <InfiniteScroll
               hasMore={Boolean(hasNextPage)}
@@ -519,21 +513,6 @@ function ComposerAction({ icon: Icon, label, active, onClick }: ComposerActionPr
       <Icon className="h-3.5 w-3.5" />
 
       <>{label}</>
-    </button>
-  );
-}
-
-function TabPill({ children, active, onClick }: TabPillProps) {
-  return (
-    <button
-      onClick={onClick}
-      className={`whitespace-nowrap rounded-full px-3 py-1.5 text-[13px] font-light transition ${
-        active
-          ? "bg-primary text-primary-foreground"
-          : "border border-border-soft bg-surface-card text-text-subtle hover:border-primary hover:text-primary"
-      }`}
-    >
-      {children}
     </button>
   );
 }

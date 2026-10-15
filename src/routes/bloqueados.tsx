@@ -1,14 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { Loader2, ShieldOff, Undo2 } from "lucide-react";
+import { ShieldOff, Undo2 } from "lucide-react";
 
 import { networkApi } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
 
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { LoadingState } from "@/components/ui/loading-state";
 
 import { AppContainer } from "@/components/app-container";
 import { UserAvatar } from "@/components/user-avatar";
@@ -49,13 +50,11 @@ function BlockedUsers() {
         </div>
 
         {isLoading ? (
-          <div className="flex justify-center py-10 text-text-subtle">
-            <Loader2 className="h-5 w-5 animate-spin" />
-          </div>
+          <LoadingState />
         ) : users.length === 0 ? (
-          <p className="rounded-2xl border border-border-soft bg-surface-card px-4 py-6 text-center text-[13px] font-light text-text-subtle">
-            {texts.profile.blockedEmpty}
-          </p>
+          <div className="rounded-2xl border border-border-soft bg-surface-card">
+            <EmptyState icon={ShieldOff} title={texts.profile.blockedEmpty} />
+          </div>
         ) : (
           <ul className="divide-y divide-border-soft overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
             {users.map((user) => (

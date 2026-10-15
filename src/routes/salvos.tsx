@@ -7,6 +7,8 @@ import { ArrowLeft, Bookmark } from "lucide-react";
 import { feedApi } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
 
+import { EmptyState } from "@/components/ui/empty-state";
+
 import { AppContainer } from "@/components/app-container";
 import { PostCard } from "@/components/post-card";
 
@@ -51,10 +53,8 @@ function SavedPosts() {
         </div>
 
         {savedPosts.length === 0 ? (
-          <div className="surface-card p-8 text-center">
-            <Bookmark className="mx-auto h-8 w-8 text-muted-foreground" />
-
-            <p className="mt-3 text-sm text-muted-foreground">{texts.saved.empty}</p>
+          <div className="surface-card">
+            <EmptyState icon={Bookmark} title={texts.saved.empty} />
           </div>
         ) : (
           <div className="space-y-4">

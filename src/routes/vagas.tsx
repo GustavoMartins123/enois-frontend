@@ -22,7 +22,6 @@ import {
   CheckCircle2,
   CircleHelp,
   Flag,
-  Loader2,
   Lock,
   MapPin,
   Plus,
@@ -48,8 +47,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LoadingState } from "@/components/ui/loading-state";
+import { Pill } from "@/components/ui/pill";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -201,17 +203,14 @@ function Vagas() {
                 {texts.jobs.filters.level}
               </span>
               {JOB_LEVELS.map((l) => (
-                <button
+                <Pill
                   key={l}
+                  size="sm"
+                  active={level === l}
                   onClick={() => setLevel(level === l ? "" : l)}
-                  className={`rounded-full border px-3 py-1 text-xs transition ${
-                    level === l
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-card text-muted-foreground hover:text-foreground"
-                  }`}
                 >
                   {l.charAt(0) + l.slice(1).toLowerCase()}
-                </button>
+                </Pill>
               ))}
             </div>
           </div>
@@ -222,17 +221,14 @@ function Vagas() {
                 {texts.jobs.filters.location}
               </span>
               {JOB_LOCATIONS.map((l, index) => (
-                <button
+                <Pill
                   key={l}
+                  size="sm"
+                  active={location === l}
                   onClick={() => setLocation(location === l ? "" : l)}
-                  className={`rounded-full border px-3 py-1 text-xs transition ${
-                    location === l
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-card text-muted-foreground hover:text-foreground"
-                  }`}
                 >
                   {texts.jobs.filters.locations[index]}
-                </button>
+                </Pill>
               ))}
             </div>
           </div>
@@ -243,17 +239,14 @@ function Vagas() {
                 {texts.jobs.filters.type}
               </span>
               {JOB_TYPES.map((t) => (
-                <button
+                <Pill
                   key={t}
+                  size="sm"
+                  active={type === t}
                   onClick={() => setType(type === t ? "" : t)}
-                  className={`rounded-full border px-3 py-1 text-xs transition ${
-                    type === t
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border bg-card text-muted-foreground hover:text-foreground"
-                  }`}
                 >
                   {t}
-                </button>
+                </Pill>
               ))}
             </div>
           </div>
@@ -432,11 +425,7 @@ function Vagas() {
           ))}
         </div>
 
-        {isFetching && allJobs.length > 0 && (
-          <div className="flex justify-center py-6">
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-          </div>
-        )}
+        {isFetching && allJobs.length > 0 && <LoadingState className="py-6" />}
 
         <InfiniteScroll
           hasMore={!!nextCursor}
@@ -446,9 +435,7 @@ function Vagas() {
           }}
         />
 
-        {!isFetching && allJobs.length === 0 && (
-          <p className="py-12 text-center text-sm text-muted-foreground">{texts.jobs.empty}</p>
-        )}
+        {!isFetching && allJobs.length === 0 && <EmptyState title={texts.jobs.empty} />}
       </div>
 
       <CreateJobDialog open={showCreate} onOpenChange={setShowCreate} />
