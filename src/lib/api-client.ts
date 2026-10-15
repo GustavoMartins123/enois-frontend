@@ -52,10 +52,39 @@ function idemKey(): Record<string, string> {
   return { "Idempotency-Key": randomUUID() };
 }
 
-let isRefreshing = false;
+/** Renova quando faltar menos que isso para expirar, em vez de esperar o 401. */
+const REFRESH_WINDOW_MS = 5 * 60 * 1000;
 
-async function tryRefreshToken(): Promise<boolean> {
-  const token = localStorage.getItem("refresh_token");
+let refreshPromise: Promise<boolean> | null = null;
+
+function refreshTokenValue(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("refresh_token");
+}
+
+function sessionExpiresAt(): number | null {
+  if (typeof window === "undefined") return null;
+  const raw = localStorage.getItem("session_expires_at");
+  if (!raw) return null;
+  const parsed = Date.parse(raw);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+/**
+ * Renova a sessao uma unica vez, mesmo com varias chamadas concorrentes: todas aguardam a MESMA
+ * promessa. Sem isso, cada 401 paralelo disparava um refresh proprio e rotacionava o token varias
+ * vezes, derrubando a sessao.
+ */
+function refreshSession(): Promise<boolean> {
+  if (refreshPromise) return refreshPromise;
+  refreshPromise = doRefresh().finally(() => {
+    refreshPromise = null;
+  });
+  return refreshPromise;
+}
+
+async function doRefresh(): Promise<boolean> {
+  const token = refreshTokenValue();
   if (!token) return false;
 
   try {
@@ -65,6 +94,7 @@ async function tryRefreshToken(): Promise<boolean> {
       body: JSON.stringify({ refreshToken: token }),
     });
 
+    // Recusa explicita (expirado/revogado): a sessao acabou.
     if (!response.ok) {
       clearSession();
       return false;
@@ -78,8 +108,28 @@ async function tryRefreshToken(): Promise<boolean> {
     localStorage.setItem("refresh_expires_at", body.refreshExpiresAt);
     return true;
   } catch {
+    // Falha de rede nao encerra a sessao: o token pode continuar valido. Quem decide e o 401.
     return false;
   }
+}
+
+/** Havendo sessao perto de expirar, renova antes da requisicao (evita o 401 e a ida ao login). */
+async function refreshIfNeeded(): Promise<void> {
+  const expiresAt = sessionExpiresAt();
+  if (expiresAt === null) return;
+  if (expiresAt - Date.now() > REFRESH_WINDOW_MS) return;
+  if (!refreshTokenValue()) return;
+  await refreshSession();
+}
+
+// Voltar para a aba depois de um tempo era o gatilho do "logout": a proxima chamada vinha 401 e
+// jogava a pessoa para o login. Ao ficar visivel, renova de forma transparente se estiver vencendo.
+if (typeof window !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      void refreshIfNeeded();
+    }
+  });
 }
 
 export function clearSession() {
@@ -96,6 +146,12 @@ async function request<T>(
   body?: unknown,
   opts?: RequestOptions,
 ): Promise<T> {
+  // Renova proativamente antes de sair com um token que esta vencendo (as rotas de auth cuidam
+  // da propria sessao e nao passam por aqui).
+  if (!path.startsWith("/auth/")) {
+    await refreshIfNeeded();
+  }
+
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...authHeaders(),
@@ -125,10 +181,8 @@ async function request<T>(
   // 401 e sessao invalida/expirada (tenta refresh e, se nao der, manda para o login). 403 e
   // PERMISSAO negada, nao sessao: derrubar o usuario aqui era um erro (quem tem conta pendente de
   // verificacao, por exemplo, era desconectado em vez de ler o aviso).
-  if (response.status === 401 && hadSession && !isRefreshing && !path.startsWith("/auth/")) {
-    isRefreshing = true;
-    const refreshed = await tryRefreshToken();
-    isRefreshing = false;
+  if (response.status === 401 && hadSession && !path.startsWith("/auth/")) {
+    const refreshed = await refreshSession();
 
     if (refreshed) {
       headers["X-Session-Token"] = getToken() ?? "";

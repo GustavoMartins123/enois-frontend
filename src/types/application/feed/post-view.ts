@@ -24,4 +24,6 @@ export type PostView = {
   /** Comunidade do post, quando publicado numa comunidade. */
   communityId?: string | null;
   community?: PostCommunity | null;
+  /** Quando o autor editou o post (nulo se nunca editado). */
+  editedAt?: string | null;
 };

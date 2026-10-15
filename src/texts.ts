@@ -608,10 +608,26 @@ export const texts = {
     },
     tag: (tag: string) => `#${tag}`,
     authorTime: (time: string) => `· ${time}`,
+    edited: "editado",
     community: {
       publishedIn: "publicou em",
       follow: "Seguir",
       followError: "Não foi possível seguir a comunidade. Tente novamente.",
+    },
+    owner: {
+      actions: "Ações da publicação",
+      edit: "Editar",
+      editTitle: "Editar publicação",
+      editDescription: "Atualize o texto. Tags, mídias e a comunidade continuam como estão.",
+      save: "Salvar",
+      delete: "Excluir",
+      deleteTitle: "Excluir publicação?",
+      deleteDescription:
+        "A publicação sai do feed para todo mundo e deixa de aparecer para quem acessar o link. As tags e mídias param de ser exibidas.",
+      confirmDelete: "Excluir",
+      edited: "Publicação atualizada.",
+      deleted: "Publicação excluída.",
+      error: "Não foi possível concluir. Tente novamente.",
     },
     reactions: {
       title: "Reações",
@@ -804,6 +820,7 @@ export const texts = {
     title: "Comunidades",
     description: "Encontre grupos profissionais, fóruns temáticos e círculos de mentoria.",
     createCommunity: "Criar comunidade",
+    myTitle: "Suas comunidades",
     topics: {
       all: "Todas",
       TECNOLOGIA: "Tecnologia",
@@ -819,6 +836,30 @@ export const texts = {
     memberCount: (count: number) => `${count} membro${count === 1 ? "" : "s"}`,
     participating: "Participando",
     enter: "Entrar",
+    leave: {
+      title: "Sair da comunidade?",
+      description: (name: string) =>
+        `Você deixa de participar de "${name}". Os posts dela deixam de aparecer para você até entrar de novo.`,
+      confirm: "Sair",
+    },
+    ownerLeaveBlocked:
+      "Você administra esta comunidade. Transfira a administração para outro membro antes de sair.",
+    transfer: {
+      action: "Transferir administração",
+      title: "Transferir administração",
+      description:
+        "Escolha quem passa a administrar a comunidade. Você continua participando como membro.",
+      choose: "Escolher membro",
+      confirm: "Transferir",
+      empty: "Não há outros membros para receber a administração.",
+    },
+    delete: {
+      action: "Excluir comunidade",
+      title: "Excluir comunidade?",
+      description:
+        "A comunidade deixa de existir para todo mundo e os membros são desvinculados. Isso não pode ser desfeito.",
+      confirm: "Excluir",
+    },
     loadMore: "Carregar mais",
     create: {
       title: "Criar comunidade",

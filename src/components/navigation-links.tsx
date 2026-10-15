@@ -1,7 +1,11 @@
+import { useQuery } from "@tanstack/react-query";
 import { Link, useRouterState } from "@tanstack/react-router";
 
+import { texts } from "@/texts";
 import type { NavigationLinksProps } from "@/types/components/navigation/navigation-links-props";
 
+import { communitiesApi } from "@/lib/api";
+import { getSessionToken } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
 
 import { navigationItems } from "./navigation-items";
@@ -12,6 +16,16 @@ export function NavigationLinks({
   className,
 }: NavigationLinksProps) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+
+  // Comunidades do usuário no menu: sem isso a pessoa só encontrava as suas indo em /comunidades
+  // e procurando na lista.
+  const { data: mine } = useQuery({
+    queryKey: ["my-communities"],
+    queryFn: () => communitiesApi.mine(8),
+    enabled: Boolean(getSessionToken()),
+    staleTime: 30_000,
+  });
+  const myCommunities = mine?.items ?? [];
 
   return (
     <nav
@@ -49,6 +63,28 @@ export function NavigationLinks({
           </Link>
         );
       })}
+
+      {!collapsed && myCommunities.length > 0 && (
+        <div className="mt-1 space-y-0.5">
+          <p className="px-3 text-[11px] font-medium uppercase tracking-wider text-text-subtle">
+            {texts.communities.myTitle}
+          </p>
+
+          {myCommunities.map((community) => (
+            <Link
+              key={community.id}
+              to="/comunidades/$communityId"
+              params={{ communityId: community.id }}
+              onClick={onNavigate}
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-[13px] font-light text-text-subtle transition hover:bg-surface-3 hover:text-text-strong"
+            >
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60" />
+
+              <span className="truncate">{community.name}</span>
+            </Link>
+          ))}
+        </div>
+      )}
     </nav>
   );
 }

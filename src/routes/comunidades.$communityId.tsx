@@ -1,12 +1,12 @@
 import { type ChangeEvent, type FormEvent, useCallback, useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, createFileRoute, notFound } from "@tanstack/react-router";
+import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { CommunityCropPurpose } from "@/types/routes/communities/community-crop-purpose";
 import type { EditCommunityFormProps } from "@/types/routes/communities/edit-community-form-props";
-import { ArrowLeft, Camera, Send, Settings, Users } from "lucide-react";
+import { ArrowLeft, Camera, Crown, Send, Settings, Trash2, Users } from "lucide-react";
 
 import { communitiesApi, feedApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
@@ -16,6 +16,7 @@ import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Dialog,
   DialogContent,
@@ -55,8 +56,12 @@ function CommunityDetail() {
   const queryClient = useQueryClient();
   const community = Route.useLoaderData();
   const { user: currentUser } = useAuth();
+  const navigate = useNavigate();
   const [draft, setDraft] = useState("");
   const [editOpen, setEditOpen] = useState(false);
+  const [leaveOpen, setLeaveOpen] = useState(false);
+  const [transferOpen, setTransferOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const { data: live } = useQuery({
     queryKey: ["community", community.id],
@@ -79,12 +84,43 @@ function CommunityDetail() {
 
   const join = useMutation({
     mutationFn: () => communitiesApi.join(community.id),
-    onSuccess: () => invalidate(),
+    onSuccess: () => {
+      invalidate();
+      queryClient.invalidateQueries({ queryKey: ["community", community.id, "members"] });
+      queryClient.invalidateQueries({ queryKey: ["my-communities"] });
+    },
   });
 
   const leave = useMutation({
     mutationFn: () => communitiesApi.leave(community.id),
-    onSuccess: () => invalidate(),
+    onSuccess: () => {
+      setLeaveOpen(false);
+      invalidate();
+      queryClient.invalidateQueries({ queryKey: ["my-communities"] });
+    },
+    onError: () => {
+      // O dono não sai sem transferir: em vez de um erro seco, oferecemos a transferência.
+      setLeaveOpen(false);
+      setTransferOpen(true);
+    },
+  });
+
+  const transfer = useMutation({
+    mutationFn: (newOwnerId: string) => communitiesApi.transfer(community.id, newOwnerId),
+    onSuccess: () => {
+      setTransferOpen(false);
+      invalidate();
+      queryClient.invalidateQueries({ queryKey: ["community", community.id, "members"] });
+    },
+  });
+
+  const removeCommunity = useMutation({
+    mutationFn: () => communitiesApi.remove(community.id),
+    onSuccess: () => {
+      setDeleteOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["my-communities"] });
+      navigate({ to: "/comunidades" });
+    },
   });
 
   const createPost = useMutation({
@@ -194,11 +230,32 @@ function CommunityDetail() {
                     </DialogContent>
                   </Dialog>
                 )}
+                {isAdmin && (
+                  <>
+                    <Button
+                      variant="outline"
+                      className="rounded-full gap-1.5 shrink-0"
+                      onClick={() => setTransferOpen(true)}
+                    >
+                      <Crown className="h-4 w-4" />
+
+                      <span className="hidden sm:inline">{texts.communities.transfer.action}</span>
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      className="rounded-full gap-1.5 shrink-0 text-destructive"
+                      onClick={() => setDeleteOpen(true)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
                 <Button
-                  className="rounded-full shrink-0"
+                  className="rounded-full shrink-0 whitespace-nowrap"
                   variant={isMember ? "secondary" : "default"}
                   disabled={join.isPending || leave.isPending}
-                  onClick={() => (isMember ? leave.mutate() : join.mutate())}
+                  onClick={() => (isMember ? setLeaveOpen(true) : join.mutate())}
                 >
                   {isMember ? texts.communities.participating : texts.communities.enter}
                 </Button>
@@ -206,6 +263,66 @@ function CommunityDetail() {
             </div>
           </div>
         </div>
+
+        <ConfirmDialog
+          open={leaveOpen}
+          onOpenChange={setLeaveOpen}
+          title={texts.communities.leave.title}
+          description={
+            isAdmin ? texts.communities.ownerLeaveBlocked : texts.communities.leave.description(live.name)
+          }
+          confirmLabel={texts.communities.leave.confirm}
+          destructive
+          pending={leave.isPending}
+          onConfirm={() => (isAdmin ? (setLeaveOpen(false), setTransferOpen(true)) : leave.mutate())}
+        />
+
+        <Dialog open={transferOpen} onOpenChange={setTransferOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>{texts.communities.transfer.title}</DialogTitle>
+            </DialogHeader>
+
+            <p className="text-sm text-muted-foreground">{texts.communities.transfer.description}</p>
+
+            <div className="max-h-72 space-y-1 overflow-y-auto">
+              {members
+                .filter((m) => m.userId !== currentUser?.id)
+                .map((m) => (
+                  <button
+                    key={m.userId}
+                    disabled={transfer.isPending}
+                    onClick={() => transfer.mutate(m.userId)}
+                    className="flex w-full items-center gap-3 rounded-lg px-2 py-2 text-left transition hover:bg-muted disabled:opacity-60"
+                  >
+                    <UserAvatar src={resolveCdnUrl(m.avatar)} alt={m.name} className="h-8 w-8" />
+
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{m.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">@{m.username}</p>
+                    </div>
+                  </button>
+                ))}
+
+              {members.filter((m) => m.userId !== currentUser?.id).length === 0 && (
+                <p className="px-2 py-3 text-sm text-muted-foreground">
+                  {texts.communities.transfer.empty}
+                </p>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <ConfirmDialog
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+          title={texts.communities.delete.title}
+          description={texts.communities.delete.description}
+          confirmLabel={texts.communities.delete.confirm}
+          destructive
+          pending={removeCommunity.isPending}
+          onConfirm={() => removeCommunity.mutate()}
+        />
 
         {isMember && (
           <form onSubmit={handlePost} className="surface-card p-5">

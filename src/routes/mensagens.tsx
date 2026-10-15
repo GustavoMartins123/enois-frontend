@@ -21,11 +21,16 @@ import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/mensagens")({
   beforeLoad: requireAuth,
+  // Permite abrir direto numa conversa (ex.: botao "Mensagem" do perfil passa o id).
+  validateSearch: (search: Record<string, unknown>): { conversation?: string } => ({
+    conversation: typeof search.conversation === "string" ? search.conversation : undefined,
+  }),
   head: () => ({ meta: [{ title: texts.messages.seoTitle }] }),
   component: Mensagens,
 });
 
 function Mensagens() {
+  const { conversation } = Route.useSearch();
   const currentUserId = getCurrentUserId();
   const queryClient = useQueryClient();
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -33,6 +38,11 @@ function Mensagens() {
   const [text, setText] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Veio de um link/perfil com uma conversa: abre ela direto.
+  useEffect(() => {
+    if (conversation) setActiveId(conversation);
+  }, [conversation]);
 
   const { data: conversationsData } = useQuery({
     queryKey: ["conversations"],

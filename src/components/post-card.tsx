@@ -6,16 +6,20 @@ import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { PostCardProps } from "@/types/components/post/post-card-props";
-import { Bookmark, Flag, Heart, MessageSquare, Share2 } from "lucide-react";
+import { Bookmark, Flag, Heart, MessageSquare, MoreHorizontal, Pencil, Share2, Trash2 } from "lucide-react";
 
 import { REACTION_EMOJIS, communitiesApi, feedApi, reactionsApi } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
 
 import { AuthorInfo } from "./post/author-info";
+import { formatTime } from "./post/format-time";
 import { LinkPreviews } from "./post/link-previews";
 import { linkifyText } from "./post/linkify-text";
 import { MediaGrid } from "./post/media-grid";
@@ -26,11 +30,15 @@ import { ReportDialog } from "./post/report-dialog";
 import { typeMeta } from "./post/type-meta";
 
 export function PostCard({ post }: PostCardProps) {
-  const { requireAuth } = useAuth();
+  const { requireAuth, user } = useAuth();
   const queryClient = useQueryClient();
+  const isOwner = user?.id != null && user.id === post.authorId;
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
   const [showComments, setShowComments] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [draft, setDraft] = useState(post.content);
   const initializePostCard = usePostCardStore((state) => state.initializePostCard);
   const disposePostCard = usePostCardStore((state) => state.disposePostCard);
   const card = usePostCardStore((state) => state.cards[post.id]);
@@ -111,6 +119,40 @@ export function PostCard({ post }: PostCardProps) {
     }
   };
 
+// Post proprio: editar o texto e excluir. O backend confere o dono; a UI so evita mostrar para os outros.
+  const editPost = useMutation({
+    mutationFn: () => feedApi.update(post.id, { content: draft.trim(), tags: post.tags }),
+    onSuccess: () => {
+      setEditOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["post", post.id] });
+      queryClient.invalidateQueries({ queryKey: ["saved-posts"] });
+    },
+  });
+
+  const deletePost = useMutation({
+    mutationFn: () => feedApi.delete(post.id),
+    onSuccess: () => {
+      setDeleteOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["saved-posts"] });
+      // Na pagina do post unico, o conteudo some: volta para o feed em vez de ficar num "nao encontrado".
+      if (typeof window !== "undefined" && window.location.pathname.startsWith("/post/")) {
+        window.location.href = "/feed";
+        return;
+      }
+      queryClient.invalidateQueries({ queryKey: ["post", post.id] });
+    },
+  });
+
+  const handleSaveEdit = () => {
+    if (!draft.trim() || draft.trim() === post.content) {
+      setEditOpen(false);
+      return;
+    }
+    editPost.mutate();
+  };
+
   // Seguir a comunidade direto do post: atualiza a lista para esconder o botao e marcar como membro.
   const followCommunity = useMutation({
     mutationFn: (communityId: string) => communitiesApi.join(communityId),
@@ -145,16 +187,59 @@ export function PostCard({ post }: PostCardProps) {
           followPending={followCommunity.isPending}
         />
 
-        <span
-          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${meta.className}`}
-        >
-          {meta.label}
-        </span>
+        <div className="flex items-center gap-1.5">
+          <span
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${meta.className}`}
+          >
+            {meta.label}
+          </span>
+
+          {isOwner && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <button
+                  className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                  title={texts.posts.owner.actions}
+                  aria-label={texts.posts.owner.actions}
+                >
+                  <MoreHorizontal className="h-4 w-4" />
+                </button>
+              </PopoverTrigger>
+
+              <PopoverContent align="end" className="w-40 rounded-2xl border-border p-1.5">
+                <button
+                  onClick={() => {
+                    setDraft(post.content);
+                    setEditOpen(true);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition hover:bg-muted"
+                >
+                  <Pencil className="h-4 w-4" />
+                  {texts.posts.owner.edit}
+                </button>
+
+                <button
+                  onClick={() => setDeleteOpen(true)}
+                  className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-destructive transition hover:bg-destructive/10"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  {texts.posts.owner.delete}
+                </button>
+              </PopoverContent>
+            </Popover>
+          )}
+        </div>
       </header>
 
       <p className="mt-4 whitespace-pre-line break-words text-[15px] font-light leading-relaxed text-text-strong">
         {linkifyText(post.content)}
       </p>
+
+      {post.editedAt && (
+        <p className="mt-1 text-[11px] font-light text-text-subtle">
+          {texts.posts.edited} {texts.posts.authorTime(formatTime(post.editedAt))}
+        </p>
+      )}
 
       {post.mediaIds.length > 0 && (
         <div className="mt-4">
@@ -269,6 +354,55 @@ export function PostCard({ post }: PostCardProps) {
           <>{postCounters.saves}</>
         </button>
       </footer>
+
+      {isOwner && (
+        <>
+          <Dialog open={editOpen} onOpenChange={setEditOpen}>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>{texts.posts.owner.editTitle}</DialogTitle>
+              </DialogHeader>
+
+              <Textarea
+                value={draft}
+                maxLength={1024}
+                autoFocus
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder={texts.posts.owner.editDescription}
+              />
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="rounded-full"
+                  onClick={() => setEditOpen(false)}
+                >
+                  {texts.common.cancel}
+                </Button>
+
+                <Button
+                  className="rounded-full"
+                  disabled={editPost.isPending || !draft.trim()}
+                  onClick={handleSaveEdit}
+                >
+                  {editPost.isPending ? texts.common.saving : texts.posts.owner.save}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <ConfirmDialog
+            open={deleteOpen}
+            onOpenChange={setDeleteOpen}
+            title={texts.posts.owner.deleteTitle}
+            description={texts.posts.owner.deleteDescription}
+            confirmLabel={texts.posts.owner.confirmDelete}
+            destructive
+            pending={deletePost.isPending}
+            onConfirm={() => deletePost.mutate()}
+          />
+        </>
+      )}
 
       <ReactionsDialog postId={post.id} />
       <ReportDialog postId={post.id} />

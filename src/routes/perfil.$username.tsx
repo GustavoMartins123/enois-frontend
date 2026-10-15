@@ -28,6 +28,7 @@ import {
 import {
   ApiError,
   feedApi,
+  messagesApi,
   networkApi,
   profileApi,
   rankingApi,
@@ -176,6 +177,21 @@ function Profile() {
       }
     },
   });
+
+  // Abrir conversa: reaproveita a conversa direta existente (o backend nao duplica) e ja entra
+  // nela. Antes o botao so levava para a lista de mensagens, deixando a pessoa procurar o contato.
+  const openConversation = useMutation({
+    mutationFn: () => messagesApi.openDirect(user.id),
+    onSuccess: (conversation) => {
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      navigate({ to: "/mensagens", search: { conversation: conversation.id } });
+    },
+  });
+
+  const handleMessage = () => {
+    if (!requireAuth()) return;
+    openConversation.mutate();
+  };
 
   const recommend = useMutation({
     mutationFn: () => recommendationsApi.create(user.id, { comment: recommendComment }),
@@ -339,10 +355,8 @@ function Profile() {
                       variant="outline"
                       size="sm"
                       className="rounded-full gap-1.5"
-                      onClick={() => {
-                        if (!requireAuth()) return;
-                        navigate({ to: "/mensagens" });
-                      }}
+                      onClick={handleMessage}
+                      disabled={openConversation.isPending}
                     >
                       <MessageCircle className="h-4 w-4" />
 

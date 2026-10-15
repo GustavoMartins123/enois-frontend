@@ -33,6 +33,14 @@ const routes = [...routeDefinitions].sort((a, b) => b.source.length - a.source.l
 
 export function navigateToHref(href: string, navigate: Navigate) {
   const path = href.replace(/^\/api\//, "").replace(/^\/+|\/+$/g, "");
+
+  // Notificação de mensagem traz o id da conversa: abre ela direto, não só a lista.
+  const conversation = path.match(/^conversations\/([^/]+)$/);
+  if (conversation) {
+    navigate({ to: "/mensagens", search: { conversation: conversation[1] } });
+    return;
+  }
+
   const route = routes.find(({ source }) => path === source || path.startsWith(`${source}/`));
 
   if (!route) return;

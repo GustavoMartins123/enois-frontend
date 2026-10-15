@@ -12,6 +12,9 @@ export const messagesApi = {
   createConversation: (data: CreateConversationInput) =>
     api.post<Conversation>("/conversations", data),
 
+  /** Abre (ou reaproveita) a conversa direta com um usuario — botao "Mensagem" do perfil. */
+  openDirect: (userId: string) => api.post<Conversation>("/conversations/direct", { userId }),
+
   getConversation: (conversationId: string) =>
     api.get<Conversation>(`/conversations/${conversationId}`),
 

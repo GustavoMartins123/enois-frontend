@@ -23,6 +23,16 @@ export const communitiesApi = {
 
   leave: (communityId: string) => api.delete<StatusResponse>(`/communities/${communityId}/members`),
 
+  /** Comunidades das quais o usuário participa (menu lateral). */
+  mine: (limit = 20) => api.get<PageResponse<Community>>(`/communities/mine${buildQuery({ limit })}`),
+
+  /** Transfere a administração para outro membro (só o dono atual). */
+  transfer: (communityId: string, newOwnerId: string) =>
+    api.post<Community>(`/communities/${communityId}/transfer`, { newOwnerId }),
+
+  /** Exclui a comunidade (só o dono). */
+  remove: (communityId: string) => api.delete<StatusResponse>(`/communities/${communityId}`),
+
   getMembers: (communityId: string) =>
     api.get<CommunityMembersResponse>(`/communities/${communityId}/members`),
 

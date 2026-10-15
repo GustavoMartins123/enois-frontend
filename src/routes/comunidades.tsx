@@ -14,6 +14,7 @@ import { resolveCdnUrl } from "@/lib/api/media";
 import { requireAuth } from "@/lib/require-auth";
 
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   Dialog,
   DialogContent,
@@ -62,6 +63,8 @@ function Comunidades() {
   const [open, setOpen] = useState(false);
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [allItems, setAllItems] = useState<Community[]>([]);
+  const [leaveTarget, setLeaveTarget] = useState<Community | null>(null);
+  const [ownerBlockedId, setOwnerBlockedId] = useState<string | null>(null);
   const cursorRef = useRef(cursor);
   cursorRef.current = cursor;
   const isDetail = matchRoute({ to: "/comunidades/$communityId" });
@@ -100,12 +103,24 @@ function Comunidades() {
 
   const join = useMutation({
     mutationFn: (id: string) => communitiesApi.join(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["communities"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["communities"] });
+      queryClient.invalidateQueries({ queryKey: ["my-communities"] });
+    },
   });
 
   const leave = useMutation({
     mutationFn: (id: string) => communitiesApi.leave(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["communities"] }),
+    onSuccess: () => {
+      setLeaveTarget(null);
+      queryClient.invalidateQueries({ queryKey: ["communities"] });
+      queryClient.invalidateQueries({ queryKey: ["my-communities"] });
+    },
+    onError: () => {
+      // Dono não sai sem transferir: orientamos a abrir a comunidade para transferir.
+      setLeaveTarget(null);
+      setOwnerBlockedId(leaveTarget?.id ?? null);
+    },
   });
 
   if (isDetail) {
@@ -183,22 +198,22 @@ function Comunidades() {
                     {c.description}
                   </p>
 
-                  <div className="mt-4 flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                      <Users className="h-3.5 w-3.5" />
+                  <div className="mt-4 flex items-center justify-between gap-2">
+                    <span className="inline-flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+                      <Users className="h-3.5 w-3.5 shrink-0" />
 
-                      <>{texts.communities.members(c.members ?? 0)}</>
+                      <span className="truncate">{texts.communities.members(c.members ?? 0)}</span>
                     </span>
 
                     <Button
                       size="sm"
                       variant={c.joined ? "secondary" : "default"}
-                      className="rounded-full"
+                      className="shrink-0 whitespace-nowrap rounded-full"
                       disabled={join.isPending || leave.isPending}
                       onClick={(e) => {
                         e.preventDefault();
                         if (c.joined) {
-                          leave.mutate(c.id);
+                          setLeaveTarget(c);
                         } else {
                           join.mutate(c.id);
                         }
@@ -207,6 +222,10 @@ function Comunidades() {
                       {c.joined ? texts.communities.participating : texts.communities.enter}
                     </Button>
                   </div>
+
+                  {ownerBlockedId === c.id && (
+                    <p className="mt-2 text-xs text-destructive">{texts.communities.ownerLeaveBlocked}</p>
+                  )}
                 </div>
               </article>
             </Link>
@@ -230,6 +249,21 @@ function Comunidades() {
           </div>
         )}
       </div>
+
+      <ConfirmDialog
+        open={leaveTarget !== null}
+        onOpenChange={(open) => !open && setLeaveTarget(null)}
+        title={texts.communities.leave.title}
+        description={
+          leaveTarget
+            ? texts.communities.leave.description(leaveTarget.name)
+            : ""
+        }
+        confirmLabel={texts.communities.leave.confirm}
+        destructive
+        pending={leave.isPending}
+        onConfirm={() => leaveTarget && leave.mutate(leaveTarget.id)}
+      />
     </AppContainer>
   );
 }
@@ -244,6 +278,7 @@ function CreateCommunityDialog({ children, open, onOpenChange }: CreateCommunity
     mutationFn: () => communitiesApi.create({ name, description, topic }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["communities"] });
+      queryClient.invalidateQueries({ queryKey: ["my-communities"] });
       onOpenChange(false);
       setName("");
       setDescription("");
