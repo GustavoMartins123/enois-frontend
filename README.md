@@ -102,5 +102,11 @@ le `process.env.IMAGEKIT_PRIVATE_KEY`).
 4. **Esqueci minha senha**: depende do SMTP configurado no backend; o link cai em `/auth/reset?token=...`
    (rota `src/routes/auth.reset.tsx`, ja existente).
 5. **Conta**: a troca de e-mail ja tem UI (`change-email-dialog`, usa `POST /api/auth/email/change`).
-   Troca de senha (`POST /api/auth/password/change`) e exclusao de conta
-   (`POST /api/auth/account/delete`) existem no backend mas **ainda nao tem tela**.
+   Troca de senha (`change-password-dialog` → `POST /api/auth/password/change`) e exclusao de conta
+   (`delete-account-dialog` → `POST /api/auth/account/delete`) tambem ja tem tela, no menu da conta.
+6. **Notificacoes push no celular**: o front nao precisa de nenhuma variavel — o service worker (`public/sw.js`)
+   recebe o `push` do backend e a chave publica VAPID vem de `GET /api/push/config`. A **unica** acao manual e
+   configurar `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` no backend (ver README do backend, passo 7). Enquanto o
+   push estiver desligado, a opcao "Ativar notificacoes no celular" nem aparece no menu. Ao mudar o `sw.js`,
+   **incremente `VERSION`** nele: e isso que descarta o cache antigo e recarrega o app.
+   No iOS o push so funciona com o app instalado na tela de inicio (iOS 16.4+).

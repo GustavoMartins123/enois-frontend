@@ -208,6 +208,13 @@ export const texts = {
       deleteAccount: "Excluir conta",
       logout: "Sair",
       loggingOut: "Saindo...",
+      pushOn: "Notificações no celular ativadas",
+      pushOff: "Ativar notificações no celular",
+      pushWorking: "Ativando...",
+      pushDenied: "Permissão de notificação negada. Libere nas configurações do navegador.",
+      pushUnavailable: "Este dispositivo não suporta notificações no celular.",
+      pushServerOff: "As notificações no celular ainda não estão disponíveis.",
+      pushError: "Não foi possível ativar as notificações. Tente novamente.",
     },
     changeEmail: {
       title: "Alterar e-mail",

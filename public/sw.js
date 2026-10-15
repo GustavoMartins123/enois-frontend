@@ -12,7 +12,7 @@
  * cliente recarrega sozinho quando o novo SW assume (ver src/lib/pwa.ts).
  */
 
-const VERSION = "enois-v2";
+const VERSION = "enois-v3";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGES_CACHE = `${VERSION}-pages`;
 
@@ -53,6 +53,51 @@ self.addEventListener("activate", (event) => {
 function isApiRequest(url) {
   return url.pathname.startsWith("/api/") || url.pathname.includes("/api/");
 }
+
+/**
+ * Web Push. O backend manda { title, body, url }; mostramos a notificacao e, no clique,
+ * levamos para a tela certa (o post/perfil/conversa de origem).
+ */
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data ? event.data.text() : "" };
+  }
+
+  const title = data.title || "Énóis";
+  const url = data.url || "/notificacoes";
+
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      body: data.body || "",
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      data: { url },
+      tag: data.tag || undefined,
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = event.notification.data?.url || "/notificacoes";
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
+      // Se o app ja esta aberto, so foca e navega (evita abrir outra aba).
+      for (const client of clients) {
+        if ("focus" in client) {
+          client.focus();
+          if ("navigate" in client) client.navigate(url).catch(() => {});
+          return undefined;
+        }
+      }
+      return self.clients.openWindow(url);
+    }),
+  );
+});
 
 self.addEventListener("fetch", (event) => {
   const { request } = event;

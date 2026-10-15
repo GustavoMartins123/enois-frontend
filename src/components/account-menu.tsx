@@ -14,6 +14,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ChangeEmailDialog } from "./change-email-dialog";
 import { ChangePasswordDialog } from "./change-password-dialog";
 import { DeleteAccountDialog } from "./delete-account-dialog";
+import { PushToggle } from "./push-toggle";
 import { UserAvatar } from "./user-avatar";
 
 const ITEM_CLASS =
@@ -105,6 +106,8 @@ export function AccountMenu({ profile }: AccountMenuProps) {
 
               <>{texts.account.menu.changePassword}</>
             </button>
+
+            <PushToggle onClose={() => setMenuOpen(false)} />
           </div>
 
           <div className="border-t border-border-soft py-1">
