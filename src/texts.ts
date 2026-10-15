@@ -1089,6 +1089,12 @@ export const texts = {
     createAction: "Publicar vaga",
     createSuccess: "Vaga publicada com sucesso.",
     createError: "Não foi possível publicar a vaga. Tente novamente.",
+    editJob: "Editar vaga",
+    editJobTitle: "Editar vaga",
+    editJobDescription:
+      "Os campos do formulário de candidatura continuam como estão — para mudá-los, publique outra vaga.",
+    updateError: "Não foi possível salvar a vaga. Tente novamente.",
+    deleted: "Vaga excluída.",
     loadError: "Não foi possível carregar suas vagas. Tente de novo.",
     retry: "Tentar de novo",
     fakeBadge: "Vaga marcada como falsa",

@@ -1,15 +1,20 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { ArrowLeft, Briefcase, CheckCircle2, Loader2, Users } from "lucide-react";
+import type { Job } from "@/types/application/job/job";
+import { ArrowLeft, Briefcase, CheckCircle2, Loader2, Pencil, Trash2, Users } from "lucide-react";
 
 import { jobsApi } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
 
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 import { AppContainer } from "@/components/app-container";
+import { JobEditDialog } from "@/components/job-edit-dialog";
 
 export const Route = createFileRoute("/vagas/minhas")({
   beforeLoad: requireAuth,
@@ -27,10 +32,21 @@ function formatPostedAt(dateStr: string | null | undefined): string {
 }
 
 function MyJobs() {
+  const queryClient = useQueryClient();
+  const [editing, setEditing] = useState<Job | null>(null);
+  const [deleting, setDeleting] = useState<Job | null>(null);
   const mine = useQuery({ queryKey: ["jobs", "mine"], queryFn: () => jobsApi.mine(undefined, 20) });
   const applications = useQuery({
     queryKey: ["jobs", "applications"],
     queryFn: () => jobsApi.applications(undefined, 20),
+  });
+
+  const removeJob = useMutation({
+    mutationFn: (jobId: string) => jobsApi.remove(jobId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      setDeleting(null);
+    },
   });
 
   const loading = mine.isLoading || applications.isLoading;
@@ -97,11 +113,35 @@ function MyJobs() {
                           <>{texts.jobs.applicationsCount(job.applicationsCount ?? 0)}</>
                         </p>
 
-                        <Link to="/vagas/$jobId/candidaturas" params={{ jobId: job.id }}>
-                          <Button variant="outline" size="sm" className="rounded-full">
-                            {texts.jobs.applications.link}
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Link to="/vagas/$jobId/candidaturas" params={{ jobId: job.id }}>
+                            <Button variant="outline" size="sm" className="rounded-full">
+                              {texts.jobs.applications.link}
+                            </Button>
+                          </Link>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-full gap-1.5"
+                            onClick={() => setEditing(job)}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+
+                            <>{texts.common.edit}</>
                           </Button>
-                        </Link>
+
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="rounded-full gap-1.5 text-destructive"
+                            onClick={() => setDeleting(job)}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+
+                            <>{texts.jobs.deleteJob}</>
+                          </Button>
+                        </div>
                       </div>
                     </li>
                   ))}
@@ -149,6 +189,18 @@ function MyJobs() {
           </>
         )}
       </div>
+
+      <JobEditDialog job={editing} onOpenChange={(open) => !open && setEditing(null)} />
+      <ConfirmDialog
+        open={!!deleting}
+        onOpenChange={(open) => !open && setDeleting(null)}
+        title={texts.jobs.deleteJob}
+        description={texts.jobs.deleteConfirm}
+        confirmLabel={texts.jobs.deleteJob}
+        destructive
+        pending={removeJob.isPending}
+        onConfirm={() => deleting && removeJob.mutate(deleting.id)}
+      />
     </AppContainer>
   );
 }
