@@ -164,7 +164,6 @@ export const texts = {
     },
     social: {
       google: "Continuar com Google",
-      apple: "Continuar com Apple",
       divider: "ou com e-mail",
       unavailable: (provider: string) =>
         `Login com ${provider} ainda não está configurado nesta instalação.`,
@@ -209,7 +208,7 @@ export const texts = {
         "O link de confirmação vale por 24 horas. Entre com seu e-mail e senha para receber outro.",
       resend: "Pedir um novo link",
     },
-    /** Vínculo de provedores na conta (vincular/desvincular Google e Apple). */
+    /** Vínculo de provedores na conta (só Google; Apple aparece apenas para desvincular). */
     links: {
       title: "Contas vinculadas",
       description:
@@ -771,7 +770,7 @@ export const texts = {
     searchPlaceholder: "Buscar vagas (ex.: java -estágio)",
     /** Ajuda da busca booleana: mostra a sintaxe sem esconder o essencial. */
     searchHint:
-      "Combine termos com AND/OU/NOT: \"frase exata\" nas aspas, -termo exclui, +termo exige e ( ) agrupa. Sem operador, os termos valem como E.",
+      'Combine termos com AND/OU/NOT: "frase exata" nas aspas, -termo exclui, +termo exige e ( ) agrupa. Sem operador, os termos valem como E.',
     searchHelp: "Como buscar",
     skillsPlaceholder: "Habilidades (ex.: Java, Spring)",
     today: "Hoje",

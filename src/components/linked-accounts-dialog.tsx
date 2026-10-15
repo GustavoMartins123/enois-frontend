@@ -1,8 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import {
+  ENABLED_OAUTH_PROVIDERS,
+  OAUTH_PROVIDER_LABELS,
+  isOAuthProvider,
+  isOAuthProviderEnabled,
+} from "@/constants/auth-providers";
 import { texts } from "@/texts";
+import type { OAuthProvider } from "@/types/application/auth/oauth-provider";
 import type { LinkedAccountsDialogProps } from "@/types/components/account/linked-accounts-dialog-props";
-import { Loader2, Link2, Link2Off } from "lucide-react";
+import { Link2, Link2Off, Loader2 } from "lucide-react";
 
 import { ApiError, authApi } from "@/lib/api";
 
@@ -15,16 +22,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
-const PROVIDERS = [
-  { id: "GOOGLE", label: "Google" },
-  { id: "APPLE", label: "Apple" },
-] as const;
-
 /**
  * Contas vinculadas: mostra o que já está ligado e permite vincular/desvincular.
  *
- * Vincular começa um OAuth com state de vinculação (o backend só liga a identidade se o pedido tiver
- * partido de uma conta logada). Desvincular é recusado quando seria o último jeito de entrar.
+ * Só oferece vincular os provedores habilitados (ver ENABLED_OAUTH_PROVIDERS), mas continua
+ * listando um provedor desativado que a conta já tenha vinculado — senão ficaria impossível
+ * desvincular. Vincular começa um OAuth com state de vinculação (o backend só liga a identidade
+ * se o pedido tiver partido de uma conta logada). Desvincular é recusado quando seria o último
+ * jeito de entrar.
  */
 export function LinkedAccountsDialog({ open, onOpenChange }: LinkedAccountsDialogProps) {
   const queryClient = useQueryClient();
@@ -37,13 +42,17 @@ export function LinkedAccountsDialog({ open, onOpenChange }: LinkedAccountsDialo
 
   const linked = data ?? [];
 
+  const visibleProviders = [
+    ...new Set<string>([...ENABLED_OAUTH_PROVIDERS, ...linked.map((item) => item.provider)]),
+  ];
+
   const unlink = useMutation({
     mutationFn: (provider: string) => authApi.oauthUnlink(provider),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["linked-providers"] }),
   });
 
   const link = useMutation({
-    mutationFn: (provider: "GOOGLE" | "APPLE") => authApi.oauthLinkStart(provider),
+    mutationFn: (provider: OAuthProvider) => authApi.oauthLinkStart(provider),
     onSuccess: (start) => {
       window.location.href = start.authorizationUrl;
     },
@@ -72,20 +81,24 @@ export function LinkedAccountsDialog({ open, onOpenChange }: LinkedAccountsDialo
           </div>
         ) : (
           <ul className="space-y-2 pt-2">
-            {PROVIDERS.map((provider) => {
-              const current = linked.find((item) => item.provider === provider.id);
+            {visibleProviders.map((provider) => {
+              const current = linked.find((item) => item.provider === provider);
+              const linkable = isOAuthProviderEnabled(provider) ? provider : null;
+              const label = isOAuthProvider(provider) ? OAUTH_PROVIDER_LABELS[provider] : provider;
               const busy = unlink.isPending || link.isPending;
 
               return (
                 <li
-                  key={provider.id}
+                  key={provider}
                   className="flex items-center justify-between gap-3 rounded-xl border border-border-soft px-3 py-2.5"
                 >
                   <div className="min-w-0">
-                    <p className="text-[13px] font-medium text-text-strong">{provider.label}</p>
+                    <p className="text-[13px] font-medium text-text-strong">{label}</p>
 
                     <p className="truncate text-[11px] font-light text-text-subtle">
-                      {current ? current.email || texts.auth.links.linked : texts.auth.links.notLinked}
+                      {current
+                        ? current.email || texts.auth.links.linked
+                        : texts.auth.links.notLinked}
                     </p>
                   </div>
 
@@ -95,24 +108,26 @@ export function LinkedAccountsDialog({ open, onOpenChange }: LinkedAccountsDialo
                       size="sm"
                       className="shrink-0 rounded-full gap-1.5"
                       disabled={busy}
-                      onClick={() => unlink.mutate(provider.id)}
+                      onClick={() => unlink.mutate(provider)}
                     >
                       <Link2Off className="h-3.5 w-3.5" />
 
                       <>{texts.auth.links.unlink}</>
                     </Button>
                   ) : (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="shrink-0 rounded-full gap-1.5"
-                      disabled={busy}
-                      onClick={() => link.mutate(provider.id)}
-                    >
-                      <Link2 className="h-3.5 w-3.5" />
+                    linkable && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="shrink-0 rounded-full gap-1.5"
+                        disabled={busy}
+                        onClick={() => link.mutate(linkable)}
+                      >
+                        <Link2 className="h-3.5 w-3.5" />
 
-                      <>{texts.auth.links.link(provider.label)}</>
-                    </Button>
+                        <>{texts.auth.links.link(label)}</>
+                      </Button>
+                    )
                   )}
                 </li>
               );
