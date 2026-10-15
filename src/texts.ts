@@ -1099,6 +1099,9 @@ export const texts = {
     updateError: "Não foi possível salvar a vaga. Tente novamente.",
     deleted: "Vaga excluída.",
     loadError: "Não foi possível carregar suas vagas. Tente de novo.",
+    identityRequired:
+      "Sua conta ainda não está verificada, e publicar/candidatar-se exige verificação. Confirme seu e-mail ou ative a verificação em duas etapas.",
+    identityAction: "Verificar minha conta",
     retry: "Tentar de novo",
     fakeBadge: "Vaga marcada como falsa",
     report: {

@@ -7,7 +7,7 @@ import { texts } from "@/texts";
 import type { Job } from "@/types/application/job/job";
 import { ArrowLeft, Briefcase, CheckCircle2, Loader2, Pencil, Trash2, Users } from "lucide-react";
 
-import { jobsApi } from "@/lib/api";
+import { ApiError, jobsApi } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
 
 import { Button } from "@/components/ui/button";
@@ -54,6 +54,13 @@ function MyJobs() {
   // "você ainda não publicou vagas" para quem tem vagas — parecia que a página quebrou.
   const failed = mine.isError || applications.isError;
 
+  // O backend exige identidade verificada para "minhas vagas" (nao para a lista publica). Sem
+  // tratar isso, a tela so dizia "nao foi possivel carregar" e a pessoa nao tinha como saber que
+  // o caminho e confirmar o e-mail — nem onde fazer isso.
+  const needsVerification =
+    (mine.error instanceof ApiError && mine.error.code === "EMAIL_NOT_VERIFIED") ||
+    (applications.error instanceof ApiError && applications.error.code === "EMAIL_NOT_VERIFIED");
+
   const retry = () => {
     void mine.refetch();
     void applications.refetch();
@@ -77,11 +84,21 @@ function MyJobs() {
           </div>
         ) : failed ? (
           <div className="surface-card p-6 text-center">
-            <p className="text-sm text-muted-foreground">{texts.jobs.loadError}</p>
+            <p className="text-sm text-muted-foreground">
+              {needsVerification ? texts.jobs.identityRequired : texts.jobs.loadError}
+            </p>
 
-            <Button variant="outline" size="sm" className="mt-3 rounded-full" onClick={retry}>
-              {texts.jobs.retry}
-            </Button>
+            {needsVerification ? (
+              <Link to="/seguranca">
+                <Button size="sm" className="mt-3 rounded-full">
+                  {texts.jobs.identityAction}
+                </Button>
+              </Link>
+            ) : (
+              <Button variant="outline" size="sm" className="mt-3 rounded-full" onClick={retry}>
+                {texts.jobs.retry}
+              </Button>
+            )}
           </div>
         ) : (
           <>
