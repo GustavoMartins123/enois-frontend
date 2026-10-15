@@ -1,7 +1,7 @@
 import type { MediaAsset } from "@/types/application/media/media-asset";
 import type { MediaUploadResponse } from "@/types/application/media/media-upload-response";
 
-import { api } from "../api-client";
+import { api, getSessionToken } from "../api-client";
 import { getImageKitAuth } from "./imagekit-auth.fn";
 
 const IMAGEKIT_PUBLIC_KEY =
@@ -35,7 +35,9 @@ export const mediaApi = {
     const folder = lastSlash >= 0 ? fullPath.slice(0, lastSlash) : "";
     const fileName = lastSlash >= 0 ? fullPath.slice(lastSlash + 1) : fullPath;
 
-    const { signature, token, expire } = await getImageKitAuth();
+    const { signature, token, expire } = await getImageKitAuth({
+      data: { sessionToken: getSessionToken() },
+    });
 
     const formData = new FormData();
     formData.append("file", file);

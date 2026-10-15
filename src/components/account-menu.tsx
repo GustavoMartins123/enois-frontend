@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { AccountMenuProps } from "@/types/components/account/account-menu-props";
-import { KeyRound, LogOut, Mail, User } from "lucide-react";
+import { KeyRound, LogOut, Mail, Trash2, User } from "lucide-react";
 
 import { logout } from "@/lib/logout";
 import { cn } from "@/lib/utils";
@@ -12,7 +12,8 @@ import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 import { ChangeEmailDialog } from "./change-email-dialog";
-import { ResetPasswordDialog } from "./reset-password-dialog";
+import { ChangePasswordDialog } from "./change-password-dialog";
+import { DeleteAccountDialog } from "./delete-account-dialog";
 import { UserAvatar } from "./user-avatar";
 
 const ITEM_CLASS =
@@ -21,7 +22,8 @@ const ITEM_CLASS =
 export function AccountMenu({ profile }: AccountMenuProps) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showChangeEmail, setShowChangeEmail] = useState(false);
-  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
   const openChangeEmail = () => {
@@ -29,9 +31,14 @@ export function AccountMenu({ profile }: AccountMenuProps) {
     setShowChangeEmail(true);
   };
 
-  const openResetPassword = () => {
+  const openChangePassword = () => {
     setMenuOpen(false);
-    setShowResetPassword(true);
+    setShowChangePassword(true);
+  };
+
+  const openDeleteAccount = () => {
+    setMenuOpen(false);
+    setShowDeleteAccount(true);
   };
 
   const handleLogout = () => {
@@ -87,10 +94,22 @@ export function AccountMenu({ profile }: AccountMenuProps) {
               <>{texts.account.menu.changeEmail}</>
             </button>
 
-            <button type="button" onClick={openResetPassword} className={ITEM_CLASS}>
+            <button type="button" onClick={openChangePassword} className={ITEM_CLASS}>
               <KeyRound className="h-4 w-4" />
 
-              <>{texts.account.menu.resetPassword}</>
+              <>{texts.account.menu.changePassword}</>
+            </button>
+          </div>
+
+          <div className="border-t border-border-soft py-1">
+            <button
+              type="button"
+              onClick={openDeleteAccount}
+              className={cn(ITEM_CLASS, "text-destructive hover:text-destructive")}
+            >
+              <Trash2 className="h-4 w-4" />
+
+              <>{texts.account.menu.deleteAccount}</>
             </button>
           </div>
 
@@ -114,11 +133,8 @@ export function AccountMenu({ profile }: AccountMenuProps) {
         onOpenChange={setShowChangeEmail}
         currentEmail={profile.email}
       />
-      <ResetPasswordDialog
-        open={showResetPassword}
-        onOpenChange={setShowResetPassword}
-        email={profile.email}
-      />
+      <ChangePasswordDialog open={showChangePassword} onOpenChange={setShowChangePassword} />
+      <DeleteAccountDialog open={showDeleteAccount} onOpenChange={setShowDeleteAccount} />
     </>
   );
 }

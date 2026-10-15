@@ -2,6 +2,8 @@ import type { StatusResponse } from "@/types/application/api/status-response";
 import type { AuthResponse } from "@/types/application/auth/auth-response";
 import type { AuthUser } from "@/types/application/auth/auth-user";
 import type { ChangeEmailInput } from "@/types/application/auth/change-email-input";
+import type { ChangePasswordInput } from "@/types/application/auth/change-password-input";
+import type { DeleteAccountInput } from "@/types/application/auth/delete-account-input";
 import type { LoginInput } from "@/types/application/auth/login-input";
 import type { OAuthStartResponse } from "@/types/application/auth/oauth-start-response";
 import type { SignupInput } from "@/types/application/auth/signup-input";
@@ -20,6 +22,12 @@ export const authApi = {
   me: () => api.get<AuthUser>("/auth/me"),
 
   changeEmail: (data: ChangeEmailInput) => api.post<StatusResponse>("/auth/email/change", data),
+
+  changePassword: (data: ChangePasswordInput) =>
+    api.post<StatusResponse>("/auth/password/change", data),
+
+  deleteAccount: (data: DeleteAccountInput) =>
+    api.post<StatusResponse>("/auth/account/delete", data),
 
   forgotPassword: (email: string) => api.post<StatusResponse>("/auth/password/forgot", { email }),
 

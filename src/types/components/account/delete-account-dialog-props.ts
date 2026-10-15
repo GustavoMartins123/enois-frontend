@@ -1,5 +1,4 @@
-export type ResetPasswordDialogProps = {
+export type DeleteAccountDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  email: string;
 };
