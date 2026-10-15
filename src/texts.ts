@@ -768,7 +768,11 @@ export const texts = {
       type: "Tipo:",
       locations: ["Remoto", "Híbrido", "Presencial"],
     },
-    searchPlaceholder: "Buscar por título ou empresa...",
+    searchPlaceholder: "Buscar vagas (ex.: java -estágio)",
+    /** Ajuda da busca booleana: mostra a sintaxe sem esconder o essencial. */
+    searchHint:
+      "Combine termos com AND/OU/NOT: \"frase exata\" nas aspas, -termo exclui, +termo exige e ( ) agrupa. Sem operador, os termos valem como E.",
+    searchHelp: "Como buscar",
     skillsPlaceholder: "Habilidades (ex.: Java, Spring)",
     today: "Hoje",
     daysAgo: (days: number) => `Há ${days} ${days === 1 ? "dia" : "dias"}`,

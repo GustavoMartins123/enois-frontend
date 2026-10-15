@@ -19,6 +19,7 @@ import {
   AlertTriangle,
   Briefcase,
   CheckCircle2,
+  CircleHelp,
   Flag,
   Loader2,
   Lock,
@@ -39,6 +40,7 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Dialog,
   DialogContent,
@@ -262,9 +264,53 @@ function Vagas() {
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder={texts.jobs.searchPlaceholder}
+                aria-describedby="jobs-search-hint"
                 className="h-9 rounded-full bg-muted pl-9"
               />
             </div>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-9 shrink-0 gap-1.5 rounded-full"
+                >
+                  <CircleHelp className="h-4 w-4" />
+
+                  <>{texts.jobs.searchHelp}</>
+                </Button>
+              </PopoverTrigger>
+
+              <PopoverContent align="start" className="w-[min(calc(100vw-2rem),22rem)] text-sm">
+                <p className="font-medium">{texts.jobs.searchHelp}</p>
+
+                <p className="mt-1 text-muted-foreground">{texts.jobs.searchHint}</p>
+
+                <ul className="mt-3 space-y-1 text-[12px] text-muted-foreground">
+                  <li>
+                    <code>java spring</code> — vagas com os dois termos
+                  </li>
+
+                  <li>
+                    <code>java -estágio</code> — com java, sem estágio
+                  </li>
+
+                  <li>
+                    <code>{"(java OR kotlin) senior"}</code> — uma coisa ou outra, e senior
+                  </li>
+
+                  <li>
+                    <code>"engenheira de dados"</code> — frase inteira
+                  </li>
+                </ul>
+              </PopoverContent>
+            </Popover>
+
+            <p id="jobs-search-hint" className="sr-only">
+              {texts.jobs.searchHint}
+            </p>
 
             <Input
               value={skills}

@@ -129,6 +129,9 @@ le `process.env.IMAGEKIT_PRIVATE_KEY`).
 - `/#comunidade` — ancora da secao de CTA da landing. O `id` fica na secao e o scroll por hash e
   tratado em `useHashScroll` (navegacao de SPA e clique no proprio link); no mobile os links de
   secao aparecem no rodape, ja que o menu do topo e so para desktop.
+- `/vagas` — busca booleana: `AND`/`E`, `OR`/`OU`, `NOT`/`NÃO`, `"frase"`, `-termo`, `+termo` e `( )`.
+  Um popover "Como buscar" explica a sintaxe sem esconder os exemplos, e os filtros de nível/tipo/local/
+  habilidades passam a ser combinados com o texto digitado.
 - `/mentoria` — agendamento real: o botao "Agendar" abre os horarios publicados (`GET
   /mentors/{id}/slots`, que devolve `PageResponse`), envia a solicitacao e da retorno; quem e o
   mentor ve "Minha agenda" para publicar horarios.
