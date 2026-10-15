@@ -204,11 +204,15 @@ function SocialButtons() {
   const startOAuth = async (provider: OAuthStartResponse["provider"]) => {
     setLoading(provider);
     setError(null);
-    // Simulate attempt then fail — SSO não configurado neste ambiente.
-    await new Promise((r) => setTimeout(r, 400));
     const providerName = provider === "GOOGLE" ? "Google" : "Apple";
-    setError(texts.auth.social.unavailable(providerName));
-    setLoading(null);
+    try {
+      // O backend devolve a URL de autorização e define o cookie de state (anti-CSRF).
+      const start = await authApi.oauthStart(provider);
+      window.location.href = start.authorizationUrl;
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : texts.auth.social.unavailable(providerName));
+      setLoading(null);
+    }
   };
 
   return (

@@ -31,6 +31,6 @@ export const authApi = {
 
   oauthCallback: (provider: string, code: string, state: string) =>
     api.get<AuthResponse>(
-      `/auth/oauth/${provider}/callback${new URLSearchParams({ code, state }).toString()}`,
+      `/auth/oauth/${provider.toLowerCase()}/callback?${new URLSearchParams({ code, state }).toString()}`,
     ),
 };

@@ -161,6 +161,8 @@ export const texts = {
       divider: "ou com e-mail",
       unavailable: (provider: string) =>
         `Função não implementada: login com ${provider} ainda não está configurado.`,
+      callbackError: "Não foi possível concluir o login social. Tente novamente.",
+      callbackLoading: "Concluindo o login...",
     },
     terms: {
       prefix: "Ao continuar, você concorda com os ",

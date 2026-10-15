@@ -24,6 +24,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as PerfilUsernameRouteImport } from './routes/perfil.$username'
 import { Route as ComunidadesCommunityIdRouteImport } from './routes/comunidades.$communityId'
 import { Route as AuthResetRouteImport } from './routes/auth.reset'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 
 const VagasRoute = VagasRouteImport.update({
   id: '/vagas',
@@ -100,6 +101,11 @@ const AuthResetRoute = AuthResetRouteImport.update({
   path: '/auth/reset',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/auth/callback',
+  path: '/auth/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -114,6 +120,7 @@ export interface FileRoutesByFullPath {
   '/salvos': typeof SalvosRoute
   '/termos': typeof TermosRoute
   '/vagas': typeof VagasRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset': typeof AuthResetRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
@@ -131,6 +138,7 @@ export interface FileRoutesByTo {
   '/salvos': typeof SalvosRoute
   '/termos': typeof TermosRoute
   '/vagas': typeof VagasRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset': typeof AuthResetRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
@@ -149,6 +157,7 @@ export interface FileRoutesById {
   '/salvos': typeof SalvosRoute
   '/termos': typeof TermosRoute
   '/vagas': typeof VagasRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset': typeof AuthResetRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
@@ -168,6 +177,7 @@ export interface FileRouteTypes {
     | '/salvos'
     | '/termos'
     | '/vagas'
+    | '/auth/callback'
     | '/auth/reset'
     | '/comunidades/$communityId'
     | '/perfil/$username'
@@ -185,6 +195,7 @@ export interface FileRouteTypes {
     | '/salvos'
     | '/termos'
     | '/vagas'
+    | '/auth/callback'
     | '/auth/reset'
     | '/comunidades/$communityId'
     | '/perfil/$username'
@@ -202,6 +213,7 @@ export interface FileRouteTypes {
     | '/salvos'
     | '/termos'
     | '/vagas'
+    | '/auth/callback'
     | '/auth/reset'
     | '/comunidades/$communityId'
     | '/perfil/$username'
@@ -220,6 +232,7 @@ export interface RootRouteChildren {
   SalvosRoute: typeof SalvosRoute
   TermosRoute: typeof TermosRoute
   VagasRoute: typeof VagasRoute
+  AuthCallbackRoute: typeof AuthCallbackRoute
   AuthResetRoute: typeof AuthResetRoute
   PerfilUsernameRoute: typeof PerfilUsernameRoute
 }
@@ -331,6 +344,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthResetRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/auth/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -359,6 +379,7 @@ const rootRouteChildren: RootRouteChildren = {
   SalvosRoute: SalvosRoute,
   TermosRoute: TermosRoute,
   VagasRoute: VagasRoute,
+  AuthCallbackRoute: AuthCallbackRoute,
   AuthResetRoute: AuthResetRoute,
   PerfilUsernameRoute: PerfilUsernameRoute,
 }
