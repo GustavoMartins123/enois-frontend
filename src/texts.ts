@@ -17,6 +17,9 @@ const common = {
   add: "Adicionar",
   back: "Voltar",
   profile: "Perfil",
+  charactersLeft: (count: number) =>
+    count === 1 ? "falta 1 caractere" : `faltam ${count} caracteres`,
+  charactersLimitReached: "limite de caracteres atingido",
 } as const;
 
 export const texts = {

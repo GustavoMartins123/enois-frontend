@@ -183,7 +183,7 @@ function Home() {
             onSubmit={publishPost}
             className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-5"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-start gap-3">
               <UserAvatar
                 src={profileUser?.avatar}
                 alt={profileUser?.name ?? texts.feed.you}
@@ -196,7 +196,7 @@ function Home() {
                   setMentionedUserIds(ids);
                 }}
                 placeholder={texts.feed.composer.placeholder}
-                className="min-h-11 flex-1 resize-none rounded-2xl border-border-soft bg-surface-1 px-3 py-2 text-[14px] font-light"
+                className="flex-1 resize-none rounded-2xl border-border-soft bg-surface-1 px-3 py-2 text-[14px] font-light"
                 maxLength={600}
               />
             </div>

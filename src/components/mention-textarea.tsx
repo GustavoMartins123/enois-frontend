@@ -10,6 +10,12 @@ import { usersApi } from "@/lib/api";
 
 import { UserAvatar } from "@/components/user-avatar";
 
+/** Altura mínima da caixa, em linhas de texto, para dar espaço de revisar o que foi escrito. */
+const MIN_ROWS = 4;
+
+/** A partir daqui o contador de caracteres passa a chamar atenção. */
+const COUNTER_WARNING_AT = 20;
+
 export function MentionTextarea({
   value,
   onChange,
@@ -33,6 +39,25 @@ export function MentionTextarea({
   useEffect(() => {
     setSelectedIdx(0);
   }, [results.length]);
+
+  // Acompanha o texto: cresce conforme você escreve e encolhe ao apagar, nunca
+  // ficando menor que MIN_ROWS linhas — assim dá pra reler e editar o que digitou.
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+
+    const styles = getComputedStyle(el);
+    const lineHeight = parseFloat(styles.lineHeight) || 20;
+    const verticalPadding = parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom);
+    const minHeight = MIN_ROWS * lineHeight + verticalPadding;
+
+    el.style.height = "auto";
+    el.style.height = `${Math.max(el.scrollHeight, minHeight)}px`;
+  }, [value]);
+
+  const remaining = maxLength === undefined ? null : maxLength - value.length;
+  const nearLimit = remaining !== null && remaining <= COUNTER_WARNING_AT;
+  const atLimit = remaining !== null && remaining <= 0;
 
   const updateMention = (text: string, cursor: number) => {
     const before = text.slice(0, cursor);
@@ -114,6 +139,17 @@ export function MentionTextarea({
         maxLength={maxLength}
         rows={rows}
       />
+
+      {remaining !== null && (
+        <p
+          className={`mt-1 text-right text-[11px] font-light ${
+            atLimit ? "text-destructive" : nearLimit ? "text-primary" : "text-text-subtle"
+          }`}
+        >
+          {atLimit ? texts.common.charactersLimitReached : texts.common.charactersLeft(remaining)}
+        </p>
+      )}
+
       {mentionQuery.length >= 2 && results.length > 0 && (
         <div className="absolute bottom-full left-0 right-0 z-50 mb-1 max-h-48 overflow-y-auto rounded-xl border border-border bg-popover shadow-lg">
           {results.map((user, i) => (

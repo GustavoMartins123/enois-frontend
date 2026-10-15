@@ -210,7 +210,7 @@ export function PostComments({ postId }: PostIdProps) {
             </div>
           )}
 
-          <div className="flex items-center gap-2 rounded-full border border-border-soft bg-surface-1 py-1.5 pl-4 pr-1.5">
+          <div className="flex items-end gap-2 rounded-2xl border border-border-soft bg-surface-1 py-2 pl-4 pr-2">
             <MentionTextarea
               value={draft}
               onChange={(value, ids) => {
@@ -218,7 +218,7 @@ export function PostComments({ postId }: PostIdProps) {
                 setCommentMentions(postId, ids);
               }}
               placeholder={texts.posts.comments.placeholder}
-              className="h-6 min-h-6 flex-1 resize-none border-0 bg-transparent p-0 text-[13px] font-light outline-none"
+              className="flex-1 resize-none border-0 bg-transparent p-0 text-[13px] font-light outline-none"
               maxLength={280}
             />
 
