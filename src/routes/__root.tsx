@@ -19,6 +19,7 @@ import type { RootRouteContext } from "@/types/routes/root/root-route-context";
 
 import { registerServiceWorker } from "@/lib/pwa";
 import { hasSession, isProtectedPath } from "@/lib/require-auth";
+import { useThemeSync } from "@/lib/theme/use-theme-sync";
 
 import appCss from "../styles.css?url";
 
@@ -123,11 +124,26 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
   errorComponent: ErrorComponent,
 });
 
+/**
+ * Aplica o tema guardado antes do primeiro paint.
+ *
+ * Sem isso o app nasce claro (e na cor padrão) e só depois de hidratar assume o
+ * tema do usuário — aquele flash. O CSS já vem resolvido do `localStorage`, então
+ * o script só injeta o texto, sem repetir a matemática de cor.
+ */
+const THEME_BOOTSTRAP_SCRIPT = `(function(){try{
+var raw=localStorage.getItem("connect-grow-preferences");
+if(raw){var parsed=JSON.parse(raw);if(parsed&&parsed.state&&parsed.state.theme==="dark"){document.documentElement.classList.add("dark");}}
+var css=localStorage.getItem("connect-grow-theme-css");
+if(css){var style=document.createElement("style");style.id="app-theme";style.textContent=css;document.head.appendChild(style);}
+}catch(error){}})();`;
+
 function RootShell({ children }: WithRequiredChildren) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} />
       </head>
 
       <body>
@@ -142,6 +158,8 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+
+  useThemeSync();
 
   useEffect(() => {
     registerServiceWorker();

@@ -122,12 +122,10 @@ async function request<T>(
   }
 
   const hadSession = Boolean(headers["X-Session-Token"]);
-  if (
-    (response.status === 401 || response.status === 403) &&
-    hadSession &&
-    !isRefreshing &&
-    !path.startsWith("/auth/")
-  ) {
+  // 401 e sessao invalida/expirada (tenta refresh e, se nao der, manda para o login). 403 e
+  // PERMISSAO negada, nao sessao: derrubar o usuario aqui era um erro (quem tem conta pendente de
+  // verificacao, por exemplo, era desconectado em vez de ler o aviso).
+  if (response.status === 401 && hadSession && !isRefreshing && !path.startsWith("/auth/")) {
     isRefreshing = true;
     const refreshed = await tryRefreshToken();
     isRefreshing = false;
@@ -162,19 +160,17 @@ async function request<T>(
     );
   }
 
-  // Sem sessao: nao redireciona daqui (ha consultas autenticadas em telas publicas, como
-  // "posts salvos" num post compartilhado). Quem barra o acesso e o guard de rota.
-  if ((response.status === 401 || response.status === 403) && !hadSession) {
-    throw new ApiError(
-      response.status,
-      "UNAUTHENTICATED",
-      "É necessário entrar para ver isso.",
-      path,
-    );
-  }
-
+  // Sem sessao nao redireciona daqui (ha consultas autenticadas em telas publicas, como "posts
+  // salvos" num post compartilhado): quem barra o acesso e o guard de rota.
+  //
+  // O que o backend respondeu vem SEMPRE primeiro: era isso que fazia senha errada no login exibir
+  // "É necessário entrar para ver isso" — a resposta de 401 ja dizia "Email ou senha invalidos".
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
+    if (!errorBody?.code && !errorBody?.message && (response.status === 401 || response.status === 403)
+        && !hadSession) {
+      throw new ApiError(response.status, "UNAUTHENTICATED", "É necessário entrar para ver isso.", path);
+    }
     throw new ApiError(
       response.status,
       errorBody?.code,

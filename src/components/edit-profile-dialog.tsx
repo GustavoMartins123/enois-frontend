@@ -51,6 +51,7 @@ export function EditProfileDialog({ profile, children }: Props) {
   const [openToWork, setOpenToWork] = useState(profile.openToWork);
   const [isMentor, setIsMentor] = useState(profile.isMentor);
   const [usernameError, setUsernameError] = useState("");
+  const [generalError, setGeneralError] = useState<string | null>(null);
 
   const updateProfile = useMutation({
     mutationFn: (data: Parameters<typeof profileApi.update>[0]) => profileApi.update(data),
@@ -68,9 +69,13 @@ export function EditProfileDialog({ profile, children }: Props) {
       setOpen(false);
     },
     onError: (err) => {
-      if (err instanceof ApiError && err.status === 409) {
+      // Mapear por CODIGO, nunca por status: um 409 tambem vem de outras validacoes (bio longa,
+      // e-mail em uso, ...) e mostrar "nome de usuario ja esta em uso" para todas era o problema.
+      if (err instanceof ApiError && err.code === "USERNAME_TAKEN") {
         setUsernameError(texts.profile.edit.usernameTaken);
+        return;
       }
+      setGeneralError(err instanceof ApiError ? err.message : texts.errors.unexpected);
     },
   });
 
@@ -94,6 +99,7 @@ export function EditProfileDialog({ profile, children }: Props) {
 
   const handleSave = async () => {
     setUsernameError("");
+    setGeneralError(null);
     await updateProfile.mutateAsync({
       username: username !== profile.username ? username : undefined,
       name: name !== profile.name ? name : undefined,
@@ -149,6 +155,12 @@ export function EditProfileDialog({ profile, children }: Props) {
                 {texts.common.cancel}
               </Button>
 
+              {generalError && (
+                <p className="mr-auto max-w-[60%] text-[12px] font-light text-destructive" role="alert">
+                  {generalError}
+                </p>
+              )}
+
               <Button size="sm" onClick={handleSave} disabled={updateProfile.isPending}>
                 {updateProfile.isPending ? texts.common.saving : texts.common.save}
               </Button>
@@ -179,6 +191,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  maxLength={160}
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
@@ -191,6 +204,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                     setUsernameError("");
                   }}
                   placeholder={texts.profile.edit.placeholders.username}
+                  maxLength={80}
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
@@ -200,6 +214,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                   value={headline}
                   onChange={(e) => setHeadline(e.target.value)}
                   placeholder={texts.profile.edit.placeholders.headline}
+                  maxLength={180}
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
@@ -208,8 +223,9 @@ export function EditProfileDialog({ profile, children }: Props) {
                 <Textarea
                   value={bio}
                   onChange={(e) => setBio(e.target.value)}
-                  rows={3}
-                  className="h-10 border-border-soft bg-surface-1 pl-9"
+                  rows={4}
+                  maxLength={1024}
+                  className="border-border-soft bg-surface-1"
                 />
               </Field>
 
@@ -218,6 +234,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                   <Input
                     value={company}
                     onChange={(e) => setCompany(e.target.value)}
+                    maxLength={160}
                     className="h-10 border-border-soft bg-surface-1"
                   />
                 </Field>
@@ -226,6 +243,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                   <Input
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
+                    maxLength={160}
                     className="h-10 border-border-soft bg-surface-1"
                   />
                 </Field>
@@ -236,6 +254,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                   value={availability}
                   onChange={(e) => setAvailability(e.target.value)}
                   placeholder={texts.profile.edit.placeholders.availability}
+                  maxLength={160}
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
@@ -245,6 +264,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                   value={portfolio}
                   onChange={(e) => setPortfolio(e.target.value)}
                   placeholder={texts.profile.edit.placeholders.portfolio}
+                  maxLength={500}
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
@@ -254,7 +274,8 @@ export function EditProfileDialog({ profile, children }: Props) {
                   value={linksText}
                   onChange={(e) => setLinksText(e.target.value)}
                   rows={3}
-                  className="h-10 border-border-soft bg-surface-1"
+                  maxLength={500}
+                  className="border-border-soft bg-surface-1"
                 />
               </Field>
 
@@ -262,6 +283,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                 <Input
                   value={skillsText}
                   onChange={(e) => setSkillsText(e.target.value)}
+                  maxLength={400}
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
@@ -270,6 +292,7 @@ export function EditProfileDialog({ profile, children }: Props) {
                 <Input
                   value={goalsText}
                   onChange={(e) => setGoalsText(e.target.value)}
+                  maxLength={400}
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>

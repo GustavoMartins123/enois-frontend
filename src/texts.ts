@@ -60,6 +60,56 @@ export const texts = {
     system: "Tema do sistema",
   },
 
+  appearance: {
+    action: "Aparência",
+    title: "Aparência",
+    description: "Escolha as cores do app. A preferência vale só neste dispositivo.",
+    mode: "Modo",
+    accentSection: "Cor de destaque",
+    accentHint: "Botões, links, selos e o gradiente da marca.",
+    hue: "Matiz",
+    hueValue: (degrees: number) => `${degrees}°`,
+    saturation: "Saturação",
+    brightness: "Brilho",
+    brightnessHint: "No modo escuro o tom sobe sozinho para continuar legível.",
+    backgroundSection: "Tom do fundo",
+    backgroundHint: "Um tingimento leve nas superfícies, discreto de propósito.",
+    backgroundIntensity: "Intensidade",
+    presets: "Paletas prontas",
+    presetNames: {
+      uva: "Uva",
+      oceano: "Oceano",
+      menta: "Menta",
+      porDoSol: "Pôr do sol",
+      rosa: "Rosa",
+      grafite: "Grafite",
+    },
+    presetLabels: {
+      uva: "A padrão do Énóis",
+      oceano: "Frio e sóbrio",
+      menta: "Fresco",
+      porDoSol: "Quente",
+      rosa: "Vibrante",
+      grafite: "Sem cor, só contraste",
+    },
+    preview: "Como vai ficar",
+    previewPost: "Esse detalhe do cache mudou minha semana.",
+    previewBadge: "Projeto",
+    previewAvatar: "MR",
+    previewAvatarName: "Marina Rocha",
+    contrast: {
+      label: "Contraste",
+      AAA: "Excelente",
+      AA: "Bom",
+      AA_LARGE: "No limite",
+      FAIL: "Difícil de ler",
+      worstPair: (pair: string) => `Ponto mais frágil: ${pair}.`,
+      hint: "Aumente o brilho ou reduza a saturação para melhorar.",
+    },
+    reset: "Restaurar padrão",
+    done: "Pronto",
+  },
+
   search: {
     action: "Buscar",
     placeholder: "Buscar pessoas, comunidades, vagas...",
@@ -256,7 +306,8 @@ export const texts = {
       wrongPassword: "Senha incorreta.",
       unavailable:
         "A verificação por aplicativo ainda não está disponível nesta instalação. Use o código por e-mail.",
-      notConfigured: "Falta configurar a chave de segurança no servidor (REDE_SECURITY_ENCRYPTION_KEY).",
+      notConfigured:
+        "Falta configurar a chave de segurança no servidor (REDE_SECURITY_ENCRYPTION_KEY).",
       verifyIdentity: "Verificar identidade",
       verifyIdentityHint:
         "Sem verificação, sua reputação é multiplicada por zero e você não publica vagas.",
@@ -964,7 +1015,8 @@ export const texts = {
       title: "Candidaturas recebidas",
       titleFor: (job: string) => `Candidaturas · ${job}`,
       seoTitle: "Candidaturas · Énóis",
-      empty: "Ninguém se candidatou ainda. Quem se candidatar aparece aqui, e você também recebe por e-mail e na conversa direta.",
+      empty:
+        "Ninguém se candidatou ainda. Quem se candidatar aparece aqui, e você também recebe por e-mail e na conversa direta.",
       candidate: "Candidato",
       experience: (years: number, count: number) =>
         `${years} ${years === 1 ? "ano" : "anos"} de experiência · ${count} ${count === 1 ? "experiência" : "experiências"}`,

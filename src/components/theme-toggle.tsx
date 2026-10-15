@@ -1,25 +1,12 @@
-import { useEffect } from "react";
-
-import { hydratePreferences, usePreferencesStore } from "@/stores/preferences.store";
+import { usePreferencesStore } from "@/stores/preferences.store";
 import { texts } from "@/texts";
 import type { Theme } from "@/types/preferences/theme";
 import { Moon, Sun } from "lucide-react";
 
-function applyTheme(theme: Theme) {
-  document.documentElement.classList.toggle("dark", theme === "dark");
-}
-
+/** Alterna claro/escuro. A aplicação no DOM fica em `useThemeSync`, no root. */
 export function ThemeToggle() {
   const theme = usePreferencesStore((state) => state.theme);
   const setTheme = usePreferencesStore((state) => state.setTheme);
-
-  useEffect(() => {
-    hydratePreferences();
-  }, []);
-
-  useEffect(() => {
-    applyTheme(theme);
-  }, [theme]);
 
   const cycleTheme = () => {
     const next: Theme = theme === "light" ? "dark" : "light";
