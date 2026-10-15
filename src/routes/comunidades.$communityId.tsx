@@ -210,11 +210,13 @@ function CommunityDetail() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              {/* flex-wrap + w-auto: o tamanho default do Button e `w-full`, entao os botoes de
+                  admin brigavam por espaco e estouravam a linha no celular. */}
+              <div className="flex flex-wrap items-center gap-2">
                 {isAdmin && (
                   <Dialog open={editOpen} onOpenChange={setEditOpen}>
                     <DialogTrigger asChild>
-                      <Button variant="outline" className="rounded-full gap-1.5">
+                      <Button variant="outline" className="w-auto rounded-full gap-1.5">
                         <Settings className="h-4 w-4" />
 
                         <>{texts.communities.detail.edit}</>
@@ -234,7 +236,7 @@ function CommunityDetail() {
                   <>
                     <Button
                       variant="outline"
-                      className="rounded-full gap-1.5 shrink-0"
+                      className="w-auto rounded-full gap-1.5"
                       onClick={() => setTransferOpen(true)}
                     >
                       <Crown className="h-4 w-4" />
@@ -244,7 +246,7 @@ function CommunityDetail() {
 
                     <Button
                       variant="outline"
-                      className="rounded-full gap-1.5 shrink-0 text-destructive"
+                      className="w-auto rounded-full gap-1.5 text-destructive"
                       onClick={() => setDeleteOpen(true)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -252,7 +254,7 @@ function CommunityDetail() {
                   </>
                 )}
                 <Button
-                  className="rounded-full shrink-0 whitespace-nowrap"
+                  className="w-auto rounded-full whitespace-nowrap"
                   variant={isMember ? "secondary" : "default"}
                   disabled={join.isPending || leave.isPending}
                   onClick={() => (isMember ? setLeaveOpen(true) : join.mutate())}
@@ -269,12 +271,16 @@ function CommunityDetail() {
           onOpenChange={setLeaveOpen}
           title={texts.communities.leave.title}
           description={
-            isAdmin ? texts.communities.ownerLeaveBlocked : texts.communities.leave.description(live.name)
+            isAdmin
+              ? texts.communities.ownerLeaveBlocked
+              : texts.communities.leave.description(live.name)
           }
           confirmLabel={texts.communities.leave.confirm}
           destructive
           pending={leave.isPending}
-          onConfirm={() => (isAdmin ? (setLeaveOpen(false), setTransferOpen(true)) : leave.mutate())}
+          onConfirm={() =>
+            isAdmin ? (setLeaveOpen(false), setTransferOpen(true)) : leave.mutate()
+          }
         />
 
         <Dialog open={transferOpen} onOpenChange={setTransferOpen}>
@@ -283,7 +289,9 @@ function CommunityDetail() {
               <DialogTitle>{texts.communities.transfer.title}</DialogTitle>
             </DialogHeader>
 
-            <p className="text-sm text-muted-foreground">{texts.communities.transfer.description}</p>
+            <p className="text-sm text-muted-foreground">
+              {texts.communities.transfer.description}
+            </p>
 
             <div className="max-h-72 space-y-1 overflow-y-auto">
               {members
@@ -299,6 +307,7 @@ function CommunityDetail() {
 
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium">{m.name}</p>
+
                       <p className="truncate text-xs text-muted-foreground">@{m.username}</p>
                     </div>
                   </button>
