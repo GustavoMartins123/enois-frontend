@@ -28,6 +28,7 @@ import { Pill } from "@/components/ui/pill";
 import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
+import { CommunityFavoriteButton } from "@/components/community-favorite-button";
 
 const TOPICS = [
   "Todas",
@@ -167,12 +168,16 @@ function Comunidades() {
               params={{ communityId: c.id }}
               className="min-w-0"
             >
-              <article className="surface-card overflow-hidden cursor-pointer transition hover:shadow-[var(--shadow-card)]">
+              <article className="surface-card relative overflow-hidden cursor-pointer transition hover:shadow-[var(--shadow-card)]">
                 {c.cover ? (
                   <img src={resolveCdnUrl(c.cover)} alt="" className="h-32 w-full object-cover" />
                 ) : (
                   <div className="h-32 w-full bg-gradient-to-br from-primary/20 to-primary/5" />
                 )}
+
+                <div className="absolute right-3 top-3">
+                  <CommunityFavoriteButton communityId={c.id} />
+                </div>
                 <div className="p-5">
                   <div className="flex items-center gap-3 mb-3">
                     {c.avatar && (

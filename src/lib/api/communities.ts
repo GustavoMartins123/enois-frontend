@@ -23,6 +23,16 @@ export const communitiesApi = {
 
   leave: (communityId: string) => api.delete<StatusResponse>(`/communities/${communityId}/members`),
 
+  /** Comunidades favoritadas (bookmark) pelo usuário. */
+  favorites: (limit = 50) =>
+    api.get<PageResponse<Community>>(`/communities/favorites${buildQuery({ limit })}`),
+
+  favorite: (communityId: string) =>
+    api.post<StatusResponse>(`/communities/${communityId}/favorite`),
+
+  unfavorite: (communityId: string) =>
+    api.delete<StatusResponse>(`/communities/${communityId}/favorite`),
+
   /** Comunidades das quais o usuário participa (menu lateral). */
   mine: (limit = 20) => api.get<PageResponse<Community>>(`/communities/mine${buildQuery({ limit })}`),
 

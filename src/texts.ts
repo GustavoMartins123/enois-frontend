@@ -822,6 +822,9 @@ export const texts = {
     description: "Encontre grupos profissionais, fóruns temáticos e círculos de mentoria.",
     createCommunity: "Criar comunidade",
     myTitle: "Suas comunidades",
+    favorite: "Favoritar",
+    unfavorite: "Remover dos favoritos",
+    favoritesTitle: "Favoritas",
     topics: {
       all: "Todas",
       TECNOLOGIA: "Tecnologia",

@@ -17,6 +17,7 @@ import { useMediaUpload } from "@/lib/use-media-upload";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { CommunityFavoriteButton } from "@/components/community-favorite-button";
 import {
   Dialog,
   DialogContent,
@@ -213,6 +214,8 @@ function CommunityDetail() {
               {/* flex-wrap + w-auto: o tamanho default do Button e `w-full`, entao os botoes de
                   admin brigavam por espaco e estouravam a linha no celular. */}
               <div className="flex flex-wrap items-center gap-2">
+                <CommunityFavoriteButton communityId={community.id} />
+
                 {isAdmin && (
                   <Dialog open={editOpen} onOpenChange={setEditOpen}>
                     <DialogTrigger asChild>
