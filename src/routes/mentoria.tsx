@@ -23,8 +23,8 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
 import { UserAvatar } from "@/components/user-avatar";
@@ -40,7 +40,12 @@ function Mentoria() {
   const [open, setOpen] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
-  const { data: mentorsData, isLoading, isError, refetch } = useQuery({
+  const {
+    data: mentorsData,
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["mentors"],
     queryFn: () => mentorsApi.list(),
   });
@@ -132,7 +137,12 @@ function Mentoria() {
             <div className="mt-4 rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
               <p>{texts.mentoring.loadError}</p>
 
-              <Button variant="outline" size="sm" className="mt-2 rounded-full" onClick={() => refetch()}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-2 rounded-full"
+                onClick={() => refetch()}
+              >
                 {texts.mentoring.retry}
               </Button>
             </div>
@@ -211,11 +221,12 @@ function MentorCard({ mentor }: MentorCardProps) {
 
   return (
     <article className="surface-card mx-auto w-full max-w-5xl space-y-4 p-5">
-      {/* Seção superior */}
-      <header className="flex flex-wrap">
+      {/* Grid de 12 colunas a partir de md: antes o container era `flex` e os `md:col-span-*`
+          não tinham efeito nenhum, então o card não se organizava como pretendido. */}
+      <header className="grid grid-cols-1 gap-4 md:grid-cols-12">
         {/* Avatar / imagem de destaque */}
         <div className="md:col-span-3">
-          <div className="flex h-full items-start justify-center overflow-hidden">
+          <div className="flex h-full items-start justify-center overflow-hidden md:justify-start">
             <UserAvatar
               src={user?.avatar}
               alt={user?.name ?? texts.mentoring.mentorFallback}
@@ -225,7 +236,7 @@ function MentorCard({ mentor }: MentorCardProps) {
         </div>
 
         {/* Conteúdo principal */}
-        <div className="space-y-4 px-4 md:col-span-6 flex-1 overflow-hidden">
+        <div className="space-y-4 overflow-hidden md:col-span-6">
           <Link
             to="/perfil/$username"
             params={{ username: user?.username ?? mentor.userId }}
@@ -242,7 +253,10 @@ function MentorCard({ mentor }: MentorCardProps) {
           {isOwner ? (
             <AddSlotDialog mentorId={mentor.id} />
           ) : (
-            <BookSessionDialog mentorId={mentor.id} mentorName={user?.name ?? texts.mentoring.mentorFallback} />
+            <BookSessionDialog
+              mentorId={mentor.id}
+              mentorName={user?.name ?? texts.mentoring.mentorFallback}
+            />
           )}
         </div>
       </header>
@@ -348,9 +362,7 @@ function BookSessionDialog({ mentorId, mentorName }: { mentorId: string; mentorN
 
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-light">
-            {texts.mentoring.bookTitle(mentorName)}
-          </DialogTitle>
+          <DialogTitle className="font-light">{texts.mentoring.bookTitle(mentorName)}</DialogTitle>
         </DialogHeader>
 
         {booked ? (
@@ -377,7 +389,12 @@ function BookSessionDialog({ mentorId, mentorName }: { mentorId: string; mentorN
               <div className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
                 <p>{texts.mentoring.slotsError}</p>
 
-                <Button variant="outline" size="sm" className="mt-2 rounded-full" onClick={() => refetch()}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-2 rounded-full"
+                  onClick={() => refetch()}
+                >
                   {texts.mentoring.retry}
                 </Button>
               </div>
@@ -430,7 +447,9 @@ function BookSessionDialog({ mentorId, mentorName }: { mentorId: string; mentorN
             )}
 
             {error && (
-              <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p>
+              <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
+                {error}
+              </p>
             )}
 
             {slots.length > 0 && (
@@ -554,15 +573,20 @@ function AddSlotDialog({ mentorId }: { mentorId: string }) {
                   className="h-10 w-full rounded-md border border-transparent bg-muted px-3 text-sm"
                 >
                   <option value="30">30 min</option>
+
                   <option value="45">45 min</option>
+
                   <option value="60">60 min</option>
+
                   <option value="90">90 min</option>
                 </select>
               </div>
             </div>
 
             {error && (
-              <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p>
+              <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
+                {error}
+              </p>
             )}
 
             <Button

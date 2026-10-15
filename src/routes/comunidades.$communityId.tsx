@@ -361,10 +361,12 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">{texts.communities.detail.cover}</Label>
         {cover ? (
-          <div className="relative overflow-hidden rounded-xl border border-border">
+          <div className="group relative overflow-hidden rounded-xl border border-border">
             <img src={cover} alt="" className="h-24 w-full object-cover" />
 
-            <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 opacity-0 transition hover:opacity-100">
+            {/* No toque não existe hover: abaixo de md as ações ficam sempre visíveis, senão
+                era impossível trocar ou remover a capa pelo celular. */}
+            <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 transition md:opacity-0 md:group-hover:opacity-100">
               <Button
                 type="button"
                 variant="secondary"

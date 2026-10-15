@@ -280,7 +280,9 @@ function CreateCommunityDialog({ children, open, onOpenChange }: CreateCommunity
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="h-10 border-transparent bg-muted"
+              // Sem `h-10`: brigava com o `min-h-[60px]` do primitivo e o campo não respeitava
+              // as `rows`. Aqui a descrição merece as 3 linhas.
+              className="border-transparent bg-muted"
             />
           </div>
 

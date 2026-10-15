@@ -156,7 +156,10 @@ export function EditProfileDialog({ profile, children }: Props) {
               </Button>
 
               {generalError && (
-                <p className="mr-auto max-w-[60%] text-[12px] font-light text-destructive" role="alert">
+                <p
+                  className="mr-auto max-w-[60%] text-[12px] font-light text-destructive"
+                  role="alert"
+                >
                   {generalError}
                 </p>
               )}
@@ -537,7 +540,9 @@ function SubList<
                   value={form[f.key] ?? ""}
                   onChange={(e) => setForm((p) => ({ ...p, [f.key]: e.target.value }))}
                   rows={2}
-                  className="h-10 border-border-soft bg-surface-1"
+                  // Sem `h-10`: a altura fixa brigava com o `min-h-[60px]` do primitivo, então
+                  // o campo ficava com 60px de qualquer jeito. As `rows` é que mandam.
+                  className="border-border-soft bg-surface-1"
                 />
               ) : (
                 <Input

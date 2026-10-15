@@ -229,7 +229,8 @@ export function PostComments({ postId }: PostIdProps) {
             <Button
               type="submit"
               size="icon"
-              className="h-7 w-7 shrink-0 rounded-full"
+              // h-9 (36px) em vez de 28px: era pequeno demais para o dedo no celular.
+              className="h-9 w-9 shrink-0 rounded-full"
               disabled={!draft.trim() || sending}
               aria-label={texts.posts.comments.send}
             >

@@ -159,11 +159,11 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       <footer className="mt-4 flex justify-between flex-wrap items-center gap-1 border-t border-border pt-3 text-sm text-muted-foreground">
-        <div className="flex">
+        <div className="flex flex-wrap">
           <Popover>
             <PopoverTrigger asChild>
               <button
-                className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
+                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground ${
                   reactionStatus ? "text-primary" : ""
                 }`}
                 title={
@@ -206,14 +206,14 @@ export function PostCard({ post }: PostCardProps) {
 
           <button
             onClick={() => setShowReactions(post.id, true)}
-            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs tabular-nums transition hover:bg-muted hover:text-foreground text-muted-foreground"
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 text-xs tabular-nums transition hover:bg-muted hover:text-foreground text-muted-foreground"
           >
             {postCounters.reactions}
           </button>
 
           <button
             onClick={toggleComments}
-            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground"
           >
             <MessageSquare className="h-4 w-4" />
 
@@ -222,7 +222,7 @@ export function PostCard({ post }: PostCardProps) {
 
           <button
             onClick={handleShare}
-            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground"
           >
             <Share2 className="h-4 w-4" />
 
@@ -231,7 +231,7 @@ export function PostCard({ post }: PostCardProps) {
 
           <button
             onClick={() => setShowReport(post.id, true)}
-            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
           >
             <Flag className="h-4 w-4" />
           </button>
@@ -239,7 +239,7 @@ export function PostCard({ post }: PostCardProps) {
 
         <button
           onClick={handleSave}
-          className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
+          className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground ${
             saved ? "text-primary" : ""
           }`}
         >

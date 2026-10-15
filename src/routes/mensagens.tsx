@@ -110,7 +110,9 @@ function Mensagens() {
 
   return (
     <AppContainer>
-      <div className="surface-card grid h-[calc(100dvh-11rem)] md:h-[calc(100vh-9rem)] grid-cols-1 overflow-hidden md:grid-cols-[320px_1fr]">
+      {/* `dvh` nos dois tamanhos: `100vh` no desktop é o valor que não encolhe quando a barra
+          do navegador aparece no celular, e aí o compositor ficava escondido atrás do teclado. */}
+      <div className="surface-card grid h-[calc(100dvh-11rem)] grid-cols-1 overflow-hidden md:h-[calc(100dvh-9rem)] md:grid-cols-[320px_1fr]">
         <div
           className={`flex flex-col border-r border-border ${activeConversation ? "hidden md:flex" : "flex"}`}
         >

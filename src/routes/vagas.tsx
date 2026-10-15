@@ -11,8 +11,8 @@ import {
 } from "@/constants/job-rules";
 import { texts } from "@/texts";
 import type { CreateJobInput } from "@/types/application/job/create-job-input";
-import type { JobApplicationFieldInput } from "@/types/application/job/job-application";
 import type { Job } from "@/types/application/job/job";
+import type { JobApplicationFieldInput } from "@/types/application/job/job-application";
 import type { JobReportReason } from "@/types/application/job/job-report-reason";
 import type { CreateJobDialogProps } from "@/types/routes/jobs/create-job-dialog-props";
 import type { ReportJobDialogProps } from "@/types/routes/jobs/report-job-dialog-props";
@@ -41,7 +41,6 @@ import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Dialog,
   DialogContent,
@@ -51,6 +50,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
@@ -386,10 +386,11 @@ function Vagas() {
                 ))}
               </div>
 
-              <div className="mt-4 flex items-center justify-between border-t border-border pt-3 text-xs text-muted-foreground">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-xs text-muted-foreground">
                 <span>{formatPostedAt(j.postedAt)}</span>
 
-                <div className="flex gap-2">
+                {/* wrap + ml-auto: em 320px os três botões descem em vez de estourar o card. */}
+                <div className="ml-auto flex flex-wrap gap-2">
                   <Button
                     size="sm"
                     variant="outline"
@@ -517,7 +518,11 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
       communityAgreement: agreed,
       applicationFields: fields
         .filter((field) => field.label.trim() !== "")
-        .map((field) => ({ label: field.label.trim(), type: field.type, required: field.required })),
+        .map((field) => ({
+          label: field.label.trim(),
+          type: field.type,
+          required: field.required,
+        })),
     });
   };
 
@@ -727,7 +732,10 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
                       setFields((current) =>
                         current.map((item, position) =>
                           position === index
-                            ? { ...item, type: event.target.value as JobApplicationFieldInput["type"] }
+                            ? {
+                                ...item,
+                                type: event.target.value as JobApplicationFieldInput["type"],
+                              }
                             : item,
                         ),
                       )
@@ -761,7 +769,9 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
 
                   <button
                     type="button"
-                    onClick={() => setFields((current) => current.filter((_, position) => position !== index))}
+                    onClick={() =>
+                      setFields((current) => current.filter((_, position) => position !== index))
+                    }
                     className="shrink-0 rounded-full p-1.5 text-destructive transition hover:bg-destructive/10"
                     aria-label={texts.jobs.applicationForm.remove}
                   >
@@ -775,7 +785,9 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
                 variant="outline"
                 size="sm"
                 className="rounded-full gap-1.5"
-                onClick={() => setFields((current) => [...current, { label: "", type: "TEXT", required: false }])}
+                onClick={() =>
+                  setFields((current) => [...current, { label: "", type: "TEXT", required: false }])
+                }
               >
                 <Plus className="h-3.5 w-3.5" />
 

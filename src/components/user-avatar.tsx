@@ -22,7 +22,9 @@ export function UserAvatar({ src, alt, className, fallback, fallbackClassName }:
       <AvatarFallback
         className={
           fallbackClassName ??
-          "bg-violet-300 text-violet-900 font-bold text-xl leading-[30px] tracking-normal"
+          // 38cqw acompanha o container do Avatar: as iniciais ficam proporcionais tanto
+          // no avatar de h-6 (comentário) quanto no grande do perfil.
+          "bg-violet-300 text-violet-900 font-bold text-[38cqw] leading-none tracking-normal"
         }
       >
         {fallback ?? getInitials(label)}
