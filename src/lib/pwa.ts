@@ -20,7 +20,7 @@ export function registerServiceWorker(): void {
     window.location.reload();
   });
 
-  window.addEventListener("load", () => {
+  const register = () => {
     navigator.serviceWorker
       .register("/sw.js", { scope: "/" })
       .then((registration) => {
@@ -31,5 +31,14 @@ export function registerServiceWorker(): void {
       .catch((error) => {
         console.error("Falha ao registrar o service worker", error);
       });
-  });
+  };
+
+  // Este código roda num useEffect, ou seja, depois do SSR hidratar. Em vários casos a hidratação
+  // acontece depois do evento `load`, então esperar por `load` nunca registraria o service worker —
+  // e sem SW ativo o Chrome não considera o app instalável (PWA).
+  if (document.readyState === "complete") {
+    register();
+  } else {
+    window.addEventListener("load", register, { once: true });
+  }
 }
