@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Pill } from "@/components/ui/pill";
 import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
@@ -148,17 +149,13 @@ function Comunidades() {
 
         <div className="flex flex-wrap gap-2">
           {TOPICS.map((t) => (
-            <button
+            <Pill
               key={t}
+              active={(t === "Todas" && !topic) || t === topic}
               onClick={() => handleTopicChange(t)}
-              className={`rounded-full border px-3.5 py-1.5 text-sm transition ${
-                (t === "Todas" && !topic) || t === topic
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground hover:text-foreground"
-              }`}
             >
               {TOPIC_LABELS[t]}
-            </button>
+            </Pill>
           ))}
         </div>
 
@@ -224,7 +221,9 @@ function Comunidades() {
                   </div>
 
                   {ownerBlockedId === c.id && (
-                    <p className="mt-2 text-xs text-destructive">{texts.communities.ownerLeaveBlocked}</p>
+                    <p className="mt-2 text-xs text-destructive">
+                      {texts.communities.ownerLeaveBlocked}
+                    </p>
                   )}
                 </div>
               </article>
@@ -254,11 +253,7 @@ function Comunidades() {
         open={leaveTarget !== null}
         onOpenChange={(open) => !open && setLeaveTarget(null)}
         title={texts.communities.leave.title}
-        description={
-          leaveTarget
-            ? texts.communities.leave.description(leaveTarget.name)
-            : ""
-        }
+        description={leaveTarget ? texts.communities.leave.description(leaveTarget.name) : ""}
         confirmLabel={texts.communities.leave.confirm}
         destructive
         pending={leave.isPending}

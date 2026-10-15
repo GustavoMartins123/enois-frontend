@@ -22,6 +22,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -149,9 +150,9 @@ function Mentoria() {
           )}
 
           {!isLoading && !isError && mentors.length === 0 && (
-            <p className="mt-4 rounded-xl border border-border-soft px-4 py-6 text-center text-sm text-muted-foreground">
-              {texts.mentoring.empty}
-            </p>
+            <div className="mt-4 rounded-xl border border-border-soft">
+              <EmptyState icon={Sparkles} title={texts.mentoring.empty} />
+            </div>
           )}
 
           <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
