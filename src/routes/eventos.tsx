@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ChangeEvent, useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
@@ -7,11 +7,12 @@ import { texts } from "@/texts";
 import type { CreateEventRequest } from "@/types/application/event/create-event-request";
 import type { CreateEventFormProps } from "@/types/routes/events/create-event-form-props";
 import type { FieldProps } from "@/types/routes/events/field-props";
-import { Calendar, MapPin, Plus, Users, Video } from "lucide-react";
+import { Calendar, ImagePlus, MapPin, Plus, Users, Video, X } from "lucide-react";
 
 import { eventsApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { requireAuth } from "@/lib/require-auth";
+import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -120,7 +121,10 @@ function Eventos() {
                     </Badge>
 
                     {e.expired && (
-                      <Badge variant="outline" className="rounded-full bg-muted font-normal text-text-subtle">
+                      <Badge
+                        variant="outline"
+                        className="rounded-full bg-muted font-normal text-text-subtle"
+                      >
                         <>{texts.events.finished}</>
                       </Badge>
                     )}
@@ -131,6 +135,27 @@ function Eventos() {
                   <p className="mt-1 text-xs text-muted-foreground">
                     {texts.events.hostedBy(e.host)}
                   </p>
+
+                  {e.location && (
+                    <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <MapPin className="h-3.5 w-3.5" />
+
+                      <>{e.location}</>
+                    </p>
+                  )}
+
+                  {e.streamUrl && !e.expired && (
+                    <a
+                      href={e.streamUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-[12px] font-semibold text-primary-foreground transition hover:opacity-90"
+                    >
+                      <Video className="h-3.5 w-3.5" />
+
+                      <>{texts.events.watchLive}</>
+                    </a>
+                  )}
 
                   <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
@@ -175,6 +200,24 @@ function CreateEventForm({ onSave, isPending }: CreateEventFormProps) {
   const [time, setTime] = useState("");
   const [format, setFormat] = useState<CreateEventRequest["format"]>("ONLINE");
   const [host, setHost] = useState("");
+  const [cover, setCover] = useState<string | null>(null);
+  const [streamUrl, setStreamUrl] = useState("");
+  const [location, setLocation] = useState("");
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const coverUpload = useMediaUpload();
+
+  const handleCoverChange = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    try {
+      const result = await coverUpload.upload(file, "COVER");
+      setCover(result.cdnUrl);
+    } catch {
+      // o proprio hook guarda o erro de upload
+    }
+  };
 
   return (
     <div className="space-y-4 pt-2">
@@ -215,6 +258,73 @@ function CreateEventForm({ onSave, isPending }: CreateEventFormProps) {
         />
       </Field>
 
+      <Field label={texts.events.form.cover}>
+        <div className="space-y-2">
+          {cover ? (
+            <div className="relative overflow-hidden rounded-xl border border-border-soft">
+              <img src={resolveCdnUrl(cover)} alt="" className="h-28 w-full object-cover" />
+
+              <button
+                type="button"
+                onClick={() => setCover(null)}
+                aria-label={texts.events.form.removeCover}
+                className="absolute right-2 top-2 grid h-8 w-8 place-items-center rounded-full bg-card/85 text-text-strong shadow transition hover:bg-card"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="rounded-full gap-1.5"
+              disabled={coverUpload.status === "uploading"}
+              onClick={() => coverInputRef.current?.click()}
+            >
+              <ImagePlus className="h-3.5 w-3.5" />
+
+              <>
+                {coverUpload.status === "uploading"
+                  ? texts.events.form.coverUploading
+                  : texts.events.form.coverAction}
+              </>
+            </Button>
+          )}
+
+          <input
+            ref={coverInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handleCoverChange}
+          />
+        </div>
+      </Field>
+
+      {/* Cada formato pede um dado: online pede o link, presencial pede o lugar, hibrido pede os dois. */}
+      {format !== "IN_PERSON" && (
+        <Field label={texts.events.form.streamUrl}>
+          <Input
+            value={streamUrl}
+            onChange={(e) => setStreamUrl(e.target.value)}
+            placeholder={texts.events.form.streamUrlPlaceholder}
+            className="h-10 border-transparent bg-muted"
+          />
+        </Field>
+      )}
+
+      {format !== "ONLINE" && (
+        <Field label={texts.events.form.location}>
+          <Input
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder={texts.events.form.locationPlaceholder}
+            className="h-10 border-transparent bg-muted"
+          />
+        </Field>
+      )}
+
       <Field label={texts.events.form.format}>
         <select
           value={format}
@@ -232,7 +342,18 @@ function CreateEventForm({ onSave, isPending }: CreateEventFormProps) {
       <Button
         className="w-full rounded-full"
         disabled={!title.trim() || !date || !host.trim() || isPending}
-        onClick={() => onSave({ title, date, time, format, host })}
+        onClick={() =>
+          onSave({
+            title,
+            date,
+            time,
+            format,
+            host,
+            cover: cover ?? undefined,
+            streamUrl: streamUrl.trim() || undefined,
+            location: location.trim() || undefined,
+          })
+        }
       >
         {isPending ? texts.common.creating : texts.events.createEvent}
       </Button>
