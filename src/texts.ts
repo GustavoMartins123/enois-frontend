@@ -165,8 +165,9 @@ export const texts = {
     social: {
       google: "Continuar com Google",
       divider: "ou com e-mail",
-      unavailable: (provider: string) =>
-        `Login com ${provider} ainda não está configurado nesta instalação.`,
+      /** Aplicativo OAuth ainda em aprovação/verificação, então a entrada por ele falha. */
+      pendingApproval:
+        "O login com Google está aguardando aprovação do OAuth e ainda não foi liberado. Entre com e-mail e senha por enquanto.",
       callbackError: "Não foi possível concluir o login social. Tente novamente.",
       callbackLoading: "Concluindo o login...",
       callbackTitle: "Entrando · Énóis",

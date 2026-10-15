@@ -2,8 +2,8 @@ import { type FormEvent, useState } from "react";
 
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
-import { OAUTH_PROVIDER_LABELS } from "@/constants/auth-providers";
 import { texts } from "@/texts";
+import type { TwoFactorChallenge } from "@/types/application/auth/two-factor";
 import type { AuthFormProps } from "@/types/routes/auth/auth-form-props";
 import type { FieldProps } from "@/types/routes/auth/field-props";
 import type { ForgotPasswordDialogProps } from "@/types/routes/auth/forgot-password-dialog-props";
@@ -216,11 +216,9 @@ function SocialButtons() {
       const start = await authApi.oauthStart("GOOGLE");
       window.location.href = start.authorizationUrl;
     } catch (err) {
-      setError(
-        err instanceof ApiError
-          ? err.message
-          : texts.auth.social.unavailable(OAUTH_PROVIDER_LABELS.GOOGLE),
-      );
+      // Sem o aplicativo aprovado no Google o start falha: explicamos em vez de vazar o erro cru.
+      const detail = err instanceof ApiError && import.meta.env.DEV ? ` (${err.message})` : "";
+      setError(`${texts.auth.social.pendingApproval}${detail}`);
       setLoading(false);
     }
   };
