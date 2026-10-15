@@ -1,6 +1,7 @@
 import type { PageResponse } from "@/types/application/api/page-response";
 import type { StatusResponse } from "@/types/application/api/status-response";
 import type { CommentView } from "@/types/application/comment/comment-view";
+import type { EditedComment } from "@/types/application/comment/edited-comment";
 
 import { api, buildQuery } from "../api-client";
 
@@ -21,6 +22,10 @@ export const commentsApi = {
     api.get<PageResponse<CommentView>>(
       `/feed/posts/${postId}/comments${buildQuery({ cursor, limit })}`,
     ),
+
+  /** Edicao do proprio comentario: so o autor (o backend recusa os demais). */
+  update: (postId: string, commentId: string, content: string) =>
+    api.patch<EditedComment>(`/feed/posts/${postId}/comments/${commentId}`, { content }),
 
   remove: (postId: string, commentId: string) =>
     api.delete<StatusResponse>(`/feed/posts/${postId}/comments/${commentId}`),

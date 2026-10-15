@@ -9,5 +9,7 @@ export type CommentView = {
   parentCommentId: string | null;
   content: string;
   createdAt: string;
+  /** Quando o autor editou (nulo se nunca editado) — vira o "editado" na tela. */
+  editedAt?: string | null;
   status: "ACTIVE" | "DELETED";
 };

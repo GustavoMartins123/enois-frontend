@@ -659,6 +659,7 @@ export const texts = {
       reply: "Responder",
       replyingTo: (name: string) => `respondendo a ${name}`,
       delete: "Excluir",
+      editError: "Não foi possível salvar a edição. Tente de novo.",
       loading: "Carregando comentários...",
       loadMore: "Ver comentários anteriores",
       loadingMore: "Carregando...",

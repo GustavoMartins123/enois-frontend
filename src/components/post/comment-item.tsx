@@ -10,7 +10,9 @@ import type { CommentItemProps } from "@/types/components/post/comment-item-prop
 import { REACTION_EMOJIS, commentsApi, profileApi, reactionsApi } from "@/lib/api";
 import { getCurrentUserId } from "@/lib/current-user";
 
+import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
 
 import { UserAvatar } from "@/components/user-avatar";
 
@@ -28,6 +30,37 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
   const updateCommentCount = usePostCardStore((state) => state.updateCommentCount);
   const isOwner = currentUserId === comment.authorId;
   const [commentReaction, setCommentReaction] = useState<string | null>(null);
+
+  // Edicao e local ao item: o texto novo e o selo aparecem na hora. Ao remontar (refetch),
+  // vale o que veio do servidor, que ja traz o editedAt.
+  const [content, setContent] = useState(comment.content);
+  const [editedAt, setEditedAt] = useState<string | null>(comment.editedAt ?? null);
+  const [editing, setEditing] = useState(false);
+  const [editDraft, setEditDraft] = useState(comment.content);
+  const [saving, setSaving] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+
+  const saveEdit = async () => {
+    const next = editDraft.trim();
+    if (!next || next === content) {
+      setEditing(false);
+      setEditDraft(content);
+      return;
+    }
+
+    setSaving(true);
+    setEditError(null);
+    try {
+      const result = await commentsApi.update(postId, comment.id, next);
+      setContent(result.content ?? next);
+      setEditedAt(result.editedAt);
+      setEditing(false);
+    } catch {
+      setEditError(texts.posts.comments.editError);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleReply = async () => {
     try {
@@ -109,12 +142,51 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
             )}
             <span className="text-[11px] font-light text-text-subtle">
               {formatTime(comment.createdAt)}
+              {editedAt ? ` · ${texts.posts.edited}` : ""}
             </span>
           </div>
 
-          <p className="mt-0.5 break-words text-[13px] font-light leading-relaxed text-text-strong">
-            {linkifyText(comment.content)}
-          </p>
+          {editing ? (
+            <div className="mt-1 space-y-2">
+              <Textarea
+                value={editDraft}
+                onChange={(event) => setEditDraft(event.target.value)}
+                rows={3}
+                maxLength={1024}
+                className="border-border-soft bg-surface-card text-[13px] font-light"
+              />
+
+              {editError && <p className="text-[11px] text-destructive">{editError}</p>}
+
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  size="sm"
+                  className="rounded-full"
+                  disabled={saving || !editDraft.trim()}
+                  onClick={() => void saveEdit()}
+                >
+                  {saving ? texts.common.saving : texts.common.save}
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="rounded-full"
+                  onClick={() => {
+                    setEditing(false);
+                    setEditDraft(content);
+                    setEditError(null);
+                  }}
+                >
+                  {texts.common.cancel}
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="mt-0.5 break-words text-[13px] font-light leading-relaxed text-text-strong">
+              {linkifyText(content)}
+            </p>
+          )}
         </div>
 
         <div className="mt-1 flex items-center gap-3 px-3 text-[11px] font-light text-text-subtle">
@@ -151,6 +223,18 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
               </div>
             </PopoverContent>
           </Popover>
+          {isOwner && !editing && (
+            <button
+              onClick={() => {
+                setEditDraft(content);
+                setEditing(true);
+              }}
+              className="transition-colors hover:text-primary"
+            >
+              {texts.common.edit}
+            </button>
+          )}
+
           {isOwner && (
             <button
               onClick={handleDelete}
