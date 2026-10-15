@@ -1226,6 +1226,34 @@ export const texts = {
     loadingOlder: "Carregando...",
   },
 
+  identity: {
+    title: "Identidade verificada",
+    subtitle:
+      "Comprove que você é uma pessoa real usando um provedor de identidade. Énóis não guarda documento, selfie nem biometria: só o resultado e a validade.",
+    states: {
+      NOT_VERIFIED: "Ainda não verificada",
+      PENDING: "Verificação em andamento",
+      VERIFIED: "Identidade verificada",
+      REJECTED: "Verificação recusada",
+      EXPIRED: "Verificação expirada",
+      REVOKED: "Verificação desvinculada",
+      ERROR: "Falha técnica na verificação",
+    },
+    start: "Verificar identidade",
+    refresh: "Atualizar estado",
+    revoke: "Desvincular identidade",
+    unavailable:
+      "A verificação de identidade ainda não está disponível: o Énóis precisa de um provedor autorizado. Assim que houver, o botão fica ativo aqui.",
+    whatWeStore:
+      "O que o Énóis guarda: o estado da verificação, o provedor e as datas. Nunca CPF, documento, selfie, biometria ou tokens do provedor.",
+    whoProcesses:
+      "Quem processa os dados é o provedor de identidade. O Énóis recebe apenas a confirmação do resultado.",
+    badgeLabel: "Identidade verificada",
+    badgeHint: "Identidade confirmada por um provedor. Não significa que a pessoa é confiável em tudo.",
+    dataNotice:
+      "Ao iniciar, você é levado ao provedor para concluir a verificação. Nada é marcado como verificado sem a confirmação dele.",
+  },
+
   support: {
     seoTitle: "Ajuda e suporte · Énóis",
     title: "Ajuda e suporte",

@@ -1,4 +1,5 @@
 export { authApi } from "./auth";
+export { identityApi } from "./identity";
 export { profileApi } from "./profile";
 export { feedApi } from "./feed";
 export { commentsApi } from "./comments";

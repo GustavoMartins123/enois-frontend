@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import { AppContainer } from "@/components/app-container";
+import { IdentityVerificationSection } from "@/components/security/identity-verification-section";
 
 export const Route = createFileRoute("/seguranca")({
   beforeLoad: requireAuth,
@@ -123,6 +124,8 @@ function Seguranca() {
             <TotpSection status={status} onError={handleError} onDone={refresh} />
 
             <EmailOtpSection status={status} onError={handleError} onDone={refresh} />
+
+            <IdentityVerificationSection />
 
             <p className="text-center text-xs text-muted-foreground">
               <Link to="/bloqueados" className="text-primary hover:underline">
