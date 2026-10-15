@@ -6,6 +6,7 @@ import type { ChangePasswordInput } from "@/types/application/auth/change-passwo
 import type { DeleteAccountInput } from "@/types/application/auth/delete-account-input";
 import type { LinkedProvider } from "@/types/application/auth/linked-provider";
 import type { LoginInput } from "@/types/application/auth/login-input";
+import type { OAuthMode } from "@/types/application/auth/oauth-mode";
 import type { OAuthStartResponse } from "@/types/application/auth/oauth-start-response";
 import type { SignupInput } from "@/types/application/auth/signup-input";
 import type { SignupResult } from "@/types/application/auth/signup-result";
@@ -82,8 +83,9 @@ export const authApi = {
   resetPassword: (token: string, password: string) =>
     api.post<StatusResponse>("/auth/password/reset", { token, password }),
 
-  oauthStart: (provider: OAuthStartResponse["provider"]) =>
-    api.get<OAuthStartResponse>(`/auth/oauth/${provider.toLowerCase()}/start`),
+  /** `mode` diz ao backend se a pessoa está entrando ou criando conta (ver OAuthMode). */
+  oauthStart: (provider: OAuthStartResponse["provider"], mode: OAuthMode = "login") =>
+    api.get<OAuthStartResponse>(`/auth/oauth/${provider.toLowerCase()}/start?mode=${mode}`),
 
   /** Provedores vinculados à conta (para vincular/desvincular). */
   oauthProviders: () => api.get<LinkedProvider[]>("/auth/oauth/providers"),

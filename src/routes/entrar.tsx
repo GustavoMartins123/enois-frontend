@@ -8,6 +8,7 @@ import type { AuthFormProps } from "@/types/routes/auth/auth-form-props";
 import type { FieldProps } from "@/types/routes/auth/field-props";
 import type { ForgotPasswordDialogProps } from "@/types/routes/auth/forgot-password-dialog-props";
 import type { LoginFormProps } from "@/types/routes/auth/login-form-props";
+import type { SocialButtonsProps } from "@/types/routes/auth/social-buttons-props";
 import type { TabBtnProps } from "@/types/routes/auth/tab-btn-props";
 import { ArrowRight, Eye, EyeOff, Loader2, MailCheck, ShieldCheck, Sparkles } from "lucide-react";
 import { z } from "zod";
@@ -204,7 +205,7 @@ function TabBtn({ active, children, onClick }: TabBtnProps) {
 }
 
 /** Entrada social: somente Google. Apple foi desativado (ver ENABLED_OAUTH_PROVIDERS). */
-function SocialButtons() {
+function SocialButtons({ mode }: SocialButtonsProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -213,7 +214,8 @@ function SocialButtons() {
     setError(null);
     try {
       // O backend registra state + nonce no servidor e devolve a URL de autorização.
-      const start = await authApi.oauthStart("GOOGLE");
+      // `mode` faz o backend recusar cadastro com e-mail que já existe, em vez de entrar na conta.
+      const start = await authApi.oauthStart("GOOGLE", mode);
       window.location.href = start.authorizationUrl;
     } catch (err) {
       // Sem o aplicativo aprovado no Google o start falha: explicamos em vez de vazar o erro cru.
@@ -232,7 +234,7 @@ function SocialButtons() {
         className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium transition hover:bg-muted disabled:opacity-50"
       >
         {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
-        <>{texts.auth.social.google}</>
+        <>{mode === "signup" ? texts.auth.social.googleSignup : texts.auth.social.google}</>
       </button>
       {error && (
         <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p>
@@ -304,7 +306,7 @@ function SignupForm(_props: AuthFormProps) {
       <p className="mt-1 text-sm text-muted-foreground">{texts.auth.signup.subtitle}</p>
 
       <div className="mt-6">
-        <SocialButtons />
+        <SocialButtons mode="signup" />
         <Divider />
       </div>
 
@@ -542,7 +544,7 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
       <p className="mt-1 text-sm text-muted-foreground">{texts.auth.login.subtitle}</p>
 
       <div className="mt-6">
-        <SocialButtons />
+        <SocialButtons mode="login" />
         <Divider />
       </div>
 

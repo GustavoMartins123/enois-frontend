@@ -167,6 +167,7 @@ export const texts = {
     },
     social: {
       google: "Continuar com Google",
+      googleSignup: "Criar conta com Google",
       divider: "ou com e-mail",
       /** Aplicativo OAuth ainda em aprovação/verificação, então a entrada por ele falha. */
       pendingApproval:
@@ -176,7 +177,7 @@ export const texts = {
       callbackTitle: "Entrando · Énóis",
       cancelled: "Você cancelou o login. Nada foi alterado na sua conta.",
       accountExists:
-        "Já existe uma conta com esse e-mail. Entre com e-mail e senha e vincule o provedor no seu perfil.",
+        "Essa conta já existe. Você não pode criar outra com o mesmo e-mail — entre com a senha que você já usa; depois, se quiser, vincule o Google pelo seu perfil.",
       emailRequired:
         "O provedor não informou um e-mail. Entre com e-mail e senha e vincule a conta depois.",
     },
