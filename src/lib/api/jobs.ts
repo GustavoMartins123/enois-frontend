@@ -14,7 +14,19 @@ export const jobsApi = {
 
   get: (jobId: string) => api.get<Job>(`/jobs/${jobId}`),
 
+  /** Vagas publicadas por mim (o autor ve o total de candidaturas). */
+  mine: (cursor?: string | null, limit = 20) =>
+    api.get<PageResponse<Job>>(`/jobs/mine${buildQuery({ cursor, limit })}`),
+
+  /** Vagas em que eu me candidatei. */
+  applications: (cursor?: string | null, limit = 20) =>
+    api.get<PageResponse<Job>>(`/jobs/applications${buildQuery({ cursor, limit })}`),
+
   create: (data: CreateJobInput) => api.post<Job>("/jobs", data),
+
+  update: (jobId: string, data: CreateJobInput) => api.put<Job>(`/jobs/${jobId}`, data),
+
+  remove: (jobId: string) => api.delete<void>(`/jobs/${jobId}`),
 
   apply: (jobId: string) => api.post<StatusResponse>(`/jobs/${jobId}/applications`),
 

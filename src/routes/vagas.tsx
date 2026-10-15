@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { JOB_LEVELS, JOB_LOCATIONS, JOB_TYPES } from "@/constants/job-options";
 import {
@@ -19,6 +19,7 @@ import type { ReportJobDialogProps } from "@/types/routes/jobs/report-job-dialog
 import {
   AlertTriangle,
   Briefcase,
+  CheckCircle2,
   Flag,
   Loader2,
   Lock,
@@ -160,6 +161,13 @@ function Vagas() {
                   <>{texts.jobs.clearFilters}</>
                 </Button>
               )}
+
+              <Link
+                to="/vagas/minhas"
+                className="inline-flex h-9 items-center rounded-full border border-border-soft px-3 text-[13px] font-medium transition hover:bg-muted"
+              >
+                {texts.jobs.myJobs}
+              </Link>
 
               <Button
                 size="sm"
@@ -343,14 +351,30 @@ function Vagas() {
                     <>{texts.jobs.report.action}</>
                   </Button>
 
-                  <Button
-                    size="sm"
-                    className="rounded-full"
-                    disabled={apply.isPending}
-                    onClick={() => apply.mutate(j.id)}
+                  <Link
+                    to="/vagas/$jobId"
+                    params={{ jobId: j.id }}
+                    className="inline-flex h-9 items-center rounded-full border border-border-soft px-3 text-[13px] font-medium transition hover:bg-muted"
                   >
-                    {texts.jobs.apply}
-                  </Button>
+                    {texts.jobs.details}
+                  </Link>
+
+                  {j.applied ? (
+                    <Button size="sm" variant="secondary" className="rounded-full gap-1.5" disabled>
+                      <CheckCircle2 className="h-3.5 w-3.5" />
+
+                      <>{texts.jobs.applied}</>
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      className="rounded-full"
+                      disabled={apply.isPending}
+                      onClick={() => apply.mutate(j.id)}
+                    >
+                      {texts.jobs.apply}
+                    </Button>
+                  )}
                 </div>
               </div>
             </article>

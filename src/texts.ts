@@ -135,6 +135,7 @@ export const texts = {
       loginPasswordMin: "A senha precisa ter ao menos 6 caracteres",
       signupNameMin: "Como podemos te chamar?",
       passwordMin: "Use ao menos 8 caracteres",
+      termsRequired: "É preciso confirmar que você tem 18 anos ou mais e aceitar os termos.",
     },
     password: {
       show: "Mostrar senha",
@@ -150,6 +151,11 @@ export const texts = {
     signup: {
       title: "Vamos começar.",
       subtitle: "Crie sua conta em menos de um minuto.",
+      termsPrefix: "Confirmo que tenho 18 anos ou mais e aceito os ",
+      termsLink: "Termos de Uso",
+      termsAnd: " e a ",
+      privacyLink: "Política de Privacidade",
+      termsSuffix: ".",
     },
     login: {
       title: "Bem-vindo de volta.",
@@ -198,6 +204,7 @@ export const texts = {
       profile: "Ver perfil",
       changeEmail: "Alterar e-mail",
       changePassword: "Trocar senha",
+      support: "Ajuda e suporte",
       deleteAccount: "Excluir conta",
       logout: "Sair",
       loggingOut: "Saindo...",
@@ -673,6 +680,25 @@ export const texts = {
     match: (score: number) => `${score}% match`,
     details: "Ver detalhes",
     apply: "Candidatar-se",
+    applied: "Inscrito",
+    appliedHint:
+      "Sua candidatura foi enviada. A empresa entra em contato pelo seu e-mail cadastrado.",
+    back: "Voltar para vagas",
+    notFound: "Vaga não encontrada.",
+    about: "Sobre a vaga",
+    skills: "Habilidades",
+    noSkills: "Sem habilidades informadas.",
+    save: "Salvar",
+    saved: "Salva",
+    ownerBadge: "Você publicou esta vaga",
+    applicationsCount: (count: number) =>
+      `${count} candidatura${count === 1 ? "" : "s"} recebida${count === 1 ? "" : "s"}`,
+    deleteJob: "Excluir vaga",
+    deleteConfirm: "Excluir esta vaga? As candidaturas recebidas também são removidas.",
+    myJobs: "Minhas vagas",
+    myApplications: "Minhas candidaturas",
+    myJobsEmpty: "Você ainda não publicou vagas.",
+    myApplicationsEmpty: "Você ainda não se candidatou a nenhuma vaga.",
     empty: "Nenhuma vaga encontrada com os filtros selecionados.",
     createJob: "Criar vaga",
     createJobTitle: "Publicar vaga",
@@ -790,6 +816,28 @@ export const texts = {
     conversationFallback: "Conversa",
   },
 
+  support: {
+    seoTitle: "Ajuda e suporte · Énóis",
+    title: "Ajuda e suporte",
+    subtitle: "Conte o que aconteceu e uma pessoa do nosso time responde por e-mail.",
+    subject: "Assunto",
+    subjectPlaceholder: "Ex.: não consigo entrar na minha conta",
+    message: "Descreva o problema",
+    messagePlaceholder: "Quanto mais detalhes, melhor conseguimos ajudar.",
+    contactEmail: "E-mail para contato",
+    contactEmailHint: "Respondemos neste e-mail.",
+    action: "Enviar pedido",
+    sending: "Enviando...",
+    successTitle: "Pedido enviado",
+    successDescription:
+      "Uma pessoa do time vai responder no e-mail informado. O pedido fica registrado no nosso painel de atendimento.",
+    newRequest: "Abrir outro pedido",
+    validationSubject: "Informe um assunto curto.",
+    validationMessage: "Descreva o problema com pelo menos 10 caracteres.",
+    validationEmail: "Informe um e-mail válido.",
+    error: "Não foi possível enviar o pedido. Tente novamente em instantes.",
+  },
+
   post: {
     seoTitle: "Publicação · Énóis",
     back: "Voltar",
@@ -823,8 +871,8 @@ export const texts = {
       title: "Termos de Uso",
       sections: [
         {
-          title: "1. Aceitação dos termos",
-          text: 'Ao criar uma conta ou usar qualquer funcionalidade da plataforma Énóis ("plataforma"), você concorda com estes Termos de Uso. Se não concordar com qualquer parte deles, não utilize a plataforma.',
+          title: "1. Aceitação dos termos e idade mínima",
+          text: 'Ao criar uma conta ou usar qualquer funcionalidade da plataforma Énóis ("plataforma"), você concorda com estes Termos de Uso e com a Política de Privacidade. Se não concordar com qualquer parte deles, não utilize a plataforma.\n\nA plataforma é destinada exclusivamente a pessoas com 18 anos ou mais, por se tratar de uma rede profissional. Ao criar a conta, você declara e confirma ser maior de idade, e esse aceite é registrado com data e hora.',
         },
         {
           title: "2. Definições",
@@ -832,7 +880,7 @@ export const texts = {
         },
         {
           title: "3. Cadastro e conta",
-          text: "Para usar a plataforma, você deve fornecer informações verdadeiras, completas e atualizadas. Você é responsável por manter a confidencialidade de suas credenciais de acesso e por todas as atividades realizadas na sua conta.\n\nÉ proibido criar contas em nome de terceiros, criar múltiplas contas para burlar restrições ou fornecer informações falsas. Podemos suspender ou encerrar contas que violem estes Termos.",
+          text: "O cadastro é permitido apenas para maiores de 18 anos. Contas identificadas como de menores de idade serão encerradas, com remoção dos dados pessoais correspondentes.\n\nPara usar a plataforma, você deve fornecer informações verdadeiras, completas e atualizadas. Você é responsável por manter a confidencialidade de suas credenciais de acesso e por todas as atividades realizadas na sua conta.\n\nÉ proibido criar contas em nome de terceiros, criar múltiplas contas para burlar restrições ou fornecer informações falsas. Podemos suspender ou encerrar contas que violem estes Termos.",
         },
         {
           title: "4. Conduta do usuário",

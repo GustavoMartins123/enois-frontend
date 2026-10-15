@@ -17,4 +17,10 @@ export type Job = {
   authorReputation?: number | null;
   /** Marcada como falsa pela moderação — o autor perde a reputação acumulada. */
   isFake?: boolean;
+  /** Estado para o usuário autenticado. */
+  applied: boolean;
+  saved: boolean;
+  owner: boolean;
+  /** Quantas candidaturas a vaga recebeu (exposto apenas para quem publicou). */
+  applicationsCount: number;
 };

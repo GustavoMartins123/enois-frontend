@@ -49,6 +49,11 @@ const signupSchema = z.object({
   name: z.string().trim().min(2, texts.auth.validation.signupNameMin).max(80),
   email: z.string().trim().email(texts.auth.validation.invalidEmail).max(255),
   password: z.string().min(8, texts.auth.validation.passwordMin).max(128),
+  // Checkbox marcado chega como "on"; ausente significa nao aceito.
+  acceptedTerms: z
+    .string()
+    .optional()
+    .refine((value) => value === "on", { message: texts.auth.validation.termsRequired }),
 });
 
 function Auth() {
@@ -282,6 +287,7 @@ function SignupForm({ onDone }: AuthFormProps) {
         name: parsed.data.name,
         email: parsed.data.email,
         password: parsed.data.password,
+        acceptedTerms: parsed.data.acceptedTerms === "on",
       });
       localStorage.setItem("session_token", result.token);
       localStorage.setItem("refresh_token", result.refreshToken);
@@ -350,6 +356,41 @@ function SignupForm({ onDone }: AuthFormProps) {
             </button>
           </div>
         </Field>
+
+        <div className="space-y-1.5">
+          <label className="flex items-start gap-2 text-[12px] font-light text-text-subtle">
+            <input type="checkbox" name="acceptedTerms" className="mt-0.5 h-4 w-4 shrink-0" />
+
+            <span>
+              <>{texts.auth.signup.termsPrefix}</>
+
+              <Link
+                to="/termos"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                <>{texts.auth.signup.termsLink}</>
+              </Link>
+
+              <>{texts.auth.signup.termsAnd}</>
+
+              <Link
+                to="/privacidade"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                <>{texts.auth.signup.privacyLink}</>
+              </Link>
+
+              <>{texts.auth.signup.termsSuffix}</>
+            </span>
+          </label>
+          {errors.acceptedTerms && (
+            <p className="text-xs text-destructive">{errors.acceptedTerms}</p>
+          )}
+        </div>
 
         {formError && <ErrorBanner error={formError} />}
         <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>

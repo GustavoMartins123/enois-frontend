@@ -4,7 +4,7 @@ import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { AccountMenuProps } from "@/types/components/account/account-menu-props";
-import { KeyRound, LogOut, Mail, Trash2, User } from "lucide-react";
+import { KeyRound, LifeBuoy, LogOut, Mail, Trash2, User } from "lucide-react";
 
 import { logout } from "@/lib/logout";
 import { cn } from "@/lib/utils";
@@ -93,6 +93,12 @@ export function AccountMenu({ profile }: AccountMenuProps) {
 
               <>{texts.account.menu.changeEmail}</>
             </button>
+
+            <Link to="/suporte" onClick={() => setMenuOpen(false)} className={ITEM_CLASS}>
+              <LifeBuoy className="h-4 w-4" />
+
+              <>{texts.account.menu.support}</>
+            </Link>
 
             <button type="button" onClick={openChangePassword} className={ITEM_CLASS}>
               <KeyRound className="h-4 w-4" />

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VagasRouteImport } from './routes/vagas'
 import { Route as TermosRouteImport } from './routes/termos'
+import { Route as SuporteRouteImport } from './routes/suporte'
 import { Route as SalvosRouteImport } from './routes/salvos'
 import { Route as RedeRouteImport } from './routes/rede'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
@@ -21,6 +22,8 @@ import { Route as EventosRouteImport } from './routes/eventos'
 import { Route as EntrarRouteImport } from './routes/entrar'
 import { Route as ComunidadesRouteImport } from './routes/comunidades'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as VagasMinhasRouteImport } from './routes/vagas.minhas'
+import { Route as VagasJobIdRouteImport } from './routes/vagas.$jobId'
 import { Route as PostPostIdRouteImport } from './routes/post.$postId'
 import { Route as PerfilUsernameRouteImport } from './routes/perfil.$username'
 import { Route as ComunidadesCommunityIdRouteImport } from './routes/comunidades.$communityId'
@@ -35,6 +38,11 @@ const VagasRoute = VagasRouteImport.update({
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
   path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SuporteRoute = SuporteRouteImport.update({
+  id: '/suporte',
+  path: '/suporte',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SalvosRoute = SalvosRouteImport.update({
@@ -87,6 +95,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VagasMinhasRoute = VagasMinhasRouteImport.update({
+  id: '/minhas',
+  path: '/minhas',
+  getParentRoute: () => VagasRoute,
+} as any)
+const VagasJobIdRoute = VagasJobIdRouteImport.update({
+  id: '/$jobId',
+  path: '/$jobId',
+  getParentRoute: () => VagasRoute,
+} as any)
 const PostPostIdRoute = PostPostIdRouteImport.update({
   id: '/post/$postId',
   path: '/post/$postId',
@@ -124,13 +142,16 @@ export interface FileRoutesByFullPath {
   '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
+  '/suporte': typeof SuporteRoute
   '/termos': typeof TermosRoute
-  '/vagas': typeof VagasRoute
+  '/vagas': typeof VagasRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset': typeof AuthResetRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
+  '/vagas/$jobId': typeof VagasJobIdRoute
+  '/vagas/minhas': typeof VagasMinhasRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -143,13 +164,16 @@ export interface FileRoutesByTo {
   '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
+  '/suporte': typeof SuporteRoute
   '/termos': typeof TermosRoute
-  '/vagas': typeof VagasRoute
+  '/vagas': typeof VagasRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset': typeof AuthResetRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
+  '/vagas/$jobId': typeof VagasJobIdRoute
+  '/vagas/minhas': typeof VagasMinhasRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -163,13 +187,16 @@ export interface FileRoutesById {
   '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
+  '/suporte': typeof SuporteRoute
   '/termos': typeof TermosRoute
-  '/vagas': typeof VagasRoute
+  '/vagas': typeof VagasRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset': typeof AuthResetRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
+  '/vagas/$jobId': typeof VagasJobIdRoute
+  '/vagas/minhas': typeof VagasMinhasRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -184,6 +211,7 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/rede'
     | '/salvos'
+    | '/suporte'
     | '/termos'
     | '/vagas'
     | '/auth/callback'
@@ -191,6 +219,8 @@ export interface FileRouteTypes {
     | '/comunidades/$communityId'
     | '/perfil/$username'
     | '/post/$postId'
+    | '/vagas/$jobId'
+    | '/vagas/minhas'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -203,6 +233,7 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/rede'
     | '/salvos'
+    | '/suporte'
     | '/termos'
     | '/vagas'
     | '/auth/callback'
@@ -210,6 +241,8 @@ export interface FileRouteTypes {
     | '/comunidades/$communityId'
     | '/perfil/$username'
     | '/post/$postId'
+    | '/vagas/$jobId'
+    | '/vagas/minhas'
   id:
     | '__root__'
     | '/'
@@ -222,6 +255,7 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/rede'
     | '/salvos'
+    | '/suporte'
     | '/termos'
     | '/vagas'
     | '/auth/callback'
@@ -229,6 +263,8 @@ export interface FileRouteTypes {
     | '/comunidades/$communityId'
     | '/perfil/$username'
     | '/post/$postId'
+    | '/vagas/$jobId'
+    | '/vagas/minhas'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -242,8 +278,9 @@ export interface RootRouteChildren {
   PrivacidadeRoute: typeof PrivacidadeRoute
   RedeRoute: typeof RedeRoute
   SalvosRoute: typeof SalvosRoute
+  SuporteRoute: typeof SuporteRoute
   TermosRoute: typeof TermosRoute
-  VagasRoute: typeof VagasRoute
+  VagasRoute: typeof VagasRouteWithChildren
   AuthCallbackRoute: typeof AuthCallbackRoute
   AuthResetRoute: typeof AuthResetRoute
   PerfilUsernameRoute: typeof PerfilUsernameRoute
@@ -264,6 +301,13 @@ declare module '@tanstack/react-router' {
       path: '/termos'
       fullPath: '/termos'
       preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/suporte': {
+      id: '/suporte'
+      path: '/suporte'
+      fullPath: '/suporte'
+      preLoaderRoute: typeof SuporteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/salvos': {
@@ -336,6 +380,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/vagas/minhas': {
+      id: '/vagas/minhas'
+      path: '/minhas'
+      fullPath: '/vagas/minhas'
+      preLoaderRoute: typeof VagasMinhasRouteImport
+      parentRoute: typeof VagasRoute
+    }
+    '/vagas/$jobId': {
+      id: '/vagas/$jobId'
+      path: '/$jobId'
+      fullPath: '/vagas/$jobId'
+      preLoaderRoute: typeof VagasJobIdRouteImport
+      parentRoute: typeof VagasRoute
+    }
     '/post/$postId': {
       id: '/post/$postId'
       path: '/post/$postId'
@@ -386,6 +444,18 @@ const ComunidadesRouteWithChildren = ComunidadesRoute._addFileChildren(
   ComunidadesRouteChildren,
 )
 
+interface VagasRouteChildren {
+  VagasJobIdRoute: typeof VagasJobIdRoute
+  VagasMinhasRoute: typeof VagasMinhasRoute
+}
+
+const VagasRouteChildren: VagasRouteChildren = {
+  VagasJobIdRoute: VagasJobIdRoute,
+  VagasMinhasRoute: VagasMinhasRoute,
+}
+
+const VagasRouteWithChildren = VagasRoute._addFileChildren(VagasRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ComunidadesRoute: ComunidadesRouteWithChildren,
@@ -397,8 +467,9 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacidadeRoute: PrivacidadeRoute,
   RedeRoute: RedeRoute,
   SalvosRoute: SalvosRoute,
+  SuporteRoute: SuporteRoute,
   TermosRoute: TermosRoute,
-  VagasRoute: VagasRoute,
+  VagasRoute: VagasRouteWithChildren,
   AuthCallbackRoute: AuthCallbackRoute,
   AuthResetRoute: AuthResetRoute,
   PerfilUsernameRoute: PerfilUsernameRoute,
