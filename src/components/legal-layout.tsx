@@ -48,6 +48,10 @@ export function LegalLayout({ children }: WithRequiredChildren) {
             <Link to="/privacidade" className="transition-colors hover:text-foreground">
               {texts.legal.footer.privacy}
             </Link>
+
+            <Link to="/diretrizes" className="transition-colors hover:text-foreground">
+              {texts.legal.footer.guidelines}
+            </Link>
           </nav>
         </div>
       </footer>

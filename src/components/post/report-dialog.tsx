@@ -1,11 +1,15 @@
 import { useState } from "react";
 
+import { Link } from "@tanstack/react-router";
+
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { ReportReason } from "@/types/application/report/report-reason";
 import type { PostIdProps } from "@/types/components/post/post-id-props";
 
 import { REPORT_REASONS, reportsApi } from "@/lib/api";
+
+import { useToast } from "@/components/ui/toast";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -18,8 +22,12 @@ export function ReportDialog({ postId }: PostIdProps) {
   const setShowReport = usePostCardStore((state) => state.setShowReport);
   const [reason, setReason] = useState<ReportReason>("SPAM");
   const [description, setDescription] = useState("");
+  const [sending, setSending] = useState(false);
+  const { toast } = useToast();
 
   const submit = async () => {
+    if (sending) return;
+    setSending(true);
     try {
       await reportsApi.create({
         targetId: postId,
@@ -29,8 +37,11 @@ export function ReportDialog({ postId }: PostIdProps) {
       });
       setShowReport(postId, false);
       setDescription("");
+      toast(texts.posts.report.success, "success");
     } catch {
-      /* silent */
+      toast(texts.posts.report.error, "error");
+    } finally {
+      setSending(false);
     }
   };
 
@@ -73,9 +84,15 @@ export function ReportDialog({ postId }: PostIdProps) {
             />
           </div>
 
-          <Button className="w-full rounded-full" onClick={submit}>
-            {texts.posts.report.action}
+          <Button className="w-full rounded-full" onClick={submit} disabled={sending}>
+            {sending ? texts.posts.report.sending : texts.posts.report.action}
           </Button>
+
+          <p className="text-center text-xs text-text-subtle">
+            <Link to="/diretrizes" className="text-primary hover:underline" target="_blank">
+              {texts.posts.report.guidelines}
+            </Link>
+          </p>
         </div>
       </DialogContent>
     </Dialog>
