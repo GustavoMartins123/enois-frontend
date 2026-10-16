@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { Link } from "@tanstack/react-router";
 
@@ -30,7 +30,9 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
   const removeComment = usePostCardStore((state) => state.removeComment);
   const updateCommentCount = usePostCardStore((state) => state.updateCommentCount);
   const isOwner = currentUserId === comment.authorId;
-  const [commentReaction, setCommentReaction] = useState<string | null>(null);
+  const [commentReaction, setCommentReaction] = useState<string | null>(
+    comment.currentUserReaction ?? null,
+  );
 
   // Edicao e local ao item: o texto novo e o selo aparecem na hora. Ao remontar (refetch),
   // vale o que veio do servidor, que ja traz o editedAt.
@@ -40,6 +42,11 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
   const [editDraft, setEditDraft] = useState(comment.content);
   const [saving, setSaving] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
+
+  // A reação do leitor vem do servidor: sem isto o like "sumia" ao recarregar.
+  useEffect(() => {
+    setCommentReaction(comment.currentUserReaction ?? null);
+  }, [comment.currentUserReaction, comment.id]);
 
   const saveEdit = async () => {
     const next = editDraft.trim();

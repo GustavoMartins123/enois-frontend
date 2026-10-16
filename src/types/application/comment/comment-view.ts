@@ -1,3 +1,5 @@
+import type { ReactionType } from "@/types/application/reaction/reaction-type";
+
 export type CommentView = {
   id: string;
   postId: string;
@@ -12,4 +14,6 @@ export type CommentView = {
   /** Quando o autor editou (nulo se nunca editado) — vira o "editado" na tela. */
   editedAt?: string | null;
   status: "ACTIVE" | "DELETED";
+  /** Reação do próprio leitor — é o que mantém o like ao recarregar a página. */
+  currentUserReaction?: ReactionType | null;
 };
