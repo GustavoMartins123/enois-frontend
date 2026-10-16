@@ -36,7 +36,10 @@ export function SandboxedHtmlFrame({
       allowFullScreen
       referrerPolicy="no-referrer"
       loading="lazy"
-      className={cn("w-full rounded-2xl border border-border-soft bg-white shadow-soft", className)}
+      // Sem borda, cantos ou sombra por padrão: quem envolve (card do post, card "Sobre") já dá o
+      // acabamento, e a página deve encostar nas bordas em vez de flutuar dentro de uma moldura.
+      // Quem quiser moldura passa a classe (o diálogo "Abrir página", por exemplo).
+      className={cn("w-full bg-white", className)}
     />
   );
 }

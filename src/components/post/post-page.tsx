@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { CONTENT_ORIGIN, HAS_CONTENT_ORIGIN } from "@/constants/content-origin";
-import { PHONE_COLUMN_CLASS, PHONE_FRAME_CLASS } from "@/constants/post-page";
+import { PHONE_COLUMN_CLASS } from "@/constants/post-page";
 import { texts } from "@/texts";
 import type { PostPageProps } from "@/types/components/post/post-page-props";
 import { Maximize2 } from "lucide-react";
@@ -26,8 +26,10 @@ export function PostPage({ postId, html }: PostPageProps) {
   const pageUrl = HAS_CONTENT_ORIGIN ? `${CONTENT_ORIGIN}/pages/${postId}` : null;
 
   return (
-    <div className="mt-4">
-      <div className={PHONE_FRAME_CLASS}>
+    // `-mx-*` cancela o padding do card do post: a página encosta nas laterais em vez de flutuar
+    // dentro de uma moldura clara (era o que aparecia como "bordinha branca" em volta).
+    <div className="-mx-4 mt-4 sm:-mx-5">
+      <div className="w-full overflow-hidden">
         {pageUrl ? (
           // Origem separada: aqui o quadro PODE rodar script (o player vive dentro da página) sem
           // que isso dê acesso ao app — é a origem diferente, não a política, que garante o corte.
@@ -41,10 +43,15 @@ export function PostPage({ postId, html }: PostPageProps) {
             allowFullScreen
             referrerPolicy="no-referrer"
             loading="lazy"
-            className="h-full w-full rounded-2xl border border-border-soft bg-white shadow-soft"
+            className="h-[520px] w-full bg-white"
           />
         ) : (
-          <SandboxedHtmlFrame html={html} title={texts.posts.page.frameTitle} className="h-full" />
+          <SandboxedHtmlFrame
+            html={html}
+            title={texts.posts.page.frameTitle}
+            className="h-[520px] w-full"
+            innerPadding={false}
+          />
         )}
       </div>
 

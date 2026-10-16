@@ -255,6 +255,8 @@ function Home() {
                   emptyPreview={texts.feed.composer.pageEmpty}
                   frameTitle={texts.posts.page.frameTitle}
                   maxLength={PAGE_HTML_MAX_LENGTH}
+                  innerPadding={false}
+                  previewClassName="mt-3 h-[420px] w-full"
                 />
               </div>
             )}

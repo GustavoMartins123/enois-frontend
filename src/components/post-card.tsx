@@ -236,7 +236,7 @@ export function PostCard({ post }: PostCardProps) {
   const toggleComments = () => setShowComments((value) => !value);
 
   return (
-    <article className="min-w-0 rounded-2xl border border-border-soft bg-surface-card p-4 transition sm:p-5">
+    <article className="min-w-0 overflow-hidden rounded-2xl border border-border-soft bg-surface-card p-4 transition sm:p-5">
       <header className="flex justify-between items-start gap-3">
         <AuthorInfo
           authorUsername={post.authorUsername}
