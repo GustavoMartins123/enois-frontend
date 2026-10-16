@@ -7,8 +7,10 @@ export type PostView = {
   authorUsername: string;
   authorName: string;
   authorAvatar: string | null;
-  type: "INSIGHT" | "ARTICLE" | "QUESTION" | "PROJECT" | "OPPORTUNITY";
+  type: "INSIGHT" | "ARTICLE" | "QUESTION" | "PROJECT" | "OPPORTUNITY" | "PAGE";
   content: string;
+  /** HTML já sanitizado da mini página (só em posts do tipo PAGE; nulo nos demais). */
+  pageHtml?: string | null;
   tags: string[];
   mediaIds: string[];
   createdAt: string;

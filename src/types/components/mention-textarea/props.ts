@@ -6,4 +6,6 @@ export type Props = Pick<
 > & {
   value: string;
   onChange: (value: string, mentionedUserIds: string[]) => void;
+  /** Mostra a barra de formatacao (negrito, lista, citacao...) acima do campo. */
+  toolbar?: boolean;
 };

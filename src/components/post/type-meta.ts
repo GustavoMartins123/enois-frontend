@@ -28,4 +28,9 @@ export const typeMeta: Record<PostView["type"], PostTypeMeta> = {
     className: "bg-highlight-article text-highlight-article-text",
     classAvatar: "bg-user-article text-user-article-text",
   },
+  PAGE: {
+    label: texts.posts.types.page,
+    className: "bg-surface-2 text-text-strong",
+    classAvatar: "",
+  },
 };

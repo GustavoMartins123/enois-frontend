@@ -5,15 +5,26 @@ import { useQuery } from "@tanstack/react-query";
 import { texts } from "@/texts";
 import type { UserSearchResult } from "@/types/application/user/user-search-result";
 import type { Props } from "@/types/components/mention-textarea/props";
+import type { RichTextFormat } from "@/types/lib/rich-text/rich-text-format";
 
 import { usersApi } from "@/lib/api";
+import { applyFormat } from "@/lib/rich-text/apply-format";
 
 import { CharCounter } from "@/components/ui/char-counter";
 
+import { RichTextToolbar } from "@/components/rich-text-toolbar";
 import { UserAvatar } from "@/components/user-avatar";
 
 /** Altura mínima da caixa, em linhas de texto, para dar espaço de revisar o que foi escrito. */
 const MIN_ROWS = 4;
+
+/** Atalhos de teclado da formatacao; `mod` e Ctrl no Windows/Linux e Cmd no Mac. */
+const SHORTCUTS: Record<string, RichTextFormat> = {
+  b: "bold",
+  i: "italic",
+  e: "code",
+  k: "link",
+};
 
 export function MentionTextarea({
   value,
@@ -22,6 +33,7 @@ export function MentionTextarea({
   className = "",
   maxLength,
   rows,
+  toolbar = false,
 }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [mentionQuery, setMentionQuery] = useState("");
@@ -99,7 +111,34 @@ export function MentionTextarea({
     });
   };
 
+  /** Formata o trecho selecionado e devolve o foco/cursor para dentro do campo. */
+  const formatSelection = (format: RichTextFormat) => {
+    const element = textareaRef.current;
+    if (!element) return;
+
+    const result = applyFormat(value, element.selectionStart, element.selectionEnd, format);
+    onChange(result.value, mentionedIds);
+
+    // O valor volta pelo `value` (componente controlado): a selecao so pode ser reposta depois
+    // do proximo paint, quando o textarea ja tem o texto novo.
+    requestAnimationFrame(() => {
+      const node = textareaRef.current;
+      if (!node) return;
+      node.focus();
+      node.setSelectionRange(result.selectionStart, result.selectionEnd);
+    });
+  };
+
   const handleKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (toolbar && (e.ctrlKey || e.metaKey) && !e.altKey) {
+      const shortcut = SHORTCUTS[e.key.toLowerCase()];
+      if (shortcut) {
+        e.preventDefault();
+        formatSelection(shortcut);
+        return;
+      }
+    }
+
     if (mentionIndex === -1 || results.length === 0) return;
     if (e.key === "ArrowDown") {
       e.preventDefault();
@@ -124,6 +163,14 @@ export function MentionTextarea({
 
   return (
     <div className="relative min-w-0 flex-1">
+      {toolbar && (
+        <RichTextToolbar
+          label={texts.posts.formatting.toolbar}
+          onFormat={formatSelection}
+          className="mb-1.5"
+        />
+      )}
+
       <textarea
         ref={textareaRef}
         value={value}

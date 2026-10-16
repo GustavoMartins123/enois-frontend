@@ -6,7 +6,16 @@ import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { PostCardProps } from "@/types/components/post/post-card-props";
-import { Bookmark, Flag, Heart, MessageSquare, MoreHorizontal, Pencil, Share2, Trash2 } from "lucide-react";
+import {
+  Bookmark,
+  Flag,
+  Heart,
+  MessageSquare,
+  MoreHorizontal,
+  Pencil,
+  Share2,
+  Trash2,
+} from "lucide-react";
 
 import { REACTION_EMOJIS, communitiesApi, feedApi, reactionsApi } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
@@ -19,15 +28,18 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 
+import { MentionTextarea } from "@/components/mention-textarea";
+
 import { AuthorInfo } from "./post/author-info";
 import { formatTime } from "./post/format-time";
 import { LinkPreviews } from "./post/link-previews";
-import { linkifyText } from "./post/linkify-text";
 import { MediaGrid } from "./post/media-grid";
 import { PostComments } from "./post/post-comments";
+import { PostPage } from "./post/post-page";
 import { ReactionsDialog } from "./post/reactions-dialog";
 import { ReactionsSummary } from "./post/reactions-summary";
 import { ReportDialog } from "./post/report-dialog";
+import { RichText } from "./post/rich-text";
 import { typeMeta } from "./post/type-meta";
 
 export function PostCard({ post }: PostCardProps) {
@@ -41,6 +53,7 @@ export function PostCard({ post }: PostCardProps) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [draft, setDraft] = useState(post.content);
+  const [pageDraft, setPageDraft] = useState(post.pageHtml ?? "");
   const initializePostCard = usePostCardStore((state) => state.initializePostCard);
   const disposePostCard = usePostCardStore((state) => state.disposePostCard);
   const card = usePostCardStore((state) => state.cards[post.id]);
@@ -121,9 +134,16 @@ export function PostCard({ post }: PostCardProps) {
     }
   };
 
-// Post proprio: editar o texto e excluir. O backend confere o dono; a UI so evita mostrar para os outros.
+  // Post proprio: editar o texto e excluir. O backend confere o dono; a UI so evita mostrar para os outros.
   const editPost = useMutation({
-    mutationFn: () => feedApi.update(post.id, { content: draft.trim(), tags: post.tags }),
+    mutationFn: () =>
+      feedApi.update(post.id, {
+        content: draft.trim(),
+        tags: post.tags,
+        // Numa pagina o HTML vai junto (o backend recusa edicao de PAGE sem ele); nos outros
+        // tipos o campo nem e enviado.
+        ...(post.type === "PAGE" ? { pageHtml: pageDraft } : {}),
+      }),
     onSuccess: () => {
       setEditOpen(false);
       toast(texts.posts.owner.edited);
@@ -165,7 +185,10 @@ export function PostCard({ post }: PostCardProps) {
   });
 
   const handleSaveEdit = () => {
-    if (!draft.trim() || draft.trim() === post.content) {
+    const contentUnchanged = draft.trim() === post.content;
+    const pageUnchanged = post.type !== "PAGE" || pageDraft === (post.pageHtml ?? "");
+
+    if (!draft.trim() || (contentUnchanged && pageUnchanged)) {
       setEditOpen(false);
       return;
     }
@@ -229,6 +252,7 @@ export function PostCard({ post }: PostCardProps) {
                 <button
                   onClick={() => {
                     setDraft(post.content);
+                    setPageDraft(post.pageHtml ?? "");
                     setEditOpen(true);
                   }}
                   className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition hover:bg-muted"
@@ -250,9 +274,10 @@ export function PostCard({ post }: PostCardProps) {
         </div>
       </header>
 
-      <p className="mt-4 whitespace-pre-line break-words text-[15px] font-light leading-relaxed text-text-strong">
-        {linkifyText(post.content)}
-      </p>
+      <RichText
+        content={post.content}
+        className="mt-4 whitespace-pre-line break-words text-[15px] font-light leading-relaxed text-text-strong"
+      />
 
       {post.editedAt && (
         <p className="mt-1 text-[11px] font-light text-text-subtle">
@@ -265,6 +290,8 @@ export function PostCard({ post }: PostCardProps) {
           <MediaGrid mediaIds={post.mediaIds} />
         </div>
       )}
+
+      {post.pageHtml && <PostPage html={post.pageHtml} />}
 
       <ReactionsSummary postId={post.id} />
       <LinkPreviews content={post.content} />
@@ -382,13 +409,34 @@ export function PostCard({ post }: PostCardProps) {
                 <DialogTitle>{texts.posts.owner.editTitle}</DialogTitle>
               </DialogHeader>
 
-              <Textarea
+              <MentionTextarea
                 value={draft}
                 maxLength={1200}
-                autoFocus
-                onChange={(event) => setDraft(event.target.value)}
+                toolbar
+                onChange={(value) => setDraft(value)}
                 placeholder={texts.posts.owner.editDescription}
+                className="rounded-md border border-input bg-transparent px-3 py-2 text-sm"
               />
+
+              {post.type === "PAGE" && (
+                <div>
+                  <label
+                    htmlFor={`page-html-${post.id}`}
+                    className="mb-1 block text-[12px] font-light text-text-subtle"
+                  >
+                    {texts.feed.composer.pageLabel}
+                  </label>
+
+                  <Textarea
+                    id={`page-html-${post.id}`}
+                    value={pageDraft}
+                    maxLength={20000}
+                    onChange={(event) => setPageDraft(event.target.value)}
+                    placeholder={texts.feed.composer.pagePlaceholder}
+                    className="min-h-[160px] font-mono text-[12px]"
+                  />
+                </div>
+              )}
 
               <div className="flex gap-2">
                 <Button
@@ -401,7 +449,11 @@ export function PostCard({ post }: PostCardProps) {
 
                 <Button
                   className="rounded-full"
-                  disabled={editPost.isPending || !draft.trim()}
+                  disabled={
+                    editPost.isPending ||
+                    !draft.trim() ||
+                    (post.type === "PAGE" && !pageDraft.trim())
+                  }
                   onClick={handleSaveEdit}
                 >
                   {editPost.isPending ? texts.common.saving : texts.posts.owner.save}

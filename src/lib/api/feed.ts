@@ -23,7 +23,8 @@ export const feedApi = {
   listByUserId: (userId: string, cursor?: string | null, limit = 20) =>
     api.get<PageResponse<PostView>>(`/users/${userId}/posts${buildQuery({ cursor, limit })}`),
 
-  update: (postId: string, data: { content: string; tags?: string[] }) =>
+  // `pageHtml` so vai em post do tipo PAGE; o backend descarta em qualquer outro tipo.
+  update: (postId: string, data: { content: string; tags?: string[]; pageHtml?: string }) =>
     api.patch<PostView>(`/feed/posts/${postId}`, data),
 
   /** Desfaz a exclusão do próprio post (soft delete reversível). */

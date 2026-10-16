@@ -12,6 +12,8 @@ import type { MediaItem } from "@/types/routes/feed/media-item";
 import {
   BarChart3,
   Calendar,
+  Code2,
+  Eye,
   FileText,
   Film,
   Image,
@@ -29,11 +31,13 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Pill } from "@/components/ui/pill";
+import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
 import { InfiniteScroll } from "@/components/infinite-scroll";
 import { MentionTextarea } from "@/components/mention-textarea";
 import { PostCard } from "@/components/post-card";
+import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/feed")({
@@ -104,6 +108,10 @@ function Home() {
   const [postType, setPostType] = useState<PostView["type"]>("INSIGHT");
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [publishError, setPublishError] = useState<string | null>(null);
+  // Modo "pagina": em vez de um post de texto, o autor cola um HTML que vira uma mini pagina.
+  const [pageMode, setPageMode] = useState(false);
+  const [pageHtml, setPageHtml] = useState("");
+  const [pagePreview, setPagePreview] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
   const upload = useMediaUpload();
 
@@ -118,19 +126,29 @@ function Home() {
     event.preventDefault();
     const content = draft.trim();
     if (!content) return;
+    // Pagina sem HTML nao existe: o texto continua obrigatorio como titulo, mas o corpo e o HTML.
+    if (pageMode && !pageHtml.trim()) return;
 
     setPublishError(null);
     try {
       let mediaIds: string[] = [];
-      if (media.length > 0) {
+      if (!pageMode && media.length > 0) {
         const results = await upload.uploadAll(media.map((m) => ({ file: m.file })));
         mediaIds = results.map((r) => r.mediaId);
       }
-      await createPost.mutateAsync({ content, type: postType, mediaIds, mentionedUserIds });
+      await createPost.mutateAsync({
+        content,
+        type: pageMode ? "PAGE" : postType,
+        mediaIds,
+        ...(pageMode ? { pageHtml } : {}),
+        mentionedUserIds,
+      });
       setDraft("");
       setMentionedUserIds([]);
       setPostType("INSIGHT");
       setMedia([]);
+      setPageMode(false);
+      setPageHtml("");
     } catch (err) {
       setPublishError(err instanceof Error ? err.message : texts.feed.composer.publishError);
     }
@@ -199,13 +217,73 @@ function Home() {
                   setDraft(val);
                   setMentionedUserIds(ids);
                 }}
-                placeholder={texts.feed.composer.placeholder}
+                placeholder={
+                  pageMode
+                    ? texts.feed.composer.pageTitlePlaceholder
+                    : texts.feed.composer.placeholder
+                }
                 className="flex-1 resize-none rounded-2xl border-border-soft bg-surface-1 px-3 py-2 text-[14px] font-light"
                 maxLength={1200}
+                toolbar
               />
             </div>
 
-            {media.length > 0 && (
+            {pageMode && (
+              <div className="mt-3 rounded-2xl border border-border-soft bg-surface-1 p-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <label
+                    htmlFor="composer-page-html"
+                    className="inline-flex items-center gap-1.5 text-[12px] font-light text-text-subtle"
+                  >
+                    <Code2 className="h-3.5 w-3.5" />
+
+                    <>{texts.feed.composer.pageLabel}</>
+                  </label>
+
+                  <button
+                    type="button"
+                    onClick={() => setPagePreview((value) => !value)}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-border-soft px-3 py-1 text-[12px] font-light text-text-subtle transition hover:border-primary hover:text-primary"
+                  >
+                    <Eye className="h-3.5 w-3.5" />
+
+                    <>
+                      {pagePreview
+                        ? texts.feed.composer.pageEditHtml
+                        : texts.feed.composer.pagePreview}
+                    </>
+                  </button>
+                </div>
+
+                <p className="mt-1 text-[12px] font-light text-text-subtle">
+                  {texts.feed.composer.pageDescription}
+                </p>
+
+                <Textarea
+                  id="composer-page-html"
+                  value={pageHtml}
+                  maxLength={20_000}
+                  onChange={(event) => setPageHtml(event.target.value)}
+                  placeholder={texts.feed.composer.pagePlaceholder}
+                  className="mt-2 min-h-[160px] font-mono text-[12px]"
+                />
+
+                {pagePreview &&
+                  (pageHtml.trim() ? (
+                    <SandboxedHtmlFrame
+                      html={pageHtml}
+                      title={texts.posts.page.frameTitle}
+                      className="mt-3 h-[320px]"
+                    />
+                  ) : (
+                    <p className="mt-3 rounded-xl border border-dashed border-border-soft px-3 py-6 text-center text-[12px] font-light text-text-subtle">
+                      {texts.feed.composer.pageEmpty}
+                    </p>
+                  ))}
+              </div>
+            )}
+
+            {!pageMode && media.length > 0 && (
               <div className="relative mt-3">
                 {mediaType === "image" ? (
                   <div
@@ -263,41 +341,54 @@ function Home() {
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border-soft pt-3 text-[13px] font-light text-text-subtle">
               <div className="flex flex-wrap gap-1.5">
+                {/* No modo pagina o post deixa de ser "um tipo de texto": as opcoes de texto e de
+                    midia somem e sobra o proprio botao, que e como se sai do modo. */}
+                {!pageMode && (
+                  <>
+                    <ComposerAction
+                      icon={Image}
+                      label={texts.feed.composer.types.insight}
+                      active={postType === "INSIGHT"}
+                      onClick={() => setPostType("INSIGHT")}
+                    />
+                    <ComposerAction
+                      icon={FileText}
+                      label={texts.feed.composer.types.article}
+                      active={postType === "ARTICLE"}
+                      onClick={() => setPostType("ARTICLE")}
+                    />
+                    <ComposerAction
+                      icon={BarChart3}
+                      label={texts.feed.composer.types.question}
+                      active={postType === "QUESTION"}
+                      onClick={() => setPostType("QUESTION")}
+                    />
+                    <ComposerAction
+                      icon={Calendar}
+                      label={texts.feed.composer.types.project}
+                      active={postType === "PROJECT"}
+                      onClick={() => setPostType("PROJECT")}
+                    />
+                    <ComposerAction
+                      icon={mediaType === "video" ? Film : Image}
+                      label={
+                        mediaType === "video"
+                          ? texts.feed.composer.video
+                          : media.length > 0
+                            ? texts.feed.composer.mediaCount(media.length)
+                            : texts.feed.composer.media
+                      }
+                      active={media.length > 0}
+                      onClick={() => fileRef.current?.click()}
+                    />
+                  </>
+                )}
+
                 <ComposerAction
-                  icon={Image}
-                  label={texts.feed.composer.types.insight}
-                  active={postType === "INSIGHT"}
-                  onClick={() => setPostType("INSIGHT")}
-                />
-                <ComposerAction
-                  icon={FileText}
-                  label={texts.feed.composer.types.article}
-                  active={postType === "ARTICLE"}
-                  onClick={() => setPostType("ARTICLE")}
-                />
-                <ComposerAction
-                  icon={BarChart3}
-                  label={texts.feed.composer.types.question}
-                  active={postType === "QUESTION"}
-                  onClick={() => setPostType("QUESTION")}
-                />
-                <ComposerAction
-                  icon={Calendar}
-                  label={texts.feed.composer.types.project}
-                  active={postType === "PROJECT"}
-                  onClick={() => setPostType("PROJECT")}
-                />
-                <ComposerAction
-                  icon={mediaType === "video" ? Film : Image}
-                  label={
-                    mediaType === "video"
-                      ? texts.feed.composer.video
-                      : media.length > 0
-                        ? texts.feed.composer.mediaCount(media.length)
-                        : texts.feed.composer.media
-                  }
-                  active={media.length > 0}
-                  onClick={() => fileRef.current?.click()}
+                  icon={Code2}
+                  label={texts.feed.composer.page}
+                  active={pageMode}
+                  onClick={() => setPageMode((value) => !value)}
                 />
               </div>
 
@@ -315,7 +406,12 @@ function Home() {
                 <Button
                   size="sm"
                   className="rounded-full"
-                  disabled={!draft.trim() || createPost.isPending || upload.status === "uploading"}
+                  disabled={
+                    !draft.trim() ||
+                    (pageMode && !pageHtml.trim()) ||
+                    createPost.isPending ||
+                    upload.status === "uploading"
+                  }
                 >
                   {createPost.isPending || upload.status === "uploading" ? (
                     <>

@@ -17,8 +17,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { UserAvatar } from "@/components/user-avatar";
 
 import { formatTime } from "./format-time";
-import { linkifyText } from "./linkify-text";
 import { LinkPreviews } from "./link-previews";
+import { RichText } from "./rich-text";
 
 /** Um comentário (com responder, reagir e excluir). */
 export function CommentItem({ comment, replyingTo }: CommentItemProps) {
@@ -192,10 +192,10 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
             </div>
           ) : (
             <>
-              <p className="mt-0.5 break-words text-[13px] font-light leading-relaxed text-text-strong">
-                {linkifyText(content)}
-              </p>
-
+              <RichText
+                content={content}
+                className="mt-0.5 whitespace-pre-line break-words text-[13px] font-light leading-relaxed text-text-strong"
+              />
               <LinkPreviews content={content} />
             </>
           )}
