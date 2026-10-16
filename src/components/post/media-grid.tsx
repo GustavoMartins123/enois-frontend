@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useQueries } from "@tanstack/react-query";
 
@@ -6,6 +6,7 @@ import type { PostView } from "@/types/application/feed/post-view";
 
 import { mediaApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
+import { useInView } from "@/lib/feed/use-in-view";
 
 /** Grade de mídias do post (vídeo único ou imagens) com visualização em tela cheia. */
 export function MediaGrid({ mediaIds }: Pick<PostView, "mediaIds">) {
@@ -20,15 +21,39 @@ export function MediaGrid({ mediaIds }: Pick<PostView, "mediaIds">) {
   const items = queryResults.filter((q) => q.data?.cdnUrl).map((q) => q.data!);
   const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
 
+  // Vídeo enviado no post: toca sozinho quando a publicação está à vista e pausa quando sai —
+  // "play automático" sem deixar vários vídeos rodando ao mesmo tempo pelo feed.
+  const { ref: videoRef, inView } = useInView<HTMLDivElement>(0.6);
+  const videoElement = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const element = videoElement.current;
+    if (!element) return;
+    if (inView) {
+      void element.play().catch(() => {
+        // Autoplay bloqueado (aba em segundo plano, economia de energia, política do navegador):
+        // o vídeo fica parado com os controles à vista, que é o comportamento seguro.
+      });
+    } else {
+      element.pause();
+    }
+  }, [inView]);
+
   if (items.length === 0) return null;
 
   const isVideo = items.some((m) => m.mimeType.startsWith("video/"));
 
   if (isVideo) {
     return (
-      <div className="overflow-hidden rounded-xl border border-border-soft">
+      <div ref={videoRef} className="overflow-hidden rounded-xl border border-border-soft">
         <video
+          ref={videoElement}
           src={resolveCdnUrl(items[0].cdnUrl)}
+          // `muted` + `playsInline` são o que fazem o play automático ser aceito no navegador (e no
+          // iOS, sem virar tela cheia): o som vem quando a pessoa quiser, pelo controle do vídeo.
+          muted
+          playsInline
+          preload="metadata"
           controls
           className="max-h-96 w-full bg-surface-1"
         />

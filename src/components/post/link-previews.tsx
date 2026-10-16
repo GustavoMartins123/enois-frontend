@@ -1,10 +1,17 @@
 import { texts } from "@/texts";
 import type { PostView } from "@/types/application/feed/post-view";
+import type { LinkPreviewsProps } from "@/types/components/post/link-previews-props";
+
+import { EmbedPlayer } from "./embed-player";
+import { extractVideoId } from "./extract-video-id";
 
 /** URL de mídia direta de GIF (Giphy/Tenor) — renderiza a imagem, sem iframe. */
 function gifMediaUrl(url: string): string | null {
-  if (/^https?:\/\/(media|i)\.giphy\.com\//.test(url) || /^https?:\/\/media\d*\.tenor\.com\//.test(url)
-      || /\.gif(\?|$)/i.test(url)) {
+  if (
+    /^https?:\/\/(media|i)\.giphy\.com\//.test(url) ||
+    /^https?:\/\/media\d*\.tenor\.com\//.test(url) ||
+    /\.gif(\?|$)/i.test(url)
+  ) {
     return url;
   }
   // Página do Giphy: monta a mídia a partir do id no fim do slug.
@@ -13,11 +20,8 @@ function gifMediaUrl(url: string): string | null {
   return null;
 }
 
-import { EmbedPlayer } from "./embed-player";
-import { extractVideoId } from "./extract-video-id";
-
 /** Renderiza preview de cada URL do conteúdo de um post (vídeo embedado ou card do link). */
-export function LinkPreviews({ content }: Pick<PostView, "content">) {
+export function LinkPreviews({ content, autoplay = false }: LinkPreviewsProps) {
   const urlRegex = /https?:\/\/[^\s]+/g;
   const urls = content.match(urlRegex) ?? [];
   const seen = new Set<string>();
@@ -30,13 +34,19 @@ export function LinkPreviews({ content }: Pick<PostView, "content">) {
 
         const video = extractVideoId(url);
         if (video) {
-          return <EmbedPlayer key={url} type={video.type} id={video.id} />;
+          return <EmbedPlayer key={url} type={video.type} id={video.id} autoplay={autoplay} />;
         }
 
         const gif = gifMediaUrl(url);
         if (gif) {
           return (
-            <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="mt-2 block">
+            <a
+              key={url}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 block"
+            >
               <img
                 src={gif}
                 alt="GIF"

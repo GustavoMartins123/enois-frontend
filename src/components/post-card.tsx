@@ -321,7 +321,7 @@ export function PostCard({ post }: PostCardProps) {
       ) : null}
 
       <ReactionsSummary postId={post.id} />
-      <LinkPreviews content={post.content} />
+      <LinkPreviews content={post.content} autoplay />
 
       {post.tags.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-1.5">
