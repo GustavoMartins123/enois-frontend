@@ -108,10 +108,22 @@ export function PostComments({ postId }: PostIdProps) {
   };
 
   const byId = new Map<string, CommentView>(comments.map((comment) => [comment.id, comment]));
-  // Raizes: sem pai ou com o pai fora do que ja foi carregado (resposta orfa nao pode sumir).
-  const roots = comments.filter(
-    (comment) => !comment.parentCommentId || !byId.has(comment.parentCommentId),
-  );
+  // Resolve a raiz de cada comentario subindo pelos pais ja carregados. Assim uma resposta a uma
+  // resposta continua aparecendo sob o mesmo comentario-raiz — antes ela nao era renderizada
+  // (nao era raiz nem resposta direta da raiz) e parecia que "nao renderizava".
+  const rootIdByComment = new Map<string, string>();
+  for (const comment of comments) {
+    let currentId = comment.id;
+    let parentId = comment.parentCommentId;
+    const guard = new Set<string>();
+    while (parentId && byId.has(parentId) && !guard.has(currentId)) {
+      guard.add(currentId);
+      currentId = parentId;
+      parentId = byId.get(parentId)?.parentCommentId ?? null;
+    }
+    rootIdByComment.set(comment.id, currentId);
+  }
+  const roots = comments.filter((comment) => rootIdByComment.get(comment.id) === comment.id);
   const replyToName = replyToId ? byId.get(replyToId)?.authorName : undefined;
 
   return (
@@ -152,7 +164,9 @@ export function PostComments({ postId }: PostIdProps) {
         {!loading &&
           !error &&
           roots.map((comment) => {
-            const replies = comments.filter((c) => c.parentCommentId === comment.id);
+            const replies = comments.filter(
+              (c) => c.id !== comment.id && rootIdByComment.get(c.id) === comment.id,
+            );
             return (
               <div key={comment.id}>
                 <CommentItem comment={comment} />
