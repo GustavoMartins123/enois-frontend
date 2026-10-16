@@ -6,7 +6,7 @@
  * exceção por reputação, tipo de conta ou quantidade de posts — a página de qualquer pessoa cabe no
  * mesmo espaço, e o contador abaixo do campo mostra exatamente essa conta.
  */
-export const PAGE_HTML_MAX_LENGTH = 100_000;
+export const PAGE_HTML_MAX_LENGTH = 20_000;
 
 /**
  * O quadro da página é uma tela de celular, não uma faixa larga.
