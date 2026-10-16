@@ -283,10 +283,12 @@ export function EditProfileDialog({ profile, children }: Props) {
               </Field>
 
               <Field label={texts.profile.edit.fields.skills}>
+                {/* 800 caracteres: espaço para listar habilidades separadas por vírgula ou escrever
+                    uma frase inteira — o servidor aceita o mesmo teto. */}
                 <Input
                   value={skillsText}
                   onChange={(e) => setSkillsText(e.target.value)}
-                  maxLength={400}
+                  maxLength={800}
                   className="h-10 border-border-soft bg-surface-1"
                 />
               </Field>
