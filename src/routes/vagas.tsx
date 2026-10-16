@@ -34,7 +34,6 @@ import { CURRENCIES, currencySymbol, formatSalary } from "@/lib/currency";
 import type { CurrencyCode } from "@/lib/currency";
 import { useCurrentUser } from "@/lib/current-user";
 import { canCreateJob, missingReputationToCreateJob } from "@/lib/job-permissions";
-import { requireAuth } from "@/lib/require-auth";
 import { cn } from "@/lib/utils";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -59,7 +58,6 @@ import { AppContainer } from "@/components/app-container";
 import { InfiniteScroll } from "@/components/infinite-scroll";
 
 export const Route = createFileRoute("/vagas")({
-  beforeLoad: requireAuth,
   head: () => ({ meta: [{ title: texts.jobs.seoTitle }] }),
   component: Vagas,
 });
