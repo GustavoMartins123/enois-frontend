@@ -21,6 +21,7 @@ import { Route as MensagensRouteImport } from './routes/mensagens'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as EventosRouteImport } from './routes/eventos'
 import { Route as EntrarRouteImport } from './routes/entrar'
+import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as ComunidadesRouteImport } from './routes/comunidades'
 import { Route as BloqueadosRouteImport } from './routes/bloqueados'
@@ -95,6 +96,11 @@ const EntrarRoute = EntrarRouteImport.update({
   path: '/entrar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DevelopersRoute = DevelopersRouteImport.update({
+  id: '/developers',
+  path: '/developers',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContatoRoute = ContatoRouteImport.update({
   id: '/contato',
   path: '/contato',
@@ -166,6 +172,7 @@ export interface FileRoutesByFullPath {
   '/bloqueados': typeof BloqueadosRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
+  '/developers': typeof DevelopersRoute
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
@@ -193,6 +200,7 @@ export interface FileRoutesByTo {
   '/bloqueados': typeof BloqueadosRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
+  '/developers': typeof DevelopersRoute
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
@@ -221,6 +229,7 @@ export interface FileRoutesById {
   '/bloqueados': typeof BloqueadosRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
+  '/developers': typeof DevelopersRoute
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
@@ -250,6 +259,7 @@ export interface FileRouteTypes {
     | '/bloqueados'
     | '/comunidades'
     | '/contato'
+    | '/developers'
     | '/entrar'
     | '/eventos'
     | '/feed'
@@ -277,6 +287,7 @@ export interface FileRouteTypes {
     | '/bloqueados'
     | '/comunidades'
     | '/contato'
+    | '/developers'
     | '/entrar'
     | '/eventos'
     | '/feed'
@@ -304,6 +315,7 @@ export interface FileRouteTypes {
     | '/bloqueados'
     | '/comunidades'
     | '/contato'
+    | '/developers'
     | '/entrar'
     | '/eventos'
     | '/feed'
@@ -332,6 +344,7 @@ export interface RootRouteChildren {
   BloqueadosRoute: typeof BloqueadosRoute
   ComunidadesRoute: typeof ComunidadesRouteWithChildren
   ContatoRoute: typeof ContatoRoute
+  DevelopersRoute: typeof DevelopersRoute
   EntrarRoute: typeof EntrarRoute
   EventosRoute: typeof EventosRoute
   FeedRoute: typeof FeedRoute
@@ -435,6 +448,13 @@ declare module '@tanstack/react-router' {
       path: '/entrar'
       fullPath: '/entrar'
       preLoaderRoute: typeof EntrarRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/developers': {
+      id: '/developers'
+      path: '/developers'
+      fullPath: '/developers'
+      preLoaderRoute: typeof DevelopersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contato': {
@@ -572,6 +592,7 @@ const rootRouteChildren: RootRouteChildren = {
   BloqueadosRoute: BloqueadosRoute,
   ComunidadesRoute: ComunidadesRouteWithChildren,
   ContatoRoute: ContatoRoute,
+  DevelopersRoute: DevelopersRoute,
   EntrarRoute: EntrarRoute,
   EventosRoute: EventosRoute,
   FeedRoute: FeedRoute,
