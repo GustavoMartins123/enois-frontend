@@ -1,3 +1,5 @@
+import type { JobApplicationStatus } from "./job-application-status";
+
 export type JobApplicationFieldType = "TEXT" | "TEXTAREA" | "NUMBER" | "LINK";
 
 /** Campo personalizado que quem publica a vaga define para o formulário de candidatura. */
@@ -49,7 +51,8 @@ export type JobApplicationAnswer = {
 export type JobApplication = {
   id: string;
   jobId: string;
-  status: string;
+  /** Estado persistido no backend; a tela nao inventa estado. */
+  status: JobApplicationStatus;
   appliedAt: string;
   answersCount: number;
   candidate: JobCandidate | null;

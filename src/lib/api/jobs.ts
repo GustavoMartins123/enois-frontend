@@ -36,6 +36,13 @@ export const jobsApi = {
   apply: (jobId: string, data?: JobApplicationInput) =>
     api.post<StatusResponse>(`/jobs/${jobId}/applications`, data ?? { answers: [] }),
 
+  /** Triagem: move a candidatura de estado (somente quem publicou a vaga). */
+  updateApplicationStatus: (
+    jobId: string,
+    applicationId: string,
+    status: JobApplication["status"],
+  ) => api.patch<JobApplication>(`/jobs/${jobId}/applications/${applicationId}`, { status }),
+
   /** Candidaturas RECEBIDAS numa vaga (somente quem publicou). */
   receivedApplications: (jobId: string, limit = 50) =>
     api.get<JobApplication[]>(`/jobs/${jobId}/applications${buildQuery({ limit })}`),

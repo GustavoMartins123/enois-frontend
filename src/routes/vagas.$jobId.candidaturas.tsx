@@ -1,8 +1,10 @@
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import type { JobApplication } from "@/types/application/job/job-application";
 import { ArrowLeft, BadgeCheck, Loader2, MessageCircle, ShieldAlert } from "lucide-react";
 
 import { jobsApi } from "@/lib/api";
@@ -41,6 +43,26 @@ function JobApplications() {
   });
 
   const applications = data ?? [];
+
+  const queryClient = useQueryClient();
+  const [pendingId, setPendingId] = useState<string | null>(null);
+  const [feedback, setFeedback] = useState<{ id: string; ok: boolean } | null>(null);
+
+  const changeStatus = useMutation({
+    mutationFn: (vars: { applicationId: string; status: JobApplication["status"] }) =>
+      jobsApi.updateApplicationStatus(jobId, vars.applicationId, vars.status),
+    onMutate: (vars) => {
+      setPendingId(vars.applicationId);
+      setFeedback(null);
+    },
+    // A lista so muda depois da resposta do backend: nao ha atualizacao otimista de estado.
+    onSuccess: (_updated, vars) => {
+      queryClient.invalidateQueries({ queryKey: ["job-applications", jobId] });
+      setFeedback({ id: vars.applicationId, ok: true });
+    },
+    onError: (_error, vars) => setFeedback({ id: vars.applicationId, ok: false }),
+    onSettled: () => setPendingId(null),
+  });
 
   return (
     <AppContainer>
@@ -161,6 +183,46 @@ function JobApplications() {
                 </div>
               </header>
 
+              {/* Triagem: estado persistido + so as acoes validas para ele. As regras sao as
+                  mesmas que o backend valida — a tela nao oferece transicao que seria recusada. */}
+              <div className="flex flex-wrap items-center gap-2 border-t border-border-soft pt-3">
+                <span
+                  className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${statusTone(application.status)}`}
+                >
+                  {texts.jobs.applications.statusLabels[application.status]}
+                </span>
+
+                {actionsFor(application.status).map((action) => (
+                  <Button
+                    key={action.status}
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full"
+                    disabled={pendingId === application.id}
+                    onClick={() =>
+                      changeStatus.mutate({ applicationId: application.id, status: action.status })
+                    }
+                  >
+                    {action.label}
+                  </Button>
+                ))}
+
+                {pendingId === application.id && (
+                  <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                )}
+
+                {feedback?.id === application.id && (
+                  <span
+                    className={`text-[12px] ${feedback.ok ? "text-growth" : "text-destructive"}`}
+                    role="status"
+                  >
+                    {feedback.ok
+                      ? texts.jobs.applications.statusUpdated
+                      : texts.jobs.applications.statusError}
+                  </span>
+                )}
+              </div>
+
               {application.message && (
                 <div className="rounded-xl bg-muted/50 px-3 py-2">
                   <p className="text-[11px] font-medium text-muted-foreground">
@@ -196,4 +258,35 @@ function JobApplications() {
       </div>
     </AppContainer>
   );
+
+  /** Cor do selo por estado: em andamento chama atencao, terminal fica discreto. */
+  function statusTone(status: JobApplication["status"]): string {
+    switch (status) {
+      case "IN_REVIEW":
+      case "ADVANCED":
+        return "bg-primary-soft text-primary";
+      default:
+        return "bg-muted text-text-subtle";
+    }
+  }
+
+  /** Acoes validas a partir do estado atual. NOT_SELECTED e terminal: nenhuma acao. */
+  function actionsFor(status: JobApplication["status"]) {
+    switch (status) {
+      case "APPLIED":
+        return [
+          { status: "IN_REVIEW" as const, label: texts.jobs.applications.markInReview },
+          { status: "NOT_SELECTED" as const, label: texts.jobs.applications.markNotSelected },
+        ];
+      case "IN_REVIEW":
+        return [
+          { status: "ADVANCED" as const, label: texts.jobs.applications.markAdvanced },
+          { status: "NOT_SELECTED" as const, label: texts.jobs.applications.markNotSelected },
+        ];
+      case "ADVANCED":
+        return [{ status: "IN_REVIEW" as const, label: texts.jobs.applications.backToReview }];
+      case "NOT_SELECTED":
+        return [];
+    }
+  }
 }
