@@ -1,12 +1,12 @@
 import { useState } from "react";
 
 import { CONTENT_ORIGIN, HAS_CONTENT_ORIGIN } from "@/constants/content-origin";
-import { PHONE_COLUMN_CLASS } from "@/constants/post-page";
 import { texts } from "@/texts";
 import type { PostPageProps } from "@/types/components/post/post-page-props";
-import { Maximize2 } from "lucide-react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { Maximize2, X } from "lucide-react";
 
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 import { SandboxedHtmlFrame } from "./sandboxed-html-frame";
 
@@ -68,30 +68,41 @@ export function PostPage({ postId, html }: PostPageProps) {
       </div>
 
       <Dialog open={expanded} onOpenChange={setExpanded}>
-        <DialogContent className="max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>{texts.posts.page.dialogTitle}</DialogTitle>
-          </DialogHeader>
+        {/* Tela cheia de verdade: antes o diálogo era centralizado e ficava pequeno, "flutuando" no
+            celular. Aqui o conteúdo ocupa a tela inteira e o botão de fechar vai para o canto
+            superior ESQUERDO, que é onde a mão alcança. O X padrão (canto direito) sai de cena. */}
+        <DialogContent
+          hideClose
+          className="inset-0 h-[100dvh] w-screen max-w-none translate-x-0 translate-y-0 gap-0 rounded-none border-0 p-0 data-[state=closed]:zoom-out-100 data-[state=open]:zoom-in-100"
+        >
+          <DialogPrimitive.Close className="absolute left-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-surface-card/90 text-text-strong shadow-lg backdrop-blur transition hover:bg-surface-card">
+            <X className="h-4 w-4" />
 
-          <div className={PHONE_COLUMN_CLASS}>
-            {pageUrl ? (
-              <iframe
-                title={texts.posts.page.frameTitle}
-                src={pageUrl}
-                sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-                allow="fullscreen"
-                allowFullScreen
-                referrerPolicy="no-referrer"
-                className="h-[70dvh] w-full rounded-2xl border border-border-soft bg-white"
-              />
-            ) : (
-              <SandboxedHtmlFrame
-                html={html}
-                title={texts.posts.page.frameTitle}
-                className="h-[70dvh]"
-              />
-            )}
-          </div>
+            <span className="sr-only">{texts.accessibility.close}</span>
+          </DialogPrimitive.Close>
+
+          <span className="sr-only">
+            <DialogTitle>{texts.posts.page.dialogTitle}</DialogTitle>
+          </span>
+
+          {pageUrl ? (
+            <iframe
+              title={texts.posts.page.frameTitle}
+              src={pageUrl}
+              sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+              allow="fullscreen"
+              allowFullScreen
+              referrerPolicy="no-referrer"
+              className="h-full w-full bg-white"
+            />
+          ) : (
+            <SandboxedHtmlFrame
+              html={html}
+              title={texts.posts.page.frameTitle}
+              className="h-full w-full"
+              innerPadding={false}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>
