@@ -1,7 +1,8 @@
 import * as React from "react";
 
+import { CheckCircle2, X, XCircle } from "lucide-react";
+
 import { cn } from "@/lib/utils";
-import { CheckCircle2, XCircle, X } from "lucide-react";
 
 type ToastVariant = "success" | "error";
 
@@ -68,7 +69,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               "pointer-events-auto flex w-full max-w-sm items-center gap-3 rounded-2xl border px-4 py-3 text-sm shadow-lg",
               item.variant === "success"
                 ? "border-border-soft bg-surface-card text-text-strong"
-                : "border-destructive/40 bg-destructive text-white",
+                : "border-destructive/40 bg-destructive text-destructive-foreground",
             )}
           >
             {item.variant === "success" ? (

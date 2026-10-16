@@ -5,8 +5,11 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-white shadow-soft hover:bg-[oklch(0.49_0.24_293)]",
-        destructive: "bg-destructive text-white shadow-sm hover:bg-destructive/90",
+        // `primary-foreground` (e nao branco chumbado) porque quem decide a cor do texto do botao e o
+        // tema: no tema escuro o acento e CLARO e o texto dele e escuro — branco ali ficava ilegivel
+        // (~2:1). Com o token, vale para o tema padrao, o escuro e o acento que a pessoa escolher.
+        default: "bg-primary text-primary-foreground shadow-soft hover:bg-primary/90",
+        destructive: "bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90",
         outline:
           "border border-border-soft bg-transparent hover:bg-surface-2 hover:text-foreground",
         secondary: "bg-surface-2 text-foreground hover:bg-surface-3",
