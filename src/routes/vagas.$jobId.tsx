@@ -22,7 +22,7 @@ import {
 
 import { jobsApi } from "@/lib/api";
 import { formatSalary } from "@/lib/currency";
-import { getCurrentUserId } from "@/lib/current-user";
+import { useCurrentUser } from "@/lib/current-user";
 import { actionsFor, applicationStatusLabel, statusTone } from "@/lib/job-application-status";
 
 import { Button } from "@/components/ui/button";
@@ -66,8 +66,11 @@ function JobDetail() {
    * sessao e devolve null — com isso o autor via a vaga como se fosse de outra pessoa e perdia
    * editar/excluir. O id do autor e a fonte confiavel aqui: se bate com o usuario logado, e dele.
    */
-  const currentUserId = getCurrentUserId();
-  const isOwner = Boolean(job?.owner) || (!!job?.author?.id && job.author.id === currentUserId);
+  // `useCurrentUser` e HOOK: busca /me e re-renderiza quando a resposta chega. A versao anterior
+  // lia o id direto do cache, e como esta pagina nunca pedia /me o valor vinha nulo — o DONO via a
+  // vaga como se fosse de outra pessoa: so "se inscrever" e "denunciar".
+  const { data: me } = useCurrentUser();
+  const isOwner = Boolean(job?.owner) || (!!job?.author?.id && job.author.id === (me?.id ?? null));
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["job", jobId] });
