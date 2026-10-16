@@ -1230,6 +1230,7 @@ export const texts = {
     inputPlaceholder: "Escreva uma mensagem...",
     conversationFallback: "Conversa",
     loadMoreConversations: "Carregar conversas antigas",
+    tabs: { all: "Todas", jobs: "Vagas", people: "Pessoas" },
     loadOlderMessages: "Ver mensagens anteriores",
     loadingOlder: "Carregando...",
   },

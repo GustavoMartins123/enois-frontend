@@ -37,6 +37,7 @@ function Mensagens() {
   const [searchQuery, setSearchQuery] = useState("");
   const [text, setText] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const [inboxTab, setInboxTab] = useState<"all" | "jobs" | "people">("all");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Veio de um link/perfil com uma conversa: abre ela direto.
@@ -60,6 +61,10 @@ function Mensagens() {
   });
 
   const conversations = conversationsData?.pages.flatMap((page) => page.items) ?? [];
+  // Separa a caixa de entrada: conversas de vaga (candidatura) x conversas com pessoas.
+  const visibleConversations = conversations.filter((c) =>
+    inboxTab === "all" ? true : inboxTab === "jobs" ? c.kind === "JOB" : c.kind !== "JOB",
+  );
   const activeConversation = activeId ? conversations.find((c) => c.id === activeId) : null;
 
   const {
@@ -212,13 +217,30 @@ function Mensagens() {
             )}
           </div>
 
+          <div className="flex gap-1 border-b border-border px-3 pb-2">
+            {(["all", "jobs", "people"] as const).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                onClick={() => setInboxTab(tab)}
+                className={`rounded-full px-3 py-1 text-[12px] font-light transition ${
+                  inboxTab === tab
+                    ? "bg-primary-soft text-primary"
+                    : "text-text-subtle hover:bg-surface-2"
+                }`}
+              >
+                {texts.messages.tabs[tab]}
+              </button>
+            ))}
+          </div>
+
           <ul className="flex-1 overflow-y-auto overscroll-contain">
-            {conversations.length === 0 ? (
+            {visibleConversations.length === 0 ? (
               <li className="p-4 text-center text-sm text-muted-foreground">
                 {texts.messages.noConversations}
               </li>
             ) : (
-              conversations.map((c) => (
+              visibleConversations.map((c) => (
                 <ConversationItem
                   key={c.id}
                   conversation={c}
