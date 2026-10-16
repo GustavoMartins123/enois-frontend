@@ -396,10 +396,12 @@ function Home() {
               </div>
 
               <div className="flex items-center gap-2">
+                {/* O motivo da recusa fica na linha de baixo, inteiro: antes ele saía truncado em
+                    200px ao lado do botão e a publicação recusada parecia "não fazer nada". */}
                 {publishError && (
-                  <p className="max-w-[200px] truncate text-[12px] font-light text-destructive">
-                    {publishError}
-                  </p>
+                  <span className="text-[12px] font-light text-destructive">
+                    {texts.feed.composer.publishErrorTitle}
+                  </span>
                 )}
                 {!publishError && upload.status === "uploading" && (
                   <span className="text-[12px] font-light text-text-subtle">
@@ -431,6 +433,12 @@ function Home() {
                 </Button>
               </div>
             </div>
+
+            {publishError && (
+              <p className="mt-2 rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-[12px] font-light text-destructive">
+                {publishError}
+              </p>
+            )}
           </form>
 
           {/* Tabs */}

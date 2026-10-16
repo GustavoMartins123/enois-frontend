@@ -577,6 +577,7 @@ export const texts = {
       mediaCount: (count: number) => `${count} ${count === 1 ? "mídia" : "mídias"}`,
       uploadProgress: (progress: number) => `Enviando... ${progress}%`,
       publishError: "Erro ao publicar. Tente novamente.",
+      publishErrorTitle: "Não foi possível publicar:",
       page: "Página",
       pagePlaceholder: "Cole aqui o HTML da sua página...",
       pageLabel: "HTML da página",
