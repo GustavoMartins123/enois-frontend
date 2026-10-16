@@ -13,6 +13,7 @@ import {
   CircleSlash,
   Loader2,
   MapPin,
+  Pencil,
   ShieldAlert,
   Trash2,
   Users,
@@ -27,6 +28,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 import { AppContainer } from "@/components/app-container";
 import { ApplyJobDialog } from "@/components/apply-job-dialog";
+import { JobEditDialog } from "@/components/job-edit-dialog";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/vagas/$jobId")({
@@ -76,6 +78,8 @@ function JobDetail() {
     onSuccess: invalidate,
   });
   const [closeOpen, setCloseOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const close = useMutation({
     mutationFn: () => jobsApi.close(jobId),
@@ -254,6 +258,18 @@ function JobDetail() {
                     </Button>
                   </Link>
 
+                  {/* Editar fica AQUI tambem: quem abre a propria vaga e o lugar mais obvio
+                      para procurar, e antes so existia em "Minhas vagas". */}
+                  <Button
+                    variant="outline"
+                    className="rounded-full gap-2"
+                    onClick={() => setEditOpen(true)}
+                  >
+                    <Pencil className="h-4 w-4" />
+
+                    <>{texts.jobs.editJob}</>
+                  </Button>
+
                   {job.status === "OPEN" && (
                     <Button
                       variant="outline"
@@ -271,9 +287,7 @@ function JobDetail() {
                     variant="destructive"
                     className="rounded-full gap-2"
                     disabled={remove.isPending}
-                    onClick={() => {
-                      if (window.confirm(texts.jobs.deleteConfirm)) remove.mutate();
-                    }}
+                    onClick={() => setDeleteOpen(true)}
                   >
                     <Trash2 className="h-4 w-4" />
 
@@ -333,6 +347,17 @@ function JobDetail() {
         )}
       </div>
 
+      <JobEditDialog job={editOpen ? (job ?? null) : null} onOpenChange={setEditOpen} />
+      <ConfirmDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        title={texts.jobs.deleteJob}
+        description={texts.jobs.deleteConfirm}
+        confirmLabel={texts.jobs.deleteJob}
+        destructive
+        pending={remove.isPending}
+        onConfirm={() => job && remove.mutate()}
+      />
       <ConfirmDialog
         open={closeOpen}
         onOpenChange={setCloseOpen}
