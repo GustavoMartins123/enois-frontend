@@ -8,13 +8,12 @@ import type { Props } from "@/types/components/mention-textarea/props";
 
 import { usersApi } from "@/lib/api";
 
+import { CharCounter } from "@/components/ui/char-counter";
+
 import { UserAvatar } from "@/components/user-avatar";
 
 /** Altura mínima da caixa, em linhas de texto, para dar espaço de revisar o que foi escrito. */
 const MIN_ROWS = 4;
-
-/** A partir daqui o contador de caracteres passa a chamar atenção. */
-const COUNTER_WARNING_AT = 20;
 
 export function MentionTextarea({
   value,
@@ -54,10 +53,6 @@ export function MentionTextarea({
     el.style.height = "auto";
     el.style.height = `${Math.max(el.scrollHeight, minHeight)}px`;
   }, [value]);
-
-  const remaining = maxLength === undefined ? null : maxLength - value.length;
-  const nearLimit = remaining !== null && remaining <= COUNTER_WARNING_AT;
-  const atLimit = remaining !== null && remaining <= 0;
 
   const updateMention = (text: string, cursor: number) => {
     const before = text.slice(0, cursor);
@@ -140,15 +135,9 @@ export function MentionTextarea({
         rows={rows}
       />
 
-      {remaining !== null && (
-        <p
-          className={`mt-1 text-right text-[11px] font-light ${
-            atLimit ? "text-destructive" : nearLimit ? "text-primary" : "text-text-subtle"
-          }`}
-        >
-          {atLimit ? texts.common.charactersLimitReached : texts.common.charactersLeft(remaining)}
-        </p>
-      )}
+      {/* Mesmo contador de todo campo com limite (Input/Textarea usam o CharCounter via withCounter):
+          um so lugar decide o aviso de "perto do limite" e o "limite atingido". */}
+      {maxLength !== undefined && <CharCounter length={value.length} max={maxLength} />}
 
       {mentionQuery.length >= 2 && results.length > 0 && (
         <div className="absolute bottom-full left-0 right-0 z-50 mb-1 max-h-48 overflow-y-auto rounded-xl border border-border bg-popover shadow-lg">

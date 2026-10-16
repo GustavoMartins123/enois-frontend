@@ -8,6 +8,9 @@ import { cn } from "@/lib/utils";
  * Fica colado nos componentes de Input/Textarea (ver `withCounter`), entao TODO campo com `maxLength`
  * mostra quanto falta — sem cada formulario precisar lembrar de renderizar o aviso.
  */
+/** A partir daqui o contador chama atencao: ainda cabe, mas esta perto do fim. */
+const WARNING_AT = 20;
+
 export function CharCounter({
   length,
   max,
@@ -18,11 +21,13 @@ export function CharCounter({
   className?: string;
 }) {
   const remaining = max - length;
+  const nearLimit = remaining > 0 && remaining <= WARNING_AT;
 
   return (
     <p
       className={cn(
         "mt-1 text-right text-[11px] font-light text-text-subtle",
+        nearLimit && "text-primary",
         remaining <= 0 && "text-destructive",
         className,
       )}
