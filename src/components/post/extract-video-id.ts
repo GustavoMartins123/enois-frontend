@@ -7,6 +7,7 @@ export function extractVideoId(url: string): EmbedPlayerProps | null {
     [/(?:dailymotion\.com\/video\/|dai\.ly\/)([a-zA-Z0-9]+)/, "dailymotion"],
     [/(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(\d+)/, "vimeo"],
     [/(?:twitch\.tv\/videos\/|clips\.twitch\.tv\/)([a-zA-Z0-9_-]+)/, "twitch"],
+    [/open\.spotify\.com\/(?:intl-[a-z]+\/)?(?:track|album|playlist|episode|show|artist)\/([a-zA-Z0-9]+)/, "spotify"],
     [/twitch\.tv\/([a-zA-Z0-9_]+)\/?$/, "twitch"],
   ];
   for (const [regex, type] of patterns) {

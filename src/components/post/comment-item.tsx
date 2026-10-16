@@ -18,6 +18,7 @@ import { UserAvatar } from "@/components/user-avatar";
 
 import { formatTime } from "./format-time";
 import { linkifyText } from "./linkify-text";
+import { LinkPreviews } from "./link-previews";
 
 /** Um comentário (com responder, reagir e excluir). */
 export function CommentItem({ comment, replyingTo }: CommentItemProps) {
@@ -183,9 +184,13 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
               </div>
             </div>
           ) : (
-            <p className="mt-0.5 break-words text-[13px] font-light leading-relaxed text-text-strong">
-              {linkifyText(content)}
-            </p>
+            <>
+              <p className="mt-0.5 break-words text-[13px] font-light leading-relaxed text-text-strong">
+                {linkifyText(content)}
+              </p>
+
+              <LinkPreviews content={content} />
+            </>
           )}
         </div>
 

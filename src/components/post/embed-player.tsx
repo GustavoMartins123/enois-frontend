@@ -53,6 +53,7 @@ export function EmbedPlayer({ type, id }: EmbedPlayerProps) {
     vimeo: `https://player.vimeo.com/video/${id}?autoplay=1`,
     dailymotion: `https://www.dailymotion.com/embed/video/${id}?autoplay=1`,
     twitch: `https://player.twitch.tv/?video=${id}&parent=${typeof window !== "undefined" ? window.location.hostname : ""}&autoplay=true`,
+    spotify: `https://open.spotify.com/embed/${id}`,
   };
 
   return (
