@@ -236,7 +236,13 @@ export function PostCard({ post }: PostCardProps) {
   const toggleComments = () => setShowComments((value) => !value);
 
   return (
-    <article className="min-w-0 overflow-hidden rounded-2xl border border-border-soft bg-surface-card p-4 transition sm:p-5">
+    <article
+      className={`min-w-0 border border-border-soft bg-surface-card p-4 transition sm:p-5 ${
+        // Post de página: sem canto no card, porque o conteúdo tem de alcançar as bordas — o
+        // arredondamento do card recortava os cantos da página e era o que sobrava de "rounding".
+        post.pageHtml ? "rounded-none" : "overflow-hidden rounded-2xl"
+      }`}
+    >
       <header className="flex justify-between items-start gap-3">
         <AuthorInfo
           authorUsername={post.authorUsername}

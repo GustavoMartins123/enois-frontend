@@ -464,7 +464,10 @@ function Profile() {
                  abaixo encostando nas três bordas. Antes usava o `Section` (que tem padding em
                  volta) com o quadro de celular centralizado — a sobra em volta e a moldura clara
                  do iframe eram o que parecia "borda branca". */
-              <section className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
+              <section className="border border-border-soft bg-surface-card">
+                {/* Sem canto no card: a bio em HTML vai até as bordas (o raio do card recortava os
+                    cantos dela — era o que sobrava de arredondamento). */}
+
                 <h2 className="px-4 pb-3 pt-4 text-base font-normal text-text-strong sm:px-6 sm:pt-6">
                   <>{texts.profile.sections.about}</>
                 </h2>
