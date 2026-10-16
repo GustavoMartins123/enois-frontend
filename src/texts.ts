@@ -659,11 +659,16 @@ export const texts = {
       quote: "Citação",
       code: "Código",
       link: "Link",
+      spoiler: "Spoiler",
       boldPlaceholder: "texto em negrito",
       italicPlaceholder: "texto em itálico",
       strikePlaceholder: "texto riscado",
       codePlaceholder: "código",
       linkPlaceholder: "texto do link",
+      spoilerPlaceholder: "texto com spoiler",
+      spoilerShow: "Mostrar spoiler",
+      spoilerHide: "Esconder spoiler",
+      spoilerHint: "Spoiler — toque para exibir",
     },
     page: {
       frameTitle: "Página publicada no post",
@@ -1445,6 +1450,90 @@ export const texts = {
     contactEmailTitle: "Sem conta (ou prefere e-mail)",
     contactEmailDescription:
       "Escreva direto para o time de suporte. Conte o que aconteceu e informe o e-mail da sua conta, se tiver.",
+  },
+
+  myReports: {
+    seoTitle: "Minhas denúncias · Énóis",
+    back: "Voltar",
+    title: "Minhas denúncias",
+    description:
+      "Acompanhe o estado das denúncias que você fez. Cada denúncia também foi enviada ao nosso time de suporte.",
+    empty: "Você ainda não fez denúncias.",
+    emptyHint: "Se viu algo que quebre as diretrizes, use o botão denunciar no próprio conteúdo.",
+    status: {
+      PENDING: "Em análise",
+      TRIAGED: "Triada",
+      APPROVED: "Procedente",
+      DISMISSED: "Não procedente",
+    } as Record<string, string>,
+    target: {
+      POST: "Publicação",
+      COMMENT: "Comentário",
+      USER: "Perfil",
+      JOB: "Vaga",
+    } as Record<string, string>,
+    reason: {
+      AI_GENERATED: "Conteúdo gerado por IA",
+      FAKE_CONTENT: "Conteúdo falso",
+      SCAM: "Golpe",
+      DISCRIMINATION: "Discriminação",
+      PREJUDICE: "Preconceito",
+      HARASSMENT: "Assédio",
+      SPAM: "Spam",
+      VIOLENCE: "Violência",
+      COPYRIGHT: "Direitos autorais",
+      OTHER: "Outro",
+    } as Record<string, string>,
+    viewPost: "Ver publicação",
+    viewJob: "Ver vaga",
+  },
+
+  guidelines: {
+    seoTitle: "Diretrizes da comunidade · Énóis",
+    seoDescription:
+      "As regras do Énóis: o que é bem-vindo, o que não é tolerado, como funcionam as denúncias e as consequências.",
+    title: "Diretrizes da comunidade",
+    intro:
+      "O Énóis é uma rede profissional. O objetivo destas diretrizes é manter um ambiente onde profissionais constroem reputação de forma honesta e se tratam com respeito.",
+    welcomeTitle: "O que é bem-vindo",
+    welcome: [
+      "Conteúdo profissional: experiências de carreira, oportunidades de trabalho, conhecimento técnico e apoio entre profissionais.",
+      "Opiniões e debate, inclusive críticas fortes, desde que sobre ideias, empresas e trabalho — não contra a pessoa.",
+      "Publicação honesta sobre quem você é e o que faz.",
+    ],
+    zeroToleranceTitle: "Zero tolerância",
+    zeroToleranceIntro:
+      "Os itens abaixo levam à remoção imediata do conteúdo e, quando confirmados, ao banimento da conta — sem aviso prévio:",
+    zeroTolerance: [
+      "Racismo, homofobia, transfobia, intolerância religiosa, xenofobia ou qualquer forma de discriminação.",
+      "Assédio, ameaça ou incitação à violência contra uma pessoa ou grupo.",
+      "Golpes, fraudes e esquemas financeiros que prejudiquem outras pessoas.",
+      "Conteúdo ilegal, exploração ou sexualização de menores.",
+    ],
+    notWelcomeTitle: "O que não é bem-vindo",
+    notWelcome: [
+      "Discurso de ódio disfarçado de opinião e ataque pessoal em vez de crítica ao trabalho.",
+      "Spam, publicidade não solicitada, correntes e engajamento artificial.",
+      "Conteúdo falso ou enganoso, inclusive vagas falsas e avaliações compradas.",
+      "Conteúdo gerado por IA publicado como se fosse sua experiência real, sem identificação.",
+      "Exposição de dados pessoais de terceiros (doxxing).",
+    ],
+    reportsTitle: "Como funcionam as denúncias",
+    reports: [
+      "Qualquer pessoa pode denunciar conteúdo direto no botão denunciar. A denúncia chega ao time de moderação e ao suporte.",
+      "Um sistema automatizado faz a pré-triagem para acelerar a análise, mas quem decide é sempre uma pessoa do time.",
+      "Você acompanha o estado das suas denúncias em Minhas denúncias, no menu da conta.",
+      "Denúncia falsa e repetida, feita para prejudicar alguém, também é violação.",
+    ],
+    penaltiesTitle: "Consequências",
+    penalties: [
+      "Primeira violação leve: remoção do conteúdo e aviso.",
+      "Reincidência ou violação grave: perda de recursos (ex.: publicar, comentar) ou suspensão temporária.",
+      "Zero tolerância (racismo, assédio, golpe): banimento permanente.",
+    ],
+    appealsTitle: "Recurso",
+    appeals:
+      "Se você acredita que uma medida foi aplicada por engano, fale com o suporte. Toda decisão pode ser revista por uma segunda pessoa do time.",
   },
 
   post: {

@@ -20,7 +20,9 @@ export type RichNode = {
     | "strike"
     | "code"
     | "link"
-    | "mention";
+    | "mention"
+    /** Texto ofuscado ate a pessoa tocar em "mostrar" (spoiler). */
+    | "spoiler";
   /** Texto do no (inline) ou do bloco de codigo. */
   text?: string;
   /** Destino do link. */

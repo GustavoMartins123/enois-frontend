@@ -18,6 +18,8 @@ const INLINE_PATTERN = new RegExp(
     "(?<![\\w_])_(?!\\s)(?<underscore>[^_\\n]+?)(?<!\\s)_(?![\\w])",
     "~~(?!\\s)(?<strike>[^~]+?)(?<!\\s)~~",
     "`(?<code>[^`]+)`",
+    // Spoiler: `||texto||`. Vem depois do código de propósito — o que está em crase não é spoiler.
+    "\\|\\|(?!\\s)(?<spoiler>[^|\\n]+?)(?<!\\s)\\|\\|",
     "\\[(?<label>[^\\]]+)\\]\\((?<url>[^()\\s]+)\\)",
     "(?<mention>@\\w+)",
     "(?<bareUrl>https?:\\/\\/[^\\s]+)",
@@ -148,6 +150,8 @@ export function parseInline(text: string): RichNode[] {
       nodes.push({ kind: "strike", text: groups.strike });
     } else if (groups.code) {
       nodes.push({ kind: "code", text: groups.code });
+    } else if (groups.spoiler) {
+      nodes.push({ kind: "spoiler", text: groups.spoiler });
     } else if (groups.url) {
       nodes.push({ kind: "link", text: groups.label, href: groups.url });
     } else if (groups.mention) {

@@ -1,7 +1,17 @@
 import { texts } from "@/texts";
 import type { RichTextToolbarProps } from "@/types/components/rich-text-toolbar/props";
 import type { RichTextFormat } from "@/types/lib/rich-text/rich-text-format";
-import { Bold, Code, Heading2, Italic, Link2, List, Quote, Strikethrough } from "lucide-react";
+import {
+  Bold,
+  Code,
+  EyeOff,
+  Heading2,
+  Italic,
+  Link2,
+  List,
+  Quote,
+  Strikethrough,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -14,6 +24,7 @@ const ACTIONS: { format: RichTextFormat; label: string; icon: typeof Bold }[] = 
   { format: "quote", label: texts.posts.formatting.quote, icon: Quote },
   { format: "code", label: texts.posts.formatting.code, icon: Code },
   { format: "link", label: texts.posts.formatting.link, icon: Link2 },
+  { format: "spoiler", label: texts.posts.formatting.spoiler, icon: EyeOff },
 ];
 
 /**

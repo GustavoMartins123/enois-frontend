@@ -35,11 +35,15 @@ export function applyFormat(
   };
 }
 
-const INLINE_MARKERS: Record<"bold" | "italic" | "strike" | "code", [string, string, string]> = {
+const INLINE_MARKERS: Record<
+  "bold" | "italic" | "strike" | "code" | "spoiler",
+  [string, string, string]
+> = {
   bold: ["**", "**", texts.posts.formatting.boldPlaceholder],
   italic: ["*", "*", texts.posts.formatting.italicPlaceholder],
   strike: ["~~", "~~", texts.posts.formatting.strikePlaceholder],
   code: ["`", "`", texts.posts.formatting.codePlaceholder],
+  spoiler: ["||", "||", texts.posts.formatting.spoilerPlaceholder],
 };
 
 /** `[texto](https://)` com a URL selecionada, que e o que falta preencher. */

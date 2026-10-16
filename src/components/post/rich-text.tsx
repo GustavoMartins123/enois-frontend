@@ -8,6 +8,8 @@ import type { RichNode } from "@/types/lib/rich-text/rich-node";
 import { parseRichText } from "@/lib/rich-text/parse";
 import { cn } from "@/lib/utils";
 
+import { SpoilerText } from "./spoiler-text";
+
 /**
  * Renderiza a formatacao leve do post/comentario.
  *
@@ -112,6 +114,9 @@ function renderInline(nodes: RichNode[]): ReactNode {
             {node.text}
           </Link>
         );
+
+      case "spoiler":
+        return <SpoilerText key={index} text={node.text ?? ""} />;
 
       case "link":
         return (
