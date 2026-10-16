@@ -34,6 +34,10 @@ export function NotificationsPopover() {
     mutationFn: () => notificationsApi.markAllAsRead(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      // Lida tudo, o painel não tem mais o que mostrar: ele sai de cena sozinho. Fecha no sucesso
+      // (e não no clique) de propósito — se a chamada falhar, o painel continua aberto, com as
+      // notificações ainda marcadas, em vez de esconder a falha junto com o popup.
+      setOpen(false);
     },
   });
 
@@ -75,14 +79,13 @@ export function NotificationsPopover() {
         className="w-[min(calc(100vw-2rem),24rem)] overflow-hidden rounded-2xl border-border-soft bg-surface-card p-0 shadow-card"
       >
         <div className="flex items-center justify-between gap-3 border-b border-border-soft px-4 py-3">
-          <span className="text-sm font-normal text-text-strong">
-            {texts.notifications.title}
-          </span>
+          <span className="text-sm font-normal text-text-strong">{texts.notifications.title}</span>
           {unreadCount > 0 && notificationTab === "novas" && (
             <button
               type="button"
+              disabled={markAllAsRead.isPending}
               onClick={() => markAllAsRead.mutate()}
-              className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-normal text-text-subtle transition hover:text-primary"
+              className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-normal text-text-subtle transition hover:text-primary disabled:opacity-60"
             >
               <CheckCheck className="h-3 w-3" />
 
