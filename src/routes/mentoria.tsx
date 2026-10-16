@@ -10,7 +10,7 @@ import type { RegisterMentorFormProps } from "@/types/routes/mentoring/register-
 import { Calendar, CheckCircle2, Loader2, Sparkles, Star } from "lucide-react";
 
 import { mentorsApi, profileApi } from "@/lib/api";
-import { getCurrentUserId } from "@/lib/current-user";
+import { getCurrentUserId, useCurrentUser } from "@/lib/current-user";
 import { requireAuth } from "@/lib/require-auth";
 
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +40,7 @@ function Mentoria() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
+  const [slotsForMentorId, setSlotsForMentorId] = useState<string | null>(null);
 
   const {
     data: mentorsData,
@@ -55,10 +56,13 @@ function Mentoria() {
 
   const createMentor = useMutation({
     mutationFn: (data: CreateMentorInput) => mentorsApi.create(data),
-    onSuccess: () => {
+    onSuccess: (mentor) => {
       queryClient.invalidateQueries({ queryKey: ["mentors"] });
       setOpen(false);
       setCreateError(null);
+      // Sem slots ninguem consegue pedir mentoria: abre o dialog de horarios no card do mentor
+      // recem-criado (o formulario "Tornar-me mentor" nao tinha essa etapa).
+      setSlotsForMentorId(mentor.id);
     },
     // Antes a falha era silenciosa: o dialogo fechava sem publicar e nada explicava o motivo.
     onError: () => setCreateError(texts.mentoring.createError),
@@ -157,7 +161,7 @@ function Mentoria() {
 
           <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
             {mentors.map((m) => (
-              <MentorCard key={m.id} mentor={m} />
+              <MentorCard key={m.id} mentor={m} openSlots={slotsForMentorId === m.id} />
             ))}
           </div>
         </div>
@@ -211,9 +215,11 @@ function RegisterMentorForm({ onSave, isPending }: RegisterMentorFormProps) {
   );
 }
 
-function MentorCard({ mentor }: MentorCardProps) {
-  const currentUserId = getCurrentUserId();
-  const isOwner = currentUserId === mentor.userId;
+function MentorCard({ mentor, openSlots = false }: MentorCardProps & { openSlots?: boolean }) {
+  // Reativo: busca o /me quando o cache ainda nao tem. O cache-only fazia o "Gerenciar horarios"
+  // sumir para o PROPRIO mentor (isOwner false sem motivo).
+  const { data: me } = useCurrentUser();
+  const isOwner = me?.id != null && me.id === mentor.userId;
 
   const { data: user } = useQuery({
     queryKey: ["profile", mentor.userId],
@@ -252,7 +258,7 @@ function MentorCard({ mentor }: MentorCardProps) {
         {/* Sidebar de estatísticas */}
         <div className="flex flex-col gap-4 md:col-span-3 text-sm">
           {isOwner ? (
-            <AddSlotDialog mentorId={mentor.id} />
+            <AddSlotDialog mentorId={mentor.id} defaultOpen={openSlots} />
           ) : (
             <BookSessionDialog
               mentorId={mentor.id}
@@ -476,9 +482,9 @@ function BookSessionDialog({ mentorId, mentorName }: { mentorId: string; mentorN
  * Agenda do mentor: publica um horario (dia/hora de inicio + duracao). Sem isso o agendamento nunca
  * teria o que oferecer.
  */
-function AddSlotDialog({ mentorId }: { mentorId: string }) {
+function AddSlotDialog({ mentorId, defaultOpen = false }: { mentorId: string; defaultOpen?: boolean }) {
   const queryClient = useQueryClient();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(defaultOpen);
   const [date, setDate] = useState("");
   const [time, setTime] = useState("19:00");
   const [minutes, setMinutes] = useState("60");
