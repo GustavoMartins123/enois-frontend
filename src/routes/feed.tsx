@@ -242,7 +242,7 @@ function Home() {
             </div>
 
             {pageMode && (
-              <div className="mt-3 rounded-2xl border border-border-soft bg-surface-1 p-3">
+              <div className="mt-3 overflow-hidden rounded-2xl border border-border-soft bg-surface-1 p-3">
                 {/* Mesmo editor da bio do perfil: um lugar só decide aviso de limite, ajuda e
                     pré-visualização (que usa o mesmo quadro isolado do render final). */}
                 <HtmlEditor
@@ -256,7 +256,7 @@ function Home() {
                   frameTitle={texts.posts.page.frameTitle}
                   maxLength={PAGE_HTML_MAX_LENGTH}
                   innerPadding={false}
-                  previewClassName="mt-3 h-[420px] w-full"
+                  previewClassName="-mx-3 -mb-3 mt-3 h-[420px] w-full"
                 />
               </div>
             )}
