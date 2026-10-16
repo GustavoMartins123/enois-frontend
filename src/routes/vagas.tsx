@@ -394,13 +394,16 @@ function Vagas() {
                     <>{texts.jobs.report.action}</>
                   </Button>
 
-                  <Link
-                    to="/vagas/$jobId"
-                    params={{ jobId: j.id }}
-                    className="inline-flex h-9 items-center rounded-full border border-border-soft px-3 text-[13px] font-medium transition hover:bg-muted"
-                  >
-                    {texts.jobs.details}
-                  </Link>
+                  {/* Vaga externa nao tem detalhe no enois (nao e persistida): so "Visitar vaga". */}
+                  {j.sourceType !== "EXTERNAL" && (
+                    <Link
+                      to="/vagas/$jobId"
+                      params={{ jobId: j.id }}
+                      className="inline-flex h-9 items-center rounded-full border border-border-soft px-3 text-[13px] font-medium transition hover:bg-muted"
+                    >
+                      {texts.jobs.details}
+                    </Link>
+                  )}
 
                   {j.sourceType === "EXTERNAL" ? (
                     <a

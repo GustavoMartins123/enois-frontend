@@ -9,6 +9,8 @@ export type Profile = {
   avatar: string | null;
   banner: string | null;
   bio: string | null;
+  /** Bio em HTML/CSS já sanitizada; quando presente, o perfil mostra ela no lugar do texto. */
+  bioHtml?: string | null;
   skills: string[];
   goals: string[];
   availability: string | null;

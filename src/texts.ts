@@ -763,6 +763,20 @@ export const texts = {
     recommendationQuote: (comment: string) => `"${comment}"`,
     uploadingIndicator: "...",
     avatarUnknown: "?",
+    bioHtml: {
+      action: "Bio em HTML",
+      title: "Bio em HTML/CSS",
+      label: "HTML/CSS da bio",
+      description:
+        "Escreva sua bio com HTML e CSS: imagens, vídeo e áudio por link https tocam dentro dela. Scripts, formulários e requisições externas não rodam, e nada aqui alcança a conta de quem visita.",
+      placeholder: "Cole ou escreva o HTML da sua bio...",
+      empty: "Cole um HTML para ver a pré-visualização.",
+      frameTitle: "Bio em HTML do perfil",
+      hint: "Quem visita seu perfil vê esta bio no lugar do texto. Deixar vazio volta para a bio de texto.",
+      saved: "Bio atualizada.",
+      error: "Não foi possível salvar a bio. Tente novamente.",
+      save: "Salvar bio",
+    },
     sections: {
       about: "Sobre",
       skills: "Habilidades",

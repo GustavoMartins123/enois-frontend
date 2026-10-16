@@ -55,6 +55,8 @@ import { BlockUserDialog } from "@/components/block-user-dialog";
 import { EditProfileDialog } from "@/components/edit-profile-dialog";
 import { ImageCropDialog } from "@/components/image-crop-dialog";
 import { PostCard } from "@/components/post-card";
+import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
+import { ProfileBioDialog } from "@/components/profile-bio-dialog";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/perfil/$username")({
@@ -324,6 +326,15 @@ function Profile() {
                       </Button>
                     </EditProfileDialog>
 
+                    <ProfileBioDialog
+                      initialHtml={user.bioHtml ?? null}
+                      onSaved={() => {
+                        queryClient.invalidateQueries({ queryKey: ["me"] });
+                        queryClient.invalidateQueries({ queryKey: ["profile", user.username] });
+                        queryClient.invalidateQueries({ queryKey: ["auth-me"] });
+                      }}
+                    />
+
                     {/* Personalização do tema: fica no próprio perfil, que é onde a pessoa
                         cuida da conta. As cores valem só neste dispositivo. */}
                     <Button
@@ -453,12 +464,24 @@ function Profile() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-6">
-            {user.bio && (
+            {user.bioHtml ? (
               <Section title={texts.profile.sections.about}>
-                <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">
-                  {user.bio}
-                </p>
+                {/* Mesmo quadro isolado do post de página: HTML/CSS rende, script não roda e nada
+                    aqui alcança a sessão de quem visita o perfil. */}
+                <SandboxedHtmlFrame
+                  html={user.bioHtml}
+                  title={texts.profile.bioHtml.frameTitle}
+                  className="h-[320px]"
+                />
               </Section>
+            ) : (
+              user.bio && (
+                <Section title={texts.profile.sections.about}>
+                  <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">
+                    {user.bio}
+                  </p>
+                </Section>
+              )
             )}
 
             {user.skills.length > 0 && (

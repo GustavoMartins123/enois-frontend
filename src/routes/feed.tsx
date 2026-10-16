@@ -14,7 +14,6 @@ import {
   BarChart3,
   Calendar,
   Code2,
-  Eye,
   FileText,
   Film,
   Image,
@@ -32,13 +31,12 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Pill } from "@/components/ui/pill";
-import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
+import { HtmlEditor } from "@/components/html-editor";
 import { InfiniteScroll } from "@/components/infinite-scroll";
 import { MentionTextarea } from "@/components/mention-textarea";
 import { PostCard } from "@/components/post-card";
-import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/feed")({
@@ -112,7 +110,6 @@ function Home() {
   // Modo "pagina": em vez de um post de texto, o autor cola um HTML que vira uma mini pagina.
   const [pageMode, setPageMode] = useState(false);
   const [pageHtml, setPageHtml] = useState("");
-  const [pagePreview, setPagePreview] = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
   const upload = useMediaUpload();
 
@@ -233,56 +230,19 @@ function Home() {
 
             {pageMode && (
               <div className="mt-3 rounded-2xl border border-border-soft bg-surface-1 p-3">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <label
-                    htmlFor="composer-page-html"
-                    className="inline-flex items-center gap-1.5 text-[12px] font-light text-text-subtle"
-                  >
-                    <Code2 className="h-3.5 w-3.5" />
-
-                    <>{texts.feed.composer.pageLabel}</>
-                  </label>
-
-                  <button
-                    type="button"
-                    onClick={() => setPagePreview((value) => !value)}
-                    className="inline-flex items-center gap-1.5 rounded-full border border-border-soft px-3 py-1 text-[12px] font-light text-text-subtle transition hover:border-primary hover:text-primary"
-                  >
-                    <Eye className="h-3.5 w-3.5" />
-
-                    <>
-                      {pagePreview
-                        ? texts.feed.composer.pageEditHtml
-                        : texts.feed.composer.pagePreview}
-                    </>
-                  </button>
-                </div>
-
-                <p className="mt-1 text-[12px] font-light text-text-subtle">
-                  {texts.feed.composer.pageDescription}
-                </p>
-
-                <Textarea
+                {/* Mesmo editor da bio do perfil: um lugar só decide aviso de limite, ajuda e
+                    pré-visualização (que usa o mesmo quadro isolado do render final). */}
+                <HtmlEditor
                   id="composer-page-html"
                   value={pageHtml}
-                  maxLength={PAGE_HTML_MAX_LENGTH}
-                  onChange={(event) => setPageHtml(event.target.value)}
+                  onChange={setPageHtml}
+                  label={texts.feed.composer.pageLabel}
+                  description={texts.feed.composer.pageDescription}
                   placeholder={texts.feed.composer.pagePlaceholder}
-                  className="mt-2 min-h-[160px] font-mono text-[12px]"
+                  emptyPreview={texts.feed.composer.pageEmpty}
+                  frameTitle={texts.posts.page.frameTitle}
+                  maxLength={PAGE_HTML_MAX_LENGTH}
                 />
-
-                {pagePreview &&
-                  (pageHtml.trim() ? (
-                    <SandboxedHtmlFrame
-                      html={pageHtml}
-                      title={texts.posts.page.frameTitle}
-                      className="mt-3 h-[320px]"
-                    />
-                  ) : (
-                    <p className="mt-3 rounded-xl border border-dashed border-border-soft px-3 py-6 text-center text-[12px] font-light text-text-subtle">
-                      {texts.feed.composer.pageEmpty}
-                    </p>
-                  ))}
               </div>
             )}
 
