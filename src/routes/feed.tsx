@@ -3,6 +3,7 @@ import { type ChangeEvent, type FormEvent, useCallback, useRef, useState } from 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { texts } from "@/texts";
 import type { CreatePostInput } from "@/types/application/feed/create-post-input";
 import type { FeedTab } from "@/types/application/feed/feed-tab";
@@ -262,7 +263,7 @@ function Home() {
                 <Textarea
                   id="composer-page-html"
                   value={pageHtml}
-                  maxLength={20_000}
+                  maxLength={PAGE_HTML_MAX_LENGTH}
                   onChange={(event) => setPageHtml(event.target.value)}
                   placeholder={texts.feed.composer.pagePlaceholder}
                   className="mt-2 min-h-[160px] font-mono text-[12px]"

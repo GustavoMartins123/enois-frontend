@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
@@ -54,6 +55,17 @@ export function PostCard({ post }: PostCardProps) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [draft, setDraft] = useState(post.content);
   const [pageDraft, setPageDraft] = useState(post.pageHtml ?? "");
+
+  // A listagem (e a resposta da publicação) não carrega o corpo da página: ele pode ter dezenas de
+  // milhares de caracteres e não teria por que viajar no feed inteiro. Quem tem uma página pede o
+  // post único — a mesma chave de cache da página do post, então lá já vem pronto.
+  const needsPage = post.type === "PAGE" && !post.pageHtml;
+  const { data: pagePost, isLoading: pageLoading } = useQuery({
+    queryKey: ["post", post.id],
+    queryFn: () => feedApi.get(post.id),
+    enabled: needsPage,
+  });
+  const pageHtml = post.pageHtml ?? pagePost?.pageHtml ?? "";
   const initializePostCard = usePostCardStore((state) => state.initializePostCard);
   const disposePostCard = usePostCardStore((state) => state.disposePostCard);
   const card = usePostCardStore((state) => state.cards[post.id]);
@@ -85,6 +97,12 @@ export function PostCard({ post }: PostCardProps) {
       setSaved(savedData.items.some((p) => p.id === post.id));
     }
   }, [savedData, post.id]);
+
+  // A página chega depois do card (requisição própria): preenche o rascunho da edição quando ela
+  // aparece, sem atropelar o que o autor já está digitando no diálogo aberto.
+  useEffect(() => {
+    if (!editOpen) setPageDraft(pageHtml);
+  }, [editOpen, pageHtml]);
 
   const totalComments = useMemo(() => postCounters.comments, [postCounters.comments]);
 
@@ -252,7 +270,7 @@ export function PostCard({ post }: PostCardProps) {
                 <button
                   onClick={() => {
                     setDraft(post.content);
-                    setPageDraft(post.pageHtml ?? "");
+                    setPageDraft(pageHtml);
                     setEditOpen(true);
                   }}
                   className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition hover:bg-muted"
@@ -291,7 +309,13 @@ export function PostCard({ post }: PostCardProps) {
         </div>
       )}
 
-      {post.pageHtml && <PostPage html={post.pageHtml} />}
+      {pageHtml ? (
+        <PostPage html={pageHtml} />
+      ) : pageLoading ? (
+        <p className="mt-4 rounded-xl border border-dashed border-border-soft px-3 py-6 text-center text-[12px] font-light text-text-subtle">
+          {texts.posts.page.loading}
+        </p>
+      ) : null}
 
       <ReactionsSummary postId={post.id} />
       <LinkPreviews content={post.content} />
@@ -430,9 +454,11 @@ export function PostCard({ post }: PostCardProps) {
                   <Textarea
                     id={`page-html-${post.id}`}
                     value={pageDraft}
-                    maxLength={20000}
+                    maxLength={PAGE_HTML_MAX_LENGTH}
                     onChange={(event) => setPageDraft(event.target.value)}
-                    placeholder={texts.feed.composer.pagePlaceholder}
+                    placeholder={
+                      pageLoading ? texts.posts.page.loading : texts.feed.composer.pagePlaceholder
+                    }
                     className="min-h-[160px] font-mono text-[12px]"
                   />
                 </div>

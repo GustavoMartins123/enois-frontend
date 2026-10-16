@@ -584,7 +584,7 @@ export const texts = {
       pagePreview: "Pré-visualizar",
       pageEditHtml: "Editar HTML",
       pageDescription:
-        "Cole um HTML e ele aparece renderizado dentro do post, como uma mini página. Scripts, formulários e requisições externas não rodam.",
+        "Cole um HTML e ele aparece renderizado dentro do post, como uma mini página. Imagem, vídeo e áudio por link https tocam dentro dela; scripts, formulários e requisições externas não rodam. Documento (PDF) vira link e abre no visualizador do navegador.",
       pageEmpty: "Cole um HTML para ver a pré-visualização.",
     },
     tabs: {
@@ -637,6 +637,7 @@ export const texts = {
       expand: "Abrir página",
       dialogTitle: "Página",
       badge: "Página",
+      loading: "Carregando a página...",
     },
     tag: (tag: string) => `#${tag}`,
     authorTime: (time: string) => `· ${time}`,

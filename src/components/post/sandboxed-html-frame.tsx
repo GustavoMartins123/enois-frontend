@@ -24,7 +24,11 @@ export function SandboxedHtmlFrame({ html, className, title }: SandboxedHtmlFram
     <iframe
       title={title}
       srcDoc={buildDocument(html)}
+      // Sem `allow-scripts` e sem `allow-same-origin`: e o que garante que o HTML colado nao roda
+      // codigo. `allow-fullscreen` existe so para o botao de tela cheia do player de video.
       sandbox="allow-popups allow-popups-to-escape-sandbox"
+      allow="fullscreen"
+      allowFullScreen
       referrerPolicy="no-referrer"
       loading="lazy"
       className={cn("w-full rounded-xl border border-border-soft bg-white", className)}
@@ -32,7 +36,12 @@ export function SandboxedHtmlFrame({ html, className, title }: SandboxedHtmlFram
   );
 }
 
-/** Politica aplicada por dentro do quadro: sem rede, sem script, sem formulario. */
+/**
+ * Politica aplicada por dentro do quadro: sem script, sem formulario e sem rede — exceto imagem e
+ * midia em https (ou embutidas em data:), que sao o conteudo que a pagina legitimamente carrega e o
+ * que toca dentro do post. Nao ha `frame-src`: quadro dentro de quadro fica de fora de proposito
+ * (era por ali que entraria player de terceiros, e ele exigiria liberar script).
+ */
 const FRAME_CSP = [
   "default-src 'none'",
   "img-src https: data:",
@@ -54,6 +63,9 @@ font:400 14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,
 h1,h2,h3,h4,h5,h6{line-height:1.25;margin:.6em 0 .4em}
 p{margin:.5em 0}
 img,video,svg,canvas{max-width:100%;height:auto}
+figure{margin:.8em 0}
+audio{width:100%}
+figcaption{font-size:12px;color:#666;margin-top:4px}
 a{color:#7c3aed}
 ul,ol{padding-left:1.4em}
 table{border-collapse:collapse;max-width:100%;font-size:13px}
