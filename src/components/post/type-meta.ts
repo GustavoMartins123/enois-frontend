@@ -28,6 +28,26 @@ export const typeMeta: Record<PostView["type"], PostTypeMeta> = {
     className: "bg-highlight-article text-highlight-article-text",
     classAvatar: "bg-user-article text-user-article-text",
   },
+  NEWS: {
+    label: texts.posts.types.news,
+    className: "bg-highlight-article text-highlight-article-text",
+    classAvatar: "",
+  },
+  TUTORIAL: {
+    label: texts.posts.types.tutorial,
+    className: "bg-highlight-insight text-highlight-insight-text",
+    classAvatar: "",
+  },
+  REVIEW: {
+    label: texts.posts.types.review,
+    className: "bg-opportunity/20 text-opportunity-foreground",
+    classAvatar: "",
+  },
+  MOMENT: {
+    label: texts.posts.types.moment,
+    className: "bg-secondary/30 text-secondary-foreground",
+    classAvatar: "",
+  },
   PAGE: {
     label: texts.posts.types.page,
     className: "bg-surface-2 text-text-strong",

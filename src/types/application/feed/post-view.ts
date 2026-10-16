@@ -7,10 +7,25 @@ export type PostView = {
   authorUsername: string;
   authorName: string;
   authorAvatar: string | null;
-  type: "INSIGHT" | "ARTICLE" | "QUESTION" | "PROJECT" | "OPPORTUNITY" | "PAGE";
+  type:
+    | "INSIGHT"
+    | "ARTICLE"
+    | "QUESTION"
+    | "PROJECT"
+    | "OPPORTUNITY"
+    | "PAGE"
+    | "NEWS"
+    | "TUTORIAL"
+    | "REVIEW"
+    | "MOMENT";
   content: string;
   /** HTML já sanitizado da mini página (só em posts do tipo PAGE; nulo nos demais). */
   pageHtml?: string | null;
+  /**
+   * Texto do artigo (só em posts do tipo ARTICLE, e só na leitura do post único — a listagem traz
+   * o resumo em `content`). Fica em tabela própria no backend.
+   */
+  articleBody?: string | null;
   tags: string[];
   mediaIds: string[];
   createdAt: string;

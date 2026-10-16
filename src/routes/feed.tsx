@@ -4,6 +4,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
+import { ARTICLE_BODY_MAX_LENGTH, POST_TYPES } from "@/constants/post-types";
 import { texts } from "@/texts";
 import type { CreatePostInput } from "@/types/application/feed/create-post-input";
 import type { FeedTab } from "@/types/application/feed/feed-tab";
@@ -13,6 +14,7 @@ import type { MediaItem } from "@/types/routes/feed/media-item";
 import {
   BarChart3,
   Calendar,
+  ChevronDown,
   Code2,
   FileText,
   Film,
@@ -31,6 +33,7 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Pill } from "@/components/ui/pill";
+import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
 import { HtmlEditor } from "@/components/html-editor";
@@ -107,9 +110,15 @@ function Home() {
   const [postType, setPostType] = useState<PostView["type"]>("INSIGHT");
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [publishError, setPublishError] = useState<string | null>(null);
-  // Modo "pagina": em vez de um post de texto, o autor cola um HTML que vira uma mini pagina.
-  const [pageMode, setPageMode] = useState(false);
+  // Tipo de publicação e o que manda: Página mostra o editor de HTML, Artigo mostra o editor do
+  // texto longo, os demais usam o campo de cima. O seletor de tipos abre em painel recolhido — com
+  // dez tipos, uma fileira de botões ocupava o composer inteiro e empurrava o texto para longe.
+  const [typePickerOpen, setTypePickerOpen] = useState(false);
   const [pageHtml, setPageHtml] = useState("");
+  const [articleBody, setArticleBody] = useState("");
+  const pageMode = postType === "PAGE";
+  const articleMode = postType === "ARTICLE";
+  const currentType = POST_TYPES.find((option) => option.id === postType) ?? POST_TYPES[0];
   const fileRef = useRef<HTMLInputElement>(null);
   const upload = useMediaUpload();
 
@@ -123,9 +132,10 @@ function Home() {
   const publishPost = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const content = draft.trim();
-    // Pagina e uma coisa OU outra: o HTML e o conteudo e o texto do post nao e exigido. Num post
-    // comum, sim — nao existe post sem texto.
+    // Pagina e uma coisa OU outra: o HTML e o conteudo e o texto do post nao e exigido. Artigo
+    // precisa de titulo (o texto de cima) E do corpo. Nos demais, o texto de cima e o post.
     if (pageMode ? !pageHtml.trim() : !content) return;
+    if (articleMode && !articleBody.trim()) return;
 
     setPublishError(null);
     try {
@@ -136,17 +146,20 @@ function Home() {
       }
       await createPost.mutateAsync({
         content: pageMode ? "" : content,
-        type: pageMode ? "PAGE" : postType,
+        type: postType,
         mediaIds,
         ...(pageMode ? { pageHtml } : {}),
+        ...(articleMode ? { articleBody } : {}),
         mentionedUserIds: pageMode ? [] : mentionedUserIds,
       });
       setDraft("");
       setMentionedUserIds([]);
       setPostType("INSIGHT");
       setMedia([]);
-      setPageMode(false);
+      setPostType("INSIGHT");
       setPageHtml("");
+      setArticleBody("");
+      setTypePickerOpen(false);
     } catch (err) {
       setPublishError(err instanceof Error ? err.message : texts.feed.composer.publishError);
     }
@@ -246,6 +259,30 @@ function Home() {
               </div>
             )}
 
+            {articleMode && (
+              <div className="mt-3 rounded-2xl border border-border-soft bg-surface-1 p-3">
+                <label
+                  htmlFor="composer-article-body"
+                  className="mb-1 block text-sm font-normal text-text-subtle"
+                >
+                  {texts.feed.composer.article.bodyLabel}
+                </label>
+
+                <p className="mb-2 text-sm font-normal text-text-subtle">
+                  {texts.feed.composer.article.bodyHint}
+                </p>
+
+                <Textarea
+                  id="composer-article-body"
+                  value={articleBody}
+                  maxLength={ARTICLE_BODY_MAX_LENGTH}
+                  onChange={(event) => setArticleBody(event.target.value)}
+                  placeholder={texts.feed.composer.article.bodyPlaceholder}
+                  className="min-h-[220px]"
+                />
+              </div>
+            )}
+
             {!pageMode && media.length > 0 && (
               <div className="relative mt-3">
                 {mediaType === "image" ? (
@@ -303,56 +340,66 @@ function Home() {
             />
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border-soft pt-3 text-sm font-normal text-text-subtle">
-              <div className="flex flex-wrap gap-1.5">
-                {/* No modo pagina o post deixa de ser "um tipo de texto": as opcoes de texto e de
-                    midia somem e sobra o proprio botao, que e como se sai do modo. */}
-                {!pageMode && (
-                  <>
-                    <ComposerAction
-                      icon={Image}
-                      label={texts.feed.composer.types.insight}
-                      active={postType === "INSIGHT"}
-                      onClick={() => setPostType("INSIGHT")}
-                    />
-                    <ComposerAction
-                      icon={FileText}
-                      label={texts.feed.composer.types.article}
-                      active={postType === "ARTICLE"}
-                      onClick={() => setPostType("ARTICLE")}
-                    />
-                    <ComposerAction
-                      icon={BarChart3}
-                      label={texts.feed.composer.types.question}
-                      active={postType === "QUESTION"}
-                      onClick={() => setPostType("QUESTION")}
-                    />
-                    <ComposerAction
-                      icon={Calendar}
-                      label={texts.feed.composer.types.project}
-                      active={postType === "PROJECT"}
-                      onClick={() => setPostType("PROJECT")}
-                    />
-                    <ComposerAction
-                      icon={mediaType === "video" ? Film : Image}
-                      label={
-                        mediaType === "video"
-                          ? texts.feed.composer.video
-                          : media.length > 0
-                            ? texts.feed.composer.mediaCount(media.length)
-                            : texts.feed.composer.media
-                      }
-                      active={media.length > 0}
-                      onClick={() => fileRef.current?.click()}
-                    />
-                  </>
-                )}
+              <div className="flex flex-wrap items-center gap-1.5">
+                {/* Seletor de tipo recolhido: mostra o tipo atual e abre a lista completa. */}
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setTypePickerOpen((open) => !open)}
+                    aria-expanded={typePickerOpen}
+                    title={texts.feed.composer.typePicker.change}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-normal transition ${
+                      typePickerOpen
+                        ? "bg-primary text-primary-foreground"
+                        : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
+                    }`}
+                  >
+                    <currentType.icon className="h-3.5 w-3.5" />
 
-                <ComposerAction
-                  icon={Code2}
-                  label={texts.feed.composer.page}
-                  active={pageMode}
-                  onClick={() => setPageMode((value) => !value)}
-                />
+                    <>
+                      {texts.feed.composer.typePicker.label}: {currentType.label}
+                    </>
+
+                    <ChevronDown
+                      className={`h-3.5 w-3.5 transition ${typePickerOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+
+                  {typePickerOpen && (
+                    <div className="absolute bottom-full left-0 z-40 mb-1 w-[min(22rem,80vw)] rounded-2xl border border-border-soft bg-popover p-2 shadow-lg">
+                      <div className="flex flex-wrap gap-1.5">
+                        {POST_TYPES.map((option) => (
+                          <ComposerAction
+                            key={option.id}
+                            icon={option.icon}
+                            label={option.label}
+                            active={option.id === postType}
+                            onClick={() => {
+                              setPostType(option.id as PostView["type"]);
+                              setTypePickerOpen(false);
+                            }}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Mídia não existe em página (a página é o conteúdo dela). */}
+                {!pageMode && (
+                  <ComposerAction
+                    icon={mediaType === "video" ? Film : Image}
+                    label={
+                      mediaType === "video"
+                        ? texts.feed.composer.video
+                        : media.length > 0
+                          ? texts.feed.composer.mediaCount(media.length)
+                          : texts.feed.composer.media
+                    }
+                    active={media.length > 0}
+                    onClick={() => fileRef.current?.click()}
+                  />
+                )}
               </div>
 
               <div className="flex items-center gap-2">
@@ -373,6 +420,7 @@ function Home() {
                   className="rounded-full"
                   disabled={
                     (pageMode ? !pageHtml.trim() : !draft.trim()) ||
+                    (articleMode && !articleBody.trim()) ||
                     createPost.isPending ||
                     upload.status === "uploading"
                   }
@@ -510,9 +558,7 @@ function Home() {
                         {u.name}
                       </Link>
 
-                      <p className="truncate text-xs font-normal text-text-subtle">
-                        {u.headline}
-                      </p>
+                      <p className="truncate text-xs font-normal text-text-subtle">{u.headline}</p>
                     </div>
 
                     <button

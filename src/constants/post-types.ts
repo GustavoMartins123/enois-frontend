@@ -1,0 +1,37 @@
+import { texts } from "@/texts";
+import {
+  BadgeCheck,
+  BarChart3,
+  Calendar,
+  Code2,
+  FileText,
+  GraduationCap,
+  Lightbulb,
+  type LucideIcon,
+  Newspaper,
+  Star,
+} from "lucide-react";
+
+/**
+ * Catálogo de tipos de publicação — a lista que o composer mostra e que o backend aceita.
+ *
+ * Fica num lugar só, de propósito: acrescentar um tipo é uma linha aqui (mais o valor no enum do
+ * backend), sem caçar botão espalhado pelo composer. `page` e `article` têm tratamento próprio
+ * (página renderiza HTML, artigo tem texto maior em tabela separada), e é por isso que o composer
+ * olha o `id` e não a posição.
+ */
+export const POST_TYPES: { id: string; label: string; icon: LucideIcon; hint?: string }[] = [
+  { id: "INSIGHT", label: texts.feed.composer.types.insight, icon: Lightbulb },
+  { id: "ARTICLE", label: texts.feed.composer.types.article, icon: FileText },
+  { id: "QUESTION", label: texts.feed.composer.types.question, icon: BarChart3 },
+  { id: "PROJECT", label: texts.feed.composer.types.project, icon: GraduationCap },
+  { id: "OPPORTUNITY", label: texts.feed.composer.types.opportunity, icon: BadgeCheck },
+  { id: "NEWS", label: texts.feed.composer.types.news, icon: Newspaper },
+  { id: "TUTORIAL", label: texts.feed.composer.types.tutorial, icon: Code2 },
+  { id: "REVIEW", label: texts.feed.composer.types.review, icon: Star },
+  { id: "MOMENT", label: texts.feed.composer.types.moment, icon: Calendar },
+  { id: "PAGE", label: texts.feed.composer.page, icon: Code2 },
+];
+
+/** Teto do texto do artigo — o mesmo do backend (`PublishPostService.MAX_ARTICLE_BODY`). */
+export const ARTICLE_BODY_MAX_LENGTH = 4_000;

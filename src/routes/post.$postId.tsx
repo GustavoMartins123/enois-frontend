@@ -8,6 +8,7 @@ import { feedApi } from "@/lib/api";
 
 import { AppContainer } from "@/components/app-container";
 import { PostCard } from "@/components/post-card";
+import { RichText } from "@/components/post/rich-text";
 
 export const Route = createFileRoute("/post/$postId")({
   // Sem `beforeLoad: requireAuth`: o post e o destino do link compartilhado e precisa abrir para
@@ -52,7 +53,24 @@ function PostDetail() {
             <p className="text-sm text-muted-foreground">{texts.post.notFound}</p>
           </div>
         ) : (
-          <PostCard post={post} />
+          <>
+            <PostCard post={post} />
+
+            {/* Artigo: o corpo vem so na leitura do post unico (a listagem traz o resumo), entao e
+                aqui que ele aparece — na mesma largura de leitura do resto. */}
+            {post.articleBody && (
+              <article className="surface-card p-5 sm:p-8">
+                <h2 className="mb-4 text-lg font-normal text-text-strong">
+                  {texts.feed.composer.article.bodyLabel}
+                </h2>
+
+                <RichText
+                  content={post.articleBody}
+                  className="whitespace-pre-line break-words text-base font-normal leading-relaxed text-text-strong"
+                />
+              </article>
+            )}
+          </>
         )}
       </div>
     </AppContainer>
