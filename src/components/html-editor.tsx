@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { PHONE_FRAME_CLASS } from "@/constants/post-page";
 import { texts } from "@/texts";
 import type { HtmlEditorProps } from "@/types/components/html-editor/props";
 import { Code2, Eye } from "lucide-react";
@@ -65,11 +66,9 @@ export function HtmlEditor({
 
       {preview &&
         (value.trim() ? (
-          <SandboxedHtmlFrame
-            html={value}
-            title={frameTitle}
-            className={previewClassName ?? "mt-3 h-[320px]"}
-          />
+          <div className={previewClassName ?? `mt-3 ${PHONE_FRAME_CLASS}`}>
+            <SandboxedHtmlFrame html={value} title={frameTitle} className="h-full" />
+          </div>
         ) : (
           <p className="mt-3 rounded-xl border border-dashed border-border-soft px-3 py-6 text-center text-[12px] font-light text-text-subtle">
             {emptyPreview}

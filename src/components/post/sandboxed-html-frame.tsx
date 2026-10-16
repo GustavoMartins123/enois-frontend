@@ -31,7 +31,7 @@ export function SandboxedHtmlFrame({ html, className, title }: SandboxedHtmlFram
       allowFullScreen
       referrerPolicy="no-referrer"
       loading="lazy"
-      className={cn("w-full rounded-xl border border-border-soft bg-white", className)}
+      className={cn("w-full rounded-2xl border border-border-soft bg-white shadow-soft", className)}
     />
   );
 }
@@ -78,6 +78,9 @@ function buildDocument(html: string): string {
   return [
     '<!doctype html><html lang="pt-BR"><head>',
     `<meta http-equiv="Content-Security-Policy" content="${FRAME_CSP}">`,
+    // Viewport de celular: e o tamanho do quadro, entao o HTML se comporta como numa tela de
+    // telefone (e o print sai inteiro, sem rolagem).
+    '<meta name="viewport" content="width=device-width, initial-scale=1">',
     '<base target="_blank">',
     `<style>${BASE_CSS}</style>`,
     "</head><body>",

@@ -3,6 +3,7 @@ import { type ChangeEvent, useCallback, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 
+import { PHONE_FRAME_CLASS } from "@/constants/post-page";
 import { texts } from "@/texts";
 import type { UpdateProfileRequest } from "@/types/application/profile/update-profile-request";
 import type { ProfileCropPurpose } from "@/types/routes/profile/profile-crop-purpose";
@@ -468,11 +469,13 @@ function Profile() {
               <Section title={texts.profile.sections.about}>
                 {/* Mesmo quadro isolado do post de página: HTML/CSS rende, script não roda e nada
                     aqui alcança a sessão de quem visita o perfil. */}
-                <SandboxedHtmlFrame
-                  html={user.bioHtml}
-                  title={texts.profile.bioHtml.frameTitle}
-                  className="h-[320px]"
-                />
+                <div className={PHONE_FRAME_CLASS}>
+                  <SandboxedHtmlFrame
+                    html={user.bioHtml}
+                    title={texts.profile.bioHtml.frameTitle}
+                    className="h-full"
+                  />
+                </div>
               </Section>
             ) : (
               user.bio && (

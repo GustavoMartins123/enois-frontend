@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { PHONE_FRAME_CLASS } from "@/constants/post-page";
 import { texts } from "@/texts";
 import type { PostPageProps } from "@/types/components/post/post-page-props";
 import { Maximize2 } from "lucide-react";
@@ -20,11 +21,9 @@ export function PostPage({ html }: PostPageProps) {
 
   return (
     <div className="mt-4">
-      <SandboxedHtmlFrame
-        html={html}
-        title={texts.posts.page.frameTitle}
-        className="h-[300px] sm:h-[420px]"
-      />
+      <div className={PHONE_FRAME_CLASS}>
+        <SandboxedHtmlFrame html={html} title={texts.posts.page.frameTitle} className="h-full" />
+      </div>
 
       <div className="mt-2 flex justify-end">
         <button
@@ -44,11 +43,13 @@ export function PostPage({ html }: PostPageProps) {
             <DialogTitle>{texts.posts.page.dialogTitle}</DialogTitle>
           </DialogHeader>
 
-          <SandboxedHtmlFrame
-            html={html}
-            title={texts.posts.page.frameTitle}
-            className="h-[65dvh]"
-          />
+          <div className="mx-auto w-full max-w-[390px]">
+            <SandboxedHtmlFrame
+              html={html}
+              title={texts.posts.page.frameTitle}
+              className="h-[70dvh]"
+            />
+          </div>
         </DialogContent>
       </Dialog>
     </div>
