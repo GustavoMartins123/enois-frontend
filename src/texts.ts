@@ -983,6 +983,10 @@ export const texts = {
   },
 
   jobs: {
+    visit: "Visitar vaga",
+    externalBadge: (platform: string) => `Vaga externa · ${platform}`,
+    externalNotice: (platform: string) =>
+      `Esta oportunidade foi publicada originalmente no ${platform}. A candidatura é feita na plataforma de origem.`,
     seoTitle: "Vagas · Énóis",
     title: "Oportunidades",
     description: "Vagas filtradas por nível, localização, tipo e habilidades.",

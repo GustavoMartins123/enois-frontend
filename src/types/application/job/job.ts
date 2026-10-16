@@ -38,4 +38,10 @@ export type Job = {
   author?: JobAuthor | null;
   /** Campos personalizados do formulário de candidatura, na ordem definida pelo autor. */
   applicationFields?: JobApplicationField[];
+  /** Origem: interna (nós) ou externa (ex.: JobRadar). Externas se candidatam na plataforma. */
+  sourceType?: "INTERNAL" | "EXTERNAL" | null;
+  /** URL original da vaga externa (para o "Visitar vaga"). */
+  sourceUrl?: string | null;
+  /** Nome da plataforma de origem (ex.: JobRadar). */
+  sourcePlatform?: string | null;
 };

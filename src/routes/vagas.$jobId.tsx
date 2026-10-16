@@ -18,6 +18,7 @@ import {
   ShieldAlert,
   Trash2,
   Users,
+  ExternalLink,
 } from "lucide-react";
 
 import { jobsApi } from "@/lib/api";
@@ -407,6 +408,31 @@ function JobDetail() {
 
                   <>{texts.jobs.closed}</>
                 </span>
+              ) : job.sourceType === "EXTERNAL" ? (
+                <div className="space-y-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-3 py-1 text-[12px] font-medium text-text-subtle">
+                    <ExternalLink className="h-3.5 w-3.5" />
+
+                    <>{texts.jobs.externalBadge(job.sourcePlatform ?? "plataforma externa")}</>
+                  </span>
+
+                  <p className="text-[12px] font-light text-text-subtle">
+                    {texts.jobs.externalNotice(job.sourcePlatform ?? "plataforma de origem")}
+                  </p>
+
+                  {job.sourceUrl && (
+                    <a
+                      href={job.sourceUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-[13px] font-medium text-primary-foreground transition hover:opacity-90"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+
+                      <>{texts.jobs.visit}</>
+                    </a>
+                  )}
+                </div>
               ) : (
                 <ApplyJobDialog job={job}>
                   <Button className="rounded-full">{texts.jobs.apply}</Button>

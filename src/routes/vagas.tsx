@@ -27,6 +27,7 @@ import {
   Plus,
   Sparkles,
   X,
+  ExternalLink,
 } from "lucide-react";
 
 import { jobsApi, reportsApi } from "@/lib/api";
@@ -401,7 +402,18 @@ function Vagas() {
                     {texts.jobs.details}
                   </Link>
 
-                  {j.applied ? (
+                  {j.sourceType === "EXTERNAL" ? (
+                    <a
+                      href={j.sourceUrl ?? "#"}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-3 text-[13px] font-medium text-primary-foreground transition hover:opacity-90"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+
+                      <>{texts.jobs.visit}</>
+                    </a>
+                  ) : j.applied ? (
                     <Button size="sm" variant="secondary" className="rounded-full gap-1.5" disabled>
                       <CheckCircle2 className="h-3.5 w-3.5" />
 
