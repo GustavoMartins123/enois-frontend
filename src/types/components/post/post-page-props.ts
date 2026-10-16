@@ -1,4 +1,6 @@
 export type PostPageProps = {
-  /** HTML já sanitizado da página publicada. */
+  /** Id do post: o quadro busca a página em `{CONTENT_ORIGIN}/pages/{postId}`. */
+  postId: string;
+  /** HTML já sanitizado — usado só no modo de reserva (sem origem de conteúdo) e na prévia do editor. */
   html: string;
 };

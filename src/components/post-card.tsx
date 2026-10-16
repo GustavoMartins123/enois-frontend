@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { usePostCardStore } from "@/stores/post-card.store";
@@ -9,6 +10,7 @@ import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { PostCardProps } from "@/types/components/post/post-card-props";
 import {
   Bookmark,
+  FileText,
   Flag,
   Heart,
   MessageSquare,
@@ -300,6 +302,19 @@ export function PostCard({ post }: PostCardProps) {
         />
       )}
 
+      {/* Artigo tem corpo (completo) na pagina do post; o card mostra o resumo e o convite. */}
+      {post.type === "ARTICLE" && (
+        <Link
+          to="/post/$postId"
+          params={{ postId: post.id }}
+          className="mt-3 inline-flex items-center gap-1.5 text-sm font-normal text-primary hover:underline"
+        >
+          <FileText className="h-3.5 w-3.5" />
+
+          <>{texts.feed.composer.article.read}</>
+        </Link>
+      )}
+
       {post.editedAt && (
         <p className="mt-1 text-xs font-normal text-text-subtle">
           {texts.posts.edited} {texts.posts.authorTime(formatTime(post.editedAt))}
@@ -313,7 +328,7 @@ export function PostCard({ post }: PostCardProps) {
       )}
 
       {pageHtml ? (
-        <PostPage html={pageHtml} />
+        <PostPage postId={post.id} html={pageHtml} />
       ) : pageLoading ? (
         <p className="mt-4 rounded-xl border border-dashed border-border-soft px-3 py-6 text-center text-xs font-normal text-text-subtle">
           {texts.posts.page.loading}
