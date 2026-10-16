@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import type { JobApplication } from "@/types/application/job/job-application";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -22,6 +23,7 @@ import {
 import { jobsApi } from "@/lib/api";
 import { formatSalary } from "@/lib/currency";
 import { getCurrentUserId } from "@/lib/current-user";
+import { actionsFor, applicationStatusLabel, statusTone } from "@/lib/job-application-status";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -77,9 +79,27 @@ function JobDetail() {
     mutationFn: (saved: boolean) => (saved ? jobsApi.removeSave(jobId) : jobsApi.save(jobId)),
     onSuccess: invalidate,
   });
+  const [pendingId, setPendingId] = useState<string | null>(null);
+
   const [closeOpen, setCloseOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+
+  // Candidaturas recebidas: o dono da vaga da o feedback daqui mesmo, sem trocar de tela.
+  const { data: receivedData } = useQuery({
+    queryKey: ["job-applications", jobId],
+    queryFn: () => jobsApi.receivedApplications(jobId, 50),
+    enabled: isOwner,
+  });
+  const received = receivedData ?? [];
+
+  const changeStatus = useMutation({
+    mutationFn: (vars: { applicationId: string; status: JobApplication["status"] }) =>
+      jobsApi.updateApplicationStatus(jobId, vars.applicationId, vars.status),
+    onMutate: (vars) => setPendingId(vars.applicationId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["job-applications", jobId] }),
+    onSettled: () => setPendingId(null),
+  });
 
   const close = useMutation({
     mutationFn: () => jobsApi.close(jobId),
@@ -246,6 +266,84 @@ function JobDetail() {
                 </p>
               )}
             </section>
+
+            {isOwner && (
+              <section className="mt-5">
+                <h2 className="text-[15px] font-light text-text-strong">
+                  {texts.jobs.applications.title}
+                </h2>
+
+                {received.length === 0 ? (
+                  <p className="mt-2 text-[13px] font-light text-text-subtle">
+                    {texts.jobs.applications.empty}
+                  </p>
+                ) : (
+                  <ul className="mt-2 space-y-3">
+                    {received.map((application) => (
+                      <li key={application.id} className="rounded-xl border border-border-soft p-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <UserAvatar
+                            src={application.candidate?.avatar || null}
+                            alt={application.candidate?.name ?? ""}
+                            className="h-9 w-9 shrink-0"
+                          />
+
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-[13px] font-medium text-text-strong">
+                              {application.candidate?.name || texts.jobs.applications.candidate}
+                            </p>
+
+                            <p className="text-[11px] font-light text-text-subtle">
+                              {texts.jobs.applications.reputation(
+                                application.candidate?.reputation ?? 0,
+                              )}
+                            </p>
+                          </div>
+
+                          <span
+                            className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${statusTone(
+                              application.status,
+                            )}`}
+                          >
+                            {applicationStatusLabel(application.status)}
+                          </span>
+                        </div>
+
+                        <div className="mt-2 flex flex-wrap items-center gap-2">
+                          {actionsFor(application.status).map((action) => (
+                            <Button
+                              key={action.status}
+                              variant="outline"
+                              size="sm"
+                              className="rounded-full"
+                              disabled={pendingId === application.id}
+                              onClick={() =>
+                                changeStatus.mutate({
+                                  applicationId: application.id,
+                                  status: action.status,
+                                })
+                              }
+                            >
+                              {action.label}
+                            </Button>
+                          ))}
+
+                          {pendingId === application.id && (
+                            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <Link to="/vagas/$jobId/candidaturas" params={{ jobId }}>
+                  <Button variant="outline" size="sm" className="mt-3 rounded-full">
+                    {texts.jobs.applications.link}
+                  </Button>
+                </Link>
+              </section>
+            )}
 
             <footer className="mt-6 flex flex-wrap items-center gap-2 border-t border-border-soft pt-4">
               {isOwner ? (

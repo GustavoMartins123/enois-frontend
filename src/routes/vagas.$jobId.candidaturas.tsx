@@ -8,6 +8,7 @@ import type { JobApplication } from "@/types/application/job/job-application";
 import { ArrowLeft, BadgeCheck, Loader2, MessageCircle, ShieldAlert } from "lucide-react";
 
 import { jobsApi } from "@/lib/api";
+import { actionsFor, statusTone } from "@/lib/job-application-status";
 import { requireAuth } from "@/lib/require-auth";
 
 import { Button } from "@/components/ui/button";
@@ -258,35 +259,4 @@ function JobApplications() {
       </div>
     </AppContainer>
   );
-
-  /** Cor do selo por estado: em andamento chama atencao, terminal fica discreto. */
-  function statusTone(status: JobApplication["status"]): string {
-    switch (status) {
-      case "IN_REVIEW":
-      case "ADVANCED":
-        return "bg-primary-soft text-primary";
-      default:
-        return "bg-muted text-text-subtle";
-    }
-  }
-
-  /** Acoes validas a partir do estado atual. NOT_SELECTED e terminal: nenhuma acao. */
-  function actionsFor(status: JobApplication["status"]) {
-    switch (status) {
-      case "APPLIED":
-        return [
-          { status: "IN_REVIEW" as const, label: texts.jobs.applications.markInReview },
-          { status: "NOT_SELECTED" as const, label: texts.jobs.applications.markNotSelected },
-        ];
-      case "IN_REVIEW":
-        return [
-          { status: "ADVANCED" as const, label: texts.jobs.applications.markAdvanced },
-          { status: "NOT_SELECTED" as const, label: texts.jobs.applications.markNotSelected },
-        ];
-      case "ADVANCED":
-        return [{ status: "IN_REVIEW" as const, label: texts.jobs.applications.backToReview }];
-      case "NOT_SELECTED":
-        return [];
-    }
-  }
 }
