@@ -48,6 +48,13 @@ const FRAME_CSP = [
   "media-src https: data:",
   "font-src data:",
   "style-src 'unsafe-inline'",
+  // O que já está implícito no `default-src 'none'` vai escrito: a lista é a auditoria da política.
+  // Quadro dentro de quadro, plugin, formulário, requisição de dados e worker ficam de fora — nenhuma
+  // dessas portas existe no que a página precisa fazer.
+  "frame-src 'none'",
+  "object-src 'none'",
+  "connect-src 'none'",
+  "worker-src 'none'",
   "form-action 'none'",
 ].join("; ");
 
