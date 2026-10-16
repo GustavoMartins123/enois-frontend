@@ -81,6 +81,12 @@ function Vagas() {
   const queryClient = useQueryClient();
   const { data: user } = useCurrentUser();
   const [query, setQuery] = useState("");
+  // Busca "debounced": sem isso, cada tecla disparava uma requisicao ao backend.
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedQuery(query), 400);
+    return () => clearTimeout(timer);
+  }, [query]);
   const [level, setLevel] = useState("");
   const [location, setLocation] = useState("");
   const [type, setType] = useState("");
@@ -94,7 +100,7 @@ function Vagas() {
   const canPublish = canCreateJob(reputation);
 
   const filters = {
-    query: query || undefined,
+    query: debouncedQuery || undefined,
     level: level || undefined,
     location: location || undefined,
     type: type || undefined,
@@ -104,6 +110,9 @@ function Vagas() {
   const { data: jobsData, isFetching } = useQuery({
     queryKey: ["jobs", filters, cursor],
     queryFn: () => jobsApi.list({ ...filters, cursor, limit: 10 }),
+    // Cache no front: navegar/focar/voltar nao rebate no backend; 60s de frescor.
+    staleTime: 60_000,
+    placeholderData: (previous) => previous,
   });
 
   const jobs = jobsData?.items ?? [];
@@ -326,7 +335,18 @@ function Vagas() {
                 <div className="min-w-0 flex-1">
                   <h3 className="break-words font-semibold">{j.title}</h3>
 
-                  <p className="break-words text-sm text-muted-foreground">{j.company}</p>
+                  {/* Aviso claro: a vaga NAO foi publicada aqui; a candidatura e na plataforma. */}
+                  {j.sourceType === "EXTERNAL" && (
+                    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-text-subtle">
+                      <ExternalLink className="h-3 w-3" />
+
+                      <>{texts.jobs.externalBadge(j.sourcePlatform ?? "plataforma externa")}</>
+                    </span>
+                  )}
+
+                  {j.company && (
+                    <p className="break-words text-sm text-muted-foreground">{j.company}</p>
+                  )}
 
                   <p className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground">
                     <MapPin className="h-3 w-3" />
