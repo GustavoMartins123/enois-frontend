@@ -15,7 +15,7 @@ export function LoadingState({ label, className }: LoadingStateProps) {
     >
       <Loader2 className="h-5 w-5 animate-spin text-primary" />
 
-      {label && <p className="text-[13px] font-light">{label}</p>}
+      {label && <p className="text-sm font-normal">{label}</p>}
     </div>
   );
 }

@@ -116,7 +116,7 @@ export function ImageCropDialog({
               onCropComplete={onCropAreaChange}
             />
           ) : (
-            <div className="flex h-full items-center justify-center px-6 text-center text-[13px] text-muted-foreground">
+            <div className="flex h-full items-center justify-center px-6 text-center text-sm text-muted-foreground">
               {imageState === "loading" ? texts.profile.cropLoading : texts.profile.cropUnsupported}
             </div>
           )}

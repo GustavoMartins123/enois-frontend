@@ -38,7 +38,7 @@ export function InfiniteScroll({
     return (
       <div ref={sentinelRef} className="flex justify-center py-4">
         {loading && (
-          <span className="inline-flex items-center gap-2 text-[13px] font-light text-text-subtle">
+          <span className="inline-flex items-center gap-2 text-sm font-normal text-text-subtle">
             <Loader2 className="h-4 w-4 animate-spin" />
 
             <>{loadingLabel}</>
@@ -50,5 +50,5 @@ export function InfiniteScroll({
 
   if (!endLabel) return null;
 
-  return <p className="py-6 text-center text-[13px] font-light text-text-subtle">{endLabel}</p>;
+  return <p className="py-6 text-center text-sm font-normal text-text-subtle">{endLabel}</p>;
 }

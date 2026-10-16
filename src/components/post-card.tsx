@@ -296,12 +296,12 @@ export function PostCard({ post }: PostCardProps) {
       {post.content.trim() !== "" && (
         <RichText
           content={post.content}
-          className="mt-4 whitespace-pre-line break-words text-[15px] font-light leading-relaxed text-text-strong"
+          className="mt-4 whitespace-pre-line break-words text-base font-normal leading-relaxed text-text-strong"
         />
       )}
 
       {post.editedAt && (
-        <p className="mt-1 text-[11px] font-light text-text-subtle">
+        <p className="mt-1 text-xs font-normal text-text-subtle">
           {texts.posts.edited} {texts.posts.authorTime(formatTime(post.editedAt))}
         </p>
       )}
@@ -315,7 +315,7 @@ export function PostCard({ post }: PostCardProps) {
       {pageHtml ? (
         <PostPage html={pageHtml} />
       ) : pageLoading ? (
-        <p className="mt-4 rounded-xl border border-dashed border-border-soft px-3 py-6 text-center text-[12px] font-light text-text-subtle">
+        <p className="mt-4 rounded-xl border border-dashed border-border-soft px-3 py-6 text-center text-xs font-normal text-text-subtle">
           {texts.posts.page.loading}
         </p>
       ) : null}
@@ -329,7 +329,7 @@ export function PostCard({ post }: PostCardProps) {
             <Badge
               key={t}
               variant="secondary"
-              className="rounded-full border border-border-soft bg-transparent font-light text-text-subtle"
+              className="rounded-full border border-border-soft bg-transparent font-normal text-text-subtle"
             >
               {texts.posts.tag(t)}
             </Badge>
@@ -449,7 +449,7 @@ export function PostCard({ post }: PostCardProps) {
                 <div>
                   <label
                     htmlFor={`page-html-${post.id}`}
-                    className="mb-1 block text-[12px] font-light text-text-subtle"
+                    className="mb-1 block text-xs font-normal text-text-subtle"
                   >
                     {texts.feed.composer.pageLabel}
                   </label>
@@ -462,7 +462,7 @@ export function PostCard({ post }: PostCardProps) {
                     placeholder={
                       pageLoading ? texts.posts.page.loading : texts.feed.composer.pagePlaceholder
                     }
-                    className="min-h-[160px] font-mono text-[12px]"
+                    className="min-h-[160px] font-mono text-xs"
                   />
                 </div>
               )}

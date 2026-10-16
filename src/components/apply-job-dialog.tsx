@@ -83,7 +83,7 @@ export function ApplyJobDialog({ job, children }: { job: Job; children: ReactNod
 
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle className="font-light">{texts.jobs.applyDialog.title(job.title)}</DialogTitle>
+          <DialogTitle className="font-normal">{texts.jobs.applyDialog.title(job.title)}</DialogTitle>
 
           <DialogDescription>{texts.jobs.applyDialog.intro}</DialogDescription>
         </DialogHeader>
@@ -105,9 +105,9 @@ export function ApplyJobDialog({ job, children }: { job: Job; children: ReactNod
         ) : (
           <div className="space-y-4 pt-2">
             <div className="rounded-xl bg-muted/60 px-4 py-3">
-              <p className="text-[13px] font-medium">{texts.jobs.applyDialog.aboutYou}</p>
+              <p className="text-sm font-medium">{texts.jobs.applyDialog.aboutYou}</p>
 
-              <ul className="mt-1.5 space-y-0.5 text-[12px] text-muted-foreground">
+              <ul className="mt-1.5 space-y-0.5 text-xs text-muted-foreground">
                 <li>· {texts.jobs.applyDialog.aboutYouProfile}</li>
                 <li>· {texts.jobs.applyDialog.aboutYouExperience}</li>
                 <li>· {texts.jobs.applyDialog.aboutYouReputation}</li>
@@ -116,7 +116,7 @@ export function ApplyJobDialog({ job, children }: { job: Job; children: ReactNod
 
             {fields.map((field) => (
               <div key={field.id} className="space-y-1.5">
-                <Label className="text-[12px]">
+                <Label className="text-xs">
                   {field.label}
                   {field.required && <span className="text-destructive"> *</span>}
                 </Label>
@@ -150,11 +150,11 @@ export function ApplyJobDialog({ job, children }: { job: Job; children: ReactNod
             ))}
 
             {fields.some((field) => field.required) && (
-              <p className="text-[11px] text-muted-foreground">{texts.jobs.applyDialog.requiredHint}</p>
+              <p className="text-xs text-muted-foreground">{texts.jobs.applyDialog.requiredHint}</p>
             )}
 
             <div className="space-y-1.5">
-              <Label className="text-[12px]">{texts.jobs.applyDialog.message}</Label>
+              <Label className="text-xs">{texts.jobs.applyDialog.message}</Label>
 
               <Textarea
                 rows={3}
@@ -172,7 +172,7 @@ export function ApplyJobDialog({ job, children }: { job: Job; children: ReactNod
                 {error.code === "EMAIL_NOT_VERIFIED" && (
                   <Link
                     to="/seguranca"
-                    className="mt-1 inline-block text-[12px] font-medium underline"
+                    className="mt-1 inline-block text-xs font-medium underline"
                   >
                     {texts.jobs.applyDialog.verifyIdentity}
                   </Link>

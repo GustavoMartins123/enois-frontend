@@ -52,7 +52,7 @@ export function DeleteAccountDialog({ open, onOpenChange }: DeleteAccountDialogP
     >
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-[18px] font-light text-destructive">
+          <DialogTitle className="text-lg font-normal text-destructive">
             {texts.account.deleteAccount.title}
           </DialogTitle>
 
@@ -60,7 +60,7 @@ export function DeleteAccountDialog({ open, onOpenChange }: DeleteAccountDialogP
         </DialogHeader>
 
         <div className="space-y-4">
-          <ul className="list-disc space-y-1 pl-5 text-[13px] font-light text-text-subtle">
+          <ul className="list-disc space-y-1 pl-5 text-sm font-normal text-text-subtle">
             {texts.account.deleteAccount.consequences.map((item) => (
               <li key={item}>{item}</li>
             ))}
@@ -79,7 +79,7 @@ export function DeleteAccountDialog({ open, onOpenChange }: DeleteAccountDialogP
             />
           </div>
 
-          <label className="flex items-start gap-2 text-[13px] font-light text-text-strong">
+          <label className="flex items-start gap-2 text-sm font-normal text-text-strong">
             <input
               type="checkbox"
               checked={confirmed}

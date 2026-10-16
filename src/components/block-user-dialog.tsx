@@ -72,7 +72,7 @@ export function BlockUserDialog({ userId, name, blocked, onDone }: BlockUserDial
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="font-light">
+          <DialogTitle className="font-normal">
             {blocked ? texts.profile.unblockTitle(name) : texts.profile.blockTitle(name)}
           </DialogTitle>
 

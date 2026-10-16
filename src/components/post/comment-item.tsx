@@ -112,12 +112,12 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
     <Link
       to="/perfil/$username"
       params={{ username: comment.authorUsername }}
-      className="text-[12px] font-medium text-text-strong hover:underline"
+      className="text-xs font-medium text-text-strong hover:underline"
     >
       {comment.authorName}
     </Link>
   ) : (
-    <span className="text-[12px] font-medium text-text-strong">{comment.authorName}</span>
+    <span className="text-xs font-medium text-text-strong">{comment.authorName}</span>
   );
 
   const avatar = (
@@ -144,11 +144,11 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
           <div className="flex flex-wrap items-center gap-2">
             {profileLink}
             {replyingTo && (
-              <span className="text-[11px] font-light text-text-subtle">
+              <span className="text-xs font-normal text-text-subtle">
                 {texts.posts.comments.replyingTo(replyingTo)}
               </span>
             )}
-            <span className="text-[11px] font-light text-text-subtle">
+            <span className="text-xs font-normal text-text-subtle">
               {formatTime(comment.createdAt)}
               {editedAt ? ` · ${texts.posts.edited}` : ""}
             </span>
@@ -161,10 +161,10 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
                 onChange={(event) => setEditDraft(event.target.value)}
                 rows={3}
                 maxLength={1024}
-                className="border-border-soft bg-surface-card text-[13px] font-light"
+                className="border-border-soft bg-surface-card text-sm font-normal"
               />
 
-              {editError && <p className="text-[11px] text-destructive">{editError}</p>}
+              {editError && <p className="text-xs text-destructive">{editError}</p>}
 
               <div className="flex flex-wrap items-center gap-2">
                 <Button
@@ -194,14 +194,14 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
             <>
               <RichText
                 content={content}
-                className="mt-0.5 whitespace-pre-line break-words text-[13px] font-light leading-relaxed text-text-strong"
+                className="mt-0.5 whitespace-pre-line break-words text-sm font-normal leading-relaxed text-text-strong"
               />
               <LinkPreviews content={content} />
             </>
           )}
         </div>
 
-        <div className="mt-1 flex items-center gap-3 px-3 text-[11px] font-light text-text-subtle">
+        <div className="mt-1 flex items-center gap-3 px-3 text-xs font-normal text-text-subtle">
           <button onClick={handleReply} className="transition-colors hover:text-primary">
             {texts.posts.comments.reply}
           </button>

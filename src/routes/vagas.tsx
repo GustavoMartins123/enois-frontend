@@ -64,7 +64,7 @@ export const Route = createFileRoute("/vagas")({
 });
 
 const SELECT_CLASS =
-  "flex h-9 w-full rounded-md border border-transparent bg-muted px-3 py-2 text-[13px] font-light text-text-strong outline-none focus-visible:ring-1 focus-visible:ring-ring";
+  "flex h-9 w-full rounded-md border border-transparent bg-muted px-3 py-2 text-sm font-normal text-text-strong outline-none focus-visible:ring-1 focus-visible:ring-ring";
 
 function formatPostedAt(dateStr: string | null | undefined): string {
   if (!dateStr) return "";
@@ -180,7 +180,7 @@ function Vagas() {
 
               <Link
                 to="/vagas/minhas"
-                className="inline-flex h-9 items-center rounded-full border border-border-soft px-3 text-[13px] font-medium transition hover:bg-muted"
+                className="inline-flex h-9 items-center rounded-full border border-border-soft px-3 text-sm font-medium transition hover:bg-muted"
               >
                 {texts.jobs.myJobs}
               </Link>
@@ -290,7 +290,7 @@ function Vagas() {
 
                 <p className="mt-1 text-muted-foreground">{texts.jobs.searchHint}</p>
 
-                <ul className="mt-3 space-y-1 text-[12px] text-muted-foreground">
+                <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
                   <li>
                     <code>java spring</code> — vagas com os dois termos
                   </li>
@@ -337,7 +337,7 @@ function Vagas() {
 
                   {/* Aviso claro: a vaga NAO foi publicada aqui; a candidatura e na plataforma. */}
                   {j.sourceType === "EXTERNAL" && (
-                    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-text-subtle">
+                    <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-surface-2 px-2 py-0.5 text-xs font-medium text-text-subtle">
                       <ExternalLink className="h-3 w-3" />
 
                       <>{texts.jobs.externalBadge(j.sourcePlatform ?? "plataforma externa")}</>
@@ -419,7 +419,7 @@ function Vagas() {
                     <Link
                       to="/vagas/$jobId"
                       params={{ jobId: j.id }}
-                      className="inline-flex h-9 items-center rounded-full border border-border-soft px-3 text-[13px] font-medium transition hover:bg-muted"
+                      className="inline-flex h-9 items-center rounded-full border border-border-soft px-3 text-sm font-medium transition hover:bg-muted"
                     >
                       {texts.jobs.details}
                     </Link>
@@ -430,7 +430,7 @@ function Vagas() {
                       href={j.sourceUrl ?? "#"}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-3 text-[13px] font-medium text-primary-foreground transition hover:opacity-90"
+                      className="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-3 text-sm font-medium text-primary-foreground transition hover:opacity-90"
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
 
@@ -558,7 +558,7 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
     >
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-light">{texts.jobs.createJobTitle}</DialogTitle>
+          <DialogTitle className="font-normal">{texts.jobs.createJobTitle}</DialogTitle>
 
           <DialogDescription>
             {texts.jobs.createJobDescription} {texts.jobs.gate.community}
@@ -589,7 +589,7 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
         ) : (
           <div className="space-y-4 pt-2">
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-light text-text-subtle">
+              <Label className="text-xs font-normal text-text-subtle">
                 {texts.jobs.fields.title}
               </Label>
 
@@ -602,7 +602,7 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-light text-text-subtle">
+              <Label className="text-xs font-normal text-text-subtle">
                 {texts.jobs.fields.company}
               </Label>
 
@@ -616,7 +616,7 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div className="space-y-1.5">
-                <Label className="text-[11px] font-light text-text-subtle">
+                <Label className="text-xs font-normal text-text-subtle">
                   {texts.jobs.fields.location}
                 </Label>
 
@@ -634,7 +634,7 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-[11px] font-light text-text-subtle">
+                <Label className="text-xs font-normal text-text-subtle">
                   {texts.jobs.fields.type}
                 </Label>
 
@@ -652,7 +652,7 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-[11px] font-light text-text-subtle">
+                <Label className="text-xs font-normal text-text-subtle">
                   {texts.jobs.fields.level}
                 </Label>
 
@@ -671,7 +671,7 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-light text-text-subtle">
+              <Label className="text-xs font-normal text-text-subtle">
                 {texts.jobs.fields.salary}
               </Label>
 
@@ -697,13 +697,13 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
                 />
               </div>
 
-              <p className="text-[11px] font-light text-text-subtle">
+              <p className="text-xs font-normal text-text-subtle">
                 {texts.jobs.fields.salaryHint(currencySymbol(currency))}
               </p>
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-light text-text-subtle">
+              <Label className="text-xs font-normal text-text-subtle">
                 {texts.jobs.fields.skills}
               </Label>
 
@@ -717,15 +717,15 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
 
             <div className="space-y-2 rounded-lg border border-border-soft p-3">
               <div>
-                <p className="text-[12px] font-medium">{texts.jobs.applicationForm.section}</p>
+                <p className="text-xs font-medium">{texts.jobs.applicationForm.section}</p>
 
-                <p className="mt-0.5 text-[11px] font-light text-text-subtle">
+                <p className="mt-0.5 text-xs font-normal text-text-subtle">
                   {texts.jobs.applicationForm.description}
                 </p>
               </div>
 
               {fields.length === 0 && (
-                <p className="text-[11px] font-light text-text-subtle">
+                <p className="text-xs font-normal text-text-subtle">
                   {texts.jobs.applicationForm.empty}
                 </p>
               )}
@@ -770,7 +770,7 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
                     ))}
                   </select>
 
-                  <label className="inline-flex shrink-0 items-center gap-1.5 text-[11px] font-light text-text-subtle">
+                  <label className="inline-flex shrink-0 items-center gap-1.5 text-xs font-normal text-text-subtle">
                     <input
                       type="checkbox"
                       checked={field.required}
@@ -816,7 +816,7 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-light text-text-subtle">
+              <Label className="text-xs font-normal text-text-subtle">
                 {texts.jobs.fields.description}
               </Label>
 
@@ -829,7 +829,7 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
               />
             </div>
 
-            <label className="flex items-start gap-2 rounded-lg bg-muted p-3 text-[12px] font-light text-text-subtle">
+            <label className="flex items-start gap-2 rounded-lg bg-muted p-3 text-xs font-normal text-text-subtle">
               <input
                 type="checkbox"
                 checked={agreed}
@@ -897,7 +897,7 @@ function ReportJobDialog({ job, onOpenChange }: ReportJobDialogProps) {
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="font-light">{texts.jobs.report.title}</DialogTitle>
+          <DialogTitle className="font-normal">{texts.jobs.report.title}</DialogTitle>
 
           <DialogDescription>{job?.title}</DialogDescription>
         </DialogHeader>
@@ -907,7 +907,7 @@ function ReportJobDialog({ job, onOpenChange }: ReportJobDialogProps) {
         ) : (
           <div className="space-y-4 pt-2">
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-light text-text-subtle">
+              <Label className="text-xs font-normal text-text-subtle">
                 {texts.jobs.report.reason}
               </Label>
 
@@ -931,7 +931,7 @@ function ReportJobDialog({ job, onOpenChange }: ReportJobDialogProps) {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-light text-text-subtle">
+              <Label className="text-xs font-normal text-text-subtle">
                 {texts.jobs.report.description}
               </Label>
 

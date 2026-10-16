@@ -405,7 +405,7 @@ function CommunityDetail() {
                       {m.role === "ADMIN" && (
                         <Badge
                           variant="outline"
-                          className="shrink-0 rounded-full text-[10px] px-1.5 py-0"
+                          className="shrink-0 rounded-full text-xs px-1.5 py-0"
                         >
                           {texts.communities.detail.admin}
                         </Badge>

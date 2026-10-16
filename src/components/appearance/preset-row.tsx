@@ -21,7 +21,7 @@ export function PresetRow({ activeId, onSelect }: PresetRowProps) {
             aria-pressed={active}
             title={texts.appearance.presetLabels[preset.id]}
             className={cn(
-              "flex items-center gap-2 rounded-full border px-3 py-1.5 text-[12px] font-light transition",
+              "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-normal transition",
               active
                 ? "border-primary bg-primary-soft text-primary"
                 : "border-border-soft bg-surface-1 text-text-subtle hover:text-text-strong",

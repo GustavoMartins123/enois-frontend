@@ -53,7 +53,7 @@ export function NavigationLinks({
             onClick={onNavigate}
             title={collapsed ? item.label : undefined}
             className={cn(
-              "flex items-center gap-3 rounded-xl border-l-2 px-3 py-3 text-[14px] font-light transition",
+              "flex items-center gap-3 rounded-xl border-l-2 px-3 py-3 text-sm font-normal transition",
               "group-data-[collapsed=true]/navigation:justify-center group-data-[collapsed=true]/navigation:gap-0 group-data-[collapsed=true]/navigation:px-0",
               active
                 ? "border-primary bg-surface-2 text-primary"
@@ -76,7 +76,7 @@ export function NavigationLinks({
 
       {!collapsed && myCommunities.length > 0 && (
         <div className="mt-1 space-y-0.5">
-          <p className="px-3 text-[11px] font-medium uppercase tracking-wider text-text-subtle">
+          <p className="px-3 text-xs font-medium uppercase tracking-wider text-text-subtle">
             {texts.communities.myTitle}
           </p>
 
@@ -86,7 +86,7 @@ export function NavigationLinks({
               to="/comunidades/$communityId"
               params={{ communityId: community.id }}
               onClick={onNavigate}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-[13px] font-light text-text-subtle transition hover:bg-surface-3 hover:text-text-strong"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-normal text-text-subtle transition hover:bg-surface-3 hover:text-text-strong"
             >
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary/60" />
 
@@ -98,7 +98,7 @@ export function NavigationLinks({
 
       {!collapsed && favoriteCommunities.length > 0 && (
         <div className="mt-1 space-y-0.5">
-          <p className="px-3 text-[11px] font-medium uppercase tracking-wider text-text-subtle">
+          <p className="px-3 text-xs font-medium uppercase tracking-wider text-text-subtle">
             {texts.communities.favoritesTitle}
           </p>
 
@@ -108,7 +108,7 @@ export function NavigationLinks({
               to="/comunidades/$communityId"
               params={{ communityId: community.id }}
               onClick={onNavigate}
-              className="flex items-center gap-2 rounded-lg px-3 py-2 text-[13px] font-light text-text-subtle transition hover:bg-surface-3 hover:text-text-strong"
+              className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-normal text-text-subtle transition hover:bg-surface-3 hover:text-text-strong"
             >
               <Star className="h-3.5 w-3.5 shrink-0 text-primary" />
 

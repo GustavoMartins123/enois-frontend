@@ -58,7 +58,7 @@ export function ProfileBioDialog({ initialHtml, onSaved }: ProfileBioDialogProps
             <DialogTitle>{texts.profile.bioHtml.title}</DialogTitle>
           </DialogHeader>
 
-          <p className="text-[12px] font-light text-text-subtle">{texts.profile.bioHtml.hint}</p>
+          <p className="text-xs font-normal text-text-subtle">{texts.profile.bioHtml.hint}</p>
 
           <HtmlEditor
             id="profile-bio-html"

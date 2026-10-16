@@ -34,13 +34,13 @@ export function AuthorInfo({
           <Link
             to="/perfil/$username"
             params={{ username: authorUsername }}
-            className="font-bold hover:underline text-[14px]"
+            className="font-bold hover:underline text-sm"
           >
             {authorName}
           </Link>
 
           {community ? (
-            <span className="text-[12px] font-light text-text-subtle">
+            <span className="text-xs font-normal text-text-subtle">
               {texts.posts.community.publishedIn}{" "}
               <Link
                 to="/comunidades/$communityId"
@@ -57,13 +57,13 @@ export function AuthorInfo({
               type="button"
               onClick={onFollowCommunity}
               disabled={followPending}
-              className="rounded-full border border-primary/40 px-2.5 py-0.5 text-[12px] font-semibold text-primary transition hover:bg-primary/10 disabled:opacity-60"
+              className="rounded-full border border-primary/40 px-2.5 py-0.5 text-xs font-semibold text-primary transition hover:bg-primary/10 disabled:opacity-60"
             >
               {followPending ? texts.common.sending : texts.posts.community.follow}
             </button>
           ) : null}
 
-          <span className="text-[12px] font-light text-text-date">
+          <span className="text-xs font-normal text-text-date">
             {texts.posts.authorTime(formatTime(createdAt))}
           </span>
         </div>

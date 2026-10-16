@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 const SIZES = {
   sm: "px-3 py-1 text-xs",
-  md: "px-3.5 py-1.5 text-[13px]",
+  md: "px-3.5 py-1.5 text-sm",
 } as const;
 
 /**
@@ -21,7 +21,7 @@ export function Pill({ active = false, size = "md", onClick, className, children
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "shrink-0 whitespace-nowrap rounded-full border font-light transition",
+        "shrink-0 whitespace-nowrap rounded-full border font-normal transition",
         SIZES[size],
         active
           ? "border-primary bg-primary text-primary-foreground"

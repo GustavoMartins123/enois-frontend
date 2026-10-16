@@ -42,7 +42,7 @@ export function PostPage({ html }: PostPageProps) {
         <button
           type="button"
           onClick={() => setExpanded(true)}
-          className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-[12px] font-light text-text-subtle transition hover:bg-surface-2 hover:text-primary"
+          className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-normal text-text-subtle transition hover:bg-surface-2 hover:text-primary"
         >
           <Maximize2 className="h-3.5 w-3.5" />
 

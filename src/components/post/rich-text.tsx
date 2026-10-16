@@ -42,7 +42,7 @@ function renderBlock(block: RichNode, key: number): ReactNode {
       return (
         <pre
           key={key}
-          className="my-2 overflow-x-auto rounded-xl bg-surface-1 p-3 text-[13px] leading-relaxed"
+          className="my-2 overflow-x-auto rounded-xl bg-surface-1 p-3 text-sm leading-relaxed"
         >
           <code>{block.text}</code>
         </pre>
@@ -96,7 +96,7 @@ function renderInline(nodes: RichNode[]): ReactNode {
 
       case "code":
         return (
-          <code key={index} className="rounded bg-surface-1 px-1.5 py-0.5 text-[13px]">
+          <code key={index} className="rounded bg-surface-1 px-1.5 py-0.5 text-sm">
             {node.text}
           </code>
         );
@@ -133,7 +133,7 @@ function renderInline(nodes: RichNode[]): ReactNode {
 }
 
 const HEADING_SIZE: Record<number, string> = {
-  1: "text-[18px]",
-  2: "text-[16px]",
-  3: "text-[15px]",
+  1: "text-lg",
+  2: "text-base",
+  3: "text-base",
 };

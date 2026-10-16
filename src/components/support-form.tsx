@@ -120,7 +120,7 @@ export function SupportForm() {
           maxLength={255}
         />
 
-        <p className="text-[11px] text-text-subtle">{texts.support.contactEmailHint}</p>
+        <p className="text-xs text-text-subtle">{texts.support.contactEmailHint}</p>
         {errors.contactEmail && (
           <p className="text-xs text-destructive">{errors.contactEmail}</p>
         )}

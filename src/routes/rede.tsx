@@ -241,7 +241,7 @@ function RequestCard({ request, onAccept, onCancel }: RequestCardProps) {
           {user?.headline && (
             <p className="truncate text-xs text-muted-foreground">{user.headline}</p>
           )}
-          <p className="text-[11px] text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {isOutgoing ? texts.network.requestSent : texts.network.wantsToConnect}
           </p>
         </div>

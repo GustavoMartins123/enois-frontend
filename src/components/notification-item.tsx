@@ -90,7 +90,7 @@ export function NotificationItem({
 
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-2">
-            <p className="text-[13px] font-light leading-tight text-text-strong">
+            <p className="text-sm font-normal leading-tight text-text-strong">
               {notification.actorName &&
                 (notification.actorUsername ? (
                   <Link
@@ -114,13 +114,13 @@ export function NotificationItem({
           <button
             type="button"
             onClick={handleNavigate}
-            className="mt-1 block w-full break-words text-left text-[13px] font-light leading-snug text-text-subtle transition hover:text-text-strong"
+            className="mt-1 block w-full break-words text-left text-sm font-normal leading-snug text-text-subtle transition hover:text-text-strong"
           >
             {notification.body}
           </button>
 
           <div className="mt-3 flex items-center justify-between gap-2">
-            <span className="text-[11px] font-light text-text-subtle">
+            <span className="text-xs font-normal text-text-subtle">
               {formatNotificationTime(notification.createdAt)}
             </span>
 
@@ -129,7 +129,7 @@ export function NotificationItem({
                 <button
                   type="button"
                   onClick={markAsRead}
-                  className="rounded-full px-2 py-1 text-[11px] font-light text-text-subtle transition hover:bg-surface-2 hover:text-text-strong"
+                  className="rounded-full px-2 py-1 text-xs font-normal text-text-subtle transition hover:bg-surface-2 hover:text-text-strong"
                 >
                   {texts.notifications.markRead}
                 </button>
@@ -139,7 +139,7 @@ export function NotificationItem({
                 <button
                   type="button"
                   onClick={handleAcceptConnection}
-                  className="rounded-full bg-primary px-3 py-1 text-[11px] font-light text-primary-foreground transition hover:bg-primary/90"
+                  className="rounded-full bg-primary px-3 py-1 text-xs font-normal text-primary-foreground transition hover:bg-primary/90"
                 >
                   {notification.ctaLabel || texts.notifications.accept}
                 </button>
@@ -147,7 +147,7 @@ export function NotificationItem({
                 <button
                   type="button"
                   onClick={handleNavigate}
-                  className="rounded-full bg-primary px-3 py-1 text-[11px] font-light text-primary-foreground transition hover:bg-primary/90"
+                  className="rounded-full bg-primary px-3 py-1 text-xs font-normal text-primary-foreground transition hover:bg-primary/90"
                 >
                   {notification.ctaLabel}
                 </button>

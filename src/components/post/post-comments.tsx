@@ -133,7 +133,7 @@ export function PostComments({ postId }: PostIdProps) {
         className="max-h-[55vh] min-h-0 space-y-3 overflow-y-auto overscroll-contain pr-1"
       >
         {loading && (
-          <p className="inline-flex items-center gap-2 py-4 text-[13px] font-light text-text-subtle">
+          <p className="inline-flex items-center gap-2 py-4 text-sm font-normal text-text-subtle">
             <Loader2 className="h-4 w-4 animate-spin" />
 
             <>{texts.posts.comments.loading}</>
@@ -142,7 +142,7 @@ export function PostComments({ postId }: PostIdProps) {
 
         {!loading && error && (
           <div className="py-4 text-center">
-            <p className="text-[13px] font-light text-destructive">{error}</p>
+            <p className="text-sm font-normal text-destructive">{error}</p>
 
             <Button
               variant="outline"
@@ -156,7 +156,7 @@ export function PostComments({ postId }: PostIdProps) {
         )}
 
         {!loading && !error && roots.length === 0 && (
-          <p className="py-4 text-center text-[13px] font-light text-text-subtle">
+          <p className="py-4 text-center text-sm font-normal text-text-subtle">
             {texts.posts.comments.empty}
           </p>
         )}
@@ -191,7 +191,7 @@ export function PostComments({ postId }: PostIdProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="rounded-full text-[13px] font-light text-primary"
+              className="rounded-full text-sm font-normal text-primary"
               disabled={loadingMore}
               onClick={loadMore}
             >
@@ -210,7 +210,7 @@ export function PostComments({ postId }: PostIdProps) {
 
         <div className="min-w-0 flex-1">
           {replyToId && (
-            <div className="mb-1 flex items-center gap-2 pl-4 text-[11px] font-light text-primary">
+            <div className="mb-1 flex items-center gap-2 pl-4 text-xs font-normal text-primary">
               <span className="truncate">
                 {replyToName
                   ? texts.posts.comments.replyingTo(replyToName)
@@ -236,7 +236,7 @@ export function PostComments({ postId }: PostIdProps) {
                 setCommentMentions(postId, ids);
               }}
               placeholder={texts.posts.comments.placeholder}
-              className="flex-1 resize-none border-0 bg-transparent p-0 text-[13px] font-light outline-none"
+              className="flex-1 resize-none border-0 bg-transparent p-0 text-sm font-normal outline-none"
               maxLength={800}
               toolbar
             />

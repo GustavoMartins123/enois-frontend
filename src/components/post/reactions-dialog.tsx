@@ -51,10 +51,10 @@ export function ReactionsDialog({ postId }: PostIdProps) {
     <Dialog open={open} onOpenChange={(nextOpen) => setShowReactions(postId, nextOpen)}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="font-light">{texts.posts.reactions.title}</DialogTitle>
+          <DialogTitle className="font-normal">{texts.posts.reactions.title}</DialogTitle>
         </DialogHeader>
         {reactions.length === 0 ? (
-          <p className="py-8 text-center text-[13px] font-light text-text-subtle">
+          <p className="py-8 text-center text-sm font-normal text-text-subtle">
             {texts.posts.reactions.empty}
           </p>
         ) : (
@@ -69,7 +69,7 @@ export function ReactionsDialog({ postId }: PostIdProps) {
                   <UserAvatar src={user?.avatar} alt={user?.name} className="h-9 w-9 shrink-0" />
 
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-light text-text-strong">
+                    <p className="truncate text-sm font-normal text-text-strong">
                       {user?.name ?? texts.common.loading}
                     </p>
                   </div>

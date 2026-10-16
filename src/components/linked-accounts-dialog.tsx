@@ -70,7 +70,7 @@ export function LinkedAccountsDialog({ open, onOpenChange }: LinkedAccountsDialo
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="font-light">{texts.auth.links.title}</DialogTitle>
+          <DialogTitle className="font-normal">{texts.auth.links.title}</DialogTitle>
 
           <DialogDescription>{texts.auth.links.description}</DialogDescription>
         </DialogHeader>
@@ -93,9 +93,9 @@ export function LinkedAccountsDialog({ open, onOpenChange }: LinkedAccountsDialo
                   className="flex items-center justify-between gap-3 rounded-xl border border-border-soft px-3 py-2.5"
                 >
                   <div className="min-w-0">
-                    <p className="text-[13px] font-medium text-text-strong">{label}</p>
+                    <p className="text-sm font-medium text-text-strong">{label}</p>
 
-                    <p className="truncate text-[11px] font-light text-text-subtle">
+                    <p className="truncate text-xs font-normal text-text-subtle">
                       {current
                         ? current.email || texts.auth.links.linked
                         : texts.auth.links.notLinked}

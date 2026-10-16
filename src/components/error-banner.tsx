@@ -78,7 +78,7 @@ export function ErrorBanner({ error, className }: ErrorBannerProps) {
               </li>
             ))}
           </ul>
-          {hint && <p className="font-light text-destructive/90">{hint}</p>}
+          {hint && <p className="font-normal text-destructive/90">{hint}</p>}
           {details.length > 0 && (
             <button
               type="button"

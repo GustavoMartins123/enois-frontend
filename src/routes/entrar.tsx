@@ -355,7 +355,7 @@ function SignupForm(_props: AuthFormProps) {
         </Field>
 
         <div className="space-y-1.5">
-          <label className="flex items-start gap-2 text-[12px] font-light text-text-subtle">
+          <label className="flex items-start gap-2 text-xs font-normal text-text-subtle">
             <input type="checkbox" name="acceptedTerms" className="mt-0.5 h-4 w-4 shrink-0" />
 
             <span>
@@ -435,7 +435,7 @@ function EmailPendingScreen({ email }: { email: string }) {
 
       <p className="mt-2 text-sm text-muted-foreground">{texts.auth.pending.description(email)}</p>
 
-      <ul className="mt-4 space-y-1.5 text-[13px] font-light text-muted-foreground">
+      <ul className="mt-4 space-y-1.5 text-sm font-normal text-muted-foreground">
         <li>· {texts.auth.pending.step1}</li>
 
         <li>· {texts.auth.pending.step2}</li>
@@ -766,7 +766,7 @@ function ForgotPasswordDialog({ open, onOpenChange }: ForgotPasswordDialogProps)
               <div>
                 <p className="text-sm font-medium">{texts.auth.forgot.checkEmail}</p>
 
-                <p className="mt-1 text-[13px] text-muted-foreground">
+                <p className="mt-1 text-sm text-muted-foreground">
                   {texts.auth.forgot.sentDescription}
                 </p>
               </div>

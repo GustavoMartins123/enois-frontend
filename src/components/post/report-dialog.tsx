@@ -38,19 +38,19 @@ export function ReportDialog({ postId }: PostIdProps) {
     <Dialog open={open} onOpenChange={(nextOpen) => setShowReport(postId, nextOpen)}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="font-light">{texts.posts.report.title}</DialogTitle>
+          <DialogTitle className="font-normal">{texts.posts.report.title}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 pt-2">
           <div className="space-y-1.5">
-            <Label className="text-[11px] font-light text-text-subtle">
+            <Label className="text-xs font-normal text-text-subtle">
               {texts.posts.report.reason}
             </Label>
 
             <select
               value={reason}
               onChange={(e) => setReason(e.target.value as ReportReason)}
-              className="flex h-10 w-full rounded-md border border-border-soft bg-background px-3 py-2 text-[13px] font-light text-text-strong border-transparent bg-muted"
+              className="flex h-10 w-full rounded-md border border-border-soft bg-background px-3 py-2 text-sm font-normal text-text-strong border-transparent bg-muted"
             >
               {REPORT_REASONS.map((r) => (
                 <option key={r} value={r} className="h-10 border-transparent bg-muted">
@@ -61,7 +61,7 @@ export function ReportDialog({ postId }: PostIdProps) {
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-[11px] font-light text-text-subtle">
+            <Label className="text-xs font-normal text-text-subtle">
               {texts.posts.report.description}
             </Label>
 
@@ -69,7 +69,7 @@ export function ReportDialog({ postId }: PostIdProps) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              className="border-border-soft bg-surface-1 text-[13px] font-light h-10 border-transparent bg-muted"
+              className="border-border-soft bg-surface-1 text-sm font-normal h-10 border-transparent bg-muted"
             />
           </div>
 

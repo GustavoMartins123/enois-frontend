@@ -81,11 +81,11 @@ export const Route = createFileRoute("/perfil/$username")({
   notFoundComponent: () => (
     <AppContainer>
       <div className="rounded-2xl border border-border-soft bg-surface-card p-10 text-center">
-        <p className="text-[16px] font-light text-text-strong">{texts.profile.notFound}</p>
+        <p className="text-base font-normal text-text-strong">{texts.profile.notFound}</p>
 
         <Link
           to="/"
-          className="mt-2 inline-block text-[13px] font-light text-primary hover:underline"
+          className="mt-2 inline-block text-sm font-normal text-primary hover:underline"
         >
           {texts.profile.backHome}
         </Link>
@@ -95,7 +95,7 @@ export const Route = createFileRoute("/perfil/$username")({
   errorComponent: () => (
     <AppContainer>
       <div className="rounded-2xl border border-border-soft bg-surface-card p-10 text-center">
-        <p className="text-[13px] font-light text-text-subtle">{texts.profile.loadError}</p>
+        <p className="text-sm font-normal text-text-subtle">{texts.profile.loadError}</p>
       </div>
     </AppContainer>
   ),
@@ -408,7 +408,7 @@ function Profile() {
               </div>
 
               {blocked && (
-                <p className="mt-3 flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-[12px] font-light text-text-subtle">
+                <p className="mt-3 flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-xs font-normal text-text-subtle">
                   <ShieldOff className="h-4 w-4 shrink-0" />
 
                   <>{texts.profile.blockedBadge}</>
@@ -418,26 +418,26 @@ function Profile() {
 
             <div className="mt-4">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="break-words text-[22px] font-light tracking-tight text-text-strong">
+                <h1 className="break-words text-xl font-normal tracking-tight text-text-strong">
                   {user.name}
                 </h1>
                 {user.openToWork && (
-                  <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-[11px] font-light text-growth">
+                  <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-normal text-growth">
                     {texts.profile.openToWork}
                   </span>
                 )}
                 {user.isMentor && (
-                  <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-[11px] font-light text-primary">
+                  <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-normal text-primary">
                     {texts.profile.mentorAvailable}
                   </span>
                 )}
               </div>
 
-              <p className="mt-1 break-words text-[14px] font-light text-primary">
+              <p className="mt-1 break-words text-sm font-normal text-primary">
                 {user.headline}
               </p>
 
-              <p className="mt-3 flex flex-wrap items-center gap-4 text-[13px] font-light text-text-subtle">
+              <p className="mt-3 flex flex-wrap items-center gap-4 text-sm font-normal text-text-subtle">
                 {user.company && (
                   <span className="inline-flex items-center gap-1.5">
                     <Briefcase className="h-4 w-4" />
@@ -454,7 +454,7 @@ function Profile() {
                 )}
                 <span>{texts.profile.connectionsMeta(user.connectionsCount)}</span>
                 {(user.reputation ?? 0) > 0 && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-opportunity/15 px-2 py-0.5 text-[11px] font-light text-opportunity-foreground">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-opportunity/15 px-2 py-0.5 text-xs font-normal text-opportunity-foreground">
                     {texts.profile.reputationMeta(user.reputation ?? 0)}
                   </span>
                 )}
@@ -480,7 +480,7 @@ function Profile() {
             ) : (
               user.bio && (
                 <Section title={texts.profile.sections.about}>
-                  <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">
+                  <p className="break-words text-sm font-normal leading-relaxed text-text-subtle">
                     {user.bio}
                   </p>
                 </Section>
@@ -493,7 +493,7 @@ function Profile() {
                   {user.skills.map((s: string) => (
                     <span
                       key={s}
-                      className="rounded-full bg-surface-2 px-2.5 py-0.5 text-[11px] font-light text-primary"
+                      className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-normal text-primary"
                     >
                       {s}
                     </span>
@@ -507,7 +507,7 @@ function Profile() {
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {user.goals.map((goal: string) => (
                     <div key={goal} className="rounded-xl border border-border-soft p-4">
-                      <p className="break-words text-[13px] font-light text-text-strong">{goal}</p>
+                      <p className="break-words text-sm font-normal text-text-strong">{goal}</p>
                     </div>
                   ))}
                 </div>
@@ -516,7 +516,7 @@ function Profile() {
 
             <Section title={texts.profile.sections.recentPosts}>
               {userPosts.length === 0 ? (
-                <p className="text-[13px] font-light text-text-subtle">{texts.profile.noPosts}</p>
+                <p className="text-sm font-normal text-text-subtle">{texts.profile.noPosts}</p>
               ) : (
                 <div className="space-y-4">
                   {userPosts.map((p) => (
@@ -529,14 +529,14 @@ function Profile() {
 
           <aside className="space-y-6">
             <Section title={texts.profile.sections.availability} icon={Clock}>
-              <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">
+              <p className="break-words text-sm font-normal leading-relaxed text-text-subtle">
                 {user.availability ?? texts.profile.availabilityUnknown}
               </p>
             </Section>
 
             {!isOwnProfile && (
               <Section title={texts.profile.sections.recommend} icon={ThumbsUp}>
-                <p className="mb-3 text-[13px] font-light text-text-subtle">
+                <p className="mb-3 text-sm font-normal text-text-subtle">
                   {texts.profile.recommendDescription}
                 </p>
 
@@ -551,7 +551,7 @@ function Profile() {
 
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle className="font-light">
+                      <DialogTitle className="font-normal">
                         {texts.profile.recommendTitle(user.name)}
                       </DialogTitle>
                     </DialogHeader>
@@ -562,7 +562,7 @@ function Profile() {
                         onChange={(e) => setRecommendComment(e.target.value)}
                         placeholder={texts.profile.recommendPlaceholder}
                         rows={3}
-                        className="border-border-soft bg-surface-1 text-[13px] font-light"
+                        className="border-border-soft bg-surface-1 text-sm font-normal"
                       />
 
                       <Button
@@ -597,7 +597,7 @@ function Profile() {
                   {rankingData.slice(0, 5).map((u, i) => (
                     <div key={u.id} className="flex items-center gap-3">
                       <span
-                        className={`w-5 text-center text-[13px] font-light ${i < 3 ? "text-opportunity" : "text-text-subtle"}`}
+                        className={`w-5 text-center text-sm font-normal ${i < 3 ? "text-opportunity" : "text-text-subtle"}`}
                       >
                         {texts.profile.rankingPosition(i + 1)}
                       </span>
@@ -610,13 +610,13 @@ function Profile() {
                         <Link
                           to="/perfil/$username"
                           params={{ username: u.username }}
-                          className="truncate text-[13px] font-light text-text-strong hover:underline"
+                          className="truncate text-sm font-normal text-text-strong hover:underline"
                         >
                           {u.name}
                         </Link>
                       </div>
 
-                      <span className="text-[11px] font-light text-opportunity-foreground">
+                      <span className="text-xs font-normal text-opportunity-foreground">
                         {u.reputation}
                       </span>
                     </div>
@@ -627,7 +627,7 @@ function Profile() {
 
             {user.externalLinks.length > 0 && (
               <Section title={texts.profile.sections.links}>
-                <ul className="space-y-2 text-[13px] font-light">
+                <ul className="space-y-2 text-sm font-normal">
                   {user.externalLinks.map((link: string) => (
                     <li key={link} className="flex items-center gap-2 text-text-subtle">
                       <LinkIcon className="h-4 w-4" />
@@ -665,7 +665,7 @@ function Profile() {
 function Section({ title, icon: Icon, children }: SectionProps) {
   return (
     <section className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-6">
-      <h2 className="mb-4 flex items-center gap-2 text-[15px] font-light text-text-strong">
+      <h2 className="mb-4 flex items-center gap-2 text-base font-normal text-text-strong">
         {Icon && (
           <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-surface-2">
             <Icon className="h-4 w-4 text-primary" />
@@ -689,12 +689,12 @@ function RecommendationItem({ recommendation }: RecommendationItemProps) {
       <div className="flex items-center gap-2 mb-2">
         <UserAvatar src={recommender?.avatar} alt={recommender?.name} className="h-6 w-6" />
 
-        <span className="text-[12px] font-medium text-text-strong">
+        <span className="text-xs font-medium text-text-strong">
           {recommender?.name ?? texts.profile.userFallback}
         </span>
       </div>
 
-      <p className="break-words text-[13px] font-light leading-relaxed text-text-subtle">
+      <p className="break-words text-sm font-normal leading-relaxed text-text-subtle">
         {texts.profile.recommendationQuote(recommendation.comment)}
       </p>
     </div>

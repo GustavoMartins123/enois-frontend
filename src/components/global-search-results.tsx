@@ -28,7 +28,7 @@ export function GlobalSearchResults({
               <UserAvatar src={item.image} alt={item.title} className="h-10 w-10" />
 
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[13px] font-light text-text-strong">{item.title}</p>
+                <p className="truncate text-sm font-normal text-text-strong">{item.title}</p>
 
                 <p className="truncate text-xs text-text-subtle">{item.subtitle}</p>
               </div>

@@ -67,7 +67,7 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
     >
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-[18px] font-light text-text-strong">
+          <DialogTitle className="text-lg font-normal text-text-strong">
             {texts.account.changePassword.title}
           </DialogTitle>
 

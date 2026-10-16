@@ -146,7 +146,7 @@ export function EditProfileDialog({ profile, children }: Props) {
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto p-0">
         <DialogHeader className="sticky top-0 z-10 border-b border-border-soft bg-surface-card px-6 pb-4 pt-6">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-[18px] font-light text-text-strong">
+            <DialogTitle className="text-lg font-normal text-text-strong">
               {texts.profile.edit.title}
             </DialogTitle>
 
@@ -157,7 +157,7 @@ export function EditProfileDialog({ profile, children }: Props) {
 
               {generalError && (
                 <p
-                  className="mr-auto max-w-[60%] text-[12px] font-light text-destructive"
+                  className="mr-auto max-w-[60%] text-xs font-normal text-destructive"
                   role="alert"
                 >
                   {generalError}
@@ -175,7 +175,7 @@ export function EditProfileDialog({ profile, children }: Props) {
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-                className={`shrink-0 rounded-full px-3 py-1.5 text-[12px] font-light transition ${
+                className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-normal transition ${
                   tab === t.key
                     ? "bg-surface-2 text-primary"
                     : "text-text-subtle hover:bg-surface-3 hover:text-text-strong"
@@ -303,13 +303,13 @@ export function EditProfileDialog({ profile, children }: Props) {
               </Field>
 
               <div className="flex items-center gap-8">
-                <label className="flex items-center gap-3 text-[13px] font-light text-text-strong">
+                <label className="flex items-center gap-3 text-sm font-normal text-text-strong">
                   <Switch checked={openToWork} onCheckedChange={setOpenToWork} />
 
                   <>{texts.profile.edit.openToWork}</>
                 </label>
 
-                <label className="flex items-center gap-3 text-[13px] font-light text-text-strong">
+                <label className="flex items-center gap-3 text-sm font-normal text-text-strong">
                   <Switch checked={isMentor} onCheckedChange={setIsMentor} />
 
                   <>{texts.profile.edit.mentorAvailable}</>
@@ -452,7 +452,7 @@ export function EditProfileDialog({ profile, children }: Props) {
 function Field({ label, error, children }: FieldProps) {
   return (
     <div className="space-y-1.5">
-      <Label className="text-[13px] font-light text-text-subtle">{label}</Label>
+      <Label className="text-sm font-normal text-text-subtle">{label}</Label>
       {children}
       {error && <p className="text-xs text-destructive">{error}</p>}
     </div>
@@ -557,7 +557,7 @@ function SubList<
             </Field>
           ))}
           {currentlyHereKey && (
-            <label className="flex items-center gap-2 text-[13px] font-light text-text-strong">
+            <label className="flex items-center gap-2 text-sm font-normal text-text-strong">
               <Switch checked={currentlyHere} onCheckedChange={setCurrentlyHere} />
 
               <>{texts.profile.edit.currentlyHere}</>
@@ -584,14 +584,14 @@ function SubList<
       ) : (
         <>
           {items.length === 0 ? (
-            <p className="py-8 text-center text-[13px] font-light text-text-subtle">
+            <p className="py-8 text-center text-sm font-normal text-text-subtle">
               {emptyMessage}
             </p>
           ) : (
             items.map((item) => (
               <div key={item.id} className="rounded-xl border border-border-soft p-4">
                 <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0 flex-1 text-[13px] font-light">
+                  <div className="min-w-0 flex-1 text-sm font-normal">
                     <p className="break-words text-text-strong">
                       {String((item as Record<string, unknown>)[fields[0].key] ?? "")}
                     </p>

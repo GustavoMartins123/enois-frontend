@@ -112,11 +112,11 @@ function MyJobs() {
                   {(mine.data?.items ?? []).map((job) => (
                     <li key={job.id} className="rounded-xl border border-border-soft p-3">
                       <Link to="/vagas/$jobId" params={{ jobId: job.id }} className="block min-w-0">
-                        <p className="truncate text-[14px] font-medium text-text-strong">
+                        <p className="truncate text-sm font-medium text-text-strong">
                           {job.title}
                         </p>
 
-                        <p className="mt-0.5 text-[12px] font-light text-text-subtle">
+                        <p className="mt-0.5 text-xs font-normal text-text-subtle">
                           {job.company}
                           {" · "}
                           {formatPostedAt(job.postedAt)}
@@ -126,7 +126,7 @@ function MyJobs() {
                       {/* Estado do processo seletivo: quem gerencia precisa ver de longe o que
                           ainda esta aberto. */}
                       <span
-                        className={`mt-1.5 inline-block rounded-full px-2 py-0.5 text-[10px] font-medium ${
+                        className={`mt-1.5 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
                           job.status === "CLOSED"
                             ? "bg-muted text-text-subtle"
                             : "bg-primary-soft text-primary"
@@ -136,7 +136,7 @@ function MyJobs() {
                       </span>
 
                       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-                        <p className="inline-flex items-center gap-1.5 text-[12px] font-light text-primary">
+                        <p className="inline-flex items-center gap-1.5 text-xs font-normal text-primary">
                           <Users className="h-3.5 w-3.5" />
 
                           <>{texts.jobs.applicationsCount(job.applicationsCount ?? 0)}</>
@@ -194,18 +194,18 @@ function MyJobs() {
                   {(applications.data?.items ?? []).map((job) => (
                     <li key={job.id} className="rounded-xl border border-border-soft p-3">
                       <Link to="/vagas/$jobId" params={{ jobId: job.id }} className="block min-w-0">
-                        <p className="truncate text-[14px] font-medium text-text-strong">
+                        <p className="truncate text-sm font-medium text-text-strong">
                           {job.title}
                         </p>
 
-                        <p className="mt-0.5 text-[12px] font-light text-text-subtle">
+                        <p className="mt-0.5 text-xs font-normal text-text-subtle">
                           {job.company}
                           {" · "}
                           {formatPostedAt(job.postedAt)}
                         </p>
                       </Link>
 
-                      <p className="mt-2 inline-flex items-center gap-1.5 text-[12px] font-light text-primary">
+                      <p className="mt-2 inline-flex items-center gap-1.5 text-xs font-normal text-primary">
                         <CheckCircle2 className="h-3.5 w-3.5" />
 
                         <>{texts.jobs.applied}</>

@@ -83,7 +83,7 @@ function JobApplications() {
             {job ? texts.jobs.applications.titleFor(job.title) : texts.jobs.applications.title}
           </h1>
 
-          <p className="mt-1 text-[12px] text-muted-foreground">
+          <p className="mt-1 text-xs text-muted-foreground">
             {texts.jobs.applications.snapshotHint}
           </p>
         </div>
@@ -101,7 +101,7 @@ function JobApplications() {
         )}
 
         {!isLoading && !isError && applications.length === 0 && (
-          <p className="rounded-2xl border border-border-soft px-4 py-8 text-center text-[13px] text-muted-foreground">
+          <p className="rounded-2xl border border-border-soft px-4 py-8 text-center text-sm text-muted-foreground">
             {texts.jobs.applications.empty}
           </p>
         )}
@@ -118,34 +118,34 @@ function JobApplications() {
 
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-[15px] font-medium">
+                    <span className="text-base font-medium">
                       {application.candidate?.name || texts.jobs.applications.candidate}
                     </span>
 
                     {application.candidate?.identityVerified ? (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-growth/15 px-2 py-0.5 text-[11px] text-growth">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-growth/15 px-2 py-0.5 text-xs text-growth">
                         <BadgeCheck className="h-3 w-3" />
 
                         <>{texts.jobs.author.verified}</>
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-[11px] text-muted-foreground">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
                         <ShieldAlert className="h-3 w-3" />
 
                         <>{texts.jobs.author.notVerified}</>
                       </span>
                     )}
 
-                    <span className="rounded-full bg-accent px-2 py-0.5 text-[11px]">
+                    <span className="rounded-full bg-accent px-2 py-0.5 text-xs">
                       {texts.jobs.applications.reputation(application.candidate?.reputation ?? 0)}
                     </span>
                   </div>
 
-                  <p className="mt-1 text-[12px] text-muted-foreground">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {application.candidate?.headline}
                   </p>
 
-                  <p className="mt-0.5 text-[12px] text-muted-foreground">
+                  <p className="mt-0.5 text-xs text-muted-foreground">
                     {texts.jobs.applications.experience(
                       application.candidate?.experienceYears ?? 0,
                       application.candidate?.experiencesCount ?? 0,
@@ -154,7 +154,7 @@ function JobApplications() {
                   </p>
 
                   {(application.candidate?.skills ?? []).length > 0 && (
-                    <p className="mt-1 text-[12px] text-muted-foreground">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       {texts.jobs.applications.skills}: {application.candidate?.skills.join(", ")}
                     </p>
                   )}
@@ -188,7 +188,7 @@ function JobApplications() {
                   mesmas que o backend valida — a tela nao oferece transicao que seria recusada. */}
               <div className="flex flex-wrap items-center gap-2 border-t border-border-soft pt-3">
                 <span
-                  className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${statusTone(application.status)}`}
+                  className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusTone(application.status)}`}
                 >
                   {texts.jobs.applications.statusLabels[application.status]}
                 </span>
@@ -214,7 +214,7 @@ function JobApplications() {
 
                 {feedback?.id === application.id && (
                   <span
-                    className={`text-[12px] ${feedback.ok ? "text-growth" : "text-destructive"}`}
+                    className={`text-xs ${feedback.ok ? "text-growth" : "text-destructive"}`}
                     role="status"
                   >
                     {feedback.ok
@@ -226,11 +226,11 @@ function JobApplications() {
 
               {application.message && (
                 <div className="rounded-xl bg-muted/50 px-3 py-2">
-                  <p className="text-[11px] font-medium text-muted-foreground">
+                  <p className="text-xs font-medium text-muted-foreground">
                     {texts.jobs.applications.message}
                   </p>
 
-                  <p className="mt-0.5 whitespace-pre-wrap break-words text-[13px]">
+                  <p className="mt-0.5 whitespace-pre-wrap break-words text-sm">
                     {application.message}
                   </p>
                 </div>
@@ -238,13 +238,13 @@ function JobApplications() {
 
               {application.answers.length > 0 && (
                 <div className="space-y-2">
-                  <p className="text-[11px] font-medium text-muted-foreground">
+                  <p className="text-xs font-medium text-muted-foreground">
                     {texts.jobs.applications.answers}
                   </p>
 
                   <dl className="space-y-1.5">
                     {application.answers.map((answer) => (
-                      <div key={answer.label} className="text-[13px]">
+                      <div key={answer.label} className="text-sm">
                         <dt className="font-medium">{answer.label}</dt>
 
                         <dd className="break-words text-muted-foreground">{answer.value}</dd>

@@ -262,7 +262,7 @@ function Mensagens() {
                 key={tab}
                 type="button"
                 onClick={() => setInboxTab(tab)}
-                className={`rounded-full px-3 py-1 text-[12px] font-light transition ${
+                className={`rounded-full px-3 py-1 text-xs font-normal transition ${
                   inboxTab === tab
                     ? "bg-primary-soft text-primary"
                     : "text-text-subtle hover:bg-surface-2"
@@ -277,7 +277,7 @@ function Mensagens() {
             <div className="flex flex-wrap items-center gap-2 border-b border-border bg-surface-2 px-3 py-2">
               <button
                 type="button"
-                className="text-[12px] font-light text-primary hover:underline"
+                className="text-xs font-normal text-primary hover:underline"
                 onClick={() =>
                   setSelected(
                     selected.size === visibleConversations.length
@@ -424,7 +424,7 @@ function Mensagens() {
                             <p className="break-words">{m.text}</p>
 
                             <p
-                              className={`mt-1 text-[10px] ${isMe ? "text-primary-foreground/70" : "text-muted-foreground"}`}
+                              className={`mt-1 text-xs ${isMe ? "text-primary-foreground/70" : "text-muted-foreground"}`}
                             >
                               {formatTime(m.time)}
                             </p>
@@ -512,7 +512,7 @@ function ConversationItem({ conversation, isActive, onSelect, selecting, selecte
           <div className="flex items-center justify-between">
             <span className="truncate text-sm font-medium">{title}</span>
 
-            <span className="text-[11px] text-muted-foreground shrink-0 ml-2">
+            <span className="text-xs text-muted-foreground shrink-0 ml-2">
               {conversation.time ? formatTime(conversation.time) : ""}
             </span>
           </div>
@@ -522,7 +522,7 @@ function ConversationItem({ conversation, isActive, onSelect, selecting, selecte
               {conversation.lastMessage ?? ""}
             </p>
             {conversation.unread > 0 && (
-              <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-primary px-1.5 text-[10px] font-semibold text-primary-foreground">
+              <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground">
                 {conversation.unread}
               </span>
             )}

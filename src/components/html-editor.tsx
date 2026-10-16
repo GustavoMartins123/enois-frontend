@@ -35,7 +35,7 @@ export function HtmlEditor({
       <div className="flex flex-wrap items-center justify-between gap-2">
         <label
           htmlFor={id}
-          className="inline-flex items-center gap-1.5 text-[12px] font-light text-text-subtle"
+          className="inline-flex items-center gap-1.5 text-xs font-normal text-text-subtle"
         >
           <Code2 className="h-3.5 w-3.5" />
 
@@ -45,7 +45,7 @@ export function HtmlEditor({
         <button
           type="button"
           onClick={() => setPreview((current) => !current)}
-          className="inline-flex items-center gap-1.5 rounded-full border border-border-soft px-3 py-1 text-[12px] font-light text-text-subtle transition hover:border-primary hover:text-primary"
+          className="inline-flex items-center gap-1.5 rounded-full border border-border-soft px-3 py-1 text-xs font-normal text-text-subtle transition hover:border-primary hover:text-primary"
         >
           <Eye className="h-3.5 w-3.5" />
 
@@ -53,7 +53,7 @@ export function HtmlEditor({
         </button>
       </div>
 
-      <p className="mt-1 text-[12px] font-light text-text-subtle">{description}</p>
+      <p className="mt-1 text-xs font-normal text-text-subtle">{description}</p>
 
       <Textarea
         id={id}
@@ -61,7 +61,7 @@ export function HtmlEditor({
         maxLength={maxLength}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="mt-2 min-h-[160px] font-mono text-[12px]"
+        className="mt-2 min-h-[160px] font-mono text-xs"
       />
 
       {preview &&
@@ -70,7 +70,7 @@ export function HtmlEditor({
             <SandboxedHtmlFrame html={value} title={frameTitle} className="h-full" />
           </div>
         ) : (
-          <p className="mt-3 rounded-xl border border-dashed border-border-soft px-3 py-6 text-center text-[12px] font-light text-text-subtle">
+          <p className="mt-3 rounded-xl border border-dashed border-border-soft px-3 py-6 text-center text-xs font-normal text-text-subtle">
             {emptyPreview}
           </p>
         ))}

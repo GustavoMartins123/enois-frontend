@@ -40,11 +40,11 @@ function BlockedUsers() {
     <AppContainer>
       <div className="space-y-4">
         <div>
-          <h1 className="text-[22px] font-light tracking-tight text-text-strong">
+          <h1 className="text-xl font-normal tracking-tight text-text-strong">
             {texts.profile.blockedTitle}
           </h1>
 
-          <p className="mt-1 text-[13px] font-light text-text-subtle">
+          <p className="mt-1 text-sm font-normal text-text-subtle">
             {texts.profile.blockedDescription}
           </p>
         </div>
@@ -70,17 +70,17 @@ function BlockedUsers() {
                     <Link
                       to="/perfil/$username"
                       params={{ username: user.username }}
-                      className="truncate text-[14px] font-light text-text-strong hover:underline"
+                      className="truncate text-sm font-normal text-text-strong hover:underline"
                     >
                       {user.name ?? user.username}
                     </Link>
                   ) : (
-                    <span className="truncate text-[14px] font-light text-text-strong">
+                    <span className="truncate text-sm font-normal text-text-strong">
                       {user.name ?? texts.profile.avatarUnknown}
                     </span>
                   )}
 
-                  <p className="text-[11px] font-light text-text-subtle">
+                  <p className="text-xs font-normal text-text-subtle">
                     {texts.profile.blockedSince(user.blockedAt)}
                   </p>
                 </div>
@@ -105,7 +105,7 @@ function BlockedUsers() {
           </ul>
         )}
 
-        <p className="flex items-center gap-2 text-[12px] font-light text-text-subtle">
+        <p className="flex items-center gap-2 text-xs font-normal text-text-subtle">
           <ShieldOff className="h-4 w-4 shrink-0" />
 
           <>{texts.profile.blockedHint}</>

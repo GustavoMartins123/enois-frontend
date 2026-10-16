@@ -26,7 +26,7 @@ export function ReactionsSummary({ postId }: PostIdProps) {
       {entries.map(([type, count]) => (
         <span
           key={type}
-          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-light tabular-nums ${
+          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-normal tabular-nums ${
             reactionStatus === type
               ? "bg-surface-2 text-primary"
               : "border border-border-soft text-text-subtle"

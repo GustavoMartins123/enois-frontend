@@ -27,17 +27,17 @@ export function ContrastNotice({ report }: ContrastNoticeProps) {
       <Icon className={cn("mt-0.5 h-3.5 w-3.5 shrink-0", TONE[report.level])} />
 
       <div className="min-w-0 space-y-0.5">
-        <p className={cn("text-[12px] font-medium", TONE[report.level])}>
+        <p className={cn("text-xs font-medium", TONE[report.level])}>
           {texts.appearance.contrast.label}: {texts.appearance.contrast[report.level]} (
           {report.ratio}:1)
         </p>
 
-        <p className="text-[11px] font-light text-text-subtle">
+        <p className="text-xs font-normal text-text-subtle">
           {texts.appearance.contrast.worstPair(report.worstPair)}
         </p>
 
         {!healthy && (
-          <p className="text-[11px] font-light text-text-subtle">
+          <p className="text-xs font-normal text-text-subtle">
             {texts.appearance.contrast.hint}
           </p>
         )}

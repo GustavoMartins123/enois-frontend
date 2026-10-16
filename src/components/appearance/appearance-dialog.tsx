@@ -68,14 +68,14 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-light">{texts.appearance.title}</DialogTitle>
+          <DialogTitle className="font-normal">{texts.appearance.title}</DialogTitle>
 
           <DialogDescription>{texts.appearance.description}</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5 pt-2">
           <section className="space-y-2">
-            <h3 className="text-[12px] font-medium text-text-strong">{texts.appearance.mode}</h3>
+            <h3 className="text-xs font-medium text-text-strong">{texts.appearance.mode}</h3>
 
             <div className="flex gap-2">
               <button
@@ -83,7 +83,7 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
                 onClick={() => setTheme("light")}
                 aria-pressed={theme === "light"}
                 className={cn(
-                  "flex items-center gap-2 rounded-full border px-3 py-1.5 text-[12px] font-light transition",
+                  "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-normal transition",
                   theme === "light"
                     ? "border-primary bg-primary-soft text-primary"
                     : "border-border-soft bg-surface-1 text-text-subtle hover:text-text-strong",
@@ -99,7 +99,7 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
                 onClick={() => setTheme("dark")}
                 aria-pressed={theme === "dark"}
                 className={cn(
-                  "flex items-center gap-2 rounded-full border px-3 py-1.5 text-[12px] font-light transition",
+                  "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-normal transition",
                   theme === "dark"
                     ? "border-primary bg-primary-soft text-primary"
                     : "border-border-soft bg-surface-1 text-text-subtle hover:text-text-strong",
@@ -113,18 +113,18 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
           </section>
 
           <section className="space-y-2">
-            <h3 className="text-[12px] font-medium text-text-strong">{texts.appearance.presets}</h3>
+            <h3 className="text-xs font-medium text-text-strong">{texts.appearance.presets}</h3>
 
             <PresetRow activeId={activePresetId} onSelect={setThemeSettings} />
           </section>
 
           <section className="space-y-3">
             <div className="space-y-0.5">
-              <h3 className="text-[12px] font-medium text-text-strong">
+              <h3 className="text-xs font-medium text-text-strong">
                 {texts.appearance.accentSection}
               </h3>
 
-              <p className="text-[11px] font-light text-text-subtle">
+              <p className="text-xs font-normal text-text-subtle">
                 {texts.appearance.accentHint}
               </p>
             </div>
@@ -165,11 +165,11 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
 
           <section className="space-y-3">
             <div className="space-y-0.5">
-              <h3 className="text-[12px] font-medium text-text-strong">
+              <h3 className="text-xs font-medium text-text-strong">
                 {texts.appearance.backgroundSection}
               </h3>
 
-              <p className="text-[11px] font-light text-text-subtle">
+              <p className="text-xs font-normal text-text-subtle">
                 {texts.appearance.backgroundHint}
               </p>
             </div>
@@ -196,7 +196,7 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
           </section>
 
           <section className="space-y-2">
-            <h3 className="text-[12px] font-medium text-text-strong">{texts.appearance.preview}</h3>
+            <h3 className="text-xs font-medium text-text-strong">{texts.appearance.preview}</h3>
 
             <ThemePreview />
             <ContrastNotice report={report} />
@@ -206,7 +206,7 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
             <Button
               type="button"
               variant="ghost"
-              className="w-auto rounded-full gap-2 text-[13px]"
+              className="w-auto rounded-full gap-2 text-sm"
               onClick={resetThemeSettings}
             >
               <RotateCcw className="h-3.5 w-3.5" />
@@ -216,7 +216,7 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
 
             <Button
               type="button"
-              className="w-auto rounded-full px-6 text-[13px]"
+              className="w-auto rounded-full px-6 text-sm"
               onClick={() => onOpenChange(false)}
             >
               {texts.appearance.done}

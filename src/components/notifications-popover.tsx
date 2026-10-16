@@ -63,7 +63,7 @@ export function NotificationsPopover() {
         >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
-            <span className="absolute right-1.5 top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-[8px] font-medium leading-none text-primary-foreground">
+            <span className="absolute right-1.5 top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-xs font-medium leading-none text-primary-foreground">
               {unreadCount > 9 ? texts.notifications.overflowCount : unreadCount}
             </span>
           )}
@@ -75,14 +75,14 @@ export function NotificationsPopover() {
         className="w-[min(calc(100vw-2rem),24rem)] overflow-hidden rounded-2xl border-border-soft bg-surface-card p-0 shadow-card"
       >
         <div className="flex items-center justify-between gap-3 border-b border-border-soft px-4 py-3">
-          <span className="text-[14px] font-light text-text-strong">
+          <span className="text-sm font-normal text-text-strong">
             {texts.notifications.title}
           </span>
           {unreadCount > 0 && notificationTab === "novas" && (
             <button
               type="button"
               onClick={() => markAllAsRead.mutate()}
-              className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] font-light text-text-subtle transition hover:text-primary"
+              className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-normal text-text-subtle transition hover:text-primary"
             >
               <CheckCheck className="h-3 w-3" />
 
@@ -96,7 +96,7 @@ export function NotificationsPopover() {
             type="button"
             onClick={() => setNotificationTab("novas")}
             className={cn(
-              "flex flex-1 items-center justify-center gap-1.5 py-2.5 text-[12px] font-light transition",
+              "flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-normal transition",
               notificationTab === "novas"
                 ? "border-b-2 border-primary text-primary"
                 : "text-text-subtle hover:text-text-strong",
@@ -104,7 +104,7 @@ export function NotificationsPopover() {
           >
             <>{texts.notifications.tabs.new}</>
             {unreadCount > 0 && (
-              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] text-primary-foreground">
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-xs text-primary-foreground">
                 {unreadCount}
               </span>
             )}
@@ -114,7 +114,7 @@ export function NotificationsPopover() {
             type="button"
             onClick={() => setNotificationTab("historico")}
             className={cn(
-              "flex-1 py-2.5 text-[12px] font-light transition",
+              "flex-1 py-2.5 text-xs font-normal transition",
               notificationTab === "historico"
                 ? "border-b-2 border-primary text-primary"
                 : "text-text-subtle hover:text-text-strong",
@@ -126,7 +126,7 @@ export function NotificationsPopover() {
 
         <div className="max-h-[28rem] overflow-y-auto">
           {displayedNotifications.length === 0 ? (
-            <p className="px-4 py-8 text-center text-[13px] font-light text-text-subtle">
+            <p className="px-4 py-8 text-center text-sm font-normal text-text-subtle">
               {notificationTab === "novas"
                 ? texts.notifications.emptyNew
                 : texts.notifications.emptyHistory}

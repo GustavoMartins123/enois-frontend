@@ -14,7 +14,7 @@ export function RangeField({
 }: RangeFieldProps) {
   return (
     <label className="block space-y-1.5">
-      <span className="flex items-baseline justify-between gap-3 text-[12px] font-light text-text-subtle">
+      <span className="flex items-baseline justify-between gap-3 text-xs font-normal text-text-subtle">
         <>{label}</>
 
         <span className="tabular-nums text-text-strong">{valueLabel}</span>
@@ -30,7 +30,7 @@ export function RangeField({
         className={hueTrack ? "theme-range theme-range-hue" : "theme-range"}
       />
 
-      {hint && <span className="block text-[11px] font-light text-text-date">{hint}</span>}
+      {hint && <span className="block text-xs font-normal text-text-date">{hint}</span>}
     </label>
   );
 }

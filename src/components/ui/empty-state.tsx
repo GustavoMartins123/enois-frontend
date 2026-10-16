@@ -15,10 +15,10 @@ export function EmptyState({ icon: Icon, title, description, children }: EmptySt
         </span>
       )}
 
-      <p className="text-[14px] font-medium text-text-strong">{title}</p>
+      <p className="text-sm font-medium text-text-strong">{title}</p>
 
       {description && (
-        <p className="max-w-sm text-[13px] font-light text-text-subtle">{description}</p>
+        <p className="max-w-sm text-sm font-normal text-text-subtle">{description}</p>
       )}
 
       {children}

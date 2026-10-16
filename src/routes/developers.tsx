@@ -18,7 +18,7 @@ export const Route = createFileRoute("/developers")({
 
 function Code({ children }: { children: string }) {
   return (
-    <pre className="mt-2 overflow-x-auto rounded-xl border border-border-soft bg-surface-1 p-3 text-[12px] leading-relaxed">
+    <pre className="mt-2 overflow-x-auto rounded-xl border border-border-soft bg-surface-1 p-3 text-xs leading-relaxed">
       <code>{children}</code>
     </pre>
   );
@@ -29,7 +29,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     <section className="surface-card p-5">
       <h2 className="text-base font-semibold tracking-tight">{title}</h2>
 
-      <div className="mt-2 space-y-2 text-sm font-light text-text-subtle">{children}</div>
+      <div className="mt-2 space-y-2 text-sm font-normal text-text-subtle">{children}</div>
     </section>
   );
 }
@@ -53,7 +53,7 @@ function Developers() {
             {texts.developers.baseUrlHint} <code>https://enois.ia.br/api</code>
           </p>
 
-          <p className="rounded-xl bg-surface-2 p-3 text-[12px]">{texts.developers.baseUrlNote}</p>
+          <p className="rounded-xl bg-surface-2 p-3 text-xs">{texts.developers.baseUrlNote}</p>
         </Section>
 
         <Section title={texts.developers.authTitle}>

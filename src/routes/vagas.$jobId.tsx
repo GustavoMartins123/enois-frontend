@@ -162,7 +162,7 @@ function JobDetail() {
                   ) : null}
                 </p>
 
-                <p className="mt-1 text-[12px] font-light text-text-date">
+                <p className="mt-1 text-xs font-normal text-text-date">
                   {job.postedAt && formatPostedAt(job.postedAt)}
                 </p>
               </div>
@@ -177,7 +177,7 @@ function JobDetail() {
                 />
 
                 <div className="min-w-0 flex-1">
-                  <p className="text-[11px] font-light text-text-subtle">
+                  <p className="text-xs font-normal text-text-subtle">
                     {texts.jobs.author.label}
                   </p>
 
@@ -185,15 +185,15 @@ function JobDetail() {
                     <Link
                       to="/perfil/$username"
                       params={{ username: job.author.username }}
-                      className="truncate text-[14px] font-medium text-text-strong hover:underline"
+                      className="truncate text-sm font-medium text-text-strong hover:underline"
                     >
                       {job.author.name}
                     </Link>
                   ) : (
-                    <span className="truncate text-[14px] font-medium">{job.author.name}</span>
+                    <span className="truncate text-sm font-medium">{job.author.name}</span>
                   )}
 
-                  <div className="mt-0.5 flex flex-wrap items-center gap-2 text-[11px]">
+                  <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs">
                     <span className="rounded-full bg-accent px-2 py-0.5">
                       {texts.jobs.author.reputation(job.author.reputation)}
                     </span>
@@ -216,7 +216,7 @@ function JobDetail() {
               </div>
             )}
 
-            <div className="mt-4 flex flex-wrap gap-2 text-[12px]">
+            <div className="mt-4 flex flex-wrap gap-2 text-xs">
               <span className="rounded-full border border-border-soft px-2.5 py-1">{job.type}</span>
 
               <span className="rounded-full border border-border-soft px-2.5 py-1">
@@ -232,9 +232,9 @@ function JobDetail() {
 
             {isOwner && (
               <div className="mt-4 rounded-xl bg-surface-2 p-3">
-                <p className="text-[13px] font-medium text-text-strong">{texts.jobs.ownerBadge}</p>
+                <p className="text-sm font-medium text-text-strong">{texts.jobs.ownerBadge}</p>
 
-                <p className="mt-1 inline-flex items-center gap-1.5 text-[12px] font-light text-text-subtle">
+                <p className="mt-1 inline-flex items-center gap-1.5 text-xs font-normal text-text-subtle">
                   <Users className="h-3.5 w-3.5" />
 
                   <>{texts.jobs.applicationsCount(job.applicationsCount ?? 0)}</>
@@ -243,29 +243,29 @@ function JobDetail() {
             )}
 
             <section className="mt-5">
-              <h2 className="text-[15px] font-light text-text-strong">{texts.jobs.about}</h2>
+              <h2 className="text-base font-normal text-text-strong">{texts.jobs.about}</h2>
 
-              <p className="mt-2 whitespace-pre-line break-words text-[13px] font-light leading-relaxed text-text-subtle">
+              <p className="mt-2 whitespace-pre-line break-words text-sm font-normal leading-relaxed text-text-subtle">
                 {job.description?.trim() || texts.jobs.description}
               </p>
             </section>
 
             <section className="mt-5">
-              <h2 className="text-[15px] font-light text-text-strong">{texts.jobs.skills}</h2>
+              <h2 className="text-base font-normal text-text-strong">{texts.jobs.skills}</h2>
 
               {job.skills?.length ? (
                 <div className="mt-2 flex flex-wrap gap-1.5">
                   {job.skills.map((skill) => (
                     <span
                       key={skill}
-                      className="rounded-full border border-border-soft bg-transparent px-2.5 py-1 text-[12px] font-light text-text-subtle"
+                      className="rounded-full border border-border-soft bg-transparent px-2.5 py-1 text-xs font-normal text-text-subtle"
                     >
                       {skill}
                     </span>
                   ))}
                 </div>
               ) : (
-                <p className="mt-2 text-[13px] font-light text-text-subtle">
+                <p className="mt-2 text-sm font-normal text-text-subtle">
                   {texts.jobs.noSkills}
                 </p>
               )}
@@ -273,12 +273,12 @@ function JobDetail() {
 
             {isOwner && (
               <section className="mt-5">
-                <h2 className="text-[15px] font-light text-text-strong">
+                <h2 className="text-base font-normal text-text-strong">
                   {texts.jobs.applications.title}
                 </h2>
 
                 {received.length === 0 ? (
-                  <p className="mt-2 text-[13px] font-light text-text-subtle">
+                  <p className="mt-2 text-sm font-normal text-text-subtle">
                     {texts.jobs.applications.empty}
                   </p>
                 ) : (
@@ -293,11 +293,11 @@ function JobDetail() {
                           />
 
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-[13px] font-medium text-text-strong">
+                            <p className="truncate text-sm font-medium text-text-strong">
                               {application.candidate?.name || texts.jobs.applications.candidate}
                             </p>
 
-                            <p className="text-[11px] font-light text-text-subtle">
+                            <p className="text-xs font-normal text-text-subtle">
                               {texts.jobs.applications.reputation(
                                 application.candidate?.reputation ?? 0,
                               )}
@@ -305,7 +305,7 @@ function JobDetail() {
                           </div>
 
                           <span
-                            className={`rounded-full px-2.5 py-1 text-[11px] font-medium ${statusTone(
+                            className={`rounded-full px-2.5 py-1 text-xs font-medium ${statusTone(
                               application.status,
                             )}`}
                           >
@@ -397,26 +397,26 @@ function JobDetail() {
                   </Button>
                 </>
               ) : job.applied ? (
-                <span className="inline-flex items-center gap-2 rounded-full bg-surface-2 px-4 py-2 text-[13px] font-medium text-primary">
+                <span className="inline-flex items-center gap-2 rounded-full bg-surface-2 px-4 py-2 text-sm font-medium text-primary">
                   <CheckCircle2 className="h-4 w-4" />
 
                   <>{texts.jobs.applied}</>
                 </span>
               ) : job.status === "CLOSED" ? (
-                <span className="inline-flex items-center gap-2 rounded-full bg-muted px-4 py-2 text-[13px] font-medium text-text-subtle">
+                <span className="inline-flex items-center gap-2 rounded-full bg-muted px-4 py-2 text-sm font-medium text-text-subtle">
                   <CircleSlash className="h-4 w-4" />
 
                   <>{texts.jobs.closed}</>
                 </span>
               ) : job.sourceType === "EXTERNAL" ? (
                 <div className="space-y-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-3 py-1 text-[12px] font-medium text-text-subtle">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-3 py-1 text-xs font-medium text-text-subtle">
                     <ExternalLink className="h-3.5 w-3.5" />
 
                     <>{texts.jobs.externalBadge(job.sourcePlatform ?? "plataforma externa")}</>
                   </span>
 
-                  <p className="text-[12px] font-light text-text-subtle">
+                  <p className="text-xs font-normal text-text-subtle">
                     {texts.jobs.externalNotice(job.sourcePlatform ?? "plataforma de origem")}
                   </p>
 
@@ -425,7 +425,7 @@ function JobDetail() {
                       href={job.sourceUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-[13px] font-medium text-primary-foreground transition hover:opacity-90"
+                      className="inline-flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:opacity-90"
                     >
                       <ExternalLink className="h-4 w-4" />
 
@@ -454,19 +454,19 @@ function JobDetail() {
             </footer>
 
             {job.status === "CLOSED" && (
-              <p className="mt-3 rounded-xl bg-muted px-3 py-2 text-[12px] font-light text-text-subtle">
+              <p className="mt-3 rounded-xl bg-muted px-3 py-2 text-xs font-normal text-text-subtle">
                 {texts.jobs.closedHint}
               </p>
             )}
 
             {job.applied && !isOwner && (
-              <p className="mt-3 rounded-xl bg-surface-2 px-3 py-2 text-[12px] font-light text-text-subtle">
+              <p className="mt-3 rounded-xl bg-surface-2 px-3 py-2 text-xs font-normal text-text-subtle">
                 {texts.jobs.appliedHint}
               </p>
             )}
 
             {(apply.isError || toggleSave.isError || remove.isError || close.isError) && (
-              <p className="mt-3 rounded-xl bg-destructive/10 px-3 py-2 text-[12px] text-destructive">
+              <p className="mt-3 rounded-xl bg-destructive/10 px-3 py-2 text-xs text-destructive">
                 {texts.errors.unexpected}
               </p>
             )}

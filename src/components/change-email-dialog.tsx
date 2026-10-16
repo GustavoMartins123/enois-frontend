@@ -66,7 +66,7 @@ export function ChangeEmailDialog({ open, onOpenChange, currentEmail }: ChangeEm
     >
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="font-light">{texts.account.changeEmail.title}</DialogTitle>
+          <DialogTitle className="font-normal">{texts.account.changeEmail.title}</DialogTitle>
 
           <DialogDescription>{texts.account.changeEmail.description}</DialogDescription>
         </DialogHeader>
@@ -86,7 +86,7 @@ export function ChangeEmailDialog({ open, onOpenChange, currentEmail }: ChangeEm
             </p>
 
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-light text-text-subtle">
+              <Label className="text-xs font-normal text-text-subtle">
                 {texts.account.changeEmail.newEmail}
               </Label>
 
@@ -101,7 +101,7 @@ export function ChangeEmailDialog({ open, onOpenChange, currentEmail }: ChangeEm
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-light text-text-subtle">
+              <Label className="text-xs font-normal text-text-subtle">
                 {texts.account.changeEmail.password}
               </Label>
 

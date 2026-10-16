@@ -19,7 +19,7 @@ import { PushToggle } from "./push-toggle";
 import { UserAvatar } from "./user-avatar";
 
 const ITEM_CLASS =
-  "flex w-full items-center gap-2 px-4 py-2 text-left text-[13px] font-light text-text-strong transition hover:bg-surface-2 disabled:opacity-50";
+  "flex w-full items-center gap-2 px-4 py-2 text-left text-sm font-normal text-text-strong transition hover:bg-surface-2 disabled:opacity-50";
 
 export function AccountMenu({ profile }: AccountMenuProps) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -64,7 +64,7 @@ export function AccountMenu({ profile }: AccountMenuProps) {
           >
             <UserAvatar src={profile.avatar} alt={profile.name} className="h-8 w-8" />
 
-            <span className="hidden text-[13px] font-light text-text-strong sm:inline">
+            <span className="hidden text-sm font-normal text-text-strong sm:inline">
               {texts.common.profile}
             </span>
           </button>
@@ -78,9 +78,9 @@ export function AccountMenu({ profile }: AccountMenuProps) {
             <UserAvatar src={profile.avatar} alt={profile.name} className="h-9 w-9" />
 
             <div className="min-w-0">
-              <p className="truncate text-[13px] font-medium text-text-strong">{profile.name}</p>
+              <p className="truncate text-sm font-medium text-text-strong">{profile.name}</p>
 
-              <p className="truncate text-[11px] text-text-subtle">{profile.email}</p>
+              <p className="truncate text-xs text-text-subtle">{profile.email}</p>
             </div>
           </div>
 

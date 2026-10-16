@@ -25,7 +25,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 const SELECT_CLASS =
-  "flex h-9 w-full rounded-md border border-transparent bg-muted px-3 py-2 text-[13px] font-light text-text-strong outline-none focus-visible:ring-1 focus-visible:ring-ring";
+  "flex h-9 w-full rounded-md border border-transparent bg-muted px-3 py-2 text-sm font-normal text-text-strong outline-none focus-visible:ring-1 focus-visible:ring-ring";
 
 /**
  * Edicao de vaga publicada por voce.
@@ -51,7 +51,7 @@ export function JobEditDialog({ job, onOpenChange }: JobEditDialogProps) {
     <Dialog open={!!job} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-light">{texts.jobs.editJobTitle}</DialogTitle>
+          <DialogTitle className="font-normal">{texts.jobs.editJobTitle}</DialogTitle>
 
           <DialogDescription>{texts.jobs.editJobDescription}</DialogDescription>
         </DialogHeader>
@@ -102,13 +102,13 @@ function EditForm({
   return (
     <div className="space-y-4 pt-2">
       <div className="space-y-1.5">
-        <Label className="text-[11px] font-light text-text-subtle">{texts.jobs.fields.title}</Label>
+        <Label className="text-xs font-normal text-text-subtle">{texts.jobs.fields.title}</Label>
 
         <Input value={title} onChange={(e) => setTitle(e.target.value)} className="bg-muted" />
       </div>
 
       <div className="space-y-1.5">
-        <Label className="text-[11px] font-light text-text-subtle">
+        <Label className="text-xs font-normal text-text-subtle">
           {texts.jobs.fields.company}
         </Label>
 
@@ -117,7 +117,7 @@ function EditForm({
 
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="space-y-1.5">
-          <Label className="text-[11px] font-light text-text-subtle">
+          <Label className="text-xs font-normal text-text-subtle">
             {texts.jobs.fields.location}
           </Label>
 
@@ -135,7 +135,7 @@ function EditForm({
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-[11px] font-light text-text-subtle">
+          <Label className="text-xs font-normal text-text-subtle">
             {texts.jobs.fields.type}
           </Label>
 
@@ -149,7 +149,7 @@ function EditForm({
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-[11px] font-light text-text-subtle">
+          <Label className="text-xs font-normal text-text-subtle">
             {texts.jobs.fields.level}
           </Label>
 
@@ -164,7 +164,7 @@ function EditForm({
       </div>
 
       <div className="space-y-1.5">
-        <Label className="text-[11px] font-light text-text-subtle">
+        <Label className="text-xs font-normal text-text-subtle">
           {texts.jobs.fields.salary}
         </Label>
 
@@ -190,13 +190,13 @@ function EditForm({
           />
         </div>
 
-        <p className="text-[11px] font-light text-text-subtle">
+        <p className="text-xs font-normal text-text-subtle">
           {texts.jobs.fields.salaryHint(currencySymbol(currency))}
         </p>
       </div>
 
       <div className="space-y-1.5">
-        <Label className="text-[11px] font-light text-text-subtle">
+        <Label className="text-xs font-normal text-text-subtle">
           {texts.jobs.fields.skills}
         </Label>
 
@@ -209,7 +209,7 @@ function EditForm({
       </div>
 
       <div className="space-y-1.5">
-        <Label className="text-[11px] font-light text-text-subtle">
+        <Label className="text-xs font-normal text-text-subtle">
           {texts.jobs.fields.description}
         </Label>
 

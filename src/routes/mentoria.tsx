@@ -250,7 +250,7 @@ function MentorCard({ mentor }: MentorCardProps) {
         </div>
 
         {/* Sidebar de estatísticas */}
-        <div className="flex flex-col gap-4 md:col-span-3 text-[13px]">
+        <div className="flex flex-col gap-4 md:col-span-3 text-sm">
           {isOwner ? (
             <AddSlotDialog mentorId={mentor.id} />
           ) : (
@@ -363,7 +363,7 @@ function BookSessionDialog({ mentorId, mentorName }: { mentorId: string; mentorN
 
       <DialogContent className="max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-light">{texts.mentoring.bookTitle(mentorName)}</DialogTitle>
+          <DialogTitle className="font-normal">{texts.mentoring.bookTitle(mentorName)}</DialogTitle>
         </DialogHeader>
 
         {booked ? (
@@ -520,7 +520,7 @@ function AddSlotDialog({ mentorId }: { mentorId: string }) {
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="font-light">{texts.mentoring.slotTitle}</DialogTitle>
+          <DialogTitle className="font-normal">{texts.mentoring.slotTitle}</DialogTitle>
         </DialogHeader>
 
         {saved ? (

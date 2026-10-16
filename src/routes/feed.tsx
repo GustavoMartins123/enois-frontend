@@ -221,7 +221,7 @@ function Home() {
                     setMentionedUserIds(ids);
                   }}
                   placeholder={texts.feed.composer.placeholder}
-                  className="flex-1 resize-none rounded-2xl border-border-soft bg-surface-1 px-3 py-2 text-[14px] font-light"
+                  className="flex-1 resize-none rounded-2xl border-border-soft bg-surface-1 px-3 py-2 text-sm font-normal"
                   maxLength={1200}
                   toolbar
                 />
@@ -302,7 +302,7 @@ function Home() {
               onChange={handleMediaSelect}
             />
 
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border-soft pt-3 text-[13px] font-light text-text-subtle">
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border-soft pt-3 text-sm font-normal text-text-subtle">
               <div className="flex flex-wrap gap-1.5">
                 {/* No modo pagina o post deixa de ser "um tipo de texto": as opcoes de texto e de
                     midia somem e sobra o proprio botao, que e como se sai do modo. */}
@@ -359,12 +359,12 @@ function Home() {
                 {/* O motivo da recusa fica na linha de baixo, inteiro: antes ele saía truncado em
                     200px ao lado do botão e a publicação recusada parecia "não fazer nada". */}
                 {publishError && (
-                  <span className="text-[12px] font-light text-destructive">
+                  <span className="text-xs font-normal text-destructive">
                     {texts.feed.composer.publishErrorTitle}
                   </span>
                 )}
                 {!publishError && upload.status === "uploading" && (
-                  <span className="text-[12px] font-light text-text-subtle">
+                  <span className="text-xs font-normal text-text-subtle">
                     {texts.feed.composer.uploadProgress(upload.progress)}
                   </span>
                 )}
@@ -395,7 +395,7 @@ function Home() {
             </div>
 
             {publishError && (
-              <p className="mt-2 rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-[12px] font-light text-destructive">
+              <p className="mt-2 rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs font-normal text-destructive">
                 {publishError}
               </p>
             )}
@@ -456,24 +456,24 @@ function Home() {
                 <Link
                   to="/perfil/$username"
                   params={{ username: profileUser.username }}
-                  className="mt-2 block text-[14px] font-light text-text-strong hover:underline"
+                  className="mt-2 block text-sm font-normal text-text-strong hover:underline"
                 >
                   {profileUser.name}
                 </Link>
 
-                <p className="line-clamp-2 text-[12px] font-light text-text-subtle">
+                <p className="line-clamp-2 text-xs font-normal text-text-subtle">
                   {profileUser.headline}
                 </p>
 
-                <div className="mt-3 grid grid-cols-2 gap-1 border-t border-border-soft pt-3 text-[12px]">
+                <div className="mt-3 grid grid-cols-2 gap-1 border-t border-border-soft pt-3 text-xs">
                   <div>
-                    <p className="font-light text-text-strong">{profileUser.connectionsCount}</p>
+                    <p className="font-normal text-text-strong">{profileUser.connectionsCount}</p>
 
                     <p className="text-text-subtle">{texts.feed.sidebar.connections}</p>
                   </div>
 
                   <div>
-                    <p className="font-light text-text-strong">{profileUser.followersCount}</p>
+                    <p className="font-normal text-text-strong">{profileUser.followersCount}</p>
 
                     <p className="text-text-subtle">{texts.feed.sidebar.followers}</p>
                   </div>
@@ -487,12 +487,12 @@ function Home() {
               <div className="flex items-center gap-2">
                 <UserPlus className="h-4 w-4 text-primary" />
 
-                <h3 className="text-[14px] font-light text-text-strong">
+                <h3 className="text-sm font-normal text-text-strong">
                   {texts.feed.sidebar.suggestions}
                 </h3>
               </div>
 
-              <p className="mt-0.5 text-[12px] font-light text-text-subtle">
+              <p className="mt-0.5 text-xs font-normal text-text-subtle">
                 {texts.feed.sidebar.suggestionsDescription}
               </p>
 
@@ -505,19 +505,19 @@ function Home() {
                       <Link
                         to="/perfil/$username"
                         params={{ username: u.username }}
-                        className="block truncate text-[13px] font-light text-text-strong hover:underline"
+                        className="block truncate text-sm font-normal text-text-strong hover:underline"
                       >
                         {u.name}
                       </Link>
 
-                      <p className="truncate text-[11px] font-light text-text-subtle">
+                      <p className="truncate text-xs font-normal text-text-subtle">
                         {u.headline}
                       </p>
                     </div>
 
                     <button
                       type="button"
-                      className="shrink-0 rounded-full border border-border-soft px-3 py-1 text-[12px] font-light text-text-subtle transition hover:border-primary hover:text-primary"
+                      className="shrink-0 rounded-full border border-border-soft px-3 py-1 text-xs font-normal text-text-subtle transition hover:border-primary hover:text-primary"
                       onClick={() => {
                         networkApi
                           .connect(u.id)
@@ -539,7 +539,7 @@ function Home() {
               <div className="flex items-center gap-2">
                 <TrendingUp className="h-4 w-4 text-primary" />
 
-                <h3 className="text-[14px] font-light text-text-strong">
+                <h3 className="text-sm font-normal text-text-strong">
                   {texts.feed.sidebar.happeningNow}
                 </h3>
               </div>
@@ -547,9 +547,9 @@ function Home() {
               <ul className="mt-3 space-y-3">
                 {eventList.slice(0, 3).map((e) => (
                   <li key={e.id}>
-                    <p className="text-[13px] font-light text-text-strong">{e.title}</p>
+                    <p className="text-sm font-normal text-text-strong">{e.title}</p>
 
-                    <p className="text-[11px] font-light text-text-subtle">
+                    <p className="text-xs font-normal text-text-subtle">
                       {texts.feed.sidebar.eventMeta(
                         e.date,
                         e.format,
@@ -572,7 +572,7 @@ function ComposerAction({ icon: Icon, label, active, onClick }: ComposerActionPr
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] font-light transition ${
+      className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-normal transition ${
         active
           ? "bg-primary text-primary-foreground"
           : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"

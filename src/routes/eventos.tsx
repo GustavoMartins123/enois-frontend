@@ -104,7 +104,7 @@ function Eventos() {
                     <div className="h-40 w-full bg-gradient-to-br from-primary/20 to-primary/5" />
                   )}
                   <div className="absolute left-4 top-4 rounded-xl bg-card/95 px-3 py-2 text-center shadow-md backdrop-blur">
-                    <p className="text-[10px] font-medium uppercase text-primary">
+                    <p className="text-xs font-medium uppercase text-primary">
                       {texts.events.months[Number(month)] ?? month}
                     </p>
 
@@ -149,7 +149,7 @@ function Eventos() {
                       href={e.streamUrl}
                       target="_blank"
                       rel="noreferrer"
-                      className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-[12px] font-semibold text-primary-foreground transition hover:opacity-90"
+                      className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition hover:opacity-90"
                     >
                       <Video className="h-3.5 w-3.5" />
 
@@ -172,7 +172,7 @@ function Eventos() {
                   </div>
 
                   {e.expired ? (
-                    <p className="mt-4 rounded-full bg-muted px-4 py-2 text-center text-[12px] font-light text-text-subtle">
+                    <p className="mt-4 rounded-full bg-muted px-4 py-2 text-center text-xs font-normal text-text-subtle">
                       {texts.events.finished}
                     </p>
                   ) : (

@@ -89,20 +89,20 @@ function Seguranca() {
               )}
 
               <div>
-                <p className="text-[15px] font-medium">
+                <p className="text-base font-medium">
                   {status.identityVerified
                     ? texts.auth.twoFactor.statusVerified
                     : texts.auth.twoFactor.statusPending}
                 </p>
 
                 {!status.identityVerified && (
-                  <p className="mt-1 text-[13px] text-muted-foreground">
+                  <p className="mt-1 text-sm text-muted-foreground">
                     {texts.auth.twoFactor.reputationZero}
                   </p>
                 )}
 
                 {status.backupCodesLeft > 0 && (
-                  <p className="mt-1 text-[12px] text-muted-foreground">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {texts.auth.twoFactor.backupLeft(status.backupCodesLeft)}
                   </p>
                 )}
@@ -111,9 +111,9 @@ function Seguranca() {
 
             {status.providerSecondFactor && (
               <section className="surface-card space-y-2 p-4">
-                <h2 className="text-[15px] font-medium">{texts.auth.twoFactor.providerSection}</h2>
+                <h2 className="text-base font-medium">{texts.auth.twoFactor.providerSection}</h2>
 
-                <p className="text-[13px] text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   {texts.auth.twoFactor.providerActive}
                 </p>
               </section>
@@ -160,9 +160,9 @@ function EmailSection({ status, onError }: SectionProps) {
 
   return (
     <section className="surface-card space-y-3 p-4">
-      <h2 className="text-[15px] font-medium">{texts.auth.twoFactor.emailSection}</h2>
+      <h2 className="text-base font-medium">{texts.auth.twoFactor.emailSection}</h2>
 
-      <p className="text-[13px] text-muted-foreground">
+      <p className="text-sm text-muted-foreground">
         {status.emailVerified ? texts.auth.twoFactor.emailConfirmed(currentEmail()) : texts.auth.twoFactor.emailPending}
       </p>
 
@@ -233,27 +233,27 @@ function TotpSection({ status, onError, onDone }: SectionProps) {
 
   return (
     <section className="surface-card space-y-3 p-4">
-      <h2 className="text-[15px] font-medium">{texts.auth.twoFactor.totpSection}</h2>
+      <h2 className="text-base font-medium">{texts.auth.twoFactor.totpSection}</h2>
 
-      <p className="text-[13px] text-muted-foreground">
+      <p className="text-sm text-muted-foreground">
         {status.totpEnabled ? texts.auth.twoFactor.totpActive : texts.auth.twoFactor.totpInactive}
       </p>
 
       {!status.totpAvailable && (
-        <p className="rounded-xl bg-muted px-4 py-2 text-[13px] text-muted-foreground">
+        <p className="rounded-xl bg-muted px-4 py-2 text-sm text-muted-foreground">
           {texts.auth.twoFactor.unavailable}
         </p>
       )}
 
       {backupCodes && (
         <div className="space-y-2 rounded-xl border border-growth/40 bg-growth/5 p-3">
-          <p className="text-[13px] font-medium">{texts.auth.twoFactor.totpBackupTitle}</p>
+          <p className="text-sm font-medium">{texts.auth.twoFactor.totpBackupTitle}</p>
 
-          <p className="text-[12px] text-muted-foreground">
+          <p className="text-xs text-muted-foreground">
             {texts.auth.twoFactor.totpBackupDescription}
           </p>
 
-          <ul className="grid grid-cols-2 gap-1 font-mono text-[13px]">
+          <ul className="grid grid-cols-2 gap-1 font-mono text-sm">
             {backupCodes.map((backup) => (
               <li key={backup}>{backup}</li>
             ))}
@@ -278,20 +278,20 @@ function TotpSection({ status, onError, onDone }: SectionProps) {
       {setup && (
         <div className="space-y-3 rounded-xl border border-border-soft p-3">
           <div>
-            <p className="text-[13px] font-medium">{texts.auth.twoFactor.totpSetupTitle}</p>
+            <p className="text-sm font-medium">{texts.auth.twoFactor.totpSetupTitle}</p>
 
-            <p className="mt-1 text-[12px] text-muted-foreground">
+            <p className="mt-1 text-xs text-muted-foreground">
               {texts.auth.twoFactor.totpSetupDescription}
             </p>
           </div>
 
           <div className="space-y-1">
-            <Label className="text-[11px] text-muted-foreground">
+            <Label className="text-xs text-muted-foreground">
               {texts.auth.twoFactor.totpSecretLabel}
             </Label>
 
             <div className="flex items-center gap-2">
-              <code className="min-w-0 flex-1 break-all rounded-lg bg-muted px-3 py-2 text-[13px]">
+              <code className="min-w-0 flex-1 break-all rounded-lg bg-muted px-3 py-2 text-sm">
                 {setup.secret}
               </code>
 
@@ -304,17 +304,17 @@ function TotpSection({ status, onError, onDone }: SectionProps) {
           </div>
 
           <div className="space-y-1">
-            <Label className="text-[11px] text-muted-foreground">
+            <Label className="text-xs text-muted-foreground">
               {texts.auth.twoFactor.totpUriLabel}
             </Label>
 
-            <code className="block break-all rounded-lg bg-muted px-3 py-2 text-[11px] text-muted-foreground">
+            <code className="block break-all rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
               {setup.otpauthUri}
             </code>
           </div>
 
           <div className="space-y-1.5">
-            <Label className="text-[11px] text-muted-foreground">
+            <Label className="text-xs text-muted-foreground">
               {texts.auth.twoFactor.totpCodeLabel}
             </Label>
 
@@ -339,7 +339,7 @@ function TotpSection({ status, onError, onDone }: SectionProps) {
 
       {status.totpEnabled && (
         <div className="space-y-2 border-t border-border-soft pt-3">
-          <Label className="text-[11px] text-muted-foreground">
+          <Label className="text-xs text-muted-foreground">
             {texts.auth.twoFactor.passwordRequired}
           </Label>
 
@@ -399,16 +399,16 @@ function EmailOtpSection({ status, onError, onDone }: SectionProps) {
 
   return (
     <section className="surface-card space-y-3 p-4">
-      <h2 className="text-[15px] font-medium">{texts.auth.twoFactor.email2faSection}</h2>
+      <h2 className="text-base font-medium">{texts.auth.twoFactor.email2faSection}</h2>
 
-      <p className="text-[13px] text-muted-foreground">
+      <p className="text-sm text-muted-foreground">
         {status.emailOtpEnabled
           ? texts.auth.twoFactor.email2faActive
           : texts.auth.twoFactor.email2faInactive}
       </p>
 
       {!status.emailVerified && !status.emailOtpEnabled && (
-        <p className="rounded-xl bg-muted px-4 py-2 text-[13px] text-muted-foreground">
+        <p className="rounded-xl bg-muted px-4 py-2 text-sm text-muted-foreground">
           {texts.auth.twoFactor.emailPending}
         </p>
       )}
@@ -425,7 +425,7 @@ function EmailOtpSection({ status, onError, onDone }: SectionProps) {
 
       {sent && (
         <div className="space-y-2 rounded-xl border border-border-soft p-3">
-          <p className="text-[12px] text-muted-foreground">{texts.auth.twoFactor.email2faConfirmHint}</p>
+          <p className="text-xs text-muted-foreground">{texts.auth.twoFactor.email2faConfirmHint}</p>
 
           <div className="flex flex-wrap gap-2">
             <Input
@@ -450,7 +450,7 @@ function EmailOtpSection({ status, onError, onDone }: SectionProps) {
 
       {status.emailOtpEnabled && (
         <div className="space-y-2 border-t border-border-soft pt-3">
-          <Label className="text-[11px] text-muted-foreground">
+          <Label className="text-xs text-muted-foreground">
             {texts.auth.twoFactor.passwordRequired}
           </Label>
 

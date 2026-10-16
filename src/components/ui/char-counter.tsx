@@ -26,7 +26,7 @@ export function CharCounter({
   return (
     <p
       className={cn(
-        "mt-1 text-right text-[11px] font-light text-text-subtle",
+        "mt-1 text-right text-xs font-normal text-text-subtle",
         nearLimit && "text-primary",
         remaining <= 0 && "text-destructive",
         className,
