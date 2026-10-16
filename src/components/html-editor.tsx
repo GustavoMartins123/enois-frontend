@@ -27,6 +27,7 @@ export function HtmlEditor({
   frameTitle,
   maxLength,
   previewClassName,
+  innerPadding,
 }: HtmlEditorProps) {
   const [preview, setPreview] = useState(true);
 
@@ -67,7 +68,12 @@ export function HtmlEditor({
       {preview &&
         (value.trim() ? (
           <div className={previewClassName ?? `mt-3 ${PHONE_FRAME_CLASS}`}>
-            <SandboxedHtmlFrame html={value} title={frameTitle} className="h-full" />
+            <SandboxedHtmlFrame
+              html={value}
+              title={frameTitle}
+              className="h-full"
+              innerPadding={innerPadding}
+            />
           </div>
         ) : (
           <p className="mt-3 rounded-xl border border-dashed border-border-soft px-3 py-6 text-center text-xs font-normal text-text-subtle">

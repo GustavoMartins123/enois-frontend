@@ -3,7 +3,6 @@ import { type ChangeEvent, useCallback, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 
-import { PHONE_FRAME_CLASS } from "@/constants/post-page";
 import { texts } from "@/texts";
 import type { UpdateProfileRequest } from "@/types/application/profile/update-profile-request";
 import type { ProfileCropPurpose } from "@/types/routes/profile/profile-crop-purpose";
@@ -83,10 +82,7 @@ export const Route = createFileRoute("/perfil/$username")({
       <div className="rounded-2xl border border-border-soft bg-surface-card p-10 text-center">
         <p className="text-base font-normal text-text-strong">{texts.profile.notFound}</p>
 
-        <Link
-          to="/"
-          className="mt-2 inline-block text-sm font-normal text-primary hover:underline"
-        >
+        <Link to="/" className="mt-2 inline-block text-sm font-normal text-primary hover:underline">
           {texts.profile.backHome}
         </Link>
       </div>
@@ -433,9 +429,7 @@ function Profile() {
                 )}
               </div>
 
-              <p className="mt-1 break-words text-sm font-normal text-primary">
-                {user.headline}
-              </p>
+              <p className="mt-1 break-words text-sm font-normal text-primary">{user.headline}</p>
 
               <p className="mt-3 flex flex-wrap items-center gap-4 text-sm font-normal text-text-subtle">
                 {user.company && (
@@ -466,17 +460,25 @@ function Profile() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-6">
             {user.bioHtml ? (
-              <Section title={texts.profile.sections.about}>
-                {/* Mesmo quadro isolado do post de página: HTML/CSS rende, script não roda e nada
-                    aqui alcança a sessão de quem visita o perfil. */}
-                <div className={PHONE_FRAME_CLASS}>
-                  <SandboxedHtmlFrame
-                    html={user.bioHtml}
-                    title={texts.profile.bioHtml.frameTitle}
-                    className="h-full"
-                  />
-                </div>
-              </Section>
+              /* Bio em HTML: card próprio, com o título "Sobre" só na linha de cima e o quadro
+                 abaixo encostando nas três bordas. Antes usava o `Section` (que tem padding em
+                 volta) com o quadro de celular centralizado — a sobra em volta e a moldura clara
+                 do iframe eram o que parecia "borda branca". */
+              <section className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
+                <h2 className="px-4 pb-3 pt-4 text-base font-normal text-text-strong sm:px-6 sm:pt-6">
+                  <>{texts.profile.sections.about}</>
+                </h2>
+
+                {/* Sem borda, sem cantos e sem folga interna do quadro: o card dá o acabamento e o
+                    HTML do autor usa todo o resto do espaço. A altura é fixa porque medir o conteúdo
+                    de dentro exigiria script no quadro — e não há script nele. */}
+                <SandboxedHtmlFrame
+                  html={user.bioHtml}
+                  title={texts.profile.bioHtml.frameTitle}
+                  className="h-[520px] w-full rounded-none border-0 bg-transparent shadow-none"
+                  innerPadding={false}
+                />
+              </section>
             ) : (
               user.bio && (
                 <Section title={texts.profile.sections.about}>

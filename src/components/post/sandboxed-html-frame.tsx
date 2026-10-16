@@ -19,11 +19,16 @@ import { cn } from "@/lib/utils";
  * `srcDoc` (e nao insercao por DOM) garante que o conteudo nunca e interpretado no documento do
  * app: ele nasce dentro do iframe, ja sob o sandbox.
  */
-export function SandboxedHtmlFrame({ html, className, title }: SandboxedHtmlFrameProps) {
+export function SandboxedHtmlFrame({
+  html,
+  className,
+  title,
+  innerPadding = true,
+}: SandboxedHtmlFrameProps) {
   return (
     <iframe
       title={title}
-      srcDoc={buildDocument(html)}
+      srcDoc={buildDocument(html, innerPadding)}
       // Sem `allow-scripts` e sem `allow-same-origin`: e o que garante que o HTML colado nao roda
       // codigo. `allow-fullscreen` existe so para o botao de tela cheia do player de video.
       sandbox="allow-popups allow-popups-to-escape-sandbox"
@@ -63,9 +68,11 @@ const FRAME_CSP = [
  * o que quiser. Fundo claro de proposito: uma pagina colada assume papel branco, e o quadro
  * precisa ler como "site dentro do post", nao como parte do tema do app.
  */
-const BASE_CSS = `*{box-sizing:border-box}
+function buildBaseCss(innerPadding: boolean): string {
+  const padding = innerPadding ? "14px 16px" : "0";
+  return `*{box-sizing:border-box}
 html,body{margin:0}
-body{background:#fff;color:#1a1a1a;padding:14px 16px;overflow-wrap:break-word;
+body{background:#fff;color:#1a1a1a;padding:${padding};overflow-wrap:break-word;
 font:400 14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 h1,h2,h3,h4,h5,h6{line-height:1.25;margin:.6em 0 .4em}
 p{margin:.5em 0}
@@ -84,8 +91,9 @@ blockquote{margin:.6em 0;padding-left:12px;border-left:3px solid #ddd;color:#555
    da página. Aqui fica a marca do lugar dele, para a página não perder a referência visual. */
 [data-enois-embed]{display:block;aspect-ratio:16/9;background:#f2f2f5;border-radius:10px;
 border:1px dashed #cfcfd6;margin:.8em 0}`;
+}
 
-function buildDocument(html: string): string {
+function buildDocument(html: string, innerPadding: boolean): string {
   return [
     '<!doctype html><html lang="pt-BR"><head>',
     `<meta http-equiv="Content-Security-Policy" content="${FRAME_CSP}">`,
@@ -93,7 +101,7 @@ function buildDocument(html: string): string {
     // telefone (e o print sai inteiro, sem rolagem).
     '<meta name="viewport" content="width=device-width, initial-scale=1">',
     '<base target="_blank">',
-    `<style>${BASE_CSS}</style>`,
+    `<style>${buildBaseCss(innerPadding)}</style>`,
     "</head><body>",
     html,
     "</body></html>",

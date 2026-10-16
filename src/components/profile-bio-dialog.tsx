@@ -71,6 +71,7 @@ export function ProfileBioDialog({ initialHtml, onSaved }: ProfileBioDialogProps
             frameTitle={texts.profile.bioHtml.frameTitle}
             maxLength={PROFILE_HTML_MAX_LENGTH}
             previewClassName="mt-3 h-[280px]"
+            innerPadding={false}
           />
 
           <div className="flex gap-2">

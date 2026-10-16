@@ -14,4 +14,6 @@ export type HtmlEditorProps = {
   maxLength: number;
   /** Altura do quadro de pré-visualização. */
   previewClassName?: string;
+  /** Folga interna do quadro (ver SandboxedHtmlFrame). A prévia usa o mesmo valor do render final. */
+  innerPadding?: boolean;
 };
