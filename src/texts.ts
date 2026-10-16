@@ -578,13 +578,12 @@ export const texts = {
       uploadProgress: (progress: number) => `Enviando... ${progress}%`,
       publishError: "Erro ao publicar. Tente novamente.",
       page: "Página",
-      pageTitlePlaceholder: "Título da página",
       pagePlaceholder: "Cole aqui o HTML da sua página...",
       pageLabel: "HTML da página",
       pagePreview: "Pré-visualizar",
       pageEditHtml: "Editar HTML",
       pageDescription:
-        "Cole um HTML e ele aparece renderizado dentro do post, como uma mini página. Imagem, vídeo e áudio por link https tocam dentro dela; scripts, formulários e requisições externas não rodam. Documento (PDF) vira link e abre no visualizador do navegador.",
+        "Uma página é uma coisa ou outra: o HTML dela é o conteúdo do post, sem texto separado. Imagem, vídeo e áudio por link https tocam dentro dela; scripts, formulários e requisições externas não rodam. Documento (PDF) vira link e abre no visualizador do navegador.",
       pageEmpty: "Cole um HTML para ver a pré-visualização.",
     },
     tabs: {
@@ -1292,9 +1291,11 @@ export const texts = {
 
   developers: {
     seoTitle: "API do Énóis · Desenvolvedores",
-    seoDescription: "Documentação da API pública do Énóis: autenticação, endpoints, paginação, erros e políticas.",
+    seoDescription:
+      "Documentação da API pública do Énóis: autenticação, endpoints, paginação, erros e políticas.",
     title: "API do Énóis",
-    subtitle: "Construa clientes, ferramentas e integrações para o Énóis. Esta é a documentação oficial.",
+    subtitle:
+      "Construa clientes, ferramentas e integrações para o Énóis. Esta é a documentação oficial.",
     philosophyTitle: "Filosofia",
     philosophy:
       "A API existe para ampliar o acesso à informação e automatizar processos — nunca para fabricar interação social. Publicar conteúdo automaticamente (IA, bots, integrações) é proibido; criar e agendar posts pela funcionalidade oficial, com você no controle, é permitido.",
@@ -1313,10 +1314,12 @@ export const texts = {
     endpointsNote:
       "A referência completa, gerada e validada contra o código (OpenAPI), está em preparação — nada aqui é fictício.",
     paginationTitle: "Paginação",
-    pagination: "Listas paginam por cursor (não por offset). Use o nextCursor da resposta anterior:",
+    pagination:
+      "Listas paginam por cursor (não por offset). Use o nextCursor da resposta anterior:",
     errorsTitle: "Erros",
     errors: "Erros têm código e mensagem estáveis, e o HTTP status correspondente:",
-    errorsNote: "Em produção não há stack trace nem detalhe interno. O código permite tratar o caso.",
+    errorsNote:
+      "Em produção não há stack trace nem detalhe interno. O código permite tratar o caso.",
     limitsTitle: "Limites e idempotência",
     limits:
       "Há limites de tamanho e de taxa por operação. Operações de escrita aceitam Idempotency-Key para você repetir com segurança sem duplicar.",

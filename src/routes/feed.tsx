@@ -126,9 +126,9 @@ function Home() {
   const publishPost = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const content = draft.trim();
-    if (!content) return;
-    // Pagina sem HTML nao existe: o texto continua obrigatorio como titulo, mas o corpo e o HTML.
-    if (pageMode && !pageHtml.trim()) return;
+    // Pagina e uma coisa OU outra: o HTML e o conteudo e o texto do post nao e exigido. Num post
+    // comum, sim — nao existe post sem texto.
+    if (pageMode ? !pageHtml.trim() : !content) return;
 
     setPublishError(null);
     try {
@@ -138,11 +138,11 @@ function Home() {
         mediaIds = results.map((r) => r.mediaId);
       }
       await createPost.mutateAsync({
-        content,
+        content: pageMode ? "" : content,
         type: pageMode ? "PAGE" : postType,
         mediaIds,
         ...(pageMode ? { pageHtml } : {}),
-        mentionedUserIds,
+        mentionedUserIds: pageMode ? [] : mentionedUserIds,
       });
       setDraft("");
       setMentionedUserIds([]);
@@ -212,21 +212,23 @@ function Home() {
                 alt={profileUser?.name ?? texts.feed.you}
                 className="h-11 w-11"
               />
-              <MentionTextarea
-                value={draft}
-                onChange={(val, ids) => {
-                  setDraft(val);
-                  setMentionedUserIds(ids);
-                }}
-                placeholder={
-                  pageMode
-                    ? texts.feed.composer.pageTitlePlaceholder
-                    : texts.feed.composer.placeholder
-                }
-                className="flex-1 resize-none rounded-2xl border-border-soft bg-surface-1 px-3 py-2 text-[14px] font-light"
-                maxLength={1200}
-                toolbar
-              />
+
+              {/* No modo pagina o campo de texto sai de cena: a pagina e o conteudo, e pedir um
+                  texto "de post" junto faria a publicacao ser as duas coisas ao mesmo tempo. Quem
+                  quiser uma legenda escreve dentro do proprio HTML. */}
+              {!pageMode && (
+                <MentionTextarea
+                  value={draft}
+                  onChange={(val, ids) => {
+                    setDraft(val);
+                    setMentionedUserIds(ids);
+                  }}
+                  placeholder={texts.feed.composer.placeholder}
+                  className="flex-1 resize-none rounded-2xl border-border-soft bg-surface-1 px-3 py-2 text-[14px] font-light"
+                  maxLength={1200}
+                  toolbar
+                />
+              )}
             </div>
 
             {pageMode && (
@@ -408,8 +410,7 @@ function Home() {
                   size="sm"
                   className="rounded-full"
                   disabled={
-                    !draft.trim() ||
-                    (pageMode && !pageHtml.trim()) ||
+                    (pageMode ? !pageHtml.trim() : !draft.trim()) ||
                     createPost.isPending ||
                     upload.status === "uploading"
                   }

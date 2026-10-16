@@ -292,10 +292,13 @@ export function PostCard({ post }: PostCardProps) {
         </div>
       </header>
 
-      <RichText
-        content={post.content}
-        className="mt-4 whitespace-pre-line break-words text-[15px] font-light leading-relaxed text-text-strong"
-      />
+      {/* Post de pagina pode nao ter texto nenhum: sem paragrafo, so a pagina logo abaixo. */}
+      {post.content.trim() !== "" && (
+        <RichText
+          content={post.content}
+          className="mt-4 whitespace-pre-line break-words text-[15px] font-light leading-relaxed text-text-strong"
+        />
+      )}
 
       {post.editedAt && (
         <p className="mt-1 text-[11px] font-light text-text-subtle">
