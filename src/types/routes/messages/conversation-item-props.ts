@@ -4,4 +4,8 @@ export type ConversationItemProps = {
   conversation: Pick<Conversation, "participantIds" | "title" | "time" | "lastMessage" | "unread">;
   isActive: boolean;
   onSelect: () => void;
+  /** Modo de seleção em massa. */
+  selecting?: boolean;
+  selected?: boolean;
+  onToggle?: () => void;
 };

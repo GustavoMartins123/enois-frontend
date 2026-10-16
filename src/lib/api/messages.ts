@@ -28,6 +28,9 @@ export const messagesApi = {
 
   markAsRead: (conversationId: string) => api.post<void>(`/conversations/${conversationId}/read`),
 
+  /** "Apagar para mim" em massa: esconde as conversas só para quem chama. */
+  hideConversations: (ids: string[]) => api.post<{ hidden: number }>("/conversations/hide", { ids }),
+
   search: (q: string, limit = 20) =>
     api.get<PageResponse<Conversation>>(`/conversations/search${buildQuery({ q, limit })}`),
 };

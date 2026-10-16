@@ -17,6 +17,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { AppContainer } from "@/components/app-container";
+import { useToast } from "@/components/ui/toast";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/mensagens")({
@@ -33,11 +35,15 @@ function Mensagens() {
   const { conversation } = Route.useSearch();
   const currentUserId = getCurrentUserId();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [text, setText] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [inboxTab, setInboxTab] = useState<"all" | "jobs" | "people">("all");
+  const [selecting, setSelecting] = useState(false);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Veio de um link/perfil com uma conversa: abre ela direto.
@@ -114,6 +120,26 @@ function Mensagens() {
     },
   });
 
+  const hideSelected = useMutation({
+    mutationFn: () => messagesApi.hideConversations(Array.from(selected)),
+    onSuccess: () => {
+      setConfirmDelete(false);
+      setSelecting(false);
+      setSelected(new Set());
+      toast(texts.messages.deleted);
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    },
+    onError: () => toast(texts.communities.actionError, "error"),
+  });
+
+  const toggleSelected = (id: string) =>
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
   const markAsRead = useMutation({
     mutationFn: (conversationId: string) => messagesApi.markAsRead(conversationId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["conversations"] }),
@@ -159,14 +185,27 @@ function Mensagens() {
             <div className="flex items-center justify-between mb-3">
               <h1 className="text-lg font-semibold">{texts.messages.title}</h1>
 
-              <Button
-                size="sm"
-                variant="outline"
-                className="rounded-full"
-                onClick={() => setShowSearch(!showSearch)}
-              >
-                {showSearch ? texts.messages.back : texts.messages.new}
-              </Button>
+              <div className="flex gap-2">
+                {!selecting && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-full"
+                    onClick={() => setSelecting(true)}
+                  >
+                    {texts.messages.selectMode}
+                  </Button>
+                )}
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="rounded-full"
+                  onClick={() => setShowSearch(!showSearch)}
+                >
+                  {showSearch ? texts.messages.back : texts.messages.new}
+                </Button>
+              </div>
             </div>
             {showSearch ? (
               <div className="space-y-3">
@@ -234,6 +273,50 @@ function Mensagens() {
             ))}
           </div>
 
+          {selecting && (
+            <div className="flex flex-wrap items-center gap-2 border-b border-border bg-surface-2 px-3 py-2">
+              <button
+                type="button"
+                className="text-[12px] font-light text-primary hover:underline"
+                onClick={() =>
+                  setSelected(
+                    selected.size === visibleConversations.length
+                      ? new Set()
+                      : new Set(visibleConversations.map((c) => c.id)),
+                  )
+                }
+              >
+                {selected.size === visibleConversations.length
+                  ? texts.messages.clearSelection
+                  : texts.messages.selectAll}
+              </button>
+
+              <div className="ml-auto flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="rounded-full"
+                  onClick={() => {
+                    setSelecting(false);
+                    setSelected(new Set());
+                  }}
+                >
+                  {texts.messages.cancelSelection}
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="rounded-full"
+                  disabled={selected.size === 0 || hideSelected.isPending}
+                  onClick={() => setConfirmDelete(true)}
+                >
+                  {texts.messages.deleteSelected(selected.size)}
+                </Button>
+              </div>
+            </div>
+          )}
+
           <ul className="flex-1 overflow-y-auto overscroll-contain">
             {visibleConversations.length === 0 ? (
               <li className="p-4 text-center text-sm text-muted-foreground">
@@ -245,7 +328,14 @@ function Mensagens() {
                   key={c.id}
                   conversation={c}
                   isActive={c.id === (activeConversation?.id ?? "")}
+                  selecting={selecting}
+                  selected={selected.has(c.id)}
+                  onToggle={() => toggleSelected(c.id)}
                   onSelect={() => {
+                    if (selecting) {
+                      toggleSelected(c.id);
+                      return;
+                    }
                     setActiveId(c.id);
                     if (c.unread > 0) markAsRead.mutate(c.id);
                   }}
@@ -370,11 +460,22 @@ function Mensagens() {
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmDelete}
+        onOpenChange={setConfirmDelete}
+        title={texts.messages.deleteTitle}
+        description={texts.messages.deleteDescription}
+        confirmLabel={texts.messages.deleteConfirm}
+        destructive
+        pending={hideSelected.isPending}
+        onConfirm={() => hideSelected.mutate()}
+      />
     </AppContainer>
   );
 }
 
-function ConversationItem({ conversation, isActive, onSelect }: ConversationItemProps) {
+function ConversationItem({ conversation, isActive, onSelect, selecting, selected, onToggle }: ConversationItemProps) {
   const currentUserId = getCurrentUserId();
   const otherId = conversation.participantIds.find((id) => id !== currentUserId);
   const { data: otherUser } = useQuery({
@@ -390,9 +491,19 @@ function ConversationItem({ conversation, isActive, onSelect }: ConversationItem
       <button
         onClick={onSelect}
         className={`flex w-full items-center gap-3 px-4 py-3 text-left transition ${
-          isActive ? "bg-primary-soft" : "hover:bg-muted"
+          selected ? "bg-primary-soft" : isActive ? "bg-primary-soft" : "hover:bg-muted"
         }`}
       >
+        {selecting && (
+          <span
+            aria-hidden
+            className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border ${
+              selected ? "border-primary bg-primary text-primary-foreground" : "border-border-soft"
+            }`}
+          >
+            {selected ? "✓" : ""}
+          </span>
+        )}
         <Link to="/perfil/$username" params={{ username: otherUser?.username ?? otherId ?? "" }}>
           <UserAvatar src={otherUser?.avatar} alt={title} className="h-11 w-11 shrink-0" />
         </Link>
