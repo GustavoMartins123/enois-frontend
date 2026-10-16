@@ -163,7 +163,7 @@ function JobDetail() {
                 </p>
 
                 <p className="mt-1 text-[12px] font-light text-text-date">
-                  {formatPostedAt(job.postedAt)}
+                  {job.postedAt && formatPostedAt(job.postedAt)}
                 </p>
               </div>
             </header>

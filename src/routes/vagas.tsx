@@ -320,7 +320,7 @@ function Vagas() {
               <div className="flex items-start gap-3">
                 <Avatar className="h-12 w-12 rounded-xl">
                   {j.logo && <AvatarImage src={j.logo} alt={j.company} className="rounded-xl" />}
-                  <AvatarFallback className="rounded-xl">{j.company[0]}</AvatarFallback>
+                  <AvatarFallback className="rounded-xl">{(j.company ?? j.title ?? "?")[0]}</AvatarFallback>
                 </Avatar>
 
                 <div className="min-w-0 flex-1">
@@ -379,7 +379,7 @@ function Vagas() {
               </div>
 
               <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-xs text-muted-foreground">
-                <span>{formatPostedAt(j.postedAt)}</span>
+                {j.postedAt && <span>{formatPostedAt(j.postedAt)}</span>}
 
                 {/* wrap + ml-auto: em 320px os três botões descem em vez de estourar o card. */}
                 <div className="ml-auto flex flex-wrap gap-2">
