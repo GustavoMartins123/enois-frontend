@@ -28,10 +28,15 @@ export function buildPostShareMeta(input: {
   postUrl: string;
   /** Imagem de marca usada quando o post não tem mídia (endereço absoluto). */
   fallbackImageUrl: string;
+  /**
+   * Cartão desenhado pelo servidor com o TEXTO da página (endereço absoluto), só para posts do tipo
+   * página. É o que faz a miniatura mostrar o que a pessoa escreveu em vez da imagem de marca.
+   */
+  pagePreviewUrl?: string | null;
   /** Tipo e endereço da primeira mídia do post, quando houver (buscados à parte). */
   media?: { mimeType: string | null; cdnUrl: string | null } | null;
 }): ShareMeta {
-  const { post, postUrl, fallbackImageUrl, media } = input;
+  const { post, postUrl, fallbackImageUrl, pagePreviewUrl, media } = input;
   const author = post.authorName || `@${post.authorUsername}`;
   const text = collapse(post.content);
 
@@ -52,18 +57,26 @@ export function buildPostShareMeta(input: {
   const mimeType = media?.mimeType ?? "";
   const isVideo = mimeType.startsWith("video/");
 
-  const imageUrl = !mediaUrl
-    ? fallbackImageUrl
-    : isVideo
-      ? `${mediaUrl}/ik-thumbnail.jpg?${VIDEO_THUMB_TRANSFORM}`
-      : `${mediaUrl}?${IMAGE_TRANSFORM}`;
+  // Página: o cartão do servidor (texto da página). Post comum: a mídia, recortada; sem mídia, a marca.
+  const imageUrl =
+    isPage && pagePreviewUrl
+      ? pagePreviewUrl
+      : !mediaUrl
+        ? fallbackImageUrl
+        : isVideo
+          ? `${mediaUrl}/ik-thumbnail.jpg?${VIDEO_THUMB_TRANSFORM}`
+          : `${mediaUrl}?${IMAGE_TRANSFORM}`;
 
   return {
     title,
     description,
     url: postUrl,
     imageUrl,
-    imageAlt: isVideo ? `Vídeo publicado por ${author}` : `Publicação de ${author}`,
+    imageAlt: isPage
+      ? `Página publicada por ${author}`
+      : isVideo
+        ? `Vídeo publicado por ${author}`
+        : `Publicação de ${author}`,
     videoUrl: isVideo ? (mediaUrl ?? null) : null,
     type: isVideo ? "video.other" : "article",
   };
