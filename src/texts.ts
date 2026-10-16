@@ -25,6 +25,9 @@ const common = {
 export const texts = {
   common,
 
+  /** Origem pública usada para montar links absolutos (miniatura de compartilhamento). */
+  siteUrl: import.meta.env.VITE_SITE_URL ?? "https://enois.ia.br",
+
   brand: {
     name: "Énóis",
     prefix: "É",
@@ -1446,6 +1449,7 @@ export const texts = {
 
   post: {
     seoTitle: "Publicação · Énóis",
+    seoDescription: "Veja esta publicação no Énóis — rede profissional gratuita, sem anúncios.",
     back: "Voltar",
     loading: "Carregando publicação...",
     notFound: "Publicação não encontrada.",

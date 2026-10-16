@@ -4,7 +4,8 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { texts } from "@/texts";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
-import { feedApi } from "@/lib/api";
+import { feedApi, mediaApi } from "@/lib/api";
+import { buildPostShareMeta } from "@/lib/open-graph";
 
 import { AppContainer } from "@/components/app-container";
 import { PostCard } from "@/components/post-card";
@@ -14,7 +15,74 @@ export const Route = createFileRoute("/post/$postId")({
   // Sem `beforeLoad: requireAuth`: o post e o destino do link compartilhado e precisa abrir para
   // quem recebeu. As acoes (reagir, comentar, salvar, compartilhar) e que pedem login.
 
-  head: () => ({ meta: [{ title: texts.post.seoTitle }] }),
+  /**
+   * O rastreador do WhatsApp/Telegram/X só vê o HTML que sai do servidor: para a miniatura ter o
+   * texto do post e a imagem, esses dados precisam estar prontos no `<head>` — por isso a busca
+   * acontece no loader (servidor), não no `useQuery` do componente.
+   *
+   * Link de post apagado ou inexistente cai no título genérico em vez de quebrar a página.
+   */
+  loader: async ({ params }) => {
+    try {
+      const post = await feedApi.get(params.postId);
+      const firstMediaId = post.mediaIds?.[0];
+      // Só a primeira mídia, e só o que a miniatura precisa (tipo + endereço).
+      const media = firstMediaId
+        ? await mediaApi
+            .get(firstMediaId)
+            .then((asset) => ({ mimeType: asset.mimeType, cdnUrl: asset.cdnUrl }))
+            .catch(() => null)
+        : null;
+      return { post, media };
+    } catch {
+      return { post: null, media: null };
+    }
+  },
+  head: ({ loaderData, params }) => {
+    const post = loaderData?.post;
+    if (!post) {
+      return {
+        meta: [
+          { title: texts.post.seoTitle },
+          { name: "description", content: texts.post.seoDescription },
+        ],
+      };
+    }
+
+    const share = buildPostShareMeta({
+      post,
+      postUrl: `${texts.siteUrl}/post/${params.postId}`,
+      fallbackImageUrl: `${texts.siteUrl}/icons/icon-512.png`,
+      media: loaderData?.media ?? null,
+    });
+
+    return {
+      meta: [
+        { title: share.title },
+        { name: "description", content: share.description },
+        { property: "og:type", content: share.type },
+        { property: "og:site_name", content: texts.brand.name },
+        { property: "og:title", content: share.title },
+        { property: "og:description", content: share.description },
+        { property: "og:url", content: share.url },
+        { property: "og:image", content: share.imageUrl },
+        { property: "og:image:width", content: "1200" },
+        { property: "og:image:height", content: "630" },
+        { property: "og:image:alt", content: share.imageAlt },
+        ...(share.videoUrl
+          ? [
+              { property: "og:video", content: share.videoUrl },
+              { property: "og:video:secure_url", content: share.videoUrl },
+              { property: "og:video:type", content: "video/mp4" },
+            ]
+          : []),
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:title", content: share.title },
+        { name: "twitter:description", content: share.description },
+        { name: "twitter:image", content: share.imageUrl },
+      ],
+    };
+  },
   component: PostDetail,
 });
 
