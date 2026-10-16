@@ -593,7 +593,7 @@ export const texts = {
       pagePreview: "Pré-visualizar",
       pageEditHtml: "Editar HTML",
       pageDescription:
-        "Uma página é uma coisa ou outra: o HTML dela é o conteúdo do post, sem texto separado. Imagem, vídeo e áudio por link https tocam dentro dela; scripts, formulários e requisições externas não rodam. Documento (PDF) vira link e abre no visualizador do navegador.",
+        "Uma página é uma coisa ou outra: o HTML dela é o conteúdo do post, sem texto separado. Imagem, vídeo e áudio por link https tocam dentro dela; scripts, formulários e requisições externas não rodam. Link de YouTube, Vimeo, Twitch, Dailymotion ou Spotify vira player embutido logo abaixo da página — o quadro em si não executa script, então o player é montado pelo próprio énóis. Documento (PDF) vira link e abre no visualizador do navegador.",
       pageEmpty: "Cole um HTML para ver a pré-visualização.",
     },
     tabs: {

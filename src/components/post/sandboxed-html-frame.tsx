@@ -72,7 +72,11 @@ table{border-collapse:collapse;max-width:100%;font-size:13px}
 th,td{border:1px solid #e3e3e3;padding:5px 8px;text-align:left}
 pre{overflow-x:auto;background:#f5f5f5;padding:10px;border-radius:8px}
 code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px}
-blockquote{margin:.6em 0;padding-left:12px;border-left:3px solid #ddd;color:#555}`;
+blockquote{margin:.6em 0;padding-left:12px;border-left:3px solid #ddd;color:#555}
+/* Onde vai um player embutido: o quadro não roda script, então o vídeo/áudio aparece logo abaixo
+   da página. Aqui fica a marca do lugar dele, para a página não perder a referência visual. */
+[data-enois-embed]{display:block;aspect-ratio:16/9;background:#f2f2f5;border-radius:10px;
+border:1px dashed #cfcfd6;margin:.8em 0}`;
 
 function buildDocument(html: string): string {
   return [

@@ -5,8 +5,11 @@ import { texts } from "@/texts";
 import type { PostPageProps } from "@/types/components/post/post-page-props";
 import { Maximize2 } from "lucide-react";
 
+import { extractPageEmbeds } from "@/lib/post-page/embeds";
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
+import { EmbedPlayer } from "./embed-player";
 import { SandboxedHtmlFrame } from "./sandboxed-html-frame";
 
 /**
@@ -18,12 +21,22 @@ import { SandboxedHtmlFrame } from "./sandboxed-html-frame";
  */
 export function PostPage({ html }: PostPageProps) {
   const [expanded, setExpanded] = useState(false);
+  // Player embutido fica fora do quadro (que roda sem script), logo abaixo, na mesma largura.
+  const embeds = extractPageEmbeds(html);
 
   return (
     <div className="mt-4">
       <div className={PHONE_FRAME_CLASS}>
         <SandboxedHtmlFrame html={html} title={texts.posts.page.frameTitle} className="h-full" />
       </div>
+
+      {embeds.length > 0 && (
+        <div className={`mt-3 space-y-3 ${PHONE_FRAME_CLASS.split(" ")[0]}`}>
+          {embeds.map((embed) => (
+            <EmbedPlayer key={`${embed.type}-${embed.id}`} type={embed.type} id={embed.id} />
+          ))}
+        </div>
+      )}
 
       <div className="mt-2 flex justify-end">
         <button
