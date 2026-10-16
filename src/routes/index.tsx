@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 
+import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
@@ -12,6 +13,8 @@ import {
   Sparkles,
   Users,
 } from "lucide-react";
+
+import { statsApi } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
 
@@ -36,6 +39,15 @@ export const Route = createFileRoute("/")({
 });
 
 function Landing() {
+  // Contador de usuários ativos: cache do servidor manda (frescor de ~10 min), então o front
+  // guarda o valor pelo mesmo tempo em vez de reperguntar a cada navegação.
+  const { data: stats } = useQuery({
+    queryKey: ["stats", "community"],
+    queryFn: () => statsApi.community(),
+    staleTime: 10 * 60_000,
+    retry: 1,
+  });
+
   useHashScroll();
 
   return (
@@ -157,6 +169,29 @@ function Landing() {
               <>{texts.landing.hero.benefits.freeForever}</>
             </span>
           </div>
+
+          {/* Contador da comunidade: número agregado, com a janela dita em voz alta ("nos últimos
+              30 dias") — é o que evita o número parecer cadastro total. Vem de cache no servidor,
+              então não custa consulta por visita; se a chamada falhar, a linha simplesmente não
+              aparece (a landing não depende disso). */}
+          {stats && (
+            <p className="mt-8 inline-flex items-center gap-2 rounded-full border border-border bg-card/70 px-4 py-1.5 text-xs text-muted-foreground backdrop-blur">
+              <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-primary" />
+
+              <>
+                {texts.landing.community.active(
+                  stats.activeUsers.toLocaleString("pt-BR"),
+                  stats.windowDays,
+                )}
+              </>
+
+              <span aria-hidden className="text-border">
+                ·
+              </span>
+
+              <>{texts.landing.community.total(stats.totalUsers.toLocaleString("pt-BR"))}</>
+            </p>
+          )}
         </div>
       </section>
 

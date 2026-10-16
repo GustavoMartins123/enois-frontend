@@ -452,6 +452,15 @@ export const texts = {
         "Uma rede profissional diferente. Sem paywalls, sem métricas de vaidade. Apenas conexões reais, mentoria e conhecimento compartilhado — tudo gratuito para sempre.",
       ogDescription: "Sua carreira merece um lugar seguro e gratuito para crescer.",
     },
+    /**
+     * Contador da comunidade. A janela vai escrita no texto de propósito: o número é de quem usou
+     * a plataforma no período, não de contas criadas — sem isso o visitante lê "usuários" e
+     * entende "cadastros".
+     */
+    community: {
+      active: (count: string, days: number) => `${count} pessoas ativas nos últimos ${days} dias`,
+      total: (count: string) => `${count} contas na plataforma`,
+    },
     nav: {
       philosophy: "Filosofia",
       features: "Recursos",

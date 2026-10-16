@@ -18,4 +18,5 @@ export { rankingApi } from "./ranking";
 export { usersApi } from "./users";
 export { recommendationsApi } from "./recommendations";
 export { supportApi } from "./support";
+export { statsApi } from "./stats";
 export { api, ApiError, buildQuery, clearSession, getSessionToken } from "../api-client";
