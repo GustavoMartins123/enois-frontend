@@ -25,7 +25,9 @@ export function InfiniteScroll({
       ([entry]) => {
         if (entry.isIntersecting) onLoadMore();
       },
-      { rootMargin: "400px" },
+      // Busca a proxima pagina ~1 viewport ANTES do fim, para ja haver pagina em cache
+      // quando o usuario chegar ao ultimo item (sem esperar a requisicao no fim).
+      { rootMargin: "1000px" },
     );
 
     observer.observe(element);
