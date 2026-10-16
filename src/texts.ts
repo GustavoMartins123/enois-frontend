@@ -1289,6 +1289,45 @@ export const texts = {
     loadingOlder: "Carregando...",
   },
 
+  developers: {
+    seoTitle: "API do Énóis · Desenvolvedores",
+    seoDescription: "Documentação da API pública do Énóis: autenticação, endpoints, paginação, erros e políticas.",
+    title: "API do Énóis",
+    subtitle: "Construa clientes, ferramentas e integrações para o Énóis. Esta é a documentação oficial.",
+    philosophyTitle: "Filosofia",
+    philosophy:
+      "A API existe para ampliar o acesso à informação e automatizar processos — nunca para fabricar interação social. Publicar conteúdo automaticamente (IA, bots, integrações) é proibido; criar e agendar posts pela funcionalidade oficial, com você no controle, é permitido.",
+    baseUrlTitle: "Base da API",
+    baseUrlHint: "Todas as rotas ficam sob",
+    baseUrlNote:
+      "Respostas JSON. Timestamps em UTC (ISO-8601). Identificadores são estáveis (prefixados por tipo).",
+    authTitle: "Autenticação",
+    authIntro:
+      "As rotas públicas não pedem credencial. As demais usam a sessão do Énóis (a mesma do app):",
+    authHeader: "Envie a sessão em todas as chamadas autenticadas:",
+    authNote:
+      "Cada pessoa só acessa o que é permitido à própria conta. Nunca compartilhe credenciais com integrações — elas nunca devem ver a sua senha.",
+    endpointsTitle: "Endpoints",
+    endpointsIntro: "Grupos principais (todos sob /api):",
+    endpointsNote:
+      "A referência completa, gerada e validada contra o código (OpenAPI), está em preparação — nada aqui é fictício.",
+    paginationTitle: "Paginação",
+    pagination: "Listas paginam por cursor (não por offset). Use o nextCursor da resposta anterior:",
+    errorsTitle: "Erros",
+    errors: "Erros têm código e mensagem estáveis, e o HTTP status correspondente:",
+    errorsNote: "Em produção não há stack trace nem detalhe interno. O código permite tratar o caso.",
+    limitsTitle: "Limites e idempotência",
+    limits:
+      "Há limites de tamanho e de taxa por operação. Operações de escrita aceitam Idempotency-Key para você repetir com segurança sem duplicar.",
+    publishingTitle: "Política de publicações",
+    publishing:
+      "Permitido: criar e agendar posts pela funcionalidade oficial do Énóis, com controle humano. Proibido: publicar por IA, bots ou integrações (inclusive por endpoints alternativos, tarefas agendadas ou webhooks). Automação proibida leva a banimento após verificação.",
+    statusTitle: "Estado e contato",
+    status:
+      "Esta é a versão inicial. Escopos de terceiros (OAuth) e o portal completo estão em construção — documentamos apenas o que já existe.",
+    securityLinkPrefix: "Vulnerabilidades: reporte em",
+  },
+
   identity: {
     title: "Identidade verificada",
     subtitle:
