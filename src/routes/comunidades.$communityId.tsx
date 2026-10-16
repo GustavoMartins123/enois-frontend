@@ -3,10 +3,26 @@ import { type ChangeEvent, type FormEvent, useCallback, useRef, useState } from 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 
+import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
+import { POST_TYPES } from "@/constants/post-types";
 import { texts } from "@/texts";
+import type { CreatePostInput } from "@/types/application/feed/create-post-input";
+import type { PostView } from "@/types/application/feed/post-view";
 import type { CommunityCropPurpose } from "@/types/routes/communities/community-crop-purpose";
 import type { EditCommunityFormProps } from "@/types/routes/communities/edit-community-form-props";
-import { ArrowLeft, Camera, Crown, Send, Settings, Trash2, Users } from "lucide-react";
+import type { MediaItem } from "@/types/routes/feed/media-item";
+import {
+  ArrowLeft,
+  Camera,
+  ChevronDown,
+  Crown,
+  Paperclip,
+  Send,
+  Settings,
+  Trash2,
+  Users,
+  X,
+} from "lucide-react";
 
 import { communitiesApi, feedApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
@@ -17,8 +33,6 @@ import { useMediaUpload } from "@/lib/use-media-upload";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { CommunityFavoriteButton } from "@/components/community-favorite-button";
-import { useToast } from "@/components/ui/toast";
 import {
   Dialog,
   DialogContent,
@@ -29,8 +43,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
+import { CommunityFavoriteButton } from "@/components/community-favorite-button";
+import { HtmlEditor } from "@/components/html-editor";
 import { ImageCropDialog } from "@/components/image-crop-dialog";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
@@ -61,6 +78,16 @@ function CommunityDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [draft, setDraft] = useState("");
+  // Mesmos recursos do composer do feed: tipo de publicação, mídia e página em HTML.
+  const [postType, setPostType] = useState<PostView["type"]>("INSIGHT");
+  const [media, setMedia] = useState<MediaItem[]>([]);
+  const [pageHtml, setPageHtml] = useState("");
+  const [publishError, setPublishError] = useState<string | null>(null);
+  const [typePickerOpen, setTypePickerOpen] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const upload = useMediaUpload();
+  const pageMode = postType === "PAGE";
+  const currentType = POST_TYPES.find((option) => option.id === postType) ?? POST_TYPES[0];
   const [editOpen, setEditOpen] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
@@ -130,24 +157,67 @@ function CommunityDetail() {
   });
 
   const createPost = useMutation({
-    mutationFn: (content: string) =>
-      feedApi.create({ type: "INSIGHT", content, communityId: community.id }),
+    mutationFn: (input: CreatePostInput) => feedApi.create(input),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["community", community.id, "feed"] });
       queryClient.invalidateQueries({ queryKey: ["feed"] });
       setDraft("");
+      setMedia([]);
+      setPageHtml("");
+      setPostType("INSIGHT");
+      setPublishError(null);
     },
+    onError: (error) =>
+      setPublishError(error instanceof Error ? error.message : texts.feed.composer.publishError),
   });
+
+  const publish = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const content = draft.trim();
+    if (pageMode ? !pageHtml.trim() : !content) return;
+
+    setPublishError(null);
+    try {
+      let mediaIds: string[] = [];
+      if (!pageMode && media.length > 0) {
+        const results = await upload.uploadAll(media.map((item) => ({ file: item.file })));
+        mediaIds = results.map((result) => result.mediaId);
+      }
+      await createPost.mutateAsync({
+        type: postType,
+        content: pageMode ? "" : content,
+        communityId: community.id,
+        mediaIds,
+        ...(pageMode ? { pageHtml } : {}),
+      });
+    } catch (error) {
+      setPublishError(error instanceof Error ? error.message : texts.feed.composer.publishError);
+    }
+  };
+
+  const handleMediaSelect = (event: ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    for (const file of Array.from(files)) {
+      const isVideo = file.type.startsWith("video/");
+      const isImage = file.type.startsWith("image/");
+      if (!isVideo && !isImage) continue;
+
+      const hasImages = media.some((item) => item.type === "image");
+      const hasVideo = media.some((item) => item.type === "video");
+      if (isVideo && (hasImages || hasVideo || media.length >= 1)) break;
+      if (isImage && hasVideo) break;
+      if (isImage && media.length >= 4) break;
+
+      const preview = URL.createObjectURL(file);
+      setMedia((current) => [...current, { type: isVideo ? "video" : "image", file, preview }]);
+    }
+    event.target.value = "";
+  };
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: ["community", community.id] });
-  };
-
-  const handlePost = (e: FormEvent) => {
-    e.preventDefault();
-    const content = draft.trim();
-    if (!content) return;
-    createPost.mutate(content);
   };
 
   const isMember = live.joined;
@@ -342,26 +412,169 @@ function CommunityDetail() {
         />
 
         {isMember && (
-          <form onSubmit={handlePost} className="surface-card p-5">
-            <Textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              placeholder={texts.communities.detail.composerPlaceholder}
-              className="min-h-20 resize-none rounded-2xl border-border bg-muted/40 text-sm"
-              maxLength={1200}
-            />
+          <form onSubmit={publish} className="surface-card p-5">
+            {!pageMode && (
+              <Textarea
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                placeholder={texts.communities.detail.composerPlaceholder}
+                className="min-h-20 resize-none rounded-2xl border-border bg-muted/40 text-sm"
+                maxLength={1200}
+              />
+            )}
 
-            <div className="mt-3 flex justify-end">
+            {pageMode && (
+              <div className="mt-3 overflow-hidden rounded-2xl border border-border-soft bg-surface-1 p-3">
+                <HtmlEditor
+                  id="community-page-html"
+                  value={pageHtml}
+                  onChange={setPageHtml}
+                  label={texts.feed.composer.pageLabel}
+                  description={texts.feed.composer.pageDescription}
+                  placeholder={texts.feed.composer.pagePlaceholder}
+                  emptyPreview={texts.feed.composer.pageEmpty}
+                  frameTitle={texts.posts.page.frameTitle}
+                  maxLength={PAGE_HTML_MAX_LENGTH}
+                  innerPadding={false}
+                  previewClassName="-mx-3 -mb-3 mt-3 h-[360px] w-full"
+                />
+              </div>
+            )}
+
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setTypePickerOpen((open) => !open)}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-normal transition ${
+                      typePickerOpen
+                        ? "bg-primary text-primary-foreground"
+                        : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
+                    }`}
+                  >
+                    <currentType.icon className="h-3.5 w-3.5" />
+
+                    <>
+                      {texts.feed.composer.typePicker.label}: {currentType.label}
+                    </>
+
+                    <ChevronDown
+                      className={`h-3.5 w-3.5 transition ${typePickerOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+
+                  {typePickerOpen && (
+                    <div className="absolute bottom-full left-0 z-40 mb-1 w-[min(22rem,80vw)] rounded-2xl border border-border-soft bg-popover p-2 shadow-lg">
+                      <div className="flex flex-wrap gap-1.5">
+                        {POST_TYPES.map((option) => (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() => {
+                              setPostType(option.id as PostView["type"]);
+                              setTypePickerOpen(false);
+                            }}
+                            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-normal transition ${
+                              option.id === postType
+                                ? "bg-primary text-primary-foreground"
+                                : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
+                            }`}
+                          >
+                            <option.icon className="h-3.5 w-3.5" />
+
+                            <>{option.label}</>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Anexo: mesmo clipe do resto do composer, com a contagem quando já tem arquivo. */}
+                {!pageMode && (
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    title={texts.feed.composer.media}
+                    className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-normal transition ${
+                      media.length > 0
+                        ? "bg-primary text-primary-foreground"
+                        : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
+                    }`}
+                  >
+                    <Paperclip className="h-3.5 w-3.5" />
+
+                    <>
+                      {media.length > 0
+                        ? texts.feed.composer.mediaCount(media.length)
+                        : texts.feed.composer.media}
+                    </>
+                  </button>
+                )}
+
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*,video/*"
+                  multiple
+                  className="hidden"
+                  onChange={handleMediaSelect}
+                />
+              </div>
+
               <Button
                 size="sm"
                 className="rounded-full gap-1.5"
-                disabled={!draft.trim() || createPost.isPending}
+                disabled={
+                  (pageMode ? !pageHtml.trim() : !draft.trim()) ||
+                  createPost.isPending ||
+                  upload.status === "uploading"
+                }
               >
                 <Send className="h-4 w-4" />
 
-                <>{createPost.isPending ? texts.common.publishing : texts.common.publish}</>
+                <>
+                  {createPost.isPending || upload.status === "uploading"
+                    ? upload.status === "uploading"
+                      ? texts.common.sending
+                      : texts.common.publishing
+                    : texts.common.publish}
+                </>
               </Button>
             </div>
+
+            {media.length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {media.map((item, index) => (
+                  <div
+                    key={index}
+                    className="relative h-20 w-20 overflow-hidden rounded-xl border border-border-soft"
+                  >
+                    <img src={item.preview} alt="" className="h-full w-full object-cover" />
+
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setMedia((current) => {
+                          URL.revokeObjectURL(current[index].preview);
+                          return current.filter((_, i) => i !== index);
+                        })
+                      }
+                      className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-surface-card/80 text-text-strong"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {publishError && (
+              <p className="mt-2 rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm font-normal text-destructive">
+                {publishError}
+              </p>
+            )}
           </form>
         )}
 
