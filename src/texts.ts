@@ -1258,6 +1258,8 @@ export const texts = {
     whoProcesses:
       "Quem processa os dados é o provedor de identidade. O Énóis recebe apenas a confirmação do resultado.",
     badgeLabel: "Identidade verificada",
+    resultOk: "Identidade verificada com sucesso.",
+    resultError: "Não foi possível concluir a verificação. Você pode tentar de novo.",
     badgeHint:
       "Identidade confirmada por um provedor. Não significa que a pessoa é confiável em tudo.",
     dataNotice:
