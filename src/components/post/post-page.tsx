@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { CONTENT_ORIGIN, HAS_CONTENT_ORIGIN } from "@/constants/content-origin";
-import { PHONE_FRAME_CLASS } from "@/constants/post-page";
+import { PHONE_COLUMN_CLASS, PHONE_FRAME_CLASS } from "@/constants/post-page";
 import { texts } from "@/texts";
 import type { PostPageProps } from "@/types/components/post/post-page-props";
 import { Maximize2 } from "lucide-react";
@@ -66,7 +66,7 @@ export function PostPage({ postId, html }: PostPageProps) {
             <DialogTitle>{texts.posts.page.dialogTitle}</DialogTitle>
           </DialogHeader>
 
-          <div className="mx-auto w-full max-w-[390px]">
+          <div className={PHONE_COLUMN_CLASS}>
             {pageUrl ? (
               <iframe
                 title={texts.posts.page.frameTitle}

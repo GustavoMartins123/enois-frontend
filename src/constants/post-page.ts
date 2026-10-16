@@ -9,16 +9,18 @@
 export const PAGE_HTML_MAX_LENGTH = 20_000;
 
 /**
- * O quadro da página é uma tela de celular, não uma faixa larga.
+ * Largura da coluna da página: 450px, para a página cobrir a largura do post.
  *
- * Duas consequências práticas: o HTML renderiza no mesmo viewport estreito que a maioria das
- * pessoas vai usar (então layout, quebra de linha e media queries se comportam como no celular) e
- * o resultado cabe inteiro num print — uma página larga obrigaria a rolar para tirar a foto.
- * A largura é fixa e a altura vem por proporção, então em tela pequena o quadro encolhe junto, sem
- * deixar de ser uma tela de celular.
+ * Continua sendo um viewport estreito — o HTML se comporta como numa tela de celular (quebra de
+ * linha, media queries, mídia em largura cheia) e o resultado cabe inteiro num print. Em tela menor
+ * o quadro encolhe junto, mantendo a proporção.
  */
-export const PHONE_FRAME_WIDTH = 390;
-export const PHONE_FRAME_HEIGHT = 780;
+export const PHONE_FRAME_WIDTH = 450;
+/** Mesma proporção de antes (1:2), agora na largura nova. */
+export const PHONE_FRAME_HEIGHT = 900;
 
-/** Classe do quadro em proporção de celular, centralizado na largura disponível. */
-export const PHONE_FRAME_CLASS = "mx-auto w-full max-w-[390px] aspect-[390/780] h-auto min-h-0";
+/** Coluna da página: a largura que o quadro e os players logo abaixo dele compartilham. */
+export const PHONE_COLUMN_CLASS = "mx-auto w-full max-w-[450px]";
+
+/** O quadro em si: a coluna mais a proporção de tela. */
+export const PHONE_FRAME_CLASS = `${PHONE_COLUMN_CLASS} aspect-[390/780] h-auto min-h-0`;
