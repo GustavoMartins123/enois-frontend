@@ -11,6 +11,8 @@ export type Profile = {
   bio: string | null;
   /** Bio em HTML/CSS já sanitizada; quando presente, o perfil mostra ela no lugar do texto. */
   bioHtml?: string | null;
+  /** Capa em HTML/CSS já sanitizada; quando presente, ocupa o lugar da imagem da capa. */
+  bannerHtml?: string | null;
   skills: string[];
   goals: string[];
   availability: string | null;

@@ -56,6 +56,7 @@ import { EditProfileDialog } from "@/components/edit-profile-dialog";
 import { ImageCropDialog } from "@/components/image-crop-dialog";
 import { PostCard } from "@/components/post-card";
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
+import { ProfileBannerDialog } from "@/components/profile-banner-dialog";
 import { ProfileBioDialog } from "@/components/profile-bio-dialog";
 import { UserAvatar } from "@/components/user-avatar";
 
@@ -113,6 +114,8 @@ function Profile() {
   const [recommendOpen, setRecommendOpen] = useState(false);
   const [recommendComment, setRecommendComment] = useState("");
   const [appearanceOpen, setAppearanceOpen] = useState(false);
+  // A capa tem duas formas (foto ou HTML/CSS): o dialogo escolhe, e o clique na capa abre ele.
+  const [bannerOpen, setBannerOpen] = useState(false);
 
   const { data: liveProfile } = useQuery({
     queryKey: ["profile", loaderUser.username],
@@ -246,7 +249,15 @@ function Profile() {
       <div className="space-y-6">
         <div className="rounded-2xl border border-border-soft bg-surface-card overflow-hidden">
           <div className="group relative">
-            {user.banner ? (
+            {user.bannerHtml ? (
+              // Capa em HTML/CSS: mesmo espaço da foto (mesmas classes), sem moldura própria — quem
+              // recorta é o card, e o quadro já vem com sandbox sem scripts.
+              <SandboxedHtmlFrame
+                html={user.bannerHtml}
+                title={texts.profile.bannerHtml.frameTitle}
+                className="h-40 w-full rounded-none border-0 shadow-none sm:h-52"
+              />
+            ) : user.banner ? (
               <img
                 src={resolveCdnUrl(user.banner)}
                 alt=""
@@ -261,7 +272,7 @@ function Profile() {
             {isOwnProfile && (
               <button
                 type="button"
-                onClick={() => bannerRef.current?.click()}
+                onClick={() => setBannerOpen(true)}
                 className="absolute inset-0 flex items-center justify-center bg-black/30 text-white transition md:opacity-0 md:group-hover:opacity-100"
                 disabled={bannerUpload.status === "uploading"}
               >
@@ -322,6 +333,17 @@ function Profile() {
                         <>{texts.profile.editProfile}</>
                       </Button>
                     </EditProfileDialog>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full gap-1.5"
+                      onClick={() => setBannerOpen(true)}
+                    >
+                      <Palette className="h-4 w-4" />
+
+                      <>{texts.profile.bannerHtml.action}</>
+                    </Button>
 
                     <ProfileBioDialog
                       initialHtml={user.bioHtml ?? null}

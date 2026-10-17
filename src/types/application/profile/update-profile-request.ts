@@ -12,6 +12,7 @@ export type UpdateProfileRequest = Partial<
     | "banner"
     | "bio"
     | "bioHtml"
+    | "bannerHtml"
     | "skills"
     | "goals"
     | "availability"
