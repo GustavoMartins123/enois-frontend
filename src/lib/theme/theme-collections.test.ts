@@ -40,16 +40,6 @@ describe("coleções temáticas", () => {
     }
   });
 
-  it("tema só-claro no modo escuro: tokens claros no seletor .dark, texto incluído", () => {
-    const win95 = resolveThemeCollection("win95");
-    expect(win95).not.toBeNull();
-    const css = buildCollectionCss(win95!, "dark");
-    expect(css).toContain('html:root.dark[data-theme="win95"]');
-    expect(css).toContain("--background: #c0c0c0");
-    expect(css).toContain("--text-strong: #0a0a0a");
-    expect(css).not.toContain('html:root[data-theme="win95"] {');
-  });
-
   it("tema só-escuro no modo claro: os tokens escuros valem nos dois modos", () => {
     const terminal = resolveThemeCollection("terminal");
     expect(terminal).not.toBeNull();
@@ -96,4 +86,46 @@ describe("coleções temáticas", () => {
       expect(collection.preview.onPrimary).toBeTruthy();
     }
   });
+});
+
+describe("modo claro/escuro com coleção ativa", () => {
+  it("tema com variante escura troca o CSS quando o modo muda", () => {
+    const metro = resolveThemeCollection("metro")!;
+    const light = buildCollectionCss(metro, "light");
+    const dark = buildCollectionCss(metro, "dark");
+    expect(light).toContain('html:root[data-theme="metro"]');
+    expect(light).toContain("--background: #ffffff");
+    expect(dark).toContain('html:root.dark[data-theme="metro"]');
+    expect(dark).toContain("--background: #171717");
+    expect(light).not.toBe(dark);
+  });
+});
+
+it("todo tema de identidade clara tem variante escura com fundo diferente", () => {
+  const claros = ["win95", "win98", "win2000", "luna", "y2k", "neumorfismo"];
+  for (const id of claros) {
+    const collection = resolveThemeCollection(id);
+    expect(collection, id).not.toBeNull();
+    expect(collection!.tokens.dark, `${id} sem variante escura`).toBeDefined();
+    expect(collection!.tokens.dark!["--background"]).not.toBe(
+      collection!.tokens.light["--background"],
+    );
+  }
+});
+
+it("temas escuros por natureza mantêm a mesma cara nos dois modos (de propósito)", () => {
+  for (const id of ["terminal", "vaporwave", "synthwave"]) {
+    const collection = resolveThemeCollection(id)!;
+    const light = buildCollectionCss(collection, "light");
+    const dark = buildCollectionCss(collection, "dark");
+    const backgroundOf = (css: string) => css.match(/--background: ([^;]+);/)?.[1];
+    expect(backgroundOf(light)).toBe(backgroundOf(dark));
+  }
+});
+
+it("o relevo dos clássicos segue o modo via variável, não cor literal", () => {
+  const win95 = resolveThemeCollection("win95")!;
+  expect(win95.css).toContain("var(--bevel-light)");
+  expect(win95.tokens.light["--bevel-light"]).toBe("#ffffff");
+  expect(win95.tokens.dark!["--bevel-light"]).not.toBe("#ffffff");
 });

@@ -82,18 +82,27 @@ function scopedCss(id: string, rules: string[]): string {
     .join("\n");
 }
 
-/** Interface clássica Win32: cinza de face, relevo rígido, sem sombra difusa. */
-const WIN95_CSS = scopedCss("win95", [
-  ".bg-surface-card, .bg-card, .bg-popover { box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #ffffff, inset -2px -2px #808080, inset 2px 2px #dfdfdf }",
-  ".bg-primary { box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #4a6ec8, inset -2px -2px #000040 }",
-]);
+/**
+ * Relevos e brilhos que dependem do modo não levam cor literal: o CSS referencia
+ * variáveis (`--bevel-*`, `--neu-*`) que cada modo define nos seus tokens — é o
+ * que faz o mesmo relevo acertar no claro e no escuro sem duplicar regra.
+ */
+const BEVEL_RULE_CARD =
+  ".bg-surface-card, .bg-card, .bg-popover { box-shadow: inset -1px -1px var(--bevel-dark), inset 1px 1px var(--bevel-light), inset -2px -2px var(--bevel-dark-2), inset 2px 2px var(--bevel-light-2) }";
+const BEVEL_RULE_BUTTON =
+  ".bg-primary { box-shadow: inset -1px -1px var(--bevel-dark), inset 1px 1px var(--bevel-light) }";
+const BEVEL_RULE_SOFT =
+  ".bg-surface-card, .bg-card, .bg-popover { box-shadow: inset -1px -1px var(--bevel-dark), inset 1px 1px var(--bevel-light) }";
 
 /**
  * Coleção temática: identidades visuais completas, uma por entrada.
  *
  * Cada tema é dados — tokens por modo e, quando precisa, CSS estrutural próprio.
  * Nenhum componente da aplicação conhece tema: quem respeita os tokens respeita
- * todos os temas, e um tema novo entra aqui sem tocar em mais nada.
+ * todos os temas, e um tema novo entra aqui sem tocar em mais nada. Temas com
+ * identidade presa a um só modo (Terminal, Vaporwave e Synthwave são escuros por
+ * natureza) repetem os mesmos tokens nos dois modos — o botão claro/escuro não
+ * muda a cara deles de propósito, e a descrição da galeria avisa.
  */
 export const THEME_COLLECTIONS: ThemeCollection[] = [
   {
@@ -116,9 +125,36 @@ export const THEME_COLLECTIONS: ThemeCollection[] = [
         radius: "0px",
         fontSans: "Tahoma, 'Segoe UI', sans-serif",
         text: { strong: "#0a0a0a", subtle: "#3a3a3a", date: "#5a5a5a" },
+        extra: {
+          "--bevel-light": "#ffffff",
+          "--bevel-light-2": "#dfdfdf",
+          "--bevel-dark": "#808080",
+          "--bevel-dark-2": "#0a0a0a",
+        },
+      }),
+      dark: palette({
+        background: "#2b2b2e",
+        surface: "#2b2b2e",
+        muted: "#3a3a3e",
+        border: "#5a5a60",
+        primary: "#2b52c4",
+        onPrimary: "#ffffff",
+        soft: "#33364a",
+        secondary: "#0f7c7c",
+        onSecondary: "#ffffff",
+        gradient: "linear-gradient(90deg, #000080, #1084d0)",
+        radius: "0px",
+        fontSans: "Tahoma, 'Segoe UI', sans-serif",
+        text: { strong: "#e8e8e8", subtle: "#b0b0b8", date: "#808088" },
+        extra: {
+          "--bevel-light": "#6a6a70",
+          "--bevel-light-2": "#54545a",
+          "--bevel-dark": "#1c1c1f",
+          "--bevel-dark-2": "#0d0d0f",
+        },
       }),
     },
-    css: WIN95_CSS,
+    css: scopedCss("win95", [BEVEL_RULE_CARD, BEVEL_RULE_BUTTON]),
     preview: {
       background: "#c0c0c0",
       surface: "#c0c0c0",
@@ -148,12 +184,36 @@ export const THEME_COLLECTIONS: ThemeCollection[] = [
         radius: "0px",
         fontSans: "Tahoma, 'Segoe UI', sans-serif",
         text: { strong: "#0a0a0a", subtle: "#3a3a3a", date: "#5a5a5a" },
+        extra: {
+          "--bevel-light": "#ffffff",
+          "--bevel-light-2": "#dfdfdf",
+          "--bevel-dark": "#808080",
+          "--bevel-dark-2": "#0a0a0a",
+        },
+      }),
+      dark: palette({
+        background: "#2c2d33",
+        surface: "#2c2d33",
+        muted: "#3b3d45",
+        border: "#5c5e6a",
+        primary: "#3a5fc8",
+        onPrimary: "#ffffff",
+        soft: "#343a52",
+        secondary: "#1c78c8",
+        onSecondary: "#ffffff",
+        gradient: "linear-gradient(90deg, #0a246a, #a6caf0)",
+        radius: "0px",
+        fontSans: "Tahoma, 'Segoe UI', sans-serif",
+        text: { strong: "#e8e8ec", subtle: "#b0b2bc", date: "#80828e" },
+        extra: {
+          "--bevel-light": "#707080",
+          "--bevel-light-2": "#58586a",
+          "--bevel-dark": "#1e1e28",
+          "--bevel-dark-2": "#0e0e14",
+        },
       }),
     },
-    css: scopedCss("win98", [
-      ".bg-surface-card, .bg-card, .bg-popover { box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #ffffff, inset -2px -2px #808080, inset 2px 2px #dfdfdf }",
-      ".bg-primary { box-shadow: inset -1px -1px #0a0a0a, inset 1px 1px #4a7ed0 }",
-    ]),
+    css: scopedCss("win98", [BEVEL_RULE_CARD, BEVEL_RULE_BUTTON]),
     preview: {
       background: "#c3c3c3",
       surface: "#c3c3c3",
@@ -183,12 +243,26 @@ export const THEME_COLLECTIONS: ThemeCollection[] = [
         radius: "0px",
         fontSans: "Tahoma, 'Segoe UI', sans-serif",
         text: { strong: "#0a0a0a", subtle: "#3f3f3f", date: "#606060" },
+        extra: { "--bevel-light": "#ffffff", "--bevel-dark": "#9a9a94" },
+      }),
+      dark: palette({
+        background: "#33343a",
+        surface: "#33343a",
+        muted: "#40424a",
+        border: "#5c5e66",
+        primary: "#5b8fc9",
+        onPrimary: "#0d1620",
+        soft: "#38424e",
+        secondary: "#5b8fc9",
+        onSecondary: "#0d1620",
+        gradient: "linear-gradient(90deg, #0a246a, #3a6ea5)",
+        radius: "0px",
+        fontSans: "Tahoma, 'Segoe UI', sans-serif",
+        text: { strong: "#e9eaee", subtle: "#b2b4bc", date: "#82848e" },
+        extra: { "--bevel-light": "#5c5e66", "--bevel-dark": "#232428" },
       }),
     },
-    css: scopedCss("win2000", [
-      ".bg-surface-card, .bg-card, .bg-popover { box-shadow: inset -1px -1px #9a9a94, inset 1px 1px #ffffff }",
-      ".bg-primary { box-shadow: inset -1px -1px #27425f, inset 1px 1px #7ba3cc }",
-    ]),
+    css: scopedCss("win2000", [BEVEL_RULE_SOFT]),
     preview: {
       background: "#d4d0c8",
       surface: "#d4d0c8",
@@ -225,9 +299,30 @@ export const THEME_COLLECTIONS: ThemeCollection[] = [
         fontSans: "Tahoma, 'Segoe UI', sans-serif",
         text: { strong: "#1a1a1a", subtle: "#5a6472", date: "#8a94a2" },
       }),
+      dark: palette({
+        background: "#16273c",
+        surface: "#1f3249",
+        muted: "#243850",
+        border: "#3d5674",
+        primary: "#4c8bf5",
+        onPrimary: "#0a1930",
+        soft: "#243a58",
+        secondary: "#3f8a4f",
+        onSecondary: "#ffffff",
+        accent: "#2a3f5c",
+        onAccent: "#cfe2ff",
+        gradient: "linear-gradient(180deg, #5b97f5, #245edb)",
+        shadows: {
+          soft: "0 1px 2px rgb(0 0 0 / 0.4)",
+          card: "0 1px 3px rgb(0 0 0 / 0.5)",
+        },
+        radius: "6px",
+        fontSans: "Tahoma, 'Segoe UI', sans-serif",
+        text: { strong: "#e8f0fa", subtle: "#a8bcd4", date: "#6f86a2" },
+      }),
     },
     css: scopedCss("luna", [
-      ".bg-primary { background-image: linear-gradient(180deg, #5b97f5, #245edb 45%, #1c50c8); border: 1px solid #1941a5 }",
+      ".bg-primary { background-image: linear-gradient(180deg, rgb(255 255 255 / 0.28), rgb(255 255 255 / 0) 45%), linear-gradient(180deg, var(--primary), color-mix(in oklab, var(--primary) 70%, #10264a)) }",
     ]),
     preview: {
       background: "#d6e5f5",
@@ -407,7 +502,8 @@ html:root.dark[data-theme="aero-glass"] .bg-surface-card, html:root.dark[data-th
   {
     id: "terminal",
     name: "Terminal",
-    description: "Fósforo verde sobre preto, fonte de máquina. O prompt é a interface.",
+    description:
+      "Fósforo verde sobre preto, fonte de máquina. Escuro por natureza — o brilho do tubo não tem modo claro.",
     metaColor: "#050805",
     tokens: {
       light: palette({
@@ -443,7 +539,8 @@ html:root.dark[data-theme="aero-glass"] .bg-surface-card, html:root.dark[data-th
   {
     id: "vaporwave",
     name: "Vaporwave",
-    description: "Roxo profundo, rosa e ciano neon. O Mediterrâneo eletrônico de 1995.",
+    description:
+      "Roxo profundo, rosa e ciano neon. Escuro por natureza — a noite é o ponto do tema.",
     metaColor: "#2b1055",
     tokens: {
       light: palette({
@@ -480,7 +577,8 @@ html:root.dark[data-theme="aero-glass"] .bg-surface-card, html:root.dark[data-th
   {
     id: "synthwave",
     name: "Synthwave",
-    description: "Noite de neon: rosa quente, laranja de pôr do sol e contorno luminoso.",
+    description:
+      "Noite de neon: rosa quente, laranja de pôr do sol e contorno luminoso. Escuro por natureza.",
     metaColor: "#1a1030",
     tokens: {
       light: palette({
@@ -538,10 +636,32 @@ html:root.dark[data-theme="aero-glass"] .bg-surface-card, html:root.dark[data-th
         },
         radius: "10px",
         text: { strong: "#16182b", subtle: "#4d5570", date: "#8b93ad" },
+        extra: { "--bevel-light": "#ffffff", "--bevel-dark": "#c8d2e4" },
+      }),
+      dark: palette({
+        background: "linear-gradient(180deg, #14161f, #101220)",
+        surface: "#1c1f2c",
+        muted: "#232636",
+        border: "#3a4158",
+        primary: "#8a94ff",
+        onPrimary: "#12142a",
+        soft: "#262b45",
+        secondary: "#3a4266",
+        onSecondary: "#dfe4ff",
+        accent: "#232946",
+        onAccent: "#cdd5ff",
+        gradient: "linear-gradient(135deg, #a8b4ff, #6f7cff)",
+        shadows: {
+          soft: "0 1px 2px rgb(0 0 0 / 0.45)",
+          card: "0 2px 6px rgb(0 0 0 / 0.5), inset 0 1px 0 #3a4158",
+        },
+        radius: "10px",
+        text: { strong: "#eef0fa", subtle: "#a8b0cc", date: "#6b7394" },
+        extra: { "--bevel-light": "#3a4158", "--bevel-dark": "#10121c" },
       }),
     },
     css: scopedCss("y2k", [
-      ".bg-surface-card, .bg-card, .bg-popover { box-shadow: inset 0 1px 0 #ffffff, inset 0 -1px 0 #c8d2e4 }",
+      ".bg-surface-card, .bg-card, .bg-popover { box-shadow: inset 0 1px 0 var(--bevel-light), inset 0 -1px 0 var(--bevel-dark) }",
     ]),
     preview: {
       background: "linear-gradient(180deg, #eef2fa, #e2e8f4)",
@@ -576,11 +696,32 @@ html:root.dark[data-theme="aero-glass"] .bg-surface-card, html:root.dark[data-th
         },
         radius: "16px",
         text: { strong: "#2d3345", subtle: "#5d6579", date: "#9aa1b2" },
+        extra: { "--neu-dark": "#c5cad3", "--neu-light": "#ffffff" },
+      }),
+      dark: palette({
+        background: "#2c3038",
+        surface: "#2c3038",
+        muted: "#262a31",
+        border: "#262a31",
+        primary: "#7c6cff",
+        onPrimary: "#ffffff",
+        soft: "#343a49",
+        secondary: "#4a5570",
+        onSecondary: "#e6ebff",
+        ring: "#7c6cff",
+        gradient: "linear-gradient(135deg, #7c6cff, #a5aeff)",
+        shadows: {
+          soft: "6px 6px 12px #23262d, -6px -6px 12px #363b44",
+          card: "9px 9px 18px #23262d, -9px -9px 18px #363b44",
+        },
+        radius: "16px",
+        text: { strong: "#e6e9f2", subtle: "#a8b0c0", date: "#6d7688" },
+        extra: { "--neu-dark": "#23262d", "--neu-light": "#363b44" },
       }),
     },
     css: scopedCss("neumorfismo", [
       ".bg-surface-card, .bg-card, .bg-popover { border-color: transparent }",
-      ".bg-muted { box-shadow: inset 4px 4px 8px #c5cad3, inset -4px -4px 8px #ffffff }",
+      ".bg-muted { box-shadow: inset 4px 4px 8px var(--neu-dark), inset -4px -4px 8px var(--neu-light) }",
     ]),
     preview: {
       background: "#e0e5ec",
