@@ -98,6 +98,33 @@ le `process.env.IMAGEKIT_PRIVATE_KEY`).
 
 ## Acoes manuais necessarias
 
+**O deploy esta PARADO desde 17/10 ~16:55 e nada que esta no `main` chegou ao ar.** Sao dois
+bloqueios de organizacao (nao de codigo), iguais nos dois repositorios:
+
+1. **O GitHub Actions esta desabilitado nos dois repos** — e o estado que o GitHub deixa depois de
+   transferir o repositorio de dono. Push novo **nao cria run nenhum** e os runs antigos ficam
+   `queued` para sempre. Religar:
+
+   ```
+   gh api -X PUT repos/Rede-ENois/enois-frontend/actions/permissions -F enabled=true
+   gh api -X PUT repos/Rede-ENois/enois-backend/actions/permissions -F enabled=true
+   ```
+
+   (ou Settings → Actions → General → permitir as acoes, em cada repositorio)
+
+2. **A trust policy do papel OIDC ainda espera o nome antigo do repositorio.** Com o Actions
+   religado, o run morre no passo `⚙️ Configurar Credenciais AWS via OIDC` com
+   `Not authorized to perform sts:AssumeRoleWithWebIdentity`: a claim `sub` passou a ser
+   `repo:Rede-ENois/enois-frontend:...` e a role `arn:aws:iam::818928662779:role/forest-dev-github`
+   (a mesma nos dois workflows) precisa aceitar `repo:Rede-ENois/enois-frontend:*` e
+   `repo:Rede-ENois/enois-backend:*`.
+
+Depois disso nao precisa de commit novo: dispare o workflow (`gh workflow run "Build, Push and GitOps
+Deploy" --ref main`) ou espere o proximo push. A `main` ja tem tudo pronto — incluindo o markdown em
+todos os campos de texto, os selos, os emblemas, os blogs e a miniatura de compartilhamento.
+
+Os itens abaixo sao os que **nao** dependem disso:
+
 0. **Criar o secret `GITOPS_TOKEN` neste repositorio** (`florestaencantada/enois-frontend` →
    Settings → Secrets and variables → Actions). Sem ele o job "GitOps Update" falha com
    `Input required and not supplied: token`, o manifesto nao e atualizado e o front **nao sofre
