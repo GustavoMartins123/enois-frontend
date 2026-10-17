@@ -84,12 +84,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📥 Checkout do Repositório GitOps (integration_onprem)
+      - name: 📥 Checkout do Repositório GitOps
         uses: actions/checkout@v4
         with:
           repository: ${{ env.GITOPS_REPO }}
           ref: ${{ env.GITOPS_BRANCH }}
-          token: ${{ secrets.GITOPS_TOKEN }}
+          # Deploy key escopada SO no integration_gitops (o PAT nao tinha API de criacao e
+          # deploy keys estavam desabilitadas na org). Alternativa a um PAT de escopo largo.
+          ssh-key: ${{ secrets.GITOPS_SSH_KEY }}
           path: gitops-repo
 
       - name: ✏️ Atualizar Tag da Imagem no Manifesto
