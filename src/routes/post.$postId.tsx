@@ -123,7 +123,7 @@ function PostDetail() {
           </div>
         ) : (
           <>
-            <PostCard post={post} />
+            <PostCard post={post} fullPost />
 
             {/* Artigo: o corpo vem so na leitura do post unico (a listagem traz o resumo), entao e
                 aqui que ele aparece — na mesma largura de leitura do resto. */}

@@ -48,17 +48,20 @@ import { RichText } from "./post/rich-text";
 import { typeMeta } from "./post/type-meta";
 
 /**
- * Posts acima disso entram compactados no feed: o corte é por linhas (8), e o "Ler
- * mais" abre o post inteiro em vez de expandir no lugar. Número único, sem exceção.
+ * Posts acima disso entram compactados na LISTA: o corte é por linhas (8) e o "Ler mais" abre o
+ * post inteiro. Na página do post o card é o post (`fullPost`), então não corta nem mostra o link —
+ * era o furo: o "Ler mais" levava para a página em que a pessoa já estava e o texto seguia cortado.
  */
 const POST_COMPACT_THRESHOLD = 400;
 
-export function PostCard({ post }: PostCardProps) {
+export function PostCard({ post, fullPost = false }: PostCardProps) {
   const { requireAuth, user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const isOwner = user?.id != null && user.id === post.authorId;
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
+  // Só corta em lista: na página do post o texto inteiro é o conteúdo da página.
+  const isCompact = !fullPost && post.content.length > POST_COMPACT_THRESHOLD;
   const [showComments, setShowComments] = useState(false);
   const [saved, setSaved] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -309,20 +312,20 @@ export function PostCard({ post }: PostCardProps) {
       </header>
 
       {/* Post de pagina pode nao ter texto nenhum: sem paragrafo, so a pagina logo abaixo.
-          Texto acima de 400 caracteres entra cortado em 8 linhas, e o "Ler mais" abre o post —
-          o texto completo mora na pagina do post, nao no card. Artigo fica so cortado: o bloco
-          abaixo dele ja e o convite para abrir. */}
+          Na lista, texto acima de 400 caracteres entra cortado em 8 linhas com o "Ler mais" que
+          abre o post; na propria pagina do post (`fullPost`) nada e cortado — o texto completo mora
+          la. Artigo fica so cortado na lista: o bloco abaixo dele ja e o convite para abrir. */}
       {post.content.trim() !== "" && (
         <>
           <RichText
             content={post.content}
             className={cn(
               "mt-4 whitespace-pre-line break-words text-base font-normal leading-relaxed text-text-strong",
-              post.content.length > POST_COMPACT_THRESHOLD && "line-clamp-8",
+              isCompact && "line-clamp-8",
             )}
           />
 
-          {post.content.length > POST_COMPACT_THRESHOLD && post.type !== "ARTICLE" && (
+          {isCompact && post.type !== "ARTICLE" && (
             <Link
               to="/post/$postId"
               params={{ postId: post.id }}
