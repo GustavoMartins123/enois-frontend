@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ChangeEvent, useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
@@ -14,9 +14,11 @@ import type { FieldProps } from "@/types/components/profile/edit-profile-dialog/
 import type { Props } from "@/types/components/profile/edit-profile-dialog/props";
 import type { SubListProps } from "@/types/components/profile/edit-profile-dialog/sub-list-props";
 import type { SubListUpdate } from "@/types/components/profile/edit-profile-dialog/sub-list-update";
-import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { Pencil, Plus, Trash2, Upload, X } from "lucide-react";
 
 import { ApiError, profileApi } from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
+import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -50,8 +52,11 @@ export function EditProfileDialog({ profile, children }: Props) {
   const [goalsText, setGoalsText] = useState((profile.goals ?? []).join(", "));
   const [openToWork, setOpenToWork] = useState(profile.openToWork);
   const [isMentor, setIsMentor] = useState(profile.isMentor);
+  const [badge, setBadge] = useState(profile.badge ?? "");
   const [usernameError, setUsernameError] = useState("");
   const [generalError, setGeneralError] = useState<string | null>(null);
+  const badgeUpload = useMediaUpload();
+  const badgeRef = useRef<HTMLInputElement>(null);
 
   const updateProfile = useMutation({
     mutationFn: (data: Parameters<typeof profileApi.update>[0]) => profileApi.update(data),
@@ -97,12 +102,30 @@ export function EditProfileDialog({ profile, children }: Props) {
     enabled: open && tab === "certifications",
   });
 
+  // Mesmo caminho do avatar na página de perfil: sobe pelo provedor que a API indicar (S3 ou
+  // ImageKit) e guarda a URL — ela vai junto no salvar do diálogo, não em um PATCH próprio.
+  const handleBadgeUpload = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    // Limpar o input: o navegador não dispara `change` para o MESMO arquivo escolhido duas vezes.
+    event.target.value = "";
+    if (!file) return;
+    setGeneralError(null);
+    try {
+      const result = await badgeUpload.upload(file, "BADGE");
+      setBadge(result.cdnUrl);
+    } catch {
+      setGeneralError(texts.profile.imageUploadError);
+    }
+  };
+
   const handleSave = async () => {
     setUsernameError("");
     setGeneralError(null);
     await updateProfile.mutateAsync({
       username: username !== profile.username ? username : undefined,
       name: name !== profile.name ? name : undefined,
+      // String vazia limpa o emblema (o servidor só preserva quando o campo vem ausente/null).
+      badge: badge !== (profile.badge ?? "") ? badge : undefined,
       headline: headline || null,
       bio: bio || null,
       company: company || null,
@@ -210,6 +233,51 @@ export function EditProfileDialog({ profile, children }: Props) {
                   maxLength={80}
                   className="h-10 border-border-soft bg-surface-1"
                 />
+              </Field>
+
+              <Field label={texts.profile.edit.fields.badge}>
+                <div className="flex flex-wrap items-center gap-3">
+                  {badge ? (
+                    <img
+                      src={resolveCdnUrl(badge)}
+                      alt=""
+                      className="h-10 w-10 shrink-0 rounded-full border border-border-soft bg-surface-1 object-cover"
+                    />
+                  ) : (
+                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-dashed border-border-soft text-text-subtle">
+                      <Upload className="h-4 w-4" />
+                    </span>
+                  )}
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => badgeRef.current?.click()}
+                    disabled={badgeUpload.status === "uploading"}
+                  >
+                    {badgeUpload.status === "uploading"
+                      ? texts.common.sending
+                      : texts.profile.edit.badgeUpload}
+                  </Button>
+
+                  {badge ? (
+                    <Button size="sm" variant="ghost" onClick={() => setBadge("")}>
+                      {texts.profile.edit.badgeRemove}
+                    </Button>
+                  ) : null}
+
+                  <input
+                    ref={badgeRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleBadgeUpload}
+                  />
+                </div>
+
+                <p className="text-xs font-normal text-text-subtle">
+                  {texts.profile.edit.badgeHint}
+                </p>
               </Field>
 
               <Field label={texts.profile.edit.fields.headline}>

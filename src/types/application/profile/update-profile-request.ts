@@ -10,6 +10,7 @@ export type UpdateProfileRequest = Partial<
     | "location"
     | "avatar"
     | "banner"
+    | "badge"
     | "bio"
     | "bioHtml"
     | "bannerHtml"

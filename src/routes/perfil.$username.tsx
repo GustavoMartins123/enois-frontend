@@ -464,6 +464,17 @@ function Profile() {
                 <h1 className="break-words text-xl font-normal tracking-tight text-text-strong">
                   {user.name}
                 </h1>
+
+                {/* Emblema: PNG pequeno colado no nome — fora do <h1> para não entrar no texto do
+                    título. Quem escolhe é a própria pessoa, no editar perfil. */}
+                {user.badge && (
+                  <img
+                    src={resolveCdnUrl(user.badge)}
+                    alt=""
+                    className="h-4 w-4 shrink-0 rounded-full object-cover"
+                  />
+                )}
+
                 {user.openToWork && (
                   <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-normal text-growth">
                     {texts.profile.openToWork}

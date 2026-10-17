@@ -964,6 +964,7 @@ export const texts = {
       fields: {
         name: "Nome",
         username: "Username (URL do perfil)",
+        badge: "Emblema",
         headline: "Headline",
         bio: "Bio",
         company: "Empresa",
@@ -982,6 +983,10 @@ export const texts = {
       },
       openToWork: "Aberto a oportunidades",
       mentorAvailable: "Mentor disponível",
+      badgeUpload: "Enviar imagem",
+      badgeRemove: "Remover emblema",
+      badgeHint:
+        "Imagem pequena (um PNG com fundo transparente fica melhor) exibida ao lado do seu nome no perfil.",
       experienceFields: {
         title: "Cargo",
         company: "Empresa",

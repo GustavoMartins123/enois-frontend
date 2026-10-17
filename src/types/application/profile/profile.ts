@@ -8,6 +8,8 @@ export type Profile = {
   location: string | null;
   avatar: string | null;
   banner: string | null;
+  /** Emblema (PNG pequeno) exibido ao lado do nome; URL de mídia, como avatar e banner. */
+  badge: string | null;
   bio: string | null;
   /** Bio em HTML/CSS já sanitizada; quando presente, o perfil mostra ela no lugar do texto. */
   bioHtml?: string | null;
