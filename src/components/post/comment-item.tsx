@@ -11,7 +11,6 @@ import { REACTION_EMOJIS, commentsApi, profileApi, reactionsApi } from "@/lib/ap
 import { getCurrentUserId } from "@/lib/current-user";
 
 import { Button } from "@/components/ui/button";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ReadMore } from "@/components/ui/read-more";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -20,6 +19,7 @@ import { UserAvatar } from "@/components/user-avatar";
 import { formatTime } from "./format-time";
 import { LinkPreviews } from "./link-previews";
 import { MediaGrid } from "./media-grid";
+import { ReactionPicker } from "./reaction-picker";
 import { RichText } from "./rich-text";
 
 /** Um comentário (com responder, reagir e excluir). */
@@ -32,7 +32,7 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
   const removeComment = usePostCardStore((state) => state.removeComment);
   const updateCommentCount = usePostCardStore((state) => state.updateCommentCount);
   const isOwner = currentUserId === comment.authorId;
-  const [commentReaction, setCommentReaction] = useState<string | null>(
+  const [commentReaction, setCommentReaction] = useState<ReactionType | null>(
     comment.currentUserReaction ?? null,
   );
 
@@ -225,35 +225,14 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
             {texts.posts.comments.reply}
           </button>
 
-          <Popover>
-            <PopoverTrigger asChild>
-              <button className="transition-colors hover:text-primary">
-                {commentReaction ? REACTION_EMOJIS[commentReaction] : texts.posts.reactions.react}
-              </button>
-            </PopoverTrigger>
-
-            <PopoverContent
-              align="start"
-              side="top"
-              className="w-fit rounded-2xl border-border-soft bg-surface-card p-1.5"
-            >
-              <div className="flex gap-1">
-                {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(
-                  ([type, emoji]) => (
-                    <button
-                      key={type}
-                      onClick={() => handleCommentReaction(type)}
-                      className={`rounded-lg px-2 py-1 text-lg transition hover:bg-surface-2 ${
-                        commentReaction === type ? "bg-surface-2 ring-1 ring-primary" : ""
-                      }`}
-                    >
-                      {emoji}
-                    </button>
-                  ),
-                )}
-              </div>
-            </PopoverContent>
-          </Popover>
+          <ReactionPicker
+            activeType={commentReaction}
+            onReact={handleCommentReaction}
+            buttonClassName="transition-colors hover:text-primary"
+            buttonTitle={texts.posts.reactions.react}
+          >
+            {commentReaction ? REACTION_EMOJIS[commentReaction] : texts.posts.reactions.react}
+          </ReactionPicker>
           {isOwner && !editing && (
             <button
               onClick={() => {

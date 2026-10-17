@@ -39,6 +39,7 @@ import { LinkPreviews } from "./post/link-previews";
 import { MediaGrid } from "./post/media-grid";
 import { PostComments } from "./post/post-comments";
 import { PostPage } from "./post/post-page";
+import { ReactionPicker } from "./post/reaction-picker";
 import { ReactionsDialog } from "./post/reactions-dialog";
 import { ReactionsSummary } from "./post/reactions-summary";
 import { ReportDialog } from "./post/report-dialog";
@@ -360,49 +361,24 @@ export function PostCard({ post }: PostCardProps) {
 
       <footer className="mt-4 flex justify-between flex-wrap items-center gap-1 border-t border-border pt-3 text-sm text-muted-foreground">
         <div className="flex flex-wrap">
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground ${
-                  reactionStatus ? "text-primary" : ""
-                }`}
-                title={
-                  reactionStatus
-                    ? texts.posts.reactions.reactedWith(REACTION_EMOJIS[reactionStatus])
-                    : texts.posts.reactions.react
-                }
-              >
-                {reactionStatus ? (
-                  <span className="text-base leading-none">{REACTION_EMOJIS[reactionStatus]}</span>
-                ) : (
-                  <Heart className="h-4 w-4" />
-                )}
-              </button>
-            </PopoverTrigger>
-
-            <PopoverContent
-              align="start"
-              side="top"
-              className="w-fit rounded-2xl border-border p-1.5"
-            >
-              <div className="flex gap-1">
-                {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(
-                  ([type, emoji]) => (
-                    <button
-                      key={type}
-                      onClick={() => handleReaction(type)}
-                      className={`rounded-lg px-2 py-1 text-xl transition hover:bg-muted ${
-                        reactionStatus === type ? "bg-muted ring-1 ring-primary" : ""
-                      }`}
-                      title={type.toLowerCase()}
-                    >
-                      {emoji}
-                    </button>
-                  ),
-                )}
-              </div>
-            </PopoverContent>
-          </Popover>
+          <ReactionPicker
+            activeType={reactionStatus}
+            onReact={handleReaction}
+            buttonClassName={`flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground ${
+              reactionStatus ? "text-primary" : ""
+            }`}
+            buttonTitle={
+              reactionStatus
+                ? texts.posts.reactions.reactedWith(REACTION_EMOJIS[reactionStatus])
+                : texts.posts.reactions.react
+            }
+          >
+            {reactionStatus ? (
+              <span className="text-base leading-none">{REACTION_EMOJIS[reactionStatus]}</span>
+            ) : (
+              <Heart className="h-4 w-4" />
+            )}
+          </ReactionPicker>
 
           <button
             onClick={() => setShowReactions(post.id, true)}
