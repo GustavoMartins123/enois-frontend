@@ -27,7 +27,7 @@ const solidLight: BackgroundStyle = { ...solidDark, color: "#f4f1fb" };
  */
 describe("plano de fundo personalizado", () => {
   it("fundo escuro escolhido vira texto claro", () => {
-    const declarations = buildWidgetDeclarations(solidDark);
+    const declarations = buildWidgetDeclarations(solidDark, "#ffffff");
     const expected = readableForeground(hexToRgb("#0b1220"), 290).css;
     expect(declarations["--foreground"]).toBe(expected);
     // O texto claro é o quase-branco da marca (oklch ~0.99), não o escuro.
@@ -35,7 +35,7 @@ describe("plano de fundo personalizado", () => {
   });
 
   it("fundo claro escolhido mantém texto escuro", () => {
-    const declarations = buildWidgetDeclarations(solidLight);
+    const declarations = buildWidgetDeclarations(solidLight, "#ffffff");
     expect(declarations["--foreground"]).toBe(readableForeground(hexToRgb("#f4f1fb"), 290).css);
     expect(declarations["--foreground"]).toContain("0.16");
   });
@@ -50,14 +50,14 @@ describe("plano de fundo personalizado", () => {
     };
     expect(backgroundValue(gradient)).toContain("linear-gradient(180deg, #1a1030, #e6dcf7)");
 
-    const declarations = buildWidgetDeclarations(gradient);
+    const declarations = buildWidgetDeclarations(gradient, "#808690");
     // O médio de #1a1030 e #e6dcf7 é meio-clara: o texto é o que lê melhor sobre ele.
     expect(declarations["--foreground"]).toBe(readableForeground(hexToRgb("#808690"), 290).css);
     expect(declarations["--text-subtle"]).toContain("color-mix");
   });
 
   it("a cor sólida escolhida é o próprio widget (não o gradiente padrão)", () => {
-    const declarations = buildWidgetDeclarations(solidDark);
+    const declarations = buildWidgetDeclarations(solidDark, "#ffffff");
     expect(declarations["--card"]).toBe("#0b1220");
     expect(declarations["--surface-card"]).toBe("#0b1220");
     expect(declarations["--card"]).not.toContain("gradient");
