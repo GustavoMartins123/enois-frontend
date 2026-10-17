@@ -1,19 +1,21 @@
+import { useState } from "react";
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import { ArrowLeft, Globe, MapPin, Users } from "lucide-react";
-import { useState } from "react";
 
 import { companiesApi } from "@/lib/api";
-import { getCurrentUser } from "@/lib/current-user";
 import { resolveCdnUrl } from "@/lib/api/media";
+import { getCurrentUser } from "@/lib/current-user";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
+import { RichText } from "@/components/post/rich-text";
 
 export const Route = createFileRoute("/empresa/$slug")({
   // Pagina PUBLICA: o link circula fora do app.
@@ -32,7 +34,9 @@ function StatusChip({ status }: { status: string }) {
         ? "bg-amber-500/15 text-amber-700 dark:text-amber-400"
         : "bg-muted text-text-subtle";
 
-  return <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${tone}`}>{label}</span>;
+  return (
+    <span className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${tone}`}>{label}</span>
+  );
 }
 
 function Empresa() {
@@ -41,7 +45,15 @@ function Empresa() {
   const { toast } = useToast();
   const currentUserId = getCurrentUser()?.id ?? null;
   const [projectOpen, setProjectOpen] = useState(false);
-  const [projectForm, setProjectForm] = useState({ title: "", problem: "", scope: "", deliverables: "", acceptanceCriteria: "", budget: "", deadline: "" });
+  const [projectForm, setProjectForm] = useState({
+    title: "",
+    problem: "",
+    scope: "",
+    deliverables: "",
+    acceptanceCriteria: "",
+    budget: "",
+    deadline: "",
+  });
   const publish = useMutation({
     mutationFn: () =>
       companiesApi.publishProject(company!.id, {
@@ -55,7 +67,15 @@ function Empresa() {
       }),
     onSuccess: () => {
       setProjectOpen(false);
-      setProjectForm({ title: "", problem: "", scope: "", deliverables: "", acceptanceCriteria: "", budget: "", deadline: "" });
+      setProjectForm({
+        title: "",
+        problem: "",
+        scope: "",
+        deliverables: "",
+        acceptanceCriteria: "",
+        budget: "",
+        deadline: "",
+      });
       toast(texts.empresa.published, "success");
       void queryClient.invalidateQueries({ queryKey: ["empresa", slug] });
     },
@@ -199,7 +219,10 @@ function Empresa() {
             </div>
 
             {company.description && (
-              <p className="mt-3 whitespace-pre-line text-sm text-text-subtle">{company.description}</p>
+              <RichText
+                content={company.description}
+                className="mt-3 whitespace-pre-line text-sm text-text-subtle"
+              />
             )}
 
             {isMember && (
@@ -235,25 +258,30 @@ function Empresa() {
                 <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
                   {project.budget && (
                     <span>
-                      <strong className="text-text-strong">{texts.empresa.budget}:</strong> {project.budget}
+                      <strong className="text-text-strong">{texts.empresa.budget}:</strong>{" "}
+                      {project.budget}
                     </span>
                   )}
                   {project.deadline && (
                     <span>
                       <strong className="text-text-strong">{texts.empresa.deadline}:</strong>{" "}
-                      {texts.empresa.deadlineBy(new Date(project.deadline).toLocaleDateString("pt-BR"))}
+                      {texts.empresa.deadlineBy(
+                        new Date(project.deadline).toLocaleDateString("pt-BR"),
+                      )}
                     </span>
                   )}
                 </div>
 
                 <div className="space-y-2 text-sm">
                   <p>
-                    <strong className="text-text-strong">{texts.empresa.problem}:</strong> {project.problem}
+                    <strong className="text-text-strong">{texts.empresa.problem}:</strong>{" "}
+                    {project.problem}
                   </p>
 
                   {project.scope && (
                     <p className="whitespace-pre-line">
-                      <strong className="text-text-strong">{texts.empresa.scope}:</strong> {project.scope}
+                      <strong className="text-text-strong">{texts.empresa.scope}:</strong>{" "}
+                      {project.scope}
                     </p>
                   )}
 
@@ -273,7 +301,11 @@ function Empresa() {
                 </div>
 
                 {project.status === "OPEN" && !isMember && currentUserId && (
-                  <Button size="sm" className="rounded-full" onClick={() => setProposalFor(project.id)}>
+                  <Button
+                    size="sm"
+                    className="rounded-full"
+                    onClick={() => setProposalFor(project.id)}
+                  >
                     {texts.empresa.apply}
                   </Button>
                 )}
@@ -327,13 +359,17 @@ function Empresa() {
                           size="sm"
                           className="rounded-full"
                           disabled={select.isPending}
-                          onClick={() => select.mutate({ projectId: candidaturesFor!, proposalId: item.id })}
+                          onClick={() =>
+                            select.mutate({ projectId: candidaturesFor!, proposalId: item.id })
+                          }
                         >
                           {texts.empresa.selectProposal}
                         </Button>
                       ) : (
                         <span className="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium">
-                          {item.status === "SELECTED" ? texts.empresa.selected : texts.empresa.declined}
+                          {item.status === "SELECTED"
+                            ? texts.empresa.selected
+                            : texts.empresa.declined}
                         </span>
                       )}
                     </div>
@@ -343,7 +379,11 @@ function Empresa() {
             )}
 
             <div className="mt-4 flex justify-end">
-              <Button variant="ghost" className="rounded-full" onClick={() => setCandidaturesFor(null)}>
+              <Button
+                variant="ghost"
+                className="rounded-full"
+                onClick={() => setCandidaturesFor(null)}
+              >
                 {texts.common.cancel}
               </Button>
             </div>
@@ -401,7 +441,9 @@ function Empresa() {
 
                 <Textarea
                   value={projectForm.problem}
-                  onChange={(event) => setProjectForm({ ...projectForm, problem: event.target.value })}
+                  onChange={(event) =>
+                    setProjectForm({ ...projectForm, problem: event.target.value })
+                  }
                   rows={3}
                   placeholder={texts.empresa.problemHint}
                 />
@@ -412,7 +454,9 @@ function Empresa() {
 
                 <Textarea
                   value={projectForm.scope}
-                  onChange={(event) => setProjectForm({ ...projectForm, scope: event.target.value })}
+                  onChange={(event) =>
+                    setProjectForm({ ...projectForm, scope: event.target.value })
+                  }
                   rows={2}
                   placeholder={texts.empresa.scopeHint}
                 />
@@ -423,7 +467,9 @@ function Empresa() {
 
                 <Textarea
                   value={projectForm.deliverables}
-                  onChange={(event) => setProjectForm({ ...projectForm, deliverables: event.target.value })}
+                  onChange={(event) =>
+                    setProjectForm({ ...projectForm, deliverables: event.target.value })
+                  }
                   rows={2}
                   placeholder={texts.empresa.deliverablesHint}
                 />
@@ -434,7 +480,9 @@ function Empresa() {
 
                 <Textarea
                   value={projectForm.acceptanceCriteria}
-                  onChange={(event) => setProjectForm({ ...projectForm, acceptanceCriteria: event.target.value })}
+                  onChange={(event) =>
+                    setProjectForm({ ...projectForm, acceptanceCriteria: event.target.value })
+                  }
                   rows={2}
                   placeholder={texts.empresa.acceptanceHint}
                 />
@@ -443,22 +491,29 @@ function Empresa() {
               <div className="grid grid-cols-2 gap-3">
                 <input
                   value={projectForm.budget}
-                  onChange={(event) => setProjectForm({ ...projectForm, budget: event.target.value })}
+                  onChange={(event) =>
+                    setProjectForm({ ...projectForm, budget: event.target.value })
+                  }
                   placeholder={texts.empresa.budgetLabel}
                   className="h-10 w-full rounded-lg border border-border-soft bg-surface-1 px-3 outline-none"
                 />
-
                 <input
                   type="date"
                   value={projectForm.deadline}
-                  onChange={(event) => setProjectForm({ ...projectForm, deadline: event.target.value })}
+                  onChange={(event) =>
+                    setProjectForm({ ...projectForm, deadline: event.target.value })
+                  }
                   className="h-10 w-full rounded-lg border border-border-soft bg-surface-1 px-3 outline-none"
                 />
               </div>
             </div>
 
             <div className="mt-4 flex justify-end gap-2">
-              <Button variant="ghost" className="rounded-full" onClick={() => setProjectOpen(false)}>
+              <Button
+                variant="ghost"
+                className="rounded-full"
+                onClick={() => setProjectOpen(false)}
+              >
                 {texts.common.cancel}
               </Button>
 

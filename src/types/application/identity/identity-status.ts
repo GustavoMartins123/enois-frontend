@@ -1,11 +1,5 @@
 export type IdentityState =
-  | "NOT_VERIFIED"
-  | "PENDING"
-  | "VERIFIED"
-  | "REJECTED"
-  | "EXPIRED"
-  | "REVOKED"
-  | "ERROR";
+  "NOT_VERIFIED" | "PENDING" | "VERIFIED" | "REJECTED" | "EXPIRED" | "REVOKED" | "ERROR";
 
 export type IdentityStatus = {
   state: IdentityState;

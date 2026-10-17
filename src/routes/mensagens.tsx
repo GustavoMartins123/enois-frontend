@@ -14,11 +14,12 @@ import { getCurrentUserId } from "@/lib/current-user";
 import { requireAuth } from "@/lib/require-auth";
 
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
-import { useToast } from "@/components/ui/toast";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { RichText } from "@/components/post/rich-text";
 import { UserAvatar } from "@/components/user-avatar";
 import { UserBadge } from "@/components/user-badge";
 
@@ -423,7 +424,6 @@ function Mensagens() {
                                   alt={otherUser?.name}
                                   className="h-7 w-7 shrink-0"
                                 />
-
                                 <UserBadge
                                   badge={otherUser?.badge}
                                   className="absolute -bottom-0.5 -right-0.5 h-3 w-3 ring-1 ring-card"
@@ -438,7 +438,11 @@ function Mensagens() {
                                 : "rounded-bl-md bg-card text-foreground"
                             }`}
                           >
-                            <p className="break-words">{m.text}</p>
+                            <RichText
+                              content={m.text}
+                              className="break-words"
+                              linkClassName="underline underline-offset-2"
+                            />
 
                             <p
                               className={`mt-1 text-xs ${isMe ? "text-primary-foreground/70" : "text-muted-foreground"}`}
@@ -501,7 +505,14 @@ function Mensagens() {
   );
 }
 
-function ConversationItem({ conversation, isActive, onSelect, selecting, selected, onToggle }: ConversationItemProps) {
+function ConversationItem({
+  conversation,
+  isActive,
+  onSelect,
+  selecting,
+  selected,
+  onToggle,
+}: ConversationItemProps) {
   const currentUserId = getCurrentUserId();
   const otherId = conversation.participantIds.find((id) => id !== currentUserId);
   const { data: otherUser } = useQuery({

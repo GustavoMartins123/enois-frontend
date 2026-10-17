@@ -12,6 +12,7 @@ import {
   Briefcase,
   Camera,
   Clock,
+  Image as ImageIcon,
   Link as LinkIcon,
   MapPin,
   MessageCircle,
@@ -19,7 +20,6 @@ import {
   Settings,
   ShieldCheck,
   ShieldOff,
-  Image as ImageIcon,
   Star,
   Target,
   ThumbsUp,
@@ -58,6 +58,7 @@ import { BlockUserDialog } from "@/components/block-user-dialog";
 import { EditProfileDialog } from "@/components/edit-profile-dialog";
 import { ImageCropDialog } from "@/components/image-crop-dialog";
 import { PostCard } from "@/components/post-card";
+import { RichText } from "@/components/post/rich-text";
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { ProfileBannerDialog } from "@/components/profile-banner-dialog";
 import { ProfileBioDialog } from "@/components/profile-bio-dialog";
@@ -334,7 +335,11 @@ function Profile() {
                     >
                       <ImageIcon className="h-4 w-4" />
 
-                      <>{bannerUpload.status === "uploading" ? texts.common.sending : texts.posts.editCover}</>
+                      <>
+                        {bannerUpload.status === "uploading"
+                          ? texts.common.sending
+                          : texts.posts.editCover}
+                      </>
                     </Button>
 
                     <Button
@@ -346,7 +351,11 @@ function Profile() {
                     >
                       <Camera className="h-4 w-4" />
 
-                      <>{avatarUpload.status === "uploading" ? texts.common.sending : texts.posts.editPhoto}</>
+                      <>
+                        {avatarUpload.status === "uploading"
+                          ? texts.common.sending
+                          : texts.posts.editPhoto}
+                      </>
                     </Button>
 
                     <EditProfileDialog profile={user}>
@@ -544,9 +553,10 @@ function Profile() {
             ) : (
               user.bio && (
                 <Section title={texts.profile.sections.about}>
-                  <p className="break-words text-sm font-normal leading-relaxed text-text-subtle">
-                    {user.bio}
-                  </p>
+                  <RichText
+                    content={user.bio}
+                    className="break-words text-sm font-normal leading-relaxed text-text-subtle"
+                  />
                 </Section>
               )
             )}

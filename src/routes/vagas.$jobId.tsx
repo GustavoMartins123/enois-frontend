@@ -12,21 +12,21 @@ import {
   Briefcase,
   CheckCircle2,
   CircleSlash,
+  ExternalLink,
   Loader2,
   MapPin,
   Pencil,
   ShieldAlert,
   Trash2,
   Users,
-  ExternalLink,
 } from "lucide-react";
 
 import { jobsApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
-import { buildShareTags } from "@/lib/open-graph";
 import { formatSalary } from "@/lib/currency";
 import { useCurrentUser } from "@/lib/current-user";
 import { actionsFor, applicationStatusLabel, statusTone } from "@/lib/job-application-status";
+import { buildShareTags } from "@/lib/open-graph";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -34,6 +34,7 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { AppContainer } from "@/components/app-container";
 import { ApplyJobDialog } from "@/components/apply-job-dialog";
 import { JobEditDialog } from "@/components/job-edit-dialog";
+import { RichText } from "@/components/post/rich-text";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/vagas/$jobId")({
@@ -45,11 +46,17 @@ export const Route = createFileRoute("/vagas/$jobId")({
     }
   },
   head: ({ loaderData: job, params }) => {
-    const title = job ? `${job.title}${job.company ? ` · ${job.company}` : ""} · ${texts.brand.name}` : texts.jobs.seoTitle;
+    const title = job
+      ? `${job.title}${job.company ? ` · ${job.company}` : ""} · ${texts.brand.name}`
+      : texts.jobs.seoTitle;
     return {
       meta: buildShareTags({
         title,
-        description: job?.description || (job ? `${job.company ? `Vaga em ${job.company}.` : "Oportunidade profissional."} Confira os detalhes no Énóis.` : "Confira oportunidades no Énóis."),
+        description:
+          job?.description ||
+          (job
+            ? `${job.company ? `Vaga em ${job.company}.` : "Oportunidade profissional."} Confira os detalhes no Énóis.`
+            : "Confira oportunidades no Énóis."),
         url: `${texts.siteUrl}/vagas/${encodeURIComponent(params.jobId)}`,
         imageUrl: resolveCdnUrl(job?.logo) || `${texts.siteUrl}/icons/icon-512.png`,
         imageAlt: job ? `Vaga ${job.title}${job.company ? ` em ${job.company}` : ""}` : title,
@@ -197,9 +204,7 @@ function JobDetail() {
                 />
 
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-normal text-text-subtle">
-                    {texts.jobs.author.label}
-                  </p>
+                  <p className="text-xs font-normal text-text-subtle">{texts.jobs.author.label}</p>
 
                   {job.author.username ? (
                     <Link
@@ -265,9 +270,10 @@ function JobDetail() {
             <section className="mt-5">
               <h2 className="text-base font-normal text-text-strong">{texts.jobs.about}</h2>
 
-              <p className="mt-2 whitespace-pre-line break-words text-sm font-normal leading-relaxed text-text-subtle">
-                {job.description?.trim() || texts.jobs.description}
-              </p>
+              <RichText
+                content={job.description?.trim() || texts.jobs.description}
+                className="mt-2 whitespace-pre-line break-words text-sm font-normal leading-relaxed text-text-subtle"
+              />
             </section>
 
             <section className="mt-5">
@@ -285,9 +291,7 @@ function JobDetail() {
                   ))}
                 </div>
               ) : (
-                <p className="mt-2 text-sm font-normal text-text-subtle">
-                  {texts.jobs.noSkills}
-                </p>
+                <p className="mt-2 text-sm font-normal text-text-subtle">{texts.jobs.noSkills}</p>
               )}
             </section>
 

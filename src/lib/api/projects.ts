@@ -1,4 +1,5 @@
-import type { UserProject, UserProjectInput } from "@/types/application/project/user-project";
+import type { UserProject } from "@/types/application/project/user-project";
+import type { UserProjectInput } from "@/types/application/project/user-project-input";
 
 import { api } from "../api-client";
 

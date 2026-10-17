@@ -16,6 +16,7 @@ import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { BlogPostDialog } from "@/components/blog/blog-post-dialog";
+import { RichText } from "@/components/post/rich-text";
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { UserAvatar } from "@/components/user-avatar";
 
@@ -180,9 +181,10 @@ function BlogPage() {
           </div>
 
           {blog.description && (
-            <p className="px-4 pb-4 text-sm font-normal text-muted-foreground sm:px-6 sm:pb-6">
-              {blog.description}
-            </p>
+            <RichText
+              content={blog.description}
+              className="px-4 pb-4 text-sm font-normal text-muted-foreground sm:px-6 sm:pb-6"
+            />
           )}
 
           {!blog.owner && !blog.subscribed && (

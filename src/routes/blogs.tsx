@@ -16,6 +16,7 @@ import { LoadingState } from "@/components/ui/loading-state";
 import { AppContainer } from "@/components/app-container";
 import { BlogEditorDialog } from "@/components/blog/blog-editor-dialog";
 import { BlogPostDialog } from "@/components/blog/blog-post-dialog";
+import { RichText } from "@/components/post/rich-text";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/blogs")({
@@ -131,9 +132,10 @@ function Blogs() {
                 </div>
 
                 {blog.description && (
-                  <p className="mt-3 line-clamp-2 text-sm font-normal text-muted-foreground">
-                    {blog.description}
-                  </p>
+                  <RichText
+                    content={blog.description}
+                    className="mt-3 line-clamp-2 text-sm font-normal text-muted-foreground"
+                  />
                 )}
               </Link>
             ))}

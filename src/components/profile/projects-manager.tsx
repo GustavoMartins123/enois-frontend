@@ -3,12 +3,11 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
-import type { UserProject, UserProjectInput } from "@/types/application/project/user-project";
+import type { UserProject } from "@/types/application/project/user-project";
+import type { UserProjectInput } from "@/types/application/project/user-project-input";
+import type { ProjectCardMode } from "@/types/components/profile/project-card-mode";
 import type { ProjectsManagerProps } from "@/types/components/profile/projects-manager-props";
-import type {
-  EditingProject,
-  ProjectCardMode,
-} from "@/types/components/profile/projects-manager-state";
+import type { EditingProject } from "@/types/components/profile/projects-manager-state";
 
 import { projectsApi } from "@/lib/api";
 

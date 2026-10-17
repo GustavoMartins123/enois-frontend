@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/loading-state";
 
 import { AppContainer } from "@/components/app-container";
+import { RichText } from "@/components/post/rich-text";
 
 export const Route = createFileRoute("/denuncias")({
   beforeLoad: requireAuth,
@@ -63,6 +64,7 @@ function MinhasDenuncias() {
         ) : reports.length === 0 ? (
           <div className="rounded-2xl border border-border-soft bg-surface-card">
             <EmptyState icon={Flag} title={texts.myReports.empty} />
+
             <p className="pb-6 text-center text-sm text-text-subtle">{texts.myReports.emptyHint}</p>
           </div>
         ) : (
@@ -90,7 +92,7 @@ function MinhasDenuncias() {
                 </div>
 
                 {report.description && (
-                  <p className="text-sm text-text-subtle">{report.description}</p>
+                  <RichText content={report.description} className="text-sm text-text-subtle" />
                 )}
 
                 {report.targetType === "POST" && (

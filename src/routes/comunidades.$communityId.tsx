@@ -4,8 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
-import { PROFILE_HTML_MAX_LENGTH } from "@/constants/profile";
 import { ARTICLE_BODY_MAX_LENGTH, POST_TYPES } from "@/constants/post-types";
+import { PROFILE_HTML_MAX_LENGTH } from "@/constants/profile";
 import { texts } from "@/texts";
 import type { CreatePostInput } from "@/types/application/feed/create-post-input";
 import type { PostView } from "@/types/application/feed/post-view";
@@ -32,8 +32,6 @@ import { requireAuth } from "@/lib/require-auth";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
-import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
-
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -46,16 +44,18 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Pill } from "@/components/ui/pill";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { CommunityFavoriteButton } from "@/components/community-favorite-button";
 import { HtmlEditor } from "@/components/html-editor";
-import { Pill } from "@/components/ui/pill";
 import { ImageCropDialog } from "@/components/image-crop-dialog";
 import { MentionTextarea } from "@/components/mention-textarea";
 import { PostCard } from "@/components/post-card";
+import { RichText } from "@/components/post/rich-text";
+import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/comunidades/$communityId")({
@@ -74,7 +74,9 @@ export const Route = createFileRoute("/comunidades/$communityId")({
         title,
         description: loaderData?.description || "Conheça esta comunidade no Énóis.",
         url: `${texts.siteUrl}/comunidades/${encodeURIComponent(params.communityId)}`,
-        imageUrl: resolveCdnUrl(loaderData?.cover || loaderData?.avatar) || `${texts.siteUrl}/icons/icon-512.png`,
+        imageUrl:
+          resolveCdnUrl(loaderData?.cover || loaderData?.avatar) ||
+          `${texts.siteUrl}/icons/icon-512.png`,
         imageAlt: loaderData?.name ? `Comunidade ${loaderData.name} no Énóis` : title,
       }),
     };
@@ -306,7 +308,10 @@ function CommunityDetail() {
                     {live.name}
                   </h1>
 
-                  <p className="mt-1 break-words text-muted-foreground">{live.description}</p>
+                  <RichText
+                    content={live.description}
+                    className="mt-1 break-words text-muted-foreground"
+                  />
 
                   <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
@@ -726,7 +731,9 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [cropPurpose, setCropPurpose] = useState<CommunityCropPurpose | null>(null);
   // Capa foto OU HTML (igual ao perfil): a escolha decide o que vai no PATCH.
-  const [bannerMode, setBannerMode] = useState<"photo" | "html">(community.bannerHtml ? "html" : "photo");
+  const [bannerMode, setBannerMode] = useState<"photo" | "html">(
+    community.bannerHtml ? "html" : "photo",
+  );
   const [bannerHtml, setBannerHtml] = useState(community.bannerHtml ?? "");
 
   const handleCropComplete = useCallback(
@@ -766,8 +773,7 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
         cover: cover || null,
         avatar: avatar || null,
         // Modo foto com HTML existente limpa o HTML (a foto volta a ser a capa); sem HTML, nao mexe.
-        bannerHtml:
-          bannerMode === "html" ? bannerHtml : community.bannerHtml ? "" : undefined,
+        bannerHtml: bannerMode === "html" ? bannerHtml : community.bannerHtml ? "" : undefined,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["community", community.id] });
@@ -794,7 +800,11 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">{texts.communities.detail.cover}</Label>
 
-        <div className="flex gap-1.5" role="tablist" aria-label={texts.communities.detail.bannerHtml.title}>
+        <div
+          className="flex gap-1.5"
+          role="tablist"
+          aria-label={texts.communities.detail.bannerHtml.title}
+        >
           <Pill active={bannerMode === "photo"} onClick={() => setBannerMode("photo")}>
             <>{texts.communities.detail.bannerHtml.photoTab}</>
           </Pill>
@@ -821,48 +831,49 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
           </div>
         )}
 
-        {bannerMode === "photo" && (cover ? (
-          <div className="group relative overflow-hidden rounded-xl border border-border">
-            <img src={cover} alt="" className="h-24 w-full object-cover" />
+        {bannerMode === "photo" &&
+          (cover ? (
+            <div className="group relative overflow-hidden rounded-xl border border-border">
+              <img src={cover} alt="" className="h-24 w-full object-cover" />
 
-            {/* No toque não existe hover: abaixo de md as ações ficam sempre visíveis, senão
+              {/* No toque não existe hover: abaixo de md as ações ficam sempre visíveis, senão
                 era impossível trocar ou remover a capa pelo celular. */}
-            <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 transition md:opacity-0 md:group-hover:opacity-100">
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                className="rounded-full gap-1.5"
-                onClick={() => coverRef.current?.click()}
-              >
-                <Camera className="h-4 w-4" />
+              <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 transition md:opacity-0 md:group-hover:opacity-100">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  className="rounded-full gap-1.5"
+                  onClick={() => coverRef.current?.click()}
+                >
+                  <Camera className="h-4 w-4" />
 
-                <>{texts.communities.detail.change}</>
-              </Button>
+                  <>{texts.communities.detail.change}</>
+                </Button>
 
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                className="rounded-full"
-                onClick={() => setCover("")}
-              >
-                {texts.communities.detail.remove}
-              </Button>
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="sm"
+                  className="rounded-full"
+                  onClick={() => setCover("")}
+                >
+                  {texts.communities.detail.remove}
+                </Button>
+              </div>
             </div>
-          </div>
-        ) : (
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full rounded-full gap-1.5"
-            onClick={() => coverRef.current?.click()}
-          >
-            <Camera className="h-4 w-4" />
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full rounded-full gap-1.5"
+              onClick={() => coverRef.current?.click()}
+            >
+              <Camera className="h-4 w-4" />
 
-            <>{texts.communities.detail.addCover}</>
-          </Button>
-        ))}
+              <>{texts.communities.detail.addCover}</>
+            </Button>
+          ))}
         <input
           ref={coverRef}
           type="file"
