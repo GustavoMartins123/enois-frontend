@@ -105,7 +105,7 @@ export function applyThemeSettings(
   const selector = mode === "dark" ? "html:root.dark" : "html:root";
   const layers: Record<string, string>[] = [];
   if (widgetBackground) layers.push(buildWidgetDeclarations(widgetBackground));
-  if (pageBackground) layers.push(buildPageDeclarations(pageBackground));
+  if (pageBackground) layers.push(buildPageDeclarations(pageBackground, !collection));
   for (const [kind, style] of [
     ["widget", widgetBackground],
     ["page", pageBackground],

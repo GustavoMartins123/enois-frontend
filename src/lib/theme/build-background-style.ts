@@ -101,8 +101,28 @@ export function buildWidgetDeclarations(
  * widgets (acima), e texto solto direto sobre a página é raro — a identidade do
  * tema e a legibilidade dos cartões valem mais.
  */
-export function buildPageDeclarations(style: BackgroundStyle): Record<string, string> {
-  return { "--background": backgroundValue(style) };
+export function buildPageDeclarations(
+  style: BackgroundStyle,
+  fitText = false,
+): Record<string, string> {
+  const declarations: Record<string, string> = { "--background": backgroundValue(style) };
+
+  // Com a camada livre ativa (sem tema da galeria), a página é dona do texto-base:
+  // pílulas, rótulos da coluna e o que senta direto sobre ela são ajustados ao mid
+  // do fundo — senão a faixa clara de um degradê engole texto claro (e vice-versa).
+  if (fitText) {
+    const mid = representativeHex(style);
+    const fitted = readableForeground(hexToRgb(mid), 290).css;
+    Object.assign(declarations, {
+      "--foreground": fitted,
+      "--text-strong": fitted,
+      "--muted-foreground": `color-mix(in srgb, ${fitted} 55%, ${mid})`,
+      "--text-subtle": `color-mix(in srgb, ${fitted} 55%, ${mid})`,
+      "--text-date": `color-mix(in srgb, ${fitted} 35%, ${mid})`,
+    });
+  }
+
+  return declarations;
 }
 
 /** Cor sólida representativa do plano de fundo (para ajustar o texto dos widgets). */
