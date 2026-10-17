@@ -202,8 +202,6 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
               <div className="mt-0.5">
                 <ReadMore
                   clampClassName="line-clamp-5"
-                  length={content.length}
-                  threshold={300}
                   moreLabel={texts.common.readMore}
                   lessLabel={texts.common.readLess}
                 >
