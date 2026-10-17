@@ -109,10 +109,16 @@ function CommunityDetail() {
   const [transferOpen, setTransferOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
 
+  // `joined` depende de QUEM pergunta, e o SSR nao tem sessao: o dado do loader chega com
+  // joined=false. Com o staleTime global de 30s esse dado valia como fresco no cliente, entao a
+  // pagina ficava mostrando "Entrar" (e escondendo o composer) para quem ja era membro — so
+  // destravava depois de 30s ou ao trocar de aba. staleTime 0 forca a confirmacao no cliente
+  // assim que a pagina monta.
   const { data: live } = useQuery({
     queryKey: ["community", community.id],
     queryFn: () => communitiesApi.get(community.id),
     initialData: community,
+    staleTime: 0,
   });
 
   const { data: membersData } = useQuery({
