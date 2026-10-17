@@ -153,6 +153,15 @@ function Mensagens() {
     sendMessage.mutate({ conversationId: activeConversation.id, text: content });
   };
 
+  // Campo de mensagem cresce com o texto (teto 128px) e volta a 1 linha ao enviar.
+  const messageInputRef = useRef<HTMLTextAreaElement>(null);
+  useEffect(() => {
+    const el = messageInputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 128)}px`;
+  }, [text]);
+
   const activeMessages = activeConversation ? messages : [];
 
   const otherParticipantId = activeConversation?.participantIds.find((id) => id !== currentUserId);
@@ -447,13 +456,22 @@ function Mensagens() {
 
               <form
                 onSubmit={handleSubmit}
-                className="flex items-center gap-2 border-t border-border p-3"
+                className="flex items-end gap-2 border-t border-border p-3"
               >
-                <Input
+                <textarea
                   value={text}
                   onChange={(e) => setText(e.target.value)}
+                  onKeyDown={(e) => {
+                    // Enter envia; Shift+Enter quebra linha (padrao de chat).
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
+                    }
+                  }}
+                  ref={messageInputRef}
+                  rows={1}
                   placeholder={texts.messages.inputPlaceholder}
-                  className="h-10 rounded-full bg-muted"
+                  className="max-h-32 min-h-[40px] w-full resize-none rounded-2xl bg-muted px-4 py-2.5 text-sm outline-none"
                 />
 
                 <button

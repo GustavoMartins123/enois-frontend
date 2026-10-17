@@ -38,6 +38,14 @@ export function MentionTextarea({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [mentionQuery, setMentionQuery] = useState("");
   const [mentionIndex, setMentionIndex] = useState(-1);
+
+  // Auto-expansao: cresce com o texto ate o teto (240px); dali em diante rola dentro.
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 240)}px`;
+  }, [value]);
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [mentionedIds, setMentionedIds] = useState<string[]>([]);
 
@@ -177,7 +185,7 @@ export function MentionTextarea({
         onInput={handleInput}
         onKeyDown={handleKey}
         placeholder={placeholder}
-        className={`w-full resize-none ${className}`}
+        className={`max-h-[240px] w-full resize-none overflow-y-auto ${className}`}
         maxLength={maxLength}
         rows={rows}
       />
