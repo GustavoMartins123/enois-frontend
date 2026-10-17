@@ -829,6 +829,10 @@ export const texts = {
         CELEBRATE: "🎉",
         SUPPORT: "💪",
         INSIGHTFUL: "💡",
+        EYES: "👀",
+        NOTE: "📝",
+        FIRE: "🔥",
+        CLAP: "👏",
       },
     },
     report: {
