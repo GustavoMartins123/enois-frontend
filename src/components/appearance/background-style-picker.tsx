@@ -12,8 +12,12 @@ import { RangeField } from "./range-field";
 /** Valores de partida, em HSL: o gradiente já nasce como rampa de um matiz só. */
 const DEFAULTS = {
   color: hslToHex(258, 30, 95),
+  alpha: 100,
   from: hslToHex(258, 30, 90),
+  fromAlpha: 100,
   to: hslToHex(258, 30, 70),
+  toAlpha: 100,
+  angle: 135,
 };
 
 const MODES: { id: "solid" | "gradient" | null; label: string }[] = [

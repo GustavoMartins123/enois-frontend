@@ -4,6 +4,7 @@ import type { ThemeCollection } from "@/types/preferences/theme-collection";
 import type { CollectionOverrides } from "@/types/preferences/theme-collection-overrides";
 
 import { PAGE_PAINT_TARGETS, paintGradientCss } from "./build-background-style";
+import { withAlpha } from "./build-background-style";
 import { buildAccentTokens } from "./build-theme-tokens";
 
 /**
