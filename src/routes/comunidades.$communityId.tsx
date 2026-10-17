@@ -5,7 +5,7 @@ import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-ro
 
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { PROFILE_HTML_MAX_LENGTH } from "@/constants/profile";
-import { POST_TYPES } from "@/constants/post-types";
+import { ARTICLE_BODY_MAX_LENGTH, POST_TYPES } from "@/constants/post-types";
 import { texts } from "@/texts";
 import type { CreatePostInput } from "@/types/application/feed/create-post-input";
 import type { PostView } from "@/types/application/feed/post-view";
@@ -54,6 +54,7 @@ import { CommunityFavoriteButton } from "@/components/community-favorite-button"
 import { HtmlEditor } from "@/components/html-editor";
 import { Pill } from "@/components/ui/pill";
 import { ImageCropDialog } from "@/components/image-crop-dialog";
+import { MentionTextarea } from "@/components/mention-textarea";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
 
@@ -88,15 +89,20 @@ function CommunityDetail() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [draft, setDraft] = useState("");
-  // Mesmos recursos do composer do feed: tipo de publicação, mídia e página em HTML.
+  // Mesmos recursos do composer do feed: tipo de publicação, mídia, página em HTML, menções e o
+  // corpo do artigo (o backend exige o corpo em ARTICLE — sem o campo, publicar artigo numa
+  // comunidade só dava erro).
   const [postType, setPostType] = useState<PostView["type"]>("INSIGHT");
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [pageHtml, setPageHtml] = useState("");
+  const [articleBody, setArticleBody] = useState("");
+  const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([]);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [typePickerOpen, setTypePickerOpen] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const upload = useMediaUpload();
   const pageMode = postType === "PAGE";
+  const articleMode = postType === "ARTICLE";
   const currentType = POST_TYPES.find((option) => option.id === postType) ?? POST_TYPES[0];
   const [editOpen, setEditOpen] = useState(false);
   const [leaveOpen, setLeaveOpen] = useState(false);
@@ -174,6 +180,8 @@ function CommunityDetail() {
       setDraft("");
       setMedia([]);
       setPageHtml("");
+      setArticleBody("");
+      setMentionedUserIds([]);
       setPostType("INSIGHT");
       setPublishError(null);
     },
@@ -184,7 +192,10 @@ function CommunityDetail() {
   const publish = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const content = draft.trim();
+    // Pagina e uma coisa OU outra (o HTML e o conteudo); artigo precisa do texto de cima E do corpo
+    // — as mesmas regras do composer do feed.
     if (pageMode ? !pageHtml.trim() : !content) return;
+    if (articleMode && !articleBody.trim()) return;
 
     setPublishError(null);
     try {
@@ -199,6 +210,8 @@ function CommunityDetail() {
         communityId: community.id,
         mediaIds,
         ...(pageMode ? { pageHtml } : {}),
+        ...(articleMode ? { articleBody } : {}),
+        mentionedUserIds: pageMode ? [] : mentionedUserIds,
       });
     } catch (error) {
       setPublishError(error instanceof Error ? error.message : texts.feed.composer.publishError);
@@ -432,12 +445,16 @@ function CommunityDetail() {
         {isMember && (
           <form onSubmit={publish} className="surface-card p-5">
             {!pageMode && (
-              <Textarea
+              <MentionTextarea
                 value={draft}
-                onChange={(event) => setDraft(event.target.value)}
+                onChange={(value, ids) => {
+                  setDraft(value);
+                  setMentionedUserIds(ids);
+                }}
                 placeholder={texts.communities.detail.composerPlaceholder}
-                className="min-h-20 resize-none rounded-2xl border-border bg-muted/40 text-sm"
+                className="min-h-20 rounded-2xl border border-border bg-muted/40 px-3 py-2 text-sm font-normal"
                 maxLength={1200}
+                toolbar
               />
             )}
 
@@ -455,6 +472,30 @@ function CommunityDetail() {
                   maxLength={PAGE_HTML_MAX_LENGTH}
                   innerPadding={false}
                   previewClassName="-mx-3 -mb-3 mt-3 h-[360px] w-full"
+                />
+              </div>
+            )}
+
+            {articleMode && (
+              <div className="mt-3 rounded-2xl border border-border-soft bg-surface-1 p-3">
+                <label
+                  htmlFor="community-article-body"
+                  className="mb-1 block text-sm font-normal text-text-subtle"
+                >
+                  {texts.feed.composer.article.bodyLabel}
+                </label>
+
+                <p className="mb-2 text-sm font-normal text-text-subtle">
+                  {texts.feed.composer.article.bodyHint}
+                </p>
+
+                <Textarea
+                  id="community-article-body"
+                  value={articleBody}
+                  maxLength={ARTICLE_BODY_MAX_LENGTH}
+                  onChange={(event) => setArticleBody(event.target.value)}
+                  placeholder={texts.feed.composer.article.bodyPlaceholder}
+                  className="min-h-[220px]"
                 />
               </div>
             )}
@@ -546,6 +587,7 @@ function CommunityDetail() {
                 className="rounded-full gap-1.5"
                 disabled={
                   (pageMode ? !pageHtml.trim() : !draft.trim()) ||
+                  (articleMode && !articleBody.trim()) ||
                   createPost.isPending ||
                   upload.status === "uploading"
                 }
