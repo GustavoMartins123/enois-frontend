@@ -841,6 +841,28 @@ export const texts = {
       undo: "Desfazer",
       error: "Não foi possível concluir. Tente novamente.",
     },
+    /**
+     * Selos de post: a sinalizacao ao lado da reacao. Nove selos em grade 3x3 no seletor; um por
+     * pessoa por post (clicar de novo tira, clicar em outro troca).
+     */
+    seals: {
+      action: "Adicionar selo",
+      title: "Sinalizar com um selo",
+      hint: "Um selo por pessoa por post. Clicar de novo no mesmo tira; escolher outro troca.",
+      remove: "Tirar meu selo",
+      error: "Nao foi possivel salvar o selo. Tente novamente.",
+      items: {
+        important: "Importante",
+        interesting: "Interessante",
+        tip: "Dica",
+        help: "Ajuda",
+        duplicate: "Post duplicado",
+        fanfic: "Fanfic",
+        tiring: "Massante",
+        goodQuestion: "Boa pergunta",
+        inspiring: "Inspirador",
+      },
+    },
     reactions: {
       title: "Reações",
       empty: "Nenhuma reação ainda",

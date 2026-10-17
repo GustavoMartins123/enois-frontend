@@ -4,13 +4,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
+import { POST_SEALS, postSeal } from "@/constants/post-seals";
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { PostCardProps } from "@/types/components/post/post-card-props";
 import {
-  Bookmark,
   BookOpen,
+  Bookmark,
   FileText,
   Flag,
   Heart,
@@ -18,10 +19,12 @@ import {
   MoreHorizontal,
   Pencil,
   Share2,
+  Tag,
   Trash2,
 } from "lucide-react";
 
 import { REACTION_EMOJIS, communitiesApi, feedApi, reactionsApi } from "@/lib/api";
+import { sealsApi } from "@/lib/api/seals";
 import { useAuth } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
 
@@ -64,6 +67,22 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
   // Só corta em lista: na página do post o texto inteiro é o conteúdo da página.
   const isCompact = !fullPost && post.content.length > POST_COMPACT_THRESHOLD;
   const [showComments, setShowComments] = useState(false);
+  // Selos do post: vem em lote do backend (aqui e um post so; a listagem pode pedir varios de uma vez).
+  const { data: seals } = useQuery({
+    queryKey: ["seals", post.id],
+    queryFn: () =>
+      sealsApi.forPosts([post.id]).then((all) => all[post.id] ?? { seals: [], mySeal: null }),
+    staleTime: 60_000,
+  });
+  const toggleSeal = useMutation({
+    mutationFn: (seal: string) =>
+      seals?.mySeal === seal ? sealsApi.remove(post.id) : sealsApi.toggle(post.id, seal),
+    onSuccess: (result) => {
+      queryClient.setQueryData(["seals", post.id], result);
+      queryClient.invalidateQueries({ queryKey: ["seals", post.id] });
+    },
+    onError: () => toast(texts.posts.seals.error, "error"),
+  });
   const [saved, setSaved] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -320,6 +339,33 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
         </div>
       </header>
 
+      {/* Selos da comunidade: ficam no topo, acima do conteudo — e o que a pessoa marcou fica em
+          destaque (o "meu selo" com anel). */}
+      {seals && seals.seals.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          {seals.seals.map((item) => {
+            const seal = postSeal(item.seal);
+            if (!seal) return null;
+            return (
+              <span
+                key={item.seal}
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium",
+                  seal.className,
+                  seals.mySeal === item.seal && "ring-1 ring-primary/60",
+                )}
+              >
+                <seal.icon className="h-3 w-3" aria-hidden />
+
+                <>{seal.label}</>
+
+                {item.count > 1 && <span className="tabular-nums opacity-70">×{item.count}</span>}
+              </span>
+            );
+          })}
+        </div>
+      )}
+
       {/* Post de pagina pode nao ter texto nenhum: sem paragrafo, so a pagina logo abaixo.
           Na lista, texto acima de 400 caracteres entra cortado em 8 linhas com o "Ler mais" que
           abre o post; na propria pagina do post (`fullPost`) nada e cortado — o texto completo mora
@@ -454,6 +500,66 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
 
             <>{texts.posts.share}</>
           </button>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
+                title={texts.posts.seals.action}
+                aria-label={texts.posts.seals.action}
+              >
+                <Tag className="h-4 w-4" />
+              </button>
+            </PopoverTrigger>
+
+            <PopoverContent align="start" className="w-64 p-3">
+              <p className="text-xs font-semibold uppercase tracking-widest text-text-subtle">
+                {texts.posts.seals.title}
+              </p>
+
+              <div className="mt-2 grid grid-cols-3 gap-1.5">
+                {POST_SEALS.map((seal) => (
+                  <button
+                    key={seal.id}
+                    type="button"
+                    onClick={() => toggleSeal.mutate(seal.id)}
+                    disabled={toggleSeal.isPending}
+                    title={seal.label}
+                    aria-label={seal.label}
+                    aria-pressed={seals?.mySeal === seal.id}
+                    className={cn(
+                      "flex flex-col items-center gap-1 rounded-lg border px-1 py-2 text-[10px] font-medium transition hover:border-primary/50",
+                      seals?.mySeal === seal.id
+                        ? "border-primary bg-primary-soft text-primary"
+                        : "border-border-soft text-text-subtle",
+                    )}
+                  >
+                    <seal.icon className="h-4 w-4" aria-hidden />
+
+                    <span className="text-center leading-tight">{seal.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              <p className="mt-2 text-[11px] leading-snug text-text-subtle">
+                {texts.posts.seals.hint}
+              </p>
+
+              {seals?.mySeal && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    sealsApi
+                      .remove(post.id)
+                      .then(() => queryClient.invalidateQueries({ queryKey: ["seals", post.id] }))
+                  }
+                  className="mt-2 w-full rounded-lg px-2 py-1.5 text-xs font-medium text-destructive transition hover:bg-destructive/10"
+                >
+                  {texts.posts.seals.remove}
+                </button>
+              )}
+            </PopoverContent>
+          </Popover>
 
           <button
             onClick={() => setShowReport(post.id, true)}
