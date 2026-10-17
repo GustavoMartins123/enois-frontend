@@ -4,6 +4,7 @@ import { texts } from "@/texts";
 import type { AuthorInfoProps } from "@/types/components/post/author-info-props";
 
 import { UserAvatar } from "@/components/user-avatar";
+import { UserBadge } from "@/components/user-badge";
 
 import { formatTime } from "./format-time";
 
@@ -12,6 +13,7 @@ export function AuthorInfo({
   authorUsername,
   authorName,
   authorAvatar,
+  authorBadge,
   createdAt,
   community,
   fallbackClassName,
@@ -38,6 +40,8 @@ export function AuthorInfo({
           >
             {authorName}
           </Link>
+
+          <UserBadge badge={authorBadge} />
 
           {community ? (
             <span className="text-xs font-normal text-text-subtle">

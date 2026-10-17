@@ -15,6 +15,7 @@ import { ReadMore } from "@/components/ui/read-more";
 import { Textarea } from "@/components/ui/textarea";
 
 import { UserAvatar } from "@/components/user-avatar";
+import { UserBadge } from "@/components/user-badge";
 
 import { formatTime } from "./format-time";
 import { LinkPreviews } from "./link-previews";
@@ -145,6 +146,8 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
         <div className="rounded-xl bg-surface-1 px-3 py-2">
           <div className="flex flex-wrap items-center gap-2">
             {profileLink}
+
+            <UserBadge badge={comment.authorBadge} />
             {replyingTo && (
               <span className="text-xs font-normal text-text-subtle">
                 {texts.posts.comments.replyingTo(replyingTo)}

@@ -8,6 +8,8 @@ export type CommentView = {
   /** Username do autor — é o que permite abrir o perfil pelo nome/foto. */
   authorUsername: string | null;
   authorAvatar: string | null;
+  /** Emblema (PNG) do autor, junto ao nome. */
+  authorBadge?: string | null;
   parentCommentId: string | null;
   content: string;
   /** Imagens/videos do comentario (upload); GIFs colados por URL continuam no texto. */

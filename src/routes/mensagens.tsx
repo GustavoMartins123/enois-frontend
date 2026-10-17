@@ -20,6 +20,7 @@ import { AppContainer } from "@/components/app-container";
 import { useToast } from "@/components/ui/toast";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { UserAvatar } from "@/components/user-avatar";
+import { UserBadge } from "@/components/user-badge";
 
 export const Route = createFileRoute("/mensagens")({
   beforeLoad: requireAuth,
@@ -407,11 +408,18 @@ function Mensagens() {
                               to="/perfil/$username"
                               params={{ username: otherUser?.username ?? otherParticipantId ?? "" }}
                             >
-                              <UserAvatar
-                                src={otherUser?.avatar}
-                                alt={otherUser?.name}
-                                className="h-7 w-7 shrink-0 mb-1"
-                              />
+                              <span className="relative mb-1 inline-block">
+                                <UserAvatar
+                                  src={otherUser?.avatar}
+                                  alt={otherUser?.name}
+                                  className="h-7 w-7 shrink-0"
+                                />
+
+                                <UserBadge
+                                  badge={otherUser?.badge}
+                                  className="absolute -bottom-0.5 -right-0.5 h-3 w-3 ring-1 ring-card"
+                                />
+                              </span>
                             </Link>
                           )}
                           <div
@@ -510,7 +518,11 @@ function ConversationItem({ conversation, isActive, onSelect, selecting, selecte
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between">
-            <span className="truncate text-sm font-medium">{title}</span>
+            <span className="flex min-w-0 items-center gap-1.5">
+              <span className="truncate text-sm font-medium">{title}</span>
+
+              <UserBadge badge={otherUser?.badge} />
+            </span>
 
             <span className="text-xs text-muted-foreground shrink-0 ml-2">
               {conversation.time ? formatTime(conversation.time) : ""}
@@ -560,7 +572,11 @@ function ConversationHeader({ conversation, onBack }: ConversationHeaderProps) {
         </Link>
 
         <div className="min-w-0">
-          <p className="truncate font-semibold">{title}</p>
+          <span className="flex items-center gap-1.5">
+            <span className="truncate font-semibold">{title}</span>
+
+            <UserBadge badge={otherUser?.badge} />
+          </span>
           {otherUser?.headline && (
             <p className="truncate text-xs text-muted-foreground">{otherUser.headline}</p>
           )}

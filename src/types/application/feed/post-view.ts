@@ -6,6 +6,7 @@ export type PostView = {
   authorId: string;
   authorUsername: string;
   authorName: string;
+  authorBadge?: string | null;
   authorAvatar: string | null;
   type:
     | "INSIGHT"

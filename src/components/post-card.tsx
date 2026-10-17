@@ -258,6 +258,7 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
         <AuthorInfo
           authorUsername={post.authorUsername}
           authorName={post.authorName}
+          authorBadge={post.authorBadge}
           authorAvatar={post.authorAvatar}
           createdAt={post.createdAt}
           community={post.community}
