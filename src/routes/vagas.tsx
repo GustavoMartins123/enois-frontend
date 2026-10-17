@@ -430,7 +430,7 @@ function Vagas() {
                       href={j.sourceUrl ?? "#"}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-3 text-sm font-medium text-primary-foreground transition hover:opacity-90"
+                      className="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-3 text-sm font-medium !text-primary-foreground transition hover:opacity-90"
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
 
