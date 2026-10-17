@@ -1,7 +1,9 @@
 import { texts } from "@/texts";
 import {
+  BookOpen,
   Bookmark,
   Briefcase,
+  Building2,
   Calendar,
   Compass,
   GraduationCap,
@@ -16,7 +18,9 @@ export const navigationItems = [
   { to: "/comunidades", label: texts.navigation.items.communities, icon: Compass },
   { to: "/mensagens", label: texts.navigation.items.messages, icon: MessageCircle },
   { to: "/salvos", label: texts.navigation.items.saved, icon: Bookmark },
+  { to: "/blogs", label: texts.navigation.items.blogs, icon: BookOpen },
   { to: "/vagas", label: texts.navigation.items.jobs, icon: Briefcase },
+  { to: "/empresas", label: texts.navigation.items.companies, icon: Building2 },
   { to: "/mentoria", label: texts.navigation.items.mentoring, icon: GraduationCap },
   { to: "/eventos", label: texts.navigation.items.events, icon: Calendar },
 ];

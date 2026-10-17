@@ -7,7 +7,17 @@ import type { ListJobsParams } from "@/types/application/job/list-jobs-params";
 
 import { api, buildQuery } from "../api-client";
 
+/** Empresa no diretorio derivado das vagas (internas abertas + externas). */
+export type CompanyDirectoryEntry = {
+  name: string;
+  logo: string;
+  openJobs: number;
+};
+
 export const jobsApi = {
+  companies: (query?: string, limit = 60) =>
+    api.get<CompanyDirectoryEntry[]>(`/jobs/companies${buildQuery({ query, limit })}`),
+
   list: (params?: ListJobsParams) =>
     api.get<PageResponse<Job>>(
       `/jobs${buildQuery({ ...params, cursor: params?.cursor ?? undefined, limit: params?.limit ?? 20 })}`,

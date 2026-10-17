@@ -43,7 +43,9 @@ export const texts = {
       communities: "Comunidades",
       messages: "Mensagens",
       saved: "Salvos",
+      blogs: "Blogs",
       jobs: "Vagas",
+      companies: "Empresas",
       mentoring: "Mentoria",
       events: "Eventos",
     },
@@ -1092,6 +1094,59 @@ export const texts = {
     },
   },
 
+  blog: {
+    seoFallbackTitle: "Blog",
+    seoTitle: (name: string) => `${name} · Blog · Énóis`,
+    seoDescription: (name: string) =>
+      `O cantinho de ${name} no Énóis: textos, imagens e páginas do jeito que a pessoa escreveu.`,
+    title: "Blogs",
+    description:
+      "Cantinhos de quem escreve por aqui: portfólio, diário, receitas, o que a pessoa quiser — sem passar pelo feed.",
+    myBlog: "Meu blog",
+    create: "Criar meu blog",
+    edit: "Editar blog",
+    newPost: "Novo post",
+    subscribe: "Inscrever-se",
+    subscribed: "Inscrito",
+    unsubscribe: "Sair da inscrição",
+    subscribeHint: "As novidades deste blog aparecem no seu Para você — e só lá.",
+    empty: "Nenhum post ainda.",
+    emptyDirectory: "Ainda não há blogs por aqui. Crie o seu.",
+    postsCount: (count: number) => `${count} ${count === 1 ? "post" : "posts"}`,
+    notFound: "Blog não encontrado.",
+    backToBlogs: "Ver todos os blogs",
+    ownerHint: "Este blog é seu. Publique pelo botão Novo post.",
+    editor: {
+      blogTitle: "Nome do blog",
+      blogDescription: "Descrição",
+      theme: "Tema do blog (HTML/CSS)",
+      themeHint:
+        "Opcional: o HTML/CSS abaixo vira a cara da sua página de blog (mesmo quadro isolado das páginas e da bio). Vazio volta ao cabeçalho padrão.",
+      save: "Salvar",
+      saved: "Blog salvo.",
+      postTitle: "Título do post",
+      modeText: "Texto",
+      modeHtml: "HTML/CSS",
+      textHint:
+        "Escreva como no Word: # vira título, **negrito**, *itálico*, - vira lista, > vira citação. A prévia mostra como fica.",
+      htmlHint: "Cole HTML e CSS livres — é o mesmo editor das páginas do perfil.",
+      preview: "Prévia",
+      write: "Escrever",
+      publish: "Publicar",
+      published: "Post publicado. Quem segue seu blog foi avisado.",
+      editPost: "Editar post",
+      savePost: "Salvar post",
+      deletePost: "Excluir post",
+      deleted: "Post excluído.",
+      error: "Não foi possível salvar. Tente novamente.",
+      emptyBody: "Escreva alguma coisa antes de publicar.",
+    },
+    feed: {
+      badge: "Blog",
+      read: "Ler no blog",
+    },
+  },
+
   communities: {
     seoTitle: "Comunidades · Énóis",
     title: "Comunidades",
@@ -1756,6 +1811,16 @@ export const texts = {
     moderationEmpty: "Nenhum recurso pendente.",
     decided: "Decisão registrada.",
     moderationError: "Não foi possível registrar a decisão.",
+  },
+
+  empresas: {
+    seoTitle: "Empresas · Énóis",
+    title: "Empresas",
+    subtitle: "Quem está contratando na rede — a partir das vagas publicadas e agregadas.",
+    searchPlaceholder: "Buscar empresa...",
+    jobsCount: (n: number) => (n === 1 ? "1 vaga aberta" : `${n} vagas abertas`),
+    viewJobs: "Ver vagas",
+    empty: "Nenhuma empresa encontrada.",
   },
 
   guidelines: {

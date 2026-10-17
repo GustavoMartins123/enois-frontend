@@ -80,7 +80,16 @@ function formatPostedAt(dateStr: string | null | undefined): string {
 function Vagas() {
   const queryClient = useQueryClient();
   const { data: user } = useCurrentUser();
-  const [query, setQuery] = useState("");
+  // Diretorio de empresas linka com ?query= preenchido (busca ja inicia com o nome).
+  const [query, setQuery] = useState(() => {
+    // Diretorio de empresas: o card gravou o nome e a busca ja inicia preenchida.
+    const fromDirectory = sessionStorage.getItem("empresas:query");
+    const params = new URLSearchParams(window.location.search);
+    const fromUrl = params.get("query") ?? "";
+    const initial = fromDirectory ?? fromUrl;
+    if (fromDirectory) sessionStorage.removeItem("empresas:query");
+    return initial;
+  });
   // Busca "debounced": sem isso, cada tecla disparava uma requisicao ao backend.
   const [debouncedQuery, setDebouncedQuery] = useState("");
   useEffect(() => {
