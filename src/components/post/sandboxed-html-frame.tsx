@@ -39,7 +39,10 @@ export function SandboxedHtmlFrame({
       // Sem borda, cantos ou sombra por padrão: quem envolve (card do post, card "Sobre") já dá o
       // acabamento, e a página deve encostar nas bordas em vez de flutuar dentro de uma moldura.
       // Quem quiser moldura passa a classe (o diálogo "Abrir página", por exemplo).
-      className={cn("w-full bg-white", className)}
+      // `border-0` e `bg-transparent` são obrigatórios, não estilo: o navegador desenha uma borda
+      // clara de 2px em todo iframe por padrão, e o fundo branco aparecia atrás do conteúdo do autor
+      // em tema escuro. Sem os dois, sobra uma "bordinha branca" em volta de tudo que é HTML/CSS.
+      className={cn("w-full border-0 bg-transparent", className)}
     />
   );
 }
@@ -75,7 +78,7 @@ function buildBaseCss(innerPadding: boolean): string {
   const padding = innerPadding ? "14px 16px" : "0";
   return `*{box-sizing:border-box}
 html,body{margin:0}
-body{background:#fff;color:#1a1a1a;padding:${padding};overflow-wrap:break-word;
+body{background:transparent;color:light-dark(#1a1a1a,#e8e6ff);color-scheme:light dark;padding:${padding};overflow-wrap:break-word;
 font:400 14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 h1,h2,h3,h4,h5,h6{line-height:1.25;margin:.6em 0 .4em}
 p{margin:.5em 0}
