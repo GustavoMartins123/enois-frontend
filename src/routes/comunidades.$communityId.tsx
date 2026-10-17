@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
+import { PROFILE_HTML_MAX_LENGTH } from "@/constants/profile";
 import { POST_TYPES } from "@/constants/post-types";
 import { texts } from "@/texts";
 import type { CreatePostInput } from "@/types/application/feed/create-post-input";
@@ -30,6 +31,8 @@ import { requireAuth } from "@/lib/require-auth";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
+import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -48,6 +51,7 @@ import { useToast } from "@/components/ui/toast";
 import { AppContainer } from "@/components/app-container";
 import { CommunityFavoriteButton } from "@/components/community-favorite-button";
 import { HtmlEditor } from "@/components/html-editor";
+import { Pill } from "@/components/ui/pill";
 import { ImageCropDialog } from "@/components/image-crop-dialog";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
@@ -237,7 +241,15 @@ function CommunityDetail() {
         </Link>
 
         <div className="surface-card overflow-hidden">
-          {live.cover ? (
+          {live.bannerHtml ? (
+            // Capa em HTML/CSS: mesmo espaço da foto, quadro isolado sem script (igual à do perfil).
+            <SandboxedHtmlFrame
+              html={live.bannerHtml}
+              title={texts.communities.detail.bannerHtml.frameTitle}
+              className="h-48 w-full rounded-none border-0 shadow-none"
+              innerPadding={false}
+            />
+          ) : live.cover ? (
             <img src={resolveCdnUrl(live.cover)} alt="" className="h-48 w-full object-cover" />
           ) : (
             <div className="h-48 w-full bg-gradient-to-br from-primary/20 to-primary/5" />
@@ -647,6 +659,9 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
   const avatarRef = useRef<HTMLInputElement>(null);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [cropPurpose, setCropPurpose] = useState<CommunityCropPurpose | null>(null);
+  // Capa foto OU HTML (igual ao perfil): a escolha decide o que vai no PATCH.
+  const [bannerMode, setBannerMode] = useState<"photo" | "html">(community.bannerHtml ? "html" : "photo");
+  const [bannerHtml, setBannerHtml] = useState(community.bannerHtml ?? "");
 
   const handleCropComplete = useCallback(
     async (blob: Blob) => {
@@ -684,6 +699,9 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
         description: description !== community.description ? description : undefined,
         cover: cover || null,
         avatar: avatar || null,
+        // Modo foto com HTML existente limpa o HTML (a foto volta a ser a capa); sem HTML, nao mexe.
+        bannerHtml:
+          bannerMode === "html" ? bannerHtml : community.bannerHtml ? "" : undefined,
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["community", community.id] });
@@ -709,7 +727,35 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
 
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">{texts.communities.detail.cover}</Label>
-        {cover ? (
+
+        <div className="flex gap-1.5" role="tablist" aria-label={texts.communities.detail.bannerHtml.title}>
+          <Pill active={bannerMode === "photo"} onClick={() => setBannerMode("photo")}>
+            <>{texts.communities.detail.bannerHtml.photoTab}</>
+          </Pill>
+
+          <Pill active={bannerMode === "html"} onClick={() => setBannerMode("html")}>
+            <>{texts.communities.detail.bannerHtml.htmlTab}</>
+          </Pill>
+        </div>
+
+        {bannerMode === "html" && (
+          <div className="rounded-2xl border border-border-soft bg-surface-1 p-3">
+            <HtmlEditor
+              id="community-banner-html"
+              value={bannerHtml}
+              onChange={setBannerHtml}
+              label={texts.communities.detail.bannerHtml.label}
+              description={texts.communities.detail.bannerHtml.description}
+              placeholder={texts.communities.detail.bannerHtml.placeholder}
+              emptyPreview={texts.communities.detail.bannerHtml.empty}
+              frameTitle={texts.communities.detail.bannerHtml.frameTitle}
+              maxLength={PROFILE_HTML_MAX_LENGTH}
+              previewClassName="mt-3 h-48 w-full"
+            />
+          </div>
+        )}
+
+        {bannerMode === "photo" && (cover ? (
           <div className="group relative overflow-hidden rounded-xl border border-border">
             <img src={cover} alt="" className="h-24 w-full object-cover" />
 
@@ -750,7 +796,7 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
 
             <>{texts.communities.detail.addCover}</>
           </Button>
-        )}
+        ))}
         <input
           ref={coverRef}
           type="file"

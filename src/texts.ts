@@ -1022,6 +1022,22 @@ export const texts = {
       addAvatar: "Adicionar avatar",
       cropCover: "Ajustar capa",
       cropAvatar: "Ajustar avatar",
+      bannerHtml: {
+        title: "Capa da comunidade",
+        choiceHint: "A capa pode ser uma foto ou um HTML/CSS seu — escolha abaixo.",
+        photoTab: "Foto",
+        htmlTab: "HTML/CSS",
+        photoHint:
+          "A foto vira a capa da comunidade. Escolher foto quando existe capa em HTML remove o HTML.",
+        label: "Capa em HTML/CSS",
+        description: "Mesma coisa da capa do perfil: HTML+CSS com animação, sem script.",
+        placeholder: "<style>\n  @keyframes brilho { ... }\n</style>\n<div class=\"capa\">...</div>",
+        empty: "A pré-visualização aparece aqui quando houver código.",
+        frameTitle: "Pré-visualização da capa da comunidade",
+        save: "Salvar capa",
+        saved: "Capa da comunidade atualizada.",
+        error: "Não foi possível salvar a capa. Tente de novo.",
+      },
     },
   },
 
