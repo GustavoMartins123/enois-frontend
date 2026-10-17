@@ -48,6 +48,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { AppearanceDialog } from "@/components/appearance/appearance-dialog";
@@ -104,6 +105,7 @@ function Profile() {
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const avatarUpload = useMediaUpload();
   const bannerUpload = useMediaUpload();
   const avatarRef = useRef<HTMLInputElement>(null);
@@ -201,12 +203,30 @@ function Profile() {
     },
   });
 
+  // GIF animado nao passa pelo recorte: o canvas converteria o primeiro frame em JPEG
+  // e mataria a animacao, entao o arquivo original vai direto pro upload.
+  const handleGifUpload = async (file: File, purpose: "AVATAR" | "BANNER") => {
+    try {
+      const upload = purpose === "AVATAR" ? avatarUpload : bannerUpload;
+      const result = await upload.upload(file, purpose);
+      const field = purpose === "AVATAR" ? "avatar" : "banner";
+      await updateProfile.mutateAsync({ [field]: result.cdnUrl });
+    } catch {
+      toast(texts.profile.imageUploadError, "error");
+    }
+  };
+
   // Limpar o input e essencial: o navegador nao dispara `change` quando o usuario escolhe o MESMO
   // arquivo duas vezes, e a impressao que fica e "a imagem nao carrega".
   const openCrop = (input: HTMLInputElement, purpose: "AVATAR" | "BANNER") => {
     const file = input.files?.[0];
     input.value = "";
     if (!file) return;
+    const isGif = file.type === "image/gif" || file.name.toLowerCase().endsWith(".gif");
+    if (isGif) {
+      void handleGifUpload(file, purpose);
+      return;
+    }
     setCropImageSrc(URL.createObjectURL(file));
     setCropPurpose(purpose);
   };
