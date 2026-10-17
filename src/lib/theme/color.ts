@@ -93,3 +93,46 @@ export function readableForeground(
 function round(value: number): number {
   return Math.round(value * 1000) / 1000;
 }
+
+/** Converte hex em HSL (h 0–360, s/l 0–100) — a forma que os sliders de fundo falam. */
+export function hexToHsl(hex: string): { h: number; s: number; l: number } {
+  // RgbColor já é normalizado (0–1): nada de dividir por 255 de novo.
+  const rn = hexToRgb(hex);
+  const max = Math.max(rn.r, rn.g, rn.b);
+  const min = Math.min(rn.r, rn.g, rn.b);
+  const l = (max + min) / 2;
+  if (max === min) return { h: 0, s: 0, l: Math.round(l * 100) };
+
+  const d = max - min;
+  const s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+  let h: number;
+  if (max === rn.r) h = (rn.g - rn.b) / d + (rn.g < rn.b ? 6 : 0);
+  else if (max === rn.g) h = (rn.b - rn.r) / d + 2;
+  else h = (rn.r - rn.g) / d + 4;
+  return { h: Math.round(h * 60), s: Math.round(s * 100), l: Math.round(l * 100) };
+}
+
+/** Converte HSL (h 0–360, s/l 0–100) de volta para hex. */
+export function hslToHex(h: number, s: number, l: number): string {
+  const sn = s / 100;
+  const ln = l / 100;
+  const c = (1 - Math.abs(2 * ln - 1)) * sn;
+  const hp = (((h % 360) + 360) % 360) / 60;
+  const x = c * (1 - Math.abs((hp % 2) - 1));
+  let r = 0;
+  let g = 0;
+  let b = 0;
+  if (hp < 1) [r, g, b] = [c, x, 0];
+  else if (hp < 2) [r, g, b] = [x, c, 0];
+  else if (hp < 3) [r, g, b] = [0, c, x];
+  else if (hp < 4) [r, g, b] = [0, x, c];
+  else if (hp < 5) [r, g, b] = [x, 0, c];
+  else [r, g, b] = [c, 0, x];
+  const m = ln - c / 2;
+  // RgbColor é normalizado (0–1): os canais HSL já nascem nessa escala.
+  return rgbToHex({
+    r: Math.min(1, Math.max(0, r + m)),
+    g: Math.min(1, Math.max(0, g + m)),
+    b: Math.min(1, Math.max(0, b + m)),
+  });
+}

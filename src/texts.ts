@@ -91,6 +91,8 @@ export const texts = {
     bgStyleDiagonal: "Diagonal",
     bgStyleVertical: "Vertical",
     bgStyleRadial: "Radial",
+    bgStyleSpread: "Extensão do degradê",
+    bgStyleSpreadHint: "Quanto o fim se afasta do começo em brilho — o degradê fica num matiz só.",
     bgStyleContrastNote: "O texto do widget se adapta sozinho para continuar legível.",
     pageBgTitle: "Plano de fundo",
     pageBgHint: "O fundo da página, atrás de tudo — a parte que fica exposta em volta dos widgets.",

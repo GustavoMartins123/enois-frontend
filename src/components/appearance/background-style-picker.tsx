@@ -4,12 +4,17 @@ import { texts } from "@/texts";
 import type { BackgroundStylePickerProps } from "@/types/components/appearance/background-style-picker-props";
 import type { BackgroundStyle } from "@/types/preferences/background-style";
 
+import { hexToHsl, hslToHex } from "@/lib/theme/color";
 import { cn } from "@/lib/utils";
 
-// Tipo local simples: a união vive aqui mesmo, sem arquivo novo de tipo.
+import { RangeField } from "./range-field";
 
-/** Valores de partida ao entrar num modo pela primeira vez (cores suaves da marca). */
-const DEFAULTS = { color: "#f4f1fb", from: "#f9f8ff", to: "#e6dcf7" } as const;
+/** Valores de partida, em HSL: o gradiente já nasce como rampa de um matiz só. */
+const DEFAULTS = {
+  color: hslToHex(258, 30, 95),
+  from: hslToHex(258, 30, 90),
+  to: hslToHex(258, 30, 70),
+};
 
 const MODES: { id: "solid" | "gradient" | null; label: string }[] = [
   { id: null, label: texts.appearance.bgStyleAuto },
@@ -50,10 +55,11 @@ function Pill({
 }
 
 /**
- * Escolha do plano de fundo da personalização: automático (o tingimento fino que
- * já existia), cor sólida ou gradiente com direção. O `<input type="color">` é
- * nativo — acessível por padrão — e o texto do app se adapta sozinho ao fundo
- * escolhido (matemática de contraste da casa, provada em teste).
+ * Escolha de cor/gradiente no estilo das cores livres: sliders, não seletor de cor
+ * nativo. Cor sólida é matiz + saturação + brilho; o gradiente é matiz + brilho do
+ * centro + EXTENSÃO — os dois extremos ficam no mesmo matiz, um mais claro e outro
+ * mais escuro, que é o degradê que fica bonito sempre (nada de duas cores que
+ * brigam). Direção continua em pílulas.
  */
 export function BackgroundStylePicker({ value, onChange }: BackgroundStylePickerProps) {
   const mode: "solid" | "gradient" | null = value?.type ?? null;
@@ -67,6 +73,8 @@ export function BackgroundStylePicker({ value, onChange }: BackgroundStylePicker
       direction: value?.direction ?? "diagonal",
       ...patch,
     });
+
+  const hueLabel = (hue: number) => texts.appearance.hueValue(Math.round(hue));
 
   return (
     <div className="space-y-3">
@@ -87,58 +95,118 @@ export function BackgroundStylePicker({ value, onChange }: BackgroundStylePicker
       </div>
 
       {mode === "solid" && value && (
-        <label className="flex items-center gap-3 text-xs font-normal text-text-subtle">
-          <>{texts.appearance.bgStyleSolid}</>
-
-          <input
-            type="color"
-            value={value.color}
-            onChange={(event) => set({ color: event.target.value })}
-            className="h-8 w-12 cursor-pointer rounded-md border border-border-soft bg-transparent"
-            aria-label={texts.appearance.bgStyleSolid}
-          />
-        </label>
+        <div className="space-y-2">
+          {(() => {
+            const colour = hexToHsl(value.color);
+            return (
+              <>
+                <RangeField
+                  label={texts.appearance.hue}
+                  value={colour.h}
+                  min={0}
+                  max={360}
+                  step={1}
+                  valueLabel={hueLabel(colour.h)}
+                  onChange={(hue) => set({ color: hslToHex(hue, colour.s, colour.l) })}
+                  hueTrack
+                />
+                <RangeField
+                  label={texts.appearance.saturation}
+                  value={colour.s}
+                  min={0}
+                  max={100}
+                  step={1}
+                  valueLabel={`${colour.s}%`}
+                  onChange={(saturation) =>
+                    set({ color: hslToHex(colour.h, saturation, colour.l) })
+                  }
+                />
+                <RangeField
+                  label={texts.appearance.brightness}
+                  value={colour.l}
+                  min={0}
+                  max={100}
+                  step={1}
+                  valueLabel={`${colour.l}%`}
+                  onChange={(lightness) => set({ color: hslToHex(colour.h, colour.s, lightness) })}
+                />
+              </>
+            );
+          })()}
+        </div>
       )}
 
       {mode === "gradient" && value && (
         <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-4 text-xs font-normal text-text-subtle">
-            <label className="flex items-center gap-2">
-              <>{texts.appearance.bgStyleFrom}</>
+          {(() => {
+            const first = hexToHsl(value.from);
+            const second = hexToHsl(value.to);
+            const center = Math.round((first.l + second.l) / 2);
+            const spread = Math.round(Math.min(60, Math.abs(first.l - second.l)));
+            // Os extremos saem do centro e da extensão: mesmo matiz, brilhos opostos.
+            const ends = (nextCenter: number, nextSpread: number) => ({
+              from: hslToHex(
+                first.h,
+                first.s,
+                Math.min(100, Math.round(nextCenter + nextSpread / 2)),
+              ),
+              to: hslToHex(
+                second.h,
+                second.s,
+                Math.max(0, Math.round(nextCenter - nextSpread / 2)),
+              ),
+            });
+            return (
+              <>
+                <RangeField
+                  label={texts.appearance.hue}
+                  value={first.h}
+                  min={0}
+                  max={360}
+                  step={1}
+                  valueLabel={hueLabel(first.h)}
+                  onChange={(hue) =>
+                    set({
+                      from: hslToHex(hue, first.s, first.l),
+                      to: hslToHex(hue, second.s, second.l),
+                    })
+                  }
+                  hueTrack
+                />
+                <RangeField
+                  label={texts.appearance.brightness}
+                  value={center}
+                  min={5}
+                  max={95}
+                  step={1}
+                  valueLabel={`${center}%`}
+                  onChange={(lightness) => set(ends(lightness, spread))}
+                />
+                <RangeField
+                  label={texts.appearance.bgStyleSpread}
+                  value={spread}
+                  min={0}
+                  max={60}
+                  step={1}
+                  valueLabel={`${spread}`}
+                  hint={texts.appearance.bgStyleSpreadHint}
+                  onChange={(nextSpread) => set(ends(center, nextSpread))}
+                />
 
-              <input
-                type="color"
-                value={value.from}
-                onChange={(event) => set({ from: event.target.value })}
-                className="h-8 w-12 cursor-pointer rounded-md border border-border-soft bg-transparent"
-                aria-label={texts.appearance.bgStyleFrom}
-              />
-            </label>
-
-            <label className="flex items-center gap-2">
-              <>{texts.appearance.bgStyleTo}</>
-
-              <input
-                type="color"
-                value={value.to}
-                onChange={(event) => set({ to: event.target.value })}
-                className="h-8 w-12 cursor-pointer rounded-md border border-border-soft bg-transparent"
-                aria-label={texts.appearance.bgStyleTo}
-              />
-            </label>
-          </div>
-
-          <div className="flex flex-wrap gap-2">
-            {DIRECTIONS.map((direction) => (
-              <Pill
-                key={direction.id}
-                active={value.direction === direction.id}
-                onClick={() => set({ direction: direction.id })}
-              >
-                {direction.label}
-              </Pill>
-            ))}
-          </div>
+                <div className="flex flex-wrap gap-2">
+                  {DIRECTIONS.map((direction) => (
+                    <Pill
+                      key={direction.id}
+                      active={value.direction === direction.id}
+                      onClick={() => set({ direction: direction.id })}
+                    >
+                      {direction.label}
+                    </Pill>
+                  ))}
+                </div>
+              </>
+            );
+          })()}
         </div>
       )}
 

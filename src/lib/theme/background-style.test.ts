@@ -6,7 +6,7 @@ import {
   buildPageDeclarations,
   buildWidgetDeclarations,
 } from "./build-background-style";
-import { hexToRgb, readableForeground } from "./color";
+import { hexToHsl, hexToRgb, hslToHex, readableForeground } from "./color";
 
 const solidDark: BackgroundStyle = {
   type: "solid",
@@ -69,5 +69,27 @@ describe("plano de fundo personalizado", () => {
     const diagonal: BackgroundStyle = { ...solidDark, type: "gradient", direction: "diagonal" };
     expect(backgroundValue(diagonal)).toContain("linear-gradient(135deg");
     expect(backgroundValue({ ...diagonal, direction: "radial" })).toContain("radial-gradient");
+  });
+});
+
+describe("conversões HSL dos sliders de fundo", () => {
+  it("hsl e hex conversam nos dois sentidos (dentro da quantização de 8 bits)", () => {
+    for (const hex of ["#0b1220", "#f4f1fb", "#ff71ce", "#000000", "#ffffff"]) {
+      const { h, s, l } = hexToHsl(hex);
+      const back = hexToHsl(hslToHex(h, s, l));
+      const circular = Math.min(Math.abs(back.h - h), 360 - Math.abs(back.h - h));
+      expect(circular).toBeLessThanOrEqual(2);
+      // Em brilho baixo, 8 bits custa alguns pontos de saturação — tolerância maior lá.
+      expect(Math.abs(back.s - s)).toBeLessThanOrEqual(6);
+      expect(Math.abs(back.l - l)).toBeLessThanOrEqual(6);
+    }
+  });
+
+  it("a extensão do degradê gera rampa de um matiz só, do claro ao escuro", () => {
+    const from = hexToHsl("#e6dcf7");
+    const to = hslToHex(from.h, from.s, Math.max(0, from.l - 30));
+    const second = hexToHsl(to);
+    expect(second.h).toBe(from.h);
+    expect(Math.abs(second.l - (from.l - 30))).toBeLessThanOrEqual(1);
   });
 });
