@@ -23,6 +23,8 @@ import { useThemeSync } from "@/lib/theme/use-theme-sync";
 
 import { ToastProvider } from "@/components/ui/toast";
 
+import { InstallPwaBanner } from "@/components/install-pwa-banner";
+
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -196,6 +198,7 @@ function RootInsideProvider() {
   return (
     <ToastProvider>
       <Outlet />
+      <InstallPwaBanner />
     </ToastProvider>
   );
 }
