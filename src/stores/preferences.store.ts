@@ -110,6 +110,14 @@ const preferencesStorage = {
             Number.isFinite(parsed.state.accentAlpha)
               ? Math.min(100, Math.max(0, parsed.state.accentAlpha))
               : 100;
+          parsed.state.widgetAlpha =
+            typeof parsed.state.widgetAlpha === "number" && Number.isFinite(parsed.state.widgetAlpha)
+              ? Math.min(100, Math.max(0, parsed.state.widgetAlpha))
+              : null;
+          parsed.state.pageAlpha =
+            typeof parsed.state.pageAlpha === "number" && Number.isFinite(parsed.state.pageAlpha)
+              ? Math.min(100, Math.max(0, parsed.state.pageAlpha))
+              : null;
         }
 
         return JSON.stringify(parsed);
@@ -151,6 +159,8 @@ export const usePreferencesStore = create<PreferencesState>()(
       widgetBackground: null,
       pageBackground: null,
       accentAlpha: 100,
+      widgetAlpha: null,
+      pageAlpha: null,
 
       setTheme: (theme: Theme) => set({ theme }),
       setThemeSettings: (themeSettings: ThemeSettings) =>
@@ -163,11 +173,15 @@ export const usePreferencesStore = create<PreferencesState>()(
           widgetBackground: null,
           pageBackground: null,
           accentAlpha: 100,
+          widgetAlpha: null,
+          pageAlpha: null,
         }),
       setThemeCollection: (themeCollection: string | null) => set({ themeCollection }),
       setWidgetBackground: (widgetBackground: BackgroundStyle | null) => set({ widgetBackground }),
       setPageBackground: (pageBackground: BackgroundStyle | null) => set({ pageBackground }),
       setAccentAlpha: (accentAlpha: number) => set({ accentAlpha }),
+      setWidgetAlpha: (widgetAlpha: number | null) => set({ widgetAlpha }),
+      setPageAlpha: (pageAlpha: number | null) => set({ pageAlpha }),
       toggleSidebar: () =>
         set((state) => ({
           sidebarCollapsed: !state.sidebarCollapsed,
@@ -184,6 +198,8 @@ export const usePreferencesStore = create<PreferencesState>()(
         widgetBackground: state.widgetBackground,
         pageBackground: state.pageBackground,
         accentAlpha: state.accentAlpha,
+        widgetAlpha: state.widgetAlpha,
+        pageAlpha: state.pageAlpha,
       }),
       skipHydration: true,
     },
