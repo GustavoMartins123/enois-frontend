@@ -23,22 +23,27 @@ import { Route as MensagensRouteImport } from './routes/mensagens'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as EventosRouteImport } from './routes/eventos'
 import { Route as EntrarRouteImport } from './routes/entrar'
+import { Route as EmpresasRouteImport } from './routes/empresas'
 import { Route as DiretrizesRouteImport } from './routes/diretrizes'
 import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as DenunciasRouteImport } from './routes/denuncias'
 import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as ComunidadesRouteImport } from './routes/comunidades'
 import { Route as BloqueadosRouteImport } from './routes/bloqueados'
+import { Route as BlogsRouteImport } from './routes/blogs'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VagasMinhasRouteImport } from './routes/vagas.minhas'
 import { Route as VagasJobIdRouteImport } from './routes/vagas.$jobId'
 import { Route as PostPostIdRouteImport } from './routes/post.$postId'
 import { Route as PerfilUsernameRouteImport } from './routes/perfil.$username'
+import { Route as ModeracaoReportIdRouteImport } from './routes/moderacao.$reportId'
 import { Route as ComunidadesCommunityIdRouteImport } from './routes/comunidades.$communityId'
+import { Route as BlogUsernameRouteImport } from './routes/blog.$username'
 import { Route as AuthVerifyRouteImport } from './routes/auth.verify'
 import { Route as AuthResetRouteImport } from './routes/auth.reset'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as VagasJobIdCandidaturasRouteImport } from './routes/vagas.$jobId.candidaturas'
+import { Route as BlogUsernamePostIdRouteImport } from './routes/blog.$username.$postId'
 
 const VagasRoute = VagasRouteImport.update({
   id: '/vagas',
@@ -110,6 +115,11 @@ const EntrarRoute = EntrarRouteImport.update({
   path: '/entrar',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EmpresasRoute = EmpresasRouteImport.update({
+  id: '/empresas',
+  path: '/empresas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DiretrizesRoute = DiretrizesRouteImport.update({
   id: '/diretrizes',
   path: '/diretrizes',
@@ -140,6 +150,11 @@ const BloqueadosRoute = BloqueadosRouteImport.update({
   path: '/bloqueados',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogsRoute = BlogsRouteImport.update({
+  id: '/blogs',
+  path: '/blogs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -165,10 +180,20 @@ const PerfilUsernameRoute = PerfilUsernameRouteImport.update({
   path: '/perfil/$username',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ModeracaoReportIdRoute = ModeracaoReportIdRouteImport.update({
+  id: '/$reportId',
+  path: '/$reportId',
+  getParentRoute: () => ModeracaoRoute,
+} as any)
 const ComunidadesCommunityIdRoute = ComunidadesCommunityIdRouteImport.update({
   id: '/$communityId',
   path: '/$communityId',
   getParentRoute: () => ComunidadesRoute,
+} as any)
+const BlogUsernameRoute = BlogUsernameRouteImport.update({
+  id: '/blog/$username',
+  path: '/blog/$username',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthVerifyRoute = AuthVerifyRouteImport.update({
   id: '/auth/verify',
@@ -190,21 +215,28 @@ const VagasJobIdCandidaturasRoute = VagasJobIdCandidaturasRouteImport.update({
   path: '/candidaturas',
   getParentRoute: () => VagasJobIdRoute,
 } as any)
+const BlogUsernamePostIdRoute = BlogUsernamePostIdRouteImport.update({
+  id: '/$postId',
+  path: '/$postId',
+  getParentRoute: () => BlogUsernameRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/blogs': typeof BlogsRoute
   '/bloqueados': typeof BloqueadosRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
   '/denuncias': typeof DenunciasRoute
   '/developers': typeof DevelopersRoute
   '/diretrizes': typeof DiretrizesRoute
+  '/empresas': typeof EmpresasRoute
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
-  '/moderacao': typeof ModeracaoRoute
+  '/moderacao': typeof ModeracaoRouteWithChildren
   '/penalidades': typeof PenalidadesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
@@ -216,27 +248,32 @@ export interface FileRoutesByFullPath {
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset': typeof AuthResetRoute
   '/auth/verify': typeof AuthVerifyRoute
+  '/blog/$username': typeof BlogUsernameRouteWithChildren
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
+  '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
+  '/blog/$username/$postId': typeof BlogUsernamePostIdRoute
   '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/blogs': typeof BlogsRoute
   '/bloqueados': typeof BloqueadosRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
   '/denuncias': typeof DenunciasRoute
   '/developers': typeof DevelopersRoute
   '/diretrizes': typeof DiretrizesRoute
+  '/empresas': typeof EmpresasRoute
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
-  '/moderacao': typeof ModeracaoRoute
+  '/moderacao': typeof ModeracaoRouteWithChildren
   '/penalidades': typeof PenalidadesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
@@ -248,28 +285,33 @@ export interface FileRoutesByTo {
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset': typeof AuthResetRoute
   '/auth/verify': typeof AuthVerifyRoute
+  '/blog/$username': typeof BlogUsernameRouteWithChildren
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
+  '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
+  '/blog/$username/$postId': typeof BlogUsernamePostIdRoute
   '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/blogs': typeof BlogsRoute
   '/bloqueados': typeof BloqueadosRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
   '/denuncias': typeof DenunciasRoute
   '/developers': typeof DevelopersRoute
   '/diretrizes': typeof DiretrizesRoute
+  '/empresas': typeof EmpresasRoute
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
-  '/moderacao': typeof ModeracaoRoute
+  '/moderacao': typeof ModeracaoRouteWithChildren
   '/penalidades': typeof PenalidadesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
@@ -281,23 +323,28 @@ export interface FileRoutesById {
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset': typeof AuthResetRoute
   '/auth/verify': typeof AuthVerifyRoute
+  '/blog/$username': typeof BlogUsernameRouteWithChildren
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
+  '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
+  '/blog/$username/$postId': typeof BlogUsernamePostIdRoute
   '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/blogs'
     | '/bloqueados'
     | '/comunidades'
     | '/contato'
     | '/denuncias'
     | '/developers'
     | '/diretrizes'
+    | '/empresas'
     | '/entrar'
     | '/eventos'
     | '/feed'
@@ -315,21 +362,26 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/auth/reset'
     | '/auth/verify'
+    | '/blog/$username'
     | '/comunidades/$communityId'
+    | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
     | '/vagas/$jobId'
     | '/vagas/minhas'
+    | '/blog/$username/$postId'
     | '/vagas/$jobId/candidaturas'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/blogs'
     | '/bloqueados'
     | '/comunidades'
     | '/contato'
     | '/denuncias'
     | '/developers'
     | '/diretrizes'
+    | '/empresas'
     | '/entrar'
     | '/eventos'
     | '/feed'
@@ -347,21 +399,26 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/auth/reset'
     | '/auth/verify'
+    | '/blog/$username'
     | '/comunidades/$communityId'
+    | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
     | '/vagas/$jobId'
     | '/vagas/minhas'
+    | '/blog/$username/$postId'
     | '/vagas/$jobId/candidaturas'
   id:
     | '__root__'
     | '/'
+    | '/blogs'
     | '/bloqueados'
     | '/comunidades'
     | '/contato'
     | '/denuncias'
     | '/developers'
     | '/diretrizes'
+    | '/empresas'
     | '/entrar'
     | '/eventos'
     | '/feed'
@@ -379,28 +436,33 @@ export interface FileRouteTypes {
     | '/auth/callback'
     | '/auth/reset'
     | '/auth/verify'
+    | '/blog/$username'
     | '/comunidades/$communityId'
+    | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
     | '/vagas/$jobId'
     | '/vagas/minhas'
+    | '/blog/$username/$postId'
     | '/vagas/$jobId/candidaturas'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BlogsRoute: typeof BlogsRoute
   BloqueadosRoute: typeof BloqueadosRoute
   ComunidadesRoute: typeof ComunidadesRouteWithChildren
   ContatoRoute: typeof ContatoRoute
   DenunciasRoute: typeof DenunciasRoute
   DevelopersRoute: typeof DevelopersRoute
   DiretrizesRoute: typeof DiretrizesRoute
+  EmpresasRoute: typeof EmpresasRoute
   EntrarRoute: typeof EntrarRoute
   EventosRoute: typeof EventosRoute
   FeedRoute: typeof FeedRoute
   MensagensRoute: typeof MensagensRoute
   MentoriaRoute: typeof MentoriaRoute
-  ModeracaoRoute: typeof ModeracaoRoute
+  ModeracaoRoute: typeof ModeracaoRouteWithChildren
   PenalidadesRoute: typeof PenalidadesRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   RedeRoute: typeof RedeRoute
@@ -412,6 +474,7 @@ export interface RootRouteChildren {
   AuthCallbackRoute: typeof AuthCallbackRoute
   AuthResetRoute: typeof AuthResetRoute
   AuthVerifyRoute: typeof AuthVerifyRoute
+  BlogUsernameRoute: typeof BlogUsernameRouteWithChildren
   PerfilUsernameRoute: typeof PerfilUsernameRoute
   PostPostIdRoute: typeof PostPostIdRoute
 }
@@ -516,6 +579,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EntrarRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/empresas': {
+      id: '/empresas'
+      path: '/empresas'
+      fullPath: '/empresas'
+      preLoaderRoute: typeof EmpresasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/diretrizes': {
       id: '/diretrizes'
       path: '/diretrizes'
@@ -558,6 +628,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BloqueadosRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blogs': {
+      id: '/blogs'
+      path: '/blogs'
+      fullPath: '/blogs'
+      preLoaderRoute: typeof BlogsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -593,12 +670,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PerfilUsernameRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/moderacao/$reportId': {
+      id: '/moderacao/$reportId'
+      path: '/$reportId'
+      fullPath: '/moderacao/$reportId'
+      preLoaderRoute: typeof ModeracaoReportIdRouteImport
+      parentRoute: typeof ModeracaoRoute
+    }
     '/comunidades/$communityId': {
       id: '/comunidades/$communityId'
       path: '/$communityId'
       fullPath: '/comunidades/$communityId'
       preLoaderRoute: typeof ComunidadesCommunityIdRouteImport
       parentRoute: typeof ComunidadesRoute
+    }
+    '/blog/$username': {
+      id: '/blog/$username'
+      path: '/blog/$username'
+      fullPath: '/blog/$username'
+      preLoaderRoute: typeof BlogUsernameRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/auth/verify': {
       id: '/auth/verify'
@@ -628,6 +719,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VagasJobIdCandidaturasRouteImport
       parentRoute: typeof VagasJobIdRoute
     }
+    '/blog/$username/$postId': {
+      id: '/blog/$username/$postId'
+      path: '/$postId'
+      fullPath: '/blog/$username/$postId'
+      preLoaderRoute: typeof BlogUsernamePostIdRouteImport
+      parentRoute: typeof BlogUsernameRoute
+    }
   }
 }
 
@@ -641,6 +739,18 @@ const ComunidadesRouteChildren: ComunidadesRouteChildren = {
 
 const ComunidadesRouteWithChildren = ComunidadesRoute._addFileChildren(
   ComunidadesRouteChildren,
+)
+
+interface ModeracaoRouteChildren {
+  ModeracaoReportIdRoute: typeof ModeracaoReportIdRoute
+}
+
+const ModeracaoRouteChildren: ModeracaoRouteChildren = {
+  ModeracaoReportIdRoute: ModeracaoReportIdRoute,
+}
+
+const ModeracaoRouteWithChildren = ModeracaoRoute._addFileChildren(
+  ModeracaoRouteChildren,
 )
 
 interface VagasJobIdRouteChildren {
@@ -667,20 +777,34 @@ const VagasRouteChildren: VagasRouteChildren = {
 
 const VagasRouteWithChildren = VagasRoute._addFileChildren(VagasRouteChildren)
 
+interface BlogUsernameRouteChildren {
+  BlogUsernamePostIdRoute: typeof BlogUsernamePostIdRoute
+}
+
+const BlogUsernameRouteChildren: BlogUsernameRouteChildren = {
+  BlogUsernamePostIdRoute: BlogUsernamePostIdRoute,
+}
+
+const BlogUsernameRouteWithChildren = BlogUsernameRoute._addFileChildren(
+  BlogUsernameRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BlogsRoute: BlogsRoute,
   BloqueadosRoute: BloqueadosRoute,
   ComunidadesRoute: ComunidadesRouteWithChildren,
   ContatoRoute: ContatoRoute,
   DenunciasRoute: DenunciasRoute,
   DevelopersRoute: DevelopersRoute,
   DiretrizesRoute: DiretrizesRoute,
+  EmpresasRoute: EmpresasRoute,
   EntrarRoute: EntrarRoute,
   EventosRoute: EventosRoute,
   FeedRoute: FeedRoute,
   MensagensRoute: MensagensRoute,
   MentoriaRoute: MentoriaRoute,
-  ModeracaoRoute: ModeracaoRoute,
+  ModeracaoRoute: ModeracaoRouteWithChildren,
   PenalidadesRoute: PenalidadesRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   RedeRoute: RedeRoute,
@@ -692,6 +816,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthCallbackRoute: AuthCallbackRoute,
   AuthResetRoute: AuthResetRoute,
   AuthVerifyRoute: AuthVerifyRoute,
+  BlogUsernameRoute: BlogUsernameRouteWithChildren,
   PerfilUsernameRoute: PerfilUsernameRoute,
   PostPostIdRoute: PostPostIdRoute,
 }
