@@ -1,4 +1,4 @@
-import { type ChangeEvent, type FormEvent, useCallback, useRef, useState } from "react";
+import { type ChangeEvent, type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
@@ -120,6 +120,14 @@ function CommunityDetail() {
     initialData: community,
     staleTime: 0,
   });
+
+  // O `joined` do loader vem de uma consulta SEM sessao (SSR), entao e desconhecido ate a
+  // primeira consulta do cliente (com sessao) responder. Enquanto isso, o CTA fica neutro:
+  // nunca mostrar "Entrar" para um membro por causa do dado anonimo do link (relato do Augusto).
+  const [viewerConfirmed, setViewerConfirmed] = useState(false);
+  useEffect(() => {
+    setViewerConfirmed(true);
+  }, [live]);
 
   const { data: membersData } = useQuery({
     queryKey: ["community", community.id, "members"],
@@ -370,11 +378,15 @@ function CommunityDetail() {
                 )}
                 <Button
                   className="w-auto rounded-full whitespace-nowrap"
-                  variant={isMember ? "secondary" : "default"}
-                  disabled={join.isPending || leave.isPending}
-                  onClick={() => (isMember ? setLeaveOpen(true) : join.mutate())}
+                  variant={viewerConfirmed && isMember ? "secondary" : "default"}
+                  disabled={join.isPending || leave.isPending || !viewerConfirmed}
+                  onClick={() => (viewerConfirmed && isMember ? setLeaveOpen(true) : join.mutate())}
                 >
-                  {isMember ? texts.communities.participating : texts.communities.enter}
+                  {!viewerConfirmed
+                    ? "…"
+                    : isMember
+                      ? texts.communities.participating
+                      : texts.communities.enter}
                 </Button>
               </div>
             </div>

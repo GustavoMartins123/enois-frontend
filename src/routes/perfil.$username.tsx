@@ -19,6 +19,7 @@ import {
   Settings,
   ShieldCheck,
   ShieldOff,
+  Image as ImageIcon,
   Star,
   Target,
   ThumbsUp,
@@ -295,20 +296,6 @@ function Profile() {
                 style={{ background: "var(--gradient-primary)" }}
               />
             )}
-            {isOwnProfile && (
-              <button
-                type="button"
-                onClick={() => setBannerOpen(true)}
-                className="absolute inset-0 flex items-center justify-center bg-black/30 text-white transition md:opacity-0 md:group-hover:opacity-100"
-                disabled={bannerUpload.status === "uploading"}
-              >
-                {bannerUpload.status === "uploading" ? (
-                  texts.common.sending
-                ) : (
-                  <Camera className="h-6 w-6" />
-                )}
-              </button>
-            )}
             <input
               ref={bannerRef}
               type="file"
@@ -326,20 +313,6 @@ function Profile() {
                   alt={user.name}
                   className="h-24 w-24 ring-4 ring-surface-card sm:h-28 sm:w-28"
                 />
-                {isOwnProfile && (
-                  <button
-                    type="button"
-                    onClick={() => avatarRef.current?.click()}
-                    className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30 text-white transition md:opacity-0 md:group-hover:opacity-100"
-                    disabled={avatarUpload.status === "uploading"}
-                  >
-                    {avatarUpload.status === "uploading" ? (
-                      texts.profile.uploadingIndicator
-                    ) : (
-                      <Camera className="h-5 w-5" />
-                    )}
-                  </button>
-                )}
                 <input
                   ref={avatarRef}
                   type="file"
@@ -352,6 +325,30 @@ function Profile() {
               <div className="flex flex-wrap gap-2">
                 {isOwnProfile ? (
                   <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full gap-1.5"
+                      onClick={() => setBannerOpen(true)}
+                      disabled={bannerUpload.status === "uploading"}
+                    >
+                      <ImageIcon className="h-4 w-4" />
+
+                      <>{bannerUpload.status === "uploading" ? texts.common.sending : texts.posts.editCover}</>
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full gap-1.5"
+                      onClick={() => avatarRef.current?.click()}
+                      disabled={avatarUpload.status === "uploading"}
+                    >
+                      <Camera className="h-4 w-4" />
+
+                      <>{avatarUpload.status === "uploading" ? texts.common.sending : texts.posts.editPhoto}</>
+                    </Button>
+
                     <EditProfileDialog profile={user}>
                       <Button variant="outline" size="sm" className="rounded-full gap-1.5">
                         <Settings className="h-4 w-4" />

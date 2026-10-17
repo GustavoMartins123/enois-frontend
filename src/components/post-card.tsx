@@ -151,17 +151,24 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
 
   const handleShare = async () => {
     if (!requireAuth()) return;
+    const url = `${window.location.origin}/post/${post.id}`;
     try {
       const result = await reactionsApi.share(post.id);
       setPostCounters(post.id, result.counters);
-      const url = `${window.location.origin}/post/${post.id}`;
-      if (navigator.share) {
-        await navigator.share({ url });
-      } else {
-        await navigator.clipboard.writeText(url);
+      // Share nativo so no celular: no desktop o dialog rejeita sem gesto e parecia
+      // "nao fazer nada". PC copia o link (com aviso); mobile usa o sheet do sistema.
+      if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
+        try {
+          await navigator.share({ url });
+          return;
+        } catch (nativeFailed) {
+          // usuario cancelou ou o navegador recusou: cai para copiar
+        }
       }
+      await navigator.clipboard.writeText(url);
+      toast(texts.posts.shareCopied, "success");
     } catch {
-      // silently fail
+      toast(texts.posts.shareCopied, "error");
     }
   };
 

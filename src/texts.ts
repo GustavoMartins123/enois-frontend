@@ -863,6 +863,9 @@ export const texts = {
       guidelines: "Veja as diretrizes da comunidade",
     },
     share: "Compartilhar",
+    shareCopied: "Link da publicação copiado!",
+    editCover: "Editar capa",
+    editPhoto: "Editar foto",
     comments: {
       empty: "Nenhum comentário ainda. Seja o primeiro a comentar.",
       placeholder: "Comente com contexto, dúvida ou referência...",
