@@ -12,6 +12,7 @@ import { getCurrentUserId } from "@/lib/current-user";
 
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ReadMore } from "@/components/ui/read-more";
 import { Textarea } from "@/components/ui/textarea";
 
 import { UserAvatar } from "@/components/user-avatar";
@@ -192,10 +193,21 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
             </div>
           ) : (
             <>
-              <RichText
-                content={content}
-                className="mt-0.5 whitespace-pre-line break-words text-sm font-normal leading-relaxed text-text-strong"
-              />
+              <div className="mt-0.5">
+                <ReadMore
+                  clampClassName="line-clamp-5"
+                  length={content.length}
+                  threshold={300}
+                  moreLabel={texts.common.readMore}
+                  lessLabel={texts.common.readLess}
+                >
+                  <RichText
+                    content={content}
+                    className="whitespace-pre-line break-words text-sm font-normal leading-relaxed text-text-strong"
+                  />
+                </ReadMore>
+              </div>
+
               <LinkPreviews content={content} />
             </>
           )}

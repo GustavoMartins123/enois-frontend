@@ -20,6 +20,8 @@ const common = {
   charactersLeft: (count: number) =>
     count === 1 ? "falta 1 caractere" : `faltam ${count} caracteres`,
   charactersLimitReached: "limite de caracteres atingido",
+  readMore: "Ler mais",
+  readLess: "Mostrar menos",
 } as const;
 
 export const texts = {
