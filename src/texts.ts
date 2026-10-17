@@ -817,6 +817,7 @@ export const texts = {
     rankingPosition: (position: number) => `${position}º`,
     recommendationQuote: (comment: string) => `"${comment}"`,
     uploadingIndicator: "...",
+    imageUploadError: "Não foi possível enviar a imagem. Tente novamente.",
     avatarUnknown: "?",
     bannerHtml: {
       action: "Mudar capa",
