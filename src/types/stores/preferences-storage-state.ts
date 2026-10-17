@@ -4,5 +4,6 @@ export type PreferencesStorageState = {
   /** Sem tipo de propósito: vem do storage, que pode ter sido editado à mão. */
   themeSettings?: unknown;
   themeCollection?: unknown;
-  backgroundStyle?: unknown;
+  widgetBackground?: unknown;
+  pageBackground?: unknown;
 };

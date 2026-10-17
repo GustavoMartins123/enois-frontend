@@ -37,9 +37,7 @@ export function ContrastNotice({ report }: ContrastNoticeProps) {
         </p>
 
         {!healthy && (
-          <p className="text-xs font-normal text-text-subtle">
-            {texts.appearance.contrast.hint}
-          </p>
+          <p className="text-xs font-normal text-text-subtle">{texts.appearance.contrast.hint}</p>
         )}
       </div>
     </div>

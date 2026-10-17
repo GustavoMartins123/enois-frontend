@@ -28,20 +28,23 @@ function representativeHex(style: BackgroundStyle): string {
 }
 
 /**
- * Declarações que o plano de fundo escolhido sobrescreve.
+ * Declarações da COR DE WIDGET: o interno de cartões, painéis, menus e sidebar.
  *
- * O fundo escolhido é dono da leitura: o texto da marca (escuro no modo claro) não
- * sobrevive a um fundo escuro. O texto principal é escolhido pelo contraste (a mesma
- * matemática dos temas da galeria) e os tons auxiliares saem por `color-mix` contra
- * o ponto médio do fundo — o CSS faz a conta, como no resto do sistema de temas.
+ * Quem pinta o widget é dono da leitura dele: o texto principal é escolhido pelo
+ * contraste (a mesma matemática dos temas da galeria) e os tons auxiliares saem
+ * por `color-mix` contra o ponto médio — o CSS faz a conta, como no resto do
+ * sistema de temas.
  */
-export function buildBackgroundDeclarations(style: BackgroundStyle): Record<string, string> {
-  const background = backgroundValue(style);
+export function buildWidgetDeclarations(style: BackgroundStyle): Record<string, string> {
+  const surface = backgroundValue(style);
   const mid = representativeHex(style);
   const fitted = readableForeground(hexToRgb(mid), 290);
 
   return {
-    "--background": background,
+    "--card": surface,
+    "--popover": surface,
+    "--sidebar": surface,
+    "--surface-card": surface,
     "--foreground": fitted.css,
     "--text-strong": fitted.css,
     "--card-foreground": fitted.css,
@@ -51,4 +54,15 @@ export function buildBackgroundDeclarations(style: BackgroundStyle): Record<stri
     "--muted-foreground": `color-mix(in srgb, ${fitted.css} 55%, ${mid})`,
     "--text-date": `color-mix(in srgb, ${fitted.css} 35%, ${mid})`,
   };
+}
+
+/**
+ * Declarações do PLANO DE FUNDO: só o `--background`, a página atrás de tudo.
+ *
+ * Sem readaptação de texto de propósito: quem tem cor própria para texto são os
+ * widgets (acima), e texto solto direto sobre a página é raro — a identidade do
+ * tema e a legibilidade dos cartões valem mais.
+ */
+export function buildPageDeclarations(style: BackgroundStyle): Record<string, string> {
+  return { "--background": backgroundValue(style) };
 }

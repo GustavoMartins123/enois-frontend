@@ -81,8 +81,8 @@ export const texts = {
     backgroundSection: "Tom do fundo",
     backgroundHint: "Um tingimento leve nas superfícies, discreto de propósito.",
     backgroundIntensity: "Intensidade",
-    bgStyleTitle: "Plano de fundo",
-    bgStyleHint: "Automático mantém o tingimento fino; cor ou gradiente assumem o fundo do app.",
+    bgStyleTitle: "Cor de widget",
+    bgStyleHint: "O interno de cartões, painéis e menus — vale por cima de qualquer tema.",
     bgStyleAuto: "Automático",
     bgStyleSolid: "Cor",
     bgStyleGradient: "Gradiente",
@@ -91,8 +91,9 @@ export const texts = {
     bgStyleDiagonal: "Diagonal",
     bgStyleVertical: "Vertical",
     bgStyleRadial: "Radial",
-    bgStyleContrastNote:
-      "O texto se adapta sozinho para continuar legível sobre o fundo escolhido.",
+    bgStyleContrastNote: "O texto do widget se adapta sozinho para continuar legível.",
+    pageBgTitle: "Plano de fundo",
+    pageBgHint: "O fundo da página, atrás de tudo — a parte que fica exposta em volta dos widgets.",
     presets: "Paletas prontas",
     presetNames: {
       uva: "Uva",

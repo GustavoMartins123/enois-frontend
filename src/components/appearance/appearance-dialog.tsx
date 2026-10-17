@@ -58,8 +58,10 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
   const resetThemeSettings = usePreferencesStore((state) => state.resetThemeSettings);
   const themeCollection = usePreferencesStore((state) => state.themeCollection);
   const setThemeCollection = usePreferencesStore((state) => state.setThemeCollection);
-  const backgroundStyle = usePreferencesStore((state) => state.backgroundStyle);
-  const setBackgroundStyle = usePreferencesStore((state) => state.setBackgroundStyle);
+  const widgetBackground = usePreferencesStore((state) => state.widgetBackground);
+  const setWidgetBackground = usePreferencesStore((state) => state.setWidgetBackground);
+  const pageBackground = usePreferencesStore((state) => state.pageBackground);
+  const setPageBackground = usePreferencesStore((state) => state.setPageBackground);
   const queryClient = useQueryClient();
 
   const report = useMemo(() => reportThemeContrast(settings, theme), [settings, theme]);
@@ -215,6 +217,8 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
 
             {/* Plano de fundo: automático, cor sólida ou gradiente. Com fundo
                     escolhido, o tingimento fino não faz sentido e fica fora. */}
+            {/* Cor de widget (o interno dos cartões/painéis) e plano de fundo (a
+                página atrás de tudo) — cada um com cor sólida ou gradiente. */}
             <div className="space-y-2 border-t border-border-soft pt-3">
               <p className="text-xs font-medium text-text-strong">
                 {texts.appearance.bgStyleTitle}
@@ -222,10 +226,18 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
 
               <p className="text-xs font-normal text-text-subtle">{texts.appearance.bgStyleHint}</p>
 
-              <BackgroundStylePicker value={backgroundStyle} onChange={setBackgroundStyle} />
+              <BackgroundStylePicker value={widgetBackground} onChange={setWidgetBackground} />
             </div>
 
-            {!activeCollection && !backgroundStyle && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-text-strong">{texts.appearance.pageBgTitle}</p>
+
+              <p className="text-xs font-normal text-text-subtle">{texts.appearance.pageBgHint}</p>
+
+              <BackgroundStylePicker value={pageBackground} onChange={setPageBackground} />
+            </div>
+
+            {!activeCollection && !pageBackground && (
               <>
                 <RangeField
                   label={texts.appearance.hue}

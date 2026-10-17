@@ -1,10 +1,8 @@
 import { THEME_COLLECTIONS } from "@/constants/theme-collections";
-import type { BackgroundStyle } from "@/types/preferences/background-style";
 import type { Theme } from "@/types/preferences/theme";
 import type { ThemeCollection } from "@/types/preferences/theme-collection";
 import type { CollectionOverrides } from "@/types/preferences/theme-collection-overrides";
 
-import { buildBackgroundDeclarations } from "./build-background-style";
 import { buildAccentTokens } from "./build-theme-tokens";
 
 /**
@@ -51,11 +49,9 @@ export function resolveThemeCollection(id: string | null | undefined): ThemeColl
  * que é o que o mantém legível; um tema só-escuro vale nos dois modos pelo mesmo
  * caminho, na direção oposta.
  *
- * As camadas livres entram por cima, nesta ordem: o tema, o destaque da cor livre
- * (só as chaves do destaque — superfícies, bordas, sombras e relevos seguem do
- * tema), e o valor do plano de fundo livre. Sobre um tema, o fundo livre troca
- * APENAS o `--background`: o texto tem dono (os cartões do tema têm cor própria),
- * então a readaptação de texto fica para a camada sem tema.
+ * A camada livre entra por cima: o destaque da cor livre (só as chaves do
+ * destaque — superfícies, bordas, sombras e relevos seguem do tema). O plano de
+ * fundo e a cor de widget livres entram DEPOIS, no bloco genérico do apply.
  */
 export function buildCollectionCss(
   collection: ThemeCollection,
@@ -74,11 +70,6 @@ export function buildCollectionCss(
       const value = accent[key];
       if (value !== undefined) effective[key] = value;
     }
-  }
-
-  if (overrides?.backgroundStyle) {
-    const background = buildBackgroundDeclarations(overrides.backgroundStyle)["--background"];
-    if (background) effective = { ...effective, "--background": background };
   }
 
   const declarations = Object.entries(effective)

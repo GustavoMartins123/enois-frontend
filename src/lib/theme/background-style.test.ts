@@ -1,7 +1,11 @@
 import type { BackgroundStyle } from "@/types/preferences/background-style";
 import { describe, expect, it } from "vitest";
 
-import { backgroundValue, buildBackgroundDeclarations } from "./build-background-style";
+import {
+  backgroundValue,
+  buildPageDeclarations,
+  buildWidgetDeclarations,
+} from "./build-background-style";
 import { hexToRgb, readableForeground } from "./color";
 
 const solidDark: BackgroundStyle = {
@@ -20,7 +24,7 @@ const solidLight: BackgroundStyle = { ...solidDark, color: "#f4f1fb" };
  */
 describe("plano de fundo personalizado", () => {
   it("fundo escuro escolhido vira texto claro", () => {
-    const declarations = buildBackgroundDeclarations(solidDark);
+    const declarations = buildWidgetDeclarations(solidDark);
     const expected = readableForeground(hexToRgb("#0b1220"), 290).css;
     expect(declarations["--foreground"]).toBe(expected);
     // O texto claro é o quase-branco da marca (oklch ~0.99), não o escuro.
@@ -28,7 +32,7 @@ describe("plano de fundo personalizado", () => {
   });
 
   it("fundo claro escolhido mantém texto escuro", () => {
-    const declarations = buildBackgroundDeclarations(solidLight);
+    const declarations = buildWidgetDeclarations(solidLight);
     expect(declarations["--foreground"]).toBe(readableForeground(hexToRgb("#f4f1fb"), 290).css);
     expect(declarations["--foreground"]).toContain("0.16");
   });
@@ -43,16 +47,22 @@ describe("plano de fundo personalizado", () => {
     };
     expect(backgroundValue(gradient)).toContain("linear-gradient(180deg, #1a1030, #e6dcf7)");
 
-    const declarations = buildBackgroundDeclarations(gradient);
+    const declarations = buildWidgetDeclarations(gradient);
     // O médio de #1a1030 e #e6dcf7 é meio-clara: o texto é o que lê melhor sobre ele.
     expect(declarations["--foreground"]).toBe(readableForeground(hexToRgb("#808690"), 290).css);
     expect(declarations["--text-subtle"]).toContain("color-mix");
   });
 
-  it("a cor sólida escolhida é o próprio fundo (não o gradiente padrão)", () => {
-    const declarations = buildBackgroundDeclarations(solidDark);
-    expect(declarations["--background"]).toBe("#0b1220");
-    expect(declarations["--background"]).not.toContain("gradient");
+  it("a cor sólida escolhida é o próprio widget (não o gradiente padrão)", () => {
+    const declarations = buildWidgetDeclarations(solidDark);
+    expect(declarations["--card"]).toBe("#0b1220");
+    expect(declarations["--surface-card"]).toBe("#0b1220");
+    expect(declarations["--card"]).not.toContain("gradient");
+  });
+
+  it("o plano de fundo da página troca só o --background, sem tocar em texto", () => {
+    const declarations = buildPageDeclarations(solidDark);
+    expect(declarations).toEqual({ "--background": "#0b1220" });
   });
 
   it("direções viram o CSS esperado", () => {

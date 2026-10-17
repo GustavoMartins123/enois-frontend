@@ -8,12 +8,15 @@ export type PreferencesState = {
   themeSettings: ThemeSettings;
   /** Coleção temática ativa (`null` = padrão da marca). */
   themeCollection: string | null;
-  /** Plano de fundo escolhido na personalização (`null` = comportamento automático). */
-  backgroundStyle: BackgroundStyle | null;
+  /** Cor de widget escolhida (cartões/painéis/menus); `null` = do tema ou da marca. */
+  widgetBackground: BackgroundStyle | null;
+  /** Plano de fundo da página (atrás de tudo); `null` = do tema ou da marca. */
+  pageBackground: BackgroundStyle | null;
   setTheme: (theme: Theme) => void;
   setThemeSettings: (settings: ThemeSettings) => void;
   resetThemeSettings: () => void;
   setThemeCollection: (collectionId: string | null) => void;
-  setBackgroundStyle: (style: BackgroundStyle | null) => void;
+  setWidgetBackground: (style: BackgroundStyle | null) => void;
+  setPageBackground: (style: BackgroundStyle | null) => void;
   toggleSidebar: () => void;
 };

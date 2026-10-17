@@ -20,7 +20,8 @@ export function useThemeSync(): void {
   const theme = usePreferencesStore((state) => state.theme);
   const themeSettings = usePreferencesStore((state) => state.themeSettings);
   const themeCollection = usePreferencesStore((state) => state.themeCollection);
-  const backgroundStyle = usePreferencesStore((state) => state.backgroundStyle);
+  const widgetBackground = usePreferencesStore((state) => state.widgetBackground);
+  const pageBackground = usePreferencesStore((state) => state.pageBackground);
 
   useEffect(() => {
     hydratePreferences();
@@ -28,8 +29,8 @@ export function useThemeSync(): void {
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
-    applyThemeSettings(themeSettings, theme, themeCollection, backgroundStyle);
-  }, [theme, themeSettings, themeCollection, backgroundStyle]);
+    applyThemeSettings(themeSettings, theme, themeCollection, widgetBackground, pageBackground);
+  }, [theme, themeSettings, themeCollection, widgetBackground, pageBackground]);
 
   useThemeAccountSync();
 }

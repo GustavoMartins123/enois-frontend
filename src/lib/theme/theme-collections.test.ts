@@ -147,19 +147,10 @@ describe("cores livres como camada sobre os temas", () => {
     expect(css).toContain("--primary: #000080");
   });
 
-  it("o plano de fundo livre troca só o valor do fundo; o texto continua o do tema", () => {
-    const background: BackgroundStyle = {
-      type: "solid",
-      color: "#0b1220",
-      from: "#0b1220",
-      to: "#0b1220",
-      direction: "diagonal",
-    };
-    const css = buildCollectionCss(resolveThemeCollection("win95")!, "light", {
-      backgroundStyle: background,
-    });
-    expect(css).toContain("--background: #0b1220");
-    // O texto segue sendo o do tema (cartões têm cor própria) — sem readaptação.
-    expect(css).toContain("--text-strong: #0a0a0a");
+  it("as camadas de fundo livres não pertencem ao builder do tema: são blocos do apply", () => {
+    // Sobre um tema, cor de widget e plano de fundo entram como blocos genéricos
+    // de mesma especificidade (apply-theme), então o builder do tema não os recebe.
+    const css = buildCollectionCss(resolveThemeCollection("win95")!, "light", { accent });
+    expect(css).not.toContain("#0b1220");
   });
 });
