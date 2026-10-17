@@ -28,10 +28,13 @@ const METHOD_STYLE: Record<HttpMethod, string> = {
   DELETE: "bg-rose-500/15 text-rose-700 dark:text-rose-400",
 };
 
+// Chips PREENCHIDOS (não tingidos): com temas pastéis, text-primary sobre fundo
+// tingido de primary ficava ilegível — texto sobre a cor cheia contrasta sempre,
+// porque onPrimary é definido pelo tema contra o próprio primary.
 const ACCESS_STYLE: Record<ApiEndpoint["access"], { label: string; className: string }> = {
-  public: { label: "público", className: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30" },
-  auth: { label: "com sessão", className: "bg-primary/10 text-primary border-primary/30" },
-  admin: { label: "admin", className: "bg-rose-500/10 text-destructive border-destructive/30" },
+  public: { label: "público", className: "bg-primary text-primary-foreground" },
+  auth: { label: "com sessão", className: "bg-primary text-primary-foreground" },
+  admin: { label: "admin", className: "bg-destructive text-destructive-foreground" },
 };
 
 function Code({ children }: { children: string }) {
@@ -95,7 +98,7 @@ function Endpoint({ endpoint }: { endpoint: ApiEndpoint }) {
 
         <code className="break-all font-mono text-xs font-semibold text-text-strong">{endpoint.path}</code>
 
-        <span className={`ml-auto rounded-full border px-2 py-0.5 text-[10px] font-medium ${access.className}`}>
+        <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-medium ${access.className}`}>
           {access.label}
         </span>
       </div>
