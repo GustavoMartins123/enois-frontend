@@ -11,7 +11,7 @@ import { withAlpha } from "@/lib/theme/build-background-style";
  * muted; tints (`*-soft`, gradiente suave) saem de `color-mix` com o destaque.
  * Um tema declarou tudo o que a marca tinge quando este mapa sai completo.
  */
-function palette(spec: PaletteSpec): ThemeCollectionTokens {
+export function palette(spec: PaletteSpec): ThemeCollectionTokens {
   const { primary, onPrimary, surface, background, muted, border } = spec;
   const soft = spec.soft ?? `color-mix(in srgb, ${primary} 14%, ${background})`;
   const secondary = spec.secondary ?? `color-mix(in oklab, ${primary} 45%, ${background})`;
@@ -122,9 +122,13 @@ const BEVEL_RULE_SOFT =
  * natureza) repetem os mesmos tokens nos dois modos — o botão claro/escuro não
  * muda a cara deles de propósito, e a descrição da galeria avisa.
  */
+import { THEME_COLLECTIONS_EXTRA } from "./theme-collections-extra";
+
 export const THEME_COLLECTIONS: ThemeCollection[] = [
+  ...THEME_COLLECTIONS_EXTRA,
   {
     id: "win95",
+    category: "retro",
     name: "Chicago 95",
     description: "Cinza de face, relevo rígido e o azul-marinho do básico que funcionava.",
     metaColor: "#000080",
@@ -184,6 +188,7 @@ export const THEME_COLLECTIONS: ThemeCollection[] = [
   },
   {
     id: "win98",
+    category: "retro",
     name: "Memphis 98",
     description: "O 95 com o título em degradê — a última infância do século XX.",
     metaColor: "#0a246a",
@@ -243,6 +248,7 @@ export const THEME_COLLECTIONS: ThemeCollection[] = [
   },
   {
     id: "win2000",
+    category: "retro",
     name: "Prata 2000",
     description: "Prata profissional, relevo suave e o azul corporativo sério.",
     metaColor: "#3a6ea5",
@@ -292,6 +298,7 @@ export const THEME_COLLECTIONS: ThemeCollection[] = [
   },
   {
     id: "luna",
+    category: "retro",
     name: "Luna",
     description: "Azuis arredondados, brilho de botão e o verde do campo. Otimista e brilhante.",
     metaColor: "#245edb",
@@ -353,6 +360,7 @@ export const THEME_COLLECTIONS: ThemeCollection[] = [
   },
   {
     id: "aero-glass",
+    category: "retro",
     name: "Aero Glass",
     surfaceAlpha: 55,
     surfaceHex: "#ffffff",
@@ -424,6 +432,7 @@ html:root.dark[data-theme="aero-glass"] .bg-surface-card, html:root.dark[data-th
   },
   {
     id: "frutiger-aero",
+    category: "retro",
     name: "Frutiger Aero",
     surfaceAlpha: 72,
     surfaceHex: "#ffffff",
@@ -485,6 +494,7 @@ html:root.dark[data-theme="aero-glass"] .bg-surface-card, html:root.dark[data-th
   },
   {
     id: "metro",
+    category: "retro",
     name: "Metro",
     description: "Blocos sólidos, tipografia na frente e zero enfeite. Conteúdo é interface.",
     metaColor: "#6b21c8",
@@ -527,6 +537,7 @@ html:root.dark[data-theme="aero-glass"] .bg-surface-card, html:root.dark[data-th
   },
   {
     id: "terminal",
+    category: "retro",
     name: "Terminal",
     description:
       "Fósforo verde sobre preto, fonte de máquina. Escuro por natureza — o brilho do tubo não tem modo claro.",
@@ -564,6 +575,7 @@ html:root.dark[data-theme="aero-glass"] .bg-surface-card, html:root.dark[data-th
   },
   {
     id: "vaporwave",
+    category: "retro",
     name: "Vaporwave",
     description:
       "Roxo profundo, rosa e ciano neon. Escuro por natureza — a noite é o ponto do tema.",
@@ -602,6 +614,7 @@ html:root.dark[data-theme="aero-glass"] .bg-surface-card, html:root.dark[data-th
   },
   {
     id: "synthwave",
+    category: "retro",
     name: "Synthwave",
     description:
       "Noite de neon: rosa quente, laranja de pôr do sol e contorno luminoso. Escuro por natureza.",
@@ -639,6 +652,7 @@ html:root.dark[data-theme="aero-glass"] .bg-surface-card, html:root.dark[data-th
   },
   {
     id: "y2k",
+    category: "retro",
     name: "Y2K",
     description: "Cromado, perolado e otimista: a internet acreditando no ano 2000.",
     metaColor: "#6f7cff",
@@ -700,6 +714,7 @@ html:root.dark[data-theme="aero-glass"] .bg-surface-card, html:root.dark[data-th
   },
   {
     id: "neumorfismo",
+    category: "retro",
     name: "Neumorfismo",
     description: "Superfícies da mesma cor do fundo, esculpidas por luz e sombra suave.",
     metaColor: "#6d5dfc",

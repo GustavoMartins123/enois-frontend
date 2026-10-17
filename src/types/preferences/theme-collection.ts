@@ -8,6 +8,8 @@ export type ThemeCollection = {
   description: string;
   /** Cor da barra do navegador enquanto o tema está ativo. */
   metaColor: string;
+  /** Categoria no seletor (Fase 1 do plano de temas). */
+  category?: "retro" | "casa" | "jogos" | "maquinas" | "papel";
   /** Transparência nativa das superfícies do tema (o slider começa nela). */
   surfaceAlpha?: number;
   /** Superfície bruta (sem alpha), para o slider de transparência re-aplicar por cima. */
