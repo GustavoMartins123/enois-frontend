@@ -14,6 +14,10 @@ export type PreferencesState = {
   pageBackground: BackgroundStyle | null;
   /** Transparência do destaque (0–100; 100 = opaco). */
   accentAlpha: number;
+  /** Transparência dos widgets; `null` = a nativa do tema (ou opaco). */
+  widgetAlpha: number | null;
+  /** Transparência da página; `null` = a nativa do tema (ou opaca). */
+  pageAlpha: number | null;
   setTheme: (theme: Theme) => void;
   setThemeSettings: (settings: ThemeSettings) => void;
   resetThemeSettings: () => void;
@@ -21,5 +25,7 @@ export type PreferencesState = {
   setWidgetBackground: (style: BackgroundStyle | null) => void;
   setPageBackground: (style: BackgroundStyle | null) => void;
   setAccentAlpha: (alpha: number) => void;
+  setWidgetAlpha: (alpha: number | null) => void;
+  setPageAlpha: (alpha: number | null) => void;
   toggleSidebar: () => void;
 };
