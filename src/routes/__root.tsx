@@ -162,6 +162,18 @@ function RootShell({ children }: WithRequiredChildren) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  // O provider precisa ENVOLVER quem usa react-query: useThemeSync tem um useQuery
+  // (tema da conta) e, fora daqui, derrubava o SSR de todas as paginas
+  // ("No QueryClient set" — o RootComponent roda FORA do proprio provider).
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RootInsideProvider />
+    </QueryClientProvider>
+  );
+}
+
+function RootInsideProvider() {
   const router = useRouter();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
 
@@ -182,10 +194,8 @@ function RootComponent() {
   }, [pathname, router]);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <ToastProvider>
-        <Outlet />
-      </ToastProvider>
-    </QueryClientProvider>
+    <ToastProvider>
+      <Outlet />
+    </ToastProvider>
   );
 }
