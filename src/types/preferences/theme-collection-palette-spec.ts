@@ -27,5 +27,7 @@ export type PaletteSpec = {
   fontSans?: string;
   /** O tema é dono da leitura: texto explícito em toda paleta, com contraste conferido. */
   text: { strong: string; subtle: string; date: string };
+  /** Transparência nativa das superfícies do tema (Aero 55, Frutiger 72; resto opaco). */
+  surfaceAlpha?: number;
   extra?: Record<string, string>;
 };
