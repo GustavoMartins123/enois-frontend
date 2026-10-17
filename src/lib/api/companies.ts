@@ -1,0 +1,24 @@
+import type { CompanyDetail, CompanySummary, ProposalView } from "@/types/application/companies/company-detail";
+
+import { api } from "../api-client";
+
+export const companiesApi = {
+  bySlug: (slug: string) => api.get<CompanyDetail>(`/empresa/${slug}`),
+  create: (data: { name: string; description?: string; sector?: string; size?: string; location?: string; website?: string }) =>
+    api.post<{ id: string; slug: string; name: string }>("/empresas", data),
+  update: (companyId: string, data: Partial<CompanySummary> & { logo?: string; cover?: string }) =>
+    api.patch<CompanySummary>(`/empresas/${companyId}`, data),
+  mine: () => api.get<CompanySummary[]>("/empresas/mine"),
+
+  publishProject: (
+    companyId: string,
+    data: { title: string; problem: string; scope?: string; deliverables: string; acceptanceCriteria: string; budget?: string; deadline?: string },
+  ) => api.post<{ id: string; status: string }>(`/empresas/${companyId}/microprojetos`, data),
+  project: (projectId: string) =>
+    api.get<{ project: CompanyDetail["projects"][number]; proposals: ProposalView[] }>(`/microprojetos/${projectId}`),
+  propose: (projectId: string, message: string) =>
+    api.post<{ id: string; status: string }>(`/microprojetos/${projectId}/proposals`, { message }),
+  selectProposal: (projectId: string, proposalId: string) =>
+    api.post<{ status: string }>(`/microprojetos/${projectId}/proposals/${proposalId}/select`),
+  complete: (projectId: string) => api.post<{ status: string }>(`/microprojetos/${projectId}/complete`),
+};

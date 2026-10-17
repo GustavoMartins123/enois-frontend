@@ -16,6 +16,7 @@ export { notificationsApi } from "./notifications";
 export { searchApi } from "./search";
 export { reportsApi, REPORT_REASONS } from "./reports";
 export { sanctionsApi } from "./sanctions";
+export { companiesApi } from "./companies";
 export { rankingApi } from "./ranking";
 export { usersApi } from "./users";
 export { recommendationsApi } from "./recommendations";
