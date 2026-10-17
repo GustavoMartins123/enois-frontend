@@ -22,6 +22,7 @@ import {
 
 import { REACTION_EMOJIS, communitiesApi, feedApi, reactionsApi } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
+import { cn } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -45,6 +46,12 @@ import { ReactionsSummary } from "./post/reactions-summary";
 import { ReportDialog } from "./post/report-dialog";
 import { RichText } from "./post/rich-text";
 import { typeMeta } from "./post/type-meta";
+
+/**
+ * Posts acima disso entram compactados no feed: o corte é por linhas (8), e o "Ler
+ * mais" abre o post inteiro em vez de expandir no lugar. Número único, sem exceção.
+ */
+const POST_COMPACT_THRESHOLD = 400;
 
 export function PostCard({ post }: PostCardProps) {
   const { requireAuth, user } = useAuth();
@@ -301,12 +308,30 @@ export function PostCard({ post }: PostCardProps) {
         </div>
       </header>
 
-      {/* Post de pagina pode nao ter texto nenhum: sem paragrafo, so a pagina logo abaixo. */}
+      {/* Post de pagina pode nao ter texto nenhum: sem paragrafo, so a pagina logo abaixo.
+          Texto acima de 400 caracteres entra cortado em 8 linhas, e o "Ler mais" abre o post —
+          o texto completo mora na pagina do post, nao no card. Artigo fica so cortado: o bloco
+          abaixo dele ja e o convite para abrir. */}
       {post.content.trim() !== "" && (
-        <RichText
-          content={post.content}
-          className="mt-4 whitespace-pre-line break-words text-base font-normal leading-relaxed text-text-strong"
-        />
+        <>
+          <RichText
+            content={post.content}
+            className={cn(
+              "mt-4 whitespace-pre-line break-words text-base font-normal leading-relaxed text-text-strong",
+              post.content.length > POST_COMPACT_THRESHOLD && "line-clamp-8",
+            )}
+          />
+
+          {post.content.length > POST_COMPACT_THRESHOLD && post.type !== "ARTICLE" && (
+            <Link
+              to="/post/$postId"
+              params={{ postId: post.id }}
+              className="mt-1 inline-flex text-sm font-normal text-primary hover:underline"
+            >
+              <>{texts.common.readMore}</>
+            </Link>
+          )}
+        </>
       )}
 
       {/* Artigo tem corpo (completo) na pagina do post; o card mostra o resumo e o convite. */}
