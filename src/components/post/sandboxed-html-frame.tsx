@@ -30,9 +30,11 @@ export function SandboxedHtmlFrame({
       title={title}
       srcDoc={buildDocument(html, innerPadding)}
       // Sem `allow-scripts` e sem `allow-same-origin`: e o que garante que o HTML colado nao roda
-      // codigo. `allow-fullscreen` existe so para o botao de tela cheia do player de video.
+      // codigo. `allow-fullscreen` existe so para o botao de tela cheia do player de video, e
+      // `autoplay` delega a permissao do autoplay que o autor pediu: midia muda toca sozinha (mesmo
+      // dentro do sandbox); com som, o navegador continua exigindo um gesto de quem le.
       sandbox="allow-popups allow-popups-to-escape-sandbox"
-      allow="fullscreen"
+      allow="autoplay; fullscreen"
       allowFullScreen
       referrerPolicy="no-referrer"
       loading="lazy"

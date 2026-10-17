@@ -34,12 +34,14 @@ export function PostPage({ postId, html }: PostPageProps) {
           // Origem separada: aqui o quadro PODE rodar script (o player vive dentro da página) sem
           // que isso dê acesso ao app — é a origem diferente, não a política, que garante o corte.
           // Sem `allow-same-origin` o player do YouTube não monta; com ela, mas em outra origem,
-          // o documento não alcança nada do énóis.
+          // o documento não alcança nada do énóis. `autoplay` na delegação é o que deixa acontecer
+          // o autoplay pedido dentro da página (o `autoplay=1` do player de terceiros e o vídeo do
+          // próprio autor) — a página só pode repassar o que este quadro concede.
           <iframe
             title={texts.posts.page.frameTitle}
             src={pageUrl}
             sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-            allow="fullscreen"
+            allow="autoplay; fullscreen"
             allowFullScreen
             referrerPolicy="no-referrer"
             loading="lazy"
@@ -90,7 +92,7 @@ export function PostPage({ postId, html }: PostPageProps) {
               title={texts.posts.page.frameTitle}
               src={pageUrl}
               sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-              allow="fullscreen"
+              allow="autoplay; fullscreen"
               allowFullScreen
               referrerPolicy="no-referrer"
               className="h-full w-full bg-white"
