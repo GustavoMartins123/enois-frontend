@@ -453,118 +453,184 @@ export const texts = {
 
   landing: {
     seo: {
-      title: "Énóis · Rede profissional gratuita e humana",
+      title: "Énóis — uma rede social feita de gente, não de atenção",
       description:
-        "Uma rede profissional diferente. Sem paywalls, sem métricas de vaidade. Apenas conexões reais, mentoria e conhecimento compartilhado — tudo gratuito para sempre.",
-      ogDescription: "Sua carreira merece um lugar seguro e gratuito para crescer.",
+        "Rede social gratuita para profissionais e comunidades: sem anúncios, sem planos pagos e com um feed que termina quando o conteúdo acaba. Conversas, mentoria, eventos e vagas.",
+      ogDescription:
+        "Sem anúncio, sem paywall e sem esteira infinita. Uma rede social em construção com as pessoas — e aberta para quem quiser ajudar.",
     },
     /**
-     * Contador da comunidade. A janela vai escrita no texto de propósito: o número é de quem usou
-     * a plataforma no período, não de contas criadas — sem isso o visitante lê "usuários" e
-     * entende "cadastros".
+     * Números da comunidade. A janela vai escrita por extenso de propósito: é o número de quem
+     * USOU a plataforma no período (sessão viva ou publicação), não o de contas criadas — sem a
+     * frase inteira, o visitante lê "usuários" e entende "cadastros". Vem de cache do servidor
+     * (~10 min), é público e agregado, e some sozinho da página se a consulta falhar.
      */
     community: {
-      active: (count: string, days: number) => `${count} pessoas ativas nos últimos ${days} dias`,
-      total: (count: string) => `${count} contas na plataforma`,
+      eyebrow: "Quem já está aqui",
+      activeLabel: (days: number) => `pessoas usaram o énóis nos últimos ${days} dias`,
+      totalLabel: "contas na plataforma",
+      note: "Números públicos e agregados — sem identificar ninguém. O servidor recalcula a cada poucos minutos.",
     },
     nav: {
-      philosophy: "Filosofia",
-      features: "Recursos",
+      proposal: "A proposta",
+      practice: "Na prática",
+      exists: "O que existe",
       community: "Comunidade",
     },
     hero: {
-      badge: "Uma rede profissional feita para pessoas",
-      title: "Cresça na sua carreira",
-      titleAccent: "em um lugar seguro e gratuito",
+      badge: "A rede é nossa",
+      title: "Uma rede social não precisa viver da sua atenção.",
       description:
-        "Énóis conecta profissionais por conhecimento, mentoria e propósito, não por métricas de popularidade.",
-      free: "100% gratuito. Sem anúncios. Sem planos pagos.",
-      join: "Entrar na comunidade",
-      explore: "Explorar a plataforma",
-      benefits: {
-        noVanity: "Sem métricas de vaidade",
-        safe: "Ambiente moderado e seguro",
-        freeForever: "Para sempre gratuito",
+        "O énóis é uma rede para profissionais e comunidades — um lugar para conversar, aprender e construir junto. Sem anúncios, sem planos pagos e sem nada tentando prender você: quem decide quando a visita acaba é você.",
+      join: "Entrar no énóis",
+      proposal: "Conhecer a proposta",
+      facts: {
+        free: "Gratuita, sem plano pago",
+        noAds: "Sem anúncio em nenhum canto",
+        feedEnds: "O feed acaba — e avisa quando acaba",
       },
     },
-    philosophy: {
-      eyebrow: "Nossa filosofia",
-      titlePrefix: "Profissionalismo com ",
-      titleAccent: "coração",
-      description:
-        "Acreditamos que o crescimento profissional acontece quando pessoas se conectam de forma autêntica, sem barreiras, sem ruído, sem custo.",
-      alwaysFree: "Sempre gratuito para todos os profissionais",
-      values: {
-        authenticity: {
-          title: "Autenticidade",
-          description:
-            "Perfis baseados em competências reais, não em palavras-chave ou conexões vazias.",
-        },
-        collaboration: {
-          title: "Colaboração",
-          description:
-            "Um ambiente onde o sucesso é construído em conjunto, não às custas de outros.",
-        },
-        learning: {
-          title: "Aprendizado",
-          description: "Conhecimento compartilhado é a verdadeira moeda da plataforma.",
-        },
-        safety: {
-          title: "Segurança",
-          description: "Espaço moderado, livre de assédio, spam e autopromoção.",
-        },
-      },
+    problem: {
+      eyebrow: "De onde a gente veio",
+      title: "Você entrou para conversar. A plataforma quer que você fique.",
+      paragraphs: [
+        "Quando a receita de uma rede vem da sua atenção, cada detalhe do produto empurra para o mesmo lado: mais tempo de tela, mais reação, mais retorno. Não é maldade de ninguém — é o modelo funcionando como foi desenhado.",
+        "O énóis nasce de uma pergunta incômoda: e se a plataforma não precisasse ganhar quando você perde seu tempo? É essa pergunta que organiza o que a gente constrói aqui — e o que a gente se recusa a construir.",
+      ],
+      standardTitle: "O modelo que a gente questiona",
+      standardPoints: [
+        "Tempo de tela como a métrica que manda.",
+        "Notificação desenhada para trazer você de volta.",
+        "Alcance disputado em leilão de anúncio.",
+        "Pessoa tratada como inventário publicitário.",
+      ],
+      oursTitle: "A aposta do énóis",
+      oursPoints: [
+        "A conta não fecha com publicidade — por isso não existe anúncio aqui.",
+        "O que existe é para todo mundo: sem plano pago esperando na esquina.",
+        "O feed termina quando o conteúdo acaba — e diz isso na sua cara.",
+        "Gente de verdade moderando, com regras escritas antes de qualquer punição.",
+      ],
     },
-    features: {
+    principles: {
       eyebrow: "Na prática",
-      title: "O que você encontra aqui",
+      title: "Filosofia sem prática vira frase de parede.",
       description:
-        "Tudo o que você precisa para crescer profissionalmente, sem os excessos das redes tradicionais.",
-      items: {
-        discussions: {
-          title: "Discussões com profundidade",
+        "Estes são compromissos que dá para conferir no produto — não promessas para um futuro distante.",
+      items: [
+        {
+          title: "Gratuito de verdade",
+          text: "Sem anúncio, sem plano pago e sem versão premium que destrava o que a gratuita esconde. Todo mundo usa a mesma plataforma, com os mesmos recursos.",
+        },
+        {
+          title: "O feed acaba",
+          text: "Quando as publicações terminam, aparece o aviso: “Você chegou ao fim do feed.” A visita acaba quando você quiser — não quando o site decidir.",
+        },
+        {
+          title: "A mídia não sequestra a tela",
+          text: "Vídeo toca sem som e só enquanto está à vista; quando você rola para longe, ele para. Nada de som automático atrás do que você está lendo.",
+        },
+        {
+          title: "Sua presença, do seu jeito",
+          text: "Bio, capa e páginas aceitam HTML e CSS escritos por você; a cor do tema é escolhida por quem usa, não imposta pelo produto.",
+        },
+        {
+          title: "Regras escritas, moderação real",
+          text: "As diretrizes são públicas e valem para todo mundo — inclusive para quem denuncia. Denúncia pode ser acompanhada e é revisada por gente, não engavetada.",
+        },
+        {
+          title: "Construção aberta",
+          text: "Uma API pública documentada, um canal de suporte de verdade e um produto que muda com o que a comunidade aponta.",
+        },
+      ],
+    },
+    product: {
+      eyebrow: "Sem maquete",
+      title: "O que já está no ar",
+      description:
+        "Nada aqui é mockup nem promessa de roadmap: é o que existe hoje, funcionando. Parte abre sem conta nenhuma; o resto pede só um cadastro gratuito.",
+      capture: {
+        alt: "Captura da página pública de vagas do énóis, com filtros por nível, local e tipo e cartões de vagas abertas",
+        caption: "Captura real da página de vagas — enois.ia.br/vagas, aberta sem login.",
+      },
+      groups: [
+        {
+          label: "Conversas",
+          items: [
+            "Publicações em vários tipos — de pergunta rápida a artigo com até 4.000 caracteres",
+            "Páginas em HTML/CSS publicadas como post, com player embutido",
+            "Comentários com imagem e GIF, reações e edição",
+            "Comunidades com capa própria, feita de foto ou HTML/CSS",
+          ],
+        },
+        {
+          label: "Trabalho e aprendizado",
+          items: [
+            "Vagas publicadas aqui e captadas de fontes públicas (Remotive, Jobicy, RemoteOK, Himalayas)",
+            "Candidatura com triagem de quem publicou a vaga",
+            "Mentoria com agenda de sessões",
+            "Eventos online, presenciais ou híbridos, com confirmação",
+          ],
+        },
+        {
+          label: "Sua conta",
+          items: [
+            "Perfil e publicações com link público — abrem sem login",
+            "Busca por pessoas, comunidades, vagas, eventos e mentores",
+            "Salvos, bloqueios e denúncias que você acompanha",
+          ],
+        },
+      ],
+      links: {
+        jobs: "Abrir as vagas",
+        guidelines: "Ler as diretrizes",
+        api: "Ver a API pública",
+      },
+    },
+    build: {
+      eyebrow: "Em construção",
+      title: "Nada aqui é definitivo — de propósito.",
+      paragraphs: [
+        "O énóis não é um produto lacrado. É software vivo, feito e refeito a partir do que a comunidade aponta: o que confunde, o que trava, o que falta.",
+        "A gente não promete perfeição — promete evolução e transparência sobre o que ainda não está resolvido, incluindo o que esta página ainda não conta.",
+      ],
+      channels: {
+        contact: {
+          label: "Falar com a gente",
           description:
-            "Conteúdo relevante e conversas significativas, sem algoritmo de engajamento vazio.",
+            "Um canal de suporte de verdade, com registro e resposta — não um formulário que some.",
         },
-        mentoring: {
-          title: "Mentoria nativa",
-          description:
-            "Encontre mentores verificados, agende sessões e acompanhe sua trilha de aprendizado.",
+        guidelines: {
+          label: "Ler as diretrizes",
+          description: "As regras da comunidade, escritas e públicas — valem para todo mundo.",
         },
-        communities: {
-          title: "Comunidades fortes",
-          description: "Grupos profissionais e fóruns temáticos para troca contínua entre pares.",
-        },
-        connections: {
-          title: "Conexões por afinidade",
-          description: "Sugestões baseadas em habilidades, objetivos e interesses, não em volume.",
-        },
-        recruiting: {
-          title: "Recrutamento honesto",
-          description:
-            "Match entre empresas e candidatos com transparência sobre faixa salarial e cultura.",
-        },
-        wellbeing: {
-          title: "Bem-estar digital",
-          description: "Notificações respeitosas e um ambiente que valoriza o seu tempo e atenção.",
+        api: {
+          label: "Construir em cima",
+          description: "A API é pública e documentada: dá para integrar, automatizar e criar.",
         },
       },
     },
-    cta: {
-      title: "Sua carreira merece um espaço melhor",
+    finalCta: {
+      eyebrow: "Chega junto",
+      title: "A internet também é feita das escolhas da gente.",
       description:
-        "Entre para uma comunidade que valoriza autenticidade, colaboração e aprendizado, sem pagar nada por isso. Sem planos, sem anúncios, sem surpresas.",
-      createAccount: "Criar conta gratuita",
+        "O énóis ainda está evoluindo — e é agora que dá para ajudar a definir o que ele vai ser. Criar conta é gratuito, leva um minuto e não pede cartão.",
+      free: "Acesso gratuito é princípio, não promoção: sem anúncio, sem plano pago e sem versão premium pela metade.",
+      createAccount: "Fazer parte do énóis",
       existingAccount: "Já tenho conta",
-      finePrint: "Sem cartão de crédito · Sem anúncios · Sem plano premium · ",
-      freeForever: "Para sempre grátis",
+      finePrint: "Sem cartão de crédito · Sem anúncios · Sem plano premium",
     },
     footer: {
       copyright: (year: number) =>
-        `© ${year} Énóis · Feito com cuidado para profissionais como você.`,
+        `© ${year} Énóis · Uma rede feita com as pessoas, todos os dias.`,
+      tagline:
+        "Uma rede social gratuita para profissionais e comunidades — sem anúncios, sem paywall, em construção com quem usa.",
+      sectionsLabel: "Nesta página",
+      projectLabel: "O projeto",
       privacy: "Privacidade",
       terms: "Termos",
       contact: "Contato",
+      api: "API pública",
       home: "Início",
     },
   },
