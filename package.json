@@ -15,6 +15,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "test:eslint-rules": "node eslint/rules/jsx-content-spacing.test.js && node eslint/rules/type-boundaries.test.js",
     "format": "prettier --write ."
   },
