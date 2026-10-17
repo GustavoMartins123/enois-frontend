@@ -93,7 +93,8 @@ const preferencesStorage = {
           parsed.state.theme = parsed.state.theme === "dark" ? "dark" : "light";
           parsed.state.themeSettings = normalizeThemeSettings(parsed.state.themeSettings);
           parsed.state.themeCollection = normalizeThemeCollection(parsed.state.themeCollection);
-          parsed.state.backgroundStyle = normalizeBackgroundStyle(parsed.state.backgroundStyle);
+          parsed.state.widgetBackground = normalizeBackgroundStyle(parsed.state.widgetBackground);
+          parsed.state.pageBackground = normalizeBackgroundStyle(parsed.state.pageBackground);
         }
 
         return JSON.stringify(parsed);
@@ -132,16 +133,23 @@ export const usePreferencesStore = create<PreferencesState>()(
       sidebarCollapsed: false,
       themeSettings: DEFAULT_THEME_SETTINGS,
       themeCollection: null,
-      backgroundStyle: null,
+      widgetBackground: null,
+      pageBackground: null,
 
       setTheme: (theme: Theme) => set({ theme }),
       setThemeSettings: (themeSettings: ThemeSettings) =>
         set({ themeSettings: clampThemeSettings(themeSettings) }),
       // Restaurar o padrão devolve a marca inteira: cores livres E sem coleção.
       resetThemeSettings: () =>
-        set({ themeSettings: DEFAULT_THEME_SETTINGS, themeCollection: null }),
+        set({
+          themeSettings: DEFAULT_THEME_SETTINGS,
+          themeCollection: null,
+          widgetBackground: null,
+          pageBackground: null,
+        }),
       setThemeCollection: (themeCollection: string | null) => set({ themeCollection }),
-      setBackgroundStyle: (backgroundStyle: BackgroundStyle | null) => set({ backgroundStyle }),
+      setWidgetBackground: (widgetBackground: BackgroundStyle | null) => set({ widgetBackground }),
+      setPageBackground: (pageBackground: BackgroundStyle | null) => set({ pageBackground }),
       toggleSidebar: () =>
         set((state) => ({
           sidebarCollapsed: !state.sidebarCollapsed,
@@ -155,7 +163,8 @@ export const usePreferencesStore = create<PreferencesState>()(
         sidebarCollapsed: state.sidebarCollapsed,
         themeSettings: state.themeSettings,
         themeCollection: state.themeCollection,
-        backgroundStyle: state.backgroundStyle,
+        widgetBackground: state.widgetBackground,
+        pageBackground: state.pageBackground,
       }),
       skipHydration: true,
     },
