@@ -704,6 +704,19 @@ function Profile() {
         />
       )}
 
+      {/* Dialogo da capa: sem ele, clicar na capa (ou em "Mudar capa") so mudava um estado que
+          ninguem lia — o clique parecia nao fazer nada. */}
+      <ProfileBannerDialog
+        open={bannerOpen}
+        onOpenChange={setBannerOpen}
+        initialHtml={user.bannerHtml ?? null}
+        onPickPhoto={() => bannerRef.current?.click()}
+        onSaved={() => {
+          queryClient.invalidateQueries({ queryKey: ["me"] });
+          queryClient.invalidateQueries({ queryKey: ["profile", user.username] });
+          queryClient.invalidateQueries({ queryKey: ["auth-me"] });
+        }}
+      />
       <AppearanceDialog open={appearanceOpen} onOpenChange={setAppearanceOpen} />
     </AppContainer>
   );
