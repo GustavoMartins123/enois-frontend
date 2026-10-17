@@ -400,6 +400,23 @@ export const texts = {
     },
   },
 
+  moderacaoReview: {
+    title: "Revisão de denúncia",
+    type: "Tipo",
+    reporter: "Denunciante",
+    reported: "Denunciado",
+    noAuthor: "Autor não identificado para este alvo",
+    content: "Conteúdo do post denunciado",
+    confirmHint: "Confirme com a sua sessão de admin — cada ação é registrada.",
+    penalize: "Penalizar o autor",
+    warn: "Avisar o autor",
+    deletePost: "Excluir o post",
+    ban: "Banir o autor",
+    applied: "Ação aplicada.",
+    actionError: "Não foi possível aplicar a ação.",
+    alreadyReviewed: "Esta denúncia já foi revisada.",
+    forbidden: "Sessão sem acesso de admin para esta fila.",
+  },
   account: {
     identity: {
       title: "Nome e identidade",
