@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 import { RangeField } from "./range-field";
 
-/** Valores de partida, em HSL: o gradiente já nasce como rampa de um matiz só. */
+/** Valores de partida: dois matizes e transparências plenas — o usuário afina dali. */
 const DEFAULTS = {
   color: hslToHex(258, 30, 95),
   alpha: 100,
@@ -17,6 +17,7 @@ const DEFAULTS = {
   fromAlpha: 100,
   to: hslToHex(258, 30, 70),
   toAlpha: 100,
+  direction: "diagonal" as const,
   angle: 135,
 };
 
@@ -27,9 +28,10 @@ const MODES: { id: "solid" | "gradient" | null; label: string }[] = [
 ];
 
 const DIRECTIONS = [
-  { id: "diagonal", label: texts.appearance.bgStyleDiagonal },
-  { id: "vertical", label: texts.appearance.bgStyleVertical },
-  { id: "radial", label: texts.appearance.bgStyleRadial },
+  { id: "diagonal", label: texts.appearance.bgStyleDiagonal, angle: 135 },
+  { id: "horizontal", label: texts.appearance.bgStyleHorizontal, angle: 90 },
+  { id: "vertical", label: texts.appearance.bgStyleVertical, angle: 180 },
+  { id: "radial", label: texts.appearance.bgStyleRadial, angle: 135 },
 ] as const;
 
 function Pill({
@@ -58,12 +60,20 @@ function Pill({
   );
 }
 
+/** Ângulo efetivo: o livre quando é custom; o preset da direção, caso contrário. */
+function angleFor(value: BackgroundStyle): number {
+  return value.direction === "custom"
+    ? value.angle
+    : (DIRECTIONS.find((d) => d.id === value.direction)?.angle ?? 135);
+}
+
 /**
- * Escolha de cor/gradiente no estilo das cores livres: sliders, não seletor de cor
- * nativo. Cor sólida é matiz + saturação + brilho; o gradiente é matiz + brilho do
- * centro + EXTENSÃO — os dois extremos ficam no mesmo matiz, um mais claro e outro
- * mais escuro, que é o degradê que fica bonito sempre (nada de duas cores que
- * brigam). Direção continua em pílulas.
+ * Escolha de cor/gradiente com transparência, no estilo das cores livres.
+ *
+ * Cor sólida: matiz, saturação, brilho e TRANSPARÊNCIA. Gradiente: DOIS matizes (o
+ * degradê vai de um ao outro), saturação única, brilho por ponta, TRANSPARÊNCIA por
+ * ponta — o "vidro" que vai de um alpha a outro —, direção em pílulas e ÂNGULO
+ * livre (0–360°) para as lineares. O texto do widget se adapta sozinho ao resultado.
  */
 export function BackgroundStylePicker({ value, onChange }: BackgroundStylePickerProps) {
   const mode: "solid" | "gradient" | null = value?.type ?? null;
@@ -72,9 +82,13 @@ export function BackgroundStylePicker({ value, onChange }: BackgroundStylePicker
     onChange({
       type: value?.type ?? "solid",
       color: value?.color ?? DEFAULTS.color,
+      alpha: value?.alpha ?? DEFAULTS.alpha,
       from: value?.from ?? DEFAULTS.from,
+      fromAlpha: value?.fromAlpha ?? DEFAULTS.fromAlpha,
       to: value?.to ?? DEFAULTS.to,
-      direction: value?.direction ?? "diagonal",
+      toAlpha: value?.toAlpha ?? DEFAULTS.toAlpha,
+      direction: value?.direction ?? DEFAULTS.direction,
+      angle: value?.angle ?? DEFAULTS.angle,
       ...patch,
     });
 
@@ -134,6 +148,16 @@ export function BackgroundStylePicker({ value, onChange }: BackgroundStylePicker
                   valueLabel={`${colour.l}%`}
                   onChange={(lightness) => set({ color: hslToHex(colour.h, colour.s, lightness) })}
                 />
+                <RangeField
+                  label={texts.appearance.bgStyleAlpha}
+                  value={value.alpha}
+                  min={5}
+                  max={100}
+                  step={1}
+                  valueLabel={`${value.alpha}%`}
+                  onChange={(alpha) => set({ alpha })}
+                  hint={texts.appearance.bgStyleAlphaHint}
+                />
               </>
             );
           })()}
@@ -145,56 +169,78 @@ export function BackgroundStylePicker({ value, onChange }: BackgroundStylePicker
           {(() => {
             const first = hexToHsl(value.from);
             const second = hexToHsl(value.to);
-            const center = Math.round((first.l + second.l) / 2);
-            const spread = Math.round(Math.min(60, Math.abs(first.l - second.l)));
-            // Os extremos saem do centro e da extensão: mesmo matiz, brilhos opostos.
-            const ends = (nextCenter: number, nextSpread: number) => ({
-              from: hslToHex(
-                first.h,
-                first.s,
-                Math.min(100, Math.round(nextCenter + nextSpread / 2)),
-              ),
-              to: hslToHex(
-                second.h,
-                second.s,
-                Math.max(0, Math.round(nextCenter - nextSpread / 2)),
-              ),
-            });
             return (
               <>
                 <RangeField
-                  label={texts.appearance.hue}
+                  label={texts.appearance.bgStyleHueFrom}
                   value={first.h}
                   min={0}
                   max={360}
                   step={1}
                   valueLabel={hueLabel(first.h)}
-                  onChange={(hue) =>
-                    set({
-                      from: hslToHex(hue, first.s, first.l),
-                      to: hslToHex(hue, second.s, second.l),
-                    })
-                  }
+                  onChange={(hue) => set({ from: hslToHex(hue, first.s, first.l) })}
                   hueTrack
                 />
                 <RangeField
-                  label={texts.appearance.brightness}
-                  value={center}
-                  min={5}
-                  max={95}
+                  label={texts.appearance.bgStyleHueTo}
+                  value={second.h}
+                  min={0}
+                  max={360}
                   step={1}
-                  valueLabel={`${center}%`}
-                  onChange={(lightness) => set(ends(lightness, spread))}
+                  valueLabel={hueLabel(second.h)}
+                  onChange={(hue) => set({ to: hslToHex(hue, second.s, second.l) })}
+                  hueTrack
                 />
                 <RangeField
-                  label={texts.appearance.bgStyleSpread}
-                  value={spread}
+                  label={texts.appearance.saturation}
+                  value={first.s}
                   min={0}
-                  max={60}
+                  max={100}
                   step={1}
-                  valueLabel={`${spread}`}
-                  hint={texts.appearance.bgStyleSpreadHint}
-                  onChange={(nextSpread) => set(ends(center, nextSpread))}
+                  valueLabel={`${first.s}%`}
+                  onChange={(saturation) =>
+                    set({
+                      from: hslToHex(first.h, saturation, first.l),
+                      to: hslToHex(second.h, saturation, second.l),
+                    })
+                  }
+                />
+                <RangeField
+                  label={texts.appearance.bgStyleBrightnessFrom}
+                  value={first.l}
+                  min={0}
+                  max={100}
+                  step={1}
+                  valueLabel={`${first.l}%`}
+                  onChange={(lightness) => set({ from: hslToHex(first.h, first.s, lightness) })}
+                />
+                <RangeField
+                  label={texts.appearance.bgStyleBrightnessTo}
+                  value={second.l}
+                  min={0}
+                  max={100}
+                  step={1}
+                  valueLabel={`${second.l}%`}
+                  onChange={(lightness) => set({ to: hslToHex(second.h, second.s, lightness) })}
+                />
+                <RangeField
+                  label={texts.appearance.bgStyleFromAlpha}
+                  value={value.fromAlpha}
+                  min={5}
+                  max={100}
+                  step={1}
+                  valueLabel={`${value.fromAlpha}%`}
+                  onChange={(alpha) => set({ fromAlpha: alpha })}
+                />
+                <RangeField
+                  label={texts.appearance.bgStyleToAlpha}
+                  value={value.toAlpha}
+                  min={5}
+                  max={100}
+                  step={1}
+                  valueLabel={`${value.toAlpha}%`}
+                  onChange={(alpha) => set({ toAlpha: alpha })}
+                  hint={texts.appearance.bgStyleAlphaRampHint}
                 />
 
                 <div className="flex flex-wrap gap-2">
@@ -202,12 +248,24 @@ export function BackgroundStylePicker({ value, onChange }: BackgroundStylePicker
                     <Pill
                       key={direction.id}
                       active={value.direction === direction.id}
-                      onClick={() => set({ direction: direction.id })}
+                      onClick={() => set({ direction: direction.id, angle: direction.angle })}
                     >
                       {direction.label}
                     </Pill>
                   ))}
                 </div>
+
+                {value.direction !== "radial" && (
+                  <RangeField
+                    label={texts.appearance.bgStyleAngle}
+                    value={angleFor(value)}
+                    min={0}
+                    max={360}
+                    step={1}
+                    valueLabel={`${angleFor(value)}°`}
+                    onChange={(angle) => set({ direction: "custom", angle })}
+                  />
+                )}
               </>
             );
           })()}
