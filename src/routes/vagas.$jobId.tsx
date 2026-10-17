@@ -22,6 +22,8 @@ import {
 } from "lucide-react";
 
 import { jobsApi } from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
+import { buildShareTags } from "@/lib/open-graph";
 import { formatSalary } from "@/lib/currency";
 import { useCurrentUser } from "@/lib/current-user";
 import { actionsFor, applicationStatusLabel, statusTone } from "@/lib/job-application-status";
@@ -35,7 +37,25 @@ import { JobEditDialog } from "@/components/job-edit-dialog";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/vagas/$jobId")({
-  head: () => ({ meta: [{ title: texts.jobs.seoTitle }] }),
+  loader: async ({ params }) => {
+    try {
+      return await jobsApi.get(params.jobId);
+    } catch {
+      return null;
+    }
+  },
+  head: ({ loaderData: job, params }) => {
+    const title = job ? `${job.title}${job.company ? ` · ${job.company}` : ""} · ${texts.brand.name}` : texts.jobs.seoTitle;
+    return {
+      meta: buildShareTags({
+        title,
+        description: job?.description || (job ? `${job.company ? `Vaga em ${job.company}.` : "Oportunidade profissional."} Confira os detalhes no Énóis.` : "Confira oportunidades no Énóis."),
+        url: `${texts.siteUrl}/vagas/${encodeURIComponent(params.jobId)}`,
+        imageUrl: resolveCdnUrl(job?.logo) || `${texts.siteUrl}/icons/icon-512.png`,
+        imageAlt: job ? `Vaga ${job.title}${job.company ? ` em ${job.company}` : ""}` : title,
+      }),
+    };
+  },
   component: JobDetail,
 });
 
@@ -439,7 +459,7 @@ function JobDetail() {
                 </ApplyJobDialog>
               )}
 
-              {!isOwner && (
+              {!isOwner && job.sourceType !== "EXTERNAL" && (
                 <Button
                   variant="outline"
                   className="rounded-full gap-2"

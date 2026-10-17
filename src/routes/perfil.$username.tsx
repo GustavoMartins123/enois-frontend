@@ -36,6 +36,7 @@ import {
 } from "@/lib/api";
 import { authApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
+import { buildShareTags } from "@/lib/open-graph";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
@@ -70,15 +71,19 @@ export const Route = createFileRoute("/perfil/$username")({
       throw notFound();
     }
   },
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: texts.profile.seoTitle(loaderData?.user.name ?? texts.profile.seoFallbackTitle) },
-      {
-        name: "description",
-        content: loaderData?.user.headline ?? texts.profile.seoFallbackDescription,
-      },
-    ],
-  }),
+  head: ({ loaderData, params }) => {
+    const user = loaderData?.user;
+    const title = texts.profile.seoTitle(user?.name ?? texts.profile.seoFallbackTitle);
+    return {
+      meta: buildShareTags({
+        title,
+        description: user?.headline || texts.profile.seoFallbackDescription,
+        url: `${texts.siteUrl}/perfil/${encodeURIComponent(params.username)}`,
+        imageUrl: resolveCdnUrl(user?.banner || user?.avatar) || `${texts.siteUrl}/icons/icon-512.png`,
+        imageAlt: user?.name ? `Perfil de ${user.name} no Énóis` : title,
+      }),
+    };
+  },
   notFoundComponent: () => (
     <AppContainer>
       <div className="rounded-2xl border border-border-soft bg-surface-card p-10 text-center">
