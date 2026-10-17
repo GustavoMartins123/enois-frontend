@@ -6,6 +6,7 @@ import type { PreferencesStorageValue } from "@/types/stores/preferences-storage
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
+import { resolveThemeCollection } from "@/lib/theme/build-collection-css";
 import { clampThemeSettings } from "@/lib/theme/build-theme-tokens";
 
 const PREFERENCES_STORAGE_KEY = "connect-grow-preferences";
@@ -43,6 +44,16 @@ function normalizeThemeSettings(value: unknown): ThemeSettings {
   });
 }
 
+/**
+ * Coleção temática do storage: só aceita identificador que existe hoje.
+ *
+ * Um tema removido (ou um valor inventado no localStorage) volta a `null` — o
+ * padrão da marca — em vez de carregar um tema pela metade.
+ */
+function normalizeThemeCollection(value: unknown): string | null {
+  return typeof value === "string" ? (resolveThemeCollection(value)?.id ?? null) : null;
+}
+
 const preferencesStorage = {
   getItem: (name: string) => {
     const stored = localStorage.getItem(name);
@@ -53,6 +64,7 @@ const preferencesStorage = {
         if (parsed.state) {
           parsed.state.theme = parsed.state.theme === "dark" ? "dark" : "light";
           parsed.state.themeSettings = normalizeThemeSettings(parsed.state.themeSettings);
+          parsed.state.themeCollection = normalizeThemeCollection(parsed.state.themeCollection);
         }
 
         return JSON.stringify(parsed);
@@ -90,11 +102,15 @@ export const usePreferencesStore = create<PreferencesState>()(
       theme: "light",
       sidebarCollapsed: false,
       themeSettings: DEFAULT_THEME_SETTINGS,
+      themeCollection: null,
 
       setTheme: (theme: Theme) => set({ theme }),
       setThemeSettings: (themeSettings: ThemeSettings) =>
         set({ themeSettings: clampThemeSettings(themeSettings) }),
-      resetThemeSettings: () => set({ themeSettings: DEFAULT_THEME_SETTINGS }),
+      // Restaurar o padrão devolve a marca inteira: cores livres E sem coleção.
+      resetThemeSettings: () =>
+        set({ themeSettings: DEFAULT_THEME_SETTINGS, themeCollection: null }),
+      setThemeCollection: (themeCollection: string | null) => set({ themeCollection }),
       toggleSidebar: () =>
         set((state) => ({
           sidebarCollapsed: !state.sidebarCollapsed,
@@ -107,6 +123,7 @@ export const usePreferencesStore = create<PreferencesState>()(
         theme: state.theme,
         sidebarCollapsed: state.sidebarCollapsed,
         themeSettings: state.themeSettings,
+        themeCollection: state.themeCollection,
       }),
       skipHydration: true,
     },

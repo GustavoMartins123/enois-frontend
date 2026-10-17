@@ -1,5 +1,7 @@
 import { useMemo } from "react";
 
+import { useQueryClient } from "@tanstack/react-query";
+
 import { THEME_LIMITS } from "@/constants/theme-defaults";
 import { THEME_PRESETS } from "@/constants/theme-presets";
 import { usePreferencesStore } from "@/stores/preferences.store";
@@ -10,7 +12,9 @@ import type { ThemeBackground } from "@/types/preferences/theme-background";
 import type { ThemePresetId } from "@/types/preferences/theme-preset-id";
 import { Moon, RotateCcw, Sun } from "lucide-react";
 
+import { resolveThemeCollection } from "@/lib/theme/build-collection-css";
 import { reportThemeContrast, sameThemeSettings } from "@/lib/theme/build-theme-tokens";
+import { syncThemeCollection } from "@/lib/theme/sync-theme-collection";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
@@ -22,6 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+import { CollectionGrid } from "./collection-grid";
 import { ContrastNotice } from "./contrast-notice";
 import { PresetRow } from "./preset-row";
 import { RangeField } from "./range-field";
@@ -50,8 +55,21 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
   const settings = usePreferencesStore((state) => state.themeSettings);
   const setThemeSettings = usePreferencesStore((state) => state.setThemeSettings);
   const resetThemeSettings = usePreferencesStore((state) => state.resetThemeSettings);
+  const themeCollection = usePreferencesStore((state) => state.themeCollection);
+  const setThemeCollection = usePreferencesStore((state) => state.setThemeCollection);
+  const queryClient = useQueryClient();
 
   const report = useMemo(() => reportThemeContrast(settings, theme), [settings, theme]);
+
+  const activeCollection = resolveThemeCollection(themeCollection);
+
+  const handleCollectionSelect = (collectionId: string | null) => {
+    setThemeCollection(collectionId);
+    // O cache da conta acompanha a escolha na hora: sem isto, um refetch traria o
+    // valor antigo do servidor e desfaria a troca em tela.
+    queryClient.setQueryData(["me", "theme"], { theme: collectionId });
+    void syncThemeCollection(collectionId);
+  };
 
   const activePresetId = useMemo<ThemePresetId | null>(() => {
     const match = THEME_PRESETS.find((preset) => sameThemeSettings(preset.settings, settings));
@@ -74,6 +92,24 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
         </DialogHeader>
 
         <div className="space-y-5 pt-2">
+          <section className="space-y-2">
+            <h3 className="text-xs font-medium text-text-strong">
+              {texts.appearance.collectionsTitle}
+            </h3>
+
+            <p className="text-xs font-normal text-text-subtle">
+              {texts.appearance.collectionsHint}
+            </p>
+
+            <CollectionGrid activeId={themeCollection} onSelect={handleCollectionSelect} />
+
+            {activeCollection && (
+              <p className="text-xs font-normal text-text-subtle">
+                {texts.appearance.colorsNote(activeCollection.name)}
+              </p>
+            )}
+          </section>
+
           <section className="space-y-2">
             <h3 className="text-xs font-medium text-text-strong">{texts.appearance.mode}</h3>
 
@@ -112,94 +148,98 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
             </div>
           </section>
 
-          <section className="space-y-2">
-            <h3 className="text-xs font-medium text-text-strong">{texts.appearance.presets}</h3>
+          {activeCollection ? null : (
+            <>
+              <section className="space-y-2">
+                <h3 className="text-xs font-medium text-text-strong">{texts.appearance.presets}</h3>
 
-            <PresetRow activeId={activePresetId} onSelect={setThemeSettings} />
-          </section>
+                <PresetRow activeId={activePresetId} onSelect={setThemeSettings} />
+              </section>
 
-          <section className="space-y-3">
-            <div className="space-y-0.5">
-              <h3 className="text-xs font-medium text-text-strong">
-                {texts.appearance.accentSection}
-              </h3>
+              <section className="space-y-3">
+                <div className="space-y-0.5">
+                  <h3 className="text-xs font-medium text-text-strong">
+                    {texts.appearance.accentSection}
+                  </h3>
 
-              <p className="text-xs font-normal text-text-subtle">
-                {texts.appearance.accentHint}
-              </p>
-            </div>
+                  <p className="text-xs font-normal text-text-subtle">
+                    {texts.appearance.accentHint}
+                  </p>
+                </div>
 
-            <RangeField
-              label={texts.appearance.hue}
-              value={settings.accent.hue}
-              min={THEME_LIMITS.hue.min}
-              max={THEME_LIMITS.hue.max}
-              step={1}
-              valueLabel={texts.appearance.hueValue(Math.round(settings.accent.hue))}
-              onChange={(hue) => updateAccent({ hue })}
-              hueTrack
-            />
-            <RangeField
-              label={texts.appearance.saturation}
-              value={settings.accent.chroma}
-              min={THEME_LIMITS.accentChroma.min}
-              max={THEME_LIMITS.accentChroma.max}
-              step={0.005}
-              valueLabel={percent(settings.accent.chroma, CHROMA_MAX.accent)}
-              onChange={(chroma) => updateAccent({ chroma })}
-            />
-            <RangeField
-              label={texts.appearance.brightness}
-              value={settings.accent.lightness}
-              min={THEME_LIMITS.accentLightness.min}
-              max={THEME_LIMITS.accentLightness.max}
-              step={0.005}
-              valueLabel={percent(
-                settings.accent.lightness - THEME_LIMITS.accentLightness.min,
-                THEME_LIMITS.accentLightness.max - THEME_LIMITS.accentLightness.min,
-              )}
-              onChange={(lightness) => updateAccent({ lightness })}
-              hint={texts.appearance.brightnessHint}
-            />
-          </section>
+                <RangeField
+                  label={texts.appearance.hue}
+                  value={settings.accent.hue}
+                  min={THEME_LIMITS.hue.min}
+                  max={THEME_LIMITS.hue.max}
+                  step={1}
+                  valueLabel={texts.appearance.hueValue(Math.round(settings.accent.hue))}
+                  onChange={(hue) => updateAccent({ hue })}
+                  hueTrack
+                />
+                <RangeField
+                  label={texts.appearance.saturation}
+                  value={settings.accent.chroma}
+                  min={THEME_LIMITS.accentChroma.min}
+                  max={THEME_LIMITS.accentChroma.max}
+                  step={0.005}
+                  valueLabel={percent(settings.accent.chroma, CHROMA_MAX.accent)}
+                  onChange={(chroma) => updateAccent({ chroma })}
+                />
+                <RangeField
+                  label={texts.appearance.brightness}
+                  value={settings.accent.lightness}
+                  min={THEME_LIMITS.accentLightness.min}
+                  max={THEME_LIMITS.accentLightness.max}
+                  step={0.005}
+                  valueLabel={percent(
+                    settings.accent.lightness - THEME_LIMITS.accentLightness.min,
+                    THEME_LIMITS.accentLightness.max - THEME_LIMITS.accentLightness.min,
+                  )}
+                  onChange={(lightness) => updateAccent({ lightness })}
+                  hint={texts.appearance.brightnessHint}
+                />
+              </section>
 
-          <section className="space-y-3">
-            <div className="space-y-0.5">
-              <h3 className="text-xs font-medium text-text-strong">
-                {texts.appearance.backgroundSection}
-              </h3>
+              <section className="space-y-3">
+                <div className="space-y-0.5">
+                  <h3 className="text-xs font-medium text-text-strong">
+                    {texts.appearance.backgroundSection}
+                  </h3>
 
-              <p className="text-xs font-normal text-text-subtle">
-                {texts.appearance.backgroundHint}
-              </p>
-            </div>
+                  <p className="text-xs font-normal text-text-subtle">
+                    {texts.appearance.backgroundHint}
+                  </p>
+                </div>
 
-            <RangeField
-              label={texts.appearance.hue}
-              value={settings.background.hue}
-              min={THEME_LIMITS.hue.min}
-              max={THEME_LIMITS.hue.max}
-              step={1}
-              valueLabel={texts.appearance.hueValue(Math.round(settings.background.hue))}
-              onChange={(hue) => updateBackground({ hue })}
-              hueTrack
-            />
-            <RangeField
-              label={texts.appearance.backgroundIntensity}
-              value={settings.background.chroma}
-              min={THEME_LIMITS.backgroundChroma.min}
-              max={THEME_LIMITS.backgroundChroma.max}
-              step={0.001}
-              valueLabel={percent(settings.background.chroma, CHROMA_MAX.background)}
-              onChange={(chroma) => updateBackground({ chroma })}
-            />
-          </section>
+                <RangeField
+                  label={texts.appearance.hue}
+                  value={settings.background.hue}
+                  min={THEME_LIMITS.hue.min}
+                  max={THEME_LIMITS.hue.max}
+                  step={1}
+                  valueLabel={texts.appearance.hueValue(Math.round(settings.background.hue))}
+                  onChange={(hue) => updateBackground({ hue })}
+                  hueTrack
+                />
+                <RangeField
+                  label={texts.appearance.backgroundIntensity}
+                  value={settings.background.chroma}
+                  min={THEME_LIMITS.backgroundChroma.min}
+                  max={THEME_LIMITS.backgroundChroma.max}
+                  step={0.001}
+                  valueLabel={percent(settings.background.chroma, CHROMA_MAX.background)}
+                  onChange={(chroma) => updateBackground({ chroma })}
+                />
+              </section>
+            </>
+          )}
 
           <section className="space-y-2">
             <h3 className="text-xs font-medium text-text-strong">{texts.appearance.preview}</h3>
 
             <ThemePreview />
-            <ContrastNotice report={report} />
+            {!activeCollection && <ContrastNotice report={report} />}
           </section>
 
           <div className="flex flex-wrap justify-between gap-2 border-t border-border-soft pt-4">
@@ -207,7 +247,11 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
               type="button"
               variant="ghost"
               className="w-auto rounded-full gap-2 text-sm"
-              onClick={resetThemeSettings}
+              onClick={() => {
+                resetThemeSettings();
+                queryClient.setQueryData(["me", "theme"], { theme: null });
+                void syncThemeCollection(null);
+              }}
             >
               <RotateCcw className="h-3.5 w-3.5" />
 

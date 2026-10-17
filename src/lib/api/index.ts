@@ -1,6 +1,7 @@
 export { authApi } from "./auth";
 export { identityApi } from "./identity";
 export { profileApi } from "./profile";
+export { preferencesApi } from "./preferences";
 export { feedApi } from "./feed";
 export { commentsApi } from "./comments";
 export { reactionsApi, REACTION_EMOJIS } from "./reactions";
@@ -14,6 +15,7 @@ export { messagesApi } from "./messages";
 export { notificationsApi } from "./notifications";
 export { searchApi } from "./search";
 export { reportsApi, REPORT_REASONS } from "./reports";
+export { sanctionsApi } from "./sanctions";
 export { rankingApi } from "./ranking";
 export { usersApi } from "./users";
 export { recommendationsApi } from "./recommendations";

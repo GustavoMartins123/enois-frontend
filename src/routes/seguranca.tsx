@@ -1,7 +1,6 @@
 import { useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
@@ -15,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import { AppContainer } from "@/components/app-container";
+import { AppearanceDialog } from "@/components/appearance/appearance-dialog";
 import { IdentityVerificationSection } from "@/components/security/identity-verification-section";
 
 export const Route = createFileRoute("/seguranca")({
@@ -32,6 +32,7 @@ export const Route = createFileRoute("/seguranca")({
 function Seguranca() {
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
+  const [appearanceOpen, setAppearanceOpen] = useState(false);
 
   const { data: status, isLoading } = useQuery({
     queryKey: ["two-factor-status"],
@@ -68,6 +69,24 @@ function Seguranca() {
             {texts.auth.twoFactor.pageDescription}
           </p>
         </div>
+
+        <section className="surface-card flex items-center justify-between gap-3 p-4">
+          <div>
+            <h2 className="text-base font-medium">{texts.appearance.title}</h2>
+
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {texts.appearance.collectionsHint}
+            </p>
+          </div>
+
+          <Button
+            variant="outline"
+            className="shrink-0 rounded-full"
+            onClick={() => setAppearanceOpen(true)}
+          >
+            {texts.appearance.action}
+          </Button>
+        </section>
 
         {isLoading && (
           <div className="flex justify-center py-8 text-muted-foreground">
@@ -120,11 +139,8 @@ function Seguranca() {
             )}
 
             <EmailSection status={status} onError={handleError} onDone={refresh} />
-
             <TotpSection status={status} onError={handleError} onDone={refresh} />
-
             <EmailOtpSection status={status} onError={handleError} onDone={refresh} />
-
             <IdentityVerificationSection />
 
             <p className="text-center text-xs text-muted-foreground">
@@ -139,6 +155,8 @@ function Seguranca() {
           <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p>
         )}
       </div>
+
+      <AppearanceDialog open={appearanceOpen} onOpenChange={setAppearanceOpen} />
     </AppContainer>
   );
 }
@@ -163,7 +181,9 @@ function EmailSection({ status, onError }: SectionProps) {
       <h2 className="text-base font-medium">{texts.auth.twoFactor.emailSection}</h2>
 
       <p className="text-sm text-muted-foreground">
-        {status.emailVerified ? texts.auth.twoFactor.emailConfirmed(currentEmail()) : texts.auth.twoFactor.emailPending}
+        {status.emailVerified
+          ? texts.auth.twoFactor.emailConfirmed(currentEmail())
+          : texts.auth.twoFactor.emailPending}
       </p>
 
       {!status.emailVerified && (
@@ -189,7 +209,9 @@ function EmailSection({ status, onError }: SectionProps) {
 }
 
 function TotpSection({ status, onError, onDone }: SectionProps) {
-  const [setup, setSetup] = useState<import("@/types/application/auth/two-factor").TotpSetup | null>(null);
+  const [setup, setSetup] = useState<
+    import("@/types/application/auth/two-factor").TotpSetup | null
+  >(null);
   const [code, setCode] = useState("");
   const [backupCodes, setBackupCodes] = useState<string[] | null>(null);
   const [copied, setCopied] = useState(false);
@@ -266,11 +288,7 @@ function TotpSection({ status, onError, onDone }: SectionProps) {
       )}
 
       {status.totpAvailable && !status.totpEnabled && !setup && !backupCodes && (
-        <Button
-          className="rounded-full"
-          disabled={start.isPending}
-          onClick={() => start.mutate()}
-        >
+        <Button className="rounded-full" disabled={start.isPending} onClick={() => start.mutate()}>
           {texts.auth.twoFactor.totpStart}
         </Button>
       )}
@@ -295,7 +313,12 @@ function TotpSection({ status, onError, onDone }: SectionProps) {
                 {setup.secret}
               </code>
 
-              <Button variant="outline" size="sm" className="shrink-0 rounded-full gap-1.5" onClick={copySecret}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0 rounded-full gap-1.5"
+                onClick={copySecret}
+              >
                 <Copy className="h-3.5 w-3.5" />
 
                 <>{copied ? texts.auth.twoFactor.totpSecretCopied : "Copiar"}</>
@@ -425,7 +448,9 @@ function EmailOtpSection({ status, onError, onDone }: SectionProps) {
 
       {sent && (
         <div className="space-y-2 rounded-xl border border-border-soft p-3">
-          <p className="text-xs text-muted-foreground">{texts.auth.twoFactor.email2faConfirmHint}</p>
+          <p className="text-xs text-muted-foreground">
+            {texts.auth.twoFactor.email2faConfirmHint}
+          </p>
 
           <div className="flex flex-wrap gap-2">
             <Input

@@ -68,7 +68,7 @@ export const texts = {
   appearance: {
     action: "Aparência",
     title: "Aparência",
-    description: "Escolha as cores do app. A preferência vale só neste dispositivo.",
+    description: "Escolha o tema e as cores do app. O tema acompanha a sua conta entre dispositivos; as cores finas valem neste.",
     mode: "Modo",
     accentSection: "Cor de destaque",
     accentHint: "Botões, links, selos e o gradiente da marca.",
@@ -97,6 +97,12 @@ export const texts = {
       rosa: "Vibrante",
       grafite: "Sem cor, só contraste",
     },
+    collectionsTitle: "Temas",
+    collectionsHint: "Coleções com identidade visual completa — cores, superfícies, fontes e efeitos.",
+    defaultThemeName: "Padrão Énóis",
+    defaultThemeDescription: "A identidade da rede, com a sua cor livre.",
+    activeLabel: "Ativo",
+    colorsNote: (name: string) => `O tema "${name}" está ativo — as cores livres valem no Padrão Énóis.`,
     preview: "Como vai ficar",
     previewPost: "Esse detalhe do cache mudou minha semana.",
     previewBadge: "Projeto",
@@ -385,6 +391,7 @@ export const texts = {
       support: "Ajuda e suporte",
       blockedUsers: "Usuários bloqueados",
       myReports: "Minhas denúncias",
+      sanctions: "Penalidades",
       linkedAccounts: "Contas vinculadas",
       security: "Segurança e verificação",
       deleteAccount: "Excluir conta",
@@ -1595,6 +1602,7 @@ export const texts = {
     status: {
       PENDING: "Em análise",
       TRIAGED: "Triada",
+      AUTO_PENALIZED: "Penalizada (automática)",
       APPROVED: "Procedente",
       DISMISSED: "Não procedente",
     } as Record<string, string>,
@@ -1618,6 +1626,47 @@ export const texts = {
     } as Record<string, string>,
     viewPost: "Ver publicação",
     viewJob: "Ver vaga",
+  },
+
+  sanctions: {
+    seoTitle: "Penalidades · Énóis",
+    back: "Voltar",
+    title: "Penalidades",
+    description:
+      "Restrições ativas na sua conta e o andamento dos seus recursos. A decisão final é sempre de uma pessoa do time.",
+    empty: "Nenhuma penalidade na sua conta.",
+    emptyHint: "Isto não é um histórico de elogios — é só o que de fato restringiu a conta.",
+    type: { RESTRICTION: "Restrição", BAN: "Banimento" } as Record<string, string>,
+    statusLabel: {
+      ACTIVE: "Ativa",
+      REMOVED: "Removida",
+    } as Record<string, string>,
+    appealStatus: {
+      PENDING: "Em análise",
+      APPROVED: "Aceito",
+      DENIED: "Negado",
+    } as Record<string, string>,
+    appealTitle: "Recorrer da restrição",
+    appealDescription:
+      "Chega em uma pessoa do time por que a penalidade foi um engano. Seja específico: contexto, intenção e o que a análise pode ter perdido.",
+    appealPlaceholder: "Explique o contexto...",
+    appealAction: "Enviar recurso",
+    appealSent: "Recurso enviado. Avisamos aqui quando houver decisão.",
+    appealError: "Não foi possível enviar o recurso. Tente de novo.",
+    appealMinLength: "Explica o recurso em pelo menos 10 caracteres.",
+    appealPending: "Seu recurso está em análise. Você será avisado da decisão.",
+    restrictedNotice:
+      "Sua conta está restrita: você não pode publicar nem comentar enquanto a restrição estiver ativa.",
+    bannedNotice:
+      "Sua conta está banida após revisão do recurso. Se precisar, fale com o suporte.",
+    moderationTitle: "Moderação · recursos",
+    moderationDescription:
+      "Fila de recursos de penalidade automática. Aprovar remove a restrição; negar converte em banimento (sessões revogadas).",
+    approve: "Aceitar recurso",
+    deny: "Negar (banir)",
+    moderationEmpty: "Nenhum recurso pendente.",
+    decided: "Decisão registrada.",
+    moderationError: "Não foi possível registrar a decisão.",
   },
 
   guidelines: {

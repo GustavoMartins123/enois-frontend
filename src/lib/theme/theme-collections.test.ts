@@ -1,0 +1,99 @@
+import { THEME_COLLECTIONS, THEME_COLLECTION_IDS } from "@/constants/theme-collections";
+import { THEME_TOKEN_NAMES } from "@/constants/theme-tokens";
+import { describe, expect, it } from "vitest";
+
+import { buildCollectionCss, resolveThemeCollection } from "./build-collection-css";
+
+/**
+ * O contrato da coleção temática: identificadores estáveis (é o que o backend
+ * valida e a conta guarda), cobertura completa de tokens nos dois modos e o
+ * fallback que mantém a leitura — tema sem variante escura leva os tokens claros
+ * para o seletor `.dark`, e vice-versa.
+ */
+describe("coleções temáticas", () => {
+  it("tem identificadores únicos, estáveis e espelhados no backend", () => {
+    expect(new Set(THEME_COLLECTION_IDS).size).toBe(THEME_COLLECTION_IDS.length);
+    expect(THEME_COLLECTION_IDS).toEqual([
+      "win95",
+      "win98",
+      "win2000",
+      "luna",
+      "aero-glass",
+      "frutiger-aero",
+      "metro",
+      "terminal",
+      "vaporwave",
+      "synthwave",
+      "y2k",
+      "neumorfismo",
+    ]);
+  });
+
+  it("cada tema cobre todos os tokens da marca no modo claro e no escuro", () => {
+    for (const collection of THEME_COLLECTIONS) {
+      const modes = [collection.tokens.light, collection.tokens.dark ?? collection.tokens.light];
+      for (const tokens of modes) {
+        for (const name of THEME_TOKEN_NAMES) {
+          expect(tokens[name], `${collection.id} sem ${name}`).toBeTruthy();
+        }
+      }
+    }
+  });
+
+  it("tema só-claro no modo escuro: tokens claros no seletor .dark, texto incluído", () => {
+    const win95 = resolveThemeCollection("win95");
+    expect(win95).not.toBeNull();
+    const css = buildCollectionCss(win95!, "dark");
+    expect(css).toContain('html:root.dark[data-theme="win95"]');
+    expect(css).toContain("--background: #c0c0c0");
+    expect(css).toContain("--text-strong: #0a0a0a");
+    expect(css).not.toContain('html:root[data-theme="win95"] {');
+  });
+
+  it("tema só-escuro no modo claro: os tokens escuros valem nos dois modos", () => {
+    const terminal = resolveThemeCollection("terminal");
+    expect(terminal).not.toBeNull();
+    const css = buildCollectionCss(terminal!, "light");
+    expect(css).toContain('html:root[data-theme="terminal"]');
+    expect(css).toContain("--background: #050805");
+    expect(css).toContain("--text-strong: #b8ffc8");
+  });
+
+  it("identificador inválido (ou tema removido) resolve para null — nunca um tema pela metade", () => {
+    expect(resolveThemeCollection("nope")).toBeNull();
+    expect(resolveThemeCollection(null)).toBeNull();
+    expect(resolveThemeCollection(undefined)).toBeNull();
+  });
+
+  it("CSS estrutural fica escopado no próprio tema, sem vazar para outro", () => {
+    for (const collection of THEME_COLLECTIONS) {
+      if (!collection.css) continue;
+      expect(collection.css).toContain(`data-theme="${collection.id}"`);
+      for (const other of THEME_COLLECTIONS) {
+        if (other.id === collection.id) continue;
+        expect(collection.css, `${collection.id} citando ${other.id}`).not.toContain(
+          `data-theme="${other.id}"`,
+        );
+      }
+    }
+  });
+
+  it("trocar de tema troca o CSS inteiro — sem recarregamento, o <style> é substituído", () => {
+    const metro = buildCollectionCss(resolveThemeCollection("metro")!, "light");
+    const terminal = buildCollectionCss(resolveThemeCollection("terminal")!, "light");
+    expect(metro).not.toBe(terminal);
+    expect(metro).toContain("--radius: 0px");
+    expect(terminal).toContain("ui-monospace");
+  });
+
+  it("cada tema traz uma amostra representativa para a galeria", () => {
+    for (const collection of THEME_COLLECTIONS) {
+      expect(collection.name.length).toBeGreaterThan(0);
+      expect(collection.description.length).toBeGreaterThan(0);
+      expect(collection.preview.background).toBeTruthy();
+      expect(collection.preview.surface).toBeTruthy();
+      expect(collection.preview.primary).toBeTruthy();
+      expect(collection.preview.onPrimary).toBeTruthy();
+    }
+  });
+});
