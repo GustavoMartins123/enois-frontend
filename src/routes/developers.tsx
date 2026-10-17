@@ -1,11 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import { Check, Copy } from "lucide-react";
+import { type ComponentProps, useState } from "react";
+
+import { API_BASE_URL, apiSections, apiUseCases, type ApiEndpoint, type HttpMethod } from "@/constants/developers-api";
 
 import { AppContainer } from "@/components/app-container";
 
 export const Route = createFileRoute("/developers")({
-  // Página PUBLICA de documentação. O subdomínio developers.enois.ia.br aponta para cá quando o
+  // Pagina PUBLICA de documentacao. O subdominio developers.enois.ia.br aponta para ca quando o
   // DNS/TLS estiver configurado (ver docs/DEVELOPERS_PORTAL.md no backend).
   head: () => ({
     meta: [
@@ -16,124 +20,298 @@ export const Route = createFileRoute("/developers")({
   component: Developers,
 });
 
+const METHOD_STYLE: Record<HttpMethod, string> = {
+  GET: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400",
+  POST: "bg-violet-500/15 text-violet-700 dark:text-violet-400",
+  PUT: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+  PATCH: "bg-amber-500/15 text-amber-700 dark:text-amber-400",
+  DELETE: "bg-rose-500/15 text-rose-700 dark:text-rose-400",
+};
+
+const ACCESS_STYLE: Record<ApiEndpoint["access"], { label: string; className: string }> = {
+  public: { label: "público", className: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30" },
+  auth: { label: "com sessão", className: "bg-primary/10 text-primary border-primary/30" },
+  admin: { label: "admin", className: "bg-rose-500/10 text-destructive border-destructive/30" },
+};
+
 function Code({ children }: { children: string }) {
+  return <CodeBlock code={children} />;
+}
+
+function CodeBlock({ code }: { code: string }) {
+  return <CopyableCode code={code.trim()} />;
+}
+
+function CopyableCode({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      // Sem clipboard (contexto inseguro): o texto continua selecionavel a mao.
+    }
+  };
+
   return (
-    <pre className="mt-2 overflow-x-auto rounded-xl border border-border-soft bg-surface-1 p-3 text-xs leading-relaxed">
-      <code>{children}</code>
-    </pre>
+    <div className="group relative mt-2">
+      <pre className="overflow-x-auto rounded-xl border border-border-soft bg-surface-1 p-3 text-xs leading-relaxed">
+        <code>{code}</code>
+      </pre>
+
+      <button
+        type="button"
+        onClick={() => void copy()}
+        className="absolute right-2 top-2 rounded-md border border-border-soft bg-surface-card p-1.5 text-text-subtle opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100"
+        aria-label={copied ? texts.developersChrome.copied : texts.developersChrome.copy}
+      >
+        {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+      </button>
+    </div>
   );
 }
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children, ...rest }: ComponentProps<"section"> & { title?: string }) {
   return (
-    <section className="surface-card p-5">
-      <h2 className="text-base font-semibold tracking-tight">{title}</h2>
+    <section className="surface-card scroll-mt-20 p-5" {...rest}>
+      {title && <h2 className="text-base font-semibold tracking-tight">{title}</h2>}
 
-      <div className="mt-2 space-y-2 text-sm font-normal text-text-subtle">{children}</div>
+      {children}
     </section>
+  );
+}
+
+function Endpoint({ endpoint }: { endpoint: ApiEndpoint }) {
+  const access = ACCESS_STYLE[endpoint.access];
+
+  return (
+    <div className="mt-3 rounded-xl border border-border-soft p-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className={`rounded-md px-2 py-0.5 font-mono text-[11px] font-bold ${METHOD_STYLE[endpoint.method]}`}>
+          {endpoint.method}
+        </span>
+
+        <code className="break-all font-mono text-xs font-semibold text-text-strong">{endpoint.path}</code>
+
+        <span className={`ml-auto rounded-full border px-2 py-0.5 text-[10px] font-medium ${access.className}`}>
+          {access.label}
+        </span>
+      </div>
+
+      <p className="mt-1.5 text-sm font-normal text-text-subtle">{endpoint.description}</p>
+
+      {endpoint.request && (
+        <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-text-subtle">requisição</p>
+      )}
+
+      {endpoint.request && <CodeBlock code={endpoint.request} />}
+
+      {endpoint.response && (
+        <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-text-subtle">resposta</p>
+      )}
+
+      {endpoint.response && <CodeBlock code={endpoint.response} />}
+    </div>
   );
 }
 
 function Developers() {
   return (
     <AppContainer>
-      <div className="mx-auto w-full max-w-3xl space-y-5">
-        <header>
-          <h1 className="text-2xl font-semibold tracking-tight">{texts.developers.title}</h1>
+      <div className="mx-auto w-full max-w-4xl space-y-6">
+        <header className="space-y-3">
+          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">{texts.developers.title}</h1>
 
-          <p className="mt-1 text-sm text-text-subtle">{texts.developers.subtitle}</p>
+          <p className="text-sm text-text-subtle sm:text-base">{texts.developers.subtitle}</p>
+
+          <div className="flex flex-wrap gap-2 pt-1">
+            <a
+              href="#comecando"
+              className="rounded-full bg-primary px-4 py-1.5 text-sm font-semibold text-primary-foreground"
+            >
+              {texts.developersChrome.start}
+            </a>
+
+            <a
+              href="#modulos"
+              className="rounded-full border border-border-soft px-4 py-1.5 text-sm font-semibold hover:bg-surface-2"
+            >
+              {texts.developersChrome.modules}
+            </a>
+
+            <a
+              href="#casos"
+              className="rounded-full border border-border-soft px-4 py-1.5 text-sm font-semibold hover:bg-surface-2"
+            >
+              {texts.developersChrome.useCases}
+            </a>
+          </div>
         </header>
 
-        <Section title={texts.developers.philosophyTitle}>
-          <p>{texts.developers.philosophy}</p>
+        <Section title={texts.developers.philosophyTitle} id="filosofia">
+          <p className="mt-2 text-sm font-normal text-text-subtle">{texts.developers.philosophy}</p>
         </Section>
 
-        <Section title={texts.developers.baseUrlTitle}>
-          <p>
-            {texts.developers.baseUrlHint} <code>https://enois.ia.br/api</code>
+        <Section title={texts.developersChrome.startTitle} id="comecando">
+          <div className="mt-2 space-y-3 text-sm font-normal text-text-subtle">
+            <p>
+              {texts.developers.baseUrlHint} <code className="font-mono text-text-strong">{API_BASE_URL}</code>{" "}
+              {texts.developers.baseUrlNote}
+            </p>
+
+            <p>{texts.developersChrome.intro}</p>
+
+            <CodeBlock
+              code={`# 1. Autentique-se (o mesmo token que o app usa)
+curl -X POST ${API_BASE_URL}/auth/login \\
+  -H "Content-Type: application/json" \\
+  -d '{"email":"ada@exemplo.com","password":"senha-forte-1"}'
+
+# 2. Autentique cada chamada com a sessao
+curl ${API_BASE_URL}/me -H "X-Session-Token: <token>"`}
+            />
+
+            <p>{texts.developersChrome.chromeIntroPublic}</p>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-xl border border-border-soft p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
+                  {texts.developersChrome.paginationTitle}
+                </p>
+
+                <p className="mt-1 text-sm">{texts.developers.pagination}</p>
+
+                <CodeBlock code={`GET ${API_BASE_URL}/feed/posts/$POST_ID/comments?limit=20\nGET ...?cursor=<nextCursor>&limit=20`} />
+              </div>
+
+              <div className="rounded-xl border border-border-soft p-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
+                  {texts.developersChrome.errorsTitle}
+                </p>
+
+                <p className="mt-1 text-sm">{texts.developers.errors}</p>
+
+                <CodeBlock
+                  code={`{"code":"UNAUTHENTICATED","message":"Sessao invalida ou expirada.",
+ "timestamp":"2026-10-17T14:20:39Z"}`}
+                />
+              </div>
+            </div>
+
+            <div className="overflow-x-auto rounded-xl border border-border-soft">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-surface-1 font-semibold text-text-strong">
+                  <tr>
+                    <th className="px-3 py-2">HTTP</th>
+                    <th className="px-3 py-2">código</th>
+                    <th className="px-3 py-2">quando</th>
+                  </tr>
+                </thead>
+
+                <tbody className="divide-y divide-border-soft">
+                  {[
+                    ["400", "BAD_REQUEST", "corpo inválido (e Idempotency-Key ausente onde é exigida)"],
+                    ["401", "UNAUTHENTICATED", "sem sessão, sessão expirada ou token forjado"],
+                    ["403", "FORBIDDEN / ACCOUNT_RESTRICTED / ACCOUNT_BANNED", "sem permissão; conta restrita ou banida"],
+                    ["404", "NOT_FOUND", "recurso inexistente (ou de outra pessoa)"],
+                    ["409", "CONFLICT / ALREADY_REPORTED / APPEAL_ALREADY_PENDING", "estado atual não permite a operação"],
+                    ["422", "INVALID_COMMENT", "regra de conteúdo violada"],
+                    ["429", "RATE_LIMITED", "limite de requisições excedido"],
+                  ].map(([http, code, when]) => (
+                    <tr key={code}>
+                      <td className="px-3 py-1.5 font-mono">{http}</td>
+                      <td className="px-3 py-1.5 font-mono text-text-strong">{code}</td>
+                      <td className="px-3 py-1.5">{when}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <p>
+              {texts.developers.limits} {texts.developersChrome.idempotencyHint}
+            </p>
+          </div>
+        </Section>
+
+        <div id="modulos" className="scroll-mt-20" />
+
+        <nav className="surface-card p-4">
+          <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
+            {texts.developersChrome.modules}
           </p>
 
-          <p className="rounded-xl bg-surface-2 p-3 text-xs">{texts.developers.baseUrlNote}</p>
-        </Section>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {apiSections.map((section) => (
+              <a
+                key={section.id}
+                href={`#modulo-${section.id}`}
+                className="rounded-full border border-border-soft px-3 py-1 text-xs font-medium transition hover:border-primary hover:text-primary"
+              >
+                {section.title}
+              </a>
+            ))}
+          </div>
+        </nav>
 
-        <Section title={texts.developers.authTitle}>
-          <p>{texts.developers.authIntro}</p>
+        {apiSections.map((section) => (
+          <Section key={section.id} title={section.title} id={`modulo-${section.id}`}>
+            <p className="mt-2 text-sm font-normal text-text-subtle">{section.description}</p>
 
-          <Code>{`POST /api/auth/login
-Content-Type: application/json
-Idempotency-Key: <uuid>
+            {section.endpoints.map((endpoint) => (
+              <Endpoint key={`${endpoint.method} ${endpoint.path}`} endpoint={endpoint} />
+            ))}
+          </Section>
+        ))}
 
-{ "email": "voce@exemplo.com", "password": "••••••" }
+        <div id="casos" className="scroll-mt-20" />
 
-# 200 ->
-{ "token": "<session>", "refreshToken": "<refresh>", "expiresAt": "...", "user": { ... } }`}</Code>
+        <header className="space-y-1 pt-2">
+          <h2 className="text-xl font-semibold tracking-tight">{texts.developersChrome.useCasesTitle}</h2>
 
-          <p>{texts.developers.authHeader}</p>
+          <p className="text-sm text-text-subtle">{texts.developersChrome.useCasesIntro}</p>
+        </header>
 
-          <Code>{`X-Session-Token: <session>`}</Code>
+        {apiUseCases.map((useCase) => (
+          <Section key={useCase.id} title={useCase.title} id={`caso-${useCase.id}`}>
+            <p className="mt-2 text-sm font-normal text-text-subtle">{useCase.description}</p>
 
-          <p>{texts.developers.authNote}</p>
-        </Section>
+            <ol className="mt-3 space-y-3">
+              {useCase.steps.map((step, index) => (
+                <li key={index} className="space-y-1">
+                  <p className="text-sm font-medium text-text-strong">
+                    <span className="mr-1.5 inline-grid h-5 w-5 place-items-center rounded-full bg-primary-soft text-[11px] font-bold text-primary">
+                      {index + 1}
+                    </span>
 
-        <Section title={texts.developers.endpointsTitle}>
-          <p>{texts.developers.endpointsIntro}</p>
+                    {step.note}
+                  </p>
 
-          <ul className="list-disc space-y-1 pl-5">
-            <li>
-              <code>GET /api/feed</code>, <code>GET /api/feed/posts/&#123;postId&#125;</code>
-            </li>
-            <li>
-              <code>GET /api/users/&#123;username&#125;</code>, <code>GET /api/users/search?q=</code>
-            </li>
-            <li>
-              <code>GET /api/communities</code>, <code>GET /api/communities/&#123;id&#125;/feed</code>
-            </li>
-            <li>
-              <code>GET /api/jobs</code>, <code>GET /api/jobs/&#123;jobId&#125;</code>
-            </li>
-            <li>
-              <code>GET /api/events</code>, <code>GET /api/mentors</code>
-            </li>
-            <li>
-              <code>GET /api/notifications</code>, <code>GET /api/conversations</code>,{" "}
-              <code>GET /api/identity</code>
-            </li>
-          </ul>
+                  {step.code && <CodeBlock code={step.code} />}
+                </li>
+              ))}
+            </ol>
+          </Section>
+        ))}
 
-          <p>{texts.developers.endpointsNote}</p>
-        </Section>
+        <Section title={texts.developers.statusTitle} id="status">
+          <div className="mt-2 space-y-2 text-sm font-normal text-text-subtle">
+            <p>{texts.developers.status}</p>
 
-        <Section title={texts.developers.paginationTitle}>
-          <p>{texts.developers.pagination}</p>
+            <p>
+              {texts.developers.securityLinkPrefix} <code className="font-mono">SECURITY.md</code>{" "}
+              {texts.developersChrome.securityHint}
+            </p>
 
-          <Code>{`{ "items": [ ... ], "nextCursor": "<cursor ou null>" }`}</Code>
-        </Section>
-
-        <Section title={texts.developers.errorsTitle}>
-          <p>{texts.developers.errors}</p>
-
-          <Code>{`{ "code": "POST_NOT_FOUND", "message": "Post nao encontrado.", "timestamp": "..." }`}</Code>
-
-          <p>{texts.developers.errorsNote}</p>
-        </Section>
-
-        <Section title={texts.developers.limitsTitle}>
-          <p>{texts.developers.limits}</p>
-        </Section>
-
-        <Section title={texts.developers.publishingTitle}>
-          <p>{texts.developers.publishing}</p>
-        </Section>
-
-        <Section title={texts.developers.statusTitle}>
-          <p>{texts.developers.status}</p>
-
-          <p>
-            {texts.developers.securityLinkPrefix}{" "}
-            <a className="text-primary hover:underline" href="mailto:seguranca@enois.ia.br">
-              seguranca@enois.ia.br
-            </a>
-          </p>
+            <p>
+              {texts.developersChrome.guidelinesHint}{" "}
+              <a href="/diretrizes" className="text-primary hover:underline">
+                {texts.legal.footer.guidelines}
+              </a>
+            </p>
+          </div>
         </Section>
       </div>
     </AppContainer>

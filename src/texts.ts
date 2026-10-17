@@ -1485,6 +1485,28 @@ export const texts = {
     loadingOlder: "Carregando...",
   },
 
+  developersChrome: {
+    start: "Começando",
+    modules: "Módulos",
+    useCases: "Casos de uso",
+    startTitle: "Começando",
+    intro:
+      "Tudo sob a mesma base da API. As rotas de leitura pública não pedem credencial; as demais usam a sessão do Énóis no header X-Session-Token — o mesmo token que o app usa, obtido no login.",
+    chromeIntroPublic:
+      "Sem sessão você já consegue: ler post público e comentários, listar comunidades e o feed delas, vagas (com a origem), eventos, mentores, ranking, busca e estatísticas. Escrever (postar, comentar, reagir, denunciar…) pede a sessão de uma conta real.",
+    paginationTitle: "Paginação",
+    errorsTitle: "Erros",
+    idempotencyHint:
+      "Operações de escrita aceitam Idempotency-Key: repita a chamada com a mesma chave e a operação não duplica. Em algumas rotas de escrita a chave é obrigatória.",
+    copy: "Copiar exemplo",
+    copied: "Copiado",
+    useCasesTitle: "Casos de uso",
+    useCasesIntro:
+      "Receitas de ponta a ponta com as chamadas reais — os exemplos de resposta abaixo são capturados da produção, não inventados.",
+    securityHint: "descreve como reportar vulnerabilidades (resposta em até 90 dias, sem caça a recompensa).",
+    guidelinesHint: "O que a plataforma tolera (e o que não tolera) está nas",
+  },
+
   developers: {
     seoTitle: "API do Énóis · Desenvolvedores",
     seoDescription:
