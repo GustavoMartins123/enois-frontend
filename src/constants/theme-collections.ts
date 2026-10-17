@@ -2,6 +2,8 @@ import type { ThemeCollection } from "@/types/preferences/theme-collection";
 import type { PaletteSpec } from "@/types/preferences/theme-collection-palette-spec";
 import type { ThemeCollectionTokens } from "@/types/preferences/theme-collection-tokens";
 
+import { withAlpha } from "@/lib/theme/build-background-style";
+
 /**
  * Expande a especificação no mapa completo de tokens.
  *
@@ -37,14 +39,14 @@ function palette(spec: PaletteSpec): ThemeCollectionTokens {
     "--project-text": primary,
     // Superfícies
     "--background": background,
-    "--card": surface,
-    "--popover": surface,
+    "--card": withAlpha(surface, spec.surfaceAlpha ?? 100),
+    "--popover": withAlpha(surface, spec.surfaceAlpha ?? 100),
     "--muted": muted,
     "--border": border,
     "--input": spec.input ?? border,
-    "--sidebar": surface,
+    "--sidebar": withAlpha(surface, spec.surfaceAlpha ?? 100),
     "--sidebar-border": border,
-    "--surface-card": surface,
+    "--surface-card": withAlpha(surface, spec.surfaceAlpha ?? 100),
     "--surface-1": background,
     "--surface-2": muted,
     "--surface-3": surface,
@@ -65,8 +67,7 @@ function palette(spec: PaletteSpec): ThemeCollectionTokens {
       const parsed = /^([\d.]+)(px|rem)$/.exec(spec.radius ?? "0.875rem");
       const base = parsed ? Number(parsed[1]) : 14;
       const unit = parsed ? parsed[2] : "rem";
-      const radiusToken = (delta: number) =>
-        `${Math.max(0, base + delta)}${unit}`;
+      const radiusToken = (delta: number) => `${Math.max(0, base + delta)}${unit}`;
       return {
         "--radius": `${base}${unit}`,
         "--radius-sm": radiusToken(-4),
@@ -353,12 +354,15 @@ export const THEME_COLLECTIONS: ThemeCollection[] = [
   {
     id: "aero-glass",
     name: "Aero Glass",
+    surfaceAlpha: 55,
+    surfaceHex: "#ffffff",
     description: "Vidro fosco, luz atravessando os painéis e bordas que brilham.",
     metaColor: "#1e6bb8",
     tokens: {
       light: palette({
         background: "linear-gradient(160deg, #cfe4f7, #9cc2e8)",
-        surface: "rgb(255 255 255 / 0.55)",
+        surface: "#ffffff",
+        surfaceAlpha: 55,
         muted: "rgb(255 255 255 / 0.38)",
         border: "rgb(255 255 255 / 0.65)",
         input: "rgb(255 255 255 / 0.5)",
@@ -377,7 +381,8 @@ export const THEME_COLLECTIONS: ThemeCollection[] = [
       }),
       dark: palette({
         background: "linear-gradient(160deg, #14243a, #0b1524)",
-        surface: "rgb(22 34 52 / 0.55)",
+        surface: "#162234",
+        surfaceAlpha: 55,
         muted: "rgb(22 34 52 / 0.4)",
         border: "rgb(120 170 220 / 0.35)",
         input: "rgb(120 170 220 / 0.25)",
@@ -420,12 +425,15 @@ html:root.dark[data-theme="aero-glass"] .bg-surface-card, html:root.dark[data-th
   {
     id: "frutiger-aero",
     name: "Frutiger Aero",
+    surfaceAlpha: 72,
+    surfaceHex: "#ffffff",
     description: "Água, céu e folha: glossy translúcido do otimismo tecnológico dos anos 2000.",
     metaColor: "#0aa1a8",
     tokens: {
       light: palette({
         background: "linear-gradient(180deg, #e5f6fd, #c9ecd2)",
-        surface: "rgb(255 255 255 / 0.72)",
+        surface: "#ffffff",
+        surfaceAlpha: 72,
         muted: "rgb(255 255 255 / 0.5)",
         border: "rgb(10 161 168 / 0.28)",
         primary: "#0aa1a8",
@@ -445,7 +453,8 @@ html:root.dark[data-theme="aero-glass"] .bg-surface-card, html:root.dark[data-th
       }),
       dark: palette({
         background: "linear-gradient(180deg, #0b2028, #123c33)",
-        surface: "rgb(14 44 52 / 0.72)",
+        surface: "#0e2c34",
+        surfaceAlpha: 72,
         muted: "rgb(14 44 52 / 0.5)",
         border: "rgb(34 211 238 / 0.3)",
         primary: "#22d3ee",

@@ -118,27 +118,50 @@ function surfaceChroma(chroma: number, mode: Theme, extra = 0): number {
  * livre de cor. É o que a personalização aplica sobre a marca e, como CAMADA,
  * sobre os temas da galeria — a superfície do tema fica de pé, o destaque é seu.
  */
-export function buildAccentTokens(accent: ThemeAccent, mode: Theme): Partial<ThemeTokenMap> {
+export function buildAccentTokens(
+  accent: ThemeAccent,
+  mode: Theme,
+  opts?: { alpha?: number; backdropRgb?: { r: number; g: number; b: number } },
+): Partial<ThemeTokenMap> {
   const { hue } = accent;
   const lightness = effectiveAccentLightness(accent, mode);
   const chroma = accent.chroma;
-  const primaryForeground = readableForeground(oklchToRgb(lightness, chroma, hue), hue).css;
+  // O texto do botão é ajustado contra a cor EFETIVA: o destaque com a transparência
+  // dele aplicada sobre o que fica atrás (widget/página) — translúcido não engana o
+  // contraste.
+  const backdrop = opts?.backdropRgb ?? {
+    r: mode === "dark" ? 0.08 : 1,
+    g: mode === "dark" ? 0.08 : 1,
+    b: mode === "dark" ? 0.12 : 1,
+  };
+  const primaryRgb = oklchToRgb(lightness, chroma, hue);
+  const a = Math.min(100, Math.max(0, Math.round(opts?.alpha ?? 100))) / 100;
+  const effectivePrimary = {
+    r: primaryRgb.r * a + backdrop.r * (1 - a),
+    g: primaryRgb.g * a + backdrop.g * (1 - a),
+    b: primaryRgb.b * a + backdrop.b * (1 - a),
+  };
+  const primaryForeground = readableForeground(effectivePrimary, hue).css;
+  const tinted = (css: string) =>
+    a >= 1 ? css : `color-mix(in srgb, ${css} ${Math.round(a * 100)}%, transparent)`;
 
   return {
-    "--primary": oklch(lightness, chroma, hue),
+    "--primary": tinted(oklch(lightness, chroma, hue)),
     "--primary-foreground": primaryForeground,
     "--primary-soft": oklch(mode === "dark" ? 0.26 : 0.95, mode === "dark" ? 0.06 : 0.04, hue),
-    "--secondary": oklch(mode === "dark" ? 0.32 : 0.82, mode === "dark" ? 0.08 : 0.1, hue + 12),
+    "--secondary": tinted(
+      oklch(mode === "dark" ? 0.32 : 0.82, mode === "dark" ? 0.08 : 0.1, hue + 12),
+    ),
     "--secondary-foreground":
       mode === "dark" ? oklch(0.96, 0.008, hue) : oklch(0.25, 0.05, hue + 12),
-    "--accent": oklch(mode === "dark" ? 0.28 : 0.95, mode === "dark" ? 0.06 : 0.04, hue),
+    "--accent": tinted(oklch(mode === "dark" ? 0.28 : 0.95, mode === "dark" ? 0.06 : 0.04, hue)),
     "--accent-foreground": mode === "dark" ? oklch(0.92, 0.04, hue) : oklch(0.35, 0.15, hue),
-    "--ring": oklch(mode === "dark" ? lightness : 0.52, mode === "dark" ? chroma : 0.22, hue),
-    "--gradient-primary": `linear-gradient(135deg, ${oklch(
-      lightness - 0.02,
-      Math.max(0, chroma - 0.03),
-      hue,
-    )}, ${oklch(lightness + 0.14, Math.max(0, chroma - 0.07), hue + 15)})`,
+    "--ring": tinted(
+      oklch(mode === "dark" ? lightness : 0.52, mode === "dark" ? chroma : 0.22, hue),
+    ),
+    "--gradient-primary": `linear-gradient(135deg, ${tinted(
+      oklch(lightness - 0.02, Math.max(0, chroma - 0.03), hue),
+    )}, ${tinted(oklch(lightness + 0.14, Math.max(0, chroma - 0.07), hue + 15))})`,
     "--shadow-soft": `0 1px 2px ${oklch(0.2, 0.05, hue)} / 0.04, 0 4px 16px ${oklch(
       0.2,
       0.05,

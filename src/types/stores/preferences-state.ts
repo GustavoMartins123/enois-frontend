@@ -12,11 +12,14 @@ export type PreferencesState = {
   widgetBackground: BackgroundStyle | null;
   /** Plano de fundo da página (atrás de tudo); `null` = do tema ou da marca. */
   pageBackground: BackgroundStyle | null;
+  /** Transparência do destaque (0–100; 100 = opaco). */
+  accentAlpha: number;
   setTheme: (theme: Theme) => void;
   setThemeSettings: (settings: ThemeSettings) => void;
   resetThemeSettings: () => void;
   setThemeCollection: (collectionId: string | null) => void;
   setWidgetBackground: (style: BackgroundStyle | null) => void;
   setPageBackground: (style: BackgroundStyle | null) => void;
+  setAccentAlpha: (alpha: number) => void;
   toggleSidebar: () => void;
 };

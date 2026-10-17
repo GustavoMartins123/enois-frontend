@@ -65,12 +65,31 @@ export function buildCollectionCss(
   let effective: Record<string, string> = tokens;
 
   if (overrides?.accent) {
-    const accent = buildAccentTokens(overrides.accent, mode);
+    const accent = buildAccentTokens(overrides.accent, mode, {
+      alpha: overrides.accentAlpha ?? 100,
+    });
     effective = { ...effective };
     for (const key of ACCENT_OVERRIDE_KEYS) {
       const value = accent[key];
       if (value !== undefined) effective[key] = value;
     }
+  }
+
+  const widgetAlpha = overrides?.widgetAlpha ?? collection.surfaceAlpha ?? null;
+  if (widgetAlpha !== null && widgetAlpha < 100) {
+    effective = { ...effective };
+    for (const key of ["--card", "--popover", "--sidebar", "--surface-card"]) {
+      const raw = collection.surfaceHex ?? effective[key];
+      if (raw && !raw.includes("gradient") && !raw.includes("color-mix")) {
+        effective[key] = withAlpha(raw, widgetAlpha);
+      }
+    }
+  }
+
+  const pageAlpha = overrides?.pageAlpha ?? null;
+  const rawBackground = effective["--background"];
+  if (pageAlpha !== null && pageAlpha < 100 && rawBackground && rawBackground.startsWith("#")) {
+    effective = { ...effective, "--background": withAlpha(rawBackground, pageAlpha) };
   }
 
   const declarations = Object.entries(effective)

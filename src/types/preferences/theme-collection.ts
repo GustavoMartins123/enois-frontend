@@ -8,6 +8,10 @@ export type ThemeCollection = {
   description: string;
   /** Cor da barra do navegador enquanto o tema está ativo. */
   metaColor: string;
+  /** Transparência nativa das superfícies do tema (o slider começa nela). */
+  surfaceAlpha?: number;
+  /** Superfície bruta (sem alpha), para o slider de transparência re-aplicar por cima. */
+  surfaceHex?: string;
   /**
    * Tokens por modo. Quando o tema não tem variante escura (`dark` ausente), a
    * clara vale nos dois modos — é isso que faz um tema de fundo claro continuar

@@ -6,4 +6,5 @@ export type PreferencesStorageState = {
   themeCollection?: unknown;
   widgetBackground?: unknown;
   pageBackground?: unknown;
+  accentAlpha?: unknown;
 };

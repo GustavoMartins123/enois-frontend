@@ -58,17 +58,27 @@ function normalizeBackgroundStyle(value: unknown): BackgroundStyle | null {
   const type = raw.type === "solid" || raw.type === "gradient" ? raw.type : null;
   if (!type) return null;
   const direction =
-    raw.direction === "vertical" || raw.direction === "radial" || raw.direction === "diagonal"
+    raw.direction === "vertical" ||
+    raw.direction === "radial" ||
+    raw.direction === "horizontal" ||
+    raw.direction === "custom" ||
+    raw.direction === "diagonal"
       ? raw.direction
       : "diagonal";
   const hex = (value: unknown, fallback: string) =>
     typeof value === "string" && HEX_COLOR.test(value) ? value : fallback;
+  const alpha = (value: unknown) =>
+    typeof value === "number" && Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 100;
   return {
     type,
     direction,
     color: hex(raw.color, BACKGROUND_DEFAULTS.color),
     from: hex(raw.from, BACKGROUND_DEFAULTS.from),
     to: hex(raw.to, BACKGROUND_DEFAULTS.to),
+    alpha: alpha(raw.alpha),
+    fromAlpha: alpha(raw.fromAlpha),
+    toAlpha: alpha(raw.toAlpha),
+    angle: alpha(raw.angle),
   };
 }
 
@@ -95,6 +105,11 @@ const preferencesStorage = {
           parsed.state.themeCollection = normalizeThemeCollection(parsed.state.themeCollection);
           parsed.state.widgetBackground = normalizeBackgroundStyle(parsed.state.widgetBackground);
           parsed.state.pageBackground = normalizeBackgroundStyle(parsed.state.pageBackground);
+          parsed.state.accentAlpha =
+            typeof parsed.state.accentAlpha === "number" &&
+            Number.isFinite(parsed.state.accentAlpha)
+              ? Math.min(100, Math.max(0, parsed.state.accentAlpha))
+              : 100;
         }
 
         return JSON.stringify(parsed);
@@ -135,6 +150,7 @@ export const usePreferencesStore = create<PreferencesState>()(
       themeCollection: null,
       widgetBackground: null,
       pageBackground: null,
+      accentAlpha: 100,
 
       setTheme: (theme: Theme) => set({ theme }),
       setThemeSettings: (themeSettings: ThemeSettings) =>
@@ -146,10 +162,12 @@ export const usePreferencesStore = create<PreferencesState>()(
           themeCollection: null,
           widgetBackground: null,
           pageBackground: null,
+          accentAlpha: 100,
         }),
       setThemeCollection: (themeCollection: string | null) => set({ themeCollection }),
       setWidgetBackground: (widgetBackground: BackgroundStyle | null) => set({ widgetBackground }),
       setPageBackground: (pageBackground: BackgroundStyle | null) => set({ pageBackground }),
+      setAccentAlpha: (accentAlpha: number) => set({ accentAlpha }),
       toggleSidebar: () =>
         set((state) => ({
           sidebarCollapsed: !state.sidebarCollapsed,
@@ -165,6 +183,7 @@ export const usePreferencesStore = create<PreferencesState>()(
         themeCollection: state.themeCollection,
         widgetBackground: state.widgetBackground,
         pageBackground: state.pageBackground,
+        accentAlpha: state.accentAlpha,
       }),
       skipHydration: true,
     },
