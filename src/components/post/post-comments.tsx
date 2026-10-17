@@ -1,16 +1,25 @@
-import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { type ChangeEvent, type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { CommentView } from "@/types/application/comment/comment-view";
 import type { PostIdProps } from "@/types/components/post/post-id-props";
-import { Loader2, Send, X } from "lucide-react";
+import type { MediaItem } from "@/types/routes/feed/media-item";
+import { Image, Loader2, Send, X } from "lucide-react";
 
 import { commentsApi } from "@/lib/api";
 import { getCurrentUser } from "@/lib/current-user";
 import { useAuth } from "@/lib/use-auth";
+import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 import { MentionTextarea } from "@/components/mention-textarea";
 import { UserAvatar } from "@/components/user-avatar";
@@ -47,7 +56,51 @@ export function PostComments({ postId }: PostIdProps) {
   const [loadingMore, setLoadingMore] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [media, setMedia] = useState<MediaItem[]>([]);
+  const [gifOpen, setGifOpen] = useState(false);
+  const [gifUrl, setGifUrl] = useState("");
+  const [gifError, setGifError] = useState(false);
+  const [posting, setPosting] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const upload = useMediaUpload();
+
+  const addMedia = (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files ?? []).filter((f) => f.type.startsWith("image/"));
+    event.target.value = "";
+    if (files.length === 0) return;
+    setMedia((current) => {
+      const room = 4 - current.length;
+      if (room <= 0) {
+        setError(texts.posts.comments.mediaLimit);
+        return current;
+      }
+      setError(null);
+      return [...current, ...files.slice(0, room).map((file) => ({
+        type: "image" as const, file, preview: URL.createObjectURL(file),
+      }))];
+    });
+  };
+
+  // Giphy/Tenor/.gif direto: o mesmo reconhecimento do LinkPreviews, para nao deixar
+  // entrar link que depois nao renderiza como GIF.
+  const isGifUrl = (value: string) =>
+    /^https:\/\/(media|i)\.giphy\.com\//.test(value) ||
+    /^https:\/\/media\d*\.tenor\.com\//.test(value) ||
+    /\.gif(\?|$)/i.test(value) ||
+    /giphy\.com\/(?:gifs\/)?[^/?#]*-[a-zA-Z0-9]+\/?$/.test(value);
+
+  const addGif = () => {
+    const value = gifUrl.trim();
+    if (!isGifUrl(value)) {
+      setGifError(true);
+      return;
+    }
+    setDraft(postId, draft ? `${draft}\n${value}` : value);
+    setGifUrl("");
+    setGifError(false);
+    setGifOpen(false);
+  };
 
   const loadFirstPage = useCallback(async () => {
     setLoading(true);
@@ -90,19 +143,29 @@ export function PostComments({ postId }: PostIdProps) {
     // Comentar e uma acao: sem sessao (link compartilhado aberto por outra pessoa) vai para o login.
     if (!requireAuth()) return;
 
+    if (posting) return;
+    setPosting(true);
     setSending(true);
     try {
-      const created = await commentsApi.create(postId, content, replyToId, mentions);
+      let mediaIds: string[] = [];
+      if (media.length > 0) {
+        const results = await upload.uploadAll(media.map((m) => ({ file: m.file })));
+        mediaIds = results.map((r) => r.mediaId);
+      }
+      const created = await commentsApi.create(postId, content, replyToId, mentions, mediaIds);
       addComment(postId, created);
       updateCommentCount(postId, 1);
       setDraft(postId, "");
       setCommentMentions(postId, []);
       setReplyToId(postId, null);
+      media.forEach((m) => URL.revokeObjectURL(m.preview));
+      setMedia([]);
       // O comentario novo entra no topo; rola a lista para o usuario ver.
       listRef.current?.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
-      setError(texts.posts.comments.error);
+      setError(media.length > 0 ? texts.posts.comments.uploadFailed : texts.posts.comments.error);
     } finally {
+      setPosting(false);
       setSending(false);
     }
   };
@@ -172,7 +235,7 @@ export function PostComments({ postId }: PostIdProps) {
                 <CommentItem comment={comment} />
 
                 {replies.length > 0 && (
-                  <div className="ml-10 mt-2 space-y-2 border-l-2 border-border-soft pl-4">
+                  <div className="ml-6 mt-2 space-y-2 border-l-2 border-border-soft pl-3 sm:ml-10 sm:pl-4">
                     {replies.map((reply) => (
                       <CommentItem
                         key={reply.id}
@@ -201,7 +264,7 @@ export function PostComments({ postId }: PostIdProps) {
         )}
       </div>
 
-      <form onSubmit={submit} className="mt-4 flex items-center gap-2.5">
+      <form onSubmit={submit} className="mt-4 flex items-start gap-2 sm:gap-2.5">
         <UserAvatar
           src={currentUser?.avatar}
           alt={currentUser?.name}
@@ -228,7 +291,33 @@ export function PostComments({ postId }: PostIdProps) {
             </div>
           )}
 
-          <div className="flex items-end gap-2 rounded-2xl border border-border-soft bg-surface-1 py-2 pl-4 pr-2">
+          {media.length > 0 && (
+            <div className="mb-2 flex flex-wrap gap-2">
+              {media.map((item, i) => (
+                <div key={item.preview} className="relative">
+                  <img
+                    src={item.preview}
+                    alt=""
+                    className="h-16 w-16 rounded-lg border border-border-soft object-cover"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      URL.revokeObjectURL(item.preview);
+                      setMedia((current) => current.filter((_, index) => index !== i));
+                    }}
+                    className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-foreground text-background shadow"
+                    aria-label={texts.posts.comments.removeMedia}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <div className="rounded-2xl border border-border-soft bg-surface-1 p-2">
             <MentionTextarea
               value={draft}
               onChange={(value, ids) => {
@@ -236,28 +325,87 @@ export function PostComments({ postId }: PostIdProps) {
                 setCommentMentions(postId, ids);
               }}
               placeholder={texts.posts.comments.placeholder}
-              className="flex-1 resize-none border-0 bg-transparent p-0 text-sm font-normal outline-none"
+              className="w-full resize-none border-0 bg-transparent px-2 py-1 text-sm font-normal outline-none"
               maxLength={800}
               toolbar
             />
 
-            <Button
-              type="submit"
-              size="icon"
-              // h-9 (36px) em vez de 28px: era pequeno demais para o dedo no celular.
-              className="h-9 w-9 shrink-0 rounded-full"
-              disabled={!draft.trim() || sending}
-              aria-label={texts.posts.comments.send}
-            >
-              {sending ? (
-                <Loader2 className="h-3.5 w-3.5 animate-spin" />
-              ) : (
-                <Send className="h-3.5 w-3.5" />
-              )}
-            </Button>
+            <div className="mt-1 flex items-center gap-1 px-1">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                className="hidden"
+                onChange={addMedia}
+              />
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="grid h-8 w-8 place-items-center rounded-full text-text-subtle transition hover:bg-surface-2 hover:text-primary"
+                aria-label={texts.posts.comments.attachMedia}
+              >
+                <Image className="h-4 w-4" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setGifError(false);
+                  setGifOpen(true);
+                }}
+                className="h-8 rounded-full px-2 text-xs font-semibold text-text-subtle transition hover:bg-surface-2 hover:text-primary"
+                aria-label={texts.posts.comments.gif}
+              >
+                {texts.posts.comments.gif}
+              </button>
+
+              <Button
+                type="submit"
+                size="icon"
+                // h-9 (36px) em vez de 28px: era pequeno demais para o dedo no celular.
+                className="ml-auto h-9 w-9 shrink-0 rounded-full"
+                disabled={(!draft.trim() && media.length === 0) || sending}
+                aria-label={texts.posts.comments.send}
+              >
+                {sending ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Send className="h-3.5 w-3.5" />
+                )}
+              </Button>
+            </div>
           </div>
         </div>
       </form>
+
+      <Dialog open={gifOpen} onOpenChange={setGifOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="font-normal">{texts.posts.comments.gifTitle}</DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-3 pt-1">
+            <p className="text-sm font-normal text-text-subtle">{texts.posts.comments.gifHint}</p>
+
+            <Input
+              value={gifUrl}
+              onChange={(event) => {
+                setGifUrl(event.target.value);
+                setGifError(false);
+              }}
+              placeholder={texts.posts.comments.gifPlaceholder}
+            />
+
+            {gifError && <p className="text-xs text-destructive">{texts.posts.comments.gifInvalid}</p>}
+
+            <Button className="w-full rounded-full" onClick={addGif} disabled={!gifUrl.trim()}>
+              {texts.posts.comments.gifAction}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

@@ -8,8 +8,12 @@ import { mediaApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { useInView } from "@/lib/feed/use-in-view";
 
-/** Grade de mídias do post (vídeo único ou imagens) com visualização em tela cheia. */
-export function MediaGrid({ mediaIds }: Pick<PostView, "mediaIds">) {
+/** Grade de mídias do post (vídeo único ou imagens) com visualização em tela cheia.
+ *
+ * `compact` encolhe as imagens para caber em espacos apertados (comentarios) sem quebrar
+ * a largura em telas pequenas.
+ */
+export function MediaGrid({ mediaIds, compact = false }: Pick<PostView, "mediaIds"> & { compact?: boolean }) {
   const queryResults = useQueries({
     queries: mediaIds.map((id) => ({
       queryKey: ["media", id],
@@ -74,7 +78,10 @@ export function MediaGrid({ mediaIds }: Pick<PostView, "mediaIds">) {
             <img
               src={resolveCdnUrl(m.cdnUrl)}
               alt=""
-              className="h-48 w-full object-cover bg-surface-1 transition hover:scale-105"
+              loading="lazy"
+              className={`w-full object-cover bg-surface-1 transition hover:scale-105 ${
+                compact ? "h-28 sm:h-36" : "h-48"
+              }`}
             />
           </button>
         ))}

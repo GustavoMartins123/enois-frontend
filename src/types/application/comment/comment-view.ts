@@ -10,6 +10,8 @@ export type CommentView = {
   authorAvatar: string | null;
   parentCommentId: string | null;
   content: string;
+  /** Imagens/videos do comentario (upload); GIFs colados por URL continuam no texto. */
+  mediaIds?: string[];
   createdAt: string;
   /** Quando o autor editou (nulo se nunca editado) — vira o "editado" na tela. */
   editedAt?: string | null;

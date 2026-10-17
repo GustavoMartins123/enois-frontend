@@ -19,6 +19,7 @@ import { UserAvatar } from "@/components/user-avatar";
 
 import { formatTime } from "./format-time";
 import { LinkPreviews } from "./link-previews";
+import { MediaGrid } from "./media-grid";
 import { RichText } from "./rich-text";
 
 /** Um comentário (com responder, reagir e excluir). */
@@ -126,7 +127,7 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
   );
 
   return (
-    <div className="flex gap-2.5">
+    <div className="flex gap-2 sm:gap-2.5">
       {comment.authorUsername ? (
         <Link
           to="/perfil/$username"
@@ -208,12 +209,18 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
                 </ReadMore>
               </div>
 
+              {comment.mediaIds && comment.mediaIds.length > 0 && (
+                <div className="mt-2 max-w-full">
+                  <MediaGrid mediaIds={comment.mediaIds} compact />
+                </div>
+              )}
+
               <LinkPreviews content={content} />
             </>
           )}
         </div>
 
-        <div className="mt-1 flex items-center gap-3 px-3 text-xs font-normal text-text-subtle">
+        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 px-3 text-xs font-normal text-text-subtle sm:gap-x-3">
           <button onClick={handleReply} className="transition-colors hover:text-primary">
             {texts.posts.comments.reply}
           </button>

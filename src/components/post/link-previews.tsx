@@ -51,7 +51,9 @@ export function LinkPreviews({ content, autoplay = false }: LinkPreviewsProps) {
                 src={gif}
                 alt="GIF"
                 loading="lazy"
-                className="max-h-72 w-auto rounded-xl border border-border-soft"
+                // max-w-full evita o GIF empurrar a largura do comentario (quebra no celular,
+                // principalmente nas respostas aninhadas, onde o balao e mais estreito).
+                className="max-h-72 max-w-full h-auto w-auto rounded-xl border border-border-soft"
               />
             </a>
           );
