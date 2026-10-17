@@ -9,6 +9,8 @@ import {
   backgroundValue,
   buildPageDeclarations,
   buildWidgetDeclarations,
+  backgroundValue,
+  pageRepresentative,
   paintGradientCss,
 } from "./build-background-style";
 import { buildCollectionCss, resolveThemeCollection } from "./build-collection-css";
@@ -50,6 +52,9 @@ export function applyThemeSettings(
   collectionId?: string | null,
   widgetBackground?: BackgroundStyle | null,
   pageBackground?: BackgroundStyle | null,
+  accentAlpha?: number,
+  widgetAlpha?: number | null,
+  pageAlpha?: number | null,
 ): void {
   if (typeof document === "undefined") return;
 
@@ -58,6 +63,16 @@ export function applyThemeSettings(
   // livre pinta por cima da identidade (que mantém superfícies e relevos).
   const accentOverride =
     !collection || isDefaultThemeSettings(settings) ? null : clampThemeSettings(settings).accent;
+  // O fundo representativo da página: a camada livre, ou a base do tema/marca — é
+  // contra ELE que o texto dos widgets translúcidos é ajustado.
+  const pageBase = background
+    ? pageRepresentative(background)
+    : (collection?.tokens[mode]?.["--background"] ??
+      collection?.surfaceHex ??
+      (mode === "dark" ? "#141420" : "#ffffff"));
+  const pageSolid = pageBase.startsWith("color-mix")
+    ? (pageBase.match(/#[0-9a-fA-F]{3,6}/)?.[0] ?? pageBase)
+    : pageBase;
 
   // O atributo é o escopo do CSS estrutural; sem coleção, ele sai de cena junto.
   if (collection) {
@@ -77,7 +92,12 @@ export function applyThemeSettings(
   }
 
   let css = collection
-    ? buildCollectionCss(collection, mode, { accent: accentOverride })
+    ? buildCollectionCss(collection, mode, {
+        accent: accentOverride,
+        accentAlpha: accentOverride ? accentAlpha : null,
+        widgetAlpha: collection && !widgetBackground ? widgetAlpha : null,
+        pageAlpha: collection && !pageBackground ? pageAlpha : null,
+      })
     : buildThemeCss(settings, mode);
 
   // Os fundos livres entram no MESMO seletor de especificidade alta dos tokens: um

@@ -22,6 +22,9 @@ export function useThemeSync(): void {
   const themeCollection = usePreferencesStore((state) => state.themeCollection);
   const widgetBackground = usePreferencesStore((state) => state.widgetBackground);
   const pageBackground = usePreferencesStore((state) => state.pageBackground);
+  const accentAlpha = usePreferencesStore((state) => state.accentAlpha);
+  const widgetAlpha = usePreferencesStore((state) => state.widgetAlpha);
+  const pageAlpha = usePreferencesStore((state) => state.pageAlpha);
 
   useEffect(() => {
     hydratePreferences();
@@ -29,8 +32,8 @@ export function useThemeSync(): void {
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
-    applyThemeSettings(themeSettings, theme, themeCollection, widgetBackground, pageBackground);
-  }, [theme, themeSettings, themeCollection, widgetBackground, pageBackground]);
+    applyThemeSettings(themeSettings, theme, themeCollection, widgetBackground, pageBackground, accentAlpha, widgetAlpha, pageAlpha);
+  }, [theme, themeSettings, themeCollection, widgetBackground, pageBackground, accentAlpha, widgetAlpha, pageAlpha]);
 
   useThemeAccountSync();
 }
