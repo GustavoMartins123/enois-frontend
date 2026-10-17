@@ -11,6 +11,7 @@ import { profileApi } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
 
 import { HtmlEditor } from "@/components/html-editor";
@@ -30,6 +31,9 @@ export function ProfileBannerDialog({
 }: ProfileBannerDialogProps) {
   const { toast } = useToast();
   const [html, setHtml] = useState(initialHtml ?? "");
+  // A escolha fica na cara: "selecionar nova foto" ou "digitar código HTML" — nada de esconder uma
+  // das duas atrás de um botão secundário.
+  const [mode, setMode] = useState<"photo" | "html">(initialHtml ? "html" : "photo");
 
   const save = useMutation({
     mutationFn: (value: string) => profileApi.update({ bannerHtml: value }),
@@ -52,61 +56,88 @@ export function ProfileBannerDialog({
           {texts.profile.bannerHtml.choiceHint}
         </p>
 
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            className="rounded-full gap-2"
-            onClick={() => {
-              onOpenChange(false);
-              onPickPhoto();
-            }}
-          >
-            <ImageIcon className="h-4 w-4" />
+        <div
+          className="flex flex-wrap gap-1.5"
+          role="tablist"
+          aria-label={texts.profile.bannerHtml.title}
+        >
+          <Pill active={mode === "photo"} onClick={() => setMode("photo")}>
+            <>
+              <ImageIcon className="mr-1.5 inline h-3.5 w-3.5" />
 
-            <>{texts.profile.bannerHtml.photo}</>
-          </Button>
+              <>{texts.profile.bannerHtml.photoTab}</>
+            </>
+          </Pill>
 
-          {initialHtml && (
+          <Pill active={mode === "html"} onClick={() => setMode("html")}>
+            <>{texts.profile.bannerHtml.htmlTab}</>
+          </Pill>
+        </div>
+
+        {mode === "photo" && (
+          <div className="space-y-2 rounded-2xl border border-border-soft bg-surface-1 p-3">
+            <p className="text-[12px] font-normal text-text-subtle">
+              {texts.profile.bannerHtml.photoHint}
+            </p>
+
             <Button
-              variant="ghost"
               className="rounded-full gap-2"
-              disabled={save.isPending}
-              onClick={() => save.mutate("")}
+              onClick={() => {
+                onOpenChange(false);
+                onPickPhoto();
+              }}
             >
-              <>{texts.profile.bannerHtml.remove}</>
+              <ImageIcon className="h-4 w-4" />
+
+              <>{texts.profile.bannerHtml.photo}</>
             </Button>
-          )}
-        </div>
 
-        <div className="rounded-2xl border border-border-soft bg-surface-1 p-3">
-          <HtmlEditor
-            id="profile-banner-html"
-            value={html}
-            onChange={setHtml}
-            label={texts.profile.bannerHtml.label}
-            description={texts.profile.bannerHtml.description}
-            placeholder={texts.profile.bannerHtml.placeholder}
-            emptyPreview={texts.profile.bannerHtml.empty}
-            frameTitle={texts.profile.bannerHtml.frameTitle}
-            maxLength={PROFILE_HTML_MAX_LENGTH}
-            // Mesma altura da capa de verdade: o autor vê o recorte antes de salvar.
-            previewClassName="mt-3 h-40 w-full sm:h-52"
-          />
-        </div>
+            {initialHtml && (
+              <Button
+                variant="ghost"
+                className="rounded-full gap-2"
+                disabled={save.isPending}
+                onClick={() => save.mutate("")}
+              >
+                <>{texts.profile.bannerHtml.remove}</>
+              </Button>
+            )}
+          </div>
+        )}
 
-        <div className="flex gap-2">
-          <Button variant="outline" className="rounded-full" onClick={() => onOpenChange(false)}>
-            {texts.common.cancel}
-          </Button>
+        {mode === "html" && (
+          <div className="rounded-2xl border border-border-soft bg-surface-1 p-3">
+            <HtmlEditor
+              id="profile-banner-html"
+              value={html}
+              onChange={setHtml}
+              label={texts.profile.bannerHtml.label}
+              description={texts.profile.bannerHtml.description}
+              placeholder={texts.profile.bannerHtml.placeholder}
+              emptyPreview={texts.profile.bannerHtml.empty}
+              frameTitle={texts.profile.bannerHtml.frameTitle}
+              maxLength={PROFILE_HTML_MAX_LENGTH}
+              // Mesma altura da capa de verdade: o autor vê o recorte antes de salvar.
+              previewClassName="mt-3 h-40 w-full sm:h-52"
+            />
+          </div>
+        )}
 
-          <Button
-            className="rounded-full"
-            disabled={save.isPending || html === (initialHtml ?? "")}
-            onClick={() => save.mutate(html)}
-          >
-            {save.isPending ? texts.common.saving : texts.profile.bannerHtml.save}
-          </Button>
-        </div>
+        {mode === "html" && (
+          <div className="flex gap-2">
+            <Button variant="outline" className="rounded-full" onClick={() => onOpenChange(false)}>
+              {texts.common.cancel}
+            </Button>
+
+            <Button
+              className="rounded-full"
+              disabled={save.isPending || html === (initialHtml ?? "")}
+              onClick={() => save.mutate(html)}
+            >
+              {save.isPending ? texts.common.saving : texts.profile.bannerHtml.save}
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

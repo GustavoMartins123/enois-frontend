@@ -823,9 +823,11 @@ export const texts = {
       action: "Mudar capa",
       title: "Capa do perfil",
       choiceHint:
-        "A capa é sua: use uma foto ou escreva HTML/CSS. Dá para trocar de ideia quando quiser — a foto continua guardada.",
-      photo: "Enviar foto",
-      photoHint: "JPG, PNG ou WebP — recorte no formato da capa.",
+        "Escolha uma das duas formas de capa. Dá para trocar de ideia quando quiser — a foto continua guardada.",
+      photoTab: "Selecionar nova foto",
+      photo: "Escolher arquivo",
+      photoHint: "JPG, PNG ou WebP — você recorta no formato da capa em seguida.",
+      htmlTab: "Digitar código HTML",
       html: "Capa em HTML/CSS",
       htmlHint:
         "Escreva a capa com HTML e CSS: ela ocupa exatamente o mesmo espaço da foto e vale para todo mundo que abrir seu perfil.",
