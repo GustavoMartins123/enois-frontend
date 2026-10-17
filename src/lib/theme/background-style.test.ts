@@ -2,9 +2,12 @@ import type { BackgroundStyle } from "@/types/preferences/background-style";
 import { describe, expect, it } from "vitest";
 
 import {
+  PAGE_PAINT_TARGETS,
+  WIDGET_PAINT_TARGETS,
   backgroundValue,
   buildPageDeclarations,
   buildWidgetDeclarations,
+  paintGradientCss,
 } from "./build-background-style";
 import { hexToHsl, hexToRgb, hslToHex, readableForeground } from "./color";
 
@@ -91,5 +94,33 @@ describe("conversões HSL dos sliders de fundo", () => {
     const second = hexToHsl(to);
     expect(second.h).toBe(from.h);
     expect(Math.abs(second.l - (from.l - 30))).toBeLessThanOrEqual(1);
+  });
+});
+
+describe("pintura de gradiente (background-image)", () => {
+  const gradient: BackgroundStyle = {
+    type: "gradient",
+    color: "#f4f1fb",
+    from: "#f9f8ff",
+    to: "#e6dcf7",
+    direction: "vertical",
+  };
+  const value = backgroundValue(gradient);
+
+  it("gradiente pinta por background-image nos utilitários da página, ancorado na viewport", () => {
+    const css = paintGradientCss(value, "html:root", PAGE_PAINT_TARGETS, true);
+    expect(css).toContain("background-image: linear-gradient(180deg");
+    expect(css).toContain(".bg-background, body");
+    expect(css).toContain("background-attachment: fixed");
+  });
+
+  it("cor de widget em degradê pinta os utilitários das superfícies, por elemento", () => {
+    const css = paintGradientCss(value, "html:root", WIDGET_PAINT_TARGETS, false);
+    expect(css).toContain(".bg-card, .bg-popover, .bg-surface-card, .bg-sidebar");
+    expect(css).not.toContain("background-attachment");
+  });
+
+  it("fundo sólido não gera pintura (funciona pelo token, como cor)", () => {
+    expect(paintGradientCss("#0b1220", "html:root", PAGE_PAINT_TARGETS, true)).toBe("");
   });
 });

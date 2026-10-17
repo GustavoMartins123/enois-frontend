@@ -66,3 +66,26 @@ export function buildWidgetDeclarations(style: BackgroundStyle): Record<string, 
 export function buildPageDeclarations(style: BackgroundStyle): Record<string, string> {
   return { "--background": backgroundValue(style) };
 }
+
+/** Onde cada camada pinta: página usa o utilitário do fundo (e o body); widgets, as superfícies. */
+export const PAGE_PAINT_TARGETS = ".bg-background, body";
+export const WIDGET_PAINT_TARGETS = ".bg-card, .bg-popover, .bg-surface-card, .bg-sidebar";
+
+/**
+ * Regra de pintura para fundos em GRADIENTE.
+ *
+ * Gradiente não é cor: um `background-color: linear-gradient(…)` é CSS inválido e a
+ * declaração inteira cai fora — é por isso que o fundo "continuava branco". A pintura
+ * que funciona é `background-image`, aplicada sobre os MESMOS utilitários que pintam
+ * o fundo por cor (nossa folha é não-camada, então ganha das utilidades do Tailwind
+ * de qualquer forma). Fundo sólido não precisa disto: como cor, já funciona pelo token.
+ */
+export function paintGradientCss(
+  value: string,
+  scope: string,
+  targets: string,
+  fixed = false,
+): string {
+  if (!value.includes("gradient")) return "";
+  return `${scope} ${targets} { background-image: ${value};${fixed ? " background-attachment: fixed" : ""} }`;
+}

@@ -3,6 +3,7 @@ import type { Theme } from "@/types/preferences/theme";
 import type { ThemeCollection } from "@/types/preferences/theme-collection";
 import type { CollectionOverrides } from "@/types/preferences/theme-collection-overrides";
 
+import { PAGE_PAINT_TARGETS, paintGradientCss } from "./build-background-style";
 import { buildAccentTokens } from "./build-theme-tokens";
 
 /**
@@ -79,5 +80,16 @@ export function buildCollectionCss(
   const selector = mode === "dark" ? "html:root.dark" : "html:root";
   const varsBlock = `${selector}[data-theme="${collection.id}"] {\n${declarations}\n}`;
 
-  return collection.css ? `${varsBlock}\n${collection.css}` : varsBlock;
+  // Fundo do tema em degradê precisa da pintura por background-image (gradiente não
+  // é cor válida para o background-color do utilitário) — senão a página fica branca
+  // e só os cartões mostram o tema. Ancorado na viewport: sem fatiar entre elementos.
+  const paint = paintGradientCss(
+    effective["--background"] ?? "",
+    `html:root[data-theme="${collection.id}"], html:root.dark[data-theme="${collection.id}"]`,
+    PAGE_PAINT_TARGETS,
+    true,
+  );
+
+  const extra = [collection.css, paint].filter(Boolean).join("\n");
+  return extra ? `${varsBlock}\n${extra}` : varsBlock;
 }

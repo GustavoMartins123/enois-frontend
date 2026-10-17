@@ -3,7 +3,14 @@ import type { BackgroundStyle } from "@/types/preferences/background-style";
 import type { Theme } from "@/types/preferences/theme";
 import type { ThemeSettings } from "@/types/preferences/theme-settings";
 
-import { buildPageDeclarations, buildWidgetDeclarations } from "./build-background-style";
+import {
+  PAGE_PAINT_TARGETS,
+  WIDGET_PAINT_TARGETS,
+  backgroundValue,
+  buildPageDeclarations,
+  buildWidgetDeclarations,
+  paintGradientCss,
+} from "./build-background-style";
 import { buildCollectionCss, resolveThemeCollection } from "./build-collection-css";
 import {
   buildThemeColor,
@@ -79,11 +86,25 @@ export function applyThemeSettings(
   const layers: Record<string, string>[] = [];
   if (widgetBackground) layers.push(buildWidgetDeclarations(widgetBackground));
   if (pageBackground) layers.push(buildPageDeclarations(pageBackground));
-  for (const declarations of layers) {
-    const block = Object.entries(declarations)
+  for (const [kind, style] of [
+    ["widget", widgetBackground],
+    ["page", pageBackground],
+  ] as const) {
+    if (!style) continue;
+    const block = Object.entries(
+      kind === "widget" ? buildWidgetDeclarations(style) : buildPageDeclarations(style),
+    )
       .map(([name, value]) => `  ${name}: ${value};`)
       .join("\n");
     css += `\n\n${selector} {\n${block}\n}`;
+    const value = kind === "widget" ? backgroundValue(style) : backgroundValue(style);
+    const paint = paintGradientCss(
+      value,
+      selector,
+      kind === "page" ? PAGE_PAINT_TARGETS : WIDGET_PAINT_TARGETS,
+      kind === "page",
+    );
+    if (paint) css += `\n${paint}`;
   }
   const style = (existing as HTMLStyleElement | null) ?? document.createElement("style");
   style.id = THEME_STYLE_ELEMENT_ID;
