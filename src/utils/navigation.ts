@@ -27,6 +27,7 @@ const routeDefinitions = [
   { source: "vagas", to: "/vagas" },
   { source: "eventos", to: "/eventos" },
   { source: "mentoria", to: "/mentoria" },
+  { source: "penalidades", to: "/penalidades" },
 ] as const satisfies readonly RouteDefinition[];
 
 const routes = [...routeDefinitions].sort((a, b) => b.source.length - a.source.length);

@@ -16,6 +16,8 @@ import { Route as SegurancaRouteImport } from './routes/seguranca'
 import { Route as SalvosRouteImport } from './routes/salvos'
 import { Route as RedeRouteImport } from './routes/rede'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
+import { Route as PenalidadesRouteImport } from './routes/penalidades'
+import { Route as ModeracaoRouteImport } from './routes/moderacao'
 import { Route as MentoriaRouteImport } from './routes/mentoria'
 import { Route as MensagensRouteImport } from './routes/mensagens'
 import { Route as FeedRouteImport } from './routes/feed'
@@ -71,6 +73,16 @@ const RedeRoute = RedeRouteImport.update({
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
   id: '/privacidade',
   path: '/privacidade',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PenalidadesRoute = PenalidadesRouteImport.update({
+  id: '/penalidades',
+  path: '/penalidades',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ModeracaoRoute = ModeracaoRouteImport.update({
+  id: '/moderacao',
+  path: '/moderacao',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MentoriaRoute = MentoriaRouteImport.update({
@@ -192,6 +204,8 @@ export interface FileRoutesByFullPath {
   '/feed': typeof FeedRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
+  '/moderacao': typeof ModeracaoRoute
+  '/penalidades': typeof PenalidadesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
@@ -222,6 +236,8 @@ export interface FileRoutesByTo {
   '/feed': typeof FeedRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
+  '/moderacao': typeof ModeracaoRoute
+  '/penalidades': typeof PenalidadesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
@@ -253,6 +269,8 @@ export interface FileRoutesById {
   '/feed': typeof FeedRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
+  '/moderacao': typeof ModeracaoRoute
+  '/penalidades': typeof PenalidadesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
@@ -285,6 +303,8 @@ export interface FileRouteTypes {
     | '/feed'
     | '/mensagens'
     | '/mentoria'
+    | '/moderacao'
+    | '/penalidades'
     | '/privacidade'
     | '/rede'
     | '/salvos'
@@ -315,6 +335,8 @@ export interface FileRouteTypes {
     | '/feed'
     | '/mensagens'
     | '/mentoria'
+    | '/moderacao'
+    | '/penalidades'
     | '/privacidade'
     | '/rede'
     | '/salvos'
@@ -345,6 +367,8 @@ export interface FileRouteTypes {
     | '/feed'
     | '/mensagens'
     | '/mentoria'
+    | '/moderacao'
+    | '/penalidades'
     | '/privacidade'
     | '/rede'
     | '/salvos'
@@ -376,6 +400,8 @@ export interface RootRouteChildren {
   FeedRoute: typeof FeedRoute
   MensagensRoute: typeof MensagensRoute
   MentoriaRoute: typeof MentoriaRoute
+  ModeracaoRoute: typeof ModeracaoRoute
+  PenalidadesRoute: typeof PenalidadesRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   RedeRoute: typeof RedeRoute
   SalvosRoute: typeof SalvosRoute
@@ -439,6 +465,20 @@ declare module '@tanstack/react-router' {
       path: '/privacidade'
       fullPath: '/privacidade'
       preLoaderRoute: typeof PrivacidadeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/penalidades': {
+      id: '/penalidades'
+      path: '/penalidades'
+      fullPath: '/penalidades'
+      preLoaderRoute: typeof PenalidadesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/moderacao': {
+      id: '/moderacao'
+      path: '/moderacao'
+      fullPath: '/moderacao'
+      preLoaderRoute: typeof ModeracaoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mentoria': {
@@ -640,6 +680,8 @@ const rootRouteChildren: RootRouteChildren = {
   FeedRoute: FeedRoute,
   MensagensRoute: MensagensRoute,
   MentoriaRoute: MentoriaRoute,
+  ModeracaoRoute: ModeracaoRoute,
+  PenalidadesRoute: PenalidadesRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   RedeRoute: RedeRoute,
   SalvosRoute: SalvosRoute,
