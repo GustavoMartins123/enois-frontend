@@ -32,6 +32,8 @@ export type JobAuthor = {
 export type JobCandidate = {
   userId: string;
   name: string;
+  /** Nome social congelado na inscrição; a empresa vê os dois, um abaixo do outro. */
+  socialName?: string | null;
   username: string;
   headline: string;
   location: string;

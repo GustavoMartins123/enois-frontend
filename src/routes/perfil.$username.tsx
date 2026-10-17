@@ -79,7 +79,8 @@ export const Route = createFileRoute("/perfil/$username")({
         title,
         description: user?.headline || texts.profile.seoFallbackDescription,
         url: `${texts.siteUrl}/perfil/${encodeURIComponent(params.username)}`,
-        imageUrl: resolveCdnUrl(user?.banner || user?.avatar) || `${texts.siteUrl}/icons/icon-512.png`,
+        imageUrl:
+          resolveCdnUrl(user?.banner || user?.avatar) || `${texts.siteUrl}/icons/icon-512.png`,
         imageAlt: user?.name ? `Perfil de ${user.name} no Énóis` : title,
       }),
     };

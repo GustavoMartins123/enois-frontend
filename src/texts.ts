@@ -401,6 +401,17 @@ export const texts = {
   },
 
   account: {
+    identity: {
+      title: "Nome e identidade",
+      hint: "O nome social substitui o seu nome de cadastro para todo mundo; o apelido entra entre parênteses depois do nome; os pronomes aparecem só no seu perfil. O nome de cadastro continua visível para você e para as empresas que recebem a sua candidatura.",
+      socialName: "Nome social",
+      nickname: "Apelido",
+      pronouns: "Pronomes",
+      placeholderOptional: "opcional",
+      save: "Salvar identidade",
+      saved: "Identidade salva.",
+      error: "Não foi possível salvar. Tente novamente.",
+    },
     menu: {
       trigger: "Menu da conta",
       profile: "Ver perfil",

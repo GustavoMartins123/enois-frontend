@@ -25,4 +25,10 @@ export type Profile = {
   connectionsCount?: number;
   followersCount?: number;
   reputation?: number;
+  /** Apelido: entra entre parênteses depois do nome (preferência da pessoa). */
+  nickname?: string | null;
+  /** Nome social: substitui o nome de cadastro para todo mundo quando existe. */
+  socialName?: string | null;
+  /** Pronomes: aparecem só no perfil, como lembrete de como tratar a pessoa. */
+  pronouns?: string | null;
 };

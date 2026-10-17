@@ -1,3 +1,5 @@
+import type { Profile } from "@/types/application/profile/profile";
+
 import { api } from "../api-client";
 
 /**
@@ -12,4 +14,11 @@ export const preferencesApi = {
   getTheme: () => api.get<{ theme: string | null }>("/me/theme"),
 
   setTheme: (theme: string | null) => api.put<void>("/me/theme", { theme }),
+
+  /** Identidade exibida: apelido, nome social e pronomes (campo nulo/vazio limpa). */
+  setIdentity: (data: {
+    nickname?: string | null;
+    socialName?: string | null;
+    pronouns?: string | null;
+  }) => api.put<Profile>("/me/identity", data),
 };

@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 
 import { AppContainer } from "@/components/app-container";
 import { AppearanceDialog } from "@/components/appearance/appearance-dialog";
+import { IdentitySection } from "@/components/security/identity-display-section";
 import { IdentityVerificationSection } from "@/components/security/identity-verification-section";
 
 export const Route = createFileRoute("/seguranca")({
@@ -69,6 +70,8 @@ function Seguranca() {
             {texts.auth.twoFactor.pageDescription}
           </p>
         </div>
+
+        <IdentitySection />
 
         <section className="surface-card flex items-center justify-between gap-3 p-4">
           <div>
