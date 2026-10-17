@@ -21,4 +21,7 @@ export const preferencesApi = {
     socialName?: string | null;
     pronouns?: string | null;
   }) => api.put<Profile>("/me/identity", data),
+
+  /** Até 5 emblemas (URLs do CDN); lista vazia limpa. */
+  setBadges: (badges: string[]) => api.put<Profile>("/me/badges", { badges }),
 };

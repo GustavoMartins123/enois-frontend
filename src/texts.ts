@@ -410,6 +410,11 @@ export const texts = {
       placeholderOptional: "opcional",
       save: "Salvar identidade",
       saved: "Identidade salva.",
+      badgesTitle: "Emblemas",
+      badgesHint: "Até 5 PNGs pequenos. O primeiro acompanha o seu nome em todo o app.",
+      badgesAdd: "Adicionar emblema",
+      badgesRemove: "Remover",
+      badgesFull: "Você já tem 5 emblemas.",
       error: "Não foi possível salvar. Tente novamente.",
     },
     menu: {

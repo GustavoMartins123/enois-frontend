@@ -31,4 +31,6 @@ export type Profile = {
   socialName?: string | null;
   /** Pronomes: aparecem só no perfil, como lembrete de como tratar a pessoa. */
   pronouns?: string | null;
+  /** Até 5 emblemas; o primeiro acompanha o nome por todo o app. */
+  badges?: string[] | null;
 };

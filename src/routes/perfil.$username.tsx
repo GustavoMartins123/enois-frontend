@@ -466,14 +466,17 @@ function Profile() {
                   {user.name}
                 </h1>
 
-                {/* Emblema: PNG pequeno colado no nome — fora do <h1> para não entrar no texto do
-                    título. Quem escolhe é a própria pessoa, no editar perfil. */}
-                {user.badge && (
-                  <img
-                    src={resolveCdnUrl(user.badge)}
-                    alt=""
-                    className="h-4 w-4 shrink-0 rounded-full object-cover"
-                  />
+                {/* Emblemas: até 5, PNG pequeno colado ao nome — fora do <h1> para não entrar no
+                    texto do título. Quem escolhe é a própria pessoa, nas configurações. */}
+                {(user.badges?.length ? user.badges : user.badge ? [user.badge] : []).map(
+                  (badge) => (
+                    <img
+                      key={badge}
+                      src={resolveCdnUrl(badge)}
+                      alt=""
+                      className="h-4 w-4 shrink-0 rounded-full object-cover"
+                    />
+                  ),
                 )}
 
                 {user.openToWork && (
