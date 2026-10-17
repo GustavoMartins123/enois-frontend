@@ -268,6 +268,8 @@ export const texts = {
     social: {
       google: "Continuar com Google",
       googleSignup: "Criar conta com Google",
+        linkedin: "Entrar com LinkedIn",
+        linkedinSignup: "Criar conta com LinkedIn",
       divider: "ou com e-mail",
       /** Aplicativo OAuth ainda em aprovação/verificação, então a entrada por ele falha. */
       pendingApproval:
@@ -1673,12 +1675,16 @@ export const texts = {
     noContact: "Nenhum contato encontrado",
     searchConversations: "Buscar conversas",
     noConversations: "Nenhuma conversa ainda",
+    noArchived: 'Nada arquivado. O que você apagar "para mim" aparece aqui.',
+    restoreSelected: (count: number) => `Restaurar ${count}`,
+    restored: "Conversas de volta na caixa de entrada.",
+    restoreError: "Não foi possível restaurar. Tente novamente.",
     selectConversation: "Selecione uma conversa ou comece uma nova para exibir as mensagens",
     noMessages: "Nenhuma mensagem ainda",
     inputPlaceholder: "Escreva uma mensagem...",
     conversationFallback: "Conversa",
     loadMoreConversations: "Carregar conversas antigas",
-    tabs: { all: "Todas", jobs: "Vagas", people: "Pessoas" },
+    tabs: { all: "Todas", jobs: "Vagas", people: "Pessoas", archived: "Arquivadas" },
     selectMode: "Selecionar",
     cancelSelection: "Cancelar",
     selectAll: "Selecionar tudo",

@@ -42,7 +42,7 @@ function Mensagens() {
   const [searchQuery, setSearchQuery] = useState("");
   const [text, setText] = useState("");
   const [showSearch, setShowSearch] = useState(false);
-  const [inboxTab, setInboxTab] = useState<"all" | "jobs" | "people">("all");
+  const [inboxTab, setInboxTab] = useState<"all" | "jobs" | "people" | "archived">("all");
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -61,8 +61,11 @@ function Mensagens() {
     hasNextPage: hasMoreConversations,
     isFetchingNextPage: isLoadingMoreConversations,
   } = useInfiniteQuery({
-    queryKey: ["conversations"],
-    queryFn: ({ pageParam }) => messagesApi.listConversations(pageParam),
+    queryKey: ["conversations", inboxTab === "archived" ? "archived" : "inbox"],
+    queryFn: ({ pageParam }) =>
+      inboxTab === "archived"
+        ? messagesApi.archivedConversations(pageParam)
+        : messagesApi.listConversations(pageParam),
     initialPageParam: null as string | null,
     getNextPageParam: (last) => last.nextCursor ?? undefined,
     refetchInterval: 15_000,
@@ -70,8 +73,14 @@ function Mensagens() {
 
   const conversations = conversationsData?.pages.flatMap((page) => page.items) ?? [];
   // Separa a caixa de entrada: conversas de vaga (candidatura) x conversas com pessoas.
+  // Arquivadas não separa por tipo: é a lista de quem foi apagado "para mim", e ali a pessoa quer
+  // reencontrar o que sumiu, não filtrar.
   const visibleConversations = conversations.filter((c) =>
-    inboxTab === "all" ? true : inboxTab === "jobs" ? c.kind === "JOB" : c.kind !== "JOB",
+    inboxTab === "archived" || inboxTab === "all"
+      ? true
+      : inboxTab === "jobs"
+        ? c.kind === "JOB"
+        : c.kind !== "JOB",
   );
   const activeConversation = activeId ? conversations.find((c) => c.id === activeId) : null;
 
@@ -120,6 +129,17 @@ function Mensagens() {
       setSearchQuery("");
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
     },
+  });
+
+  const restoreSelected = useMutation({
+    mutationFn: () => messagesApi.unhideConversations(Array.from(selected)),
+    onSuccess: () => {
+      setSelected(new Set());
+      setSelecting(false);
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      toast(texts.messages.restored);
+    },
+    onError: () => toast(texts.messages.restoreError, "error"),
   });
 
   const hideSelected = useMutation({
@@ -268,7 +288,7 @@ function Mensagens() {
           </div>
 
           <div className="flex gap-1 border-b border-border px-3 pb-2">
-            {(["all", "jobs", "people"] as const).map((tab) => (
+            {(["all", "jobs", "people", "archived"] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
@@ -315,15 +335,26 @@ function Mensagens() {
                   {texts.messages.cancelSelection}
                 </Button>
 
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  className="rounded-full"
-                  disabled={selected.size === 0 || hideSelected.isPending}
-                  onClick={() => setConfirmDelete(true)}
-                >
-                  {texts.messages.deleteSelected(selected.size)}
-                </Button>
+                {inboxTab === "archived" ? (
+                  <Button
+                    size="sm"
+                    className="rounded-full"
+                    disabled={selected.size === 0 || restoreSelected.isPending}
+                    onClick={() => restoreSelected.mutate()}
+                  >
+                    {texts.messages.restoreSelected(selected.size)}
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="rounded-full"
+                    disabled={selected.size === 0 || hideSelected.isPending}
+                    onClick={() => setConfirmDelete(true)}
+                  >
+                    {texts.messages.deleteSelected(selected.size)}
+                  </Button>
+                )}
               </div>
             </div>
           )}
@@ -331,7 +362,9 @@ function Mensagens() {
           <ul className="flex-1 overflow-y-auto overscroll-contain">
             {visibleConversations.length === 0 ? (
               <li className="p-4 text-center text-sm text-muted-foreground">
-                {texts.messages.noConversations}
+                {inboxTab === "archived"
+                  ? texts.messages.noArchived
+                  : texts.messages.noConversations}
               </li>
             ) : (
               visibleConversations.map((c) => (

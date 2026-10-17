@@ -29,7 +29,16 @@ export const messagesApi = {
   markAsRead: (conversationId: string) => api.post<void>(`/conversations/${conversationId}/read`),
 
   /** "Apagar para mim" em massa: esconde as conversas só para quem chama. */
-  hideConversations: (ids: string[]) => api.post<{ hidden: number }>("/conversations/hide", { ids }),
+  hideConversations: (ids: string[]) =>
+    api.post<{ hidden: number }>("/conversations/hide", { ids }),
+
+  /** As arquivadas (apagadas só para quem chama) — a tela de restaurar. */
+  archivedConversations: (cursor?: string | null, limit = 20) =>
+    api.get<PageResponse<Conversation>>(`/conversations/archived${buildQuery({ cursor, limit })}`),
+
+  /** Restaurar: desfaz o "apagar para mim" das conversas escolhidas. */
+  unhideConversations: (ids: string[]) =>
+    api.post<{ restored: number }>("/conversations/unhide", { ids }),
 
   search: (q: string, limit = 20) =>
     api.get<PageResponse<Conversation>>(`/conversations/search${buildQuery({ q, limit })}`),
