@@ -1,9 +1,8 @@
-import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
-
-import type { ReactionPickerProps } from "@/types/components/post/reaction-picker-props";
+import { type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } from "react";
 
 import { REACTION_EMOJIS } from "@/constants/reaction-emojis";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
+import type { ReactionPickerProps } from "@/types/components/post/reaction-picker-props";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
