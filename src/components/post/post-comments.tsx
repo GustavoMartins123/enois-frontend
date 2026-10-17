@@ -5,7 +5,7 @@ import { texts } from "@/texts";
 import type { CommentView } from "@/types/application/comment/comment-view";
 import type { PostIdProps } from "@/types/components/post/post-id-props";
 import type { MediaItem } from "@/types/routes/feed/media-item";
-import { Image, Loader2, Send, X } from "lucide-react";
+import { Image, Loader2, Mic, Send, Square, X } from "lucide-react";
 
 import { commentsApi } from "@/lib/api";
 import { getCurrentUser } from "@/lib/current-user";
@@ -52,10 +52,71 @@ export function PostComments({ postId }: PostIdProps) {
   const [error, setError] = useState<string | null>(null);
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [gifOpen, setGifOpen] = useState(false);
+  const [recording, setRecording] = useState(false);
+  const [recordedSeconds, setRecordedSeconds] = useState(0);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
   const [posting, setPosting] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const upload = useMediaUpload();
+
+  // Gravar áudio: o mesmo caminho do anexo (vira arquivo e sobe como mídia) — o que muda é que o
+  // arquivo nasce do microfone. Sem suporte no navegador, o botão nem aparece.
+  const canRecord = typeof window !== "undefined" && typeof window.MediaRecorder !== "undefined";
+
+  const stopRecording = () => {
+    recorderRef.current?.stop();
+    recorderRef.current = null;
+    setRecording(false);
+  };
+
+  const startRecording = async () => {
+    if (media.length >= 4) {
+      setError(texts.posts.comments.mediaLimit);
+      return;
+    }
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      audioChunksRef.current = [];
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) audioChunksRef.current.push(event.data);
+      };
+      recorder.onstop = () => {
+        stream.getTracks().forEach((track) => track.stop());
+        const blob = new Blob(audioChunksRef.current, { type: recorder.mimeType || "audio/webm" });
+        audioChunksRef.current = [];
+        setRecordedSeconds(0);
+        if (blob.size === 0) return;
+        const file = new File([blob], `audio-${Date.now()}.webm`, { type: blob.type });
+        setMedia((current) =>
+          current.length >= 4
+            ? current
+            : [...current, { type: "audio", file, preview: URL.createObjectURL(file) }],
+        );
+      };
+      recorder.start();
+      recorderRef.current = recorder;
+      setError(null);
+      setRecordedSeconds(0);
+      setRecording(true);
+    } catch {
+      setError(texts.posts.comments.micDenied);
+    }
+  };
+
+  // Cronômetro da gravação e teto de 3 minutos: arquivo de áudio longo é caro de subir e ninguém
+  // ouve — melhor cortar sozinho do que descobrir depois.
+  useEffect(() => {
+    if (!recording) return;
+    const timer = setInterval(() => setRecordedSeconds((current) => current + 1), 1000);
+    return () => clearInterval(timer);
+  }, [recording]);
+
+  useEffect(() => {
+    if (recording && recordedSeconds >= 180) stopRecording();
+  }, [recording, recordedSeconds]);
 
   const addMedia = (event: ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files ?? []).filter((f) => f.type.startsWith("image/"));
@@ -68,9 +129,14 @@ export function PostComments({ postId }: PostIdProps) {
         return current;
       }
       setError(null);
-      return [...current, ...files.slice(0, room).map((file) => ({
-        type: "image" as const, file, preview: URL.createObjectURL(file),
-      }))];
+      return [
+        ...current,
+        ...files.slice(0, room).map((file) => ({
+          type: "image" as const,
+          file,
+          preview: URL.createObjectURL(file),
+        })),
+      ];
     });
   };
 
@@ -274,11 +340,19 @@ export function PostComments({ postId }: PostIdProps) {
             <div className="mb-2 flex flex-wrap gap-2">
               {media.map((item, i) => (
                 <div key={item.preview} className="relative">
-                  <img
-                    src={item.preview}
-                    alt=""
-                    className="h-16 w-16 rounded-lg border border-border-soft object-cover"
-                  />
+                  {item.type === "audio" ? (
+                    <audio
+                      src={item.preview}
+                      controls
+                      className="h-16 w-56 rounded-lg border border-border-soft"
+                    />
+                  ) : (
+                    <img
+                      src={item.preview}
+                      alt=""
+                      className="h-16 w-16 rounded-lg border border-border-soft object-cover"
+                    />
+                  )}
 
                   <button
                     type="button"
@@ -327,6 +401,39 @@ export function PostComments({ postId }: PostIdProps) {
               >
                 <Image className="h-4 w-4" />
               </button>
+
+              {canRecord && (
+                <button
+                  type="button"
+                  onClick={() => (recording ? stopRecording() : void startRecording())}
+                  className="grid h-8 w-8 place-items-center rounded-full text-text-subtle transition hover:bg-surface-2 hover:text-primary"
+                  aria-label={
+                    recording
+                      ? texts.posts.comments.stopRecording
+                      : texts.posts.comments.recordAudio
+                  }
+                  title={
+                    recording
+                      ? texts.posts.comments.stopRecording
+                      : texts.posts.comments.recordAudio
+                  }
+                >
+                  {recording ? (
+                    <Square className="h-4 w-4 text-destructive" />
+                  ) : (
+                    <Mic className="h-4 w-4" />
+                  )}
+                </button>
+              )}
+
+              {recording && (
+                <span className="text-xs font-normal text-destructive" aria-live="polite">
+                  {texts.posts.comments.recording(
+                    Math.floor(recordedSeconds / 60),
+                    recordedSeconds % 60,
+                  )}
+                </span>
+              )}
 
               <button
                 type="button"

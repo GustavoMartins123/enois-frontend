@@ -7,7 +7,7 @@ import { useState } from "react";
 
 import { companiesApi, jobsApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
-import { getSessionToken } from "@/lib/api-client";
+import { useIsAuthenticated } from "@/lib/use-auth";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -28,7 +28,8 @@ function Empresas() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const logged = Boolean(getSessionToken());
+  // Sessão lida depois da montagem: ler o token no render quebrava a hidratação.
+  const logged = useIsAuthenticated();
 
   const { data, isLoading } = useQuery({
     queryKey: ["companies", search],
