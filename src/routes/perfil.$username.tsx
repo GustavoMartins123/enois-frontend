@@ -12,6 +12,7 @@ import {
   Briefcase,
   Camera,
   Clock,
+  Flag,
   Image as ImageIcon,
   Link as LinkIcon,
   MapPin,
@@ -58,10 +59,12 @@ import { BlockUserDialog } from "@/components/block-user-dialog";
 import { EditProfileDialog } from "@/components/edit-profile-dialog";
 import { ImageCropDialog } from "@/components/image-crop-dialog";
 import { PostCard } from "@/components/post-card";
+import { ReportDialog } from "@/components/post/report-dialog";
 import { RichText } from "@/components/post/rich-text";
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { ProfileBannerDialog } from "@/components/profile-banner-dialog";
 import { ProfileBioDialog } from "@/components/profile-bio-dialog";
+import { ProfileProjectsSection } from "@/components/profile/projects-section";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/perfil/$username")({
@@ -122,6 +125,7 @@ function Profile() {
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const [cropPurpose, setCropPurpose] = useState<ProfileCropPurpose | null>(null);
   const [recommendOpen, setRecommendOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [recommendComment, setRecommendComment] = useState("");
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   // A capa tem duas formas (foto ou HTML/CSS): o dialogo escolhe, e o clique na capa abre ele.
@@ -453,6 +457,24 @@ function Profile() {
                         queryClient.invalidateQueries({ queryKey: ["connection-status", user.id] })
                       }
                     />
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full gap-1.5"
+                      onClick={() => setReportOpen(true)}
+                    >
+                      <Flag className="h-4 w-4" />
+
+                      <>{texts.posts.report.action}</>
+                    </Button>
+
+                    <ReportDialog
+                      targetId={user.id}
+                      targetType="USER"
+                      open={reportOpen}
+                      onOpenChange={setReportOpen}
+                    />
                   </>
                 )}
               </div>
@@ -560,6 +582,10 @@ function Profile() {
                 </Section>
               )
             )}
+
+            {/* Projetos: cards abaixo da bio — estruturados (stack, repo, status, diário)
+                ou o HTML próprio do autor. O dono gerencia por aqui mesmo. */}
+            <ProfileProjectsSection username={user.username} isOwner={isOwnProfile} />
 
             {user.skills.length > 0 && (
               <Section title={texts.profile.sections.skills}>
