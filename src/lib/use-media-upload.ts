@@ -24,14 +24,20 @@ export function useMediaUpload() {
 
     try {
       const fileName = genFileName(file);
-      const { id, cdnUrl } = await mediaApi.requestUpload({
+      const { id, cdnUrl, uploadUrl, provider, uploadHeaders } = await mediaApi.requestUpload({
         fileName,
         mimeType: file.type,
         size: file.size,
         purpose,
       });
 
-      await mediaApi.uploadToImageKit(cdnUrl, file);
+      // O servidor diz para onde subir: com S3 é uma URL assinada (PUT direto); sem isso, o fluxo
+      // multipart do ImageKit de sempre. O front não adivinha pelo formato da URL.
+      if (provider === "S3") {
+        await mediaApi.uploadToSignedUrl(uploadUrl, file, uploadHeaders ?? {});
+      } else {
+        await mediaApi.uploadToImageKit(cdnUrl, file);
+      }
 
       setState({ status: "done", progress: 100 });
       return { mediaId: id, cdnUrl };

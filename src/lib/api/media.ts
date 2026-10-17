@@ -26,6 +26,25 @@ export const mediaApi = {
 
   delete: (mediaId: string) => api.delete<Pick<MediaAsset, "id" | "status">>(`/media/${mediaId}`),
 
+  /**
+   * Sobe o arquivo direto no storage por URL assinada (S3).
+   *
+   * Os cabecalhos vêm assinados pelo servidor: o `Content-Type` precisa ser EXATAMENTE o mesmo, ou
+   * o S3 recusa a subida (403). Nada de credencial aqui — a URL já autoriza aquela subida.
+   */
+  uploadToSignedUrl: async (
+    signedUrl: string,
+    file: File,
+    headers: Record<string, string> = {},
+  ) => {
+    const response = await fetch(signedUrl, { method: "PUT", body: file, headers });
+
+    if (!response.ok) {
+      const body = await response.text().catch(() => "");
+      throw new Error(`Upload falhou: ${response.status} ${body}`);
+    }
+  },
+
   uploadToImageKit: async (cdnUrl: string, file: File) => {
     const absoluteUrl = resolveCdnUrl(cdnUrl) ?? cdnUrl;
     const fullPath = decodeURIComponent(
