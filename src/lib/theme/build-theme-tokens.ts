@@ -201,7 +201,13 @@ export function buildThemeCss(settings: ThemeSettings, mode: Theme): string {
     .map(([name, value]) => `  ${name}: ${value};`)
     .join("\n");
 
-  return `:root {\n${declarations}\n}`;
+  // O seletor NAO e `:root` sozinho de proposito. O CSS do app define os tokens em
+  // `:root` (claro) e `.dark` (escuro), que tem a MESMA especificidade — e o Vite injeta CSS
+  // por rota, entao um chunk que chegasse depois do nosso `<style>` voltava a ganhar e a
+  // personalizacao "desaplicava" sozinha no meio da navegacao. Com um seletor de tipo junto
+  // (`html:root` / `html:root.dark`) a especificidade sobe e o tema do usuario vale sempre.
+  const selector = mode === "dark" ? "html:root.dark" : "html:root";
+  return `${selector} {\n${declarations}\n}`;
 }
 
 /** Cor da barra do navegador/instalação — acompanha o destaque escolhido. */
