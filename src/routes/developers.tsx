@@ -56,8 +56,8 @@ function CopyableCode({ code }: { code: string }) {
   };
 
   return (
-    <div className="group relative mt-2">
-      <pre className="overflow-x-auto rounded-xl border border-border-soft bg-surface-1 p-3 text-xs leading-relaxed">
+    <div className="group relative mt-2 min-w-0">
+      <pre className="max-w-full overflow-x-auto rounded-xl border border-border-soft bg-surface-1 p-3 text-xs leading-relaxed">
         <code>{code}</code>
       </pre>
 
@@ -87,7 +87,7 @@ function Endpoint({ endpoint }: { endpoint: ApiEndpoint }) {
   const access = ACCESS_STYLE[endpoint.access];
 
   return (
-    <div className="mt-3 rounded-xl border border-border-soft p-3">
+    <div className="mt-3 min-w-0 rounded-xl border border-border-soft p-3">
       <div className="flex flex-wrap items-center gap-2">
         <span className={`rounded-md px-2 py-0.5 font-mono text-[11px] font-bold ${METHOD_STYLE[endpoint.method]}`}>
           {endpoint.method}
@@ -176,7 +176,7 @@ curl ${API_BASE_URL}/me -H "X-Session-Token: <token>"`}
             <p>{texts.developersChrome.chromeIntroPublic}</p>
 
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-xl border border-border-soft p-3">
+              <div className="min-w-0 rounded-xl border border-border-soft p-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
                   {texts.developersChrome.paginationTitle}
                 </p>
@@ -186,7 +186,7 @@ curl ${API_BASE_URL}/me -H "X-Session-Token: <token>"`}
                 <CodeBlock code={`GET ${API_BASE_URL}/feed/posts/$POST_ID/comments?limit=20\nGET ...?cursor=<nextCursor>&limit=20`} />
               </div>
 
-              <div className="rounded-xl border border-border-soft p-3">
+              <div className="min-w-0 rounded-xl border border-border-soft p-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
                   {texts.developersChrome.errorsTitle}
                 </p>
