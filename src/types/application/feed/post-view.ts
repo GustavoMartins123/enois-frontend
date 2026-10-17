@@ -18,7 +18,9 @@ export type PostView = {
     | "NEWS"
     | "TUTORIAL"
     | "REVIEW"
-    | "MOMENT";
+    | "MOMENT"
+    /** Ponteiro de um post de blog: o conteúdo mora em /blog/{username}. */
+    | "BLOG";
   content: string;
   /** HTML já sanitizado da mini página (só em posts do tipo PAGE; nulo nos demais). */
   pageHtml?: string | null;

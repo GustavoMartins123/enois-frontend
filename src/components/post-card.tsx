@@ -10,6 +10,7 @@ import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { PostCardProps } from "@/types/components/post/post-card-props";
 import {
   Bookmark,
+  BookOpen,
   FileText,
   Flag,
   Heart,
@@ -343,6 +344,19 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
             </Link>
           )}
         </>
+      )}
+
+      {/* Blog: o post-ponteiro so aponta para o cantinho — o conteudo mora la, nao no feed. */}
+      {post.type === "BLOG" && (
+        <Link
+          to="/blog/$username/$postId"
+          params={{ username: post.authorUsername, postId: post.id }}
+          className="mt-3 inline-flex items-center gap-1.5 text-sm font-normal text-primary hover:underline"
+        >
+          <BookOpen className="h-3.5 w-3.5" aria-hidden />
+
+          <>{texts.blog.feed.read}</>
+        </Link>
       )}
 
       {/* Artigo tem corpo (completo) na pagina do post; o card mostra o resumo e o convite. */}

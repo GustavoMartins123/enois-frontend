@@ -1,0 +1,20 @@
+import type { BlogPost } from "./blog-post";
+
+export type Blog = {
+  id: string;
+  slug: string;
+  title: string;
+  description: string | null;
+  /** Tema em HTML/CSS sanitizado; nulo = cabeçalho padrão. */
+  themeHtml: string | null;
+  authorName: string;
+  authorUsername: string;
+  authorAvatar: string | null;
+  authorBadge: string | null;
+  posts: number;
+  /** Se quem está lendo já segue o blog (false sem sessão). */
+  subscribed: boolean;
+  /** Se o blog é de quem está lendo. */
+  owner: boolean;
+  items: BlogPost[];
+};
