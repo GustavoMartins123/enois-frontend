@@ -7,7 +7,7 @@ import { texts } from "@/texts";
 import type { Community } from "@/types/application/community/community";
 import type { CommunityTopic } from "@/types/application/community/community-topic";
 import type { CreateCommunityDialogProps } from "@/types/routes/communities/create-community-dialog-props";
-import { Loader2, Plus, Users } from "lucide-react";
+import { Loader2, Plus, Star, Users } from "lucide-react";
 
 import { communitiesApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
@@ -26,10 +26,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Pill } from "@/components/ui/pill";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
-import { CommunityFavoriteButton } from "@/components/community-favorite-button";
-import { useToast } from "@/components/ui/toast";
+import { CommunityCard } from "@/components/community-card";
+import { COMMUNITY_FAVORITES_KEY } from "@/components/community-favorite-button";
 
 const TOPICS = [
   "Todas",
@@ -81,6 +82,14 @@ function Comunidades() {
 
   const nextCursor = communitiesData?.nextCursor ?? null;
 
+  // Favoritas têm seção própria no início da página; a lista principal não repete
+  // nenhuma delas (remover o favorito devolve o card para o fluxo comum).
+  const { data: favoritesData } = useQuery({
+    queryKey: COMMUNITY_FAVORITES_KEY,
+    queryFn: () => communitiesApi.favorites(),
+    enabled: !isDetail,
+  });
+
   useEffect(() => {
     if (!communitiesData?.items) return;
     setAllItems((prev) => {
@@ -92,6 +101,14 @@ function Comunidades() {
       return communitiesData.items;
     });
   }, [communitiesData]);
+
+  const byId = new Map(allItems.map((c) => [c.id, c]));
+  // Com um tópico ativo, a seção mostra só as favoritas daquele tópico.
+  const pinnedFavorites = (favoritesData?.items ?? [])
+    .filter((c) => !topic || c.topic === topic)
+    .map((c) => byId.get(c.id) ?? c);
+  const favoriteIds = new Set(pinnedFavorites.map((c) => c.id));
+  const gridItems = allItems.filter((c) => !favoriteIds.has(c.id));
 
   const loadMore = () => {
     if (nextCursor && !isFetching) {
@@ -166,79 +183,41 @@ function Comunidades() {
           ))}
         </div>
 
+        {pinnedFavorites.length > 0 && (
+          <section className="space-y-3">
+            <h2 className="flex items-center gap-1.5 text-sm font-medium text-text-strong">
+              <Star className="h-4 w-4 text-primary" />
+
+              <>{texts.communities.favoritesTitle}</>
+            </h2>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {pinnedFavorites.map((c) => (
+                <CommunityCard
+                  key={c.id}
+                  community={c}
+                  joinPending={join.isPending}
+                  leavePending={leave.isPending}
+                  ownerBlocked={ownerBlockedId === c.id}
+                  onJoin={join.mutate}
+                  onLeave={setLeaveTarget}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {allItems.map((c) => (
-            <Link
+          {gridItems.map((c) => (
+            <CommunityCard
               key={c.id}
-              to="/comunidades/$communityId"
-              params={{ communityId: c.id }}
-              className="min-w-0"
-            >
-              <article className="surface-card relative overflow-hidden cursor-pointer transition hover:shadow-[var(--shadow-card)]">
-                {c.cover ? (
-                  <img src={resolveCdnUrl(c.cover)} alt="" className="h-32 w-full object-cover" />
-                ) : (
-                  <div className="h-32 w-full bg-gradient-to-br from-primary/20 to-primary/5" />
-                )}
-
-                <div className="absolute right-3 top-3">
-                  <CommunityFavoriteButton communityId={c.id} />
-                </div>
-                <div className="p-5">
-                  <div className="flex items-center gap-3 mb-3">
-                    {c.avatar && (
-                      <img
-                        src={resolveCdnUrl(c.avatar)}
-                        alt=""
-                        className="h-10 w-10 rounded-full object-cover ring-2 ring-border"
-                      />
-                    )}
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium uppercase tracking-wider text-primary">
-                        {c.topic}
-                      </p>
-
-                      <h3 className="font-semibold truncate">{c.name}</h3>
-                    </div>
-                  </div>
-
-                  <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">
-                    {c.description}
-                  </p>
-
-                  <div className="mt-4 flex items-center justify-between gap-2">
-                    <span className="inline-flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
-                      <Users className="h-3.5 w-3.5 shrink-0" />
-
-                      <span className="truncate">{texts.communities.members(c.members ?? 0)}</span>
-                    </span>
-
-                    <Button
-                      size="sm"
-                      variant={c.joined ? "secondary" : "default"}
-                      className="shrink-0 whitespace-nowrap rounded-full"
-                      disabled={join.isPending || leave.isPending}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (c.joined) {
-                          setLeaveTarget(c);
-                        } else {
-                          join.mutate(c.id);
-                        }
-                      }}
-                    >
-                      {c.joined ? texts.communities.participating : texts.communities.enter}
-                    </Button>
-                  </div>
-
-                  {ownerBlockedId === c.id && (
-                    <p className="mt-2 text-xs text-destructive">
-                      {texts.communities.ownerLeaveBlocked}
-                    </p>
-                  )}
-                </div>
-              </article>
-            </Link>
+              community={c}
+              joinPending={join.isPending}
+              leavePending={leave.isPending}
+              ownerBlocked={ownerBlockedId === c.id}
+              onJoin={join.mutate}
+              onLeave={setLeaveTarget}
+            />
           ))}
         </div>
 
