@@ -2,21 +2,37 @@ import type { BackgroundStyle } from "@/types/preferences/background-style";
 
 import { hexToRgb, readableForeground, rgbToHex } from "./color";
 
-/** O valor CSS do fundo escolhido: cor direta ou gradiente na direção pedida. */
+/**
+ * Emite uma cor com transparência. Alpha 100 devolve o hex puro (CSS limpo);
+ * abaixo disso, `color-mix` com transparente — cor válida até como background-color.
+ */
+export function withAlpha(hex: string, alpha: number): string {
+  if (alpha >= 100) return hex;
+  return `color-mix(in srgb, ${hex} ${Math.round(alpha)}%, transparent)`;
+}
+
+/** O valor CSS do fundo escolhido: cor direta ou gradiente na direção/ângulo pedidos. */
 export function backgroundValue(style: BackgroundStyle): string {
-  if (style.type === "solid") return style.color;
+  if (style.type === "solid") return withAlpha(style.color, style.alpha);
+
+  const first = withAlpha(style.from, style.fromAlpha);
+  const second = withAlpha(style.to, style.toAlpha);
   switch (style.direction) {
-    case "vertical":
-      return `linear-gradient(180deg, ${style.from}, ${style.to})`;
     case "radial":
-      return `radial-gradient(circle at 50% 0%, ${style.from}, ${style.to})`;
+      return `radial-gradient(circle at 50% 0%, ${first}, ${second})`;
+    case "horizontal":
+      return `linear-gradient(90deg, ${first}, ${second})`;
+    case "custom":
+      return `linear-gradient(${Math.round(style.angle)}deg, ${first}, ${second})`;
+    case "vertical":
+      return `linear-gradient(180deg, ${first}, ${second})`;
     default:
-      return `linear-gradient(135deg, ${style.from}, ${style.to})`;
+      return `linear-gradient(135deg, ${first}, ${second})`;
   }
 }
 
 /** Ponto médio do fundo (o próprio colorido, ou a média dos extremos do gradiente). */
-function representativeHex(style: BackgroundStyle): string {
+export function representativeHex(style: BackgroundStyle): string {
   if (style.type === "solid") return style.color;
   const first = hexToRgb(style.from);
   const second = hexToRgb(style.to);
@@ -27,32 +43,54 @@ function representativeHex(style: BackgroundStyle): string {
   });
 }
 
+/** Alpha média efetiva do estilo (sólido usa a própria; gradiente, a média das pontas). */
+export function effectiveAlpha(style: BackgroundStyle): number {
+  if (style.type === "solid") return Math.min(100, Math.max(0, style.alpha));
+  return Math.min(100, Math.max(0, Math.round((style.fromAlpha + style.toAlpha) / 2)));
+}
+
+function textDeclarations(fittedCss: string, mid: string): Record<string, string> {
+  return {
+    "--foreground": fittedCss,
+    "--text-strong": fittedCss,
+    "--card-foreground": fittedCss,
+    "--popover-foreground": fittedCss,
+    "--sidebar-foreground": fittedCss,
+    "--text-subtle": `color-mix(in srgb, ${fittedCss} 55%, ${mid})`,
+    "--muted-foreground": `color-mix(in srgb, ${fittedCss} 55%, ${mid})`,
+    "--text-date": `color-mix(in srgb, ${fittedCss} 35%, ${mid})`,
+  };
+}
+
 /**
  * Declarações da COR DE WIDGET: o interno de cartões, painéis, menus e sidebar.
  *
- * Quem pinta o widget é dono da leitura dele: o texto principal é escolhido pelo
- * contraste (a mesma matemática dos temas da galeria) e os tons auxiliares saem
- * por `color-mix` contra o ponto médio — o CSS faz a conta, como no resto do
- * sistema de temas.
+ * Quem pinta o widget é dono da leitura dele: o texto é ajustado pelo contraste
+ * contra a cor EFETIVA (a escolhida com a transparência dela aplicada sobre o fundo
+ * representativo da página) — widget translúcido continua legível.
  */
-export function buildWidgetDeclarations(style: BackgroundStyle): Record<string, string> {
+export function buildWidgetDeclarations(
+  style: BackgroundStyle,
+  pageRepresentativeHex: string,
+): Record<string, string> {
   const surface = backgroundValue(style);
   const mid = representativeHex(style);
-  const fitted = readableForeground(hexToRgb(mid), 290);
+  const backdrop = hexToRgb(pageRepresentativeHex);
+  const own = hexToRgb(mid);
+  const a = effectiveAlpha(style) / 100;
+  const effective = rgbToHex({
+    r: own.r * a + backdrop.r * (1 - a),
+    g: own.g * a + backdrop.g * (1 - a),
+    b: own.b * a + backdrop.b * (1 - a),
+  });
+  const fitted = readableForeground(hexToRgb(effective), 290);
 
   return {
     "--card": surface,
     "--popover": surface,
     "--sidebar": surface,
     "--surface-card": surface,
-    "--foreground": fitted.css,
-    "--text-strong": fitted.css,
-    "--card-foreground": fitted.css,
-    "--popover-foreground": fitted.css,
-    "--sidebar-foreground": fitted.css,
-    "--text-subtle": `color-mix(in srgb, ${fitted.css} 55%, ${mid})`,
-    "--muted-foreground": `color-mix(in srgb, ${fitted.css} 55%, ${mid})`,
-    "--text-date": `color-mix(in srgb, ${fitted.css} 35%, ${mid})`,
+    ...textDeclarations(fitted.css, mid),
   };
 }
 
@@ -67,18 +105,20 @@ export function buildPageDeclarations(style: BackgroundStyle): Record<string, st
   return { "--background": backgroundValue(style) };
 }
 
+/** Cor sólida representativa do plano de fundo (para ajustar o texto dos widgets). */
+export function pageRepresentative(style: BackgroundStyle): string {
+  return representativeHex(style);
+}
+
 /** Onde cada camada pinta: página usa o utilitário do fundo (e o body); widgets, as superfícies. */
 export const PAGE_PAINT_TARGETS = ".bg-background, body";
-export const WIDGET_PAINT_TARGETS = ".bg-card, .bg-popover, .bg-surface-card, .bg-sidebar";
+export const WIDGET_PAINT_TARGETS =
+  ".bg-card, .bg-popover, .bg-surface-card, .bg-sidebar, .surface-card";
 
 /**
- * Regra de pintura para fundos em GRADIENTE.
- *
- * Gradiente não é cor: um `background-color: linear-gradient(…)` é CSS inválido e a
- * declaração inteira cai fora — é por isso que o fundo "continuava branco". A pintura
- * que funciona é `background-image`, aplicada sobre os MESMOS utilitários que pintam
- * o fundo por cor (nossa folha é não-camada, então ganha das utilidades do Tailwind
- * de qualquer forma). Fundo sólido não precisa disto: como cor, já funciona pelo token.
+ * Regra de pintura para fundos em GRADIENTE (gradiente não é cor: background-color
+ * rejeita e a declaração cai fora — a pintura que funciona é background-image).
+ * Fundo sólido não precisa disto: com ou sem alpha, é cor válida pelo token.
  */
 export function paintGradientCss(
   value: string,
