@@ -68,7 +68,8 @@ export const texts = {
   appearance: {
     action: "Aparência",
     title: "Aparência",
-    description: "Escolha o tema e as cores do app. O tema acompanha a sua conta entre dispositivos; as cores finas valem neste.",
+    description:
+      "Escolha o tema e as cores do app. O tema acompanha a sua conta entre dispositivos; as cores finas valem neste.",
     mode: "Modo",
     accentSection: "Cor de destaque",
     accentHint: "Botões, links, selos e o gradiente da marca.",
@@ -80,6 +81,18 @@ export const texts = {
     backgroundSection: "Tom do fundo",
     backgroundHint: "Um tingimento leve nas superfícies, discreto de propósito.",
     backgroundIntensity: "Intensidade",
+    bgStyleTitle: "Plano de fundo",
+    bgStyleHint: "Automático mantém o tingimento fino; cor ou gradiente assumem o fundo do app.",
+    bgStyleAuto: "Automático",
+    bgStyleSolid: "Cor",
+    bgStyleGradient: "Gradiente",
+    bgStyleFrom: "De",
+    bgStyleTo: "Para",
+    bgStyleDiagonal: "Diagonal",
+    bgStyleVertical: "Vertical",
+    bgStyleRadial: "Radial",
+    bgStyleContrastNote:
+      "O texto se adapta sozinho para continuar legível sobre o fundo escolhido.",
     presets: "Paletas prontas",
     presetNames: {
       uva: "Uva",
@@ -98,11 +111,13 @@ export const texts = {
       grafite: "Sem cor, só contraste",
     },
     collectionsTitle: "Temas",
-    collectionsHint: "Coleções com identidade visual completa — cores, superfícies, fontes e efeitos.",
+    collectionsHint:
+      "Coleções com identidade visual completa — cores, superfícies, fontes e efeitos.",
     defaultThemeName: "Padrão Énóis",
     defaultThemeDescription: "A identidade da rede, com a sua cor livre.",
     activeLabel: "Ativo",
-    colorsNote: (name: string) => `O tema "${name}" está ativo — as cores livres valem no Padrão Énóis.`,
+    colorsNote: (name: string) =>
+      `O tema "${name}" está ativo — as cores livres valem no Padrão Énóis.`,
     preview: "Como vai ficar",
     previewPost: "Esse detalhe do cache mudou minha semana.",
     previewBadge: "Projeto",
@@ -1122,7 +1137,7 @@ export const texts = {
           "A foto vira a capa da comunidade. Escolher foto quando existe capa em HTML remove o HTML.",
         label: "Capa em HTML/CSS",
         description: "Mesma coisa da capa do perfil: HTML+CSS com animação, sem script.",
-        placeholder: "<style>\n  @keyframes brilho { ... }\n</style>\n<div class=\"capa\">...</div>",
+        placeholder: '<style>\n  @keyframes brilho { ... }\n</style>\n<div class="capa">...</div>',
         empty: "A pré-visualização aparece aqui quando houver código.",
         frameTitle: "Pré-visualização da capa da comunidade",
         save: "Salvar capa",
@@ -1512,7 +1527,8 @@ export const texts = {
     useCasesTitle: "Casos de uso",
     useCasesIntro:
       "Receitas de ponta a ponta com as chamadas reais — os exemplos de resposta abaixo são capturados da produção, não inventados.",
-    securityHint: "descreve como reportar vulnerabilidades (resposta em até 90 dias, sem caça a recompensa).",
+    securityHint:
+      "descreve como reportar vulnerabilidades (resposta em até 90 dias, sem caça a recompensa).",
     guidelinesHint: "O que a plataforma tolera (e o que não tolera) está nas",
   },
 
@@ -1688,8 +1704,7 @@ export const texts = {
     appealPending: "Seu recurso está em análise. Você será avisado da decisão.",
     restrictedNotice:
       "Sua conta está restrita: você não pode publicar nem comentar enquanto a restrição estiver ativa.",
-    bannedNotice:
-      "Sua conta está banida após revisão do recurso. Se precisar, fale com o suporte.",
+    bannedNotice: "Sua conta está banida após revisão do recurso. Se precisar, fale com o suporte.",
     moderationTitle: "Moderação · recursos",
     moderationDescription:
       "Fila de recursos de penalidade automática. Aprovar remove a restrição; negar converte em banimento (sessões revogadas).",

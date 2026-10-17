@@ -1,4 +1,5 @@
 import { DEFAULT_THEME_SETTINGS } from "@/constants/theme-defaults";
+import type { BackgroundStyle } from "@/types/preferences/background-style";
 import type { Theme } from "@/types/preferences/theme";
 import type { ThemeSettings } from "@/types/preferences/theme-settings";
 import type { PreferencesState } from "@/types/stores/preferences-state";
@@ -44,6 +45,33 @@ function normalizeThemeSettings(value: unknown): ThemeSettings {
   });
 }
 
+const HEX_COLOR = /^#(?:[0-9a-f]{3}|[0-9a-f]{6})$/i;
+const BACKGROUND_DEFAULTS = { color: "#f4f1fb", from: "#f9f8ff", to: "#e6dcf7" } as const;
+
+/**
+ * Plano de fundo do storage: tipo e direção válidos, cores hex; qualquer coisa
+ * estranha no localStorage volta a `null` (comportamento automático).
+ */
+function normalizeBackgroundStyle(value: unknown): BackgroundStyle | null {
+  if (typeof value !== "object" || value === null) return null;
+  const raw = value as Record<string, unknown>;
+  const type = raw.type === "solid" || raw.type === "gradient" ? raw.type : null;
+  if (!type) return null;
+  const direction =
+    raw.direction === "vertical" || raw.direction === "radial" || raw.direction === "diagonal"
+      ? raw.direction
+      : "diagonal";
+  const hex = (value: unknown, fallback: string) =>
+    typeof value === "string" && HEX_COLOR.test(value) ? value : fallback;
+  return {
+    type,
+    direction,
+    color: hex(raw.color, BACKGROUND_DEFAULTS.color),
+    from: hex(raw.from, BACKGROUND_DEFAULTS.from),
+    to: hex(raw.to, BACKGROUND_DEFAULTS.to),
+  };
+}
+
 /**
  * Coleção temática do storage: só aceita identificador que existe hoje.
  *
@@ -65,6 +93,7 @@ const preferencesStorage = {
           parsed.state.theme = parsed.state.theme === "dark" ? "dark" : "light";
           parsed.state.themeSettings = normalizeThemeSettings(parsed.state.themeSettings);
           parsed.state.themeCollection = normalizeThemeCollection(parsed.state.themeCollection);
+          parsed.state.backgroundStyle = normalizeBackgroundStyle(parsed.state.backgroundStyle);
         }
 
         return JSON.stringify(parsed);
@@ -103,6 +132,7 @@ export const usePreferencesStore = create<PreferencesState>()(
       sidebarCollapsed: false,
       themeSettings: DEFAULT_THEME_SETTINGS,
       themeCollection: null,
+      backgroundStyle: null,
 
       setTheme: (theme: Theme) => set({ theme }),
       setThemeSettings: (themeSettings: ThemeSettings) =>
@@ -111,6 +141,7 @@ export const usePreferencesStore = create<PreferencesState>()(
       resetThemeSettings: () =>
         set({ themeSettings: DEFAULT_THEME_SETTINGS, themeCollection: null }),
       setThemeCollection: (themeCollection: string | null) => set({ themeCollection }),
+      setBackgroundStyle: (backgroundStyle: BackgroundStyle | null) => set({ backgroundStyle }),
       toggleSidebar: () =>
         set((state) => ({
           sidebarCollapsed: !state.sidebarCollapsed,
@@ -124,6 +155,7 @@ export const usePreferencesStore = create<PreferencesState>()(
         sidebarCollapsed: state.sidebarCollapsed,
         themeSettings: state.themeSettings,
         themeCollection: state.themeCollection,
+        backgroundStyle: state.backgroundStyle,
       }),
       skipHydration: true,
     },

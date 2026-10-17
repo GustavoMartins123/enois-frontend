@@ -26,6 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+import { BackgroundStylePicker } from "./background-style-picker";
 import { CollectionGrid } from "./collection-grid";
 import { ContrastNotice } from "./contrast-notice";
 import { PresetRow } from "./preset-row";
@@ -57,6 +58,8 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
   const resetThemeSettings = usePreferencesStore((state) => state.resetThemeSettings);
   const themeCollection = usePreferencesStore((state) => state.themeCollection);
   const setThemeCollection = usePreferencesStore((state) => state.setThemeCollection);
+  const backgroundStyle = usePreferencesStore((state) => state.backgroundStyle);
+  const setBackgroundStyle = usePreferencesStore((state) => state.setBackgroundStyle);
   const queryClient = useQueryClient();
 
   const report = useMemo(() => reportThemeContrast(settings, theme), [settings, theme]);
@@ -212,25 +215,43 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
                   </p>
                 </div>
 
-                <RangeField
-                  label={texts.appearance.hue}
-                  value={settings.background.hue}
-                  min={THEME_LIMITS.hue.min}
-                  max={THEME_LIMITS.hue.max}
-                  step={1}
-                  valueLabel={texts.appearance.hueValue(Math.round(settings.background.hue))}
-                  onChange={(hue) => updateBackground({ hue })}
-                  hueTrack
-                />
-                <RangeField
-                  label={texts.appearance.backgroundIntensity}
-                  value={settings.background.chroma}
-                  min={THEME_LIMITS.backgroundChroma.min}
-                  max={THEME_LIMITS.backgroundChroma.max}
-                  step={0.001}
-                  valueLabel={percent(settings.background.chroma, CHROMA_MAX.background)}
-                  onChange={(chroma) => updateBackground({ chroma })}
-                />
+                {/* Plano de fundo: automático, cor sólida ou gradiente. Com fundo
+                    escolhido, o tingimento fino não faz sentido e fica fora. */}
+                <div className="space-y-2 border-t border-border-soft pt-3">
+                  <p className="text-xs font-medium text-text-strong">
+                    {texts.appearance.bgStyleTitle}
+                  </p>
+
+                  <p className="text-xs font-normal text-text-subtle">
+                    {texts.appearance.bgStyleHint}
+                  </p>
+
+                  <BackgroundStylePicker value={backgroundStyle} onChange={setBackgroundStyle} />
+                </div>
+
+                {!backgroundStyle && (
+                  <>
+                    <RangeField
+                      label={texts.appearance.hue}
+                      value={settings.background.hue}
+                      min={THEME_LIMITS.hue.min}
+                      max={THEME_LIMITS.hue.max}
+                      step={1}
+                      valueLabel={texts.appearance.hueValue(Math.round(settings.background.hue))}
+                      onChange={(hue) => updateBackground({ hue })}
+                      hueTrack
+                    />
+                    <RangeField
+                      label={texts.appearance.backgroundIntensity}
+                      value={settings.background.chroma}
+                      min={THEME_LIMITS.backgroundChroma.min}
+                      max={THEME_LIMITS.backgroundChroma.max}
+                      step={0.001}
+                      valueLabel={percent(settings.background.chroma, CHROMA_MAX.background)}
+                      onChange={(chroma) => updateBackground({ chroma })}
+                    />
+                  </>
+                )}
               </section>
             </>
           )}
