@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+import { MAX_BADGES } from "@/constants/badges";
 import { texts } from "@/texts";
 import { X } from "lucide-react";
 
@@ -14,8 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/toast";
-
-const MAX_BADGES = 5;
 
 /**
  * Nome e identidade: nome social (substitui o de cadastro para todo mundo), apelido

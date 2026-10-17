@@ -3,6 +3,7 @@ import { type ChangeEvent, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "@tanstack/react-router";
 
+import { MAX_BADGES } from "@/constants/badges";
 import { texts } from "@/texts";
 import type { Certification } from "@/types/application/profile/certification";
 import type { CertificationRequest } from "@/types/application/profile/certification-request";
@@ -10,13 +11,14 @@ import type { Education } from "@/types/application/profile/education";
 import type { EducationRequest } from "@/types/application/profile/education-request";
 import type { Experience } from "@/types/application/profile/experience";
 import type { ExperienceRequest } from "@/types/application/profile/experience-request";
+import type { Profile } from "@/types/application/profile/profile";
 import type { FieldProps } from "@/types/components/profile/edit-profile-dialog/field-props";
 import type { Props } from "@/types/components/profile/edit-profile-dialog/props";
 import type { SubListProps } from "@/types/components/profile/edit-profile-dialog/sub-list-props";
 import type { SubListUpdate } from "@/types/components/profile/edit-profile-dialog/sub-list-update";
-import { Pencil, Plus, Trash2, Upload, X } from "lucide-react";
+import { Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 
-import { ApiError, profileApi } from "@/lib/api";
+import { ApiError, preferencesApi, profileApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
@@ -32,6 +34,16 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+
+/**
+ * Os emblemas do perfil: a lista nova e, para quem ainda só tem o emblema antigo (campo único),
+ * ele sozinho — a mesma leitura que a página de perfil faz. A primeira imagem é a que acompanha
+ * o nome em todo o app.
+ */
+function badgesOf(profile: Profile) {
+  if (profile.badges?.length) return profile.badges;
+  return profile.badge ? [profile.badge] : [];
+}
 
 export function EditProfileDialog({ profile, children }: Props) {
   const queryClient = useQueryClient();
@@ -52,7 +64,7 @@ export function EditProfileDialog({ profile, children }: Props) {
   const [goalsText, setGoalsText] = useState((profile.goals ?? []).join(", "));
   const [openToWork, setOpenToWork] = useState(profile.openToWork);
   const [isMentor, setIsMentor] = useState(profile.isMentor);
-  const [badge, setBadge] = useState(profile.badge ?? "");
+  const [badges, setBadges] = useState<string[]>(badgesOf(profile));
   const [usernameError, setUsernameError] = useState("");
   const [generalError, setGeneralError] = useState<string | null>(null);
   const badgeUpload = useMediaUpload();
@@ -110,9 +122,14 @@ export function EditProfileDialog({ profile, children }: Props) {
     event.target.value = "";
     if (!file) return;
     setGeneralError(null);
+    if (badges.length >= MAX_BADGES) {
+      setGeneralError(texts.profile.edit.badgesFull);
+      return;
+    }
     try {
       const result = await badgeUpload.upload(file, "BADGE");
-      setBadge(result.cdnUrl);
+      // Entra no fim da lista: a ordem é a que aparece no perfil, e a primeira acompanha o nome.
+      setBadges((current) => [...current, result.cdnUrl]);
     } catch {
       setGeneralError(texts.profile.imageUploadError);
     }
@@ -121,11 +138,19 @@ export function EditProfileDialog({ profile, children }: Props) {
   const handleSave = async () => {
     setUsernameError("");
     setGeneralError(null);
+    // Os emblemas vão por endpoint próprio (a lista de até 5 não passa pelo PUT do perfil) e antes
+    // do resto: assim o perfil já volta com a lista nova. Lista vazia limpa todos.
+    if (badges.join("\n") !== badgesOf(profile).join("\n")) {
+      try {
+        await preferencesApi.setBadges(badges);
+      } catch (err) {
+        setGeneralError(err instanceof ApiError ? err.message : texts.profile.imageUploadError);
+        return;
+      }
+    }
     await updateProfile.mutateAsync({
       username: username !== profile.username ? username : undefined,
       name: name !== profile.name ? name : undefined,
-      // String vazia limpa o emblema (o servidor só preserva quando o campo vem ausente/null).
-      badge: badge !== (profile.badge ?? "") ? badge : undefined,
       headline: headline || null,
       bio: bio || null,
       company: company || null,
@@ -235,35 +260,44 @@ export function EditProfileDialog({ profile, children }: Props) {
                 />
               </Field>
 
-              <Field label={texts.profile.edit.fields.badge}>
-                <div className="flex flex-wrap items-center gap-3">
-                  {badge ? (
-                    <img
-                      src={resolveCdnUrl(badge)}
-                      alt=""
-                      className="h-10 w-10 shrink-0 rounded-full border border-border-soft bg-surface-1 object-cover"
-                    />
-                  ) : (
-                    <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-dashed border-border-soft text-text-subtle">
-                      <Upload className="h-4 w-4" />
+              <Field label={texts.profile.edit.fields.badges}>
+                <div className="flex flex-wrap items-center gap-2">
+                  {badges.map((url, index) => (
+                    <span key={url} className="relative inline-flex shrink-0">
+                      <img
+                        src={resolveCdnUrl(url)}
+                        alt=""
+                        className="h-10 w-10 rounded-full border border-border-soft bg-surface-1 object-cover"
+                      />
+
+                      <button
+                        type="button"
+                        aria-label={`${texts.profile.edit.badgeRemove} ${index + 1}`}
+                        onClick={() =>
+                          setBadges((current) => current.filter((item) => item !== url))
+                        }
+                        className="absolute -right-1 -top-1 grid h-4 w-4 place-items-center rounded-full bg-surface-1 text-text-subtle ring-1 ring-border-soft transition hover:text-destructive"
+                      >
+                        <X className="h-2.5 w-2.5" />
+                      </button>
                     </span>
-                  )}
+                  ))}
 
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => badgeRef.current?.click()}
-                    disabled={badgeUpload.status === "uploading"}
-                  >
-                    {badgeUpload.status === "uploading"
-                      ? texts.common.sending
-                      : texts.profile.edit.badgeUpload}
-                  </Button>
-
-                  {badge ? (
-                    <Button size="sm" variant="ghost" onClick={() => setBadge("")}>
-                      {texts.profile.edit.badgeRemove}
-                    </Button>
+                  {badges.length < MAX_BADGES ? (
+                    <button
+                      type="button"
+                      onClick={() => badgeRef.current?.click()}
+                      disabled={badgeUpload.status === "uploading"}
+                      aria-label={texts.profile.edit.badgeUpload}
+                      title={texts.profile.edit.badgeUpload}
+                      className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-dashed border-border-soft text-text-subtle transition hover:border-primary/50 hover:text-foreground disabled:opacity-50"
+                    >
+                      {badgeUpload.status === "uploading" ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Plus className="h-4 w-4" />
+                      )}
+                    </button>
                   ) : null}
 
                   <input
@@ -276,7 +310,9 @@ export function EditProfileDialog({ profile, children }: Props) {
                 </div>
 
                 <p className="text-xs font-normal text-text-subtle">
-                  {texts.profile.edit.badgeHint}
+                  {badges.length >= MAX_BADGES
+                    ? texts.profile.edit.badgesFull
+                    : texts.profile.edit.badgesHint}
                 </p>
               </Field>
 
