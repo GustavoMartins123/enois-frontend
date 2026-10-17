@@ -430,7 +430,11 @@ function Vagas() {
                       href={j.sourceUrl ?? "#"}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-3 text-sm font-medium !text-primary-foreground transition hover:opacity-90"
+                      // text-primary-foreground e obrigatorio aqui: o bloco pai usa text-muted-foreground
+                      // e, sem cor propria, o texto do botao herda o cinza sobre o roxo (ilegivel).
+                      // Nao use o prefixo `!` de importante do Tailwind v3 — aqui e v4 (sufixo), a
+                      // classe com `!` na frente nao gera CSS nenhum.
+                      className="inline-flex h-9 items-center gap-1.5 rounded-full bg-primary px-3 text-sm font-medium text-primary-foreground transition hover:opacity-90"
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
 
