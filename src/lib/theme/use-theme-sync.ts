@@ -32,8 +32,26 @@ export function useThemeSync(): void {
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
-    applyThemeSettings(themeSettings, theme, themeCollection, widgetBackground, pageBackground, accentAlpha, widgetAlpha, pageAlpha);
-  }, [theme, themeSettings, themeCollection, widgetBackground, pageBackground, accentAlpha, widgetAlpha, pageAlpha]);
+    applyThemeSettings(
+      themeSettings,
+      theme,
+      themeCollection,
+      widgetBackground,
+      pageBackground,
+      accentAlpha,
+      widgetAlpha,
+      pageAlpha,
+    );
+  }, [
+    theme,
+    themeSettings,
+    themeCollection,
+    widgetBackground,
+    pageBackground,
+    accentAlpha,
+    widgetAlpha,
+    pageAlpha,
+  ]);
 
   useThemeAccountSync();
 }

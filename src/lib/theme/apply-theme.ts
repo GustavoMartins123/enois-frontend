@@ -9,7 +9,6 @@ import {
   backgroundValue,
   buildPageDeclarations,
   buildWidgetDeclarations,
-  backgroundValue,
   pageRepresentative,
   paintGradientCss,
 } from "./build-background-style";
@@ -41,10 +40,9 @@ export const THEME_COLLECTION_STORAGE_KEY = "connect-grow-theme-collection";
 
 /**
  * Aplica o que o usuário escolheu, em camadas: padrão da marca / tema da coleção >
- * cor de destaque livre > cor de widget livre > plano de fundo (página) livre.
- * Coleção inválida (removida, editada à mão) é tratada como ausência — nunca aplica
- * um tema pela metade. A cor de widget pinta o interno dos cartões/painéis E ajusta
- * o texto a ela; o plano de fundo troca só a página, atrás de tudo.
+ * cor de destaque livre (com a transparência dela) > cor de widget livre > plano de
+ * fundo livre. Coleção inválida (removida, editada à mão) é tratada como ausência —
+ * nunca aplica um tema pela metade.
  */
 export function applyThemeSettings(
   settings: ThemeSettings,
@@ -63,10 +61,12 @@ export function applyThemeSettings(
   // livre pinta por cima da identidade (que mantém superfícies e relevos).
   const accentOverride =
     !collection || isDefaultThemeSettings(settings) ? null : clampThemeSettings(settings).accent;
+
   // O fundo representativo da página: a camada livre, ou a base do tema/marca — é
-  // contra ELE que o texto dos widgets translúcidos é ajustado.
-  const pageBase = background
-    ? pageRepresentative(background)
+  // contra ELE que o texto dos widgets translúcidos é ajustado. `color-mix` entrega
+  // cor com alpha; o hex de dentro é o que a matemática de contraste consome.
+  const pageBase = pageBackground
+    ? pageRepresentative(pageBackground)
     : (collection?.tokens[mode]?.["--background"] ??
       collection?.surfaceHex ??
       (mode === "dark" ? "#141420" : "#ffffff"));
@@ -103,29 +103,39 @@ export function applyThemeSettings(
   // Os fundos livres entram no MESMO seletor de especificidade alta dos tokens: um
   // chunk de rota não os desfaz no meio da navegação (lição da camada de cores).
   const selector = mode === "dark" ? "html:root.dark" : "html:root";
-  const layers: Record<string, string>[] = [];
-  if (widgetBackground) layers.push(buildWidgetDeclarations(widgetBackground));
-  if (pageBackground) layers.push(buildPageDeclarations(pageBackground, !collection));
-  for (const [kind, style] of [
-    ["widget", widgetBackground],
-    ["page", pageBackground],
-  ] as const) {
-    if (!style) continue;
-    const block = Object.entries(
-      kind === "widget" ? buildWidgetDeclarations(style) : buildPageDeclarations(style),
-    )
+  const layers: {
+    declarations: Record<string, string>;
+    style: BackgroundStyle;
+    kind: "widget" | "page";
+  }[] = [];
+  if (widgetBackground) {
+    layers.push({
+      declarations: buildWidgetDeclarations(widgetBackground, pageSolid),
+      style: widgetBackground,
+      kind: "widget",
+    });
+  }
+  if (pageBackground) {
+    layers.push({
+      declarations: buildPageDeclarations(pageBackground, !collection),
+      style: pageBackground,
+      kind: "page",
+    });
+  }
+  for (const layer of layers) {
+    const block = Object.entries(layer.declarations)
       .map(([name, value]) => `  ${name}: ${value};`)
       .join("\n");
     css += `\n\n${selector} {\n${block}\n}`;
-    const value = kind === "widget" ? backgroundValue(style) : backgroundValue(style);
     const paint = paintGradientCss(
-      value,
+      backgroundValue(layer.style),
       selector,
-      kind === "page" ? PAGE_PAINT_TARGETS : WIDGET_PAINT_TARGETS,
-      kind === "page",
+      layer.kind === "page" ? PAGE_PAINT_TARGETS : WIDGET_PAINT_TARGETS,
+      layer.kind === "page",
     );
     if (paint) css += `\n${paint}`;
   }
+
   const style = (existing as HTMLStyleElement | null) ?? document.createElement("style");
   style.id = THEME_STYLE_ELEMENT_ID;
   style.textContent = css;
