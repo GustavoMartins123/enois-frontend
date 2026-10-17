@@ -460,15 +460,15 @@ export const texts = {
 
   landing: {
     seo: {
-      title: "Énóis — uma rede social feita de gente, não de atenção",
+      title: "Énóis, uma rede social feita de gente, não de atenção",
       description:
         "Rede social gratuita para profissionais e comunidades: sem anúncios, sem planos pagos e com um feed que termina quando o conteúdo acaba. Conversas, mentoria, eventos e vagas.",
       ogDescription:
-        "Sem anúncio, sem paywall e sem esteira infinita. Uma rede social em construção com as pessoas — e aberta para quem quiser ajudar.",
+        "Sem anúncio, sem paywall e sem esteira infinita. Uma rede social em construção com as pessoas, e aberta para quem quiser ajudar.",
     },
     /**
      * Números da comunidade. A janela vai escrita por extenso de propósito: é o número de quem
-     * USOU a plataforma no período (sessão viva ou publicação), não o de contas criadas — sem a
+     * USOU a plataforma no período (sessão viva ou publicação), não o de contas criadas, sem a
      * frase inteira, o visitante lê "usuários" e entende "cadastros". Vem de cache do servidor
      * (~10 min), é público e agregado, e some sozinho da página se a consulta falhar.
      */
@@ -476,7 +476,7 @@ export const texts = {
       eyebrow: "Quem já está aqui",
       activeLabel: (days: number) => `pessoas usaram o énóis nos últimos ${days} dias`,
       totalLabel: "contas na plataforma",
-      note: "Números públicos e agregados — sem identificar ninguém. O servidor recalcula a cada poucos minutos.",
+      note: "Números públicos e agregados, sem identificar ninguém. O servidor recalcula a cada poucos minutos.",
     },
     nav: {
       proposal: "A proposta",
@@ -488,21 +488,21 @@ export const texts = {
       badge: "A rede é nossa",
       title: "Uma rede social não precisa viver da sua atenção.",
       description:
-        "O énóis é uma rede para profissionais e comunidades — um lugar para conversar, aprender e construir junto. Sem anúncios, sem planos pagos e sem nada tentando prender você: quem decide quando a visita acaba é você.",
+        "O énóis é uma rede para profissionais e comunidades, um lugar para conversar, aprender e construir junto. Sem anúncios, sem planos pagos e sem nada tentando prender você: quem decide quando a visita acaba é você.",
       join: "Entrar no énóis",
       proposal: "Conhecer a proposta",
       facts: {
         free: "Gratuita, sem plano pago",
         noAds: "Sem anúncio em nenhum canto",
-        feedEnds: "O feed acaba — e avisa quando acaba",
+        feedEnds: "O feed acaba, e avisa quando acaba",
       },
     },
     problem: {
       eyebrow: "De onde a gente veio",
       title: "Você entrou para conversar. A plataforma quer que você fique.",
       paragraphs: [
-        "Quando a receita de uma rede vem da sua atenção, cada detalhe do produto empurra para o mesmo lado: mais tempo de tela, mais reação, mais retorno. Não é maldade de ninguém — é o modelo funcionando como foi desenhado.",
-        "O énóis nasce de uma pergunta incômoda: e se a plataforma não precisasse ganhar quando você perde seu tempo? É essa pergunta que organiza o que a gente constrói aqui — e o que a gente se recusa a construir.",
+        "Quando a receita de uma rede vem da sua atenção, cada detalhe do produto empurra para o mesmo lado: mais tempo de tela, mais reação, mais retorno. Não é maldade de ninguém, é o modelo funcionando como foi desenhado.",
+        "O énóis nasce de uma pergunta incômoda: e se a plataforma não precisasse ganhar quando você perde seu tempo? É essa pergunta que organiza o que a gente constrói aqui, e o que a gente se recusa a construir.",
       ],
       standardTitle: "O modelo que a gente questiona",
       standardPoints: [
@@ -513,9 +513,9 @@ export const texts = {
       ],
       oursTitle: "A aposta do énóis",
       oursPoints: [
-        "A conta não fecha com publicidade — por isso não existe anúncio aqui.",
+        "A conta não fecha com publicidade, por isso não existe anúncio aqui.",
         "O que existe é para todo mundo: sem plano pago esperando na esquina.",
-        "O feed termina quando o conteúdo acaba — e diz isso na sua cara.",
+        "O feed termina quando o conteúdo acaba, e diz isso na sua cara.",
         "Gente de verdade moderando, com regras escritas antes de qualquer punição.",
       ],
     },
@@ -523,7 +523,7 @@ export const texts = {
       eyebrow: "Na prática",
       title: "Filosofia sem prática vira frase de parede.",
       description:
-        "Estes são compromissos que dá para conferir no produto — não promessas para um futuro distante.",
+        "Estes são compromissos que dá para conferir no produto, não promessas para um futuro distante.",
       items: [
         {
           title: "Gratuito de verdade",
@@ -531,7 +531,7 @@ export const texts = {
         },
         {
           title: "O feed acaba",
-          text: "Quando as publicações terminam, aparece o aviso: “Você chegou ao fim do feed.” A visita acaba quando você quiser — não quando o site decidir.",
+          text: "Quando as publicações terminam, aparece o aviso: “Você chegou ao fim do feed.” A visita acaba quando você quiser, não quando o site decidir.",
         },
         {
           title: "A mídia não sequestra a tela",
@@ -543,7 +543,7 @@ export const texts = {
         },
         {
           title: "Regras escritas, moderação real",
-          text: "As diretrizes são públicas e valem para todo mundo — inclusive para quem denuncia. Denúncia pode ser acompanhada e é revisada por gente, não engavetada.",
+          text: "As diretrizes são públicas e valem para todo mundo, inclusive para quem denuncia. Denúncia pode ser acompanhada e é revisada por gente, não engavetada.",
         },
         {
           title: "Construção aberta",
@@ -558,13 +558,13 @@ export const texts = {
         "Nada aqui é mockup nem promessa de roadmap: é o que existe hoje, funcionando. Parte abre sem conta nenhuma; o resto pede só um cadastro gratuito.",
       capture: {
         alt: "Captura da página pública de vagas do énóis, com filtros por nível, local e tipo e cartões de vagas abertas",
-        caption: "Captura real da página de vagas — enois.ia.br/vagas, aberta sem login.",
+        caption: "Captura real da página de vagas, enois.ia.br/vagas, aberta sem login.",
       },
       groups: [
         {
           label: "Conversas",
           items: [
-            "Publicações em vários tipos — de pergunta rápida a artigo com até 4.000 caracteres",
+            "Publicações em vários tipos, de pergunta rápida a artigo com até 4.000 caracteres",
             "Páginas em HTML/CSS publicadas como post, com player embutido",
             "Comentários com imagem e GIF, reações e edição",
             "Comunidades com capa própria, feita de foto ou HTML/CSS",
@@ -582,7 +582,7 @@ export const texts = {
         {
           label: "Sua conta",
           items: [
-            "Perfil e publicações com link público — abrem sem login",
+            "Perfil e publicações com link público, abrem sem login",
             "Busca por pessoas, comunidades, vagas, eventos e mentores",
             "Salvos, bloqueios e denúncias que você acompanha",
           ],
@@ -596,20 +596,20 @@ export const texts = {
     },
     build: {
       eyebrow: "Em construção",
-      title: "Nada aqui é definitivo — de propósito.",
+      title: "Nada aqui é definitivo, de propósito.",
       paragraphs: [
         "O énóis não é um produto lacrado. É software vivo, feito e refeito a partir do que a comunidade aponta: o que confunde, o que trava, o que falta.",
-        "A gente não promete perfeição — promete evolução e transparência sobre o que ainda não está resolvido, incluindo o que esta página ainda não conta.",
+        "A gente não promete perfeição, promete evolução e transparência sobre o que ainda não está resolvido, incluindo o que esta página ainda não conta.",
       ],
       channels: {
         contact: {
           label: "Falar com a gente",
           description:
-            "Um canal de suporte de verdade, com registro e resposta — não um formulário que some.",
+            "Um canal de suporte de verdade, com registro e resposta, não um formulário que some.",
         },
         guidelines: {
           label: "Ler as diretrizes",
-          description: "As regras da comunidade, escritas e públicas — valem para todo mundo.",
+          description: "As regras da comunidade, escritas e públicas, valem para todo mundo.",
         },
         api: {
           label: "Construir em cima",
@@ -621,7 +621,7 @@ export const texts = {
       eyebrow: "Chega junto",
       title: "A internet também é feita das escolhas da gente.",
       description:
-        "O énóis ainda está evoluindo — e é agora que dá para ajudar a definir o que ele vai ser. Criar conta é gratuito, leva um minuto e não pede cartão.",
+        "O énóis ainda está evoluindo, e é agora que dá para ajudar a definir o que ele vai ser. Criar conta é gratuito, leva um minuto e não pede cartão.",
       free: "Acesso gratuito é princípio, não promoção: sem anúncio, sem plano pago e sem versão premium pela metade.",
       createAccount: "Fazer parte do énóis",
       existingAccount: "Já tenho conta",
@@ -631,7 +631,7 @@ export const texts = {
       copyright: (year: number) =>
         `© ${year} Énóis · Uma rede feita com as pessoas, todos os dias.`,
       tagline:
-        "Uma rede social gratuita para profissionais e comunidades — sem anúncios, sem paywall, em construção com quem usa.",
+        "Uma rede social gratuita para profissionais e comunidades, sem anúncios, sem paywall, em construção com quem usa.",
       sectionsLabel: "Nesta página",
       projectLabel: "O projeto",
       privacy: "Privacidade",
