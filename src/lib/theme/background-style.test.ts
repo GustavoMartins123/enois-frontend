@@ -49,6 +49,12 @@ describe("plano de fundo personalizado", () => {
     expect(declarations["--text-subtle"]).toContain("color-mix");
   });
 
+  it("a cor sólida escolhida é o próprio fundo (não o gradiente padrão)", () => {
+    const declarations = buildBackgroundDeclarations(solidDark);
+    expect(declarations["--background"]).toBe("#0b1220");
+    expect(declarations["--background"]).not.toContain("gradient");
+  });
+
   it("direções viram o CSS esperado", () => {
     const diagonal: BackgroundStyle = { ...solidDark, type: "gradient", direction: "diagonal" };
     expect(backgroundValue(diagonal)).toContain("linear-gradient(135deg");

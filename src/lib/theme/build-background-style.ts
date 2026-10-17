@@ -4,6 +4,7 @@ import { hexToRgb, readableForeground, rgbToHex } from "./color";
 
 /** O valor CSS do fundo escolhido: cor direta ou gradiente na direção pedida. */
 export function backgroundValue(style: BackgroundStyle): string {
+  if (style.type === "solid") return style.color;
   switch (style.direction) {
     case "vertical":
       return `linear-gradient(180deg, ${style.from}, ${style.to})`;

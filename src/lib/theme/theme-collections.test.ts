@@ -1,5 +1,6 @@
 import { THEME_COLLECTIONS, THEME_COLLECTION_IDS } from "@/constants/theme-collections";
 import { THEME_TOKEN_NAMES } from "@/constants/theme-tokens";
+import type { BackgroundStyle } from "@/types/preferences/background-style";
 import { describe, expect, it } from "vitest";
 
 import { buildCollectionCss, resolveThemeCollection } from "./build-collection-css";
@@ -128,4 +129,37 @@ it("o relevo dos clássicos segue o modo via variável, não cor literal", () =>
   expect(win95.css).toContain("var(--bevel-light)");
   expect(win95.tokens.light["--bevel-light"]).toBe("#ffffff");
   expect(win95.tokens.dark!["--bevel-light"]).not.toBe("#ffffff");
+});
+
+describe("cores livres como camada sobre os temas", () => {
+  const accent = { hue: 20, chroma: 0.18, lightness: 0.5 };
+
+  it("a cor livre ajusta o destaque do tema sem tocar em superfícies e relevo", () => {
+    const css = buildCollectionCss(resolveThemeCollection("win95")!, "light", { accent });
+    expect(css).not.toContain("--primary: #000080"); // destaque do tema sai
+    expect(css).toContain("--primary: oklch("); // entra o destaque escolhido
+    expect(css).toContain("--background: #c0c0c0"); // superfície do tema fica
+    expect(css).toContain("var(--bevel-light)"); // relevo continua lá
+  });
+
+  it("sem cor livre, o destaque do tema vale (nada é inventado)", () => {
+    const css = buildCollectionCss(resolveThemeCollection("win95")!, "light", { accent: null });
+    expect(css).toContain("--primary: #000080");
+  });
+
+  it("o plano de fundo livre troca só o valor do fundo; o texto continua o do tema", () => {
+    const background: BackgroundStyle = {
+      type: "solid",
+      color: "#0b1220",
+      from: "#0b1220",
+      to: "#0b1220",
+      direction: "diagonal",
+    };
+    const css = buildCollectionCss(resolveThemeCollection("win95")!, "light", {
+      backgroundStyle: background,
+    });
+    expect(css).toContain("--background: #0b1220");
+    // O texto segue sendo o do tema (cartões têm cor própria) — sem readaptação.
+    expect(css).toContain("--text-strong: #0a0a0a");
+  });
 });

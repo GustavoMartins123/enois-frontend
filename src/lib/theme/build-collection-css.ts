@@ -1,6 +1,33 @@
 import { THEME_COLLECTIONS } from "@/constants/theme-collections";
+import type { BackgroundStyle } from "@/types/preferences/background-style";
 import type { Theme } from "@/types/preferences/theme";
 import type { ThemeCollection } from "@/types/preferences/theme-collection";
+import type { CollectionOverrides } from "@/types/preferences/theme-collection-overrides";
+
+import { buildBackgroundDeclarations } from "./build-background-style";
+import { buildAccentTokens } from "./build-theme-tokens";
+
+/**
+ * Chaves do destaque que a cor livre sobrescreve num tema. Superfícies, bordas,
+ * sombras e os relevos ficam do tema: é a identidade que continua de pé — o que o
+ * usuário pinta é o destaque (e o fundo, pelo plano de fundo).
+ */
+const ACCENT_OVERRIDE_KEYS = [
+  "--primary",
+  "--primary-foreground",
+  "--primary-soft",
+  "--secondary",
+  "--secondary-foreground",
+  "--accent",
+  "--accent-foreground",
+  "--ring",
+  "--gradient-primary",
+  "--mentorship-button",
+  "--highlight-project",
+  "--highlight-project-text",
+  "--background-user-project",
+  "--project-text",
+] as const;
 
 /**
  * Resolve o identificador para um tema da coleção.
@@ -23,11 +50,38 @@ export function resolveThemeCollection(id: string | null | undefined): ThemeColl
  * escuro traz os tokens claros no seletor `.dark` — inclusive o texto claro —,
  * que é o que o mantém legível; um tema só-escuro vale nos dois modos pelo mesmo
  * caminho, na direção oposta.
+ *
+ * As camadas livres entram por cima, nesta ordem: o tema, o destaque da cor livre
+ * (só as chaves do destaque — superfícies, bordas, sombras e relevos seguem do
+ * tema), e o valor do plano de fundo livre. Sobre um tema, o fundo livre troca
+ * APENAS o `--background`: o texto tem dono (os cartões do tema têm cor própria),
+ * então a readaptação de texto fica para a camada sem tema.
  */
-export function buildCollectionCss(collection: ThemeCollection, mode: Theme): string {
+export function buildCollectionCss(
+  collection: ThemeCollection,
+  mode: Theme,
+  overrides?: CollectionOverrides,
+): string {
   const tokens =
     mode === "dark" ? (collection.tokens.dark ?? collection.tokens.light) : collection.tokens.light;
-  const declarations = Object.entries(tokens)
+
+  let effective: Record<string, string> = tokens;
+
+  if (overrides?.accent) {
+    const accent = buildAccentTokens(overrides.accent, mode);
+    effective = { ...effective };
+    for (const key of ACCENT_OVERRIDE_KEYS) {
+      const value = accent[key];
+      if (value !== undefined) effective[key] = value;
+    }
+  }
+
+  if (overrides?.backgroundStyle) {
+    const background = buildBackgroundDeclarations(overrides.backgroundStyle)["--background"];
+    if (background) effective = { ...effective, "--background": background };
+  }
+
+  const declarations = Object.entries(effective)
     .map(([name, value]) => `  ${name}: ${value};`)
     .join("\n");
 

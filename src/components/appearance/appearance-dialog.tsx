@@ -151,110 +151,104 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
             </div>
           </section>
 
-          {activeCollection ? null : (
-            <>
-              <section className="space-y-2">
-                <h3 className="text-xs font-medium text-text-strong">{texts.appearance.presets}</h3>
+          {/* As cores livres valem SEMPRE: sem tema, são o tema; com tema, são
+              camada por cima (destaque e fundo — superfícies ficam do tema). */}
+          <section className="space-y-2">
+            <h3 className="text-xs font-medium text-text-strong">{texts.appearance.presets}</h3>
 
-                <PresetRow activeId={activePresetId} onSelect={setThemeSettings} />
-              </section>
+            <PresetRow activeId={activePresetId} onSelect={setThemeSettings} />
+          </section>
 
-              <section className="space-y-3">
-                <div className="space-y-0.5">
-                  <h3 className="text-xs font-medium text-text-strong">
-                    {texts.appearance.accentSection}
-                  </h3>
+          <section className="space-y-3">
+            <div className="space-y-0.5">
+              <h3 className="text-xs font-medium text-text-strong">
+                {texts.appearance.accentSection}
+              </h3>
 
-                  <p className="text-xs font-normal text-text-subtle">
-                    {texts.appearance.accentHint}
-                  </p>
-                </div>
+              <p className="text-xs font-normal text-text-subtle">{texts.appearance.accentHint}</p>
+            </div>
 
+            <RangeField
+              label={texts.appearance.hue}
+              value={settings.accent.hue}
+              min={THEME_LIMITS.hue.min}
+              max={THEME_LIMITS.hue.max}
+              step={1}
+              valueLabel={texts.appearance.hueValue(Math.round(settings.accent.hue))}
+              onChange={(hue) => updateAccent({ hue })}
+              hueTrack
+            />
+            <RangeField
+              label={texts.appearance.saturation}
+              value={settings.accent.chroma}
+              min={THEME_LIMITS.accentChroma.min}
+              max={THEME_LIMITS.accentChroma.max}
+              step={0.005}
+              valueLabel={percent(settings.accent.chroma, CHROMA_MAX.accent)}
+              onChange={(chroma) => updateAccent({ chroma })}
+            />
+            <RangeField
+              label={texts.appearance.brightness}
+              value={settings.accent.lightness}
+              min={THEME_LIMITS.accentLightness.min}
+              max={THEME_LIMITS.accentLightness.max}
+              step={0.005}
+              valueLabel={percent(
+                settings.accent.lightness - THEME_LIMITS.accentLightness.min,
+                THEME_LIMITS.accentLightness.max - THEME_LIMITS.accentLightness.min,
+              )}
+              onChange={(lightness) => updateAccent({ lightness })}
+              hint={texts.appearance.brightnessHint}
+            />
+          </section>
+
+          <section className="space-y-3">
+            <div className="space-y-0.5">
+              <h3 className="text-xs font-medium text-text-strong">
+                {texts.appearance.backgroundSection}
+              </h3>
+
+              <p className="text-xs font-normal text-text-subtle">
+                {texts.appearance.backgroundHint}
+              </p>
+            </div>
+
+            {/* Plano de fundo: automático, cor sólida ou gradiente. Com fundo
+                    escolhido, o tingimento fino não faz sentido e fica fora. */}
+            <div className="space-y-2 border-t border-border-soft pt-3">
+              <p className="text-xs font-medium text-text-strong">
+                {texts.appearance.bgStyleTitle}
+              </p>
+
+              <p className="text-xs font-normal text-text-subtle">{texts.appearance.bgStyleHint}</p>
+
+              <BackgroundStylePicker value={backgroundStyle} onChange={setBackgroundStyle} />
+            </div>
+
+            {!activeCollection && !backgroundStyle && (
+              <>
                 <RangeField
                   label={texts.appearance.hue}
-                  value={settings.accent.hue}
+                  value={settings.background.hue}
                   min={THEME_LIMITS.hue.min}
                   max={THEME_LIMITS.hue.max}
                   step={1}
-                  valueLabel={texts.appearance.hueValue(Math.round(settings.accent.hue))}
-                  onChange={(hue) => updateAccent({ hue })}
+                  valueLabel={texts.appearance.hueValue(Math.round(settings.background.hue))}
+                  onChange={(hue) => updateBackground({ hue })}
                   hueTrack
                 />
                 <RangeField
-                  label={texts.appearance.saturation}
-                  value={settings.accent.chroma}
-                  min={THEME_LIMITS.accentChroma.min}
-                  max={THEME_LIMITS.accentChroma.max}
-                  step={0.005}
-                  valueLabel={percent(settings.accent.chroma, CHROMA_MAX.accent)}
-                  onChange={(chroma) => updateAccent({ chroma })}
+                  label={texts.appearance.backgroundIntensity}
+                  value={settings.background.chroma}
+                  min={THEME_LIMITS.backgroundChroma.min}
+                  max={THEME_LIMITS.backgroundChroma.max}
+                  step={0.001}
+                  valueLabel={percent(settings.background.chroma, CHROMA_MAX.background)}
+                  onChange={(chroma) => updateBackground({ chroma })}
                 />
-                <RangeField
-                  label={texts.appearance.brightness}
-                  value={settings.accent.lightness}
-                  min={THEME_LIMITS.accentLightness.min}
-                  max={THEME_LIMITS.accentLightness.max}
-                  step={0.005}
-                  valueLabel={percent(
-                    settings.accent.lightness - THEME_LIMITS.accentLightness.min,
-                    THEME_LIMITS.accentLightness.max - THEME_LIMITS.accentLightness.min,
-                  )}
-                  onChange={(lightness) => updateAccent({ lightness })}
-                  hint={texts.appearance.brightnessHint}
-                />
-              </section>
-
-              <section className="space-y-3">
-                <div className="space-y-0.5">
-                  <h3 className="text-xs font-medium text-text-strong">
-                    {texts.appearance.backgroundSection}
-                  </h3>
-
-                  <p className="text-xs font-normal text-text-subtle">
-                    {texts.appearance.backgroundHint}
-                  </p>
-                </div>
-
-                {/* Plano de fundo: automático, cor sólida ou gradiente. Com fundo
-                    escolhido, o tingimento fino não faz sentido e fica fora. */}
-                <div className="space-y-2 border-t border-border-soft pt-3">
-                  <p className="text-xs font-medium text-text-strong">
-                    {texts.appearance.bgStyleTitle}
-                  </p>
-
-                  <p className="text-xs font-normal text-text-subtle">
-                    {texts.appearance.bgStyleHint}
-                  </p>
-
-                  <BackgroundStylePicker value={backgroundStyle} onChange={setBackgroundStyle} />
-                </div>
-
-                {!backgroundStyle && (
-                  <>
-                    <RangeField
-                      label={texts.appearance.hue}
-                      value={settings.background.hue}
-                      min={THEME_LIMITS.hue.min}
-                      max={THEME_LIMITS.hue.max}
-                      step={1}
-                      valueLabel={texts.appearance.hueValue(Math.round(settings.background.hue))}
-                      onChange={(hue) => updateBackground({ hue })}
-                      hueTrack
-                    />
-                    <RangeField
-                      label={texts.appearance.backgroundIntensity}
-                      value={settings.background.chroma}
-                      min={THEME_LIMITS.backgroundChroma.min}
-                      max={THEME_LIMITS.backgroundChroma.max}
-                      step={0.001}
-                      valueLabel={percent(settings.background.chroma, CHROMA_MAX.background)}
-                      onChange={(chroma) => updateBackground({ chroma })}
-                    />
-                  </>
-                )}
-              </section>
-            </>
-          )}
+              </>
+            )}
+          </section>
 
           <section className="space-y-2">
             <h3 className="text-xs font-medium text-text-strong">{texts.appearance.preview}</h3>

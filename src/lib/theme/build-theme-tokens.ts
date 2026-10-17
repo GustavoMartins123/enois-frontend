@@ -113,19 +113,18 @@ function surfaceChroma(chroma: number, mode: Theme, extra = 0): number {
   return clamp(base + extra, 0, 0.08);
 }
 
-export function buildThemeTokens(settings: ThemeSettings, mode: Theme): ThemeTokenMap {
-  const { accent, background } = clampThemeSettings(settings);
+/**
+ * Bloco do destaque (botões, links, gradiente, anel, selos) derivado da escolha
+ * livre de cor. É o que a personalização aplica sobre a marca e, como CAMADA,
+ * sobre os temas da galeria — a superfície do tema fica de pé, o destaque é seu.
+ */
+export function buildAccentTokens(accent: ThemeAccent, mode: Theme): Partial<ThemeTokenMap> {
   const { hue } = accent;
   const lightness = effectiveAccentLightness(accent, mode);
   const chroma = accent.chroma;
-  const surfaceHue = background.hue;
-  const surface = (extraC: number, lightnessValue: number, hueShift = 0) =>
-    oklch(lightnessValue, surfaceChroma(background.chroma, mode, extraC), surfaceHue + hueShift);
-
-  // O texto do destaque é escolhido pelo que se lê melhor — nunca fica ilegível.
   const primaryForeground = readableForeground(oklchToRgb(lightness, chroma, hue), hue).css;
 
-  const accentTokens = {
+  return {
     "--primary": oklch(lightness, chroma, hue),
     "--primary-foreground": primaryForeground,
     "--primary-soft": oklch(mode === "dark" ? 0.26 : 0.95, mode === "dark" ? 0.06 : 0.04, hue),
@@ -157,6 +156,15 @@ export function buildThemeTokens(settings: ThemeSettings, mode: Theme): ThemeTok
     "--background-user-project": oklch(0.8, 0.09, hue),
     "--project-text": oklch(0.33, 0.12, hue),
   } satisfies Partial<ThemeTokenMap>;
+}
+
+export function buildThemeTokens(settings: ThemeSettings, mode: Theme): ThemeTokenMap {
+  const { accent, background } = clampThemeSettings(settings);
+  const surfaceHue = background.hue;
+  const surface = (extraC: number, lightnessValue: number, hueShift = 0) =>
+    oklch(lightnessValue, surfaceChroma(background.chroma, mode, extraC), surfaceHue + hueShift);
+
+  const accentTokens = buildAccentTokens(accent, mode);
 
   const surfaceTokens =
     mode === "dark"

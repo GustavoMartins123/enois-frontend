@@ -5,7 +5,12 @@ import type { ThemeSettings } from "@/types/preferences/theme-settings";
 
 import { buildBackgroundDeclarations } from "./build-background-style";
 import { buildCollectionCss, resolveThemeCollection } from "./build-collection-css";
-import { buildThemeColor, buildThemeCss, isDefaultThemeSettings } from "./build-theme-tokens";
+import {
+  buildThemeColor,
+  buildThemeCss,
+  clampThemeSettings,
+  isDefaultThemeSettings,
+} from "./build-theme-tokens";
 
 export const THEME_STYLE_ELEMENT_ID = "app-theme";
 
@@ -41,6 +46,11 @@ export function applyThemeSettings(
   const collection = resolveThemeCollection(collectionId);
   // Quem manda no fundo com um tema da galeria ativo é o tema; o fundo escolhido
   // vale na personalização de cores livres.
+  // Com um tema da galeria ativo, as cores livres passam a ser CAMADA: o destaque
+  // livre pinta por cima da identidade (que mantém superfícies e relevos), e o
+  // plano de fundo livre troca o valor do fundo. Sem tema, o modelo antigo vale.
+  const accentOverride =
+    !collection || isDefaultThemeSettings(settings) ? null : clampThemeSettings(settings).accent;
   const background = collection ? null : (backgroundStyle ?? null);
 
   // O atributo é o escopo do CSS estrutural; sem coleção, ele sai de cena junto.
@@ -60,7 +70,12 @@ export function applyThemeSettings(
     return;
   }
 
-  let css = collection ? buildCollectionCss(collection, mode) : buildThemeCss(settings, mode);
+  let css = collection
+    ? buildCollectionCss(collection, mode, {
+        accent: accentOverride,
+        backgroundStyle: backgroundStyle ?? null,
+      })
+    : buildThemeCss(settings, mode);
 
   if (background) {
     // O fundo escolhido entra no MESMO seletor de especificidade alta dos tokens:
