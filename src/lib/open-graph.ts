@@ -57,15 +57,23 @@ export function buildPostShareMeta(input: {
   const mimeType = media?.mimeType ?? "";
   const isVideo = mimeType.startsWith("video/");
 
-  // Página: o cartão do servidor (texto da página). Post comum: a mídia, recortada; sem mídia, a marca.
+  // As transformações e miniaturas de vídeo são recursos do ImageKit, não do S3.
+  const isImageKit = mediaUrl ? new URL(mediaUrl).hostname === "ik.imagekit.io" : false;
+  const isImage = mimeType.startsWith("image/");
   const imageUrl =
     isPage && pagePreviewUrl
       ? pagePreviewUrl
       : !mediaUrl
         ? fallbackImageUrl
         : isVideo
-          ? `${mediaUrl}/ik-thumbnail.jpg?${VIDEO_THUMB_TRANSFORM}`
-          : `${mediaUrl}?${IMAGE_TRANSFORM}`;
+          ? isImageKit
+            ? `${mediaUrl}/ik-thumbnail.jpg?${VIDEO_THUMB_TRANSFORM}`
+            : fallbackImageUrl
+          : isImage
+            ? isImageKit
+              ? `${mediaUrl}${mediaUrl.includes("?") ? "&" : "?"}${IMAGE_TRANSFORM}`
+              : mediaUrl
+            : fallbackImageUrl;
 
   return {
     title,
@@ -77,7 +85,7 @@ export function buildPostShareMeta(input: {
       : isVideo
         ? `Vídeo publicado por ${author}`
         : `Publicação de ${author}`,
-    videoUrl: isVideo ? (mediaUrl ?? null) : null,
+    videoUrl: mimeType === "video/mp4" ? (mediaUrl ?? null) : null,
     type: isVideo ? "video.other" : "article",
   };
 }
@@ -92,4 +100,32 @@ function excerpt(text: string, limit: number): string {
   const cut = text.slice(0, limit);
   const lastSpace = cut.lastIndexOf(" ");
   return `${(lastSpace > limit * 0.6 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
+}
+
+
+/** Metadados para paginas publicas, emitidos no HTML inicial do servidor. */
+export function buildShareTags(input: {
+  title: string;
+  description: string;
+  url: string;
+  imageUrl: string;
+  imageAlt: string;
+}) {
+  const description = excerpt(collapse(input.description), DESCRIPTION_LIMIT);
+  return [
+    { title: input.title },
+    { name: "description", content: description },
+    { property: "og:type", content: "website" },
+    { property: "og:site_name", content: "Énóis" },
+    { property: "og:title", content: input.title },
+    { property: "og:description", content: description },
+    { property: "og:url", content: input.url },
+    { property: "og:image", content: input.imageUrl },
+    { property: "og:image:alt", content: input.imageAlt },
+    { name: "twitter:card", content: "summary_large_image" },
+    { name: "twitter:title", content: input.title },
+    { name: "twitter:description", content: description },
+    { name: "twitter:image", content: input.imageUrl },
+    { name: "twitter:image:alt", content: input.imageAlt },
+  ];
 }

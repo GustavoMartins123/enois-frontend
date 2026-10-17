@@ -27,6 +27,7 @@ import {
 
 import { communitiesApi, feedApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
+import { buildShareTags } from "@/lib/open-graph";
 import { requireAuth } from "@/lib/require-auth";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
@@ -65,13 +66,18 @@ export const Route = createFileRoute("/comunidades/$communityId")({
       throw notFound();
     }
   },
-  head: ({ loaderData }) => ({
-    meta: [
-      {
-        title: `${loaderData?.name ?? texts.communities.detail.seoFallback} · ${texts.brand.name}`,
-      },
-    ],
-  }),
+  head: ({ loaderData, params }) => {
+    const title = `${loaderData?.name ?? texts.communities.detail.seoFallback} · ${texts.brand.name}`;
+    return {
+      meta: buildShareTags({
+        title,
+        description: loaderData?.description || "Conheça esta comunidade no Énóis.",
+        url: `${texts.siteUrl}/comunidades/${encodeURIComponent(params.communityId)}`,
+        imageUrl: resolveCdnUrl(loaderData?.cover || loaderData?.avatar) || `${texts.siteUrl}/icons/icon-512.png`,
+        imageAlt: loaderData?.name ? `Comunidade ${loaderData.name} no Énóis` : title,
+      }),
+    };
+  },
   component: CommunityDetail,
 });
 

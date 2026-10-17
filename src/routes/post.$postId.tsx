@@ -69,13 +69,7 @@ export const Route = createFileRoute("/post/$postId")({
         { property: "og:description", content: share.description },
         { property: "og:url", content: share.url },
         { property: "og:image", content: share.imageUrl },
-        { property: "og:image:width", content: "1200" },
-        { property: "og:image:height", content: "630" },
         { property: "og:image:alt", content: share.imageAlt },
-        {
-          property: "og:image:type",
-          content: share.imageUrl.endsWith(".png") ? "image/png" : "image/jpeg",
-        },
         ...(share.videoUrl
           ? [
               { property: "og:video", content: share.videoUrl },
