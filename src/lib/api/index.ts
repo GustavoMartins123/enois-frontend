@@ -2,6 +2,7 @@ export { authApi } from "./auth";
 export { identityApi } from "./identity";
 export { profileApi } from "./profile";
 export { preferencesApi } from "./preferences";
+export { projectsApi } from "./projects";
 export { feedApi } from "./feed";
 export { commentsApi } from "./comments";
 export { reactionsApi, REACTION_EMOJIS } from "./reactions";

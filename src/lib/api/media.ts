@@ -18,6 +18,32 @@ export function resolveCdnUrl(url: string | null | undefined): string | undefine
   return `${IMAGEKIT_URL_ENDPOINT}${cleaned.startsWith("/") ? "" : "/"}${cleaned}`;
 }
 
+const IMAGEKIT_HOST = (() => {
+  try {
+    return new URL(IMAGEKIT_URL_ENDPOINT).host;
+  } catch {
+    return "";
+  }
+})();
+
+/**
+ * O endereço é de mídia nossa (caminho relativo, mesmo host do app ou o CDN que a gente usa)?
+ *
+ * Serve para decidir o que pode virar imagem num texto formatado: imagem de servidor de terceiro
+ * carrega sozinha e entrega o IP de quem lê para quem publicou, então ela sai como link.
+ */
+export function isOwnMediaUrl(url: string): boolean {
+  if (!/^https?:\/\//i.test(url)) return true;
+
+  try {
+    const parsed = new URL(url);
+    if (typeof window !== "undefined" && parsed.host === window.location.host) return true;
+    return IMAGEKIT_HOST !== "" && parsed.host === IMAGEKIT_HOST;
+  } catch {
+    return false;
+  }
+}
+
 export const mediaApi = {
   requestUpload: (data: Pick<MediaAsset, "fileName" | "mimeType" | "size" | "purpose">) =>
     api.post<MediaUploadResponse>("/media/uploads", data),
