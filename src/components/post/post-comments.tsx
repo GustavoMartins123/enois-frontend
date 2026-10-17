@@ -13,18 +13,12 @@ import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 
 import { MentionTextarea } from "@/components/mention-textarea";
 import { UserAvatar } from "@/components/user-avatar";
 
 import { CommentItem } from "./comment-item";
+import { GifPickerDialog } from "./gif-picker-dialog";
 
 const PAGE_SIZE = 20;
 
@@ -58,8 +52,6 @@ export function PostComments({ postId }: PostIdProps) {
   const [error, setError] = useState<string | null>(null);
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [gifOpen, setGifOpen] = useState(false);
-  const [gifUrl, setGifUrl] = useState("");
-  const [gifError, setGifError] = useState(false);
   const [posting, setPosting] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -82,24 +74,11 @@ export function PostComments({ postId }: PostIdProps) {
     });
   };
 
-  // Giphy/Tenor/.gif direto: o mesmo reconhecimento do LinkPreviews, para nao deixar
-  // entrar link que depois nao renderiza como GIF.
-  const isGifUrl = (value: string) =>
-    /^https:\/\/(media|i)\.giphy\.com\//.test(value) ||
-    /^https:\/\/media\d*\.tenor\.com\//.test(value) ||
-    /\.gif(\?|$)/i.test(value) ||
-    /giphy\.com\/(?:gifs\/)?[^/?#]*-[a-zA-Z0-9]+\/?$/.test(value);
-
-  const addGif = () => {
-    const value = gifUrl.trim();
-    if (!isGifUrl(value)) {
-      setGifError(true);
-      return;
-    }
-    setDraft(postId, draft ? `${draft}\n${value}` : value);
-    setGifUrl("");
-    setGifError(false);
-    setGifOpen(false);
+  // O GIF entra como URL no proprio texto do comentario — o link-previews transforma em imagem — e
+  // e assim que ele sempre funcionou aqui. Quem escolhe a URL e o seletor (busca no provedor ou link
+  // colado no modo alternativo), que ja entrega so link aceito.
+  const addGif = (url: string) => {
+    setDraft(postId, draft ? `${draft}\n${url}` : url);
   };
 
   const loadFirstPage = useCallback(async () => {
@@ -351,10 +330,7 @@ export function PostComments({ postId }: PostIdProps) {
 
               <button
                 type="button"
-                onClick={() => {
-                  setGifError(false);
-                  setGifOpen(true);
-                }}
+                onClick={() => setGifOpen(true)}
                 className="h-8 rounded-full px-2 text-xs font-semibold text-text-subtle transition hover:bg-surface-2 hover:text-primary"
                 aria-label={texts.posts.comments.gif}
               >
@@ -380,32 +356,7 @@ export function PostComments({ postId }: PostIdProps) {
         </div>
       </form>
 
-      <Dialog open={gifOpen} onOpenChange={setGifOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="font-normal">{texts.posts.comments.gifTitle}</DialogTitle>
-          </DialogHeader>
-
-          <div className="space-y-3 pt-1">
-            <p className="text-sm font-normal text-text-subtle">{texts.posts.comments.gifHint}</p>
-
-            <Input
-              value={gifUrl}
-              onChange={(event) => {
-                setGifUrl(event.target.value);
-                setGifError(false);
-              }}
-              placeholder={texts.posts.comments.gifPlaceholder}
-            />
-
-            {gifError && <p className="text-xs text-destructive">{texts.posts.comments.gifInvalid}</p>}
-
-            <Button className="w-full rounded-full" onClick={addGif} disabled={!gifUrl.trim()}>
-              {texts.posts.comments.gifAction}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <GifPickerDialog open={gifOpen} onOpenChange={setGifOpen} onSelect={addGif} />
     </section>
   );
 }
