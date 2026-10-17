@@ -494,6 +494,13 @@ function Profile() {
                   {user.name}
                 </h1>
 
+                {/* Vulgo: etiqueta ao lado do nome, escolhida pela própria pessoa. */}
+                {user.aka && (
+                  <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs font-normal text-text-subtle">
+                    {texts.profile.aka(user.aka)}
+                  </span>
+                )}
+
                 {/* Emblemas: até 5, PNG pequeno colado ao nome — fora do <h1> para não entrar no
                     texto do título. Quem escolhe é a própria pessoa, nas configurações. */}
                 {(user.badges?.length ? user.badges : user.badge ? [user.badge] : []).map(

@@ -27,7 +27,7 @@ import { RichText } from "@/components/post/rich-text";
  * como fica; "HTML/CSS" é o editor livre, o mesmo das páginas do perfil. Nos dois casos o backend
  * guarda o que a pessoa escreveu (markdown como markdown, HTML sanitizado).
  */
-export function BlogPostDialog({ open, onOpenChange }: BlogPostDialogProps) {
+export function BlogPostDialog({ open, onOpenChange, post }: BlogPostDialogProps) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [title, setTitle] = useState("");
@@ -38,20 +38,23 @@ export function BlogPostDialog({ open, onOpenChange }: BlogPostDialogProps) {
 
   useEffect(() => {
     if (!open) return;
-    setTitle("");
-    setBody("");
-    setFormat("MARKDOWN");
+    setTitle(post?.title ?? "");
+    setBody(post?.body ?? "");
+    setFormat(post?.bodyFormat ?? "MARKDOWN");
     setPreview(false);
     setError(null);
-  }, [open]);
+  }, [open, post]);
 
   const publish = useMutation({
-    mutationFn: () => blogsApi.publish({ title, body, format }),
+    mutationFn: () =>
+      post
+        ? blogsApi.editPost(post.id, { title, body, format })
+        : blogsApi.publish({ title, body, format }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["blog"] });
       queryClient.invalidateQueries({ queryKey: ["blogs"] });
       queryClient.invalidateQueries({ queryKey: ["feed"] });
-      toast(texts.blog.editor.published);
+      toast(post ? texts.blog.editor.updated : texts.blog.editor.published);
       onOpenChange(false);
     },
     onError: (err) => setError(err instanceof Error ? err.message : texts.blog.editor.error),
@@ -63,7 +66,9 @@ export function BlogPostDialog({ open, onOpenChange }: BlogPostDialogProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="font-normal">{texts.blog.newPost}</DialogTitle>
+          <DialogTitle className="font-normal">
+            {post ? texts.blog.editor.editPost : texts.blog.newPost}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-3 pt-1">
@@ -149,7 +154,11 @@ export function BlogPostDialog({ open, onOpenChange }: BlogPostDialogProps) {
             </Button>
 
             <Button size="sm" onClick={() => publish.mutate()} disabled={!canPublish}>
-              {publish.isPending ? texts.common.publishing : texts.blog.editor.publish}
+              {publish.isPending
+                ? texts.common.publishing
+                : post
+                  ? texts.blog.editor.savePost
+                  : texts.blog.editor.publish}
             </Button>
           </div>
         </div>

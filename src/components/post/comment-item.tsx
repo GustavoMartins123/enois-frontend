@@ -21,6 +21,7 @@ import { formatTime } from "./format-time";
 import { LinkPreviews } from "./link-previews";
 import { MediaGrid } from "./media-grid";
 import { ReactionPicker } from "./reaction-picker";
+import { ReportDialog } from "./report-dialog";
 import { RichText } from "./rich-text";
 
 /** Um comentário (com responder, reagir e excluir). */
@@ -45,6 +46,7 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
   const [editDraft, setEditDraft] = useState(comment.content);
   const [saving, setSaving] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
+  const [reportOpen, setReportOpen] = useState(false);
 
   // A reação do leitor vem do servidor: sem isto o like "sumia" ao recarregar.
   useEffect(() => {
@@ -256,8 +258,24 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
               {texts.posts.comments.delete}
             </button>
           )}
+
+          {!isOwner && (
+            <button
+              onClick={() => setReportOpen(true)}
+              className="transition-colors hover:text-primary"
+            >
+              {texts.posts.report.action}
+            </button>
+          )}
         </div>
       </div>
+
+      <ReportDialog
+        targetId={comment.id}
+        targetType="COMMENT"
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+      />
     </div>
   );
 }

@@ -13,14 +13,28 @@ import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export const Route = createFileRoute("/")({
-  head: () => ({
-    meta: [
-      { title: texts.landing.seo.title },
-      { name: "description", content: texts.landing.seo.description },
-      { property: "og:title", content: texts.landing.seo.title },
-      { property: "og:description", content: texts.landing.seo.ogDescription },
-    ],
-  }),
+  head: () => {
+    // Miniatura da portinha: é o que aparece quando alguém compartilha enois.ia.br. A imagem é uma
+    // captura de verdade desta página (1200x630, a proporção que as plataformas recortam).
+    const shareImage = `${texts.siteUrl}/landing/og.png`;
+    return {
+      meta: [
+        { title: texts.landing.seo.title },
+        { name: "description", content: texts.landing.seo.description },
+        { property: "og:type", content: "website" },
+        { property: "og:site_name", content: "Énóis" },
+        { property: "og:title", content: texts.landing.seo.title },
+        { property: "og:description", content: texts.landing.seo.ogDescription },
+        { property: "og:url", content: texts.siteUrl },
+        { property: "og:image", content: shareImage },
+        { property: "og:image:width", content: "1200" },
+        { property: "og:image:height", content: "630" },
+        { property: "og:image:alt", content: texts.landing.seo.ogImageAlt },
+        { name: "twitter:card", content: "summary_large_image" },
+        { name: "twitter:image", content: shareImage },
+      ],
+    };
+  },
   component: Landing,
 });
 

@@ -64,6 +64,7 @@ export function EditProfileDialog({ profile, children }: Props) {
   const [goalsText, setGoalsText] = useState((profile.goals ?? []).join(", "));
   const [openToWork, setOpenToWork] = useState(profile.openToWork);
   const [isMentor, setIsMentor] = useState(profile.isMentor);
+  const [aka, setAka] = useState(profile.aka ?? "");
   const [badges, setBadges] = useState<string[]>(badgesOf(profile));
   const [usernameError, setUsernameError] = useState("");
   const [generalError, setGeneralError] = useState<string | null>(null);
@@ -150,6 +151,8 @@ export function EditProfileDialog({ profile, children }: Props) {
     }
     await updateProfile.mutateAsync({
       username: username !== profile.username ? username : undefined,
+      // String vazia limpa (o servidor só preserva quando o campo vem ausente/null).
+      aka: aka.trim(),
       name: name !== profile.name ? name : undefined,
       headline: headline || null,
       bio: bio || null,
@@ -258,6 +261,18 @@ export function EditProfileDialog({ profile, children }: Props) {
                   maxLength={80}
                   className="h-10 border-border-soft bg-surface-1"
                 />
+              </Field>
+
+              <Field label={texts.profile.edit.fields.aka}>
+                <Input
+                  value={aka}
+                  onChange={(e) => setAka(e.target.value)}
+                  placeholder={texts.profile.edit.placeholders.aka}
+                  maxLength={60}
+                  className="h-10 border-border-soft bg-surface-1"
+                />
+
+                <p className="text-xs font-normal text-text-subtle">{texts.profile.edit.akaHint}</p>
               </Field>
 
               <Field label={texts.profile.edit.fields.badges}>
@@ -688,9 +703,7 @@ function SubList<
       ) : (
         <>
           {items.length === 0 ? (
-            <p className="py-8 text-center text-sm font-normal text-text-subtle">
-              {emptyMessage}
-            </p>
+            <p className="py-8 text-center text-sm font-normal text-text-subtle">{emptyMessage}</p>
           ) : (
             items.map((item) => (
               <div key={item.id} className="rounded-xl border border-border-soft p-4">

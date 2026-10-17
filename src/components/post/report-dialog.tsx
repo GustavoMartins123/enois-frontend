@@ -2,24 +2,32 @@ import { useState } from "react";
 
 import { Link } from "@tanstack/react-router";
 
-import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { ReportReason } from "@/types/application/report/report-reason";
-import type { PostIdProps } from "@/types/components/post/post-id-props";
+import type { ReportTargetType } from "@/types/application/report/report-target-type";
+import type { ReportDialogProps } from "@/types/components/post/report-dialog-props";
 
 import { REPORT_REASONS, reportsApi } from "@/lib/api";
-
-import { useToast } from "@/components/ui/toast";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/toast";
 
-/** Denúncia de post. */
-export function ReportDialog({ postId }: PostIdProps) {
-  const open = usePostCardStore((state) => state.cards[postId]?.showReport ?? false);
-  const setShowReport = usePostCardStore((state) => state.setShowReport);
+/** Título por alvo: o mesmo formulário serve para post, comentário, perfil e vaga. */
+const REPORT_TITLES: Record<ReportTargetType, string> = {
+  POST: texts.posts.report.title,
+  COMMENT: texts.posts.report.titles.comment,
+  USER: texts.posts.report.titles.profile,
+  JOB: texts.jobs.report.title,
+};
+
+/**
+ * Denúncia de qualquer alvo. Quem abre manda no estado (`open`/`onOpenChange`) — o card do post
+ * guarda isso no store, porque o botão de denunciar fica longe do diálogo.
+ */
+export function ReportDialog({ targetId, targetType, open, onOpenChange }: ReportDialogProps) {
   const [reason, setReason] = useState<ReportReason>("SPAM");
   const [description, setDescription] = useState("");
   const [sending, setSending] = useState(false);
@@ -30,12 +38,12 @@ export function ReportDialog({ postId }: PostIdProps) {
     setSending(true);
     try {
       await reportsApi.create({
-        targetId: postId,
-        targetType: "POST",
+        targetId,
+        targetType,
         reason,
         description: description || undefined,
       });
-      setShowReport(postId, false);
+      onOpenChange(false);
       setDescription("");
       toast(texts.posts.report.success, "success");
     } catch {
@@ -46,10 +54,10 @@ export function ReportDialog({ postId }: PostIdProps) {
   };
 
   return (
-    <Dialog open={open} onOpenChange={(nextOpen) => setShowReport(postId, nextOpen)}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="font-normal">{texts.posts.report.title}</DialogTitle>
+          <DialogTitle className="font-normal">{REPORT_TITLES[targetType]}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 pt-2">

@@ -107,6 +107,8 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
   const setShowReactions = usePostCardStore((state) => state.setShowReactions);
   const setShowReport = usePostCardStore((state) => state.setShowReport);
 
+  // O estado de "denunciar" ja vem no card selecionado acima (sem seletor novo).
+  const showReport = card?.showReport ?? false;
   const postCounters = card?.postCounters ?? post.counters;
   const reactionStatus = card?.reactionStatus ?? post.currentUserReaction ?? null;
 
@@ -658,7 +660,12 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
       )}
 
       <ReactionsDialog postId={post.id} />
-      <ReportDialog postId={post.id} />
+      <ReportDialog
+        targetId={post.id}
+        targetType="POST"
+        open={showReport}
+        onOpenChange={(next) => setShowReport(post.id, next)}
+      />
 
       {showComments && <PostComments postId={post.id} />}
     </article>

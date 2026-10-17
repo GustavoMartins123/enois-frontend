@@ -529,6 +529,8 @@ export const texts = {
         "Rede social gratuita para profissionais e comunidades: sem anúncios, sem planos pagos e com um feed que termina quando o conteúdo acaba. Conversas, mentoria, eventos e vagas.",
       ogDescription:
         "Sem anúncio, sem paywall e sem esteira infinita. Uma rede social em construção com as pessoas, e aberta para quem quiser ajudar.",
+      ogImageAlt:
+        'Página inicial do Énóis com a frase "Uma rede social não precisa viver da sua atenção".',
     },
     /**
      * Números da comunidade. A janela vai escrita por extenso de propósito: é o número de quem
@@ -889,6 +891,10 @@ export const texts = {
     },
     report: {
       title: "Denunciar post",
+      titles: {
+        comment: "Denunciar comentário",
+        profile: "Denunciar perfil",
+      },
       reason: "Motivo",
       description: "Descrição (opcional)",
       action: "Denunciar",
@@ -931,7 +937,8 @@ export const texts = {
       gifSearchEmpty: (term: string) => `Nenhum GIF encontrado para “${term}”.`,
       gifSearchNothing: "Nenhum GIF para mostrar agora.",
       gifSearchError: "Não foi possível buscar GIFs agora. Tente de novo.",
-      gifUnavailable: "A busca de GIF está indisponível no momento — dá para colar um link abaixo.",
+      gifUnavailable:
+        "Sem provedor externo configurado — buscando nos GIFs da comunidade. Para a busca externa, configure REDE_GIFS_TENOR_KEY (grátis no Google Cloud) e colar link continua valendo.",
       gifPasteToggle: "Prefiro colar um link",
       gifBackToSearch: "Voltar para a busca",
       gifPoweredBy: (provider: string) => `GIFs por ${provider}`,
@@ -965,6 +972,8 @@ export const texts = {
     loadError: "Não foi possível carregar este perfil.",
     editProfile: "Editar perfil",
     message: "Mensagem",
+    /** Etiqueta ao lado do nome: "vulgo Java". */
+    aka: (value: string) => `vulgo ${value}`,
     waitingResponse: "Aguardando resposta",
     connected: "Conectado",
     connect: "Conectar",
@@ -1099,6 +1108,7 @@ export const texts = {
         name: "Nome",
         username: "Username (URL do perfil)",
         badges: "Emblemas",
+        aka: "Vulgo",
         headline: "Headline",
         bio: "Bio",
         company: "Empresa",
@@ -1111,12 +1121,14 @@ export const texts = {
       },
       placeholders: {
         username: "seu-username",
+        aka: "Ex.: Java",
         headline: "Cargo ou frase de destaque",
         availability: "Ex.: Disponível para freelas",
         portfolio: "https://...",
       },
       openToWork: "Aberto a oportunidades",
       mentorAvailable: "Mentor disponível",
+      akaHint: "Como você é conhecido por aqui (até 60 caracteres). Aparece ao lado do seu nome.",
       badgeUpload: "Enviar imagem",
       badgeRemove: "Remover emblema",
       badgesHint:
@@ -1193,9 +1205,11 @@ export const texts = {
       write: "Escrever",
       publish: "Publicar",
       published: "Post publicado. Quem segue seu blog foi avisado.",
+      updated: "Post atualizado.",
       editPost: "Editar post",
       savePost: "Salvar post",
       deletePost: "Excluir post",
+      deleteHint: "O post sai do seu blog e do feed de quem segue. Não dá para desfazer.",
       deleted: "Post excluído.",
       error: "Não foi possível salvar. Tente novamente.",
       emptyBody: "Escreva alguma coisa antes de publicar.",
