@@ -58,8 +58,25 @@ function palette(spec: PaletteSpec): ThemeCollectionTokens {
     "--text-strong": spec.text.strong,
     "--text-subtle": spec.text.subtle,
     "--text-date": spec.text.date,
-    // Estrutura
-    "--radius": spec.radius ?? "0.875rem",
+    // Estrutura. Os raios DERIVADOS (sm/md/xl/2xl/3xl) são calc(var(--radius) ± N) no CSS
+    // da marca — com raio 0 eles devolviam pixels (2xl = +8) e os cartões do Win95/Metro
+    // continuavam arredondados. O tema emite os seis coerentes com o raio dele.
+    ...(() => {
+      const parsed = /^([\d.]+)(px|rem)$/.exec(spec.radius ?? "0.875rem");
+      const base = parsed ? Number(parsed[1]) : 14;
+      const unit = parsed ? parsed[2] : "rem";
+      const radiusToken = (delta: number) =>
+        `${Math.max(0, base + delta)}${unit}`;
+      return {
+        "--radius": `${base}${unit}`,
+        "--radius-sm": radiusToken(-4),
+        "--radius-md": radiusToken(-2),
+        "--radius-lg": radiusToken(0),
+        "--radius-xl": radiusToken(4),
+        "--radius-2xl": radiusToken(8),
+        "--radius-3xl": radiusToken(12),
+      };
+    })(),
     ...(spec.fontSans ? { "--font-sans": spec.fontSans, "--font-display": spec.fontSans } : {}),
     ...spec.extra,
   } satisfies ThemeCollectionTokens;
@@ -88,11 +105,11 @@ function scopedCss(id: string, rules: string[]): string {
  * que faz o mesmo relevo acertar no claro e no escuro sem duplicar regra.
  */
 const BEVEL_RULE_CARD =
-  ".bg-surface-card, .bg-card, .bg-popover { box-shadow: inset -1px -1px var(--bevel-dark), inset 1px 1px var(--bevel-light), inset -2px -2px var(--bevel-dark-2), inset 2px 2px var(--bevel-light-2) }";
+  ".surface-card, .bg-surface-card, .bg-card, .bg-popover { box-shadow: inset -1px -1px var(--bevel-dark), inset 1px 1px var(--bevel-light), inset -2px -2px var(--bevel-dark-2), inset 2px 2px var(--bevel-light-2) }";
 const BEVEL_RULE_BUTTON =
   ".bg-primary { box-shadow: inset -1px -1px var(--bevel-dark), inset 1px 1px var(--bevel-light) }";
 const BEVEL_RULE_SOFT =
-  ".bg-surface-card, .bg-card, .bg-popover { box-shadow: inset -1px -1px var(--bevel-dark), inset 1px 1px var(--bevel-light) }";
+  ".surface-card, .bg-surface-card, .bg-card, .bg-popover { box-shadow: inset -1px -1px var(--bevel-dark), inset 1px 1px var(--bevel-light) }";
 
 /**
  * Coleção temática: identidades visuais completas, uma por entrada.
@@ -661,7 +678,7 @@ html:root.dark[data-theme="aero-glass"] .bg-surface-card, html:root.dark[data-th
       }),
     },
     css: scopedCss("y2k", [
-      ".bg-surface-card, .bg-card, .bg-popover { box-shadow: inset 0 1px 0 var(--bevel-light), inset 0 -1px 0 var(--bevel-dark) }",
+      ".surface-card, .bg-surface-card, .bg-card, .bg-popover { box-shadow: inset 0 1px 0 var(--bevel-light), inset 0 -1px 0 var(--bevel-dark) }",
     ]),
     preview: {
       background: "linear-gradient(180deg, #eef2fa, #e2e8f4)",
@@ -720,7 +737,8 @@ html:root.dark[data-theme="aero-glass"] .bg-surface-card, html:root.dark[data-th
       }),
     },
     css: scopedCss("neumorfismo", [
-      ".bg-surface-card, .bg-card, .bg-popover { border-color: transparent }",
+      ".surface-card, .bg-surface-card, .bg-card, .bg-popover { border-color: transparent }",
+      ".surface-card { box-shadow: 9px 9px 18px var(--neu-dark), -9px -9px 18px var(--neu-light) }",
       ".bg-muted { box-shadow: inset 4px 4px 8px var(--neu-dark), inset -4px -4px 8px var(--neu-light) }",
     ]),
     preview: {
