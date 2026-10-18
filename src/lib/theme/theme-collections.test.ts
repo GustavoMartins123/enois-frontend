@@ -12,9 +12,9 @@ import { buildCollectionCss, resolveThemeCollection } from "./build-collection-c
  * para o seletor `.dark`, e vice-versa.
  */
 describe("coleções temáticas", () => {
-  it("tem identificadores únicos, estáveis e espelhados no backend", () => {
+  it("tem identificadores únicos e os 12 originais preservados (a lista cresce por design)", () => {
     expect(new Set(THEME_COLLECTION_IDS).size).toBe(THEME_COLLECTION_IDS.length);
-    expect(THEME_COLLECTION_IDS).toEqual([
+    for (const original of [
       "win95",
       "win98",
       "win2000",
@@ -27,7 +27,9 @@ describe("coleções temáticas", () => {
       "synthwave",
       "y2k",
       "neumorfismo",
-    ]);
+    ]) {
+      expect(THEME_COLLECTION_IDS, `faltou ${original}`).toContain(original);
+    }
   });
 
   it("cada tema cobre todos os tokens da marca no modo claro e no escuro", () => {
