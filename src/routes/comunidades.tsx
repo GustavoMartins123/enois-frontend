@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
 
+import { TOPICS, TOPIC_LABELS } from "@/constants/community-topics";
 import { texts } from "@/texts";
 import type { Community } from "@/types/application/community/community";
 import type { CommunityTopic } from "@/types/application/community/community-topic";
@@ -31,28 +32,6 @@ import { useToast } from "@/components/ui/toast";
 import { AppContainer } from "@/components/app-container";
 import { CommunityCard } from "@/components/community-card";
 import { COMMUNITY_FAVORITES_KEY } from "@/components/community-favorite-button";
-
-const TOPICS = [
-  "Todas",
-  "TECNOLOGIA",
-  "ENGENHARIA",
-  "DESIGN",
-  "PRODUTO",
-  "LIDERANCA",
-  "CARREIRA",
-  "FREELANCE",
-] as const;
-
-const TOPIC_LABELS: Record<(typeof TOPICS)[number], string> = {
-  Todas: texts.communities.topics.all,
-  TECNOLOGIA: texts.communities.topics.TECNOLOGIA,
-  ENGENHARIA: texts.communities.topics.ENGENHARIA,
-  DESIGN: texts.communities.topics.DESIGN,
-  PRODUTO: texts.communities.topics.PRODUTO,
-  LIDERANCA: texts.communities.topics.LIDERANCA,
-  CARREIRA: texts.communities.topics.CARREIRA,
-  FREELANCE: texts.communities.topics.FREELANCE,
-};
 
 export const Route = createFileRoute("/comunidades")({
   beforeLoad: requireAuth,

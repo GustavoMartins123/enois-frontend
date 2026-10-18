@@ -3,10 +3,12 @@ import { type ChangeEvent, type FormEvent, useCallback, useEffect, useRef, useSt
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 
+import { TOPICS, TOPIC_LABELS } from "@/constants/community-topics";
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { ARTICLE_BODY_MAX_LENGTH, POST_TYPES } from "@/constants/post-types";
 import { PROFILE_HTML_MAX_LENGTH } from "@/constants/profile";
 import { texts } from "@/texts";
+import type { CommunityTopic } from "@/types/application/community/community-topic";
 import type { CreatePostInput } from "@/types/application/feed/create-post-input";
 import type { PostView } from "@/types/application/feed/post-view";
 import type { CommunityCropPurpose } from "@/types/routes/communities/community-crop-purpose";
@@ -735,6 +737,9 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
     community.bannerHtml ? "html" : "photo",
   );
   const [bannerHtml, setBannerHtml] = useState(community.bannerHtml ?? "");
+  // O tópico muda depois de criada: a comunidade cresce e muda de assunto, e antes não havia
+  // como corrigir — o valor ficava congelado no que foi escolhido no dia da criação.
+  const [topic, setTopic] = useState<CommunityTopic>(community.topic);
 
   const handleCropComplete = useCallback(
     async (blob: Blob) => {
@@ -770,6 +775,7 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
       communitiesApi.update(community.id, {
         name: name !== community.name ? name : undefined,
         description: description !== community.description ? description : undefined,
+        topic: topic !== community.topic ? topic : undefined,
         cover: cover || null,
         avatar: avatar || null,
         // Modo foto com HTML existente limpa o HTML (a foto volta a ser a capa); sem HTML, nao mexe.
@@ -787,6 +793,22 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
         <Label className="text-xs text-muted-foreground">{texts.communities.create.name}</Label>
 
         <Input value={name} onChange={(e) => setName(e.target.value)} />
+      </div>
+
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">{texts.communities.create.topic}</Label>
+
+        <select
+          value={topic}
+          onChange={(e) => setTopic(e.target.value as CommunityTopic)}
+          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm border-transparent bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {TOPICS.filter((t) => t !== "Todas").map((t) => (
+            <option key={t} value={t}>
+              {TOPIC_LABELS[t]}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="space-y-1.5">

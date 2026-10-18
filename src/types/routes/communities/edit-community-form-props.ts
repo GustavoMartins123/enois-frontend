@@ -1,6 +1,9 @@
 import type { Community } from "@/types/application/community/community";
 
 export type EditCommunityFormProps = {
-  community: Pick<Community, "id" | "name" | "description" | "cover" | "avatar" | "bannerHtml">;
+  community: Pick<
+    Community,
+    "id" | "name" | "description" | "topic" | "cover" | "avatar" | "bannerHtml"
+  >;
   onClose: () => void;
 };

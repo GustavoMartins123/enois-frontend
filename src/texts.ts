@@ -1399,6 +1399,7 @@ export const texts = {
       LIDERANCA: "Liderança",
       CARREIRA: "Carreira",
       FREELANCE: "Freelance",
+      OUTROS: "Outros",
     },
     members: (count: number) =>
       `${count.toLocaleString("pt-BR")} ${count === 1 ? "membro" : "membros"}`,
