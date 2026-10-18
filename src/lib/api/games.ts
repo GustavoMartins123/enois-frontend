@@ -119,6 +119,16 @@ export const gamesApi = {
   /** Impulsiona o PRÓPRIO jogo: 5 faíscas por 7 dias no topo do catálogo (G2). */
   boost: (gameId: string) =>
     api.post<{ id: string; boosted: boolean }>(`/games/${encodeURIComponent(gameId)}/boost`, {}),
+  /** Identidade DO JOGO: token opaco (15 min, uso único) + pseudônimo — nunca a sessão. */
+  identity: (gameId: string) =>
+    api.post<{ token: string; expiresAt: string; playerRef: string }>(`/games/${encodeURIComponent(gameId)}/identity`, {}),
+  /** Gasto de faísca confirmado do nosso lado (idempotente pelo requestId do jogo). */
+  spend: (gameId: string, amount: number, motivo: string, requestId: string) =>
+    api.post<{ status: string; requestId?: string }>(`/games/${encodeURIComponent(gameId)}/despesas`, {
+      amount,
+      motivo,
+      requestId,
+    }),
   /** G-share: publica a conquista no feed com a tag do jogo (o texto vem do jogo, o clique é humano). */
   compartilhar: (gameId: string, texto: string, mediaIds?: string[]) =>
     api.post<{ postId: string; status: string }>(`/games/${encodeURIComponent(gameId)}/compartilhar`, {

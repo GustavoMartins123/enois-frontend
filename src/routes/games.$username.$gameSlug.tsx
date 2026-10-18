@@ -7,6 +7,7 @@ import { texts } from "@/texts";
 import { Bookmark, ExternalLink, Gamepad2, Loader2, Maximize2, Share2, Sparkles } from "lucide-react";
 
 import { gamesApi, mediaApi } from "@/lib/api";
+import { formatFaisca } from "@/lib/faisca";
 import { useAuth } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
 
@@ -71,6 +72,22 @@ function GamePage() {
       queryClient.invalidateQueries({ queryKey: ["games", "slug", username, gameSlug] }),
   });
 
+  // A identidade do jogo é emitida ao começar a jogar (o iframe recebe por postMessage).
+  const emitirIdentidade = useMutation({
+    mutationFn: (gameId: string) => gamesApi.identity(gameId),
+    onSuccess: (dados) => setIdentidade(dados.token),
+  });
+
+  const confirmarGasto = useMutation({
+    mutationFn: () => gamesApi.spend(g.id, gasto!.amount, gasto!.motivo, gasto!.requestId),
+    onSuccess: () => {
+      setGasto(null);
+      toast("Gasto confirmado — as faíscas saíram da sua carteira.", "success");
+      void queryClient.invalidateQueries({ queryKey: ["carteira"] });
+    },
+    onError: () => toast("Não foi possível confirmar o gasto agora.", "error"),
+  });
+
   const favorite = useMutation({
     mutationFn: (vars: { gameId: string; favorited: boolean }) =>
       vars.favorited ? gamesApi.unfavorite(vars.gameId) : gamesApi.favorite(vars.gameId),
@@ -117,6 +134,8 @@ function GamePage() {
   }, [playing, failed]);
 
   const [compartilhamento, setCompartilhamento] = useState<{ texto: string; imagem: string | null } | null>(null);
+  const [identidade, setIdentidade] = useState<string | null>(null);
+  const [gasto, setGasto] = useState<{ amount: number; motivo: string; requestId: string } | null>(null);
 
   // G-share: o jogo (iframe de OUTRA origem, sem sessão nenhuma) pede o compartilhamento por
   // postMessage; a página valida a origem contra o endereço registrado do jogo, mostra a PRÉVIA
@@ -132,14 +151,39 @@ function GamePage() {
     }
     const listener = (e: MessageEvent) => {
       if (e.origin !== origemDoJogo) return;
-      const dado = e.data as { type?: string; texto?: unknown; imagem?: unknown };
+      const dado = e.data as {
+        type?: string;
+        texto?: unknown;
+        imagem?: unknown;
+        amount?: unknown;
+        motivo?: unknown;
+        requestId?: unknown;
+      };
+      // O jogo PEDE a identidade (ele nunca recebe a sessão): respondemos só com o token opaco.
+      if (dado?.type === "enois:identity") {
+        if (identidade && e.source) {
+          (e.source as Window).postMessage({ type: "enois:identity", token: identidade }, e.origin);
+        }
+        return;
+      }
+      // O jogo PEDE um gasto: NADA sai daqui sem a pessoa confirmar na plataforma.
+      if (dado?.type === "enois:spend" && typeof dado.amount === "number" && typeof dado.requestId === "string") {
+        if (dado.amount > 0 && Number.isSafeInteger(dado.amount)) {
+          setGasto({
+            amount: dado.amount,
+            motivo: typeof dado.motivo === "string" ? dado.motivo.slice(0, 200) : "",
+            requestId: dado.requestId.slice(0, 120),
+          });
+        }
+        return;
+      }
       if (dado?.type !== "enois:share" || typeof dado.texto !== "string") return;
       const imagem = typeof dado.imagem === "string" && dado.imagem.startsWith("data:image/") ? dado.imagem : null;
       setCompartilhamento({ texto: dado.texto.slice(0, 600), imagem });
     };
     window.addEventListener("message", listener);
     return () => window.removeEventListener("message", listener);
-  }, [playing, game.data?.url]);
+  }, [playing, game.data?.url, identidade]);
 
   if (game.isLoading) {
     return (
@@ -276,6 +320,7 @@ function GamePage() {
                   setPlaying(true);
                   setFailed(false);
                   play.mutate(g.id);
+                  emitirIdentidade.mutate(g.id);
                 }}
               >
                 <span>
@@ -358,6 +403,33 @@ function GamePage() {
             </div>
           </div>
         </div>
+
+        {gasto && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-sm rounded-2xl border border-border-soft bg-surface-card p-5">
+              <h3 className="text-base font-semibold">O jogo quer gastar faíscas</h3>
+
+              <p className="mt-2 text-sm text-text-strong">
+                <span className="font-semibold">{formatFaisca(gasto.amount)} faíscas</span>
+                {gasto.motivo ? ` — ${gasto.motivo}` : ""}
+              </p>
+
+              <p className="mt-1 text-xs text-text-subtle">
+                O gasto só acontece com a sua confirmação. O jogo nunca acessa a sua conta nem a
+                sua sessão — ele apenas pediu.
+              </p>
+
+              <div className="mt-4 flex justify-end gap-2">
+                <Button variant="ghost" className="rounded-full" onClick={() => setGasto(null)}>
+                  Recusar
+                </Button>
+                <Button className="rounded-full" disabled={confirmarGasto.isPending} onClick={() => confirmarGasto.mutate()}>
+                  {confirmarGasto.isPending ? "Confirmando…" : "Confirmar gasto"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {compartilhamento && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
