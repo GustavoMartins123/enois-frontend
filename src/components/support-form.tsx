@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { texts } from "@/texts";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { CheckCircle2, Loader2, Paperclip, X } from "lucide-react";
 
 import { ApiError, supportApi } from "@/lib/api";
 import { getCurrentUser } from "@/lib/current-user";
+import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,9 @@ export function SupportForm() {
   const [formError, setFormError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const imageUpload = useMediaUpload();
 
   const reset = () => {
     setSubject("");
@@ -34,6 +38,16 @@ export function SupportForm() {
     setErrors({});
     setFormError(null);
     setSent(false);
+    setImageUrl(null);
+  };
+
+  const attachImage = async (file: File) => {
+    try {
+      const result = await imageUpload.upload(file, "POST_IMAGE");
+      setImageUrl(result.cdnUrl);
+    } catch {
+      setFormError(texts.support.imageUploadError);
+    }
   };
 
   const submit = async () => {
@@ -51,6 +65,7 @@ export function SupportForm() {
         subject: subject.trim(),
         message: message.trim(),
         contactEmail: contactEmail.trim(),
+        imageUrl,
       });
       setSent(true);
     } catch (err) {
@@ -65,9 +80,7 @@ export function SupportForm() {
       <div className="py-8 text-center">
         <CheckCircle2 className="mx-auto h-10 w-10 text-primary" />
 
-        <h2 className="mt-3 text-lg font-semibold tracking-tight">
-          {texts.support.successTitle}
-        </h2>
+        <h2 className="mt-3 text-lg font-semibold tracking-tight">{texts.support.successTitle}</h2>
 
         <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
           {texts.support.successDescription}
@@ -109,6 +122,67 @@ export function SupportForm() {
         {errors.message && <p className="text-xs text-destructive">{errors.message}</p>}
       </div>
 
+      {/* Anexo de imagem: o print que explica o pedido — chega como anexo no e-mail do time. */}
+      <div className="space-y-1.5">
+        <Label htmlFor="support-image" className="flex items-center gap-1.5">
+          <Paperclip className="h-3.5 w-3.5" />
+
+          <>{texts.support.attachImage}</>
+        </Label>
+
+        <input
+          ref={fileRef}
+          id="support-image"
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          className="hidden"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) void attachImage(file);
+            event.target.value = "";
+          }}
+        />
+
+        {imageUrl ? (
+          <div className="relative inline-block">
+            <img
+              src={imageUrl}
+              alt=""
+              className="h-24 w-auto rounded-lg border border-border-soft object-cover"
+            />
+
+            <button
+              type="button"
+              aria-label={texts.support.removeImage}
+              onClick={() => setImageUrl(null)}
+              className="absolute -right-1.5 -top-1.5 grid h-6 w-6 place-items-center rounded-full bg-surface-card text-muted-foreground shadow-md transition hover:text-destructive"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            className="rounded-full"
+            disabled={imageUpload.status === "uploading"}
+            onClick={() => fileRef.current?.click()}
+          >
+            {imageUpload.status === "uploading" ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Paperclip className="h-4 w-4" />
+            )}
+
+            <>
+              {imageUpload.status === "uploading"
+                ? texts.common.sending
+                : texts.support.attachImageAction}
+            </>
+          </Button>
+        )}
+      </div>
+
       <div className="space-y-1.5">
         <Label htmlFor="support-email">{texts.support.contactEmail}</Label>
 
@@ -121,9 +195,7 @@ export function SupportForm() {
         />
 
         <p className="text-xs text-text-subtle">{texts.support.contactEmailHint}</p>
-        {errors.contactEmail && (
-          <p className="text-xs text-destructive">{errors.contactEmail}</p>
-        )}
+        {errors.contactEmail && <p className="text-xs text-destructive">{errors.contactEmail}</p>}
       </div>
 
       {formError && (

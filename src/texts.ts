@@ -1845,6 +1845,10 @@ export const texts = {
   support: {
     seoTitle: "Ajuda e suporte · Énóis",
     title: "Ajuda e suporte",
+    attachImage: "Anexar imagem",
+    attachImageAction: "Anexar imagem (opcional)",
+    removeImage: "Remover imagem",
+    imageUploadError: "Não foi possível enviar a imagem. Tente de novo.",
     subtitle: "Conte o que aconteceu e uma pessoa do nosso time responde por e-mail.",
     subject: "Assunto",
     subjectPlaceholder: "Ex.: não consigo entrar na minha conta",
