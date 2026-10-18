@@ -14,6 +14,7 @@ import { Link2, Link2Off, Loader2 } from "lucide-react";
 import { ApiError, authApi } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
+import { LinkedinImportSection } from "@/components/security/linkedin-import-section";
 import {
   Dialog,
   DialogContent,
@@ -153,6 +154,15 @@ export function LinkedAccountsDialog({ open, onOpenChange }: LinkedAccountsDialo
             {errorMessage}
           </p>
         )}
+
+        {/* A importação mora AQUI: conectou o LinkedIn, o próximo passo natural está na mesma tela.
+            O import lê o ARQUIVO DE DADOS do LinkedIn (o mesmo caminho sancionado — sem scraping e
+            sem depender da aprovação de parceiro): a pessoa escolhe o que quer trazer. */}
+        <div className="mt-3">
+          <LinkedinImportSection
+            linkedinConectado={linked.some((item) => item.provider === "LINKEDIN")}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );

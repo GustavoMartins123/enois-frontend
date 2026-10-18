@@ -482,6 +482,9 @@ export const texts = {
       error: "Não foi possível salvar. Tente novamente.",
     },
     linkedinImport: {
+      semEstrutura: (lista: string) =>
+        `Também vieram no arquivo, mas ainda não têm um lugar no perfil do Énóis: ${lista}.`,
+      connectFirst: "Conecte o LinkedIn para importar seus dados.",
       title: "Importar do LinkedIn",
       hint: "Baixe o arquivo de dados no LinkedIn (Configurações → Obter uma cópia dos seus dados) e suba aqui: o app lê experiências, formação, certificações e projetos para você revisar antes de salvar.",
       button: "Enviar arquivo do LinkedIn",

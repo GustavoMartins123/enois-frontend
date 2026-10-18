@@ -16,7 +16,7 @@ import { useToast } from "@/components/ui/toast";
  * a pessoa marca o que quer e o app cria experiencias, formação, certificações e
  * projetos pelos endpoints normais.
  */
-export function LinkedinImportSection() {
+export function LinkedinImportSection({ linkedinConectado = false }: { linkedinConectado?: boolean }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [preview, setPreview] = useState<LinkedinImportPreview | null>(null);
@@ -31,6 +31,8 @@ export function LinkedinImportSection() {
         ...Object.fromEntries(preview.education.map((_, i) => [`edu${i}`, true])),
         ...Object.fromEntries(preview.certifications.map((_, i) => [`cert${i}`, true])),
         ...Object.fromEntries(preview.projects.map((_, i) => [`proj${i}`, true])),
+        ...(preview.profile ? { perfil: true } : {}),
+        ...(preview.skills?.length ? { skills: true } : {}),
       });
     },
     onError: (error) => toast(error.message, "error"),
@@ -92,6 +94,19 @@ export function LinkedinImportSection() {
           }),
         );
       });
+      // Perfil: os campos do Profile.csv e as skills entram num update único (parcial).
+      if (preview.profile && selected.perfil) {
+        const campos: Record<string, unknown> = {};
+        if (preview.profile.headline) campos.headline = preview.profile.headline;
+        if (preview.profile.location) campos.location = preview.profile.location;
+        if (preview.profile.summary) campos.bio = preview.profile.summary.slice(0, 2_000);
+        if (Object.keys(campos).length > 0) {
+          saves.push(profileApi.update(campos));
+        }
+      }
+      if (preview.skills?.length && selected.skills) {
+        saves.push(profileApi.update({ skills: preview.skills.slice(0, 50) }));
+      }
       await Promise.all(saves);
       return saves.length;
     },
@@ -108,6 +123,20 @@ export function LinkedinImportSection() {
 
   const linhas = preview
     ? [
+        ...(preview.profile
+          ? [
+              {
+                key: "perfil",
+                label:
+                  `Perfil: ${preview.profile.headline ?? "—"}` +
+                  (preview.profile.location ? ` · ${preview.profile.location}` : "") +
+                  (preview.profile.summary ? " · com o seu resumo" : ""),
+              },
+            ]
+          : []),
+        ...(preview.skills?.length
+          ? [{ key: "skills", label: `Habilidades: ${preview.skills.slice(0, 8).join(", ")}${preview.skills.length > 8 ? "…" : ""}` }]
+          : []),
         ...preview.experiences.map((exp, i) => ({
           key: `exp${i}`,
           label: `${exp.title ?? ""} — ${exp.company ?? ""}`,
@@ -125,7 +154,9 @@ export function LinkedinImportSection() {
     <div className="space-y-2 border-t border-border-soft pt-3">
       <p className="text-xs font-medium text-text-strong">{texts.account.linkedinImport.title}</p>
 
-      <p className="text-xs font-normal text-text-subtle">{texts.account.linkedinImport.hint}</p>
+      <p className="text-xs font-normal text-text-subtle">
+        {linkedinConectado ? texts.account.linkedinImport.hint : texts.account.linkedinImport.connectFirst}
+      </p>
 
       {!preview && (
         <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border-soft px-3 py-1.5 text-xs text-text-subtle transition hover:text-text-strong">
@@ -150,6 +181,16 @@ export function LinkedinImportSection() {
           <p className="text-xs font-normal text-text-subtle">
             {texts.account.linkedinImport.found(preview.found)}
           </p>
+
+          {Object.keys(preview.semEstrutura ?? {}).length > 0 && (
+            <p className="text-[11px] leading-relaxed text-text-subtle">
+              {texts.account.linkedinImport.semEstrutura(
+                Object.entries(preview.semEstrutura)
+                  .map(([rotulo, n]) => `${n} ${rotulo.toLowerCase()}`)
+                  .join(", "),
+              )}
+            </p>
+          )}
 
           <div className="max-h-52 space-y-1 overflow-y-auto rounded-lg bg-surface-1 p-2">
             {linhas.map((linha) => (
