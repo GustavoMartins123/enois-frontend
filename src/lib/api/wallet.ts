@@ -5,6 +5,8 @@ export type WalletEntry = {
   amount: number;
   kind: string;
   message: string | null;
+  /** O identificador da transação (a contestação fala por ele). */
+  refId: string | null;
   createdAt: string;
 };
 
@@ -28,6 +30,9 @@ export type CoinQuote = {
 export const walletApi = {
   wallet: () => api.get<Wallet>("/carteira"),
   cotacao: (historico = 90) => api.get<CoinQuote>(`/coin/cotacao?historico=${historico}`),
+  /** A vítima contesta uma transferência (golpe) — vai para a fila de moderação. */
+  contestar: (refId: string, reason: string, description: string) =>
+    api.post<{ id: string; state: string }>(`/carteira/transacoes/${refId}/contestar`, { reason, description }),
   transfer: (toUsername: string, amount: number, message?: string) =>
     api.post<{ status: string; amount: number; toUsername: string }>("/carteira/transferencias", {
       toUsername,

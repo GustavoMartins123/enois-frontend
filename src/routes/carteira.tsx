@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { ArrowLeft, Send, ShoppingBag, Sparkles, TrendingUp, Zap } from "lucide-react";
+import { ArrowLeft, Send, ShieldAlert, ShoppingBag, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { useState } from "react";
 
 import { lojaApi, walletApi } from "@/lib/api";
@@ -16,6 +16,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
+import { UserPicker } from "@/components/user-picker";
 
 export const Route = createFileRoute("/carteira")({
   beforeLoad: requireAuth,
@@ -29,7 +30,7 @@ function Carteira() {
   const [payOpen, setPayOpen] = useState(false);
   const [form, setForm] = useState({ toUsername: "", amount: "", message: "" });
 
-  const { data: wallet, isLoading } = useQuery({
+  const { data: wallet, isLoading, isError, refetch } = useQuery({
     queryKey: ["carteira"],
     queryFn: () => walletApi.wallet(),
   });
@@ -44,6 +45,22 @@ function Carteira() {
       void queryClient.invalidateQueries({ queryKey: ["carteira"] });
     },
     onError: () => toast(texts.wallet.transferError, "error"),
+  });
+
+  const [contestar, setContestar] = useState<{ refId: string; motivo: string; descricao: string } | null>(null);
+  const contestarMutation = useMutation({
+    mutationFn: () => walletApi.contestar(contestar!.refId, contestar!.motivo, contestar!.descricao.trim()),
+    onSuccess: () => {
+      setContestar(null);
+      toast("Contestação enviada: a moderação vai analisar os dois lados.", "success");
+      void queryClient.invalidateQueries({ queryKey: ["carteira"] });
+    },
+    onError: (error: unknown) => {
+      const code = (error as { code?: string }).code;
+      toast(code === "CONTEST_WINDOW_CLOSED" ? "O prazo de contestação (7 dias) já fechou."
+        : code === "ALREADY_CONTESTED" ? "Esta transferência já foi contestada."
+        : "Não foi possível contestar agora.", "error");
+    },
   });
 
   const entries = wallet?.entries ?? [];
@@ -68,6 +85,13 @@ function Carteira() {
 
           {isLoading ? (
             <LoadingState />
+          ) : isError ? (
+            <div className="rounded-xl border border-border-soft p-4 text-sm text-text-subtle">
+              Não foi possível carregar a carteira agora.
+              <Button size="sm" variant="outline" className="ml-2 rounded-full" onClick={() => refetch()}>
+                Tentar de novo
+              </Button>
+            </div>
           ) : (
             <p className="text-4xl font-semibold tracking-tight text-text-strong">
               {formatFaisca(wallet?.balance ?? 0)}{" "}
@@ -102,9 +126,9 @@ function Carteira() {
                 <label className="block space-y-1">
                   <span className="text-xs text-text-subtle">{texts.wallet.toLabel}</span>
 
-                  <Input
+                  <UserPicker
                     value={form.toUsername}
-                    onChange={(event) => setForm({ ...form, toUsername: event.target.value })}
+                    onChange={(username) => setForm({ ...form, toUsername: username })}
                     placeholder={texts.wallet.toPlaceholder}
                   />
                 </label>
@@ -160,6 +184,60 @@ function Carteira() {
           </div>
         )}
 
+        {contestar && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-md rounded-2xl border border-border-soft bg-surface-card p-5">
+              <h3 className="flex items-center gap-2 text-base font-semibold">
+                <ShieldAlert className="h-4 w-4 text-destructive" />
+                Contestar transferência
+              </h3>
+
+              <p className="mt-2 text-xs leading-relaxed text-text-subtle">
+                Caiu num golpe? A contestação vai para a moderação, que analisa os dois lados:
+                se proceder, a transferência é <span className="font-semibold text-text-strong">revertida</span> e
+                o valor volta para você; se não proceder, quem contestou é penalizado.
+              </p>
+
+              <div className="mt-3 space-y-3 text-sm">
+                <label className="block space-y-1">
+                  <span className="text-xs text-text-subtle">Motivo</span>
+                  <select
+                    className="h-10 w-full rounded-lg border border-border-soft bg-transparent px-3 text-sm text-text-strong"
+                    value={contestar.motivo}
+                    onChange={(e) => setContestar({ ...contestar, motivo: e.target.value })}
+                  >
+                    <option value="golpe">Golpe / fraude</option>
+                    <option value="nao-entregue">Não recebi o combinado</option>
+                    <option value="conta-comprometida">Minha conta foi comprometida</option>
+                    <option value="outro">Outro</option>
+                  </select>
+                </label>
+                <label className="block space-y-1">
+                  <span className="text-xs text-text-subtle">O que aconteceu (mín. 20 caracteres)</span>
+                  <Textarea
+                    rows={4}
+                    value={contestar.descricao}
+                    onChange={(e) => setContestar({ ...contestar, descricao: e.target.value })}
+                  />
+                </label>
+              </div>
+
+              <div className="mt-4 flex justify-end gap-2">
+                <Button variant="ghost" className="rounded-full" onClick={() => setContestar(null)}>
+                  {texts.common.cancel}
+                </Button>
+                <Button
+                  className="rounded-full"
+                  disabled={contestarMutation.isPending || contestar.descricao.trim().length < 20}
+                  onClick={() => contestarMutation.mutate()}
+                >
+                  {contestarMutation.isPending ? texts.common.saving : "Enviar contestação"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <section className="space-y-3">
           <h2 className="text-sm font-semibold uppercase tracking-widest text-text-subtle">
             {texts.wallet.history}
@@ -190,6 +268,16 @@ function Carteira() {
                       {new Date(entry.createdAt).toLocaleString("pt-BR")}
                     </span>
                   </span>
+
+                  {entry.kind === "TRANSFER_OUT" && entry.refId && (
+                    <button
+                      type="button"
+                      className="shrink-0 rounded-full border border-border-soft px-2 py-1 text-xs text-text-subtle transition hover:border-destructive hover:text-destructive"
+                      onClick={() => setContestar({ refId: entry.refId!, motivo: "golpe", descricao: "" })}
+                    >
+                      Contestar
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>
