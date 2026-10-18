@@ -25,25 +25,42 @@ function mixSrgb(a: { r: number; g: number; b: number }, b: { r: number; g: numb
  * muted; tints (`*-soft`, gradiente suave) saem de `color-mix` com o destaque.
  * Um tema declarou tudo o que a marca tinge quando este mapa sai completo.
  */
+/**
+ * Cor SÓLIDA representativa de um valor de fundo: alguns temas declaram o fundo
+ * como GRADIENTE — toda a matemática de contraste precisa de uma cor; a primeira
+ * parada do gradiente representa o topo da página, que é onde o texto nasce.
+ */
+function fundoSolido(valor: string): string {
+  const hex = valor.match(/#[0-9a-fA-F]{6}\b/);
+  if (hex) return hex[0];
+  const rgb = valor.match(/rgba?\(\s*[\d.]+[,\s]+[\d.]+[,\s]+[\d.]+/);
+  if (rgb) {
+    const [r, g, b] = rgb[0].match(/[\d.]+/g) ?? ["255", "255", "255"];
+    const canal = (v: string) => Math.round(Number(v)).toString(16).padStart(2, "0");
+    return `#${canal(r)}${canal(g)}${canal(b)}`;
+  }
+  return "#ffffff";
+}
+
 export function palette(spec: PaletteSpec): ThemeCollectionTokens {
-  const { primary, onPrimary, surface, background, muted, border } = spec;
+  const { primary, onPrimary, surface, muted, border } = spec;
+  const bgSolido = fundoSolido(spec.background);
   // O soft é um WASH (fundo sutil): no contexto claro fica MAIS CLARO que o primário,
   // no escuro MAIS ESCURO. Alguns temas declararam um soft do lado oposto (tom
   // profundo no claro) — aí nenhum texto alcança 3:1 contra ele e o par
   // bg-primary-soft + text-primary fica ilegível; esses caem no mix padrão.
   const primaryRgb = hexToRgb(primary);
-  const backgroundRgb = hexToRgb(background);
+  const backgroundRgb = hexToRgb(bgSolido);
   const claro = relativeLuminance(backgroundRgb) > relativeLuminance(primaryRgb);
+  const mixPadrao = `color-mix(in srgb, ${primary} 14%, ${bgSolido})`;
   const mixSoft = mixSrgb(primaryRgb, backgroundRgb, 0.14);
-  const softRgb = spec.soft
-    ? hexToRgb(spec.soft)
-    : mixSoft;
+  const softRgb = spec.soft ? hexToRgb(fundoSolido(spec.soft)) : mixSoft;
   const softNoLadoCerto =
     claro ? relativeLuminance(softRgb) > relativeLuminance(primaryRgb)
           : relativeLuminance(softRgb) < relativeLuminance(primaryRgb);
-  const softFinal = softNoLadoCerto ? (spec.soft ?? `color-mix(in srgb, ${primary} 14%, ${background})`) : `color-mix(in srgb, ${primary} 14%, ${background})`;
+  const softFinal = softNoLadoCerto ? (spec.soft ?? mixPadrao) : mixPadrao;
   const softFinalRgb = softNoLadoCerto ? softRgb : mixSoft;
-  const secondary = spec.secondary ?? `color-mix(in oklab, ${primary} 45%, ${background})`;
+  const secondary = spec.secondary ?? `color-mix(in oklab, ${primary} 45%, ${bgSolido})`;
   // O texto que usa o destaque como COR (links, "Entrar") não pode sumir quando o
   // primário do tema é claro demais (amarelo, ciano) para o fundo — e também não
   // pode empatar com o soft nos combos bg-primary-soft + text-primary.
@@ -63,7 +80,7 @@ export function palette(spec: PaletteSpec): ThemeCollectionTokens {
     "--gradient-primary":
       spec.gradient ??
       `linear-gradient(135deg, ${primary}, color-mix(in oklab, ${primary} 70%, white))`,
-    "--gradient-soft": `linear-gradient(135deg, ${background}, color-mix(in srgb, ${primary} 8%, ${background}))`,
+    "--gradient-soft": `linear-gradient(135deg, ${bgSolido}, color-mix(in srgb, ${primary} 8%, ${bgSolido}))`,
     "--shadow-soft": spec.shadows?.soft ?? "none",
     "--shadow-card": spec.shadows?.card ?? "none",
     "--mentorship-button": primary,
@@ -72,7 +89,7 @@ export function palette(spec: PaletteSpec): ThemeCollectionTokens {
     "--background-user-project": softFinal,
     "--project-text": primaryText,
     // Superfícies
-    "--background": background,
+    "--background": spec.background,
     "--card": withAlpha(surface, spec.surfaceAlpha ?? 100),
     "--popover": withAlpha(surface, spec.surfaceAlpha ?? 100),
     "--muted": muted,
@@ -81,7 +98,7 @@ export function palette(spec: PaletteSpec): ThemeCollectionTokens {
     "--sidebar": withAlpha(surface, spec.surfaceAlpha ?? 100),
     "--sidebar-border": border,
     "--surface-card": withAlpha(surface, spec.surfaceAlpha ?? 100),
-    "--surface-1": background,
+    "--surface-1": spec.background,
     "--surface-2": muted,
     "--surface-3": surface,
     "--border-soft": border,
