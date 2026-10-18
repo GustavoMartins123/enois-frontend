@@ -1,3 +1,4 @@
+import type { LinkedinImportPreview } from "@/types/application/profile/linkedin-import-preview";
 import type { Profile } from "@/types/application/profile/profile";
 
 import { api } from "../api-client";
@@ -24,4 +25,24 @@ export const preferencesApi = {
 
   /** Até 5 emblemas (URLs do CDN); lista vazia limpa. */
   setBadges: (badges: string[]) => api.put<Profile>("/me/badges", { badges }),
+
+  /**
+   * Importar o ARQUIVO DE DADOS do LinkedIn (multipart): devolve o retrato parseado
+   * para revisão — nada é salvo automaticamente. Usa fetch direto (multipart).
+   */
+  importLinkedinArchive: async (file: File) => {
+    const { getSessionToken } = await import("../api-client");
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await fetch("/api/me/import/linkedin", {
+      method: "POST",
+      headers: { "X-Session-Token": getSessionToken() ?? "" },
+      body: formData,
+    });
+    if (!response.ok) {
+      const body = await response.json().catch(() => null);
+      throw new Error(body?.message ?? "Não foi possível ler o arquivo do LinkedIn.");
+    }
+    return (await response.json()) as LinkedinImportPreview;
+  },
 };
