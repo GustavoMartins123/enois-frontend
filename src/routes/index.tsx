@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 
+import { ApoieBanner } from "@/components/apoie-banner";
+
 export const Route = createFileRoute("/")({
   head: () => {
     // Miniatura da portinha: é o que aparece quando alguém compartilha enois.ia.br. A imagem é uma
@@ -110,6 +112,8 @@ function Landing() {
           </div>
         </div>
       </header>
+
+      <ApoieBanner />
 
       <main>
         <section aria-labelledby="hero-title" className="border-b border-border">
