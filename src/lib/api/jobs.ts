@@ -64,6 +64,10 @@ export const jobsApi = {
   receivedApplications: (jobId: string, limit = 50) =>
     api.get<JobApplication[]>(`/jobs/${jobId}/applications${buildQuery({ limit })}`),
 
+  /** As vagas salvas (internas e externas resolvidas, na ordem do save). */
+  saved: () => api.get<PageResponse<Job>>(`/jobs/saved`),
+  /** Os agregadores disponíveis (o filtro da aba externas). */
+  platforms: () => api.get<string[]>(`/jobs/platforms`),
   save: (jobId: string) => api.post<StatusResponse>(`/jobs/${jobId}/saves`),
 
   removeSave: (jobId: string) => api.delete<StatusResponse>(`/jobs/${jobId}/saves`),
