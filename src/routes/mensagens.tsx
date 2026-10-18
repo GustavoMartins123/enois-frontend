@@ -12,9 +12,11 @@ import { ArrowLeft, Search, Send } from "lucide-react";
 import { messagesApi, networkApi, profileApi } from "@/lib/api";
 import { getCurrentUserId } from "@/lib/current-user";
 import { requireAuth } from "@/lib/require-auth";
+import { insertSnippet } from "@/lib/rich-text/insert-snippet";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { EmojiPicker } from "@/components/ui/emoji-picker";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 
@@ -197,6 +199,22 @@ function Mensagens() {
     el.style.height = "auto";
     el.style.height = `${Math.min(el.scrollHeight, 128)}px`;
   }, [text]);
+
+  /** Emoji do seletor: entra na posição do cursor (o campo é o mesmo, então vale para o chat). */
+  const insertEmoji = (emoji: string) => {
+    const el = messageInputRef.current;
+    const start = el?.selectionStart ?? text.length;
+    const end = el?.selectionEnd ?? start;
+    const result = insertSnippet(text, start, end, emoji);
+    setText(result.value);
+
+    requestAnimationFrame(() => {
+      const node = messageInputRef.current;
+      if (!node) return;
+      node.focus();
+      node.setSelectionRange(result.selectionStart, result.selectionEnd);
+    });
+  };
 
   const activeMessages = activeConversation ? messages : [];
 
@@ -577,6 +595,11 @@ function Mensagens() {
                     rows={1}
                     placeholder={texts.messages.inputPlaceholder}
                     className="max-h-32 min-h-[40px] w-full resize-none rounded-2xl bg-muted px-4 py-2.5 text-sm outline-none"
+                  />
+                  <EmojiPicker
+                    onPick={insertEmoji}
+                    buttonTitle={texts.posts.formatting.emoji}
+                    buttonClassName="grid h-10 w-10 shrink-0 place-items-center rounded-full text-text-subtle transition hover:bg-muted hover:text-foreground"
                   />
 
                   <button

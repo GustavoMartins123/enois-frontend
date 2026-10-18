@@ -15,6 +15,8 @@ import {
 
 import { cn } from "@/lib/utils";
 
+import { EmojiPicker } from "@/components/ui/emoji-picker";
+
 const ACTIONS: { format: RichTextFormat; label: string; icon: typeof Bold }[] = [
   { format: "bold", label: texts.posts.formatting.bold, icon: Bold },
   { format: "italic", label: texts.posts.formatting.italic, icon: Italic },
@@ -33,7 +35,7 @@ const ACTIONS: { format: RichTextFormat; label: string; icon: typeof Bold }[] = 
  * `onMouseDown` com `preventDefault` mantem o foco (e a selecao) no textarea: sem isso o clique
  * no botao levaria o cursor embora e a formatacao cairia no lugar errado — ou em nada.
  */
-export function RichTextToolbar({ onFormat, label, className }: RichTextToolbarProps) {
+export function RichTextToolbar({ onFormat, onEmoji, label, className }: RichTextToolbarProps) {
   return (
     <div role="toolbar" aria-label={label} className={cn("flex flex-wrap gap-0.5", className)}>
       {ACTIONS.map(({ format, label: actionLabel, icon: Icon }) => (
@@ -49,6 +51,16 @@ export function RichTextToolbar({ onFormat, label, className }: RichTextToolbarP
           <Icon className="h-3.5 w-3.5" />
         </button>
       ))}
+
+      {/* O emoji entra por último na barra: é o único que não é formatação, e fica longe dos
+          botões de marcação para não ser clicado por engano. */}
+      {onEmoji && (
+        <EmojiPicker
+          onPick={onEmoji}
+          buttonTitle={texts.posts.formatting.emoji}
+          buttonClassName="grid h-7 w-7 place-items-center rounded-lg text-text-subtle transition hover:bg-surface-2 hover:text-primary"
+        />
+      )}
     </div>
   );
 }

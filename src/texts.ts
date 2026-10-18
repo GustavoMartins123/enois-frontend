@@ -841,6 +841,9 @@ export const texts = {
       spoilerShow: "Mostrar spoiler",
       spoilerHide: "Esconder spoiler",
       spoilerHint: "Spoiler — toque para exibir",
+      emoji: "Emoji",
+      emojiSearch: "Buscar emoji",
+      emojiEmpty: "Nenhum emoji com esse nome.",
     },
     page: {
       frameTitle: "Página publicada no post",

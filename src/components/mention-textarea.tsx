@@ -9,6 +9,7 @@ import type { RichTextFormat } from "@/types/lib/rich-text/rich-text-format";
 
 import { usersApi } from "@/lib/api";
 import { applyFormat } from "@/lib/rich-text/apply-format";
+import { insertSnippet } from "@/lib/rich-text/insert-snippet";
 
 import { CharCounter } from "@/components/ui/char-counter";
 
@@ -137,6 +138,28 @@ export function MentionTextarea({
     });
   };
 
+  /**
+   * Emoji do seletor: entra na posição do cursor, substituindo o que estiver selecionado (o mesmo
+   * contrato das formatações). O campo não perde o foco ao escolher, então a posição é a que a
+   * pessoa estava vendo. Passar do limite não insere — o contador de caracteres já avisa.
+   */
+  const insertEmoji = (emoji: string) => {
+    const element = textareaRef.current;
+    const start = element?.selectionStart ?? value.length;
+    const end = element?.selectionEnd ?? start;
+    const result = insertSnippet(value, start, end, emoji);
+    if (maxLength !== undefined && result.value.length > maxLength) return;
+
+    onChange(result.value, mentionedIds);
+
+    requestAnimationFrame(() => {
+      const node = textareaRef.current;
+      if (!node) return;
+      node.focus();
+      node.setSelectionRange(result.selectionStart, result.selectionEnd);
+    });
+  };
+
   const handleKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (toolbar && (e.ctrlKey || e.metaKey) && !e.altKey) {
       const shortcut = SHORTCUTS[e.key.toLowerCase()];
@@ -175,6 +198,7 @@ export function MentionTextarea({
         <RichTextToolbar
           label={texts.posts.formatting.toolbar}
           onFormat={formatSelection}
+          onEmoji={insertEmoji}
           className="mb-1.5"
         />
       )}
