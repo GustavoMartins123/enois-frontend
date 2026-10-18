@@ -5,6 +5,7 @@ import { Link } from "@tanstack/react-router";
 import type { RichTextProps } from "@/types/components/post/rich-text-props";
 import type { RichNode } from "@/types/lib/rich-text/rich-node";
 
+import { directMediaKind, gifMediaUrl } from "@/lib/shared-links";
 import { isOwnMediaUrl } from "@/lib/api/media";
 import { parseRichText } from "@/lib/rich-text/parse";
 import { cn } from "@/lib/utils";
@@ -186,6 +187,9 @@ function renderInline(nodes: RichNode[], linkClass: string): ReactNode {
         return <SpoilerText key={index} text={node.text ?? ""} />;
 
       case "link":
+        if (isMidiaDireta(node.href)) {
+          return renderMidia(node.href!, index);
+        }
         return (
           <a
             key={index}
@@ -199,6 +203,9 @@ function renderInline(nodes: RichNode[], linkClass: string): ReactNode {
         );
 
       case "image":
+        if (isMidiaDireta(node.href)) {
+          return renderMidia(node.href!, index);
+        }
         return isOwnMediaUrl(node.href ?? "") ? (
           <img
             key={index}
@@ -231,3 +238,21 @@ const HEADING_SIZE: Record<number, string> = {
   2: "text-base",
   3: "text-base",
 };
+
+/** O endereço é MÍDIA direta (GIF de Giphy/Tenor, imagem/vídeo/áudio por extensão)? */
+function isMidiaDireta(href?: string | null): boolean {
+  if (!href) return false;
+  return directMediaKind(href) !== null || gifMediaUrl(href) !== null;
+}
+
+/** Renderiza a mídia inline: o link cru sai do texto e a mídia roda no player (pedido da Mel). */
+function renderMidia(href: string, key: React.Key): ReactNode {
+  const tipo = directMediaKind(href);
+  if (tipo === "video") {
+    return <video key={key} src={href} controls playsInline className="my-1 max-h-96 w-full rounded-xl border border-border-soft" />;
+  }
+  if (tipo === "audio") {
+    return <audio key={key} src={href} controls className="my-1 w-full max-w-md" />;
+  }
+  return <img key={key} src={gifMediaUrl(href) ?? href} alt="" loading="lazy" referrerPolicy="no-referrer" className="my-1 max-h-96 rounded-xl border border-border-soft" />;
+}
