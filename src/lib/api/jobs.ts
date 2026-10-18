@@ -14,6 +14,8 @@ export type CompanyDirectoryEntry = {
   name: string;
   logo: string;
   openJobs: number;
+  /** enois (página real) ou externa (agregador). */
+  origem?: "enois" | "externa" | null;
 };
 
 export const jobsApi = {
