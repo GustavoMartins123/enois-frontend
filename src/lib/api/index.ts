@@ -20,6 +20,7 @@ export { sanctionsApi } from "./sanctions";
 export { sealsApi } from "./seals";
 export { companiesApi } from "./companies";
 export { gamesApi } from "./games";
+export { marketplaceApi } from "./marketplace";
 export { themesApi } from "./themes";
 export { walletApi } from "./wallet";
 export { rankingApi } from "./ranking";

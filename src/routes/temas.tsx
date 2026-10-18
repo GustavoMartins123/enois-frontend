@@ -76,7 +76,11 @@ function Galeria() {
 
           <p className="text-sm text-muted-foreground">
             Temas criados pela própria rede, feitos só de cores — sem CSS livre, sem imagens.
-            Instalar aplica na hora e você volta ao seu tema quando quiser.
+            Instalar aplica na hora e você volta ao seu tema quando quiser. Quer vender os seus?{" "}
+            <Link to="/marketplace" className="text-primary-text hover:underline">
+              Marketplace
+            </Link>
+            .
           </p>
         </div>
 
