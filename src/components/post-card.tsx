@@ -494,13 +494,15 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
             <>{totalComments}</>
           </button>
 
+          {/* Só o ícone: com o rótulo, esta era a única ação que empurrava a fileira para uma
+              segunda linha. O nome continua no title/aria-label, para quem usa leitor de tela. */}
           <button
             onClick={handleShare}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground"
+            title={texts.posts.share}
+            aria-label={texts.posts.share}
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
           >
             <Share2 className="h-4 w-4" />
-
-            <>{texts.posts.share}</>
           </button>
 
           <Popover>
