@@ -43,6 +43,9 @@ export type JobCandidate = {
   experiencesCount: number;
   reputation: number;
   identityVerified: boolean;
+  /** Currículo que a pessoa enviou junto com a candidatura (retrato do momento do envio). */
+  resumeUrl?: string | null;
+  resumeName?: string | null;
 };
 
 export type JobApplicationAnswer = {

@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   CircleSlash,
   ExternalLink,
+  FileText,
   Loader2,
   MapPin,
   Pencil,
@@ -332,6 +333,21 @@ function JobDetail() {
                                 application.candidate?.reputation ?? 0,
                               )}
                             </p>
+
+                            {/* Currículo do momento da candidatura: é o primeiro documento que
+                                quem faz a triagem procura, então fica no cartão. */}
+                            {application.candidate?.resumeUrl && (
+                              <a
+                                href={resolveCdnUrl(application.candidate.resumeUrl)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-0.5 inline-flex items-center gap-1 text-xs font-normal text-primary hover:underline"
+                              >
+                                <FileText className="h-3.5 w-3.5" />
+
+                                <>{texts.jobs.applications.resume}</>
+                              </a>
+                            )}
                           </div>
 
                           <span

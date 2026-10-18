@@ -1578,6 +1578,7 @@ export const texts = {
       feedbackRequired: "Escreva o motivo — ele vai para o candidato.",
       feedbackSend: "Enviar retorno",
       feedbackFrom: "Retorno da empresa",
+      resume: "Currículo",
       backToReview: "Voltar para análise",
       statusUpdated: "Estado atualizado.",
       statusError: "Não foi possível atualizar o estado. Tente novamente.",
