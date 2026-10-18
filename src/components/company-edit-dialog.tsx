@@ -43,6 +43,7 @@ export function CompanyEditDialog({
   const coverUpload = useMediaUpload();
 
   const [form, setForm] = useState({
+    name: company.name ?? "",
     description: company.description ?? "",
     sector: company.sector ?? "",
     size: company.size ?? "",
@@ -55,6 +56,7 @@ export function CompanyEditDialog({
   const salvar = useMutation({
     mutationFn: () =>
       companiesApi.update(company.id, {
+        name: form.name,
         description: form.description,
         sector: form.sector,
         size: form.size,
@@ -93,33 +95,53 @@ export function CompanyEditDialog({
         </DialogHeader>
 
         <div className="space-y-3">
+          <label className="block space-y-1 text-sm">
+            <span className="text-xs text-text-subtle">{texts.empresa.editPanel.nameLabel}</span>
+            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          </label>
+
           <div className="grid grid-cols-2 gap-2">
             {(["logo", "cover"] as const).map((campo) => (
-              <label
-                key={campo}
-                className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-border-soft p-3 text-xs text-text-subtle transition hover:border-primary hover:text-primary"
-              >
-                {form[campo] ? (
-                  <img
-                    src={form[campo]}
-                    alt=""
-                    className={campo === "logo" ? "h-16 w-16 rounded-xl object-cover" : "h-16 w-full rounded-lg object-cover"}
+              <div key={campo} className="flex flex-col items-center gap-1">
+                <label
+                  className="relative flex cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-border-soft p-3 text-xs text-text-subtle transition hover:border-primary hover:text-primary"
+                >
+                  {form[campo] ? (
+                    <img
+                      src={form[campo]}
+                      alt=""
+                      className={campo === "logo" ? "h-16 w-16 rounded-xl object-cover" : "h-16 w-full rounded-lg object-cover"}
+                    />
+                  ) : (
+                    <ImagePlus className="h-5 w-5" />
+                  )}
+                  <span>{campo === "logo" ? texts.empresa.editPanel.logo : texts.empresa.editPanel.cover}</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) void enviarImagem(file, campo);
+                      e.target.value = "";
+                    }}
                   />
-                ) : (
-                  <ImagePlus className="h-5 w-5" />
-                )}
-                <span>{campo === "logo" ? texts.empresa.editPanel.logo : texts.empresa.editPanel.cover}</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) void enviarImagem(file, campo);
-                    e.target.value = "";
-                  }}
-                />
-              </label>
+                  {form[campo] && (
+                    <button
+                      type="button"
+                      aria-label={`Remover ${campo === "logo" ? "logo" : "capa"}`}
+                      className="absolute right-1 top-1 grid h-6 w-6 place-items-center rounded-full bg-destructive/90 text-white transition hover:bg-destructive"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setForm((atual) => ({ ...atual, [campo]: "" }));
+                      }}
+                    >
+                      ×
+                    </button>
+                  )}
+                </label>
+              </div>
             ))}
           </div>
 

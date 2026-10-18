@@ -14,12 +14,14 @@ export const companiesApi = {
   update: (
     companyId: string,
     data: {
+      name?: string;
       description?: string;
       sector?: string;
       size?: string;
       location?: string;
       website?: string;
       logo?: string;
+      /** "" remove a capa/imagem (o backend trata vazio como remoção). */
       cover?: string;
     },
   ) => api.patch<CompanySummary>(`/empresas/${companyId}`, data),

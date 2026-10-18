@@ -2260,7 +2260,8 @@ export const texts = {
   empresa: {
     editPanel: {
       title: "Editar empresa",
-      description: "Nome é fixo; descrição, setor, tamanho, local, site, logo e capa são seus.",
+      description: "Nome, descrição, setor, tamanho, local, site, logo e capa são seus.",
+      nameLabel: "Nome da empresa",
       descriptionLabel: "Descrição",
       sector: "Setor",
       size: "Tamanho",
