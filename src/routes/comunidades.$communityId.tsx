@@ -280,11 +280,13 @@ function CommunityDetail() {
         <div className="surface-card overflow-hidden">
           {live.bannerHtml ? (
             // Capa em HTML/CSS: mesmo espaço da foto, quadro isolado sem script (igual à do perfil).
+            // `clip` é o delimitador da faixa — ver o comentário na capa do perfil.
             <SandboxedHtmlFrame
               html={live.bannerHtml}
               title={texts.communities.detail.bannerHtml.frameTitle}
               className="h-48 w-full rounded-none border-0 shadow-none"
               innerPadding={false}
+              clip
             />
           ) : live.cover ? (
             <img src={resolveCdnUrl(live.cover)} alt="" className="h-48 w-full object-cover" />

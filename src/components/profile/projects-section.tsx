@@ -66,6 +66,8 @@ export function ProfileProjectsSection({ username, isOwner }: ProjectsSectionPro
                 title={texts.profile.projects.htmlFrame}
                 className="h-[460px] w-full rounded-lg border border-border-soft"
                 innerPadding={false}
+                // Teto do quadro que cresce: HTML de autor não escolhe o tamanho da página.
+                maxHeight={1200}
               />
             ) : (
               <article key={project.id} className="rounded-xl border border-border-soft p-4">

@@ -300,11 +300,14 @@ function Profile() {
           <div className="group relative">
             {user.bannerHtml ? (
               // Capa em HTML/CSS: mesmo espaço da foto (mesmas classes), sem moldura própria — quem
-              // recorta é o card, e o quadro já vem com sandbox sem scripts.
+              // recorta é o card, e o quadro já vem com sandbox sem scripts. `clip` é o delimitador:
+              // a capa é uma FAIXA da altura que o layout diz, e o HTML do autor é cortado nela —
+              // sem ele, um `height: 100vh` na capa realimentava a medida e crescia até tomar a tela.
               <SandboxedHtmlFrame
                 html={user.bannerHtml}
                 title={texts.profile.bannerHtml.frameTitle}
                 className="h-40 w-full rounded-none border-0 shadow-none sm:h-52"
+                clip
               />
             ) : user.banner ? (
               <img
@@ -585,13 +588,15 @@ function Profile() {
                 </h2>
 
                 {/* Sem borda, sem cantos e sem folga interna do quadro: o card dá o acabamento e o
-                    HTML do autor usa todo o resto do espaço. A altura é fixa porque medir o conteúdo
-                    de dentro exigiria script no quadro — e não há script nele. */}
+                    HTML do autor usa todo o resto do espaço. O quadro cresce com o conteúdo, mas
+                    com TETO: uma bio gigante — ou um `100vh` colado por engano — para de crescer
+                    aqui em vez de empurrar a página inteira para baixo. */}
                 <SandboxedHtmlFrame
                   html={user.bioHtml}
                   title={texts.profile.bioHtml.frameTitle}
                   className="h-[520px] w-full rounded-none border-0 bg-transparent shadow-none"
                   innerPadding={false}
+                  maxHeight={1200}
                 />
               </section>
             ) : (

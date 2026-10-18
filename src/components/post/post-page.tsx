@@ -54,6 +54,9 @@ export function PostPage({ postId, html }: PostPageProps) {
             title={texts.posts.page.frameTitle}
             className="h-[520px] w-full"
             innerPadding={false}
+            // Teto do quadro que cresce: uma página pode ser longa, mas não pode ser infinita —
+            // era por aqui que um `100vh` no HTML do autor virava faixa sem fim no feed.
+            maxHeight={2400}
           />
         )}
       </div>
