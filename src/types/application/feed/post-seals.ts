@@ -3,6 +3,6 @@ import type { PostSealCount } from "./post-seal-count";
 export type PostSeals = {
   /** Contagens do maior para o menor; vazio = ninguém marcou nada. */
   seals: PostSealCount[];
-  /** O selo de quem está lendo, quando há um. */
-  mySeal: string | null;
+  /** Os selos de quem está lendo (pode haver mais de um), para acender todos no seletor. */
+  mySeals: string[];
 };

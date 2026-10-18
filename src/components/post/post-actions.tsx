@@ -16,6 +16,7 @@ import { useToast } from "@/components/ui/toast";
 import { ReactionPicker } from "./reaction-picker";
 import { ReactionsDialog } from "./reactions-dialog";
 import { ReportDialog } from "./report-dialog";
+import { SealsDialog } from "./seals-dialog";
 
 /**
  * A fileira de ações de um post: reagir, ver quem reagiu, comentar, compartilhar, salvar e
@@ -199,6 +200,7 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
       </footer>
 
       <ReactionsDialog postId={post.id} />
+      <SealsDialog postId={post.id} />
       <ReportDialog
         targetId={post.id}
         targetType="POST"

@@ -871,9 +871,14 @@ export const texts = {
     seals: {
       action: "Adicionar selo",
       title: "Sinalizar com um selo",
-      hint: "Um selo por pessoa por post. Clicar de novo no mesmo tira; escolher outro troca.",
-      remove: "Tirar meu selo",
+      hint: "Quantos selos quiser: cada um conta sozinho. Clicar de novo no mesmo tira.",
+      remove: "Tirar meus selos",
       error: "Nao foi possivel salvar o selo. Tente novamente.",
+      /** O selo no topo do post abre a lista de quem marcou — como a contagem de reações abre a dela. */
+      seeWho: "Ver quem marcou",
+      peopleTitle: "Selos do post",
+      peopleEmpty: "Ninguem marcou este post ainda.",
+      peopleTotal: (count: number) => (count === 1 ? "1 selo" : `${count} selos`),
       items: {
         important: "Importante",
         interesting: "Interessante",

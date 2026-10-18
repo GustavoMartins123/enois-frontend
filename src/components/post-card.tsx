@@ -56,15 +56,17 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
   const { data: seals } = useQuery({
     queryKey: ["seals", post.id],
     queryFn: () =>
-      sealsApi.forPosts([post.id]).then((all) => all[post.id] ?? { seals: [], mySeal: null }),
+      sealsApi.forPosts([post.id]).then((all) => all[post.id] ?? { seals: [], mySeals: [] }),
     staleTime: 60_000,
   });
+  // Cada selo alterna sozinho: o backend tira quando já existe, então não há "troca" nem remoção
+  // dos outros (a pessoa pode ter quantos quiser neste post).
   const toggleSeal = useMutation({
-    mutationFn: (seal: string) =>
-      seals?.mySeal === seal ? sealsApi.remove(post.id) : sealsApi.toggle(post.id, seal),
+    mutationFn: (seal: string) => sealsApi.toggle(post.id, seal),
     onSuccess: (result) => {
       queryClient.setQueryData(["seals", post.id], result);
       queryClient.invalidateQueries({ queryKey: ["seals", post.id] });
+      queryClient.invalidateQueries({ queryKey: ["seals-people", post.id] });
     },
     onError: () => toast(texts.posts.seals.error, "error"),
   });
@@ -87,6 +89,7 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
   // a mesma peça que o post do blog usa. Aqui fica só o card, que é quem inicializa o estado dele.
   const initializePostCard = usePostCardStore((state) => state.initializePostCard);
   const disposePostCard = usePostCardStore((state) => state.disposePostCard);
+  const setShowSeals = usePostCardStore((state) => state.setShowSeals);
 
   useEffect(() => {
     initializePostCard(post);
@@ -246,28 +249,33 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
         </div>
       </header>
 
-      {/* Selos da comunidade: ficam no topo, acima do conteudo — e o que a pessoa marcou fica em
-          destaque (o "meu selo" com anel). */}
+      {/* Selos da comunidade: ficam no topo, acima do conteudo — e os que a pessoa marcou ficam em
+          destaque (anel). Cada selo é um botão: abre a lista de quem marcou, como a contagem de
+          reações abre a de quem reagiu. A contagem aparece sempre (é a resposta de "quantos"). */}
       {seals && seals.seals.length > 0 && (
         <div className="mt-3 flex flex-wrap items-center gap-1.5">
           {seals.seals.map((item) => {
             const seal = postSeal(item.seal);
             if (!seal) return null;
             return (
-              <span
+              <button
                 key={item.seal}
+                type="button"
+                onClick={() => setShowSeals(post.id, true)}
+                title={`${seal.label} · ${texts.posts.seals.seeWho}`}
+                aria-label={`${seal.label} · ${texts.posts.seals.seeWho}`}
                 className={cn(
-                  "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium",
+                  "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium transition hover:border-primary/50",
                   seal.className,
-                  seals.mySeal === item.seal && "ring-1 ring-primary/60",
+                  (seals.mySeals ?? []).includes(item.seal) && "ring-1 ring-primary/60",
                 )}
               >
                 <seal.icon className="h-3 w-3" aria-hidden />
 
                 <>{seal.label}</>
 
-                {item.count > 1 && <span className="tabular-nums opacity-70">×{item.count}</span>}
-              </span>
+                <span className="tabular-nums opacity-70">{item.count}</span>
+              </button>
             );
           })}
         </div>
@@ -381,40 +389,44 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
             </p>
 
             <div className="mt-2 grid grid-cols-3 gap-1.5">
-              {POST_SEALS.map((seal) => (
-                <button
-                  key={seal.id}
-                  type="button"
-                  onClick={() => toggleSeal.mutate(seal.id)}
-                  disabled={toggleSeal.isPending}
-                  title={seal.label}
-                  aria-label={seal.label}
-                  aria-pressed={seals?.mySeal === seal.id}
-                  className={cn(
-                    "flex flex-col items-center gap-1 rounded-lg border px-1 py-2 text-[10px] font-medium transition hover:border-primary/50",
-                    seals?.mySeal === seal.id
-                      ? "border-primary bg-primary-soft text-primary"
-                      : "border-border-soft text-text-subtle",
-                  )}
-                >
-                  <seal.icon className="h-4 w-4" aria-hidden />
+              {POST_SEALS.map((seal) => {
+                const mine = (seals?.mySeals ?? []).includes(seal.id);
+                return (
+                  <button
+                    key={seal.id}
+                    type="button"
+                    onClick={() => toggleSeal.mutate(seal.id)}
+                    disabled={toggleSeal.isPending}
+                    title={seal.label}
+                    aria-label={seal.label}
+                    aria-pressed={mine}
+                    className={cn(
+                      "flex flex-col items-center gap-1 rounded-lg border px-1 py-2 text-[10px] font-medium transition hover:border-primary/50",
+                      mine
+                        ? "border-primary bg-primary-soft text-primary"
+                        : "border-border-soft text-text-subtle",
+                    )}
+                  >
+                    <seal.icon className="h-4 w-4" aria-hidden />
 
-                  <span className="text-center leading-tight">{seal.label}</span>
-                </button>
-              ))}
+                    <span className="text-center leading-tight">{seal.label}</span>
+                  </button>
+                );
+              })}
             </div>
 
             <p className="mt-2 text-[11px] leading-snug text-text-subtle">
               {texts.posts.seals.hint}
             </p>
 
-            {seals?.mySeal && (
+            {(seals?.mySeals ?? []).length > 0 && (
               <button
                 type="button"
                 onClick={() =>
-                  sealsApi
-                    .remove(post.id)
-                    .then(() => queryClient.invalidateQueries({ queryKey: ["seals", post.id] }))
+                  sealsApi.remove(post.id).then((result) => {
+                    queryClient.setQueryData(["seals", post.id], result);
+                    queryClient.invalidateQueries({ queryKey: ["seals-people", post.id] });
+                  })
                 }
                 className="mt-2 w-full rounded-lg px-2 py-1.5 text-xs font-medium text-destructive transition hover:bg-destructive/10"
               >

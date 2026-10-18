@@ -24,5 +24,6 @@ export type PostCardStore = {
   setPostCounters: (postId: string, postCounters: PostView["counters"]) => void;
   setReactionStatus: (postId: string, reactionStatus: ReactionType | null) => void;
   setShowReactions: (postId: string, showReactions: boolean) => void;
+  setShowSeals: (postId: string, showSeals: boolean) => void;
   setShowReport: (postId: string, showReport: boolean) => void;
 };

@@ -10,5 +10,7 @@ export type PostCardState = {
   postCounters: PostView["counters"];
   reactionStatus: ReactionType | null;
   showReactions: boolean;
+  /** A lista de quem marcou o post com selos (o diálogo da linha de selos). */
+  showSeals: boolean;
   showReport: boolean;
 };

@@ -45,6 +45,7 @@ export const usePostCardStore = create<PostCardStore>()((set) => ({
             postCounters: post.counters,
             reactionStatus: post.currentUserReaction ?? null,
             showReactions: false,
+            showSeals: false,
             showReport: false,
           },
         },
@@ -116,6 +117,10 @@ export const usePostCardStore = create<PostCardStore>()((set) => ({
   setShowReactions: (postId: string, showReactions: boolean) =>
     set((state) => ({
       cards: updateCard(state.cards, postId, (card) => ({ ...card, showReactions })),
+    })),
+  setShowSeals: (postId: string, showSeals: boolean) =>
+    set((state) => ({
+      cards: updateCard(state.cards, postId, (card) => ({ ...card, showSeals })),
     })),
   setShowReport: (postId: string, showReport: boolean) =>
     set((state) => ({
