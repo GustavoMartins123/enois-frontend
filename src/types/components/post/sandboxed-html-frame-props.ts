@@ -11,4 +11,9 @@ export type SandboxedHtmlFrameProps = {
    * ocupa a largura do card e uma margem branca em volta parecia sobra.
    */
   innerPadding?: boolean;
+  /**
+   * O quadro cresce até a altura do conteúdo (padrão) em vez de rolar por dentro. Quem é janela —
+   * a prévia do editor e a página em tela cheia — passa `false` e mantém a rolagem própria.
+   */
+  autoHeight?: boolean;
 };

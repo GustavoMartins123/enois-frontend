@@ -1,3 +1,5 @@
+import { useCallback, useEffect, useRef, useState } from "react";
+
 import type { SandboxedHtmlFrameProps } from "@/types/components/post/sandboxed-html-frame-props";
 
 import { cn } from "@/lib/utils";
@@ -7,9 +9,12 @@ import { cn } from "@/lib/utils";
  *
  * Aqui mora a seguranca do recurso, e ela nao depende do sanitizador estar perfeito:
  *
- * - `sandbox` sem `allow-scripts`: script nenhum executa, nem com evento inline. Sem
- *   `allow-same-origin`, o iframe tambem nao enxerga o documento pai, cookies ou storage — a
- *   origem e opaca, entao nada aqui alcanca a sessao de quem esta lendo.
+ * - `sandbox` sem `allow-scripts`: script nenhum executa, nem com evento inline. `allow-same-origin`
+ *   ENTRA de proposito, e nao afrouxa isso: quem executa script e o `allow-scripts`, que continua
+ *   fora. O que a mesma origem da e o direito de o NOSSO codigo medir a altura do documento
+ *   (`contentDocument`), e e assim que o quadro cresce ate o conteudo em vez de rolar por dentro.
+ *   Nao acrescente `allow-scripts` aqui: com a mesma origem, isso daria ao HTML colado o mesmo
+ *   poder do app (storage e sessao de quem le) — e e justamente o que o recurso evita.
  * - CSP dentro do proprio documento (`default-src 'none'`): nenhuma requisicao sai dai, entao o
  *   HTML nao consegue chamar um servidor externo nem carregar pixel de rastreio. O que segue
  *   liberado e imagem/video em https e data: com CSS inline, que e o que dá aparencia a pagina.
@@ -24,16 +29,73 @@ export function SandboxedHtmlFrame({
   className,
   title,
   innerPadding = true,
+  autoHeight = true,
 }: SandboxedHtmlFrameProps) {
+  const frame = useRef<HTMLIFrameElement>(null);
+  const [measured, setMeasured] = useState<number | null>(null);
+
+  /**
+   * Altura do conteudo, medida do lado de fora.
+   *
+   * Sem `allow-scripts` nao ha script dentro do quadro para avisar o tamanho — mas com
+   * `allow-same-origin` o documento e legivel daqui, entao a conta sai no pai. `scrollHeight` do
+   * `body` e do `documentElement` (o maior dos dois) cobre tanto documento curto quanto conteudo
+   * que estoura, e o `ResizeObserver` refaz a conta quando imagem ou fonte mudam o tamanho.
+   */
+  const measure = useCallback(() => {
+    const doc = frame.current?.contentDocument;
+    if (!doc) return;
+    const body = doc.body;
+    const root = doc.documentElement;
+    const altura = Math.ceil(
+      Math.max(
+        body?.scrollHeight ?? 0,
+        body?.offsetHeight ?? 0,
+        root?.scrollHeight ?? 0,
+        root?.offsetHeight ?? 0,
+      ),
+    );
+    if (altura > 0) setMeasured((atual) => (atual === altura ? atual : altura));
+  }, []);
+
+  useEffect(() => {
+    if (!autoHeight) return;
+    const element = frame.current;
+    if (!element) return;
+
+    let observer: ResizeObserver | null = null;
+    const attach = () => {
+      measure();
+      const body = element.contentDocument?.body;
+      if (body && typeof ResizeObserver !== "undefined") {
+        observer?.disconnect();
+        observer = new ResizeObserver(() => measure());
+        observer.observe(body);
+      }
+    };
+
+    element.addEventListener("load", attach);
+    // O `srcdoc` pode ter carregado antes deste efeito (primeira pintura): mede agora tambem.
+    attach();
+    window.addEventListener("resize", measure);
+
+    return () => {
+      element.removeEventListener("load", attach);
+      observer?.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, [autoHeight, html, measure]);
+
   return (
     <iframe
+      ref={frame}
       title={title}
       srcDoc={buildDocument(html, innerPadding)}
       // Sem `allow-scripts` e sem `allow-same-origin`: e o que garante que o HTML colado nao roda
       // codigo. `allow-fullscreen` existe so para o botao de tela cheia do player de video, e
       // `autoplay` delega a permissao do autoplay que o autor pediu: midia muda toca sozinha (mesmo
       // dentro do sandbox); com som, o navegador continua exigindo um gesto de quem le.
-      sandbox="allow-popups allow-popups-to-escape-sandbox"
+      sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
       allow="autoplay; fullscreen"
       allowFullScreen
       referrerPolicy="no-referrer"
@@ -45,6 +107,9 @@ export function SandboxedHtmlFrame({
       // clara de 2px em todo iframe por padrão, e o fundo branco aparecia atrás do conteúdo do autor
       // em tema escuro. Sem os dois, sobra uma "bordinha branca" em volta de tudo que é HTML/CSS.
       className={cn("w-full border-0 bg-transparent", className)}
+      // A classe do chamador continua valendo como altura ate a medida chegar (o SSR nao mede):
+      // o estilo em linha e que manda depois dela.
+      style={autoHeight && measured ? { height: measured } : undefined}
     />
   );
 }

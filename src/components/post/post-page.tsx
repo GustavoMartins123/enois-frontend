@@ -13,9 +13,10 @@ import { SandboxedHtmlFrame } from "./sandboxed-html-frame";
 /**
  * A "mini pagina" dentro do post: o HTML colado pelo autor renderizado num quadro isolado.
  *
- * O quadro tem altura fixa (e rolagem propria) porque nao ha como medir o conteudo de dentro sem
- * script de dentro avisando o tamanho. Quem quiser ler com folga abre no dialogo, com a mesma altura
- * relativa a viewport.
+ * No modo embutido o quadro cresce ate o conteudo (a altura sai da medida do documento, sem rodar
+ * script nenhum — ver SandboxedHtmlFrame), entao a pagina aparece inteira no post e quem rola e a
+ * tela. Na origem de conteudo a medida nao e possivel (documento de outra origem) e o quadro segue
+ * com altura fixa; quem quiser ler com folga abre o dialogo em tela cheia, que e uma janela.
  *
  * O documento vem da ORIGEM DE CONTEUDO (`/pages/{id}`), separada da origem do app — e por isso o
  * quadro pode liberar script (o player de terceiros precisa) sem que o HTML colado alcance a sessao
@@ -103,6 +104,8 @@ export function PostPage({ postId, html }: PostPageProps) {
               title={texts.posts.page.frameTitle}
               className="h-full w-full"
               innerPadding={false}
+              // Tela cheia é janela: a rolagem de dentro é o que se espera de uma página aberta.
+              autoHeight={false}
             />
           )}
         </DialogContent>
