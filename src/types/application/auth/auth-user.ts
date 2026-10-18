@@ -10,4 +10,9 @@ export type AuthUser = {
   twoFactorEnabled: boolean;
   /** Conta verificada: e-mail confirmado ou segundo fator ativo — é o que sustenta a reputação. */
   identityVerified: boolean;
+  /**
+   * A conta tem senha que a pessoa conhece. Quem entrou por login social nasce sem uma: a tela
+   * pede para CRIAR a primeira em vez de confirmar a atual.
+   */
+  hasPassword: boolean;
 };

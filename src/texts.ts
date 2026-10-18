@@ -531,15 +531,20 @@ export const texts = {
     },
     changePassword: {
       title: "Trocar senha",
+      titleCreate: "Criar senha",
       description: "Por segurança, você entrará de novo com a nova senha.",
+      descriptionCreate:
+        "Sua conta entrou por login social e ainda não tem senha. Crie uma para ligar o segundo fator e entrar sem o provedor.",
       current: "Senha atual",
       newPassword: "Nova senha",
       confirm: "Confirmar nova senha",
       action: "Salvar nova senha",
+      actionCreate: "Criar senha",
       saving: "Salvando...",
       tooShort: "A senha precisa ter pelo menos 8 caracteres.",
       mismatch: "As senhas não conferem.",
       error: "Não foi possível trocar a senha. Confira a senha atual.",
+      errorCreate: "Não foi possível criar a senha. Tente novamente.",
     },
     deleteAccount: {
       title: "Excluir conta",
