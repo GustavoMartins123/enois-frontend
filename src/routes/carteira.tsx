@@ -2,10 +2,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { ArrowLeft, Send, Sparkles, TrendingUp, Zap } from "lucide-react";
+import { ArrowLeft, Send, ShoppingBag, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { useState } from "react";
 
-import { walletApi } from "@/lib/api";
+import { lojaApi, walletApi } from "@/lib/api";
 import { faiscaToBrlCents, formatBrlCents, formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { requireAuth } from "@/lib/require-auth";
 
@@ -90,6 +90,8 @@ function Carteira() {
         </div>
 
         <CotacaoCard mf={wallet?.balance ?? 0} />
+
+        <LojaSection />
 
         {payOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -263,5 +265,84 @@ function Sparkline({ valores, subiu }: { valores: number[]; subiu: boolean }) {
       <polyline points={pontos} fill="none" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"
         className={cor} stroke="currentColor" />
     </svg>
+  );
+}
+
+/**
+ * A LOJA de cosméticos (plano C3): molduras de avatar nativas por faíscas — compra
+ * direta (auditada no ledger, sem escrow) e equipar. Só aparência, nunca alcance.
+ */
+function LojaSection() {
+  const queryClient = useQueryClient();
+  const catalog = useQuery({ queryKey: ["loja"], queryFn: () => lojaApi.catalog() });
+  const buy = useMutation({
+    mutationFn: (id: string) => lojaApi.buy(id),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["loja"] }),
+  });
+  const equip = useMutation({
+    mutationFn: (id: string) => lojaApi.equip(id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["loja"] });
+      void queryClient.invalidateQueries({ queryKey: ["perfil"] });
+    },
+  });
+
+  const itens = catalog.data ?? [];
+  if (catalog.isLoading) return null;
+
+  return (
+    <section className="surface-card space-y-3 p-6" aria-label="Loja de molduras">
+      <div className="flex items-center gap-2 text-text-subtle">
+        <ShoppingBag className="h-4 w-4 text-primary" />
+        <span className="text-xs font-medium uppercase tracking-widest">Loja · molduras de avatar</span>
+      </div>
+
+      <ul className="grid gap-2 sm:grid-cols-2">
+        {itens.map((item) => (
+          <li key={item.id} className="rounded-xl border border-border-soft p-3">
+            <div className="flex items-center gap-3">
+              <span className={`grid h-10 w-10 place-items-center rounded-full bg-violet-300 font-bold text-violet-900 ${item.cssRing}`}>
+                ✦
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-semibold">{item.name}</span>
+                <span className="block truncate text-xs text-text-subtle">{item.description}</span>
+              </span>
+              <span className="shrink-0 text-sm font-semibold text-primary-text">
+                {formatFaisca(item.priceMf)}
+              </span>
+            </div>
+            <div className="mt-2 flex justify-end gap-2">
+              {item.equipped ? (
+                <span className="rounded-full bg-primary-soft px-2.5 py-1 text-xs font-medium text-primary-text">
+                  equipada
+                </span>
+              ) : item.owned ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="rounded-full"
+                  disabled={equip.isPending}
+                  onClick={() => equip.mutate(item.id)}
+                >
+                  Equipar
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  className="rounded-full"
+                  disabled={buy.isPending}
+                  onClick={() => buy.mutate(item.id)}
+                >
+                  Comprar
+                </Button>
+              )}
+            </div>
+          </li>
+        ))}
+      </ul>
+
+      <p className="text-xs text-text-subtle">A moldura equipada aparece no seu perfil.</p>
+    </section>
   );
 }

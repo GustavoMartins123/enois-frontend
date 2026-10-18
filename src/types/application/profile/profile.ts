@@ -33,6 +33,8 @@ export type Profile = {
   pronouns?: string | null;
   /** Vulgo: como a pessoa é conhecida (etiqueta ao lado do nome, só no perfil). */
   aka?: string | null;
+  /** Moldura de avatar equipada (loja de cosméticos). */
+  avatarFrame?: string | null;
   /** Currículo em PDF (endereço no storage) — só o dono recebe estes dois campos. */
   resumeUrl?: string | null;
   resumeName?: string | null;

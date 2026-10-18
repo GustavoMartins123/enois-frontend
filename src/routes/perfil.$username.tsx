@@ -68,6 +68,14 @@ import { ProfileResumeDialog } from "@/components/profile-resume-dialog";
 import { ProfileProjectsSection } from "@/components/profile/projects-section";
 import { UserAvatar } from "@/components/user-avatar";
 
+/** As molduras da loja (C3): o anel que cada uma pinta ao redor do avatar. */
+const FRAME_RING: Record<string, string> = {
+  "moldura-ambar": "ring-amber-400",
+  "moldura-esmeralda": "ring-emerald-400",
+  "moldura-violeta": "ring-violet-500",
+  "moldura-coral": "ring-rose-400",
+};
+
 export const Route = createFileRoute("/perfil/$username")({
   loader: async ({ params }) => {
     try {
@@ -325,7 +333,7 @@ function Profile() {
                 <UserAvatar
                   src={resolveCdnUrl(user.avatar)}
                   alt={user.name}
-                  className="h-24 w-24 ring-4 ring-surface-card sm:h-28 sm:w-28"
+                  className={`h-24 w-24 ring-4 sm:h-28 sm:w-28 ${FRAME_RING[user.avatarFrame ?? ""] ?? "ring-surface-card"}`}
                 />
                 <input
                   ref={avatarRef}

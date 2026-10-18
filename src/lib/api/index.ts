@@ -24,6 +24,7 @@ export { servicesApi } from "./services";
 export { marketplaceApi } from "./marketplace";
 export { themesApi } from "./themes";
 export { walletApi } from "./wallet";
+export { lojaApi } from "./loja";
 export { rankingApi } from "./ranking";
 export { usersApi } from "./users";
 export { recommendationsApi } from "./recommendations";
