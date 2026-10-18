@@ -58,13 +58,26 @@ export function LinkedAccountsDialog({ open, onOpenChange }: LinkedAccountsDialo
     },
   });
 
-  const error = unlink.error ?? link.error;
-  const errorMessage =
-    error instanceof ApiError && error.code === "LAST_LOGIN_METHOD"
+  // Cada ação tem a sua mensagem: dizer "não foi possível desvincular" quando o clique foi em
+  // "Vincular" manda a pessoa procurar um vínculo que não existe (era o que acontecia aqui).
+  const unlinkMessage =
+    unlink.error instanceof ApiError && unlink.error.code === "LAST_LOGIN_METHOD"
       ? texts.auth.links.lastMethod
-      : error
+      : unlink.error
         ? texts.auth.links.unlinkError
         : null;
+
+  const linkMessage = link.error
+    ? link.error instanceof ApiError && link.error.code === "OAUTH_NOT_CONFIGURED"
+      ? texts.auth.links.notConfigured(
+          link.variables
+            ? OAUTH_PROVIDER_LABELS[link.variables]
+            : texts.auth.links.providerFallback,
+        )
+      : texts.auth.links.linkError
+    : null;
+
+  const errorMessage = unlinkMessage ?? linkMessage;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

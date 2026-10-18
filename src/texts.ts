@@ -394,6 +394,15 @@ export const texts = {
         "Este é o único jeito de entrar na sua conta. Defina uma senha (em “Trocar senha”) antes de desvincular.",
       unlinkError: "Não foi possível desvincular agora. Tente novamente.",
       linkError: "Não foi possível iniciar a vinculação. Tente novamente.",
+      /**
+       * O backend responde OAUTH_NOT_CONFIGURED quando falta credencial do provedor (ver
+       * `SocialLoginService.buildAuthorizationUrl`) — dizer isso é melhor que "tente novamente",
+       * que manda a pessoa repetir um clique que nunca vai funcionar.
+       */
+      notConfigured: (provider: string) =>
+        `O ${provider} ainda não está configurado no Énóis. Tente novamente mais tarde.`,
+      /** Nome do provedor quando a tela não sabe qual foi (o rótulo vem de OAUTH_PROVIDER_LABELS). */
+      providerFallback: "provedor",
     },
     terms: {
       prefix: "Ao continuar, você concorda com os ",
