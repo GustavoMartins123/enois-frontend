@@ -9,11 +9,12 @@ import type { GroupMember } from "@/types/application/group/group-member";
 import type { GroupPost } from "@/types/application/group/group-post";
 import type { GroupView } from "@/types/application/group/group-view";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
-import { Loader2, MessageCircle, Plus, Smile, Users } from "lucide-react";
+import { Loader2, MessageCircle, Plus, Smile, Trash2, Users } from "lucide-react";
 
 import { groupsApi } from "@/lib/api";
 import { getSessionToken } from "@/lib/api-client";
 import { resolveCdnUrl } from "@/lib/api/media";
+import { getCurrentUserId } from "@/lib/current-user";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -208,6 +209,7 @@ function GroupFeed({ group }: { group: GroupView }) {
   });
   const topics = topicsData?.items ?? [];
   const canManage = group.viewerRole === "OWNER" || group.viewerRole === "ADMIN";
+  const canModerate = ["OWNER", "ADMIN", "MODERATOR"].includes(group.viewerRole ?? "");
   const activeTopicId = topicId ?? topics.find((topic) => topic.status === "OPEN")?.id ?? null;
   const activeTopic = topics.find((topic) => topic.id === activeTopicId) ?? null;
 
@@ -332,7 +334,12 @@ function GroupFeed({ group }: { group: GroupView }) {
           ) : (
             <ul className="space-y-3">
               {posts.map((post) => (
-                <GroupPostItem key={post.id} groupId={group.id} post={post} />
+                <GroupPostItem
+                  key={post.id}
+                  groupId={group.id}
+                  post={post}
+                  canModerate={canModerate}
+                />
               ))}
             </ul>
           )}
@@ -372,11 +379,30 @@ function GroupFeed({ group }: { group: GroupView }) {
   );
 }
 
-function GroupPostItem({ groupId, post }: { groupId: string; post: GroupPost }) {
+function GroupPostItem({
+  groupId,
+  post,
+  canModerate,
+}: {
+  groupId: string;
+  post: GroupPost;
+  canModerate: boolean;
+}) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState(false);
+  const [removeOpen, setRemoveOpen] = useState(false);
+  const currentUserId = getCurrentUserId();
+
+  const remove = useMutation({
+    mutationFn: () => groupsApi.removePost(groupId, post.id),
+    onSuccess: () => {
+      setRemoveOpen(false);
+      invalidate();
+    },
+    onError: () => toast(texts.groups.removePostError, "error"),
+  });
 
   const { data: commentsData, isLoading: commentsLoading } = useQuery({
     queryKey: ["group-comments", groupId, post.id],
@@ -448,6 +474,18 @@ function GroupPostItem({ groupId, post }: { groupId: string; post: GroupPost }) 
 
           <>{`${texts.groups.commentsTitle} (${post.comments})`}</>
         </button>
+
+        {(post.authorId === currentUserId || canModerate) && (
+          <button
+            type="button"
+            onClick={() => setRemoveOpen(true)}
+            className="inline-flex items-center gap-1 rounded-full px-2 py-1 transition hover:text-destructive"
+          >
+            <Trash2 className="h-4 w-4" />
+
+            <>{texts.groups.removeAction}</>
+          </button>
+        )}
       </div>
 
       {showComments && (
@@ -500,6 +538,17 @@ function GroupPostItem({ groupId, post }: { groupId: string; post: GroupPost }) 
           </div>
         </div>
       )}
+
+      <ConfirmDialog
+        open={removeOpen}
+        onOpenChange={setRemoveOpen}
+        title={texts.groups.removePostTitle}
+        description={texts.groups.removePostDescription}
+        confirmLabel={texts.groups.removeAction}
+        destructive
+        pending={remove.isPending}
+        onConfirm={() => remove.mutate()}
+      />
     </li>
   );
 }

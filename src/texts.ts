@@ -143,6 +143,11 @@ export const texts = {
     roleAdmin: "Administrador",
     roleModerator: "Moderador",
     roleMember: "Membro",
+    removeAction: "Remover",
+    removePostTitle: "Remover publicação?",
+    removePostDescription: "Ela some do feed do grupo; a ação fica registrada na auditoria.",
+    removeCommentTitle: "Remover comentário?",
+    removePostError: "Não foi possível remover a publicação.",
   },
 
   accessibility: {

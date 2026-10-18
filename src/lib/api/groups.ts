@@ -84,4 +84,14 @@ export const groupsApi = {
 
   unreact: (groupId: string, postId: string) =>
     api.delete<StatusResponse>(`/groups/${groupId}/posts/${postId}/reactions`),
+
+  /** O autor apaga o próprio; quem modera apaga o dos outros (o backend confere). */
+  removePost: (groupId: string, postId: string) =>
+    api.delete<StatusResponse>(`/groups/${groupId}/posts/${postId}`),
+
+  removeComment: (groupId: string, postId: string, commentId: string) =>
+    api.delete<StatusResponse>(`/groups/${groupId}/posts/${postId}/comments/${commentId}`),
+
+  /** Encerra o grupo (só o dono). */
+  close: (groupId: string) => api.post<GroupView>(`/groups/${groupId}/close`),
 };
