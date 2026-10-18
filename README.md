@@ -98,30 +98,32 @@ le `process.env.IMAGEKIT_PRIVATE_KEY`).
 
 ## Acoes manuais necessarias
 
-**O deploy esta PARADO desde 17/10 ~16:55 e nada que esta no `main` chegou ao ar.** Sao dois
-bloqueios de organizacao (nao de codigo), iguais nos dois repositorios:
+**Estado do deploy (18/10 00:5x): o BACKEND esta no ar e atualizado; o FRONT ainda nao sobe.**
+Falta uma linha no IAM.
 
-1. **O GitHub Actions esta desabilitado nos dois repos** — e o estado que o GitHub deixa depois de
-   transferir o repositorio de dono. Push novo **nao cria run nenhum** e os runs antigos ficam
-   `queued` para sempre. Religar:
+- O GitHub Actions foi **religado** nos dois repositorios e o backend ja deploya normalmente
+  (o manifesto esta em `enois/backend:dc44362`, o commit do curriculo + agilizar envio).
+- O **front** falha em todos os runs no passo `⚙️ Configurar Credenciais AWS via OIDC` com
+  `Not authorized to perform sts:AssumeRoleWithWebIdentity`. Nao e build: os dois workflows
+  ficaram **identicos** (mesmo papel `arn:aws:iam::818928662779:role/forest-dev-enois-ecr`,
+  mesmas permissoes) e o backend assume o papel sem problema — ou seja, a **trust policy do
+  papel aceita o repositorio do backend e nao o do front**.
 
-   ```
-   gh api -X PUT repos/Rede-ENois/enois-frontend/actions/permissions -F enabled=true
-   gh api -X PUT repos/Rede-ENois/enois-backend/actions/permissions -F enabled=true
-   ```
+**O que falta (quem tem acesso a AWS):** incluir o repositorio do front na trust policy do
+papel `forest-dev-enois-ecr`, aceitando
 
-   (ou Settings → Actions → General → permitir as acoes, em cada repositorio)
+```
+repo:Rede-ENois/enois-frontend:*
+```
 
-2. **A trust policy do papel OIDC ainda espera o nome antigo do repositorio.** Com o Actions
-   religado, o run morre no passo `⚙️ Configurar Credenciais AWS via OIDC` com
-   `Not authorized to perform sts:AssumeRoleWithWebIdentity`: a claim `sub` passou a ser
-   `repo:Rede-ENois/enois-frontend:...` e a role `arn:aws:iam::818928662779:role/forest-dev-github`
-   (a mesma nos dois workflows) precisa aceitar `repo:Rede-ENois/enois-frontend:*` e
-   `repo:Rede-ENois/enois-backend:*`.
+(hoje ela aceita `repo:Rede-ENois/enois-backend:*` — foi por isso que o backend voltou a
+deployar e o front nao). Alternativa, se preferirem um papel por repositorio: criar o
+equivalente para o front e trocar a linha `role-to-assume` do workflow deste repositorio.
 
-Depois disso nao precisa de commit novo: dispare o workflow (`gh workflow run "Build, Push and GitOps
-Deploy" --ref main`) ou espere o proximo push. A `main` ja tem tudo pronto — incluindo o markdown em
-todos os campos de texto, os selos, os emblemas, os blogs e a miniatura de compartilhamento.
+Depois disso nao precisa de commit novo: dispare o workflow (`gh workflow run "Build, Push and
+GitOps Deploy" --ref main`) ou espere o proximo push. A `main` ja tem tudo pronto — incluindo
+o markdown em todos os campos de texto, os selos, os emblemas, os blogs, o audio nos
+comentarios, o curriculo no perfil e o "agilizar envio" das vagas.
 
 Os itens abaixo sao os que **nao** dependem disso:
 
