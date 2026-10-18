@@ -13,7 +13,8 @@ export type SandboxedHtmlFrameProps = {
   innerPadding?: boolean;
   /**
    * O quadro cresce até a altura do conteúdo (padrão) em vez de rolar por dentro. Quem é janela —
-   * a prévia do editor e a página em tela cheia — passa `false` e mantém a rolagem própria.
+   * a prévia do editor, a página em tela cheia e o quadro embutido no post — passa `false` e
+   * mantém a rolagem própria.
    */
   autoHeight?: boolean;
   /**
