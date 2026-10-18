@@ -9,6 +9,8 @@ export type DeveloperPage = {
   username: string;
   name: string;
   badge?: string | null;
+  /** Todos os emblemas do criador (até 5), junto ao nome. */
+  badges?: string[] | null;
   avatar?: string | null;
   cover?: string | null;
   displayName?: string | null;

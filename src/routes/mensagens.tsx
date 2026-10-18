@@ -23,7 +23,7 @@ import { useToast } from "@/components/ui/toast";
 import { AppContainer } from "@/components/app-container";
 import { RichText } from "@/components/post/rich-text";
 import { UserAvatar } from "@/components/user-avatar";
-import { UserBadge } from "@/components/user-badge";
+import { UserBadges } from "@/components/user-badge";
 
 export const Route = createFileRoute("/mensagens")({
   beforeLoad: requireAuth,
@@ -514,7 +514,9 @@ function Mensagens() {
                                   alt={otherUser?.name}
                                   className="h-7 w-7 shrink-0"
                                 />
-                                <UserBadge
+                                {/* No avatar, só o primeiro emblema: é enfeite da foto, não a
+                                    linha do nome — empilhar cinco ali viraria borrão. */}
+                                <UserBadges
                                   badge={otherUser?.badge}
                                   className="absolute -bottom-0.5 -right-0.5 h-3 w-3 ring-1 ring-card"
                                 />
@@ -677,7 +679,7 @@ function ConversationItem({
             <span className="flex min-w-0 items-center gap-1.5">
               <span className="truncate text-sm font-medium">{title}</span>
 
-              <UserBadge badge={otherUser?.badge} />
+              <UserBadges badges={otherUser?.badges} badge={otherUser?.badge} />
             </span>
 
             <span className="text-xs text-muted-foreground shrink-0 ml-2">
@@ -731,7 +733,7 @@ function ConversationHeader({ conversation, onBack, action }: ConversationHeader
           <span className="flex items-center gap-1.5">
             <span className="truncate font-semibold">{title}</span>
 
-            <UserBadge badge={otherUser?.badge} />
+            <UserBadges badges={otherUser?.badges} badge={otherUser?.badge} />
           </span>
           {otherUser?.headline && (
             <p className="truncate text-xs text-muted-foreground">{otherUser.headline}</p>

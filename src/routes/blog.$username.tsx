@@ -20,6 +20,7 @@ import { BlogPostDialog } from "@/components/blog/blog-post-dialog";
 import { RichText } from "@/components/post/rich-text";
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { UserAvatar } from "@/components/user-avatar";
+import { UserBadges } from "@/components/user-badge";
 
 export const Route = createFileRoute("/blog/$username")({
   loader: async ({ params }) => {
@@ -133,7 +134,11 @@ function BlogPage() {
               />
 
               <div>
-                <p className="text-sm font-semibold text-text-strong">{blog.authorName}</p>
+                <p className="flex items-center gap-1 text-sm font-semibold text-text-strong">
+                  <>{blog.authorName}</>
+
+                  <UserBadges badges={blog.authorBadges} badge={blog.authorBadge} />
+                </p>
 
                 <p className="text-xs font-normal text-text-subtle">
                   {texts.blog.postsCount(blog.posts)}

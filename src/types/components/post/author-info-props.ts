@@ -2,7 +2,13 @@ import type { PostView } from "@/types/application/feed/post-view";
 
 export type AuthorInfoProps = Pick<
   PostView,
-  "authorUsername" | "authorName" | "authorAvatar" | "authorBadge" | "createdAt" | "community"
+  | "authorUsername"
+  | "authorName"
+  | "authorAvatar"
+  | "authorBadge"
+  | "authorBadges"
+  | "createdAt"
+  | "community"
 > & {
   fallbackClassName?: string;
   /** Chamado quando o leitor aperta "Seguir" na comunidade do post. */

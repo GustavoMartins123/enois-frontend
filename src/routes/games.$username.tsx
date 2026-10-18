@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 
 import { AppContainer } from "@/components/app-container";
 import { UserAvatar } from "@/components/user-avatar";
-import { UserBadge } from "@/components/user-badge";
+import { UserBadges } from "@/components/user-badge";
 
 export const Route = createFileRoute("/games/$username")({
   head: ({ params }) => ({ meta: [{ title: `${params.username} · Jogos · Énóis` }] }),
@@ -90,7 +90,7 @@ function DeveloperPage() {
               <h1 className="flex flex-wrap items-center gap-1.5 text-xl font-semibold tracking-tight text-text-strong">
                 <>{dev.displayName || dev.name}</>
 
-                <UserBadge badge={dev.badge} />
+                <UserBadges badges={dev.badges} badge={dev.badge} />
               </h1>
 
               <p className="text-sm text-text-subtle">
