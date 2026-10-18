@@ -14,6 +14,7 @@ import { redirect } from "@tanstack/react-router";
  * `requireAuth()` e mandam para o login.
  */
 const PROTECTED_ROUTES = [
+  "/jogos-diarios",
   "/feed",
   "/rede",
   "/salvos",
@@ -42,3 +43,4 @@ export function requireAuth() {
     throw redirect({ to: "/entrar", search: { tab: "login" } });
   }
 }
+

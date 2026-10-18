@@ -7,6 +7,7 @@ import {
   Calendar,
   Compass,
   GraduationCap,
+  Gamepad2,
   Home,
   MessageCircle,
   Users,
@@ -25,4 +26,6 @@ export const navigationItems = [
   { to: "/empresas", label: texts.navigation.items.companies, icon: Building2 },
   { to: "/mentoria", label: texts.navigation.items.mentoring, icon: GraduationCap },
   { to: "/eventos", label: texts.navigation.items.events, icon: Calendar },
+  { to: "/jogos-diarios", label: "Jogos diários", icon: Gamepad2 },
 ];
+

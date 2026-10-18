@@ -24,6 +24,7 @@ import { Route as ModeracaoRouteImport } from './routes/moderacao'
 import { Route as MentoriaRouteImport } from './routes/mentoria'
 import { Route as MensagensRouteImport } from './routes/mensagens'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
+import { Route as JogosDiariosRouteImport } from './routes/jogos-diarios'
 import { Route as GruposRouteImport } from './routes/grupos'
 import { Route as GamesRouteImport } from './routes/games'
 import { Route as FeedRouteImport } from './routes/feed'
@@ -130,6 +131,11 @@ const MensagensRoute = MensagensRouteImport.update({
 const MarketplaceRoute = MarketplaceRouteImport.update({
   id: '/marketplace',
   path: '/marketplace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JogosDiariosRoute = JogosDiariosRouteImport.update({
+  id: '/jogos-diarios',
+  path: '/jogos-diarios',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GruposRoute = GruposRouteImport.update({
@@ -309,6 +315,7 @@ export interface FileRoutesByFullPath {
   '/feed': typeof FeedRoute
   '/games': typeof GamesRouteWithChildren
   '/grupos': typeof GruposRouteWithChildren
+  '/jogos-diarios': typeof JogosDiariosRoute
   '/marketplace': typeof MarketplaceRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
@@ -358,6 +365,7 @@ export interface FileRoutesByTo {
   '/feed': typeof FeedRoute
   '/games': typeof GamesRouteWithChildren
   '/grupos': typeof GruposRouteWithChildren
+  '/jogos-diarios': typeof JogosDiariosRoute
   '/marketplace': typeof MarketplaceRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
@@ -408,6 +416,7 @@ export interface FileRoutesById {
   '/feed': typeof FeedRoute
   '/games': typeof GamesRouteWithChildren
   '/grupos': typeof GruposRouteWithChildren
+  '/jogos-diarios': typeof JogosDiariosRoute
   '/marketplace': typeof MarketplaceRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
@@ -459,6 +468,7 @@ export interface FileRouteTypes {
     | '/feed'
     | '/games'
     | '/grupos'
+    | '/jogos-diarios'
     | '/marketplace'
     | '/mensagens'
     | '/mentoria'
@@ -508,6 +518,7 @@ export interface FileRouteTypes {
     | '/feed'
     | '/games'
     | '/grupos'
+    | '/jogos-diarios'
     | '/marketplace'
     | '/mensagens'
     | '/mentoria'
@@ -557,6 +568,7 @@ export interface FileRouteTypes {
     | '/feed'
     | '/games'
     | '/grupos'
+    | '/jogos-diarios'
     | '/marketplace'
     | '/mensagens'
     | '/mentoria'
@@ -607,6 +619,7 @@ export interface RootRouteChildren {
   FeedRoute: typeof FeedRoute
   GamesRoute: typeof GamesRouteWithChildren
   GruposRoute: typeof GruposRouteWithChildren
+  JogosDiariosRoute: typeof JogosDiariosRoute
   MarketplaceRoute: typeof MarketplaceRoute
   MensagensRoute: typeof MensagensRoute
   MentoriaRoute: typeof MentoriaRoute
@@ -737,6 +750,13 @@ declare module '@tanstack/react-router' {
       path: '/marketplace'
       fullPath: '/marketplace'
       preLoaderRoute: typeof MarketplaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jogos-diarios': {
+      id: '/jogos-diarios'
+      path: '/jogos-diarios'
+      fullPath: '/jogos-diarios'
+      preLoaderRoute: typeof JogosDiariosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/grupos': {
@@ -1065,6 +1085,7 @@ const rootRouteChildren: RootRouteChildren = {
   FeedRoute: FeedRoute,
   GamesRoute: GamesRouteWithChildren,
   GruposRoute: GruposRouteWithChildren,
+  JogosDiariosRoute: JogosDiariosRoute,
   MarketplaceRoute: MarketplaceRoute,
   MensagensRoute: MensagensRoute,
   MentoriaRoute: MentoriaRoute,
