@@ -3,6 +3,7 @@ import type { PaletteSpec } from "@/types/preferences/theme-collection-palette-s
 import type { ThemeCollectionTokens } from "@/types/preferences/theme-collection-tokens";
 
 import { withAlpha } from "@/lib/theme/build-background-style";
+import { hexToRgb, textSafeAccent } from "@/lib/theme/color";
 
 /**
  * Expande a especificação no mapa completo de tokens.
@@ -20,6 +21,9 @@ export function palette(spec: PaletteSpec): ThemeCollectionTokens {
     // Destaque
     "--primary": primary,
     "--primary-foreground": onPrimary,
+    // O texto que usa o destaque como COR (links, "Entrar") não pode sumir quando o
+    // primário do tema é claro demais (amarelo, ciano) para o fundo — ver textSafeAccent.
+    "--primary-text": textSafeAccent(hexToRgb(primary), hexToRgb(background)),
     "--primary-soft": soft,
     "--secondary": secondary,
     "--secondary-foreground": spec.onSecondary ?? onPrimary,

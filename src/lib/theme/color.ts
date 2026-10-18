@@ -94,6 +94,37 @@ function round(value: number): number {
   return Math.round(value * 1000) / 1000;
 }
 
+/**
+ * Cor do destaque SEGURA como texto: o próprio primário quando ele já alcança 3:1
+ * contra o fundo; senão, escurecido (fundo mais claro que ele) ou clareado até
+ * alcançar. Botões continuam com o primário vivo (`--primary`) — é o TEXTO que o
+ * usa como cor (links, "Entrar", "Esqueci minha senha") que não pode sumir em
+ * temas de primário claro (amarelo, ciano) sobre fundo claro.
+ */
+export function textSafeAccent(primary: RgbColor, background: RgbColor): string {
+  if (contrastRatio(primary, background) >= 3) return rgbToHex(primary);
+  const darken = relativeLuminance(background) > relativeLuminance(primary);
+  const target = darken ? 0 : 1;
+  let low = 0;
+  let high = 1;
+  let best = darken ? { r: 0, g: 0, b: 0 } : { r: 1, g: 1, b: 1 };
+  for (let i = 0; i < 12; i += 1) {
+    const t = (low + high) / 2;
+    const mixed = {
+      r: primary.r + (target - primary.r) * t,
+      g: primary.g + (target - primary.g) * t,
+      b: primary.b + (target - primary.b) * t,
+    };
+    if (contrastRatio(mixed, background) >= 3.2) {
+      best = mixed;
+      high = t;
+    } else {
+      low = t;
+    }
+  }
+  return rgbToHex(best);
+}
+
 /** Converte hex em HSL (h 0–360, s/l 0–100) — a forma que os sliders de fundo falam. */
 export function hexToHsl(hex: string): { h: number; s: number; l: number } {
   // RgbColor já é normalizado (0–1): nada de dividir por 255 de novo.

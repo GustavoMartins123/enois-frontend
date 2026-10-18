@@ -9,6 +9,7 @@ export const THEME_TOKEN_NAMES = [
   // Destaque
   "--primary",
   "--primary-foreground",
+  "--primary-text",
   "--primary-soft",
   "--secondary",
   "--secondary-foreground",

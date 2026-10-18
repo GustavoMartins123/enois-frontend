@@ -79,6 +79,7 @@
   --popover-foreground: oklch(0.2 0.02 280);
   --primary: oklch(0.54 0.25 293);
   --primary-foreground: oklch(0.99 0.005 290);
+  --primary-text: oklch(0.54 0.25 293);
   --primary-soft: oklch(0.95 0.04 295);
   --secondary: oklch(0.82 0.1 305);
   --secondary-foreground: oklch(0.25 0.05 290);
@@ -136,6 +137,7 @@
   --popover-foreground: oklch(0.96 0.008 280);
   --primary: oklch(0.7 0.18 300);
   --primary-foreground: oklch(0.16 0.02 285);
+  --primary-text: oklch(0.7 0.18 300);
   --primary-soft: oklch(0.26 0.06 295);
   --secondary: oklch(0.32 0.08 300);
   --secondary-foreground: oklch(0.96 0.008 280);
@@ -377,4 +379,15 @@ img {
   outline: 2px solid var(--ring);
   outline-offset: 4px;
   border-radius: 9999px;
+}
+
+/* O TEXTO que usa o destaque como COR (links, "Entrar", "Esqueci minha senha") lê o
+   par legível `--primary-text` — o primário vivo (`--primary`) é para PREENCHER
+   (botões, badges). Temas de primário claro (amarelo, ciano) geravam texto invisível
+   sobre fundo claro; o token é derivado por tema para alcançar 3:1. Mesma
+   especificidade, depois do Tailwind: esta regra vence. */
+@layer utilities {
+  .text-primary {
+    color: var(--primary-text, var(--primary));
+  }
 }

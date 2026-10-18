@@ -15,6 +15,7 @@ import { buildAccentTokens } from "./build-theme-tokens";
 const ACCENT_OVERRIDE_KEYS = [
   "--primary",
   "--primary-foreground",
+  "--primary-text",
   "--primary-soft",
   "--secondary",
   "--secondary-foreground",
