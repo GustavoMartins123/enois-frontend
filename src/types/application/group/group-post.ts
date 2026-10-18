@@ -13,5 +13,7 @@ export type GroupPost = {
   pinned: boolean;
   reactions: number;
   comments: number;
+  /** Reação de quem está lendo (a tela realça o emoji escolhido). */
+  myReaction: string | null;
   createdAt: string;
 };

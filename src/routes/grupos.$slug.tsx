@@ -3,10 +3,12 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
+import { REACTION_EMOJIS } from "@/constants/reaction-emojis";
 import { texts } from "@/texts";
 import type { GroupPost } from "@/types/application/group/group-post";
 import type { GroupView } from "@/types/application/group/group-view";
-import { Loader2, Plus, Users } from "lucide-react";
+import type { ReactionType } from "@/types/application/reaction/reaction-type";
+import { Loader2, MessageCircle, Plus, Smile, Users } from "lucide-react";
 
 import { groupsApi } from "@/lib/api";
 import { getSessionToken } from "@/lib/api-client";
@@ -20,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
+import { ReactionPicker } from "@/components/post/reaction-picker";
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { UserAvatar } from "@/components/user-avatar";
 import { UserBadges } from "@/components/user-badge";
@@ -40,6 +43,7 @@ function GrupoPage() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const authenticated = Boolean(getSessionToken());
+  const [editOpen, setEditOpen] = useState(false);
 
   const {
     data: group,
@@ -87,6 +91,8 @@ function GrupoPage() {
       </AppContainer>
     );
   }
+
+  const canManage = group.viewerRole === "OWNER" || group.viewerRole === "ADMIN";
 
   return (
     <AppContainer>
@@ -157,6 +163,16 @@ function GrupoPage() {
                   {group.joinMode === "OPEN" ? texts.groups.join : texts.groups.requestJoin}
                 </Button>
               ) : null}
+
+              {canManage && (
+                <Button
+                  variant="outline"
+                  className="w-auto rounded-full"
+                  onClick={() => setEditOpen(true)}
+                >
+                  {texts.groups.edit}
+                </Button>
+              )}
             </div>
           </div>
         </div>
@@ -166,6 +182,8 @@ function GrupoPage() {
         ) : (
           <p className="text-sm text-text-subtle">{texts.groups.membersOnly}</p>
         )}
+
+        <EditGroupDialog group={group} open={editOpen} onOpenChange={setEditOpen} />
       </div>
     </AppContainer>
   );
@@ -310,7 +328,7 @@ function GroupFeed({ group }: { group: GroupView }) {
           ) : (
             <ul className="space-y-3">
               {posts.map((post) => (
-                <GroupPostItem key={post.id} post={post} />
+                <GroupPostItem key={post.id} groupId={group.id} post={post} />
               ))}
             </ul>
           )}
@@ -350,7 +368,41 @@ function GroupFeed({ group }: { group: GroupView }) {
   );
 }
 
-function GroupPostItem({ post }: { post: GroupPost }) {
+function GroupPostItem({ groupId, post }: { groupId: string; post: GroupPost }) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [comment, setComment] = useState("");
+  const [showComments, setShowComments] = useState(false);
+
+  const { data: commentsData, isLoading: commentsLoading } = useQuery({
+    queryKey: ["group-comments", groupId, post.id],
+    queryFn: () => groupsApi.comments(groupId, post.id),
+    enabled: showComments,
+  });
+  const comments = commentsData?.items ?? [];
+
+  const invalidate = () => {
+    void queryClient.invalidateQueries({ queryKey: ["group-posts", groupId] });
+    void queryClient.invalidateQueries({ queryKey: ["group-comments", groupId, post.id] });
+  };
+
+  const react = useMutation({
+    mutationFn: (type: string) => groupsApi.react(groupId, post.id, type),
+    onSuccess: invalidate,
+    onError: () => toast(texts.groups.reactError, "error"),
+  });
+
+  const sendComment = useMutation({
+    mutationFn: () => groupsApi.comment(groupId, post.id, { content: comment.trim() }),
+    onSuccess: () => {
+      setComment("");
+      invalidate();
+    },
+    onError: () => toast(texts.groups.commentError, "error"),
+  });
+
+  const currentReaction = (post.myReaction as ReactionType | null) ?? null;
+
   return (
     <li className="rounded-2xl border border-border-soft bg-surface-card p-4">
       <div className="flex items-center gap-2">
@@ -367,9 +419,184 @@ function GroupPostItem({ post }: { post: GroupPost }) {
 
       <p className="mt-2 whitespace-pre-line text-sm text-text-strong">{post.content}</p>
 
-      <p className="mt-2 text-xs text-text-date">
-        {texts.groups.postMeta(post.reactions, post.comments)}
-      </p>
+      <div className="mt-2 flex items-center gap-3 text-xs text-text-subtle">
+        <ReactionPicker
+          activeType={currentReaction}
+          onReact={(type) => react.mutate(type)}
+          buttonClassName="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs text-text-subtle transition hover:text-text-strong"
+          buttonTitle={texts.groups.react}
+        >
+          {currentReaction ? (
+            <span aria-hidden="true">{REACTION_EMOJIS[currentReaction]}</span>
+          ) : (
+            <Smile className="h-4 w-4" />
+          )}
+
+          <>{String(post.reactions)}</>
+        </ReactionPicker>
+
+        <button
+          type="button"
+          onClick={() => setShowComments((current) => !current)}
+          className="inline-flex items-center gap-1 rounded-full px-2 py-1 transition hover:text-text-strong"
+        >
+          <MessageCircle className="h-4 w-4" />
+
+          <>{`${texts.groups.commentsTitle} (${post.comments})`}</>
+        </button>
+      </div>
+
+      {showComments && (
+        <div className="mt-3 space-y-3 border-t border-border-soft pt-3">
+          {commentsLoading ? (
+            <div className="flex justify-center py-3 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+            </div>
+          ) : comments.length === 0 ? (
+            <p className="text-xs text-text-subtle">{texts.groups.noComments}</p>
+          ) : (
+            <ul className="space-y-2">
+              {comments.map((item) => (
+                <li key={item.id} className="flex items-start gap-2">
+                  <UserAvatar
+                    src={item.authorAvatar}
+                    alt={item.authorName ?? ""}
+                    className="h-6 w-6 shrink-0"
+                  />
+
+                  <div className="min-w-0">
+                    <p className="flex items-center gap-1 text-xs font-medium text-text-strong">
+                      <>{item.authorName ?? ""}</>
+
+                      <UserBadges badges={item.authorBadges} />
+                    </p>
+
+                    <p className="whitespace-pre-line text-sm text-text-strong">{item.content}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+
+          <div className="flex items-end gap-2">
+            <Input
+              value={comment}
+              onChange={(event) => setComment(event.target.value)}
+              placeholder={texts.groups.commentPlaceholder}
+              maxLength={1200}
+            />
+
+            <Button
+              className="w-auto rounded-full"
+              disabled={!comment.trim() || sendComment.isPending}
+              onClick={() => sendComment.mutate()}
+            >
+              {sendComment.isPending ? texts.groups.commenting : texts.groups.commentAction}
+            </Button>
+          </div>
+        </div>
+      )}
     </li>
+  );
+}
+
+function EditGroupDialog({
+  group,
+  open,
+  onOpenChange,
+}: {
+  group: GroupView;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [name, setName] = useState(group.name);
+  const [description, setDescription] = useState(group.description ?? "");
+  const [joinMode, setJoinMode] = useState<"OPEN" | "APPROVAL">(group.joinMode);
+
+  const save = useMutation({
+    mutationFn: () =>
+      groupsApi.update(group.id, {
+        name: name.trim(),
+        description: description.trim() || null,
+        joinMode,
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["group", group.slug] });
+      void queryClient.invalidateQueries({ queryKey: ["groups"] });
+      onOpenChange(false);
+    },
+    onError: () => toast(texts.groups.saveError, "error"),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-normal">{texts.groups.editTitle}</DialogTitle>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="editGroupName">{texts.groups.name}</Label>
+
+            <Input
+              id="editGroupName"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              maxLength={120}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="editGroupDescription">{texts.groups.description}</Label>
+
+            <Textarea
+              id="editGroupDescription"
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              maxLength={600}
+              className="min-h-20"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-text-strong">{texts.groups.joinModeLabel}</p>
+
+            <div className="flex flex-wrap gap-2">
+              {(
+                [
+                  { id: "OPEN" as const, label: texts.groups.openLabel },
+                  { id: "APPROVAL" as const, label: texts.groups.approvalLabel },
+                ] as const
+              ).map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setJoinMode(option.id)}
+                  aria-pressed={joinMode === option.id}
+                  className={
+                    joinMode === option.id
+                      ? "rounded-full border border-primary bg-primary-soft px-3 py-1.5 text-xs font-medium text-primary"
+                      : "rounded-full border border-border-soft px-3 py-1.5 text-xs font-normal text-text-subtle transition hover:text-text-strong"
+                  }
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <Button
+            className="w-full rounded-full"
+            disabled={!name.trim() || save.isPending}
+            onClick={() => save.mutate()}
+          >
+            {save.isPending ? texts.groups.saving : texts.groups.save}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
