@@ -2,10 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { ArrowLeft, Send, Sparkles, Zap } from "lucide-react";
+import { ArrowLeft, Send, Sparkles, TrendingUp, Zap } from "lucide-react";
 import { useState } from "react";
 
 import { walletApi } from "@/lib/api";
+import { faiscaToBrlCents, formatBrlCents, formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { requireAuth } from "@/lib/require-auth";
 
 import { Button } from "@/components/ui/button";
@@ -32,9 +33,10 @@ function Carteira() {
     queryKey: ["carteira"],
     queryFn: () => walletApi.wallet(),
   });
+  const { data: cotacao } = useQuery({ queryKey: ["cotacao"], queryFn: () => walletApi.cotacao(90) });
 
   const transfer = useMutation({
-    mutationFn: () => walletApi.transfer(form.toUsername.trim(), Number(form.amount), form.message.trim() || undefined),
+    mutationFn: () => walletApi.transfer(form.toUsername.trim(), parseFaiscaInput(form.amount) ?? 0, form.message.trim() || undefined),
     onSuccess: () => {
       setPayOpen(false);
       setForm({ toUsername: "", amount: "", message: "" });
@@ -68,7 +70,8 @@ function Carteira() {
             <LoadingState />
           ) : (
             <p className="text-4xl font-semibold tracking-tight text-text-strong">
-              {wallet?.balance ?? 0} <span className="text-lg font-normal text-text-subtle">faíscas</span>
+              {formatFaisca(wallet?.balance ?? 0)}{" "}
+              <span className="text-lg font-normal text-text-subtle">faíscas</span>
             </p>
           )}
 
@@ -85,6 +88,8 @@ function Carteira() {
 
           <p className="text-xs leading-relaxed text-text-subtle">{texts.wallet.notice}</p>
         </div>
+
+        <CotacaoCard mf={wallet?.balance ?? 0} />
 
         {payOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -106,12 +111,16 @@ function Carteira() {
                   <span className="text-xs text-text-subtle">{texts.wallet.amountLabel}</span>
 
                   <Input
-                    type="number"
-                    min="1"
+                    inputMode="decimal"
                     value={form.amount}
                     onChange={(event) => setForm({ ...form, amount: event.target.value })}
-                    placeholder="0"
+                    placeholder="0,00"
                   />
+                  {cotacao && parseFaiscaInput(form.amount) !== null && (
+                    <span className="block text-xs text-text-subtle">
+                      ≈ {formatBrlCents(faiscaToBrlCents(parseFaiscaInput(form.amount)!, cotacao.brlCents))} na cotação de referência
+                    </span>
+                  )}
                 </label>
 
                 <label className="block space-y-1">
@@ -138,9 +147,7 @@ function Carteira() {
                   disabled={
                     transfer.isPending ||
                     !form.toUsername.trim() ||
-                    !form.amount ||
-                    Number(form.amount) <= 0 ||
-                    Number.isNaN(Number(form.amount))
+                    parseFaiscaInput(form.amount) === null
                   }
                   onClick={() => transfer.mutate()}
                 >
@@ -169,7 +176,7 @@ function Carteira() {
                     className={`text-sm font-semibold ${entry.amount >= 0 ? "text-green-600 dark:text-green-400" : "text-destructive"}`}
                   >
                     {entry.amount >= 0 ? "+" : ""}
-                    {entry.amount}
+                    {formatFaisca(entry.amount)}
                   </span>
 
                   <span className="min-w-0 flex-1">
@@ -188,5 +195,73 @@ function Carteira() {
         </section>
       </div>
     </AppContainer>
+  );
+}
+
+/**
+ * A MINI BOLSA (plano C7/Fase 5): a cotação de REFERÊNCIA da faísca em BRL e o seu
+ * histórico no gráfico. Cotação publicada pela plataforma — não é câmbio: comprar
+ * faísca com dinheiro é Fase 6/7, condicionada a parecer jurídico.
+ */
+function CotacaoCard({ mf }: { mf: number }) {
+  const { data: cotacao } = useQuery({
+    queryKey: ["cotacao"],
+    queryFn: () => walletApi.cotacao(90),
+  });
+  if (!cotacao) return null;
+
+  const pontos = [...cotacao.historico].reverse();
+  const atual = cotacao.brlCents;
+  const anterior = pontos.length > 1 ? pontos[pontos.length - 2].brlCents : atual;
+  const subiu = atual >= anterior;
+
+  return (
+    <section className="surface-card space-y-3 p-6" aria-label="Cotação da faísca">
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 text-text-subtle">
+          <TrendingUp className="h-4 w-4 text-primary" />
+          <span className="text-xs font-medium uppercase tracking-widest">Cotação de referência</span>
+        </div>
+        <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-text-subtle">não é câmbio</span>
+      </div>
+
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <p className="text-2xl font-semibold tracking-tight text-text-strong">
+          1 faísca = {formatBrlCents(atual)}
+        </p>
+        <p className="text-sm text-text-subtle">
+          Seu saldo ≈ <span className="font-semibold text-text-strong">{formatBrlCents(faiscaToBrlCents(mf, atual))}</span>
+        </p>
+      </div>
+
+      {pontos.length > 1 && <Sparkline valores={pontos.map((p) => p.brlCents)} subiu={subiu} />}
+
+      <p className="text-xs leading-relaxed text-text-subtle">
+        Preço de referência publicado pela plataforma, usado para remunerar criadores e
+        atualizado quando necessário — o histórico fica aqui embaixo do gráfico.
+        Comprar faísca com dinheiro ainda não existe.
+      </p>
+    </section>
+  );
+}
+
+/** O sparkline do histórico da cotação: SVG puro, sem biblioteca. */
+function Sparkline({ valores, subiu }: { valores: number[]; subiu: boolean }) {
+  const width = 320;
+  const height = 48;
+  const min = Math.min(...valores);
+  const max = Math.max(...valores);
+  const span = max - min || 1;
+  const step = valores.length > 1 ? width / (valores.length - 1) : width;
+  const pontos = valores
+    .map((v, i) => `${(i * step).toFixed(1)},${(height - 6 - ((v - min) / span) * (height - 12)).toFixed(1)}`)
+    .join(" ");
+  const cor = subiu ? "text-green-600 dark:text-green-400" : "text-destructive";
+
+  return (
+    <svg viewBox={`0 0 ${width} ${height}`} className="h-12 w-full" preserveAspectRatio="none" aria-hidden="true">
+      <polyline points={pontos} fill="none" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round"
+        className={cor} stroke="currentColor" />
+    </svg>
   );
 }

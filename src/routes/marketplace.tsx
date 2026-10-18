@@ -6,6 +6,7 @@ import { Store, Sparkles, BadgeCheck, RotateCcw } from "lucide-react";
 
 import { texts } from "@/texts";
 import { marketplaceApi, themesApi } from "@/lib/api";
+import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { isAuthenticated } from "@/lib/use-auth";
 
 import type { ThemeGalleryItem } from "@/lib/api/themes";
@@ -132,7 +133,7 @@ function ListingCard({ listing }: { listing: { id: string; itemId: string; title
         </span>
         <span className="flex shrink-0 items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-sm font-semibold text-primary-text">
           <Sparkles className="h-3.5 w-3.5" />
-          {listing.price}
+          {formatFaisca(listing.price)}
         </span>
       </div>
       <Button
@@ -243,7 +244,7 @@ function SellButton() {
         itemId: theme!.id,
         title: theme!.name,
         description: theme!.description || undefined,
-        price: Math.max(1, Math.round(Number(price) || 0)),
+        price: parseFaiscaInput(price) ?? 0,
       }),
     onSuccess: () => {
       setOpen(false);
@@ -318,8 +319,11 @@ function SellButton() {
                 Fechar
               </Button>
               {theme && (
-                <Button disabled={publish.isPending || !(Number(price) > 0)} onClick={() => publish.mutate()}>
-                  Listar por {price} faíscas
+                <Button
+                  disabled={publish.isPending || parseFaiscaInput(price) === null}
+                  onClick={() => publish.mutate()}
+                >
+                  Listar por {formatFaisca(parseFaiscaInput(price) ?? 0)} faíscas
                 </Button>
               )}
             </div>

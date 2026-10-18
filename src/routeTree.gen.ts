@@ -42,6 +42,7 @@ import { Route as VagasJobIdRouteImport } from './routes/vagas.$jobId'
 import { Route as PostPostIdRouteImport } from './routes/post.$postId'
 import { Route as PerfilUsernameRouteImport } from './routes/perfil.$username'
 import { Route as ModeracaoReportIdRouteImport } from './routes/moderacao.$reportId'
+import { Route as GamesPainelRouteImport } from './routes/games.painel'
 import { Route as GamesUsernameRouteImport } from './routes/games.$username'
 import { Route as EmpresaSlugRouteImport } from './routes/empresa.$slug'
 import { Route as ComunidadesCommunityIdRouteImport } from './routes/comunidades.$communityId'
@@ -218,6 +219,11 @@ const ModeracaoReportIdRoute = ModeracaoReportIdRouteImport.update({
   path: '/$reportId',
   getParentRoute: () => ModeracaoRoute,
 } as any)
+const GamesPainelRoute = GamesPainelRouteImport.update({
+  id: '/painel',
+  path: '/painel',
+  getParentRoute: () => GamesRoute,
+} as any)
 const GamesUsernameRoute = GamesUsernameRouteImport.update({
   id: '/$username',
   path: '/$username',
@@ -305,6 +311,7 @@ export interface FileRoutesByFullPath {
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/empresa/$slug': typeof EmpresaSlugRoute
   '/games/$username': typeof GamesUsernameRouteWithChildren
+  '/games/painel': typeof GamesPainelRoute
   '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
@@ -350,6 +357,7 @@ export interface FileRoutesByTo {
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/empresa/$slug': typeof EmpresaSlugRoute
   '/games/$username': typeof GamesUsernameRouteWithChildren
+  '/games/painel': typeof GamesPainelRoute
   '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
@@ -396,6 +404,7 @@ export interface FileRoutesById {
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
   '/empresa/$slug': typeof EmpresaSlugRoute
   '/games/$username': typeof GamesUsernameRouteWithChildren
+  '/games/painel': typeof GamesPainelRoute
   '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
@@ -443,6 +452,7 @@ export interface FileRouteTypes {
     | '/comunidades/$communityId'
     | '/empresa/$slug'
     | '/games/$username'
+    | '/games/painel'
     | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
@@ -488,6 +498,7 @@ export interface FileRouteTypes {
     | '/comunidades/$communityId'
     | '/empresa/$slug'
     | '/games/$username'
+    | '/games/painel'
     | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
@@ -533,6 +544,7 @@ export interface FileRouteTypes {
     | '/comunidades/$communityId'
     | '/empresa/$slug'
     | '/games/$username'
+    | '/games/painel'
     | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
@@ -815,6 +827,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ModeracaoReportIdRouteImport
       parentRoute: typeof ModeracaoRoute
     }
+    '/games/painel': {
+      id: '/games/painel'
+      path: '/painel'
+      fullPath: '/games/painel'
+      preLoaderRoute: typeof GamesPainelRouteImport
+      parentRoute: typeof GamesRoute
+    }
     '/games/$username': {
       id: '/games/$username'
       path: '/$username'
@@ -914,10 +933,12 @@ const GamesUsernameRouteWithChildren = GamesUsernameRoute._addFileChildren(
 
 interface GamesRouteChildren {
   GamesUsernameRoute: typeof GamesUsernameRouteWithChildren
+  GamesPainelRoute: typeof GamesPainelRoute
 }
 
 const GamesRouteChildren: GamesRouteChildren = {
   GamesUsernameRoute: GamesUsernameRouteWithChildren,
+  GamesPainelRoute: GamesPainelRoute,
 }
 
 const GamesRouteWithChildren = GamesRoute._addFileChildren(GamesRouteChildren)

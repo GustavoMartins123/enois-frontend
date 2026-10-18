@@ -5,6 +5,7 @@ import { useState } from "react";
 import { Briefcase, Handshake, Send, Sparkles } from "lucide-react";
 
 import { servicesApi } from "@/lib/api";
+import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { isAuthenticated } from "@/lib/use-auth";
 
 import type { ServiceContract, ServiceListing, ServiceRequest } from "@/types/application/services/service-types";
@@ -95,7 +96,7 @@ function Price({ value }: { value: number }) {
   return (
     <span className="flex shrink-0 items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-sm font-semibold text-primary-text">
       <Sparkles className="h-3.5 w-3.5" />
-      {value}
+      {formatFaisca(value)}
     </span>
   );
 }
@@ -132,7 +133,7 @@ function RequestCard({ request }: { request: ServiceRequest }) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
-  const [price, setPrice] = useState(String(request.budgetMin));
+  const [price, setPrice] = useState("");
   const propose = useMutation({
     mutationFn: () => servicesApi.propose(request.id, { message, price: Math.round(Number(price) || 0) }),
     onSuccess: () => {
@@ -149,7 +150,7 @@ function RequestCard({ request }: { request: ServiceRequest }) {
           <span className="text-xs text-text-subtle">{request.category}</span>
         </span>
         <span className="shrink-0 text-sm font-semibold text-primary-text">
-          {request.budgetMin}–{request.budgetMax} faíscas
+          {formatFaisca(request.budgetMin)}–{formatFaisca(request.budgetMax)} faíscas
         </span>
       </div>
       <p className="mt-2 text-sm text-text-subtle">{request.description}</p>
@@ -163,11 +164,11 @@ function RequestCard({ request }: { request: ServiceRequest }) {
         <div className="mt-3 space-y-2">
           <Textarea rows={3} placeholder="Como você faria? (mínimo 10 caracteres)" value={message} onChange={(e) => setMessage(e.target.value)} />
           <div className="flex items-center gap-2">
-            <Input type="number" min={request.budgetMin} max={request.budgetMax} value={price} onChange={(e) => setPrice(e.target.value)} />
+            <Input inputMode="decimal" placeholder={`${formatFaisca(request.budgetMin)}–${formatFaisca(request.budgetMax)}`} value={price} onChange={(e) => setPrice(e.target.value)} />
             <Button
               size="sm"
               className="rounded-full gap-1"
-              disabled={propose.isPending || message.trim().length < 10 || !(Number(price) >= request.budgetMin && Number(price) <= request.budgetMax)}
+              disabled={propose.isPending || message.trim().length < 10 || (() => { const mf = parseFaiscaInput(price); return mf === null || mf < request.budgetMin || mf > request.budgetMax; })()}
               onClick={() => propose.mutate()}
             >
               <Send className="h-4 w-4" />
@@ -272,7 +273,7 @@ function NewOfferButton() {
         title: f.title.trim(),
         description: f.description.trim(),
         deliverables: f.deliverables.trim(),
-        price: Math.round(Number(f.price) || 0),
+        price: parseFaiscaInput(f.price) ?? 0,
         deliveryDays: Math.round(Number(f.deliveryDays) || 0),
       }),
     onSuccess: () => {
@@ -331,8 +332,8 @@ function NewRequestButton() {
         title: f.title.trim(),
         description: f.description.trim(),
         deliverables: f.deliverables.trim(),
-        budgetMin: Math.round(Number(f.budgetMin) || 0),
-        budgetMax: Math.round(Number(f.budgetMax) || 0),
+        budgetMin: parseFaiscaInput(f.budgetMin) ?? 0,
+        budgetMax: parseFaiscaInput(f.budgetMax) ?? 0,
       }),
     onSuccess: () => {
       setOpen(false);
