@@ -2,23 +2,10 @@ import { texts } from "@/texts";
 import type { PostView } from "@/types/application/feed/post-view";
 import type { LinkPreviewsProps } from "@/types/components/post/link-previews-props";
 
+import { directMediaKind, gifMediaUrl } from "@/lib/shared-links";
+
 import { EmbedPlayer } from "./embed-player";
 import { extractVideoId } from "./extract-video-id";
-
-/** URL de mídia direta de GIF (Giphy/Tenor) — renderiza a imagem, sem iframe. */
-function gifMediaUrl(url: string): string | null {
-  if (
-    /^https?:\/\/(media|i)\.giphy\.com\//.test(url) ||
-    /^https?:\/\/media\d*\.tenor\.com\//.test(url) ||
-    /\.gif(\?|$)/i.test(url)
-  ) {
-    return url;
-  }
-  // Página do Giphy: monta a mídia a partir do id no fim do slug.
-  const giphy = url.match(/giphy\.com\/(?:gifs\/)?[^/?#]*-([a-zA-Z0-9]+)\/?$/);
-  if (giphy) return `https://media.giphy.com/media/${giphy[1]}/giphy.gif`;
-  return null;
-}
 
 /** Renderiza preview de cada URL do conteúdo de um post (vídeo embedado ou card do link). */
 export function LinkPreviews({ content, autoplay = false }: LinkPreviewsProps) {
@@ -59,6 +46,26 @@ export function LinkPreviews({ content, autoplay = false }: LinkPreviewsProps) {
           );
         }
 
+        const media = directMediaKind(url);
+        if (media === "image") {
+          return (
+            <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="mt-2 block">
+              <img
+                src={url}
+                alt=""
+                loading="lazy"
+                className="max-h-72 max-w-full h-auto w-auto rounded-xl border border-border-soft"
+              />
+            </a>
+          );
+        }
+        if (media === "video") {
+          return <video key={url} src={url} controls playsInline className="mt-2 max-h-72 max-w-full rounded-xl border border-border-soft" />;
+        }
+        if (media === "audio") {
+          return <audio key={url} src={url} controls className="mt-2 w-full" />;
+        }
+
         return (
           <a
             key={url}
@@ -88,7 +95,7 @@ export function LinkPreviews({ content, autoplay = false }: LinkPreviewsProps) {
                 })()}
               </p>
 
-              <p className="truncate text-xs font-normal text-text-subtle">{url}</p>
+              <p className="truncate text-xs font-normal text-text-subtle">{texts.posts.video.openLabel}</p>
             </div>
           </a>
         );

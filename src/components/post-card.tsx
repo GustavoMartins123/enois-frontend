@@ -7,6 +7,7 @@ import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { POST_SEALS, postSeal } from "@/constants/post-seals";
 import { usePostCardStore } from "@/stores/post-card.store";
 import { postContentLimit } from "@/constants/post-content-limits";
+import { hideExternalPageUrls } from "@/lib/shared-links";
 import { texts } from "@/texts";
 import type { PostCardProps } from "@/types/components/post/post-card-props";
 import { BookOpen, FileText, MoreHorizontal, Pencil, Tag, Trash2 , Clock } from "lucide-react";
@@ -299,10 +300,10 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
           Na lista, texto acima de 400 caracteres entra cortado em 8 linhas com o "Ler mais" que
           abre o post; na propria pagina do post (`fullPost`) nada e cortado — o texto completo mora
           la. Artigo fica so cortado na lista: o bloco abaixo dele ja e o convite para abrir. */}
-      {post.content.trim() !== "" && (
+      {hideExternalPageUrls(post.content) !== "" && (
         <>
           <RichText
-            content={post.content}
+            content={hideExternalPageUrls(post.content)}
             className={cn(
               "mt-4 whitespace-pre-line break-words text-base font-normal leading-relaxed text-text-strong",
               isCompact && "line-clamp-8",

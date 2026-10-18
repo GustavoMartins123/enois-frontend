@@ -22,6 +22,8 @@ import { LinkPreviews } from "./link-previews";
 import { MediaGrid } from "./media-grid";
 import { ReactionPicker } from "./reaction-picker";
 import { ReportDialog } from "./report-dialog";
+import { hideExternalPageUrls } from "@/lib/shared-links";
+
 import { RichText } from "./rich-text";
 
 /** Um comentário (com responder, reagir e excluir). */
@@ -206,7 +208,7 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
                   lessLabel={texts.common.readLess}
                 >
                   <RichText
-                    content={content}
+                    content={hideExternalPageUrls(content)}
                     className="whitespace-pre-line break-words text-sm font-normal leading-relaxed text-text-strong"
                   />
                 </ReadMore>

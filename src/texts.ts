@@ -1016,6 +1016,7 @@ export const texts = {
       uploadFailed: "Não foi possível enviar a mídia. Tente de novo.",
     },
     video: {
+      openLabel: "abrir no site",
       watchOn: (provider: string) => `Clique para assistir no ${provider}`,
       icons: {
         cinema: "🎬",
