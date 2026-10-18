@@ -745,6 +745,7 @@ export const texts = {
     loadingMore: "Carregando mais publicações...",
     endOfFeed: "Você chegou ao fim do feed.",
     loadMore: "Carregar mais",
+    share: "Compartilhar",
     empty: "Nada por aqui ainda. Publicações da sua rede aparecem neste feed.",
     composer: {
       publishedOffer: "Publicado! Que tal levar esse insight para o LinkedIn também?",
@@ -1282,6 +1283,98 @@ export const texts = {
     },
   },
 
+  /**
+   * Énóis Games: o catálogo, a página do criador e o player.
+   *
+   * O texto diz o que é verdade: o Énóis NÃO hospeda o jogo — ele roda onde o criador publicou, e
+   * aqui é o convite. Quando o site de origem proíbe quadro, a tela explica em vez de fingir falha.
+   */
+  games: {
+    title: "Jogos",
+    description:
+      "Feitos pela comunidade. O Énóis não hospeda: cada jogo roda no lugar onde o criador o publicou — aqui só o convite.",
+    searchPlaceholder: "Buscar jogo, criador ou tag",
+    mostPlayed: "Mais jogados",
+    alphabetical: "A-Z",
+    loadMore: "Carregar mais",
+    share: "Compartilhar",
+    empty: "Nenhum jogo encontrado com esses filtros.",
+    emptyHint: "Você fez um jogo? Envie o link e ele aparece aqui depois da moderação.",
+    loading: "Carregando…",
+    error: "Não foi possível carregar o catálogo agora.",
+    /** Página do criador. */
+    developer: {
+      notFound: "Criador não encontrado.",
+      games: (count: number) => `${count} ${count === 1 ? "jogo" : "jogos"}`,
+      followers: (count: number) => `${count} ${count === 1 ? "seguidor" : "seguidores"}`,
+      follow: "Acompanhar",
+      following: "Acompanhando",
+      editPage: "Editar minha página",
+      about: "Sobre",
+      links: "Links",
+      noGames: "Nenhum jogo publicado ainda.",
+      badge: "Criador no Énóis Games",
+    },
+    /** Painel de quem publica. */
+    panel: {
+      title: "Painel do criador",
+      description:
+        "Aqui você edita a sua página de criador e acompanha a moderação dos seus jogos. Enviar um jogo novo é pelo botão da aba Jogos.",
+      profileTitle: "Minha página de criador",
+      displayName: "Nome de estúdio ou criador (opcional)",
+      headline: "Uma linha sobre o que você faz",
+      bio: "Sobre você ou o estúdio",
+      links: "Links separados por vírgula (site, GitHub, itch.io)",
+      gamesTitle: "Meus jogos",
+      noGames: "Você ainda não enviou nenhum jogo.",
+      view: "Ver página",
+      saved: "Página salva.",
+      error: "Não foi possível salvar agora.",
+      status: {
+        SUBMITTED: "Na fila de revisão",
+        PUBLISHED: "Publicado",
+        REJECTED: "Recusado",
+        SUSPENDED: "Fora do ar",
+      },
+    },
+    /** Página do jogo e player. */
+    game: {
+      play: "Jogar",
+      playAgain: "Jogar de novo",
+      fullscreen: "Tela cheia",
+      openAtOrigin: "Abrir no site do criador",
+      loading: "Carregando o jogo…",
+      /** O quadro não avisa quando o site recusa incorporação: a pessoa decide tentar de novo. */
+      blocked:
+        "O jogo não abriu aqui. O site do criador pode não permitir ser exibido dentro de outra página — abra na origem para jogar.",
+      retry: "Tentar de novo",
+      favorite: "Guardar na biblioteca",
+      unfavorite: "Tirar da biblioteca",
+      favorites: (count: number) => `${count} na biblioteca`,
+      share: "Compartilhar",
+      shareCopied: "Link do jogo copiado!",
+      stats: (plays: number, players: number) =>
+        plays === 1 ? "1 sessão" : `${plays} sessões · ${players} ${players === 1 ? "pessoa jogou" : "pessoas jogaram"}`,
+      about: "Sobre o jogo",
+      details: "Ficha",
+      genres: "Gêneros",
+      languages: "Idiomas",
+      controls: "Controles",
+      requirements: "Requisitos",
+      warnings: "Avisos de conteúdo",
+      version: (value: string) => `Versão ${value}`,
+      /** A compra ainda não existe: dizer "em breve" é melhor que esconder o preço. */
+      priceSoon: (coins: number) => `${coins} faíscas · compra em breve`,
+      free: "Grátis",
+      updates: "Novidades do criador",
+      noUpdates: "O criador ainda não publicou novidades.",
+      by: "por",
+      suspended: "Este jogo está fora do ar por decisão da moderação.",
+      notPublished: "Este jogo ainda não está publicado — só você vê esta página.",
+      external: "Jogo externo",
+    },
+  },
+
   communities: {
     seoTitle: "Comunidades · Énóis",
     title: "Comunidades",
@@ -1335,6 +1428,7 @@ export const texts = {
       confirm: "Excluir",
     },
     loadMore: "Carregar mais",
+    share: "Compartilhar",
     create: {
       title: "Criar comunidade",
       name: "Nome",

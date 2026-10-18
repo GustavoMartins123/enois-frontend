@@ -1,12 +1,35 @@
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef, useState } from "react";
 
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useRef, useState } from "react";
-import { ExternalLink, Maximize2, ShieldAlert } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, createFileRoute } from "@tanstack/react-router";
+
+import { texts } from "@/texts";
+import { Bookmark, ExternalLink, Gamepad2, Loader2, Maximize2, Share2 } from "lucide-react";
 
 import { gamesApi } from "@/lib/api";
+import { useAuth } from "@/lib/use-auth";
+import { cn } from "@/lib/utils";
+
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
+
+/** A proporção do quadro, escolhida pelo criador (o jogo decide como quer aparecer). */
+const ASPECT: Record<string, string> = {
+  WIDESCREEN: "16 / 9",
+  CLASSIC: "4 / 3",
+  SQUARE: "1 / 1",
+  PORTRAIT: "9 / 16",
+};
+
+const STAGE_LABEL: Record<string, string> = {
+  IN_DEVELOPMENT: "Em desenvolvimento",
+  DEMO: "Demo",
+  EARLY_ACCESS: "Acesso antecipado",
+  RELEASED: "Lançado",
+  PAUSED: "Pausado",
+};
 
 export const Route = createFileRoute("/games/$username/$gameSlug")({
   head: ({ params }) => ({ meta: [{ title: `${params.gameSlug} · Jogos · Énóis` }] }),
@@ -14,23 +37,59 @@ export const Route = createFileRoute("/games/$username/$gameSlug")({
 });
 
 /**
- * O jogo embutido (Parte E): o Énóis NÃO hospeda — o quadro carrega o jogo do lugar
- * onde o criador o publicou. O sandbox deixa scripts rodar, mas sem popups livres e
- * sem formulários; a tela cheia é explícita (allow="fullscreen" + botão).
+ * A página do jogo e o player.
+ *
+ * O Énóis NÃO hospeda: o quadro carrega o endereço onde o criador publicou, com sandbox mínimo e
+ * tela cheia explícita. O que a tela garante: **nenhum botão mente sobre o estado do jogo** (jogo
+ * fora do ar não aparece como jogável), a sessão é contada pelo servidor quando alguém aperta jogar,
+ * e o site de origem pode recusar o quadro — aí a tela explica e oferece abrir na origem em vez de
+ * fingir que o jogo quebrou.
  */
 function GamePage() {
   const { username, gameSlug } = Route.useParams();
+  const { requireAuth } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [playing, setPlaying] = useState(false);
+  const [failed, setFailed] = useState(false);
+  const frame = useRef<HTMLIFrameElement>(null);
+
   const game = useQuery({
     queryKey: ["games", "slug", username, gameSlug],
     queryFn: () => gamesApi.bySlug(username, gameSlug),
   });
-  const frame = useRef<HTMLIFrameElement>(null);
-  const [playing, setPlaying] = useState(false);
+
+  const updates = useQuery({
+    queryKey: ["games", "updates", game.data?.id],
+    queryFn: () => gamesApi.updates(game.data!.id),
+    enabled: Boolean(game.data?.id),
+  });
+
+  const play = useMutation({
+    mutationFn: (gameId: string) => gamesApi.play(gameId),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["games", "slug", username, gameSlug] }),
+  });
+
+  const favorite = useMutation({
+    mutationFn: (vars: { gameId: string; favorited: boolean }) =>
+      vars.favorited ? gamesApi.unfavorite(vars.gameId) : gamesApi.favorite(vars.gameId),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["games", "slug", username, gameSlug] }),
+  });
+
+  // O quadro não avisa quando o site recusa incorporação: se nada carregar em 12s, oferecemos a
+  // saída honesta (abrir na origem) em vez de deixar a pessoa olhando um retângulo vazio.
+  useEffect(() => {
+    if (!playing || failed) return;
+    const timer = setTimeout(() => setFailed(true), 12_000);
+    return () => clearTimeout(timer);
+  }, [playing, failed]);
 
   if (game.isLoading) {
     return (
       <AppContainer>
-        <p className="py-10 text-center text-sm text-text-subtle">Carregando…</p>
+        <p className="py-10 text-center text-sm text-text-subtle">{texts.games.loading}</p>
       </AppContainer>
     );
   }
@@ -38,19 +97,31 @@ function GamePage() {
   if (game.isError || !game.data) {
     return (
       <AppContainer>
-        <p className="py-10 text-center text-sm text-text-subtle">Jogo não encontrado.</p>
+        <div className="surface-card mx-auto max-w-2xl p-8 text-center">
+          <Gamepad2 className="mx-auto h-10 w-10 text-primary" />
+
+          <p className="mt-3 text-sm font-medium text-text-strong">
+            {texts.games.developer.notFound}
+          </p>
+
+          <Link to="/games" className="mt-2 inline-block text-sm text-primary hover:underline">
+            {texts.games.title}
+          </Link>
+        </div>
       </AppContainer>
     );
   }
 
   const g = game.data;
+  const playable = g.status === "PUBLISHED";
+  const gallery = [g.cover, ...g.mediaIds].filter(Boolean) as string[];
 
   return (
     <AppContainer>
-      <div className="mx-auto w-full max-w-4xl">
+      <div className="mx-auto w-full max-w-4xl space-y-5">
         <p className="text-sm text-text-subtle">
           <Link to="/games" className="hover:underline">
-            Jogos
+            {texts.games.title}
           </Link>
           {" / "}
           <Link to="/games/$username" params={{ username }} className="hover:underline">
@@ -58,81 +129,291 @@ function GamePage() {
           </Link>
         </p>
 
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">{g.title}</h1>
-        {g.description && <p className="mt-1 text-sm text-text-subtle">{g.description}</p>}
+        <header className="flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-2xl font-semibold tracking-tight text-text-strong">{g.title}</h1>
 
-        <div className="relative mt-4 overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
-          {playing ? (
-            <iframe
-              ref={frame}
-              src={g.url}
-              title={g.title}
-              className="aspect-video w-full"
-              allow="fullscreen; gamepad; autoplay"
-              sandbox="allow-scripts allow-same-origin allow-pointer-lock"
-              referrerPolicy="no-referrer"
-            />
-          ) : (
-            <button
-              type="button"
-              className="grid aspect-video w-full place-items-center bg-primary-soft"
-              onClick={() => setPlaying(true)}
-            >
-              <span className="text-center">
-                <span className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-primary text-primary-text shadow-soft">
-                  ▶
-                </span>
-                <span className="mt-3 block text-sm font-medium">Jogar (carrega o jogo de {host(g.url)})</span>
+            <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-text-subtle">
+              <Link
+                to="/games/$username"
+                params={{ username }}
+                className="font-medium text-primary hover:underline"
+              >
+                {g.username ?? username}
+              </Link>
+
+              <span className="rounded-full border border-border-soft px-2 py-0.5 text-xs">
+                {STAGE_LABEL[g.stage] ?? g.stage}
               </span>
-            </button>
-          )}
 
-          {playing && (
-            <button
-              type="button"
-              aria-label="Tela cheia"
-              className="absolute right-2 top-2 grid h-9 w-9 place-items-center rounded-full bg-black/60 text-white"
-              onClick={() => frame.current?.requestFullscreen?.()}
+              <span className="rounded-full border border-border-soft px-2 py-0.5 text-xs">
+                {g.distribution === "PAID"
+                  ? texts.games.game.priceSoon(g.priceCoins)
+                  : texts.games.game.free}
+              </span>
+
+              {g.version && <span className="text-xs">{texts.games.game.version(g.version)}</span>}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap gap-1.5">
+            <Button
+              variant="outline"
+              size="sm"
+              className={cn("rounded-full gap-1.5", g.favorited && "text-primary")}
+              disabled={favorite.isPending}
+              onClick={() => {
+                if (!requireAuth()) return;
+                favorite.mutate({ gameId: g.id, favorited: g.favorited });
+              }}
             >
-              <Maximize2 className="h-4 w-4" />
-            </button>
-          )}
-        </div>
+              <Bookmark className="h-3.5 w-3.5" />
 
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-          <p className="flex items-center gap-1.5 text-xs text-text-subtle">
-            <ShieldAlert className="h-3.5 w-3.5" />
-            O jogo roda fora do Énóis, num quadro isolado.
+              <>{g.favorited ? texts.games.game.unfavorite : texts.games.game.favorite}</>
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full gap-1.5"
+              onClick={async () => {
+                const url = `${window.location.origin}/games/${g.username ?? username}/${g.slug}`;
+                try {
+                  await navigator.clipboard.writeText(url);
+                  toast(texts.games.game.shareCopied, "success");
+                } catch {
+                  toast(texts.games.game.shareCopied, "error");
+                }
+              }}
+            >
+              <Share2 className="h-3.5 w-3.5" />
+
+              <>{texts.games.share}</>
+            </Button>
+          </div>
+        </header>
+
+        {!playable && (
+          <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
+            {g.status === "SUSPENDED" ? texts.games.game.suspended : texts.games.game.notPublished}
           </p>
-          <a
-            href={g.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-text hover:underline"
-          >
-            <ExternalLink className="h-4 w-4" />
-            Abrir em nova aba
-          </a>
+        )}
+
+        {/* O player: clique para jogar (nada roda sozinho), proporção do criador e tela cheia. */}
+        <div className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
+          <div className="relative w-full" style={{ aspectRatio: ASPECT[g.aspect] ?? "16 / 9" }}>
+            {playing && playable && !failed ? (
+              <iframe
+                ref={frame}
+                src={g.url}
+                title={g.title}
+                className="h-full w-full border-0"
+                allow="fullscreen; gamepad; autoplay"
+                sandbox="allow-scripts allow-same-origin allow-pointer-lock"
+                referrerPolicy="no-referrer"
+              />
+            ) : (
+              <button
+                type="button"
+                className="grid h-full w-full place-items-center bg-primary-soft text-center"
+                disabled={!playable}
+                onClick={() => {
+                  setPlaying(true);
+                  setFailed(false);
+                  play.mutate(g.id);
+                }}
+              >
+                <span>
+                  {failed ? (
+                    <>
+                      <p className="mx-auto max-w-sm px-4 text-sm text-text-strong">
+                        {texts.games.game.blocked}
+                      </p>
+
+                      <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary">
+                        <ExternalLink className="h-4 w-4" />
+
+                        <>{texts.games.game.openAtOrigin}</>
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Gamepad2 className="mx-auto h-10 w-10 text-primary-text" />
+
+                      <span className="mt-2 block text-sm font-medium text-primary-text">
+                        {texts.games.game.play}
+                      </span>
+
+                      <span className="mt-1 block text-xs text-text-subtle">
+                        {texts.games.game.external}
+                      </span>
+                    </>
+                  )}
+                </span>
+              </button>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border-soft px-3 py-2">
+            <p className="text-xs text-text-subtle">
+              {texts.games.game.stats(g.plays, g.plays)}
+              {g.favorites > 0 && ` · ${texts.games.game.favorites(g.favorites)}`}
+            </p>
+
+            <div className="flex gap-1.5">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-full gap-1.5 text-xs"
+                onClick={() => {
+                  setFailed(false);
+                  setPlaying(true);
+                }}
+              >
+                {play.isPending ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Gamepad2 className="h-3.5 w-3.5" />
+                )}
+
+                <>{texts.games.game.retry}</>
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="rounded-full gap-1.5 text-xs"
+                onClick={() => frame.current?.requestFullscreen?.().catch(() => undefined)}
+              >
+                <Maximize2 className="h-3.5 w-3.5" />
+
+                <>{texts.games.game.fullscreen}</>
+              </Button>
+
+              <a
+                href={g.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-text-subtle transition hover:bg-muted hover:text-foreground"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+
+                <>{texts.games.game.openAtOrigin}</>
+              </a>
+            </div>
+          </div>
         </div>
 
-        {g.tags && (
-          <ul className="mt-3 flex flex-wrap gap-1.5">
-            {g.tags.split(",").map((t) => (
-              <li key={t} className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-text-subtle">
-                {t.trim()}
-              </li>
+        {gallery.length > 1 && (
+          <div className="flex gap-2 overflow-x-auto pb-1">
+            {gallery.slice(1, 6).map((url) => (
+              <img
+                key={url}
+                src={url}
+                alt=""
+                className="h-24 w-40 shrink-0 rounded-xl border border-border-soft object-cover"
+              />
             ))}
-          </ul>
+          </div>
         )}
+
+        <section className="surface-card space-y-3 p-4 sm:p-5">
+          <h2 className="text-base font-medium">{texts.games.game.about}</h2>
+
+          <p className="whitespace-pre-line text-sm font-normal text-muted-foreground">
+            {g.description}
+          </p>
+
+          <dl className="grid gap-2 text-sm sm:grid-cols-2">
+            {g.genres.length > 0 && (
+              <div>
+                <dt className="text-xs font-medium uppercase tracking-wide text-text-subtle">
+                  {texts.games.game.genres}
+                </dt>
+
+                <dd className="text-text-strong">{g.genres.join(", ")}</dd>
+              </div>
+            )}
+
+            {g.languages.length > 0 && (
+              <div>
+                <dt className="text-xs font-medium uppercase tracking-wide text-text-subtle">
+                  {texts.games.game.languages}
+                </dt>
+
+                <dd className="text-text-strong">{g.languages.join(", ")}</dd>
+              </div>
+            )}
+
+            {g.controls && (
+              <div>
+                <dt className="text-xs font-medium uppercase tracking-wide text-text-subtle">
+                  {texts.games.game.controls}
+                </dt>
+
+                <dd className="text-text-strong">{g.controls}</dd>
+              </div>
+            )}
+
+            {g.requirements && (
+              <div>
+                <dt className="text-xs font-medium uppercase tracking-wide text-text-subtle">
+                  {texts.games.game.requirements}
+                </dt>
+
+                <dd className="text-text-strong">{g.requirements}</dd>
+              </div>
+            )}
+
+            {g.contentWarnings && (
+              <div>
+                <dt className="text-xs font-medium uppercase tracking-wide text-text-subtle">
+                  {texts.games.game.warnings}
+                </dt>
+
+                <dd className="text-text-strong">{g.contentWarnings}</dd>
+              </div>
+            )}
+          </dl>
+        </section>
+
+        <section className="surface-card space-y-3 p-4 sm:p-5">
+          <h2 className="text-base font-medium">{texts.games.game.updates}</h2>
+
+          {(updates.data?.length ?? 0) === 0 ? (
+            <p className="text-sm font-normal text-text-subtle">{texts.games.game.noUpdates}</p>
+          ) : (
+            <ul className="space-y-3">
+              {updates.data!.map((update) => (
+                <li key={update.id} className="border-l-2 border-border-soft pl-3">
+                  <p className="text-sm font-medium text-text-strong">
+                    {update.title}
+                    {update.version && (
+                      <span className="ml-2 text-xs font-normal text-text-subtle">
+                        {texts.games.game.version(update.version)}
+                      </span>
+                    )}
+                  </p>
+
+                  <p className="text-xs text-text-subtle">
+                    {new Date(update.createdAt).toLocaleDateString("pt-BR", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+
+                  {update.body && (
+                    <p className="mt-1 whitespace-pre-line text-sm font-normal text-muted-foreground">
+                      {update.body}
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </div>
     </AppContainer>
   );
-}
-
-function host(url: string): string {
-  try {
-    return new URL(url).host;
-  } catch {
-    return url;
-  }
 }

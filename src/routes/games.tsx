@@ -1,12 +1,16 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
-import { Gamepad2, ExternalLink, Send } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, createFileRoute } from "@tanstack/react-router";
 
+import { GAME_GENRES, GAME_STAGES } from "@/constants/game-options";
 import { texts } from "@/texts";
+import type { GameView } from "@/types/application/games/game-view";
+import { ExternalLink, Gamepad2, Send } from "lucide-react";
+
 import { gamesApi } from "@/lib/api";
 import { isAuthenticated } from "@/lib/use-auth";
+import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +31,44 @@ export const Route = createFileRoute("/games")({
  */
 function Games() {
   const authenticated = isAuthenticated();
-  const catalog = useQuery({ queryKey: ["games", "catalog"], queryFn: () => gamesApi.catalog(60) });
+  const [query, setQuery] = useState("");
+  const [genre, setGenre] = useState("");
+  const [stage, setStage] = useState("");
+  const [order, setOrder] = useState<"recent" | "plays" | "title">("recent");
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [pages, setPages] = useState<GameView[]>([]);
+
+  // Busca com atraso: sem isso cada tecla dispara uma consulta ao backend.
+  const [term, setTerm] = useState("");
+  useEffect(() => {
+    const timer = setTimeout(() => setTerm(query.trim()), 350);
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  // Trocar qualquer filtro recomeça a lista (o cursor antigo não vale para outra consulta).
+  useEffect(() => {
+    setCursor(null);
+    setPages([]);
+  }, [term, genre, stage, order]);
+
+  const filters = {
+    query: term || undefined,
+    genre: genre || undefined,
+    stage: stage || undefined,
+    order,
+  };
+  const catalog = useQuery({
+    queryKey: ["games", "catalog", filters, cursor],
+    queryFn: () => gamesApi.catalog({ ...filters, limit: 24, cursor }),
+  });
+
+  useEffect(() => {
+    if (!catalog.data) return;
+    setPages((current) =>
+      cursor === null ? catalog.data.items : [...current, ...catalog.data.items],
+    );
+  }, [catalog.data, cursor]);
+
   const mine = useQuery({
     queryKey: ["games", "mine"],
     queryFn: () => gamesApi.mine(),
@@ -43,9 +84,10 @@ function Games() {
               <Gamepad2 className="h-6 w-6 text-primary" />
               Jogos
             </h1>
+
             <p className="mt-1 text-sm text-text-subtle">
-              Feitos pela comunidade. O Énóis não hospeda: cada jogo roda no lugar onde o criador
-              o publicou — aqui só o convite.
+              Feitos pela comunidade. O Énóis não hospeda: cada jogo roda no lugar onde o criador o
+              publicou — aqui só o convite.
             </p>
           </div>
           {authenticated && <SubmitButton />}
@@ -53,23 +95,101 @@ function Games() {
 
         {mine.data && mine.data.length > 0 && <MyGames games={mine.data} />}
 
+        {/* Busca e filtros: o catálogo é para DESCOBRIR — sem isto só rola quem já sabe o que quer. */}
+        <div className="mb-4 space-y-2">
+          <Input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={texts.games.searchPlaceholder}
+            aria-label={texts.games.searchPlaceholder}
+          />
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            {GAME_STAGES.map((item) => (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setStage(stage === item.id ? "" : item.id)}
+                className={cn(
+                  "rounded-full border px-2.5 py-1 text-xs font-medium transition",
+                  stage === item.id
+                    ? "border-primary bg-primary-soft text-primary-text"
+                    : "border-border-soft text-text-subtle hover:bg-surface-2",
+                )}
+              >
+                {item.label}
+              </button>
+            ))}
+
+            <span className="mx-1 h-4 w-px bg-border-soft" aria-hidden />
+
+            <button
+              type="button"
+              onClick={() => setOrder(order === "plays" ? "recent" : "plays")}
+              className={cn(
+                "rounded-full border px-2.5 py-1 text-xs font-medium transition",
+                order === "plays"
+                  ? "border-primary bg-primary-soft text-primary-text"
+                  : "border-border-soft text-text-subtle hover:bg-surface-2",
+              )}
+            >
+              {texts.games.mostPlayed}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setOrder(order === "title" ? "recent" : "title")}
+              className={cn(
+                "rounded-full border px-2.5 py-1 text-xs font-medium transition",
+                order === "title"
+                  ? "border-primary bg-primary-soft text-primary-text"
+                  : "border-border-soft text-text-subtle hover:bg-surface-2",
+              )}
+            >
+              {texts.games.alphabetical}
+            </button>
+          </div>
+
+          {GAME_GENRES.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              {GAME_GENRES.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  onClick={() => setGenre(genre === item ? "" : item)}
+                  className={cn(
+                    "rounded-full px-2 py-0.5 text-xs font-normal transition",
+                    genre === item
+                      ? "bg-primary text-primary-foreground"
+                      : "text-text-subtle hover:bg-surface-2",
+                  )}
+                >
+                  {item}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
         {catalog.isLoading ? (
           <p className="py-10 text-center text-sm text-text-subtle">Carregando…</p>
         ) : catalog.isError ? (
           <p className="py-10 text-center text-sm text-text-subtle">
             Não foi possível carregar o catálogo agora.
           </p>
-        ) : (catalog.data?.length ?? 0) === 0 ? (
+        ) : pages.length === 0 ? (
           <div className="surface-card rounded-2xl p-8 text-center">
             <Gamepad2 className="mx-auto h-10 w-10 text-primary" />
+
             <p className="mt-3 text-sm font-medium">Nenhum jogo publicado ainda.</p>
+
             <p className="mt-1 text-sm text-text-subtle">
               Você fez um jogo? Envie o link e ele aparece aqui depois da moderação.
             </p>
           </div>
         ) : (
           <ul className="grid gap-3 sm:grid-cols-2">
-            {catalog.data!.map((g) => (
+            {pages.map((g) => (
               <li key={g.id}>
                 <Link
                   to="/games/$username/$gameSlug"
@@ -77,17 +197,33 @@ function Games() {
                   className="surface-card flex items-center gap-3 p-4 transition hover:border-primary"
                 >
                   <GameCover cover={g.cover} />
+
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold">{g.title}</span>
+
                     <span className="block truncate text-sm text-text-subtle">
                       {g.description || " "}
                     </span>
                   </span>
+
                   <ExternalLink className="h-4 w-4 shrink-0 text-text-subtle" />
                 </Link>
               </li>
             ))}
           </ul>
+        )}
+
+        {catalog.data?.nextCursor && (
+          <div className="mt-4 flex justify-center">
+            <Button
+              variant="outline"
+              className="rounded-full"
+              disabled={catalog.isFetching}
+              onClick={() => setCursor(catalog.data?.nextCursor ?? null)}
+            >
+              {catalog.isFetching ? texts.common.loading : texts.games.loadMore}
+            </Button>
+          </div>
         )}
       </div>
     </AppContainer>
@@ -116,15 +252,19 @@ function MyGames({ games }: { games: Awaited<ReturnType<typeof gamesApi.mine>> }
   return (
     <section className="mb-6">
       <h2 className="mb-2 text-sm font-semibold text-text-subtle">Meus envios</h2>
+
       <ul className="space-y-2">
         {games.map((g) => (
           <li key={g.id} className="surface-card flex items-center gap-3 p-3">
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-medium">{g.title}</span>
               {g.status === "REJECTED" && g.reviewNote && (
-                <span className="block truncate text-xs text-text-subtle">Moderação: {g.reviewNote}</span>
+                <span className="block truncate text-xs text-text-subtle">
+                  Moderação: {g.reviewNote}
+                </span>
               )}
             </span>
+
             <StatusBadge status={g.status} />
             {g.status === "REJECTED" && (
               <Button
@@ -156,7 +296,9 @@ function StatusBadge({ status }: { status: string }) {
     REJECTED: "não aceito",
   };
   return (
-    <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${map[status] ?? map.SUBMITTED}`}>
+    <span
+      className={`rounded-full px-2 py-0.5 text-xs font-medium ${map[status] ?? map.SUBMITTED}`}
+    >
       {label[status] ?? status}
     </span>
   );
@@ -189,12 +331,16 @@ function SubmitButton() {
       </Button>
 
       {open && (
-        <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4" onClick={() => setOpen(false)}>
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4"
+          onClick={() => setOpen(false)}
+        >
           <div
             className="surface-card w-full max-w-md rounded-2xl p-5"
             onClick={(e) => e.stopPropagation()}
           >
             <h2 className="text-lg font-semibold">Enviar um jogo</h2>
+
             <p className="mt-1 text-sm text-text-subtle">
               O jogo precisa estar publicado em outro lugar (itch.io, site próprio). Envie o link —
               a moderação revisa antes de publicar.
@@ -203,34 +349,46 @@ function SubmitButton() {
             <div className="mt-4 space-y-3">
               <label className="block text-sm">
                 <span className="mb-1 block font-medium">Título</span>
-                <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} />
+
+                <Input
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                />
               </label>
+
               <label className="block text-sm">
                 <span className="mb-1 block font-medium">Slug (o endereço do jogo)</span>
+
                 <Input
                   placeholder="kawaiigame"
                   value={form.slug}
                   onChange={(e) => setForm({ ...form, slug: e.target.value })}
                 />
               </label>
+
               <label className="block text-sm">
                 <span className="mb-1 block font-medium">Link do jogo (https)</span>
+
                 <Input
                   placeholder="https://meujogo.itch.io/…"
                   value={form.url}
                   onChange={(e) => setForm({ ...form, url: e.target.value })}
                 />
               </label>
+
               <label className="block text-sm">
                 <span className="mb-1 block font-medium">Descrição</span>
+
                 <Textarea
                   rows={3}
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                 />
               </label>
+
               <label className="block text-sm">
                 <span className="mb-1 block font-medium">Tags (separadas por vírgula)</span>
+
                 <Input
                   value={form.tags}
                   onChange={(e) => setForm({ ...form, tags: e.target.value })}
@@ -248,8 +406,11 @@ function SubmitButton() {
               <Button variant="ghost" onClick={() => setOpen(false)}>
                 Cancelar
               </Button>
+
               <Button
-                disabled={submit.isPending || !form.title.trim() || !form.slug.trim() || !form.url.trim()}
+                disabled={
+                  submit.isPending || !form.title.trim() || !form.slug.trim() || !form.url.trim()
+                }
                 onClick={() => submit.mutate()}
               >
                 Enviar para moderação
