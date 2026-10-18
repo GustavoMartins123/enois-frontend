@@ -158,7 +158,9 @@ export function EditProfileDialog({ profile, children }: Props) {
       bio: bio || null,
       company: company || null,
       location: location || null,
-      availability: availability || null,
+      // Apenas apagar o valor, nao alterava o campo. O servidor entende string vazia como "limpar", null como "preservar".
+      // Desta forma, se o usuário apagar o campo, ele será removido do perfil de fato.
+      availability: availability !== (profile.availability ?? "") ? (availability === "" ? "" : availability) : undefined,
       portfolio: portfolio || null,
       externalLinks: linksText
         ? linksText
