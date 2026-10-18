@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -7,23 +7,10 @@ import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { POST_SEALS, postSeal } from "@/constants/post-seals";
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
-import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { PostCardProps } from "@/types/components/post/post-card-props";
-import {
-  BookOpen,
-  Bookmark,
-  FileText,
-  Flag,
-  Heart,
-  MessageSquare,
-  MoreHorizontal,
-  Pencil,
-  Share2,
-  Tag,
-  Trash2,
-} from "lucide-react";
+import { BookOpen, FileText, MoreHorizontal, Pencil, Tag, Trash2 } from "lucide-react";
 
-import { REACTION_EMOJIS, communitiesApi, feedApi, reactionsApi } from "@/lib/api";
+import { communitiesApi, feedApi } from "@/lib/api";
 import { sealsApi } from "@/lib/api/seals";
 import { useAuth } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
@@ -42,12 +29,10 @@ import { AuthorInfo } from "./post/author-info";
 import { formatTime } from "./post/format-time";
 import { LinkPreviews } from "./post/link-previews";
 import { MediaGrid } from "./post/media-grid";
+import { PostActions } from "./post/post-actions";
 import { PostComments } from "./post/post-comments";
 import { PostPage } from "./post/post-page";
-import { ReactionPicker } from "./post/reaction-picker";
-import { ReactionsDialog } from "./post/reactions-dialog";
 import { ReactionsSummary } from "./post/reactions-summary";
-import { ReportDialog } from "./post/report-dialog";
 import { RichText } from "./post/rich-text";
 import { typeMeta } from "./post/type-meta";
 
@@ -83,7 +68,6 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
     },
     onError: () => toast(texts.posts.seals.error, "error"),
   });
-  const [saved, setSaved] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [draft, setDraft] = useState(post.content);
@@ -99,100 +83,21 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
     enabled: needsPage,
   });
   const pageHtml = post.pageHtml ?? pagePost?.pageHtml ?? "";
+  // As ações do post (reagir, comentar, compartilhar, salvar, denunciar) moram no `PostActions` —
+  // a mesma peça que o post do blog usa. Aqui fica só o card, que é quem inicializa o estado dele.
   const initializePostCard = usePostCardStore((state) => state.initializePostCard);
   const disposePostCard = usePostCardStore((state) => state.disposePostCard);
-  const card = usePostCardStore((state) => state.cards[post.id]);
-  const setPostCounters = usePostCardStore((state) => state.setPostCounters);
-  const setReactionStatus = usePostCardStore((state) => state.setReactionStatus);
-  const setShowReactions = usePostCardStore((state) => state.setShowReactions);
-  const setShowReport = usePostCardStore((state) => state.setShowReport);
-
-  // O estado de "denunciar" ja vem no card selecionado acima (sem seletor novo).
-  const showReport = card?.showReport ?? false;
-  const postCounters = card?.postCounters ?? post.counters;
-  const reactionStatus = card?.reactionStatus ?? post.currentUserReaction ?? null;
 
   useEffect(() => {
     initializePostCard(post);
     return () => disposePostCard(post.id);
   }, [disposePostCard, initializePostCard, post]);
 
-  useEffect(() => {
-    setReactionStatus(post.id, post.currentUserReaction ?? null);
-  }, [post.currentUserReaction, post.id, setReactionStatus]);
-
-  const { data: savedData } = useQuery({
-    queryKey: ["saved-posts"],
-    queryFn: () => feedApi.listSaved(),
-    staleTime: 30_000,
-  });
-
-  useEffect(() => {
-    if (savedData) {
-      setSaved(savedData.items.some((p) => p.id === post.id));
-    }
-  }, [savedData, post.id]);
-
   // A página chega depois do card (requisição própria): preenche o rascunho da edição quando ela
   // aparece, sem atropelar o que o autor já está digitando no diálogo aberto.
   useEffect(() => {
     if (!editOpen) setPageDraft(pageHtml);
   }, [editOpen, pageHtml]);
-
-  const totalComments = useMemo(() => postCounters.comments, [postCounters.comments]);
-
-  const handleReaction = async (type: ReactionType) => {
-    if (!requireAuth()) return;
-    try {
-      if (reactionStatus === type) {
-        const result = await reactionsApi.removeReaction(post.id);
-        setReactionStatus(post.id, null);
-        if ("counters" in result) setPostCounters(post.id, result.counters!);
-      } else {
-        const result = await reactionsApi.react(post.id, type);
-        setReactionStatus(post.id, type);
-        if ("counters" in result) setPostCounters(post.id, result.counters!);
-      }
-    } catch {
-      // silently fail
-    }
-  };
-
-  const handleSave = async () => {
-    if (!requireAuth()) return;
-    try {
-      const result = saved
-        ? await reactionsApi.removeSave(post.id)
-        : await reactionsApi.save(post.id);
-      setSaved(!saved);
-      setPostCounters(post.id, result.counters);
-    } catch {
-      // silently fail
-    }
-  };
-
-  const handleShare = async () => {
-    if (!requireAuth()) return;
-    const url = `${window.location.origin}/post/${post.id}`;
-    try {
-      const result = await reactionsApi.share(post.id);
-      setPostCounters(post.id, result.counters);
-      // Share nativo so no celular: no desktop o dialog rejeita sem gesto e parecia
-      // "nao fazer nada". PC copia o link (com aviso); mobile usa o sheet do sistema.
-      if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
-        try {
-          await navigator.share({ url });
-          return;
-        } catch (nativeFailed) {
-          // usuario cancelou ou o navegador recusou: cai para copiar
-        }
-      }
-      await navigator.clipboard.writeText(url);
-      toast(texts.posts.shareCopied, "success");
-    } catch {
-      toast(texts.posts.shareCopied, "error");
-    }
-  };
 
   // Post proprio: editar o texto e excluir. O backend confere o dono; a UI so evita mostrar para os outros.
   const editPost = useMutation({
@@ -457,133 +362,68 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
         </div>
       )}
 
-      <footer className="mt-4 flex justify-between flex-wrap items-center gap-1 border-t border-border pt-3 text-sm text-muted-foreground">
-        <div className="flex flex-wrap">
-          <ReactionPicker
-            activeType={reactionStatus}
-            onReact={handleReaction}
-            buttonClassName={`flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground ${
-              reactionStatus ? "text-primary" : ""
-            }`}
-            buttonTitle={
-              reactionStatus
-                ? texts.posts.reactions.reactedWith(REACTION_EMOJIS[reactionStatus])
-                : texts.posts.reactions.react
-            }
-          >
-            {reactionStatus ? (
-              <span className="text-base leading-none">{REACTION_EMOJIS[reactionStatus]}</span>
-            ) : (
-              <Heart className="h-4 w-4" />
-            )}
-          </ReactionPicker>
+      {/* Selos: entram na fileira das ações (a peça é do card, que é quem sabe os selos do post). */}
+      <PostActions post={post} onComments={toggleComments}>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
+              title={texts.posts.seals.action}
+              aria-label={texts.posts.seals.action}
+            >
+              <Tag className="h-4 w-4" />
+            </button>
+          </PopoverTrigger>
 
-          <button
-            onClick={() => setShowReactions(post.id, true)}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 text-xs tabular-nums transition hover:bg-muted hover:text-foreground text-muted-foreground"
-          >
-            {postCounters.reactions}
-          </button>
+          <PopoverContent align="start" className="w-64 p-3">
+            <p className="text-xs font-semibold uppercase tracking-widest text-text-subtle">
+              {texts.posts.seals.title}
+            </p>
 
-          <button
-            onClick={toggleComments}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground"
-          >
-            <MessageSquare className="h-4 w-4" />
-
-            <>{totalComments}</>
-          </button>
-
-          {/* Só o ícone: com o rótulo, esta era a única ação que empurrava a fileira para uma
-              segunda linha. O nome continua no title/aria-label, para quem usa leitor de tela. */}
-          <button
-            onClick={handleShare}
-            title={texts.posts.share}
-            aria-label={texts.posts.share}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-          >
-            <Share2 className="h-4 w-4" />
-          </button>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
-                title={texts.posts.seals.action}
-                aria-label={texts.posts.seals.action}
-              >
-                <Tag className="h-4 w-4" />
-              </button>
-            </PopoverTrigger>
-
-            <PopoverContent align="start" className="w-64 p-3">
-              <p className="text-xs font-semibold uppercase tracking-widest text-text-subtle">
-                {texts.posts.seals.title}
-              </p>
-
-              <div className="mt-2 grid grid-cols-3 gap-1.5">
-                {POST_SEALS.map((seal) => (
-                  <button
-                    key={seal.id}
-                    type="button"
-                    onClick={() => toggleSeal.mutate(seal.id)}
-                    disabled={toggleSeal.isPending}
-                    title={seal.label}
-                    aria-label={seal.label}
-                    aria-pressed={seals?.mySeal === seal.id}
-                    className={cn(
-                      "flex flex-col items-center gap-1 rounded-lg border px-1 py-2 text-[10px] font-medium transition hover:border-primary/50",
-                      seals?.mySeal === seal.id
-                        ? "border-primary bg-primary-soft text-primary"
-                        : "border-border-soft text-text-subtle",
-                    )}
-                  >
-                    <seal.icon className="h-4 w-4" aria-hidden />
-
-                    <span className="text-center leading-tight">{seal.label}</span>
-                  </button>
-                ))}
-              </div>
-
-              <p className="mt-2 text-[11px] leading-snug text-text-subtle">
-                {texts.posts.seals.hint}
-              </p>
-
-              {seals?.mySeal && (
+            <div className="mt-2 grid grid-cols-3 gap-1.5">
+              {POST_SEALS.map((seal) => (
                 <button
+                  key={seal.id}
                   type="button"
-                  onClick={() =>
-                    sealsApi
-                      .remove(post.id)
-                      .then(() => queryClient.invalidateQueries({ queryKey: ["seals", post.id] }))
-                  }
-                  className="mt-2 w-full rounded-lg px-2 py-1.5 text-xs font-medium text-destructive transition hover:bg-destructive/10"
+                  onClick={() => toggleSeal.mutate(seal.id)}
+                  disabled={toggleSeal.isPending}
+                  title={seal.label}
+                  aria-label={seal.label}
+                  aria-pressed={seals?.mySeal === seal.id}
+                  className={cn(
+                    "flex flex-col items-center gap-1 rounded-lg border px-1 py-2 text-[10px] font-medium transition hover:border-primary/50",
+                    seals?.mySeal === seal.id
+                      ? "border-primary bg-primary-soft text-primary"
+                      : "border-border-soft text-text-subtle",
+                  )}
                 >
-                  {texts.posts.seals.remove}
+                  <seal.icon className="h-4 w-4" aria-hidden />
+
+                  <span className="text-center leading-tight">{seal.label}</span>
                 </button>
-              )}
-            </PopoverContent>
-          </Popover>
+              ))}
+            </div>
 
-          <button
-            onClick={() => setShowReport(post.id, true)}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
-          >
-            <Flag className="h-4 w-4" />
-          </button>
-        </div>
+            <p className="mt-2 text-[11px] leading-snug text-text-subtle">
+              {texts.posts.seals.hint}
+            </p>
 
-        <button
-          onClick={handleSave}
-          className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground ${
-            saved ? "text-primary" : ""
-          }`}
-        >
-          <Bookmark className="h-4 w-4" />
-
-          <>{postCounters.saves}</>
-        </button>
-      </footer>
+            {seals?.mySeal && (
+              <button
+                type="button"
+                onClick={() =>
+                  sealsApi
+                    .remove(post.id)
+                    .then(() => queryClient.invalidateQueries({ queryKey: ["seals", post.id] }))
+                }
+                className="mt-2 w-full rounded-lg px-2 py-1.5 text-xs font-medium text-destructive transition hover:bg-destructive/10"
+              >
+                {texts.posts.seals.remove}
+              </button>
+            )}
+          </PopoverContent>
+        </Popover>
+      </PostActions>
 
       {isOwner && (
         <>
@@ -660,14 +500,6 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
           />
         </>
       )}
-
-      <ReactionsDialog postId={post.id} />
-      <ReportDialog
-        targetId={post.id}
-        targetType="POST"
-        open={showReport}
-        onOpenChange={(next) => setShowReport(post.id, next)}
-      />
 
       {showComments && <PostComments postId={post.id} />}
     </article>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
@@ -6,6 +6,7 @@ import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-ro
 import { texts } from "@/texts";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 
+import { feedApi } from "@/lib/api";
 import { blogsApi } from "@/lib/api/blogs";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { buildShareTags } from "@/lib/open-graph";
@@ -16,12 +17,21 @@ import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { BlogPostDialog } from "@/components/blog/blog-post-dialog";
+import { PostActions } from "@/components/post/post-actions";
 import { PostComments } from "@/components/post/post-comments";
+import { ReactionsSummary } from "@/components/post/reactions-summary";
 import { RichText } from "@/components/post/rich-text";
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { UserAvatar } from "@/components/user-avatar";
 
-export const Route = createFileRoute("/blog/$username/$postId")({
+/**
+ * Um post do blog: `/blog/{username}/{postId}`.
+ *
+ * O `_` no fim de `$username_` (no NOME DO ARQUIVO) é o que impede esta rota de aninhar na página
+ * do blog. Sem ele, `/blog/$username` vira rota-mãe desta, e o filho só apareceria dentro de um
+ * `<Outlet/>` — que a página do blog não tem. Era esse o furo: clicar num post não abria nada.
+ */
+export const Route = createFileRoute("/blog/$username_/$postId")({
   loader: async ({ params }) => {
     try {
       const blog = await blogsApi.get(params.username);
@@ -29,7 +39,11 @@ export const Route = createFileRoute("/blog/$username/$postId")({
       if (!post) {
         throw notFound();
       }
-      return { blog, post };
+      // O ponteiro no feed (mesmo id) é quem tem as contagens e a reação de quem lê: buscá-lo aqui
+      // deixa a fileira de ações já montada no primeiro HTML, sem piscar depois. Se ele não vier, a
+      // página abre do mesmo jeito — só sem as ações.
+      const pointer = await feedApi.get(post.id).catch(() => null);
+      return { blog, post, pointer };
     } catch {
       throw notFound();
     }
@@ -91,6 +105,21 @@ function BlogPostPage() {
 
   const blog = data ?? loaderData.blog;
   const post = blog.items.find((item) => item.id === loaderData.post.id) ?? loaderData.post;
+
+  // O post do blog é o MESMO post do feed (o ponteiro nasce com o id dele), então as ações —
+  // reagir, comentar, compartilhar, salvar, denunciar — são as do feed, e as contagens vêm de lá.
+  // O post do blog em si só guarda o texto: título, corpo e formato.
+  const { data: feedPost } = useQuery({
+    queryKey: ["post", post.id],
+    queryFn: () => feedApi.get(post.id),
+    initialData: loaderData.pointer ?? undefined,
+  });
+
+  const commentsRef = useRef<HTMLDivElement>(null);
+  // O botão de comentários da fileira rola até a conversa (aqui ela é uma seção fixa, não um
+  // bloco que abre e fecha como no feed).
+  const focusComments = () =>
+    commentsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   const deletePost = useMutation({
     mutationFn: () => blogsApi.removePost(post.id),
@@ -189,11 +218,29 @@ function BlogPostPage() {
               />
             </div>
           )}
+
+          {/* A fileira de ações do feed, aqui também: reagir, comentar, compartilhar, salvar e
+              denunciar. Ela espera o ponteiro do feed chegar, porque é dele que vêm as contagens e
+              a reação de quem lê. O link compartilhado daqui é o do blog (é o que a pessoa está
+              lendo), não o do post no feed. */}
+          {feedPost && (
+            <div className="px-5 pb-4 sm:px-8 sm:pb-5">
+              <ReactionsSummary postId={post.id} />
+              <PostActions
+                post={feedPost}
+                onComments={focusComments}
+                shareUrl={`${texts.siteUrl}/blog/${encodeURIComponent(blog.slug)}/${encodeURIComponent(post.id)}`}
+              />
+            </div>
+          )}
         </article>
 
         {/* Comentários: o post do blog é um post do Énóis (mesmo id no feed), então a conversa é a
             mesma — quem visita o cantinho comenta aqui, e o dono responde de onde quiser. */}
-        <section className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
+        <section
+          ref={commentsRef}
+          className="scroll-mt-24 overflow-hidden rounded-2xl border border-border-soft bg-surface-card"
+        >
           <PostComments postId={post.id} />
         </section>
       </div>

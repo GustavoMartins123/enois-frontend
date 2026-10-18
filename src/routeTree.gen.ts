@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VagasRouteImport } from './routes/vagas'
 import { Route as TermosRouteImport } from './routes/termos'
+import { Route as TemasRouteImport } from './routes/temas'
 import { Route as SuporteRouteImport } from './routes/suporte'
 import { Route as SegurancaRouteImport } from './routes/seguranca'
 import { Route as SalvosRouteImport } from './routes/salvos'
@@ -29,6 +30,7 @@ import { Route as DevelopersRouteImport } from './routes/developers'
 import { Route as DenunciasRouteImport } from './routes/denuncias'
 import { Route as ContatoRouteImport } from './routes/contato'
 import { Route as ComunidadesRouteImport } from './routes/comunidades'
+import { Route as CarteiraRouteImport } from './routes/carteira'
 import { Route as BloqueadosRouteImport } from './routes/bloqueados'
 import { Route as BlogsRouteImport } from './routes/blogs'
 import { Route as IndexRouteImport } from './routes/index'
@@ -37,13 +39,14 @@ import { Route as VagasJobIdRouteImport } from './routes/vagas.$jobId'
 import { Route as PostPostIdRouteImport } from './routes/post.$postId'
 import { Route as PerfilUsernameRouteImport } from './routes/perfil.$username'
 import { Route as ModeracaoReportIdRouteImport } from './routes/moderacao.$reportId'
+import { Route as EmpresaSlugRouteImport } from './routes/empresa.$slug'
 import { Route as ComunidadesCommunityIdRouteImport } from './routes/comunidades.$communityId'
 import { Route as BlogUsernameRouteImport } from './routes/blog.$username'
 import { Route as AuthVerifyRouteImport } from './routes/auth.verify'
 import { Route as AuthResetRouteImport } from './routes/auth.reset'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as VagasJobIdCandidaturasRouteImport } from './routes/vagas.$jobId.candidaturas'
-import { Route as BlogUsernamePostIdRouteImport } from './routes/blog.$username.$postId'
+import { Route as BlogUsernamePostIdRouteImport } from './routes/blog.$username_.$postId'
 
 const VagasRoute = VagasRouteImport.update({
   id: '/vagas',
@@ -53,6 +56,11 @@ const VagasRoute = VagasRouteImport.update({
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
   path: '/termos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TemasRoute = TemasRouteImport.update({
+  id: '/temas',
+  path: '/temas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SuporteRoute = SuporteRouteImport.update({
@@ -145,6 +153,11 @@ const ComunidadesRoute = ComunidadesRouteImport.update({
   path: '/comunidades',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CarteiraRoute = CarteiraRouteImport.update({
+  id: '/carteira',
+  path: '/carteira',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BloqueadosRoute = BloqueadosRouteImport.update({
   id: '/bloqueados',
   path: '/bloqueados',
@@ -185,6 +198,11 @@ const ModeracaoReportIdRoute = ModeracaoReportIdRouteImport.update({
   path: '/$reportId',
   getParentRoute: () => ModeracaoRoute,
 } as any)
+const EmpresaSlugRoute = EmpresaSlugRouteImport.update({
+  id: '/empresa/$slug',
+  path: '/empresa/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ComunidadesCommunityIdRoute = ComunidadesCommunityIdRouteImport.update({
   id: '/$communityId',
   path: '/$communityId',
@@ -216,15 +234,16 @@ const VagasJobIdCandidaturasRoute = VagasJobIdCandidaturasRouteImport.update({
   getParentRoute: () => VagasJobIdRoute,
 } as any)
 const BlogUsernamePostIdRoute = BlogUsernamePostIdRouteImport.update({
-  id: '/$postId',
-  path: '/$postId',
-  getParentRoute: () => BlogUsernameRoute,
+  id: '/blog/$username_/$postId',
+  path: '/blog/$username/$postId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/blogs': typeof BlogsRoute
   '/bloqueados': typeof BloqueadosRoute
+  '/carteira': typeof CarteiraRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
   '/denuncias': typeof DenunciasRoute
@@ -243,13 +262,15 @@ export interface FileRoutesByFullPath {
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
   '/suporte': typeof SuporteRoute
+  '/temas': typeof TemasRoute
   '/termos': typeof TermosRoute
   '/vagas': typeof VagasRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset': typeof AuthResetRoute
   '/auth/verify': typeof AuthVerifyRoute
-  '/blog/$username': typeof BlogUsernameRouteWithChildren
+  '/blog/$username': typeof BlogUsernameRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
+  '/empresa/$slug': typeof EmpresaSlugRoute
   '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
@@ -262,6 +283,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/blogs': typeof BlogsRoute
   '/bloqueados': typeof BloqueadosRoute
+  '/carteira': typeof CarteiraRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
   '/denuncias': typeof DenunciasRoute
@@ -280,13 +302,15 @@ export interface FileRoutesByTo {
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
   '/suporte': typeof SuporteRoute
+  '/temas': typeof TemasRoute
   '/termos': typeof TermosRoute
   '/vagas': typeof VagasRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset': typeof AuthResetRoute
   '/auth/verify': typeof AuthVerifyRoute
-  '/blog/$username': typeof BlogUsernameRouteWithChildren
+  '/blog/$username': typeof BlogUsernameRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
+  '/empresa/$slug': typeof EmpresaSlugRoute
   '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
@@ -300,6 +324,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/blogs': typeof BlogsRoute
   '/bloqueados': typeof BloqueadosRoute
+  '/carteira': typeof CarteiraRoute
   '/comunidades': typeof ComunidadesRouteWithChildren
   '/contato': typeof ContatoRoute
   '/denuncias': typeof DenunciasRoute
@@ -318,19 +343,21 @@ export interface FileRoutesById {
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
   '/suporte': typeof SuporteRoute
+  '/temas': typeof TemasRoute
   '/termos': typeof TermosRoute
   '/vagas': typeof VagasRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset': typeof AuthResetRoute
   '/auth/verify': typeof AuthVerifyRoute
-  '/blog/$username': typeof BlogUsernameRouteWithChildren
+  '/blog/$username': typeof BlogUsernameRoute
   '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
+  '/empresa/$slug': typeof EmpresaSlugRoute
   '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
-  '/blog/$username/$postId': typeof BlogUsernamePostIdRoute
+  '/blog/$username_/$postId': typeof BlogUsernamePostIdRoute
   '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
 }
 export interface FileRouteTypes {
@@ -339,6 +366,7 @@ export interface FileRouteTypes {
     | '/'
     | '/blogs'
     | '/bloqueados'
+    | '/carteira'
     | '/comunidades'
     | '/contato'
     | '/denuncias'
@@ -357,6 +385,7 @@ export interface FileRouteTypes {
     | '/salvos'
     | '/seguranca'
     | '/suporte'
+    | '/temas'
     | '/termos'
     | '/vagas'
     | '/auth/callback'
@@ -364,6 +393,7 @@ export interface FileRouteTypes {
     | '/auth/verify'
     | '/blog/$username'
     | '/comunidades/$communityId'
+    | '/empresa/$slug'
     | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
@@ -376,6 +406,7 @@ export interface FileRouteTypes {
     | '/'
     | '/blogs'
     | '/bloqueados'
+    | '/carteira'
     | '/comunidades'
     | '/contato'
     | '/denuncias'
@@ -394,6 +425,7 @@ export interface FileRouteTypes {
     | '/salvos'
     | '/seguranca'
     | '/suporte'
+    | '/temas'
     | '/termos'
     | '/vagas'
     | '/auth/callback'
@@ -401,6 +433,7 @@ export interface FileRouteTypes {
     | '/auth/verify'
     | '/blog/$username'
     | '/comunidades/$communityId'
+    | '/empresa/$slug'
     | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
@@ -413,6 +446,7 @@ export interface FileRouteTypes {
     | '/'
     | '/blogs'
     | '/bloqueados'
+    | '/carteira'
     | '/comunidades'
     | '/contato'
     | '/denuncias'
@@ -431,6 +465,7 @@ export interface FileRouteTypes {
     | '/salvos'
     | '/seguranca'
     | '/suporte'
+    | '/temas'
     | '/termos'
     | '/vagas'
     | '/auth/callback'
@@ -438,12 +473,13 @@ export interface FileRouteTypes {
     | '/auth/verify'
     | '/blog/$username'
     | '/comunidades/$communityId'
+    | '/empresa/$slug'
     | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
     | '/vagas/$jobId'
     | '/vagas/minhas'
-    | '/blog/$username/$postId'
+    | '/blog/$username_/$postId'
     | '/vagas/$jobId/candidaturas'
   fileRoutesById: FileRoutesById
 }
@@ -451,6 +487,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BlogsRoute: typeof BlogsRoute
   BloqueadosRoute: typeof BloqueadosRoute
+  CarteiraRoute: typeof CarteiraRoute
   ComunidadesRoute: typeof ComunidadesRouteWithChildren
   ContatoRoute: typeof ContatoRoute
   DenunciasRoute: typeof DenunciasRoute
@@ -469,14 +506,17 @@ export interface RootRouteChildren {
   SalvosRoute: typeof SalvosRoute
   SegurancaRoute: typeof SegurancaRoute
   SuporteRoute: typeof SuporteRoute
+  TemasRoute: typeof TemasRoute
   TermosRoute: typeof TermosRoute
   VagasRoute: typeof VagasRouteWithChildren
   AuthCallbackRoute: typeof AuthCallbackRoute
   AuthResetRoute: typeof AuthResetRoute
   AuthVerifyRoute: typeof AuthVerifyRoute
-  BlogUsernameRoute: typeof BlogUsernameRouteWithChildren
+  BlogUsernameRoute: typeof BlogUsernameRoute
+  EmpresaSlugRoute: typeof EmpresaSlugRoute
   PerfilUsernameRoute: typeof PerfilUsernameRoute
   PostPostIdRoute: typeof PostPostIdRoute
+  BlogUsernamePostIdRoute: typeof BlogUsernamePostIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -493,6 +533,13 @@ declare module '@tanstack/react-router' {
       path: '/termos'
       fullPath: '/termos'
       preLoaderRoute: typeof TermosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/temas': {
+      id: '/temas'
+      path: '/temas'
+      fullPath: '/temas'
+      preLoaderRoute: typeof TemasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/suporte': {
@@ -621,6 +668,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ComunidadesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/carteira': {
+      id: '/carteira'
+      path: '/carteira'
+      fullPath: '/carteira'
+      preLoaderRoute: typeof CarteiraRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/bloqueados': {
       id: '/bloqueados'
       path: '/bloqueados'
@@ -677,6 +731,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ModeracaoReportIdRouteImport
       parentRoute: typeof ModeracaoRoute
     }
+    '/empresa/$slug': {
+      id: '/empresa/$slug'
+      path: '/empresa/$slug'
+      fullPath: '/empresa/$slug'
+      preLoaderRoute: typeof EmpresaSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/comunidades/$communityId': {
       id: '/comunidades/$communityId'
       path: '/$communityId'
@@ -719,12 +780,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VagasJobIdCandidaturasRouteImport
       parentRoute: typeof VagasJobIdRoute
     }
-    '/blog/$username/$postId': {
-      id: '/blog/$username/$postId'
-      path: '/$postId'
+    '/blog/$username_/$postId': {
+      id: '/blog/$username_/$postId'
+      path: '/blog/$username/$postId'
       fullPath: '/blog/$username/$postId'
       preLoaderRoute: typeof BlogUsernamePostIdRouteImport
-      parentRoute: typeof BlogUsernameRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -777,22 +838,11 @@ const VagasRouteChildren: VagasRouteChildren = {
 
 const VagasRouteWithChildren = VagasRoute._addFileChildren(VagasRouteChildren)
 
-interface BlogUsernameRouteChildren {
-  BlogUsernamePostIdRoute: typeof BlogUsernamePostIdRoute
-}
-
-const BlogUsernameRouteChildren: BlogUsernameRouteChildren = {
-  BlogUsernamePostIdRoute: BlogUsernamePostIdRoute,
-}
-
-const BlogUsernameRouteWithChildren = BlogUsernameRoute._addFileChildren(
-  BlogUsernameRouteChildren,
-)
-
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BlogsRoute: BlogsRoute,
   BloqueadosRoute: BloqueadosRoute,
+  CarteiraRoute: CarteiraRoute,
   ComunidadesRoute: ComunidadesRouteWithChildren,
   ContatoRoute: ContatoRoute,
   DenunciasRoute: DenunciasRoute,
@@ -811,14 +861,17 @@ const rootRouteChildren: RootRouteChildren = {
   SalvosRoute: SalvosRoute,
   SegurancaRoute: SegurancaRoute,
   SuporteRoute: SuporteRoute,
+  TemasRoute: TemasRoute,
   TermosRoute: TermosRoute,
   VagasRoute: VagasRouteWithChildren,
   AuthCallbackRoute: AuthCallbackRoute,
   AuthResetRoute: AuthResetRoute,
   AuthVerifyRoute: AuthVerifyRoute,
-  BlogUsernameRoute: BlogUsernameRouteWithChildren,
+  BlogUsernameRoute: BlogUsernameRoute,
+  EmpresaSlugRoute: EmpresaSlugRoute,
   PerfilUsernameRoute: PerfilUsernameRoute,
   PostPostIdRoute: PostPostIdRoute,
+  BlogUsernamePostIdRoute: BlogUsernamePostIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

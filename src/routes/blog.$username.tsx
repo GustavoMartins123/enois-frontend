@@ -9,6 +9,7 @@ import { ArrowLeft, PenLine, Plus, Rss } from "lucide-react";
 import { blogsApi } from "@/lib/api/blogs";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { buildShareTags } from "@/lib/open-graph";
+import { plainPreview } from "@/lib/rich-text/preview";
 import { useAuth } from "@/lib/use-auth";
 
 import { Button } from "@/components/ui/button";
@@ -200,24 +201,41 @@ function BlogPage() {
           </p>
         ) : (
           <div className="space-y-3">
-            {blog.items.map((post) => (
-              <Link
-                key={post.id}
-                to="/blog/$username/$postId"
-                params={{ username: blog.slug, postId: post.id }}
-                className="surface-card block p-4 transition hover:border-primary/40 sm:p-5"
-              >
-                <p className="text-base font-semibold text-text-strong">{post.title}</p>
+            {blog.items.map((post) => {
+              // O resumo: sem ele a lista mostrava só o título, e um post cheio de texto parecia
+              // vazio. Post escrito no editor livre (HTML/CSS) não tem resumo em texto — o rótulo
+              // diz o que é, em vez de abrir um espaço em branco no card.
+              const preview = post.bodyFormat === "MARKDOWN" ? plainPreview(post.body) : "";
 
-                <p className="mt-1 text-xs font-normal text-text-subtle">
-                  {new Date(post.publishedAt).toLocaleDateString("pt-BR", {
-                    day: "2-digit",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </p>
-              </Link>
-            ))}
+              return (
+                <Link
+                  key={post.id}
+                  to="/blog/$username/$postId"
+                  params={{ username: blog.slug, postId: post.id }}
+                  className="surface-card block p-4 transition hover:border-primary/40 sm:p-5"
+                >
+                  <p className="text-base font-semibold text-text-strong">{post.title}</p>
+
+                  {preview !== "" ? (
+                    <p className="mt-1 line-clamp-2 text-sm font-normal text-muted-foreground">
+                      {preview}
+                    </p>
+                  ) : post.bodyFormat === "HTML" ? (
+                    <p className="mt-1 text-sm font-normal text-text-subtle">
+                      {texts.blog.pagePost}
+                    </p>
+                  ) : null}
+
+                  <p className="mt-1 text-xs font-normal text-text-subtle">
+                    {new Date(post.publishedAt).toLocaleDateString("pt-BR", {
+                      day: "2-digit",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>

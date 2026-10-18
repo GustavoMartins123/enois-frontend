@@ -1,0 +1,210 @@
+import { useEffect, useState } from "react";
+
+import { useQuery } from "@tanstack/react-query";
+
+import { usePostCardStore } from "@/stores/post-card.store";
+import { texts } from "@/texts";
+import type { ReactionType } from "@/types/application/reaction/reaction-type";
+import type { PostActionsProps } from "@/types/components/post/post-actions-props";
+import { Bookmark, Flag, Heart, MessageSquare, Share2 } from "lucide-react";
+
+import { REACTION_EMOJIS, feedApi, reactionsApi } from "@/lib/api";
+import { useAuth } from "@/lib/use-auth";
+
+import { useToast } from "@/components/ui/toast";
+
+import { ReactionPicker } from "./reaction-picker";
+import { ReactionsDialog } from "./reactions-dialog";
+import { ReportDialog } from "./report-dialog";
+
+/**
+ * A fileira de ações de um post: reagir, ver quem reagiu, comentar, compartilhar, salvar e
+ * denunciar.
+ *
+ * Era o rodapé do card do feed e virou peça própria porque o post do blog é o MESMO post (o
+ * ponteiro do feed tem o id do post do blog) e ficava sem ação nenhuma lá — reagir, comentar e
+ * compartilhar só existiam no feed. Aqui as duas telas usam o mesmo estado, guardado no store do
+ * card pela chave do post.
+ */
+export function PostActions({ post, onComments, shareUrl, children }: PostActionsProps) {
+  const { requireAuth, user } = useAuth();
+  const { toast } = useToast();
+  const initializePostCard = usePostCardStore((state) => state.initializePostCard);
+  const disposePostCard = usePostCardStore((state) => state.disposePostCard);
+  const card = usePostCardStore((state) => state.cards[post.id]);
+  const setPostCounters = usePostCardStore((state) => state.setPostCounters);
+  const setReactionStatus = usePostCardStore((state) => state.setReactionStatus);
+  const setShowReactions = usePostCardStore((state) => state.setShowReactions);
+  const setShowReport = usePostCardStore((state) => state.setShowReport);
+
+  const postCounters = card?.postCounters ?? post.counters;
+  const reactionStatus = card?.reactionStatus ?? post.currentUserReaction ?? null;
+  const showReport = card?.showReport ?? false;
+
+  useEffect(() => {
+    initializePostCard(post);
+    return () => disposePostCard(post.id);
+  }, [disposePostCard, initializePostCard, post]);
+
+  useEffect(() => {
+    setReactionStatus(post.id, post.currentUserReaction ?? null);
+  }, [post.currentUserReaction, post.id, setReactionStatus]);
+
+  const [saved, setSaved] = useState(false);
+
+  // Sem sessão não há "salvos" para perguntar — a resposta seria 401 numa página que abre para
+  // quem recebeu o link (o post do blog, o post compartilhado).
+  const { data: savedData } = useQuery({
+    queryKey: ["saved-posts"],
+    queryFn: () => feedApi.listSaved(),
+    staleTime: 30_000,
+    enabled: !!user,
+  });
+
+  useEffect(() => {
+    if (savedData) {
+      setSaved(savedData.items.some((p) => p.id === post.id));
+    }
+  }, [savedData, post.id]);
+
+  const handleReaction = async (type: ReactionType) => {
+    if (!requireAuth()) return;
+    try {
+      if (reactionStatus === type) {
+        const result = await reactionsApi.removeReaction(post.id);
+        setReactionStatus(post.id, null);
+        if ("counters" in result) setPostCounters(post.id, result.counters!);
+      } else {
+        const result = await reactionsApi.react(post.id, type);
+        setReactionStatus(post.id, type);
+        if ("counters" in result) setPostCounters(post.id, result.counters!);
+      }
+    } catch {
+      // silently fail
+    }
+  };
+
+  const handleSave = async () => {
+    if (!requireAuth()) return;
+    try {
+      const result = saved
+        ? await reactionsApi.removeSave(post.id)
+        : await reactionsApi.save(post.id);
+      setSaved(!saved);
+      setPostCounters(post.id, result.counters);
+    } catch {
+      // silently fail
+    }
+  };
+
+  const handleShare = async () => {
+    if (!requireAuth()) return;
+    const url = shareUrl ?? `${window.location.origin}/post/${post.id}`;
+    try {
+      const result = await reactionsApi.share(post.id);
+      setPostCounters(post.id, result.counters);
+      // Share nativo so no celular: no desktop o dialog rejeita sem gesto e parecia
+      // "nao fazer nada". PC copia o link (com aviso); mobile usa o sheet do sistema.
+      if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
+        try {
+          await navigator.share({ url });
+          return;
+        } catch (nativeFailed) {
+          // usuario cancelou ou o navegador recusou: cai para copiar
+        }
+      }
+      await navigator.clipboard.writeText(url);
+      toast(texts.posts.shareCopied, "success");
+    } catch {
+      toast(texts.posts.shareCopied, "error");
+    }
+  };
+
+  return (
+    <>
+      <footer className="mt-4 flex flex-wrap items-center justify-between gap-1 border-t border-border pt-3 text-sm text-muted-foreground">
+        <div className="flex flex-wrap">
+          <ReactionPicker
+            activeType={reactionStatus}
+            onReact={handleReaction}
+            buttonClassName={`flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground ${
+              reactionStatus ? "text-primary" : ""
+            }`}
+            buttonTitle={
+              reactionStatus
+                ? texts.posts.reactions.reactedWith(REACTION_EMOJIS[reactionStatus])
+                : texts.posts.reactions.react
+            }
+          >
+            {reactionStatus ? (
+              <span className="text-base leading-none">{REACTION_EMOJIS[reactionStatus]}</span>
+            ) : (
+              <Heart className="h-4 w-4" />
+            )}
+          </ReactionPicker>
+
+          <button
+            onClick={() => setShowReactions(post.id, true)}
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 text-xs tabular-nums transition hover:bg-muted hover:text-foreground text-muted-foreground"
+          >
+            {postCounters.reactions}
+          </button>
+
+          <button
+            onClick={onComments}
+            title={texts.posts.comments.title}
+            aria-label={texts.posts.comments.title}
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground"
+          >
+            <MessageSquare className="h-4 w-4" />
+
+            <>{postCounters.comments}</>
+          </button>
+
+          {/* Só o ícone: com o rótulo, esta era a única ação que empurrava a fileira para uma
+              segunda linha. O nome continua no title/aria-label, para quem usa leitor de tela. */}
+          <button
+            onClick={handleShare}
+            title={texts.posts.share}
+            aria-label={texts.posts.share}
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+          >
+            <Share2 className="h-4 w-4" />
+          </button>
+
+          {children}
+
+          <button
+            onClick={() => setShowReport(post.id, true)}
+            title={texts.posts.report.title}
+            aria-label={texts.posts.report.title}
+            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
+          >
+            <Flag className="h-4 w-4" />
+          </button>
+        </div>
+
+        <button
+          onClick={handleSave}
+          title={saved ? texts.posts.unsave : texts.posts.save}
+          aria-label={saved ? texts.posts.unsave : texts.posts.save}
+          className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground ${
+            saved ? "text-primary" : ""
+          }`}
+        >
+          <Bookmark className="h-4 w-4" />
+
+          <>{postCounters.saves}</>
+        </button>
+      </footer>
+
+      <ReactionsDialog postId={post.id} />
+      <ReportDialog
+        targetId={post.id}
+        targetType="POST"
+        open={showReport}
+        onOpenChange={(next) => setShowReport(post.id, next)}
+      />
+    </>
+  );
+}

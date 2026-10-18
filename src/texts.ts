@@ -926,6 +926,8 @@ export const texts = {
     },
     share: "Compartilhar",
     shareCopied: "Link da publicação copiado!",
+    save: "Salvar publicação",
+    unsave: "Remover dos salvos",
     editPhoto: "Editar foto",
     comments: {
       empty: "Nenhum comentário ainda. Seja o primeiro a comentar.",
@@ -1226,6 +1228,8 @@ export const texts = {
     postsCount: (count: number) => `${count} ${count === 1 ? "post" : "posts"}`,
     notFound: "Blog não encontrado.",
     backToBlogs: "Ver todos os blogs",
+    /** Post escrito no editor livre: na lista não há resumo em texto, então o card diz o que é. */
+    pagePost: "Página em HTML/CSS",
     ownerHint: "Este blog é seu. Publique pelo botão Novo post.",
     editor: {
       blogTitle: "Nome do blog",

@@ -2,6 +2,7 @@ import type { CommentView } from "@/types/application/comment/comment-view";
 import type { PostView } from "@/types/application/feed/post-view";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { PostCardState } from "@/types/stores/post-card-state";
+import type { PostCardStore } from "@/types/stores/post-card-store";
 import { create } from "zustand";
 
 const pendingDisposals = new Map<string, ReturnType<typeof setTimeout>>();
@@ -20,7 +21,7 @@ function updateCard(
   };
 }
 
-export const usePostCardStore = create((set) => ({
+export const usePostCardStore = create<PostCardStore>()((set) => ({
   cards: {} as Record<string, PostCardState>,
 
   initializePostCard: (post: PostView) => {
