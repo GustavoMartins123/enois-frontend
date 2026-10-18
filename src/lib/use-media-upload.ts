@@ -57,13 +57,20 @@ export function useMediaUpload() {
       const { file, purpose = "POST_IMAGE" } = files[i];
       try {
         const fileName = genFileName(file);
-        const { id, cdnUrl } = await mediaApi.requestUpload({
+        const { id, cdnUrl, uploadUrl, provider, uploadHeaders } = await mediaApi.requestUpload({
           fileName,
           mimeType: file.type,
           size: file.size,
           purpose,
         });
-        await mediaApi.uploadToImageKit(cdnUrl, file);
+        // Mesma bifurcação do upload avulso: quem manda no caminho é o provedor que o servidor
+        // respondeu, não o formato da URL. Aqui subia sempre pelo ImageKit — com o storage em S3,
+        // o compositor (que usa este caminho para TODOS os anexos) falhava.
+        if (provider === "S3") {
+          await mediaApi.uploadToSignedUrl(uploadUrl, file, uploadHeaders ?? {});
+        } else {
+          await mediaApi.uploadToImageKit(cdnUrl, file);
+        }
         results.push({ mediaId: id, cdnUrl });
         setState((s) => ({ ...s, progress: Math.round(((i + 1) / files.length) * 100) }));
       } catch (err) {
