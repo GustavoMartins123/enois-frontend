@@ -73,6 +73,16 @@ const SHAPES: number[][][] = [
 ];
 const SHAPE_NAMES = ["I", "O", "T", "S", "Z", "J", "L"];
 
+// Cores temáticas para cada tipo de peça
+const PIECE_COLORS: Record<number, { bg: string; text: string; ghost: string }> = {
+  0: { bg: "bg-cyan-500", text: "text-white", ghost: "border-cyan-500/60 bg-cyan-500/20" },       // I
+  1: { bg: "bg-amber-400", text: "text-amber-950", ghost: "border-amber-400/60 bg-amber-400/20" },// O
+  2: { bg: "bg-purple-500", text: "text-white", ghost: "border-purple-500/60 bg-purple-500/20" }, // T
+  3: { bg: "bg-emerald-500", text: "text-white", ghost: "border-emerald-500/60 bg-emerald-500/20" },// S
+  4: { bg: "bg-rose-500", text: "text-white", ghost: "border-rose-500/60 bg-rose-500/20" },       // Z
+  5: { bg: "bg-blue-500", text: "text-white", ghost: "border-blue-500/60 bg-blue-500/20" },       // J
+  6: { bg: "bg-orange-500", text: "text-white", ghost: "border-orange-500/60 bg-orange-500/20" }, // L
+};
 const keys: Record<string, BlocksAction> = {
   ArrowLeft: "LEFT",
   ArrowRight: "RIGHT",
@@ -157,6 +167,22 @@ function gameCells(game: ReturnType<typeof createLocalGame>): { x: number; y: nu
   return shapeCells(game.piece, game.rotation).map((cell) => ({
     x: game.x + cell.x,
     y: game.y + cell.y,
+  }));
+}
+
+function getGhostY(game: ReturnType<typeof createLocalGame>): number {
+  let gy = game.y;
+  while (fits(game, game.x, gy + 1, game.rotation)) {
+    gy++;
+  }
+  return gy;
+}
+
+function ghostCells(game: ReturnType<typeof createLocalGame>): { x: number; y: number }[] {
+  const gy = getGhostY(game);
+  return shapeCells(game.piece, game.rotation).map((cell) => ({
+    x: game.x + cell.x,
+    y: gy + cell.y,
   }));
 }
 
@@ -523,6 +549,12 @@ export function DailyBlocks() {
     playing && game
       ? new Set(gameCells(game).map((cell) => `${cell.x},${cell.y}`))
       : new Set<string>();
+  const ghostSet =
+    playing && game
+      ? new Set(ghostCells(game).map((cell) => `${cell.x},${cell.y}`))
+      : new Set<string>();
+  const activePieceColor = playing && game ? (PIECE_COLORS[game.piece] ?? PIECE_COLORS[0]) : null;
+  const nextPieceColor = playing && game ? (PIECE_COLORS[game.next] ?? PIECE_COLORS[0]) : null;
   const renderedRows = official
     ? official.board.map((row) => row.split(""))
     : game
@@ -622,16 +654,19 @@ export function DailyBlocks() {
               {renderedRows?.map((row, y) =>
                 row.map((cell, x) => {
                   const active = activeSet.has(`${x},${y}`);
+                  const isGhost = !active && ghostSet.has(`${x},${y}`);
                   return (
                     <span
                       key={`${x}-${y}`}
                       aria-hidden="true"
-                      className={`grid aspect-square place-items-center border-[0.5px] border-border/40 text-[8px] leading-none ${
+                      className={`grid aspect-square place-items-center border-[0.5px] border-border/30 text-[8px] leading-none transition-colors duration-100 ${
                         cell === "#"
-                          ? "bg-muted text-muted-foreground"
-                          : active
-                            ? "bg-primary font-bold text-primary-foreground"
-                            : ""
+                          ? "bg-muted-foreground/40 text-muted-foreground"
+                          : active && activePieceColor
+                            ? `${activePieceColor.bg} ${activePieceColor.text} font-bold shadow-sm`
+                            : isGhost && activePieceColor
+                              ? `${activePieceColor.ghost} border border-dashed`
+                              : ""
                       }`}
                     >
                       {cell === "#" ? "■" : active ? "◆" : ""}
@@ -642,11 +677,11 @@ export function DailyBlocks() {
             </div>
 
             {playing && (
-              <div className="space-y-1">
-                <p className="text-sm font-medium">Próxima</p>
+              <div className="space-y-1.5">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Próxima</p>
 
                 <div
-                  className="grid grid-cols-4 gap-1"
+                  className="grid grid-cols-4 gap-1 p-2.5 rounded-lg border border-border/50 bg-muted/20"
                   role="img"
                   aria-label={`Próxima peça: ${SHAPE_NAMES[game?.next ?? 0]}`}
                 >
@@ -659,7 +694,11 @@ export function DailyBlocks() {
                         <span
                           key={`${x}-${y}`}
                           aria-hidden="true"
-                          className={`grid h-4 w-4 place-items-center text-[10px] ${on ? "bg-primary font-bold text-primary-foreground" : "bg-muted/40"}`}
+                          className={`grid h-4 w-4 place-items-center rounded-sm text-[10px] ${
+                            on && nextPieceColor
+                              ? `${nextPieceColor.bg} ${nextPieceColor.text} font-bold shadow-sm`
+                              : "bg-transparent"
+                          }`}
                         >
                           {on ? "◆" : ""}
                         </span>
@@ -672,13 +711,14 @@ export function DailyBlocks() {
           </div>
 
           {playing && (
-            <div className="flex flex-wrap gap-2" aria-label="Controles do jogo">
+            <div className="flex flex-wrap gap-2 sm:gap-2.5 touch-manipulation select-none" aria-label="Controles do jogo">
               {buttons.map((button) => (
                 <Button
                   key={button.action}
                   type="button"
                   variant="outline"
                   size="icon"
+                  className="h-11 w-11 sm:h-12 sm:w-12 text-lg active:scale-95 touch-manipulation"
                   aria-label={button.label}
                   disabled={Boolean(syncError)}
                   onClick={() => perform(button.action)}
