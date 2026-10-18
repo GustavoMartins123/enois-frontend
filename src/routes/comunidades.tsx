@@ -240,7 +240,8 @@ function CreateCommunityDialog({ children, open, onOpenChange }: CreateCommunity
   const [topic, setTopic] = useState<CommunityTopic>("TECNOLOGIA");
 
   const create = useMutation({
-    mutationFn: () => communitiesApi.create({ name, description, topic }),
+    mutationFn: () =>
+      communitiesApi.create({ name, description: description.trim() || null, topic }),
     onSuccess: () => {
       toast(texts.communities.created);
       queryClient.invalidateQueries({ queryKey: ["communities"] });
@@ -307,7 +308,7 @@ function CreateCommunityDialog({ children, open, onOpenChange }: CreateCommunity
 
           <Button
             className="w-full rounded-full"
-            disabled={!name.trim() || !description.trim() || create.isPending}
+            disabled={!name.trim() || create.isPending}
             onClick={() => create.mutate()}
           >
             {create.isPending ? texts.common.creating : texts.common.create}

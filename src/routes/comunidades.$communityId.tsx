@@ -312,10 +312,12 @@ function CommunityDetail() {
                     {live.name}
                   </h1>
 
-                  <RichText
-                    content={live.description}
-                    className="mt-1 break-words text-muted-foreground"
-                  />
+                  {live.description && (
+                    <RichText
+                      content={live.description}
+                      className="mt-1 break-words text-muted-foreground"
+                    />
+                  )}
 
                   <div className="mt-3 flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="inline-flex items-center gap-1.5">
@@ -725,7 +727,7 @@ function CommunityDetail() {
 function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
   const queryClient = useQueryClient();
   const [name, setName] = useState(community.name);
-  const [description, setDescription] = useState(community.description);
+  const [description, setDescription] = useState(community.description ?? "");
   const [cover, setCover] = useState(community.cover ?? "");
   const [avatar, setAvatar] = useState(community.avatar ?? "");
   const coverUpload = useMediaUpload();
