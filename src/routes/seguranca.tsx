@@ -14,7 +14,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
 import { AppContainer } from "@/components/app-container";
-import { AppearanceDialog } from "@/components/appearance/appearance-dialog";
 import { IdentitySection } from "@/components/security/identity-display-section";
 import { IdentityVerificationSection } from "@/components/security/identity-verification-section";
 
@@ -33,7 +32,6 @@ export const Route = createFileRoute("/seguranca")({
 function Seguranca() {
   const queryClient = useQueryClient();
   const [error, setError] = useState<string | null>(null);
-  const [appearanceOpen, setAppearanceOpen] = useState(false);
 
   const { data: status, isLoading } = useQuery({
     queryKey: ["two-factor-status"],
@@ -72,24 +70,6 @@ function Seguranca() {
         </div>
 
         <IdentitySection />
-
-        <section className="surface-card flex items-center justify-between gap-3 p-4">
-          <div>
-            <h2 className="text-base font-medium">{texts.appearance.title}</h2>
-
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              {texts.appearance.collectionsHint}
-            </p>
-          </div>
-
-          <Button
-            variant="outline"
-            className="shrink-0 rounded-full"
-            onClick={() => setAppearanceOpen(true)}
-          >
-            {texts.appearance.action}
-          </Button>
-        </section>
 
         {isLoading && (
           <div className="flex justify-center py-8 text-muted-foreground">
@@ -158,8 +138,6 @@ function Seguranca() {
           <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p>
         )}
       </div>
-
-      <AppearanceDialog open={appearanceOpen} onOpenChange={setAppearanceOpen} />
     </AppContainer>
   );
 }
