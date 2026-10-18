@@ -106,7 +106,7 @@ function round(value: number): number {
  */
 export function textSafeAccent(primary: RgbColor, backgrounds: RgbColor[]): string {
   const worst = (color: RgbColor) => Math.min(...backgrounds.map((bg) => contrastRatio(color, bg)));
-  if (worst(primary) >= 3) return rgbToHex(primary);
+  if (worst(primary) >= 3.4) return rgbToHex(primary);
   // A direção vem do fundo da PÁGINA (primeiro da lista) — o soft pode ficar do lado
   // oposto da luminância (tom profundo num tema claro) e não manda na direção; ele só
   // entra no gate do pior caso, junto.
@@ -123,18 +123,18 @@ export function textSafeAccent(primary: RgbColor, backgrounds: RgbColor[]): stri
       g: primary.g + (target - primary.g) * t,
       b: primary.b + (target - primary.b) * t,
     };
-    if (worst(mixed) >= 3.2) {
+    if (worst(mixed) >= 3.4) {
       best = mixed;
       high = t;
     } else {
       low = t;
     }
   }
-  if (worst(best) < 3.2) {
+  if (worst(best) < 3.4) {
     // Fundo do primário colado no alvo (ex.: soft ≈ primário): segue para preto/branco
     // além da mistura — o pior caso vence.
     let extra = best;
-    for (let i = 0; i < 12 && worst(extra) < 3.2; i += 1) {
+    for (let i = 0; i < 12 && worst(extra) < 3.4; i += 1) {
       extra = { r: extra.r + (target - extra.r) * 0.5, g: extra.g + (target - extra.g) * 0.5, b: extra.b + (target - extra.b) * 0.5 };
     }
     return rgbToHex(extra);
