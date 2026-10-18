@@ -1717,6 +1717,13 @@ export const texts = {
     noArchived: 'Nada arquivado. O que você apagar "para mim" aparece aqui.',
     restoreSelected: (count: number) => `Restaurar ${count}`,
     restored: "Conversas de volta na caixa de entrada.",
+    selectMessages: "Selecionar mensagens",
+    selectedMessages: (count: number) =>
+      count === 0 ? "Toque nas mensagens para escolher" : `${count} selecionada${count === 1 ? "" : "s"}`,
+    deleteSelectedMessages: (count: number) =>
+      count === 0 ? "Apagar para mim" : `Apagar ${count} para mim`,
+    messagesDeleted: "Mensagens apagadas para você. O outro participante continua vendo.",
+    messagesDeleteError: "Não foi possível apagar. Tente novamente.",
     restoreError: "Não foi possível restaurar. Tente novamente.",
     selectConversation: "Selecione uma conversa ou comece uma nova para exibir as mensagens",
     noMessages: "Nenhuma mensagem ainda",

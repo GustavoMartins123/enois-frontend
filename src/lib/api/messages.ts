@@ -36,6 +36,10 @@ export const messagesApi = {
   archivedConversations: (cursor?: string | null, limit = 20) =>
     api.get<PageResponse<Conversation>>(`/conversations/archived${buildQuery({ cursor, limit })}`),
 
+  /** "Apagar para mim" por mensagem (some só para quem apagou). */
+  hideMessages: (conversationId: string, ids: string[]) =>
+    api.post<{ hidden: number }>(`/conversations/${conversationId}/messages/hide`, { ids }),
+
   /** Restaurar: desfaz o "apagar para mim" das conversas escolhidas. */
   unhideConversations: (ids: string[]) =>
     api.post<{ restored: number }>("/conversations/unhide", { ids }),

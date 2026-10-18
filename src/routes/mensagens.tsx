@@ -44,6 +44,8 @@ function Mensagens() {
   const [showSearch, setShowSearch] = useState(false);
   const [inboxTab, setInboxTab] = useState<"all" | "jobs" | "people" | "archived">("all");
   const [selecting, setSelecting] = useState(false);
+  const [selectingMessages, setSelectingMessages] = useState(false);
+  const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmDelete, setConfirmDelete] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -129,6 +131,19 @@ function Mensagens() {
       setSearchQuery("");
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
     },
+  });
+
+  // Apagar MENSAGEM para mim: some só para quem apagou (o outro continua vendo na conversa dele).
+  const hideMessages = useMutation({
+    mutationFn: () =>
+      messagesApi.hideMessages(activeConversation!.id, Array.from(selectedMessages)),
+    onSuccess: () => {
+      setSelectedMessages(new Set());
+      setSelectingMessages(false);
+      queryClient.invalidateQueries({ queryKey: ["messages", activeConversation?.id] });
+      toast(texts.messages.messagesDeleted);
+    },
+    onError: () => toast(texts.messages.messagesDeleteError, "error"),
   });
 
   const restoreSelected = useMutation({
@@ -413,6 +428,17 @@ function Mensagens() {
           ) : (
             <>
               <ConversationHeader
+                action={
+                  selectingMessages ? undefined : (
+                    <button
+                      type="button"
+                      onClick={() => setSelectingMessages(true)}
+                      className="rounded-full px-3 py-1 text-xs font-normal text-text-subtle transition hover:bg-surface-2 hover:text-primary"
+                    >
+                      {texts.messages.selectMessages}
+                    </button>
+                  )
+                }
                 conversation={activeConversation}
                 onBack={() => setActiveId(null)}
               />
@@ -444,7 +470,18 @@ function Mensagens() {
                       return (
                         <div
                           key={m.id}
-                          className={`flex items-end gap-2 ${isMe ? "justify-end" : "justify-start"}`}
+                          onClick={() => {
+                            if (!selectingMessages) return;
+                            setSelectedMessages((current) => {
+                              const next = new Set(current);
+                              if (next.has(m.id)) next.delete(m.id);
+                              else next.add(m.id);
+                              return next;
+                            });
+                          }}
+                          className={`flex items-end gap-2 ${isMe ? "justify-end" : "justify-start"} ${
+                            selectingMessages ? "cursor-pointer" : ""
+                          }`}
                         >
                           {!isMe && (
                             <Link
@@ -469,7 +506,7 @@ function Mensagens() {
                               isMe
                                 ? "rounded-br-md bg-primary text-primary-foreground"
                                 : "rounded-bl-md bg-card text-foreground"
-                            }`}
+                            } ${selectedMessages.has(m.id) ? "ring-2 ring-destructive/70" : ""}`}
                           >
                             <RichText
                               content={m.text}
@@ -491,34 +528,66 @@ function Mensagens() {
                 </div>
               </div>
 
-              <form
-                onSubmit={handleSubmit}
-                className="flex items-end gap-2 border-t border-border p-3"
-              >
-                <textarea
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  onKeyDown={(e) => {
-                    // Enter envia; Shift+Enter quebra linha (padrao de chat).
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
-                    }
-                  }}
-                  ref={messageInputRef}
-                  rows={1}
-                  placeholder={texts.messages.inputPlaceholder}
-                  className="max-h-32 min-h-[40px] w-full resize-none rounded-2xl bg-muted px-4 py-2.5 text-sm outline-none"
-                />
+              {selectingMessages ? (
+                <div className="flex flex-wrap items-center gap-2 border-t border-border bg-surface-2 p-3">
+                  <span className="text-xs font-normal text-text-subtle">
+                    {texts.messages.selectedMessages(selectedMessages.size)}
+                  </span>
 
-                <button
-                  type="submit"
-                  disabled={!text.trim() || sendMessage.isPending}
-                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+                  <div className="ml-auto flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full"
+                      onClick={() => {
+                        setSelectingMessages(false);
+                        setSelectedMessages(new Set());
+                      }}
+                    >
+                      {texts.messages.cancelSelection}
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      className="rounded-full"
+                      disabled={selectedMessages.size === 0 || hideMessages.isPending}
+                      onClick={() => hideMessages.mutate()}
+                    >
+                      {texts.messages.deleteSelectedMessages(selectedMessages.size)}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <form
+                  onSubmit={handleSubmit}
+                  className="flex items-end gap-2 border-t border-border p-3"
                 >
-                  <Send className="h-4 w-4" />
-                </button>
-              </form>
+                  <textarea
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    onKeyDown={(e) => {
+                      // Enter envia; Shift+Enter quebra linha (padrao de chat).
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
+                      }
+                    }}
+                    ref={messageInputRef}
+                    rows={1}
+                    placeholder={texts.messages.inputPlaceholder}
+                    className="max-h-32 min-h-[40px] w-full resize-none rounded-2xl bg-muted px-4 py-2.5 text-sm outline-none"
+                  />
+
+                  <button
+                    type="submit"
+                    disabled={!text.trim() || sendMessage.isPending}
+                    className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+                  >
+                    <Send className="h-4 w-4" />
+                  </button>
+                </form>
+              )}
             </>
           )}
         </div>
@@ -607,7 +676,7 @@ function ConversationItem({
   );
 }
 
-function ConversationHeader({ conversation, onBack }: ConversationHeaderProps) {
+function ConversationHeader({ conversation, onBack, action }: ConversationHeaderProps) {
   const currentUserId = getCurrentUserId();
   const otherId = conversation.participantIds.find((id) => id !== currentUserId);
   const { data: otherUser } = useQuery({
@@ -644,6 +713,8 @@ function ConversationHeader({ conversation, onBack }: ConversationHeaderProps) {
           )}
         </div>
       </div>
+
+      {action && <div className="ml-auto shrink-0">{action}</div>}
     </header>
   );
 }
