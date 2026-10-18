@@ -70,11 +70,15 @@ function Blogs() {
               <>{mine ? texts.blog.edit : texts.blog.create}</>
             </Button>
 
-            <Button size="sm" className="rounded-full gap-1.5" onClick={() => setPostOpen(true)}>
-              <Plus className="h-4 w-4" aria-hidden />
+            {/* Post mora DENTRO de um blog: sem blog, o caminho é criar o blog primeiro (o botão
+                ao lado) — não publicar num cantinho que ainda não existe. */}
+            {mine && (
+              <Button size="sm" className="rounded-full gap-1.5" onClick={() => setPostOpen(true)}>
+                <Plus className="h-4 w-4" aria-hidden />
 
-              <>{texts.blog.newPost}</>
-            </Button>
+                <>{texts.blog.newPost}</>
+              </Button>
+            )}
           </div>
         </div>
 

@@ -16,6 +16,7 @@ import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { BlogPostDialog } from "@/components/blog/blog-post-dialog";
+import { PostComments } from "@/components/post/post-comments";
 import { RichText } from "@/components/post/rich-text";
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { UserAvatar } from "@/components/user-avatar";
@@ -189,6 +190,12 @@ function BlogPostPage() {
             </div>
           )}
         </article>
+
+        {/* Comentários: o post do blog é um post do Énóis (mesmo id no feed), então a conversa é a
+            mesma — quem visita o cantinho comenta aqui, e o dono responde de onde quiser. */}
+        <section className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
+          <PostComments postId={post.id} />
+        </section>
       </div>
 
       <BlogPostDialog open={editOpen} onOpenChange={setEditOpen} post={post} />
