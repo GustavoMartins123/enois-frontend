@@ -343,22 +343,6 @@ function Profile() {
                       variant="outline"
                       size="sm"
                       className="rounded-full gap-1.5"
-                      onClick={() => setBannerOpen(true)}
-                      disabled={bannerUpload.status === "uploading"}
-                    >
-                      <ImageIcon className="h-4 w-4" />
-
-                      <>
-                        {bannerUpload.status === "uploading"
-                          ? texts.common.sending
-                          : texts.posts.editCover}
-                      </>
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="rounded-full gap-1.5"
                       onClick={() => avatarRef.current?.click()}
                       disabled={avatarUpload.status === "uploading"}
                     >
@@ -379,15 +363,22 @@ function Profile() {
                       </Button>
                     </EditProfileDialog>
 
+                    {/* UM botão para a capa: o diálogo já oferece as duas formas (foto ou HTML).
+                        Havia dois abrindo o mesmo diálogo — um deles com o rótulo antigo. */}
                     <Button
                       variant="outline"
                       size="sm"
                       className="rounded-full gap-1.5"
                       onClick={() => setBannerOpen(true)}
+                      disabled={bannerUpload.status === "uploading"}
                     >
-                      <Palette className="h-4 w-4" />
+                      <ImageIcon className="h-4 w-4" />
 
-                      <>{texts.profile.bannerHtml.action}</>
+                      <>
+                        {bannerUpload.status === "uploading"
+                          ? texts.common.sending
+                          : texts.profile.bannerHtml.action}
+                      </>
                     </Button>
 
                     <ProfileResumeDialog
