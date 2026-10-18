@@ -60,6 +60,9 @@ export type JobApplication = {
   candidate: JobCandidate | null;
   message: string | null;
   answers: JobApplicationAnswer[];
+  /** Retorno do empregador (obrigatório quando reprova) — o candidato lê na lista dele. */
+  feedback?: string | null;
+  reviewedAt?: string | null;
 };
 
 export type JobApplicationInput = {

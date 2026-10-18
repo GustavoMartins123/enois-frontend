@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 import { AppContainer } from "@/components/app-container";
+import { ApplicationFeedbackDialog } from "@/components/application-feedback-dialog";
 import { ApplyByEmailButton } from "@/components/apply-by-email-button";
 import { ApplyJobDialog } from "@/components/apply-job-dialog";
 import { JobEditDialog } from "@/components/job-edit-dialog";
@@ -112,6 +113,7 @@ function JobDetail() {
     onSuccess: invalidate,
   });
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [feedbackFor, setFeedbackFor] = useState<string | null>(null);
 
   const [closeOpen, setCloseOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -126,8 +128,11 @@ function JobDetail() {
   const received = receivedData ?? [];
 
   const changeStatus = useMutation({
-    mutationFn: (vars: { applicationId: string; status: JobApplication["status"] }) =>
-      jobsApi.updateApplicationStatus(jobId, vars.applicationId, vars.status),
+    mutationFn: (vars: {
+      applicationId: string;
+      status: JobApplication["status"];
+      feedback?: string;
+    }) => jobsApi.updateApplicationStatus(jobId, vars.applicationId, vars.status, vars.feedback),
     onMutate: (vars) => setPendingId(vars.applicationId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["job-applications", jobId] }),
     onSettled: () => setPendingId(null),
@@ -346,12 +351,17 @@ function JobDetail() {
                               size="sm"
                               className="rounded-full"
                               disabled={pendingId === application.id}
-                              onClick={() =>
+                              onClick={() => {
+                                // Reprovar exige motivo: abre o diálogo em vez de mandar direto.
+                                if (action.status === "NOT_SELECTED") {
+                                  setFeedbackFor(application.id);
+                                  return;
+                                }
                                 changeStatus.mutate({
                                   applicationId: application.id,
                                   status: action.status,
-                                })
-                              }
+                                });
+                              }}
                             >
                               {action.label}
                             </Button>
@@ -508,6 +518,16 @@ function JobDetail() {
       </div>
 
       <JobEditDialog job={editOpen ? (job ?? null) : null} onOpenChange={setEditOpen} />
+      <ApplicationFeedbackDialog
+        open={feedbackFor !== null}
+        onOpenChange={(open) => !open && setFeedbackFor(null)}
+        pending={changeStatus.isPending}
+        onSubmit={(feedback) => {
+          if (!feedbackFor) return;
+          changeStatus.mutate({ applicationId: feedbackFor, status: "NOT_SELECTED", feedback });
+          setFeedbackFor(null);
+        }}
+      />
       <ConfirmDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}

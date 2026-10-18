@@ -1571,6 +1571,13 @@ export const texts = {
       markInReview: "Marcar em análise",
       markAdvanced: "Marcar como avançou",
       markNotSelected: "Não selecionar",
+      feedbackTitle: "Por que essa candidatura não seguiu?",
+      feedbackHint:
+        'O candidato recebe este retorno. Um motivo concreto ajuda mais do que um "não selecionado" seco.',
+      feedbackPlaceholder: "Ex.: seguimos com quem já tinha experiência em pagamentos.",
+      feedbackRequired: "Escreva o motivo — ele vai para o candidato.",
+      feedbackSend: "Enviar retorno",
+      feedbackFrom: "Retorno da empresa",
       backToReview: "Voltar para análise",
       statusUpdated: "Estado atualizado.",
       statusError: "Não foi possível atualizar o estado. Tente novamente.",

@@ -8,6 +8,7 @@ import type { Job } from "@/types/application/job/job";
 import { ArrowLeft, Briefcase, CheckCircle2, Loader2, Pencil, Trash2, Users } from "lucide-react";
 
 import { ApiError, jobsApi } from "@/lib/api";
+import { applicationStatusLabel, statusTone } from "@/lib/job-application-status";
 import { requireAuth } from "@/lib/require-auth";
 
 import { Button } from "@/components/ui/button";
@@ -36,9 +37,11 @@ function MyJobs() {
   const [editing, setEditing] = useState<Job | null>(null);
   const [deleting, setDeleting] = useState<Job | null>(null);
   const mine = useQuery({ queryKey: ["jobs", "mine"], queryFn: () => jobsApi.mine(undefined, 20) });
+  // Candidaturas COM o estado e o retorno do empregador (antes vinha só a vaga, e o "não
+  // selecionado" com o motivo só existia no aviso).
   const applications = useQuery({
     queryKey: ["jobs", "applications"],
-    queryFn: () => jobsApi.applications(undefined, 20),
+    queryFn: () => jobsApi.myApplications(),
   });
 
   const removeJob = useMutation({
@@ -112,9 +115,7 @@ function MyJobs() {
                   {(mine.data?.items ?? []).map((job) => (
                     <li key={job.id} className="rounded-xl border border-border-soft p-3">
                       <Link to="/vagas/$jobId" params={{ jobId: job.id }} className="block min-w-0">
-                        <p className="truncate text-sm font-medium text-text-strong">
-                          {job.title}
-                        </p>
+                        <p className="truncate text-sm font-medium text-text-strong">{job.title}</p>
 
                         <p className="mt-0.5 text-xs font-normal text-text-subtle">
                           {job.company}
@@ -185,23 +186,27 @@ function MyJobs() {
                 <>{texts.jobs.myApplications}</>
               </h2>
 
-              {(applications.data?.items ?? []).length === 0 ? (
+              {(applications.data ?? []).length === 0 ? (
                 <p className="mt-3 text-sm text-muted-foreground">
                   {texts.jobs.myApplicationsEmpty}
                 </p>
               ) : (
                 <ul className="mt-4 space-y-3">
-                  {(applications.data?.items ?? []).map((job) => (
-                    <li key={job.id} className="rounded-xl border border-border-soft p-3">
-                      <Link to="/vagas/$jobId" params={{ jobId: job.id }} className="block min-w-0">
+                  {(applications.data ?? []).map((application) => (
+                    <li key={application.id} className="rounded-xl border border-border-soft p-3">
+                      <Link
+                        to="/vagas/$jobId"
+                        params={{ jobId: application.jobId }}
+                        className="block min-w-0"
+                      >
                         <p className="truncate text-sm font-medium text-text-strong">
-                          {job.title}
+                          {application.jobTitle}
                         </p>
 
                         <p className="mt-0.5 text-xs font-normal text-text-subtle">
-                          {job.company}
+                          {application.jobCompany}
                           {" · "}
-                          {formatPostedAt(job.postedAt)}
+                          {formatPostedAt(application.appliedAt)}
                         </p>
                       </Link>
 
@@ -210,6 +215,27 @@ function MyJobs() {
 
                         <>{texts.jobs.applied}</>
                       </p>
+
+                      <span
+                        className={`mt-2 inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${statusTone(
+                          application.status,
+                        )}`}
+                      >
+                        {applicationStatusLabel(application.status)}
+                      </span>
+
+                      {/* O retorno do empregador fica aqui, onde a pessoa relê a candidatura. */}
+                      {application.feedback && (
+                        <div className="mt-2 rounded-lg bg-surface-2 px-3 py-2">
+                          <p className="text-xs font-medium text-text-strong">
+                            {texts.jobs.applications.feedbackFrom}
+                          </p>
+
+                          <p className="mt-0.5 whitespace-pre-line break-words text-xs font-normal text-text-subtle">
+                            {application.feedback}
+                          </p>
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>

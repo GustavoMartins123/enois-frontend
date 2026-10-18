@@ -5,6 +5,8 @@ import type { Job } from "@/types/application/job/job";
 import type { JobApplication, JobApplicationInput } from "@/types/application/job/job-application";
 import type { ListJobsParams } from "@/types/application/job/list-jobs-params";
 
+import type { MyApplication } from "@/types/application/job/my-application";
+
 import { api, buildQuery } from "../api-client";
 
 /** Empresa no diretorio derivado das vagas (internas abertas + externas). */
@@ -51,7 +53,12 @@ export const jobsApi = {
     jobId: string,
     applicationId: string,
     status: JobApplication["status"],
-  ) => api.patch<JobApplication>(`/jobs/${jobId}/applications/${applicationId}`, { status }),
+    feedback?: string,
+  ) =>
+    api.patch<JobApplication>(`/jobs/${jobId}/applications/${applicationId}`, { status, feedback }),
+
+  /** Minhas candidaturas, com estado e retorno do empregador (GET /jobs/applications/mine). */
+  myApplications: () => api.get<MyApplication[]>("/jobs/applications/mine"),
 
   /** Candidaturas RECEBIDAS numa vaga (somente quem publicou). */
   receivedApplications: (jobId: string, limit = 50) =>
