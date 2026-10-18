@@ -96,6 +96,8 @@ function Games() {
 
         {mine.data && mine.data.length > 0 && <MyGames games={mine.data} />}
 
+        <ColecoesSection />
+
         {/* Busca e filtros: o catálogo é para DESCOBRIR — sem isto só rola quem já sabe o que quer. */}
         <div className="mb-4 space-y-2">
           <Input
@@ -443,5 +445,40 @@ function SubmitButton() {
         </div>
       )}
     </>
+  );
+}
+
+/**
+ * As coleções curadas (G3 do plano): blocos temáticos de jogos escolhidos pela
+ * curadoria, com os jogos resolvidos dentro.
+ */
+function ColecoesSection() {
+  const colecoes = useQuery({ queryKey: ["games", "colecoes"], queryFn: () => gamesApi.colecoes(20) });
+  const itens = colecoes.data ?? [];
+  if (colecoes.isLoading || itens.length === 0) return null;
+
+  return (
+    <section className="mb-6 space-y-3" aria-label="Coleções curadas">
+      {itens.map((c) => (
+        <div key={c.id} className="surface-card p-4">
+          <h2 className="text-sm font-semibold">{c.title}</h2>
+          {c.description && <p className="mt-0.5 text-xs text-text-subtle">{c.description}</p>}
+          <ul className="mt-2 flex flex-wrap gap-2">
+            {c.jogos.map((g) => (
+              <li key={g.id}>
+                <Link
+                  to="/games/$username/$gameSlug"
+                  params={{ username: g.username ?? "", gameSlug: g.slug }}
+                  className="inline-flex items-center gap-1.5 rounded-full border border-border-soft px-3 py-1.5 text-sm font-medium transition hover:border-primary"
+                >
+                  <Gamepad2 className="h-3.5 w-3.5 text-primary" />
+                  {g.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
+    </section>
   );
 }
