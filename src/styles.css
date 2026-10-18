@@ -222,30 +222,36 @@
   color: transparent;
 }
 
-input,
-textarea,
-select {
-  font: inherit;
-}
+/* Resets de elementos em @layer base: UNLAYERED eles vencem as utilities do
+   Tailwind (ordem de camada fala mais alto que especificidade) e um
+   `a { color: inherit }` solto MATAVA toda utility de cor de texto em link —
+   o "Entrar" herdava o --foreground e virava invisível sobre o bg-primary. */
+@layer base {
+  input,
+  textarea,
+  select {
+    font: inherit;
+  }
 
-button {
-  cursor: pointer;
-}
+  button {
+    cursor: pointer;
+  }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 
-ul {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
 
-img {
-  display: block;
-  max-width: 100%;
+  img {
+    display: block;
+    max-width: 100%;
+  }
 }
 
 @keyframes chama {
