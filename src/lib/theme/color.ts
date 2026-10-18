@@ -107,7 +107,11 @@ function round(value: number): number {
 export function textSafeAccent(primary: RgbColor, backgrounds: RgbColor[]): string {
   const worst = (color: RgbColor) => Math.min(...backgrounds.map((bg) => contrastRatio(color, bg)));
   if (worst(primary) >= 3) return rgbToHex(primary);
-  const darken = backgrounds.every((bg) => relativeLuminance(bg) > relativeLuminance(primary));
+  // A direção vem do fundo da PÁGINA (primeiro da lista) — o soft pode ficar do lado
+  // oposto da luminância (tom profundo num tema claro) e não manda na direção; ele só
+  // entra no gate do pior caso, junto.
+  const page = backgrounds[0];
+  const darken = relativeLuminance(page) > relativeLuminance(primary);
   const target = darken ? 0 : 1;
   let low = 0;
   let high = 1;
