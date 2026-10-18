@@ -48,6 +48,11 @@ export const typeMeta: Record<PostView["type"], PostTypeMeta> = {
     className: "bg-secondary/30 text-secondary-foreground",
     classAvatar: "",
   },
+  DIVERTIDO: {
+    label: texts.posts.types.divertido,
+    className: "bg-accent text-accent-foreground",
+    classAvatar: "",
+  },
   PAGE: {
     label: texts.posts.types.page,
     className: "bg-surface-2 text-text-strong",

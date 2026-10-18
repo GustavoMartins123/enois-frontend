@@ -775,7 +775,9 @@ export const texts = {
         news: "Notícia",
         tutorial: "Tutorial",
         review: "Avaliação",
+        divertido: "Divertido",
         moment: "Momento",
+        momentHint: "Momento se apaga sozinho em 24 horas.",
       },
       typePicker: {
         label: "Tipo",
@@ -826,6 +828,8 @@ export const texts = {
   },
 
   posts: {
+    momentExpiry: (hours: number) => `some em ${hours}h`,
+    momentExpiryTitle: "Momento se apaga sozinho em 24 horas",
     types: {
       insight: "Insight",
       question: "Pergunta",
@@ -836,6 +840,7 @@ export const texts = {
       news: "Notícia",
       tutorial: "Tutorial",
       review: "Avaliação",
+      divertido: "Divertido",
       moment: "Momento",
     },
     formatting: {

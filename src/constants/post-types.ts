@@ -9,6 +9,7 @@ import {
   Lightbulb,
   type LucideIcon,
   Newspaper,
+  Smile,
   Star,
 } from "lucide-react";
 
@@ -29,7 +30,13 @@ export const POST_TYPES: { id: string; label: string; icon: LucideIcon; hint?: s
   { id: "NEWS", label: texts.feed.composer.types.news, icon: Newspaper },
   { id: "TUTORIAL", label: texts.feed.composer.types.tutorial, icon: Code2 },
   { id: "REVIEW", label: texts.feed.composer.types.review, icon: Star },
-  { id: "MOMENT", label: texts.feed.composer.types.moment, icon: Calendar },
+  { id: "DIVERTIDO", label: texts.feed.composer.types.divertido, icon: Smile },
+  {
+    id: "MOMENT",
+    label: texts.feed.composer.types.moment,
+    icon: Calendar,
+    hint: texts.feed.composer.types.momentHint,
+  },
   { id: "PAGE", label: texts.feed.composer.page, icon: Code2 },
 ];
 

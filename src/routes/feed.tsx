@@ -25,6 +25,7 @@ import {
   TrendingUp,
   UserPlus,
   X,
+  Clock,
 } from "lucide-react";
 
 import { authApi, eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
@@ -385,6 +386,13 @@ function Home() {
                       className={`h-3.5 w-3.5 transition ${typePickerOpen ? "rotate-180" : ""}`}
                     />
                   </button>
+
+                  {currentType.id === "MOMENT" && (
+                    <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+                      <Clock className="h-3.5 w-3.5" />
+                      {currentType.hint}
+                    </p>
+                  )}
 
                   {typePickerOpen && (
                     <div className="absolute bottom-full left-0 z-40 mb-1 w-[min(22rem,80vw)] rounded-2xl border border-border-soft bg-popover p-2 shadow-lg">

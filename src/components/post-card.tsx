@@ -9,7 +9,7 @@ import { usePostCardStore } from "@/stores/post-card.store";
 import { postContentLimit } from "@/constants/post-content-limits";
 import { texts } from "@/texts";
 import type { PostCardProps } from "@/types/components/post/post-card-props";
-import { BookOpen, FileText, MoreHorizontal, Pencil, Tag, Trash2 } from "lucide-react";
+import { BookOpen, FileText, MoreHorizontal, Pencil, Tag, Trash2 , Clock } from "lucide-react";
 
 import { communitiesApi, feedApi } from "@/lib/api";
 import { sealsApi } from "@/lib/api/seals";
@@ -214,6 +214,16 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
           >
             {meta.label}
           </span>
+
+          {post.type === "MOMENT" && post.expiresAt && (
+            <span
+              className="inline-flex items-center gap-1 rounded-full border border-amber-500/40 px-2 py-1 text-xs font-normal text-amber-600 dark:text-amber-400"
+              title={texts.posts.momentExpiryTitle}
+            >
+              <Clock className="h-3 w-3" />
+              {texts.posts.momentExpiry(remainingHours(post.expiresAt))}
+            </span>
+          )}
 
           {isOwner && (
             <Popover>
@@ -520,4 +530,10 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
       {showComments && <PostComments postId={post.id} />}
     </article>
   );
+}
+
+/** Quantas horas faltam para o Momento se apagar (arredonda para cima; mínimo 1). */
+function remainingHours(expiresAt: string): number {
+  const diff = new Date(expiresAt).getTime() - Date.now();
+  return Math.max(1, Math.ceil(diff / 3_600_000));
 }
