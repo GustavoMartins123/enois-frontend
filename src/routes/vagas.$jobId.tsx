@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Link, Outlet, createFileRoute, useMatchRoute, useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { JobApplication } from "@/types/application/job/job-application";
@@ -101,6 +101,7 @@ function JobDetail() {
   // lia o id direto do cache, e como esta pagina nunca pedia /me o valor vinha nulo — o DONO via a
   // vaga como se fosse de outra pessoa: so "se inscrever" e "denunciar".
   const { data: me } = useCurrentUser();
+  const matchRoute = useMatchRoute();
   const isOwner = Boolean(job?.owner) || (!!job?.author?.id && job.author.id === (me?.id ?? null));
 
   const invalidate = () => {
@@ -154,6 +155,12 @@ function JobDetail() {
       navigate({ to: "/vagas" });
     },
   });
+
+  // A lista de candidaturas é filha desta página: sem devolver o filho aqui, o roteador renderiza
+  // a vaga no lugar dela (mesma armadilha do Outlet).
+  if (matchRoute({ to: "/vagas/$jobId/candidaturas" })) {
+    return <Outlet />;
+  }
 
   return (
     <AppContainer>

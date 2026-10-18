@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import { ArrowLeft, Gavel } from "lucide-react";
@@ -27,11 +27,15 @@ export const Route = createFileRoute("/moderacao")({
 function Moderacao() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const matchRoute = useMatchRoute();
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["pending-appeals"],
     queryFn: () => sanctionsApi.pendingAppeals(),
     retry: false,
+    // A decisão de um recurso é filha desta fila: quando é ela que está na tela, a fila não precisa
+    // ser buscada (e o roteador só renderiza o filho se a fila devolver o Outlet).
+    enabled: !matchRoute({ to: "/moderacao/$reportId" }),
   });
 
   const decide = useMutation({
@@ -43,6 +47,12 @@ function Moderacao() {
     },
     onError: () => toast(texts.sanctions.moderationError, "error"),
   });
+
+  // Sem devolver o filho aqui, o roteador renderiza a fila no lugar da tela de decisão (a mesma
+  // armadilha do Outlet que derrubava o post do blog).
+  if (matchRoute({ to: "/moderacao/$reportId" })) {
+    return <Outlet />;
+  }
 
   return (
     <AppContainer>
@@ -57,7 +67,9 @@ function Moderacao() {
         </Link>
 
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">{texts.sanctions.moderationTitle}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {texts.sanctions.moderationTitle}
+          </h1>
 
           <p className="text-sm text-muted-foreground">{texts.sanctions.moderationDescription}</p>
         </div>
@@ -75,7 +87,10 @@ function Moderacao() {
         ) : (
           <ul className="space-y-3">
             {data!.map((item) => (
-              <li key={item.id} className="space-y-2 rounded-2xl border border-border-soft bg-surface-card p-4">
+              <li
+                key={item.id}
+                className="space-y-2 rounded-2xl border border-border-soft bg-surface-card p-4"
+              >
                 <p className="text-sm">{item.message}</p>
 
                 <p className="text-xs text-text-subtle">

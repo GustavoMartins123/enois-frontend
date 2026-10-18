@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
 
 import { JOB_LEVELS, JOB_LOCATIONS, JOB_TYPES } from "@/constants/job-options";
 import {
@@ -21,13 +21,13 @@ import {
   Briefcase,
   CheckCircle2,
   CircleHelp,
+  ExternalLink,
   Flag,
   Lock,
   MapPin,
   Plus,
   Sparkles,
   X,
-  ExternalLink,
 } from "lucide-react";
 
 import { jobsApi, reportsApi } from "@/lib/api";
@@ -80,8 +80,19 @@ function formatPostedAt(dateStr: string | null | undefined): string {
 function Vagas() {
   const queryClient = useQueryClient();
   const { data: user } = useCurrentUser();
+  const matchRoute = useMatchRoute();
+  // Esta página é MÃE da vaga e de "Minhas vagas": sem devolver o filho aqui, o roteador renderiza
+  // esta lista no lugar delas e clicar numa vaga não abria nada (a mesma armadilha do Outlet que
+  // derrubava o post do blog).
+  // `fuzzy` porque a lista de candidaturas é neta desta página (`/vagas/{id}/candidaturas`): sem
+  // ele, só o caminho exato cede o lugar e a tela de candidaturas fica sem renderizar.
+  const isChildRoute = Boolean(
+    matchRoute({ to: "/vagas/$jobId", fuzzy: true }) || matchRoute({ to: "/vagas/minhas" }),
+  );
   // Diretorio de empresas linka com ?query= preenchido (busca ja inicia com o nome).
   const [query, setQuery] = useState(() => {
+    // Sem navegador (render no servidor) não há sessão nem endereço para ler: a busca começa vazia.
+    if (typeof window === "undefined") return "";
     // Diretorio de empresas: o card gravou o nome e a busca ja inicia preenchida.
     const fromDirectory = sessionStorage.getItem("empresas:query");
     const params = new URLSearchParams(window.location.search);
@@ -122,6 +133,8 @@ function Vagas() {
     // Cache no front: navegar/focar/voltar nao rebate no backend; 60s de frescor.
     staleTime: 60_000,
     placeholderData: (previous) => previous,
+    // Na vaga (ou em "Minhas vagas") esta lista não aparece: não vale gastar a requisição.
+    enabled: !isChildRoute,
   });
 
   const jobs = jobsData?.items ?? [];
@@ -161,6 +174,10 @@ function Vagas() {
     setType("");
     setSkills("");
   };
+
+  if (isChildRoute) {
+    return <Outlet />;
+  }
 
   return (
     <AppContainer>
@@ -338,7 +355,9 @@ function Vagas() {
               <div className="flex items-start gap-3">
                 <Avatar className="h-12 w-12 rounded-xl">
                   {j.logo && <AvatarImage src={j.logo} alt={j.company} className="rounded-xl" />}
-                  <AvatarFallback className="rounded-xl">{(j.company ?? j.title ?? "?")[0]}</AvatarFallback>
+                  <AvatarFallback className="rounded-xl">
+                    {(j.company ?? j.title ?? "?")[0]}
+                  </AvatarFallback>
                 </Avatar>
 
                 <div className="min-w-0 flex-1">
