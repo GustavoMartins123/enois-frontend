@@ -122,6 +122,27 @@ export const texts = {
     commenting: "Enviando...",
     commentError: "Não foi possível comentar.",
     noComments: "Nenhum comentário ainda.",
+    adminTitle: "Administração",
+    requestsTitle: "Solicitações de ingresso",
+    noRequests: "Nenhuma solicitação pendente.",
+    approve: "Aprovar",
+    reject: "Recusar",
+    requestError: "Não foi possível decidir a solicitação.",
+    membersTitle: "Membros",
+    removeMember: "Remover",
+    removeMemberTitle: (name: string) => `Remover ${name}?`,
+    removeMemberDescription:
+      "A pessoa deixa de ver o conteúdo do grupo e precisa pedir entrada de novo para voltar.",
+    removeError: "Não foi possível remover o membro.",
+    transfer: "Transferir propriedade",
+    transferTitle: (name: string) => `Passar a propriedade para ${name}?`,
+    transferDescription:
+      "Você continua como administrador; a partir daqui é essa pessoa quem responde pelo grupo.",
+    transferError: "Não foi possível transferir a propriedade.",
+    roleOwner: "Dono",
+    roleAdmin: "Administrador",
+    roleModerator: "Moderador",
+    roleMember: "Membro",
   },
 
   accessibility: {

@@ -5,6 +5,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { REACTION_EMOJIS } from "@/constants/reaction-emojis";
 import { texts } from "@/texts";
+import type { GroupMember } from "@/types/application/group/group-member";
 import type { GroupPost } from "@/types/application/group/group-post";
 import type { GroupView } from "@/types/application/group/group-view";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
@@ -15,6 +16,7 @@ import { getSessionToken } from "@/lib/api-client";
 import { resolveCdnUrl } from "@/lib/api/media";
 
 import { Button } from "@/components/ui/button";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -176,6 +178,8 @@ function GrupoPage() {
             </div>
           </div>
         </div>
+
+        {canManage && <AdminPanel group={group} />}
 
         {group.joined ? (
           <GroupFeed group={group} />
@@ -598,5 +602,189 @@ function EditGroupDialog({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** Administração local: pedidos de ingresso e membros. O backend confere as permissões. */
+function AdminPanel({ group }: { group: GroupView }) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [removeTarget, setRemoveTarget] = useState<GroupMember | null>(null);
+  const [transferTarget, setTransferTarget] = useState<GroupMember | null>(null);
+
+  const { data: requestsData } = useQuery({
+    queryKey: ["group-requests", group.id],
+    queryFn: () => groupsApi.requests(group.id),
+  });
+  const requests = requestsData?.items ?? [];
+
+  const { data: membersData } = useQuery({
+    queryKey: ["group-members", group.id],
+    queryFn: () => groupsApi.members(group.id),
+  });
+  const members = membersData?.items ?? [];
+
+  const invalidate = () => {
+    void queryClient.invalidateQueries({ queryKey: ["group-requests", group.id] });
+    void queryClient.invalidateQueries({ queryKey: ["group-members", group.id] });
+    void queryClient.invalidateQueries({ queryKey: ["group", group.slug] });
+  };
+
+  const decide = useMutation({
+    mutationFn: ({ requestId, approve }: { requestId: string; approve: boolean }) =>
+      approve ? groupsApi.approve(group.id, requestId) : groupsApi.reject(group.id, requestId),
+    onSuccess: invalidate,
+    onError: () => toast(texts.groups.requestError, "error"),
+  });
+
+  const removeMember = useMutation({
+    mutationFn: (userId: string) => groupsApi.removeMember(group.id, userId),
+    onSuccess: () => {
+      setRemoveTarget(null);
+      invalidate();
+    },
+    onError: () => toast(texts.groups.removeError, "error"),
+  });
+
+  const transfer = useMutation({
+    mutationFn: (userId: string) => groupsApi.transfer(group.id, userId),
+    onSuccess: () => {
+      setTransferTarget(null);
+      invalidate();
+    },
+    onError: () => toast(texts.groups.transferError, "error"),
+  });
+
+  const isOwner = group.viewerRole === "OWNER";
+  const roleLabel = (role: GroupMember["role"]) =>
+    role === "OWNER"
+      ? texts.groups.roleOwner
+      : role === "ADMIN"
+        ? texts.groups.roleAdmin
+        : role === "MODERATOR"
+          ? texts.groups.roleModerator
+          : texts.groups.roleMember;
+  const nameOf = (member: { name: string | null; username: string | null }) =>
+    member.name ?? member.username ?? "";
+
+  return (
+    <section className="space-y-5 rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-5">
+      <h2 className="text-sm font-medium text-text-strong">{texts.groups.adminTitle}</h2>
+
+      <div className="space-y-2">
+        <h3 className="text-xs font-medium text-text-strong">{texts.groups.requestsTitle}</h3>
+
+        {requests.length === 0 ? (
+          <p className="text-xs text-text-subtle">{texts.groups.noRequests}</p>
+        ) : (
+          <ul className="space-y-2">
+            {requests.map((request) => (
+              <li
+                key={request.id}
+                className="flex flex-wrap items-center gap-2 rounded-xl bg-surface-1 px-3 py-2"
+              >
+                <UserAvatar
+                  src={request.avatar}
+                  alt={request.name ?? ""}
+                  className="h-7 w-7 shrink-0"
+                />
+
+                <span className="min-w-0 flex-1 truncate text-sm text-text-strong">
+                  {nameOf(request)}
+                </span>
+
+                <Button
+                  size="sm"
+                  className="w-auto rounded-full"
+                  disabled={decide.isPending}
+                  onClick={() => decide.mutate({ requestId: request.id, approve: true })}
+                >
+                  {texts.groups.approve}
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="w-auto rounded-full"
+                  disabled={decide.isPending}
+                  onClick={() => decide.mutate({ requestId: request.id, approve: false })}
+                >
+                  {texts.groups.reject}
+                </Button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <h3 className="text-xs font-medium text-text-strong">{texts.groups.membersTitle}</h3>
+
+        <ul className="space-y-2">
+          {members.map((member) => (
+            <li
+              key={member.userId}
+              className="flex flex-wrap items-center gap-2 rounded-xl bg-surface-1 px-3 py-2"
+            >
+              <UserAvatar
+                src={member.avatar}
+                alt={member.name ?? ""}
+                className="h-7 w-7 shrink-0"
+              />
+
+              <span className="min-w-0 flex-1 truncate text-sm text-text-strong">
+                {nameOf(member)}
+              </span>
+
+              <span className="text-xs text-text-subtle">{roleLabel(member.role)}</span>
+
+              {member.role !== "OWNER" && (
+                <>
+                  {isOwner && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="w-auto rounded-full"
+                      onClick={() => setTransferTarget(member)}
+                    >
+                      {texts.groups.transfer}
+                    </Button>
+                  )}
+
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="w-auto rounded-full text-destructive"
+                    onClick={() => setRemoveTarget(member)}
+                  >
+                    {texts.groups.removeMember}
+                  </Button>
+                </>
+              )}
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <ConfirmDialog
+        open={removeTarget !== null}
+        onOpenChange={(open) => !open && setRemoveTarget(null)}
+        title={texts.groups.removeMemberTitle(removeTarget ? nameOf(removeTarget) : "")}
+        description={texts.groups.removeMemberDescription}
+        confirmLabel={texts.groups.removeMember}
+        destructive
+        pending={removeMember.isPending}
+        onConfirm={() => removeTarget && removeMember.mutate(removeTarget.userId)}
+      />
+      <ConfirmDialog
+        open={transferTarget !== null}
+        onOpenChange={(open) => !open && setTransferTarget(null)}
+        title={texts.groups.transferTitle(transferTarget ? nameOf(transferTarget) : "")}
+        description={texts.groups.transferDescription}
+        confirmLabel={texts.groups.transfer}
+        pending={transfer.isPending}
+        onConfirm={() => transferTarget && transfer.mutate(transferTarget.userId)}
+      />
+    </section>
   );
 }
