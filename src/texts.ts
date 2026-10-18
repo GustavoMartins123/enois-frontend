@@ -816,6 +816,7 @@ export const texts = {
       suggestionsDescription: "Com base em interesses e objetivos em comum.",
       connect: "Conectar",
       happeningNow: "Acontecendo agora",
+      seeAllEvents: "Ver todos os eventos",
       confirmed: (count: number) => `${count} ${count === 1 ? "confirmado" : "confirmados"}`,
       eventMeta: (date: string, format: string, confirmed: string) =>
         `${date} · ${format} · ${confirmed}`,

@@ -1,4 +1,4 @@
-import { type ChangeEvent, useRef, useState } from "react";
+import { type ChangeEvent, useEffect, useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
@@ -29,6 +29,9 @@ import { Label } from "@/components/ui/label";
 import { AppContainer } from "@/components/app-container";
 
 export const Route = createFileRoute("/eventos")({
+  validateSearch: (search: Record<string, unknown>): { evento?: string } => ({
+    evento: typeof search.evento === "string" && search.evento.length > 0 ? search.evento : undefined,
+  }),
   beforeLoad: requireAuth,
   head: () => ({ meta: [{ title: texts.events.seoTitle }] }),
   component: Eventos,
@@ -37,6 +40,20 @@ export const Route = createFileRoute("/eventos")({
 function Eventos() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const { evento: eventoDestacado } = Route.useSearch();
+  const cardRef = useRef<HTMLDivElement | null>(null);
+  const [recemChegado, setRecemChegado] = useState(false);
+
+  // Deep link (?evento=id): rola até o card e o destaca por uns segundos.
+  useEffect(() => {
+    if (!eventoDestacado) return;
+    const timer = setTimeout(() => {
+      cardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setRecemChegado(true);
+      setTimeout(() => setRecemChegado(false), 4000);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [eventoDestacado]);
 
   const { data: eventsData } = useQuery({
     queryKey: ["events"],
@@ -96,7 +113,14 @@ function Eventos() {
             const Icon = e.format === "ONLINE" ? Video : MapPin;
             const [, month, day] = (e.date ?? "").split("-");
             return (
-              <article key={e.id} className="surface-card overflow-hidden">
+              <article
+                key={e.id}
+                id={`evento-${e.id}`}
+                ref={e.id === eventoDestacado ? cardRef : undefined}
+                className={`surface-card overflow-hidden transition ${
+                  e.id === eventoDestacado && recemChegado ? "ring-2 ring-primary" : ""
+                }`}
+              >
                 <div className="relative">
                   {e.cover ? (
                     <img src={resolveCdnUrl(e.cover)} alt="" className="h-40 w-full object-cover" />

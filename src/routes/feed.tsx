@@ -631,18 +631,33 @@ function Home() {
               <ul className="mt-3 space-y-3">
                 {eventList.slice(0, 3).map((e) => (
                   <li key={e.id}>
-                    <p className="text-sm font-normal text-text-strong">{e.title}</p>
+                    <Link
+                      to="/eventos"
+                      search={{ evento: e.id }}
+                      className="block group/ev"
+                    >
+                      <p className="text-sm font-normal text-text-strong underline-offset-2 group-hover/ev:underline">
+                        {e.title}
+                      </p>
 
-                    <p className="text-xs font-normal text-text-subtle">
-                      {texts.feed.sidebar.eventMeta(
-                        e.date,
-                        e.format,
-                        texts.feed.sidebar.confirmed(e.attendees),
-                      )}
-                    </p>
+                      <p className="text-xs font-normal text-text-subtle">
+                        {texts.feed.sidebar.eventMeta(
+                          e.date,
+                          e.format,
+                          texts.feed.sidebar.confirmed(e.attendees),
+                        )}
+                      </p>
+                    </Link>
                   </li>
                 ))}
               </ul>
+
+              <Link
+                to="/eventos"
+                className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+              >
+                {texts.feed.sidebar.seeAllEvents}
+              </Link>
             </div>
           )}
         </aside>
