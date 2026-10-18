@@ -161,12 +161,17 @@ function Landing() {
         {stats ? (
           <section
             aria-labelledby="community-numbers"
-            className="border-b border-border bg-foreground text-background"
+            // A faixa usa o PAR do tema (destaque + texto sobre o destaque), não o par
+            // "invertido" (bg-foreground/text-background): com os temas de fundo em gradiente, o
+            // `--background` não é cor válida para texto — a cor era descartada, o texto herdava a
+            // cor de cima e a faixa virava branco no branco. `--primary-foreground` é escrito por
+            // cada tema justamente para contrastar com `--primary`.
+            className="border-b border-border bg-primary text-primary-foreground"
           >
             <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-16">
               <h2
                 id="community-numbers"
-                className="text-xs font-semibold uppercase tracking-widest text-background/60"
+                className="text-xs font-semibold uppercase tracking-widest text-primary-foreground/70"
               >
                 {texts.landing.community.eyebrow}
               </h2>
@@ -177,23 +182,23 @@ function Landing() {
                     {stats.activeUsers.toLocaleString("pt-BR")}
                   </p>
 
-                  <p className="mt-2 text-base text-background/75">
+                  <p className="mt-2 text-base text-primary-foreground/75">
                     {texts.landing.community.activeLabel(stats.windowDays)}
                   </p>
                 </div>
 
-                <div className="border-t border-background/20 pt-6 sm:border-l sm:border-t-0 sm:pl-16 sm:pt-0">
+                <div className="border-t border-primary-foreground/20 pt-6 sm:border-l sm:border-t-0 sm:pl-16 sm:pt-0">
                   <p className="text-2xl font-semibold tabular-nums">
                     {stats.totalUsers.toLocaleString("pt-BR")}
                   </p>
 
-                  <p className="mt-1 text-sm text-background/75">
+                  <p className="mt-1 text-sm text-primary-foreground/75">
                     {texts.landing.community.totalLabel}
                   </p>
                 </div>
               </div>
 
-              <p className="mt-10 max-w-2xl text-xs leading-relaxed text-background/60">
+              <p className="mt-10 max-w-2xl text-xs leading-relaxed text-primary-foreground/70">
                 {texts.landing.community.note}
               </p>
             </div>
