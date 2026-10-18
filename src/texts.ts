@@ -1945,6 +1945,15 @@ export const texts = {
     viewJobs: "Ver vagas",
     empty: "Nenhuma empresa encontrada.",
   },
+    exportTheme: "Exportar tema",
+    importTheme: "Importar tema",
+    exportFileName: "tema.enois-theme",
+    importError: "Arquivo inválido — use um .enois-theme exportado do Énóis.",
+    galleryLink: "Temas da comunidade",
+
+  themeGallery: {
+    seoTitle: "Temas da comunidade · Énóis",
+  },
 
   empresa: {
     seoTitle: (name: string) => `${name} · Énóis`,
