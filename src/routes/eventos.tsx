@@ -44,23 +44,30 @@ function Eventos() {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const [recemChegado, setRecemChegado] = useState(false);
 
-  // Deep link (?evento=id): rola até o card e o destaca por uns segundos.
-  useEffect(() => {
-    if (!eventoDestacado) return;
-    const timer = setTimeout(() => {
-      cardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-      setRecemChegado(true);
-      setTimeout(() => setRecemChegado(false), 4000);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [eventoDestacado]);
-
   const { data: eventsData } = useQuery({
     queryKey: ["events"],
     queryFn: () => eventsApi.list(),
   });
 
   const events = eventsData?.items ?? [];
+
+  // Deep link (?evento=id): rola até o card e o destaca por alguns segundos.
+  //
+  // A rolagem espera a lista chegar: o card só existe depois dela, e o link aberto em aba nova
+  // chegava antes dos eventos e não rolava para lugar nenhum (o destaque até aparecia, mas fora
+  // da tela). Depender da lista faz o efeito rodar de novo quando ela chega — com o card no lugar.
+  useEffect(() => {
+    if (!eventoDestacado || events.length === 0) return;
+    const rolar = setTimeout(() => {
+      cardRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setRecemChegado(true);
+    }, 250);
+    const apagar = setTimeout(() => setRecemChegado(false), 4250);
+    return () => {
+      clearTimeout(rolar);
+      clearTimeout(apagar);
+    };
+  }, [eventoDestacado, events.length]);
 
   const attend = useMutation({
     mutationFn: (eventId: string) => eventsApi.attend(eventId),

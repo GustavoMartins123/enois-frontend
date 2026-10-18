@@ -16,6 +16,7 @@ import {
   BarChart3,
   Calendar,
   ChevronDown,
+  ChevronRight,
   Code2,
   FileText,
   Film,
@@ -631,22 +632,28 @@ function Home() {
               <ul className="mt-3 space-y-3">
                 {eventList.slice(0, 3).map((e) => (
                   <li key={e.id}>
+                    {/* O item inteiro é o link para o evento. A seta é o que diz isso: sem ela, o
+                        título só reagia no hover e a linha parecia texto solto. */}
                     <Link
                       to="/eventos"
                       search={{ evento: e.id }}
-                      className="block group/ev"
+                      className="group/ev flex items-start gap-2"
                     >
-                      <p className="text-sm font-normal text-text-strong underline-offset-2 group-hover/ev:underline">
-                        {e.title}
-                      </p>
+                      <span className="min-w-0 flex-1">
+                        <p className="text-sm font-normal text-text-strong underline-offset-2 group-hover/ev:underline">
+                          {e.title}
+                        </p>
 
-                      <p className="text-xs font-normal text-text-subtle">
-                        {texts.feed.sidebar.eventMeta(
-                          e.date,
-                          e.format,
-                          texts.feed.sidebar.confirmed(e.attendees),
-                        )}
-                      </p>
+                        <p className="text-xs font-normal text-text-subtle">
+                          {texts.feed.sidebar.eventMeta(
+                            e.date,
+                            e.format,
+                            texts.feed.sidebar.confirmed(e.attendees),
+                          )}
+                        </p>
+                      </span>
+
+                      <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-text-subtle transition group-hover/ev:translate-x-0.5 group-hover/ev:text-primary" />
                     </Link>
                   </li>
                 ))}
