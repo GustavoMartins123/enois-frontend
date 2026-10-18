@@ -23,6 +23,7 @@ import { Route as ModeracaoRouteImport } from './routes/moderacao'
 import { Route as MentoriaRouteImport } from './routes/mentoria'
 import { Route as MensagensRouteImport } from './routes/mensagens'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
+import { Route as GruposRouteImport } from './routes/grupos'
 import { Route as GamesRouteImport } from './routes/games'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as EventosRouteImport } from './routes/eventos'
@@ -42,6 +43,7 @@ import { Route as VagasJobIdRouteImport } from './routes/vagas.$jobId'
 import { Route as PostPostIdRouteImport } from './routes/post.$postId'
 import { Route as PerfilUsernameRouteImport } from './routes/perfil.$username'
 import { Route as ModeracaoReportIdRouteImport } from './routes/moderacao.$reportId'
+import { Route as GruposSlugRouteImport } from './routes/grupos.$slug'
 import { Route as GamesPainelRouteImport } from './routes/games.painel'
 import { Route as GamesUsernameRouteImport } from './routes/games.$username'
 import { Route as EmpresaSlugRouteImport } from './routes/empresa.$slug'
@@ -122,6 +124,11 @@ const MensagensRoute = MensagensRouteImport.update({
 const MarketplaceRoute = MarketplaceRouteImport.update({
   id: '/marketplace',
   path: '/marketplace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GruposRoute = GruposRouteImport.update({
+  id: '/grupos',
+  path: '/grupos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GamesRoute = GamesRouteImport.update({
@@ -219,6 +226,11 @@ const ModeracaoReportIdRoute = ModeracaoReportIdRouteImport.update({
   path: '/$reportId',
   getParentRoute: () => ModeracaoRoute,
 } as any)
+const GruposSlugRoute = GruposSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => GruposRoute,
+} as any)
 const GamesPainelRoute = GamesPainelRouteImport.update({
   id: '/painel',
   path: '/painel',
@@ -290,6 +302,7 @@ export interface FileRoutesByFullPath {
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
   '/games': typeof GamesRouteWithChildren
+  '/grupos': typeof GruposRouteWithChildren
   '/marketplace': typeof MarketplaceRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
@@ -312,6 +325,7 @@ export interface FileRoutesByFullPath {
   '/empresa/$slug': typeof EmpresaSlugRoute
   '/games/$username': typeof GamesUsernameRouteWithChildren
   '/games/painel': typeof GamesPainelRoute
+  '/grupos/$slug': typeof GruposSlugRoute
   '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
@@ -336,6 +350,7 @@ export interface FileRoutesByTo {
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
   '/games': typeof GamesRouteWithChildren
+  '/grupos': typeof GruposRouteWithChildren
   '/marketplace': typeof MarketplaceRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
@@ -358,6 +373,7 @@ export interface FileRoutesByTo {
   '/empresa/$slug': typeof EmpresaSlugRoute
   '/games/$username': typeof GamesUsernameRouteWithChildren
   '/games/painel': typeof GamesPainelRoute
+  '/grupos/$slug': typeof GruposSlugRoute
   '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
@@ -383,6 +399,7 @@ export interface FileRoutesById {
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
   '/games': typeof GamesRouteWithChildren
+  '/grupos': typeof GruposRouteWithChildren
   '/marketplace': typeof MarketplaceRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
@@ -405,6 +422,7 @@ export interface FileRoutesById {
   '/empresa/$slug': typeof EmpresaSlugRoute
   '/games/$username': typeof GamesUsernameRouteWithChildren
   '/games/painel': typeof GamesPainelRoute
+  '/grupos/$slug': typeof GruposSlugRoute
   '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
@@ -431,6 +449,7 @@ export interface FileRouteTypes {
     | '/eventos'
     | '/feed'
     | '/games'
+    | '/grupos'
     | '/marketplace'
     | '/mensagens'
     | '/mentoria'
@@ -453,6 +472,7 @@ export interface FileRouteTypes {
     | '/empresa/$slug'
     | '/games/$username'
     | '/games/painel'
+    | '/grupos/$slug'
     | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
@@ -477,6 +497,7 @@ export interface FileRouteTypes {
     | '/eventos'
     | '/feed'
     | '/games'
+    | '/grupos'
     | '/marketplace'
     | '/mensagens'
     | '/mentoria'
@@ -499,6 +520,7 @@ export interface FileRouteTypes {
     | '/empresa/$slug'
     | '/games/$username'
     | '/games/painel'
+    | '/grupos/$slug'
     | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
@@ -523,6 +545,7 @@ export interface FileRouteTypes {
     | '/eventos'
     | '/feed'
     | '/games'
+    | '/grupos'
     | '/marketplace'
     | '/mensagens'
     | '/mentoria'
@@ -545,6 +568,7 @@ export interface FileRouteTypes {
     | '/empresa/$slug'
     | '/games/$username'
     | '/games/painel'
+    | '/grupos/$slug'
     | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
@@ -570,6 +594,7 @@ export interface RootRouteChildren {
   EventosRoute: typeof EventosRoute
   FeedRoute: typeof FeedRoute
   GamesRoute: typeof GamesRouteWithChildren
+  GruposRoute: typeof GruposRouteWithChildren
   MarketplaceRoute: typeof MarketplaceRoute
   MensagensRoute: typeof MensagensRoute
   MentoriaRoute: typeof MentoriaRoute
@@ -692,6 +717,13 @@ declare module '@tanstack/react-router' {
       path: '/marketplace'
       fullPath: '/marketplace'
       preLoaderRoute: typeof MarketplaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/grupos': {
+      id: '/grupos'
+      path: '/grupos'
+      fullPath: '/grupos'
+      preLoaderRoute: typeof GruposRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/games': {
@@ -827,6 +859,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ModeracaoReportIdRouteImport
       parentRoute: typeof ModeracaoRoute
     }
+    '/grupos/$slug': {
+      id: '/grupos/$slug'
+      path: '/$slug'
+      fullPath: '/grupos/$slug'
+      preLoaderRoute: typeof GruposSlugRouteImport
+      parentRoute: typeof GruposRoute
+    }
     '/games/painel': {
       id: '/games/painel'
       path: '/painel'
@@ -943,6 +982,17 @@ const GamesRouteChildren: GamesRouteChildren = {
 
 const GamesRouteWithChildren = GamesRoute._addFileChildren(GamesRouteChildren)
 
+interface GruposRouteChildren {
+  GruposSlugRoute: typeof GruposSlugRoute
+}
+
+const GruposRouteChildren: GruposRouteChildren = {
+  GruposSlugRoute: GruposSlugRoute,
+}
+
+const GruposRouteWithChildren =
+  GruposRoute._addFileChildren(GruposRouteChildren)
+
 interface ModeracaoRouteChildren {
   ModeracaoReportIdRoute: typeof ModeracaoReportIdRoute
 }
@@ -994,6 +1044,7 @@ const rootRouteChildren: RootRouteChildren = {
   EventosRoute: EventosRoute,
   FeedRoute: FeedRoute,
   GamesRoute: GamesRouteWithChildren,
+  GruposRoute: GruposRouteWithChildren,
   MarketplaceRoute: MarketplaceRoute,
   MensagensRoute: MensagensRoute,
   MentoriaRoute: MentoriaRoute,

@@ -1,0 +1,249 @@
+import { useState } from "react";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+
+import { texts } from "@/texts";
+import type { GroupView } from "@/types/application/group/group-view";
+import { ChevronRight, Loader2, Plus, Search, Users } from "lucide-react";
+
+import { groupsApi } from "@/lib/api";
+import { getSessionToken } from "@/lib/api-client";
+import { resolveCdnUrl } from "@/lib/api/media";
+
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/toast";
+
+import { AppContainer } from "@/components/app-container";
+
+export const Route = createFileRoute("/grupos")({
+  head: () => ({ meta: [{ title: texts.groups.seoTitle }] }),
+  component: Grupos,
+});
+
+/**
+ * Descoberta de grupos — PÚBLICA de propósito: quem ainda não entrou pode conhecer a apresentação,
+ * mas nada do conteúdo interno aparece aqui (o backend só manda metadados públicos).
+ */
+function Grupos() {
+  const [query, setQuery] = useState("");
+  const [createOpen, setCreateOpen] = useState(false);
+  const authenticated = Boolean(getSessionToken());
+
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["groups", query],
+    queryFn: () => groupsApi.list(query.trim() || undefined),
+  });
+  const groups = data?.items ?? [];
+
+  return (
+    <AppContainer>
+      <div className="mx-auto w-full max-w-4xl space-y-6">
+        <header className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight text-text-strong">
+              {texts.groups.title}
+            </h1>
+
+            <p className="mt-1 text-sm text-muted-foreground">{texts.groups.subtitle}</p>
+          </div>
+
+          {authenticated && (
+            <Button className="w-auto rounded-full gap-2" onClick={() => setCreateOpen(true)}>
+              <Plus className="h-4 w-4" />
+
+              <>{texts.groups.create}</>
+            </Button>
+          )}
+        </header>
+
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder={texts.groups.searchPlaceholder}
+            className="pl-9"
+          />
+        </div>
+
+        {isLoading && (
+          <div className="flex justify-center py-8 text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" />
+          </div>
+        )}
+
+        {isError && (
+          <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
+            {texts.groups.loadError}
+          </p>
+        )}
+
+        {!isLoading && !isError && groups.length === 0 && (
+          <p className="text-sm text-text-subtle">{texts.groups.empty}</p>
+        )}
+
+        <ul className="space-y-3">
+          {groups.map((group) => (
+            <GroupCard key={group.id} group={group} />
+          ))}
+        </ul>
+      </div>
+
+      <CreateGroupDialog open={createOpen} onOpenChange={setCreateOpen} />
+    </AppContainer>
+  );
+}
+
+function GroupCard({ group }: { group: GroupView }) {
+  return (
+    <li>
+      <Link
+        to="/grupos/$slug"
+        params={{ slug: group.slug }}
+        className="flex items-center gap-3 rounded-2xl border border-border-soft bg-surface-card p-4 transition hover:border-primary/40"
+      >
+        {group.avatar ? (
+          <img
+            src={resolveCdnUrl(group.avatar)}
+            alt=""
+            className="h-12 w-12 shrink-0 rounded-xl object-cover"
+          />
+        ) : (
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+            <Users className="h-5 w-5" />
+          </span>
+        )}
+
+        <span className="min-w-0 flex-1">
+          <span className="block truncate font-semibold text-text-strong">{group.name}</span>
+
+          {group.description && (
+            <span className="block truncate text-sm text-text-subtle">{group.description}</span>
+          )}
+
+          <span className="mt-0.5 block text-xs text-text-date">
+            {texts.groups.members(group.members)} ·{" "}
+            {group.joinMode === "OPEN" ? texts.groups.joinModeOpen : texts.groups.joinModeApproval}
+          </span>
+        </span>
+
+        <ChevronRight className="h-4 w-4 shrink-0 text-text-subtle" />
+      </Link>
+    </li>
+  );
+}
+
+function CreateGroupDialog({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [joinMode, setJoinMode] = useState<"OPEN" | "APPROVAL">("APPROVAL");
+
+  const create = useMutation({
+    mutationFn: () =>
+      groupsApi.create({
+        name: name.trim(),
+        description: description.trim() || null,
+        joinMode,
+      }),
+    onSuccess: (group) => {
+      void queryClient.invalidateQueries({ queryKey: ["groups"] });
+      onOpenChange(false);
+      void navigate({ to: "/grupos/$slug", params: { slug: group.slug } });
+    },
+    onError: () => toast(texts.groups.createError, "error"),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-normal">{texts.groups.createTitle}</DialogTitle>
+
+          <DialogDescription>{texts.groups.createDescription}</DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="groupName">{texts.groups.name}</Label>
+
+            <Input
+              id="groupName"
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              placeholder={texts.groups.namePlaceholder}
+              maxLength={120}
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label htmlFor="groupDescription">{texts.groups.description}</Label>
+
+            <Textarea
+              id="groupDescription"
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              placeholder={texts.groups.descriptionPlaceholder}
+              maxLength={600}
+              className="min-h-20"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-text-strong">{texts.groups.joinModeLabel}</p>
+
+            <div className="flex flex-wrap gap-2">
+              {(
+                [
+                  { id: "OPEN" as const, label: texts.groups.openLabel },
+                  { id: "APPROVAL" as const, label: texts.groups.approvalLabel },
+                ] as const
+              ).map((option) => (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => setJoinMode(option.id)}
+                  aria-pressed={joinMode === option.id}
+                  className={
+                    joinMode === option.id
+                      ? "rounded-full border border-primary bg-primary-soft px-3 py-1.5 text-xs font-medium text-primary"
+                      : "rounded-full border border-border-soft px-3 py-1.5 text-xs font-normal text-text-subtle transition hover:text-text-strong"
+                  }
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <Button
+            className="w-full rounded-full"
+            disabled={!name.trim() || create.isPending}
+            onClick={() => create.mutate()}
+          >
+            {create.isPending ? texts.groups.creating : texts.groups.createAction}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}

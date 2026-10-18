@@ -9,6 +9,7 @@ export { reactionsApi, REACTION_EMOJIS } from "./reactions";
 export { networkApi } from "./network";
 export { mediaApi } from "./media";
 export { communitiesApi } from "./communities";
+export { groupsApi } from "./groups";
 export { jobsApi } from "./jobs";
 export { eventsApi } from "./events";
 export { mentorsApi } from "./mentors";

@@ -1,0 +1,17 @@
+/** Publicação do feed privado do grupo (tabela própria; nunca aparece no feed principal). */
+export type GroupPost = {
+  id: string;
+  groupId: string;
+  topicId: string;
+  authorId: string;
+  authorName: string | null;
+  authorUsername: string | null;
+  authorAvatar: string | null;
+  authorBadges: string[];
+  content: string;
+  mediaIds: string[];
+  pinned: boolean;
+  reactions: number;
+  comments: number;
+  createdAt: string;
+};
