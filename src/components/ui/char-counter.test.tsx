@@ -3,8 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { CharCounter } from "./char-counter";
 
-const render = (length: number) =>
-  renderToStaticMarkup(<CharCounter length={length} max={1200} />);
+const render = (length: number) => renderToStaticMarkup(<CharCounter length={length} max={1200} />);
 
 describe("CharCounter", () => {
   it("mostra o uso e o limite desde o campo vazio", () => {
