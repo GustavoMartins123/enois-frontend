@@ -90,6 +90,9 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
   const initializePostCard = usePostCardStore((state) => state.initializePostCard);
   const disposePostCard = usePostCardStore((state) => state.disposePostCard);
   const setShowSeals = usePostCardStore((state) => state.setShowSeals);
+  // `mySeals` é a lista (backend novo); `mySeal` é o campo antigo, para a janela em que o pod do
+  // backend ainda não subiu — sem isso, um selo já dado apareceria apagado.
+  const mySeals = seals ? (seals.mySeals ?? (seals.mySeal ? [seals.mySeal] : [])) : [];
 
   useEffect(() => {
     initializePostCard(post);
@@ -267,7 +270,7 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
                 className={cn(
                   "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium transition hover:border-primary/50",
                   seal.className,
-                  (seals.mySeals ?? []).includes(item.seal) && "ring-1 ring-primary/60",
+                  mySeals.includes(item.seal) && "ring-1 ring-primary/60",
                 )}
               >
                 <seal.icon className="h-3 w-3" aria-hidden />
@@ -390,7 +393,7 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
 
             <div className="mt-2 grid grid-cols-3 gap-1.5">
               {POST_SEALS.map((seal) => {
-                const mine = (seals?.mySeals ?? []).includes(seal.id);
+                const mine = mySeals.includes(seal.id);
                 return (
                   <button
                     key={seal.id}
@@ -419,7 +422,7 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
               {texts.posts.seals.hint}
             </p>
 
-            {(seals?.mySeals ?? []).length > 0 && (
+            {mySeals.length > 0 && (
               <button
                 type="button"
                 onClick={() =>
