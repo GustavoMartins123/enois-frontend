@@ -17,6 +17,8 @@ const common = {
   add: "Adicionar",
   back: "Voltar",
   profile: "Perfil",
+  charactersProgress: (used: number, max: number) =>
+    `${used.toLocaleString("pt-BR")} / ${max.toLocaleString("pt-BR")} caracteres`,
   charactersLeft: (count: number) =>
     count === 1 ? "falta 1 caractere" : `faltam ${count} caracteres`,
   charactersLimitReached: "limite de caracteres atingido",
