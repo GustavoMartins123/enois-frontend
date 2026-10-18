@@ -20,7 +20,7 @@ export function NavigationDrawer() {
       <SheetContent
         side="left"
         overlayClassName="bg-black/50 backdrop-blur-sm md:hidden"
-        className="w-72 border-border-soft bg-surface-card p-0 shadow-card md:hidden [&>button]:right-3 [&>button]:top-2.5 [&>button]:grid [&>button]:h-9 [&>button]:w-9 [&>button]:place-items-center [&>button]:rounded-full [&>button]:text-text-subtle [&>button]:opacity-100 [&>button]:transition [&>button:hover]:bg-surface-2 [&>button:hover]:text-primary sm:[&>button]:top-3.5"
+        className="flex w-72 flex-col border-border-soft bg-surface-card p-0 shadow-card md:hidden [&>button]:right-3 [&>button]:top-2.5 [&>button]:grid [&>button]:h-9 [&>button]:w-9 [&>button]:place-items-center [&>button]:rounded-full [&>button]:text-text-subtle [&>button]:opacity-100 [&>button]:transition [&>button:hover]:bg-surface-2 [&>button:hover]:text-primary sm:[&>button]:top-3.5"
       >
         <SheetTitle className="sr-only">{texts.navigation.drawerTitle}</SheetTitle>
 
@@ -28,7 +28,12 @@ export function NavigationDrawer() {
           <AppBrand onClick={closeMobileNavigation} />
         </div>
 
-        <NavigationLinks onNavigate={closeMobileNavigation} className="overflow-y-auto p-3" />
+        {/* `min-h-0` + `flex-1` é o que faz a lista rolar dentro do painel: sem isso ela cresce
+            além da altura e o fim fica fora da tela. */}
+        <NavigationLinks
+          onNavigate={closeMobileNavigation}
+          className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-3"
+        />
       </SheetContent>
     </Sheet>
   );

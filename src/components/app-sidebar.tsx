@@ -19,7 +19,11 @@ export function AppSidebar() {
   return (
     <aside
       className={cn(
-        "sticky top-20 hidden h-fit shrink-0 lg:block",
+        // A altura para no que cabe abaixo do cabeçalho (top-20 = 5rem) e a barra rola por dentro.
+        // Antes era `h-fit` + sticky: com mais itens do que cabia na tela, o fim da lista ficava
+        // fora do alcance — sem rolagem nenhuma, porque um elemento do tamanho do conteúdo nunca
+        // rola. `overscroll-contain` evita que a rolagem da barra puxe a página junto.
+        "sticky top-20 hidden max-h-[calc(100vh-6rem)] shrink-0 overflow-y-auto overscroll-contain lg:block",
         sidebarCollapsed ? "w-16" : "w-60",
       )}
       style={{ transition: "width 0.3s cubic-bezier(0.4, 0, 0.2, 1)" }}
