@@ -19,6 +19,9 @@ const searchSchema = z.object({
   /** Cancelamento ou falha devolvidos pelo provedor (ver finishOAuthError no backend). */
   error: z.string().optional(),
   provider: z.string().optional(),
+  /** Chegam quando o redirect_uri registrado no provedor aponta para esta página (LinkedIn). */
+  code: z.string().optional(),
+  state: z.string().optional(),
 });
 
 export const Route = createFileRoute("/auth/callback")({
@@ -42,6 +45,17 @@ function OAuthCallback() {
       setError(errorMessage(search.error));
       return;
     }
+
+    // LinkedIn está registrado com redirect_uri para esta página: o code/state são trocados no
+    // backend, que devolve a sessão em /auth/callback?token=... (o mesmo caminho do Google).
+    if (search.provider && search.code && search.state) {
+      const params = new URLSearchParams({ code: search.code, state: search.state });
+      window.location.replace(
+        `/api/auth/oauth/${search.provider.toLowerCase()}/callback?${params.toString()}`,
+      );
+      return;
+    }
+
     if (!search.token) {
       setError(texts.auth.social.callbackError);
       return;
