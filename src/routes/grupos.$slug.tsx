@@ -9,7 +9,7 @@ import type { GroupMember } from "@/types/application/group/group-member";
 import type { GroupPost } from "@/types/application/group/group-post";
 import type { GroupView } from "@/types/application/group/group-view";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
-import { Loader2, MessageCircle, Plus, Smile, Trash2, Users } from "lucide-react";
+import { Flag, Loader2, MessageCircle, Plus, Smile, Trash2, Users } from "lucide-react";
 
 import { groupsApi } from "@/lib/api";
 import { getSessionToken } from "@/lib/api-client";
@@ -26,6 +26,7 @@ import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { ReactionPicker } from "@/components/post/reaction-picker";
+import { ReportDialog } from "@/components/post/report-dialog";
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { UserAvatar } from "@/components/user-avatar";
 import { UserBadges } from "@/components/user-badge";
@@ -393,6 +394,7 @@ function GroupPostItem({
   const [comment, setComment] = useState("");
   const [showComments, setShowComments] = useState(false);
   const [removeOpen, setRemoveOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const currentUserId = getCurrentUserId();
 
   const remove = useMutation({
@@ -486,6 +488,16 @@ function GroupPostItem({
             <>{texts.groups.removeAction}</>
           </button>
         )}
+
+        <button
+          type="button"
+          onClick={() => setReportOpen(true)}
+          title={texts.posts.report.title}
+          aria-label={texts.posts.report.title}
+          className="inline-flex items-center gap-1 rounded-full px-2 py-1 transition hover:text-text-strong"
+        >
+          <Flag className="h-4 w-4" />
+        </button>
       </div>
 
       {showComments && (
@@ -548,6 +560,12 @@ function GroupPostItem({
         destructive
         pending={remove.isPending}
         onConfirm={() => remove.mutate()}
+      />
+      <ReportDialog
+        targetId={post.id}
+        targetType="GROUP_POST"
+        open={reportOpen}
+        onOpenChange={setReportOpen}
       />
     </li>
   );

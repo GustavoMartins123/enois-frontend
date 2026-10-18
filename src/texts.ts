@@ -148,6 +148,8 @@ export const texts = {
     removePostDescription: "Ela some do feed do grupo; a ação fica registrada na auditoria.",
     removeCommentTitle: "Remover comentário?",
     removePostError: "Não foi possível remover a publicação.",
+    reportPost: "Denunciar publicação do grupo",
+    reportComment: "Denunciar comentário do grupo",
   },
 
   accessibility: {
