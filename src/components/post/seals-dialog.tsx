@@ -23,7 +23,7 @@ export function SealsDialog({ postId }: PostIdProps) {
   const open = usePostCardStore((state) => state.cards[postId]?.showSeals ?? false);
   const setShowSeals = usePostCardStore((state) => state.setShowSeals);
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ["seals-people", postId],
     queryFn: () => sealsApi.people(postId),
     enabled: open,
@@ -62,7 +62,11 @@ export function SealsDialog({ postId }: PostIdProps) {
 
         {people.length === 0 ? (
           <p className="py-8 text-center text-sm font-normal text-text-subtle">
-            {isLoading ? texts.common.loading : texts.posts.seals.peopleEmpty}
+            {isError
+              ? texts.posts.seals.peopleError
+              : isLoading
+                ? texts.common.loading
+                : texts.posts.seals.peopleEmpty}
           </p>
         ) : (
           <div className="space-y-3 pt-2">

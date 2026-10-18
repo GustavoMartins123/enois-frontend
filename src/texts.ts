@@ -878,6 +878,7 @@ export const texts = {
       seeWho: "Ver quem marcou",
       peopleTitle: "Selos do post",
       peopleEmpty: "Ninguem marcou este post ainda.",
+      peopleError: "Nao foi possivel carregar quem marcou. Tente de novo.",
       peopleTotal: (count: number) => (count === 1 ? "1 selo" : `${count} selos`),
       items: {
         important: "Importante",
