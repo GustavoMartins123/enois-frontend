@@ -1,6 +1,15 @@
 import type { RequestOptions } from "@/types/application/api/request-options";
 
-const API_BACKEND = import.meta.env.VITE_API_BACKEND ?? "http://localhost:8081/api";
+/**
+ * Base da API.
+ *
+ * O padrao e RELATIVO (`/api`): em producao o proprio host serve a API, e no dev o proxy do Vite
+ * encaminha para o backend (ver `BACKEND_TARGET` no vite.config.ts). O fallback antigo era
+ * `http://localhost:8081/api`, e quando um build saiu sem a variavel (Dockerfile sem ARG) a imagem
+ * publicada passou a chamar localhost DENTRO do navegador de quem usava — o app ficou vazio e o
+ * login dizia "nao foi possivel conectar ao servidor".
+ */
+const API_BACKEND = import.meta.env.VITE_API_BACKEND ?? "/api";
 
 function baseUrl(): string {
   if (typeof window === "undefined") return API_BACKEND;
