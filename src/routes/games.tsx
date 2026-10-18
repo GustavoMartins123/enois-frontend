@@ -6,9 +6,10 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { GAME_GENRES, GAME_STAGES } from "@/constants/game-options";
 import { texts } from "@/texts";
 import type { GameView } from "@/types/application/games/game-view";
-import { ExternalLink, Gamepad2, Send } from "lucide-react";
+import { ExternalLink, Gamepad2, Send , Rocket } from "lucide-react";
 
 import { gamesApi } from "@/lib/api";
+import { formatFaisca } from "@/lib/faisca";
 import { isAuthenticated } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
 
@@ -241,11 +242,15 @@ function GameCover({ cover }: { cover?: string | null }) {
   );
 }
 
-/** Os jogos de quem está logado, com o status da moderação e o reenvio. */
+/** Os jogos de quem está logado, com o status da moderação, o reenvio e o impulso. */
 function MyGames({ games }: { games: Awaited<ReturnType<typeof gamesApi.mine>> }) {
   const queryClient = useQueryClient();
   const resubmit = useMutation({
     mutationFn: (gameId: string) => gamesApi.resubmit(gameId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["games"] }),
+  });
+  const boost = useMutation({
+    mutationFn: (gameId: string) => gamesApi.boost(gameId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["games"] }),
   });
 
@@ -265,6 +270,11 @@ function MyGames({ games }: { games: Awaited<ReturnType<typeof gamesApi.mine>> }
               )}
             </span>
 
+            {g.boosted && (
+              <span className="rounded-full bg-primary-soft px-2 py-0.5 text-xs font-medium text-primary-text">
+                impulsionado
+              </span>
+            )}
             <StatusBadge status={g.status} />
             {g.status === "REJECTED" && (
               <Button
@@ -275,6 +285,19 @@ function MyGames({ games }: { games: Awaited<ReturnType<typeof gamesApi.mine>> }
                 onClick={() => resubmit.mutate(g.id)}
               >
                 Reenviar
+              </Button>
+            )}
+            {g.status === "PUBLISHED" && !g.boosted && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-full gap-1"
+                disabled={boost.isPending}
+                onClick={() => boost.mutate(g.id)}
+                title={`Sobe no catálogo por 7 dias — ${formatFaisca(5000)} faíscas`}
+              >
+                <Rocket className="h-4 w-4" />
+                Impulsionar
               </Button>
             )}
           </li>

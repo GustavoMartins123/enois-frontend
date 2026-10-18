@@ -108,4 +108,7 @@ export const gamesApi = {
   /** Reenvia um jogo recusado para nova rodada de moderação. */
   resubmit: (gameId: string) =>
     api.post<{ id: string; status: string }>(`/games/${encodeURIComponent(gameId)}/resubmit`, {}),
+  /** Impulsiona o PRÓPRIO jogo: 5 faíscas por 7 dias no topo do catálogo (G2). */
+  boost: (gameId: string) =>
+    api.post<{ id: string; boosted: boolean }>(`/games/${encodeURIComponent(gameId)}/boost`, {}),
 };
