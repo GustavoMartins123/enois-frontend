@@ -3,7 +3,11 @@ import type { PaletteSpec } from "@/types/preferences/theme-collection-palette-s
 import type { ThemeCollectionTokens } from "@/types/preferences/theme-collection-tokens";
 
 import { withAlpha } from "@/lib/theme/build-background-style";
-import { hexToRgb, textSafeAccent } from "@/lib/theme/color";
+import {
+  hexToRgb,
+  relativeLuminance,
+  textSafeAccent,
+} from "@/lib/theme/color";
 
 /** Mistura `color-mix(in srgb, a p%, b)` canal a canal (o que o CSS faz, sem CSS). */
 function mixSrgb(a: { r: number; g: number; b: number }, b: { r: number; g: number; b: number }, p: number) {
@@ -23,23 +27,34 @@ function mixSrgb(a: { r: number; g: number; b: number }, b: { r: number; g: numb
  */
 export function palette(spec: PaletteSpec): ThemeCollectionTokens {
   const { primary, onPrimary, surface, background, muted, border } = spec;
-  const soft = spec.soft ?? `color-mix(in srgb, ${primary} 14%, ${background})`;
-  const secondary = spec.secondary ?? `color-mix(in oklab, ${primary} 45%, ${background})`;
-  // O RGB do soft para o cálculo do par de texto (o soft pode ser hex declarado ou
-  // um color-mix — a mistura em sRGB é a mesma conta do CSS, canal a canal).
+  // O soft é um WASH (fundo sutil): no contexto claro fica MAIS CLARO que o primário,
+  // no escuro MAIS ESCURO. Alguns temas declararam um soft do lado oposto (tom
+  // profundo no claro) — aí nenhum texto alcança 3:1 contra ele e o par
+  // bg-primary-soft + text-primary fica ilegível; esses caem no mix padrão.
+  const primaryRgb = hexToRgb(primary);
+  const backgroundRgb = hexToRgb(background);
+  const claro = relativeLuminance(backgroundRgb) > relativeLuminance(primaryRgb);
+  const mixSoft = mixSrgb(primaryRgb, backgroundRgb, 0.14);
   const softRgb = spec.soft
     ? hexToRgb(spec.soft)
-    : mixSrgb(hexToRgb(primary), hexToRgb(background), 0.14);
+    : mixSoft;
+  const softNoLadoCerto =
+    claro ? relativeLuminance(softRgb) > relativeLuminance(primaryRgb)
+          : relativeLuminance(softRgb) < relativeLuminance(primaryRgb);
+  const softFinal = softNoLadoCerto ? (spec.soft ?? `color-mix(in srgb, ${primary} 14%, ${background})`) : `color-mix(in srgb, ${primary} 14%, ${background})`;
+  const softFinalRgb = softNoLadoCerto ? softRgb : mixSoft;
+  const secondary = spec.secondary ?? `color-mix(in oklab, ${primary} 45%, ${background})`;
+  // O texto que usa o destaque como COR (links, "Entrar") não pode sumir quando o
+  // primário do tema é claro demais (amarelo, ciano) para o fundo — e também não
+  // pode empatar com o soft nos combos bg-primary-soft + text-primary.
+  const primaryText = textSafeAccent(primaryRgb, [backgroundRgb, softFinalRgb]);
 
   return {
     // Destaque
     "--primary": primary,
     "--primary-foreground": onPrimary,
-    // O texto que usa o destaque como COR (links, "Entrar") não pode sumir quando o
-    // primário do tema é claro demais (amarelo, ciano) para o fundo — e também não
-    // pode empatar com o soft nos combos bg-primary-soft + text-primary.
-    "--primary-text": textSafeAccent(hexToRgb(primary), [hexToRgb(background), softRgb]),
-    "--primary-soft": soft,
+    "--primary-text": primaryText,
+    "--primary-soft": softFinal,
     "--secondary": secondary,
     "--secondary-foreground": spec.onSecondary ?? onPrimary,
     "--accent": spec.accent ?? muted,
@@ -52,10 +67,10 @@ export function palette(spec: PaletteSpec): ThemeCollectionTokens {
     "--shadow-soft": spec.shadows?.soft ?? "none",
     "--shadow-card": spec.shadows?.card ?? "none",
     "--mentorship-button": primary,
-    "--highlight-project": soft,
-    "--highlight-project-text": primary,
-    "--background-user-project": soft,
-    "--project-text": primary,
+    "--highlight-project": softFinal,
+    "--highlight-project-text": primaryText,
+    "--background-user-project": softFinal,
+    "--project-text": primaryText,
     // Superfícies
     "--background": background,
     "--card": withAlpha(surface, spec.surfaceAlpha ?? 100),
