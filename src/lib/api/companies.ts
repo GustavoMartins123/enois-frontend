@@ -1,4 +1,9 @@
-import type { CompanyDetail, CompanySummary, ProposalView } from "@/types/application/companies/company-detail";
+import type {
+  CompanyDetail,
+  CompanyMember,
+  CompanySummary,
+  ProposalView,
+} from "@/types/application/companies/company-detail";
 
 import { api } from "../api-client";
 
@@ -6,9 +11,22 @@ export const companiesApi = {
   bySlug: (slug: string) => api.get<CompanyDetail>(`/empresa/${slug}`),
   create: (data: { name: string; description?: string; sector?: string; size?: string; location?: string; website?: string }) =>
     api.post<{ id: string; slug: string; name: string }>("/empresas", data),
-  update: (companyId: string, data: Partial<CompanySummary> & { logo?: string; cover?: string }) =>
-    api.patch<CompanySummary>(`/empresas/${companyId}`, data),
+  update: (
+    companyId: string,
+    data: {
+      description?: string;
+      sector?: string;
+      size?: string;
+      location?: string;
+      website?: string;
+      logo?: string;
+      cover?: string;
+    },
+  ) => api.patch<CompanySummary>(`/empresas/${companyId}`, data),
   mine: () => api.get<CompanySummary[]>("/empresas/mine"),
+  members: (companyId: string) => api.get<CompanyMember[]>([`/empresas/${companyId}/members`].join("")),
+  addMember: (companyId: string, userId: string, role: CompanyMember["role"]) =>
+    api.post<CompanyMember>(`/empresas/${companyId}/members`, { userId, role }),
 
   publishProject: (
     companyId: string,
