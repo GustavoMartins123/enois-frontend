@@ -78,7 +78,7 @@ export function ApoieBanner() {
 
       {aberto && (
         <div className="mx-auto max-w-6xl px-4 pb-5 sm:px-6">
-          <div className="grid gap-5 rounded-2xl border border-border-soft bg-surface-card p-5 sm:grid-cols-[auto_1fr] sm:items-center sm:p-6">
+          <div className="grid gap-5 rounded-2xl border border-border-soft bg-surface-card p-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center sm:p-6">
             <div className="mx-auto w-fit rounded-xl bg-white p-2">
               {qr ? (
                 <img src={qr} alt="QR Code Pix da The Kof Foundation" className="h-44 w-44" />
@@ -94,8 +94,8 @@ export function ApoieBanner() {
                 "Pix copia e cola". A chave é o CNPJ da fundação.
               </p>
 
-              <div className="flex items-center gap-2">
-                <code className="min-w-0 flex-1 overflow-x-auto rounded-lg border border-border-soft bg-surface-1 px-3 py-2 font-mono text-xs text-text-strong">
+              <div className="flex items-start gap-2">
+                <code className="block min-w-0 flex-1 break-all rounded-lg border border-border-soft bg-surface-1 px-3 py-2 font-mono text-xs text-text-strong">
                   {pixCopiaECola()}
                 </code>
 
