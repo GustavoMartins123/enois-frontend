@@ -22,5 +22,7 @@ export type UpdateProfileRequest = Partial<
     | "openToWork"
     | "isMentor"
     | "aka"
+    | "resumeUrl"
+    | "resumeName"
   >
 >;

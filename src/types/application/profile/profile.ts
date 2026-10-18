@@ -33,6 +33,9 @@ export type Profile = {
   pronouns?: string | null;
   /** Vulgo: como a pessoa é conhecida (etiqueta ao lado do nome, só no perfil). */
   aka?: string | null;
+  /** Currículo em PDF (endereço no storage) — só o dono recebe estes dois campos. */
+  resumeUrl?: string | null;
+  resumeName?: string | null;
   /** Até 5 emblemas; o primeiro acompanha o nome por todo o app. */
   badges?: string[] | null;
 };

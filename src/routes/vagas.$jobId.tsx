@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 import { AppContainer } from "@/components/app-container";
+import { ApplyByEmailButton } from "@/components/apply-by-email-button";
 import { ApplyJobDialog } from "@/components/apply-job-dialog";
 import { JobEditDialog } from "@/components/job-edit-dialog";
 import { RichText } from "@/components/post/rich-text";
@@ -456,11 +457,19 @@ function JobDetail() {
                       <>{texts.jobs.visit}</>
                     </a>
                   )}
+
+                  {/* Envio por e-mail: a vaga externa que publica um endereço ganha o atalho. */}
+                  <ApplyByEmailButton job={job} email={job.applyEmail} />
                 </div>
               ) : (
-                <ApplyJobDialog job={job}>
-                  <Button className="rounded-full">{texts.jobs.apply}</Button>
-                </ApplyJobDialog>
+                <div className="flex flex-wrap items-center gap-2">
+                  <ApplyJobDialog job={job}>
+                    <Button className="rounded-full">{texts.jobs.apply}</Button>
+                  </ApplyJobDialog>
+
+                  {/* Vaga daqui que diz "mande seu currículo para x@y.com": o atalho vale igual. */}
+                  <ApplyByEmailButton job={job} />
+                </div>
               )}
 
               {!isOwner && job.sourceType !== "EXTERNAL" && (

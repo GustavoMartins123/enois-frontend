@@ -15,6 +15,8 @@ export type Job = {
   postedAt: string;
   matchScore: number | null;
   description?: string | null;
+  /** E-mail de candidatura publicado pela vaga (externas trazem na descrição da fonte). */
+  applyEmail?: string | null;
   authorId?: string | null;
   authorName?: string | null;
   authorAvatar?: string | null;

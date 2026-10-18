@@ -64,6 +64,7 @@ import { RichText } from "@/components/post/rich-text";
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { ProfileBannerDialog } from "@/components/profile-banner-dialog";
 import { ProfileBioDialog } from "@/components/profile-bio-dialog";
+import { ProfileResumeDialog } from "@/components/profile-resume-dialog";
 import { ProfileProjectsSection } from "@/components/profile/projects-section";
 import { UserAvatar } from "@/components/user-avatar";
 
@@ -139,6 +140,14 @@ function Profile() {
 
   const user = liveProfile ?? loaderUser;
   const isOwnProfile = me?.id === user.id;
+
+  // O currículo só existe na projeção do DONO (/me): o perfil público não traz, de propósito.
+  const { data: myProfile } = useQuery({
+    queryKey: ["me"],
+    queryFn: () => profileApi.me(),
+    enabled: isOwnProfile,
+    staleTime: 60_000,
+  });
 
   // Estado de verificação da conta (e-mail/2FA): vem de /auth/me, não do perfil público.
   const { data: authMe } = useQuery({
@@ -381,6 +390,13 @@ function Profile() {
                       <>{texts.profile.bannerHtml.action}</>
                     </Button>
 
+                    <ProfileResumeDialog
+                      resumeUrl={myProfile?.resumeUrl}
+                      resumeName={myProfile?.resumeName}
+                      onSaved={() => {
+                        queryClient.invalidateQueries({ queryKey: ["me"] });
+                      }}
+                    />
                     <ProfileBioDialog
                       initialHtml={user.bioHtml ?? null}
                       onSaved={() => {

@@ -457,6 +457,14 @@ export const texts = {
       badgesFull: "Você já tem 5 emblemas.",
       error: "Não foi possível salvar. Tente novamente.",
     },
+    linkedinImport: {
+      title: "Importar do LinkedIn",
+      hint: "Baixe o arquivo de dados no LinkedIn (Configurações → Obter uma cópia dos seus dados) e suba aqui: o app lê experiências, formação, certificações e projetos para você revisar antes de salvar.",
+      button: "Enviar arquivo do LinkedIn",
+      found: (count: number) => `${count} itens encontrados — marque o que quer importar:`,
+      save: "Importar selecionados",
+      done: (count: number) => `${count} itens importados do LinkedIn.`,
+    },
     menu: {
       trigger: "Menu da conta",
       profile: "Ver perfil",
@@ -989,6 +997,21 @@ export const texts = {
     loadError: "Não foi possível carregar este perfil.",
     editProfile: "Editar perfil",
     message: "Mensagem",
+    resume: {
+      action: "Currículo",
+      title: "Seu currículo",
+      hint: "Um PDF só seu: ele não aparece no seu perfil para os outros. Serve para anexar nas candidaturas.",
+      empty: "Nenhum currículo enviado ainda.",
+      upload: "Enviar PDF",
+      sending: "Enviando...",
+      download: "Baixar",
+      remove: "Remover currículo",
+      removed: "Currículo removido.",
+      saved: "Currículo atualizado.",
+      wrongType: "O currículo precisa ser um PDF.",
+      tooBig: "O PDF passou de 5 MB. Envie uma versão menor.",
+      error: "Não foi possível salvar o currículo. Tente novamente.",
+    },
     /** Etiqueta ao lado do nome: "vulgo Java". */
     aka: (value: string) => `vulgo ${value}`,
     waitingResponse: "Aguardando resposta",
@@ -1387,6 +1410,12 @@ export const texts = {
 
   jobs: {
     visit: "Visitar vaga",
+    applyByEmail: {
+      action: "Agilizar envio",
+      hint: "O Énóis escreve o e-mail com os seus dados e abre o seu app de e-mail.",
+      resumeHint: "Currículo baixado: anexe no e-mail que acabou de abrir.",
+      noProfile: "Entre na sua conta para usar o envio por e-mail.",
+    },
     externalBadge: (platform: string) => `Vaga externa · ${platform}`,
     externalNotice: (platform: string) =>
       `Esta oportunidade foi publicada originalmente no ${platform}. A candidatura é feita na plataforma de origem.`,
