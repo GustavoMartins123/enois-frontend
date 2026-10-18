@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 
 import { useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 
 import { THEME_LIMITS } from "@/constants/theme-defaults";
 import { THEME_PRESETS } from "@/constants/theme-presets";
@@ -329,7 +330,7 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
               >
                 <Download className="h-3.5 w-3.5" />
 
-                <>{texts.appearance.fileExport}</>
+                <>{texts.exportTheme}</>
               </Button>
 
               <Button
@@ -340,9 +341,15 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
               >
                 <Upload className="h-3.5 w-3.5" />
 
-                <>{texts.appearance.fileImport}</>
+                <>{texts.importTheme}</>
               </Button>
             </div>
+
+            <p className="text-xs font-normal text-text-subtle">
+              <Link to="/temas" className="text-primary-text hover:underline">
+                {texts.galleryLink}
+              </Link>
+            </p>
 
             {/* O input fica escondido: quem abre é o botão de importar. */}
             <input

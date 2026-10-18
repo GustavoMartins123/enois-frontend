@@ -159,8 +159,6 @@ export const texts = {
     fileSection: "Tema em arquivo",
     fileHint:
       "Baixe o seu tema num arquivo .enois-theme para guardar ou mandar para alguém — é o mesmo arquivo que o marketplace vende. Importar aplica o arquivo aqui.",
-    fileExport: "Exportar tema",
-    fileImport: "Importar tema",
     fileImported: "Tema importado.",
     fileErrors: {
       json: "O arquivo não é um tema do Énóis (não é um JSON válido).",
