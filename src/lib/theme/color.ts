@@ -96,14 +96,18 @@ function round(value: number): number {
 
 /**
  * Cor do destaque SEGURA como texto: o próprio primário quando ele já alcança 3:1
- * contra o fundo; senão, escurecido (fundo mais claro que ele) ou clareado até
- * alcançar. Botões continuam com o primário vivo (`--primary`) — é o TEXTO que o
- * usa como cor (links, "Entrar", "Esqueci minha senha") que não pode sumir em
- * temas de primário claro (amarelo, ciano) sobre fundo claro.
+ * contra TODOS os fundos dados; senão, escurecido (fundo mais claro que ele) ou
+ * clareado até alcançar o pior caso. Botões continuam com o primário vivo
+ * (`--primary`) — é o TEXTO que o usa como cor (links, "Entrar", "Esqueci minha
+ * senha") que não pode sumir em temas de primário claro (amarelo, ciano). O fundo
+ * do `--primary-soft` entra na lista porque combos `bg-primary-soft text-primary`
+ * (iniciais de empresa, passos) ficariam texto≈fundo quando o soft é o próprio
+ * tom profundo derivado do primário.
  */
-export function textSafeAccent(primary: RgbColor, background: RgbColor): string {
-  if (contrastRatio(primary, background) >= 3) return rgbToHex(primary);
-  const darken = relativeLuminance(background) > relativeLuminance(primary);
+export function textSafeAccent(primary: RgbColor, backgrounds: RgbColor[]): string {
+  const worst = (color: RgbColor) => Math.min(...backgrounds.map((bg) => contrastRatio(color, bg)));
+  if (worst(primary) >= 3) return rgbToHex(primary);
+  const darken = backgrounds.every((bg) => relativeLuminance(bg) > relativeLuminance(primary));
   const target = darken ? 0 : 1;
   let low = 0;
   let high = 1;
@@ -115,12 +119,21 @@ export function textSafeAccent(primary: RgbColor, background: RgbColor): string 
       g: primary.g + (target - primary.g) * t,
       b: primary.b + (target - primary.b) * t,
     };
-    if (contrastRatio(mixed, background) >= 3.2) {
+    if (worst(mixed) >= 3.2) {
       best = mixed;
       high = t;
     } else {
       low = t;
     }
+  }
+  if (worst(best) < 3.2) {
+    // Fundo do primário colado no alvo (ex.: soft ≈ primário): segue para preto/branco
+    // além da mistura — o pior caso vence.
+    let extra = best;
+    for (let i = 0; i < 12 && worst(extra) < 3.2; i += 1) {
+      extra = { r: extra.r + (target - extra.r) * 0.5, g: extra.g + (target - extra.g) * 0.5, b: extra.b + (target - extra.b) * 0.5 };
+    }
+    return rgbToHex(extra);
   }
   return rgbToHex(best);
 }

@@ -5,6 +5,15 @@ import type { ThemeCollectionTokens } from "@/types/preferences/theme-collection
 import { withAlpha } from "@/lib/theme/build-background-style";
 import { hexToRgb, textSafeAccent } from "@/lib/theme/color";
 
+/** Mistura `color-mix(in srgb, a p%, b)` canal a canal (o que o CSS faz, sem CSS). */
+function mixSrgb(a: { r: number; g: number; b: number }, b: { r: number; g: number; b: number }, p: number) {
+  return {
+    r: a.r * p + b.r * (1 - p),
+    g: a.g * p + b.g * (1 - p),
+    b: a.b * p + b.b * (1 - p),
+  };
+}
+
 /**
  * Expande a especificação no mapa completo de tokens.
  *
@@ -16,14 +25,20 @@ export function palette(spec: PaletteSpec): ThemeCollectionTokens {
   const { primary, onPrimary, surface, background, muted, border } = spec;
   const soft = spec.soft ?? `color-mix(in srgb, ${primary} 14%, ${background})`;
   const secondary = spec.secondary ?? `color-mix(in oklab, ${primary} 45%, ${background})`;
+  // O RGB do soft para o cálculo do par de texto (o soft pode ser hex declarado ou
+  // um color-mix — a mistura em sRGB é a mesma conta do CSS, canal a canal).
+  const softRgb = spec.soft
+    ? hexToRgb(spec.soft)
+    : mixSrgb(hexToRgb(primary), hexToRgb(background), 0.14);
 
   return {
     // Destaque
     "--primary": primary,
     "--primary-foreground": onPrimary,
     // O texto que usa o destaque como COR (links, "Entrar") não pode sumir quando o
-    // primário do tema é claro demais (amarelo, ciano) para o fundo — ver textSafeAccent.
-    "--primary-text": textSafeAccent(hexToRgb(primary), hexToRgb(background)),
+    // primário do tema é claro demais (amarelo, ciano) para o fundo — e também não
+    // pode empatar com o soft nos combos bg-primary-soft + text-primary.
+    "--primary-text": textSafeAccent(hexToRgb(primary), [hexToRgb(background), softRgb]),
     "--primary-soft": soft,
     "--secondary": secondary,
     "--secondary-foreground": spec.onSecondary ?? onPrimary,

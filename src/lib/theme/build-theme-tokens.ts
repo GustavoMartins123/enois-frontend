@@ -150,8 +150,12 @@ export function buildAccentTokens(
     "--primary": tinted(oklch(lightness, chroma, hue)),
     "--primary-foreground": primaryForeground,
     // O texto que usa o destaque como COR (links, "Entrar") lê a versão legível contra
-    // o fundo; o primário vivo fica para os PREENCHIMENTOS (botões).
-    "--primary-text": textSafeAccent(effectivePrimary, backdrop),
+    // o fundo E o soft (combos bg-primary-soft + text-primary); o primário vivo fica
+    // para os PREENCHIMENTOS (botões).
+    "--primary-text": textSafeAccent(effectivePrimary, [
+      backdrop,
+      oklchToRgb(mode === "dark" ? 0.26 : 0.95, mode === "dark" ? 0.06 : 0.04, hue),
+    ]),
     "--primary-soft": oklch(mode === "dark" ? 0.26 : 0.95, mode === "dark" ? 0.06 : 0.04, hue),
     "--secondary": tinted(
       oklch(mode === "dark" ? 0.32 : 0.82, mode === "dark" ? 0.08 : 0.1, hue + 12),
