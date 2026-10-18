@@ -9,6 +9,7 @@ import { getSessionToken } from "@/lib/api-client";
 
 import { applyThemeSettings } from "./apply-theme";
 import { resolveThemeCollection } from "./build-collection-css";
+import { syncThemeCollection } from "./sync-theme-collection";
 
 /**
  * Único ponto que leva modo (claro/escuro), coleção temática e personalização para o DOM.
@@ -59,14 +60,18 @@ export function useThemeSync(): void {
 /**
  * Recupera o tema salvo na conta ao entrar.
  *
- * Regra de conflito explícita e sempre igual: **a conta ganha**. Se o backend
- * guarda um tema válido, ele passa a valer; se a conta não tem preferência (ou o
- * identificador não existe mais), o que estava no dispositivo segue valendo.
+ * A regra é **quem escreveu por último ganha**, comparando a data das duas escolhas. Antes era
+ * "a conta ganha" sempre, e isso engolia a escolha do dispositivo quando o envio para a conta
+ * falhava (foi o que aconteceu enquanto a API estava fora: o tema voltava ao antigo a cada
+ * recarga, mesmo tendo sido trocado aqui). Sem data na conta (nunca escolheu) ou com um
+ * identificador que o front não conhece, o local vale e sobe.
+ *
  * Convidado não chega aqui: sem sessão, a preferência é só local mesmo.
  */
 function useThemeAccountSync(): void {
   const token = getSessionToken();
   const themeCollection = usePreferencesStore((state) => state.themeCollection);
+  const themeCollectionUpdatedAt = usePreferencesStore((state) => state.themeCollectionUpdatedAt);
   const setThemeCollection = usePreferencesStore((state) => state.setThemeCollection);
 
   const { data } = useQuery({
@@ -81,8 +86,18 @@ function useThemeAccountSync(): void {
     if (!token || data === undefined) return;
 
     const fromAccount = resolveThemeCollection(data.theme)?.id ?? null;
-    if (fromAccount && fromAccount !== themeCollection) {
+    if (fromAccount === themeCollection) return;
+
+    const accountAt = data.updatedAt ? Date.parse(data.updatedAt) : 0;
+    const localAt = themeCollectionUpdatedAt ?? 0;
+
+    if (fromAccount && accountAt > localAt) {
       setThemeCollection(fromAccount);
+      return;
     }
-  }, [token, data, themeCollection, setThemeCollection]);
+    if (themeCollection) {
+      // O daqui é mais novo (ou a conta não tem nada): sobe, em vez de aceitar o valor antigo.
+      void syncThemeCollection(themeCollection);
+    }
+  }, [token, data, themeCollection, themeCollectionUpdatedAt, setThemeCollection]);
 }

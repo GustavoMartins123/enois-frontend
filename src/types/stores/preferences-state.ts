@@ -8,6 +8,8 @@ export type PreferencesState = {
   themeSettings: ThemeSettings;
   /** Coleção temática ativa (`null` = padrão da marca). */
   themeCollection: string | null;
+  /** Quando a coleção foi escolhida neste dispositivo (conflito com a conta). */
+  themeCollectionUpdatedAt: number | null;
   /** Cor de widget escolhida (cartões/painéis/menus); `null` = do tema ou da marca. */
   widgetBackground: BackgroundStyle | null;
   /** Plano de fundo da página (atrás de tudo); `null` = do tema ou da marca. */

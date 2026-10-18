@@ -103,6 +103,16 @@ const preferencesStorage = {
           parsed.state.theme = parsed.state.theme === "dark" ? "dark" : "light";
           parsed.state.themeSettings = normalizeThemeSettings(parsed.state.themeSettings);
           parsed.state.themeCollection = normalizeThemeCollection(parsed.state.themeCollection);
+          // Estado salvo ANTES desta data existir: quem já tinha um tema escolhido aqui vale como
+          // "escolhido agora" — senão a primeira recarga depois da correção deixaria o valor
+          // antigo da conta vencer e a pessoa perderia o tema que estava vendo.
+          const storedAt = parsed.state.themeCollectionUpdatedAt;
+          parsed.state.themeCollectionUpdatedAt =
+            typeof storedAt === "number" && Number.isFinite(storedAt)
+              ? storedAt
+              : parsed.state.themeCollection
+                ? Date.now()
+                : null;
           parsed.state.widgetBackground = normalizeBackgroundStyle(parsed.state.widgetBackground);
           parsed.state.pageBackground = normalizeBackgroundStyle(parsed.state.pageBackground);
           parsed.state.accentAlpha =
@@ -111,7 +121,8 @@ const preferencesStorage = {
               ? Math.min(100, Math.max(0, parsed.state.accentAlpha))
               : 100;
           parsed.state.widgetAlpha =
-            typeof parsed.state.widgetAlpha === "number" && Number.isFinite(parsed.state.widgetAlpha)
+            typeof parsed.state.widgetAlpha === "number" &&
+            Number.isFinite(parsed.state.widgetAlpha)
               ? Math.min(100, Math.max(0, parsed.state.widgetAlpha))
               : null;
           parsed.state.pageAlpha =
@@ -156,6 +167,8 @@ export const usePreferencesStore = create<PreferencesState>()(
       sidebarCollapsed: false,
       themeSettings: DEFAULT_THEME_SETTINGS,
       themeCollection: null,
+      /** Quando a coleção foi escolhida AQUI (para resolver conflito com a conta). */
+      themeCollectionUpdatedAt: null,
       widgetBackground: null,
       pageBackground: null,
       accentAlpha: 100,
@@ -170,13 +183,15 @@ export const usePreferencesStore = create<PreferencesState>()(
         set({
           themeSettings: DEFAULT_THEME_SETTINGS,
           themeCollection: null,
+          themeCollectionUpdatedAt: Date.now(),
           widgetBackground: null,
           pageBackground: null,
           accentAlpha: 100,
           widgetAlpha: null,
           pageAlpha: null,
         }),
-      setThemeCollection: (themeCollection: string | null) => set({ themeCollection }),
+      setThemeCollection: (themeCollection: string | null) =>
+        set({ themeCollection, themeCollectionUpdatedAt: Date.now() }),
       setWidgetBackground: (widgetBackground: BackgroundStyle | null) => set({ widgetBackground }),
       setPageBackground: (pageBackground: BackgroundStyle | null) => set({ pageBackground }),
       setAccentAlpha: (accentAlpha: number) => set({ accentAlpha }),
@@ -195,6 +210,7 @@ export const usePreferencesStore = create<PreferencesState>()(
         sidebarCollapsed: state.sidebarCollapsed,
         themeSettings: state.themeSettings,
         themeCollection: state.themeCollection,
+        themeCollectionUpdatedAt: state.themeCollectionUpdatedAt,
         widgetBackground: state.widgetBackground,
         pageBackground: state.pageBackground,
         accentAlpha: state.accentAlpha,

@@ -12,7 +12,7 @@ import { api } from "../api-client";
  */
 export const preferencesApi = {
   /** Coleção temática ativa na conta; `null` é o padrão da marca. */
-  getTheme: () => api.get<{ theme: string | null }>("/me/theme"),
+  getTheme: () => api.get<{ theme: string | null; updatedAt: string | null }>("/me/theme"),
 
   setTheme: (theme: string | null) => api.put<void>("/me/theme", { theme }),
 
