@@ -119,6 +119,12 @@ export const gamesApi = {
   /** Impulsiona o PRÓPRIO jogo: 5 faíscas por 7 dias no topo do catálogo (G2). */
   boost: (gameId: string) =>
     api.post<{ id: string; boosted: boolean }>(`/games/${encodeURIComponent(gameId)}/boost`, {}),
+  /** G-share: publica a conquista no feed com a tag do jogo (o texto vem do jogo, o clique é humano). */
+  compartilhar: (gameId: string, texto: string, mediaIds?: string[]) =>
+    api.post<{ postId: string; status: string }>(`/games/${encodeURIComponent(gameId)}/compartilhar`, {
+      texto,
+      mediaIds: mediaIds ?? [],
+    }),
   /** Coleções temáticas curadas (G3) com os jogos resolvidos. */
   colecoes: (limit = 20) => api.get<ColecaoView[]>(`/games/colecoes?limit=${limit}`),
 };

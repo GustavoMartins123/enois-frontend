@@ -4,9 +4,9 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { Bookmark, ExternalLink, Gamepad2, Loader2, Maximize2, Share2 } from "lucide-react";
+import { Bookmark, ExternalLink, Gamepad2, Loader2, Maximize2, Share2, Sparkles } from "lucide-react";
 
-import { gamesApi } from "@/lib/api";
+import { gamesApi, mediaApi } from "@/lib/api";
 import { useAuth } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
 
@@ -78,6 +78,36 @@ function GamePage() {
       queryClient.invalidateQueries({ queryKey: ["games", "slug", username, gameSlug] }),
   });
 
+  // Publica a conquista: a imagem (dataURL do jogo) sobe pela mídia normal e o post leva as
+  // tags do jogo. O clique aqui é o que publica — o jogo só pede.
+  const compartilhar = useMutation({
+    mutationFn: async ({ gameId, texto, imagem }: { gameId: string; texto: string; imagem: string | null }) => {
+      let mediaIds: string[] = [];
+      if (imagem) {
+        const blob = await (await fetch(imagem)).blob();
+        const arquivo = new File([blob], "conquista.png", { type: blob.type || "image/png" });
+        const resultado = await mediaApi.requestUpload({
+          fileName: `media/${crypto.randomUUID()}/conquista.png`,
+          mimeType: arquivo.type,
+          size: arquivo.size,
+          purpose: "POST_IMAGE",
+        });
+        if (resultado.provider === "S3") {
+          await mediaApi.uploadToSignedUrl(resultado.uploadUrl, arquivo, resultado.uploadHeaders ?? {});
+        } else {
+          await mediaApi.uploadToImageKit(resultado.cdnUrl, arquivo);
+        }
+        mediaIds = [resultado.id];
+      }
+      return gamesApi.compartilhar(gameId, texto, mediaIds);
+    },
+    onSuccess: () => {
+      setCompartilhamento(null);
+      toast("Conquista publicada no seu feed!", "success");
+    },
+    onError: () => toast("Não foi possível publicar a conquista agora.", "error"),
+  });
+
   // O quadro não avisa quando o site recusa incorporação: se nada carregar em 12s, oferecemos a
   // saída honesta (abrir na origem) em vez de deixar a pessoa olhando um retângulo vazio.
   useEffect(() => {
@@ -85,6 +115,31 @@ function GamePage() {
     const timer = setTimeout(() => setFailed(true), 12_000);
     return () => clearTimeout(timer);
   }, [playing, failed]);
+
+  const [compartilhamento, setCompartilhamento] = useState<{ texto: string; imagem: string | null } | null>(null);
+
+  // G-share: o jogo (iframe de OUTRA origem, sem sessão nenhuma) pede o compartilhamento por
+  // postMessage; a página valida a origem contra o endereço registrado do jogo, mostra a PRÉVIA
+  // e só publica com o clique da pessoa — o texto/mídia entram no feed dela, a sessão nunca
+  // atravessa a borda do quadro. Protocolo: { type: "enois:share", texto, imagem? }.
+  useEffect(() => {
+    if (!playing || !game.data?.url) return;
+    let origemDoJogo = "";
+    try {
+      origemDoJogo = new URL(game.data.url).origin;
+    } catch {
+      return;
+    }
+    const listener = (e: MessageEvent) => {
+      if (e.origin !== origemDoJogo) return;
+      const dado = e.data as { type?: string; texto?: unknown; imagem?: unknown };
+      if (dado?.type !== "enois:share" || typeof dado.texto !== "string") return;
+      const imagem = typeof dado.imagem === "string" && dado.imagem.startsWith("data:image/") ? dado.imagem : null;
+      setCompartilhamento({ texto: dado.texto.slice(0, 600), imagem });
+    };
+    window.addEventListener("message", listener);
+    return () => window.removeEventListener("message", listener);
+  }, [playing, game.data?.url]);
 
   if (game.isLoading) {
     return (
@@ -303,6 +358,47 @@ function GamePage() {
             </div>
           </div>
         </div>
+
+        {compartilhamento && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-md rounded-2xl border border-border-soft bg-surface-card p-5">
+              <h3 className="flex items-center gap-2 text-base font-semibold">
+                <Sparkles className="h-4 w-4 text-primary" />
+                Compartilhar conquista
+              </h3>
+
+              <p className="mt-2 rounded-xl bg-surface-2 p-3 text-sm text-text-strong">
+                {compartilhamento.texto}
+              </p>
+
+              {compartilhamento.imagem && (
+                <img
+                  src={compartilhamento.imagem}
+                  alt=""
+                  className="mt-2 max-h-48 w-full rounded-xl border border-border-soft object-contain"
+                />
+              )}
+
+              <p className="mt-2 text-xs text-text-subtle">
+                Publica no seu feed com a tag do jogo <span className="font-medium">{g.title}</span>.
+                A imagem e o texto vêm do jogo — confira antes de publicar.
+              </p>
+
+              <div className="mt-4 flex justify-end gap-2">
+                <Button variant="ghost" className="rounded-full" onClick={() => setCompartilhamento(null)}>
+                  Cancelar
+                </Button>
+                <Button
+                  className="rounded-full"
+                  disabled={compartilhar.isPending}
+                  onClick={() => compartilhar.mutate({ gameId: g.id, ...compartilhamento })}
+                >
+                  {compartilhar.isPending ? "Publicando…" : "Publicar no feed"}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {gallery.length > 1 && (
           <div className="flex gap-2 overflow-x-auto pb-1">
