@@ -2,9 +2,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { ArrowLeft, Gavel } from "lucide-react";
+import { ArrowLeft, Gavel, ShieldAlert } from "lucide-react";
 
-import { sanctionsApi } from "@/lib/api";
+import { sanctionsApi, walletApi } from "@/lib/api";
+import { formatFaisca } from "@/lib/faisca";
 import { requireAuth } from "@/lib/require-auth";
 
 import { Button } from "@/components/ui/button";
@@ -74,6 +75,8 @@ function Moderacao() {
           <p className="text-sm text-muted-foreground">{texts.sanctions.moderationDescription}</p>
         </div>
 
+        <DisputasSection />
+
         {isLoading ? (
           <LoadingState />
         ) : error ? (
@@ -123,5 +126,89 @@ function Moderacao() {
         )}
       </div>
     </AppContainer>
+  );
+}
+
+/**
+ * As contestações de transferência (golpe) na fila de moderação: VERDADEIRA reverte a
+ * transferência e restringe o golpista; FALSA restringe quem contestou de má-fé.
+ * Somente administradores — para os demais a API devolve 403 e a seção nem aparece.
+ */
+function DisputasSection() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const { data: disputas, error, isLoading } = useQuery({
+    queryKey: ["coin-disputas"],
+    queryFn: () => walletApi.disputasPendentes(30),
+    retry: false,
+  });
+
+  const decidir = useMutation({
+    mutationFn: ({ id, deferir, note }: { id: string; deferir: boolean; note?: string }) =>
+      deferir ? walletApi.deferirDisputa(id, note) : walletApi.rejeitarDisputa(id, note),
+    onSuccess: (resposta) => {
+      toast(
+        resposta.state === "UPHELD"
+          ? "Contestação deferida: a transferência foi revertida e o valor voltou para a vítima."
+          : "Contestação rejeitada: quem contestou foi restringido.",
+        "success",
+      );
+      void queryClient.invalidateQueries({ queryKey: ["coin-disputas"] });
+    },
+    onError: () => toast("Não foi possível decidir a contestação.", "error"),
+  });
+
+  // 403 = não é admin: a seção não existe para quem não decide.
+  if (error) return null;
+
+  return (
+    <section className="space-y-3" aria-label="Contestações de transferência">
+      <div className="flex items-center gap-2">
+        <ShieldAlert className="h-4 w-4 text-primary" />
+        <h2 className="text-sm font-semibold uppercase tracking-widest text-text-subtle">
+          Contestações de transferência
+        </h2>
+      </div>
+
+      {isLoading ? (
+        <LoadingState />
+      ) : (disputas?.length ?? 0) === 0 ? (
+        <p className="rounded-2xl border border-border-soft bg-surface-card p-4 text-sm text-text-subtle">
+          Nenhuma contestação esperando decisão.
+        </p>
+      ) : (
+        <ul className="space-y-3">
+          {disputas!.map((d) => (
+            <li key={d.id} className="space-y-2 rounded-2xl border border-border-soft bg-surface-card p-4">
+              <p className="text-sm font-semibold">
+                Transferência de {formatFaisca(d.amount)} faíscas · motivo: {d.reason}
+              </p>
+              <p className="text-xs text-text-subtle">
+                {new Date(d.createdAt).toLocaleString("pt-BR")} · ref {d.entryRef.slice(0, 16)}…
+              </p>
+              <div className="flex flex-wrap gap-2 pt-1">
+                <Button
+                  size="sm"
+                  className="rounded-full"
+                  disabled={decidir.isPending}
+                  onClick={() => decidir.mutate({ id: d.id, deferir: true })}
+                >
+                  Procede (reverter)
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="rounded-full"
+                  disabled={decidir.isPending}
+                  onClick={() => decidir.mutate({ id: d.id, deferir: false })}
+                >
+                  Não procede (punir contestador)
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
   );
 }
