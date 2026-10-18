@@ -1,5 +1,6 @@
 import type { ThemeFile } from "@/types/lib/theme-file";
 import type { ThemeFileResult } from "@/types/lib/theme-file-result";
+import type { BackgroundStyle } from "@/types/preferences/background-style";
 import type { ThemeSettings } from "@/types/preferences/theme-settings";
 
 import { resolveThemeCollection } from "@/lib/theme/build-collection-css";
@@ -20,6 +21,8 @@ export function buildThemeFile(input: {
   collection: string | null;
   settings: ThemeSettings;
   name?: string | null;
+  widget?: BackgroundStyle | null;
+  page?: BackgroundStyle | null;
 }): string {
   const file: ThemeFile = {
     format: "enois-theme",
@@ -27,6 +30,8 @@ export function buildThemeFile(input: {
     ...(input.name ? { name: input.name.trim() } : {}),
     collection: resolveThemeCollection(input.collection)?.id ?? null,
     settings: clampThemeSettings(input.settings),
+    ...(input.widget ? { widget: input.widget } : {}),
+    ...(input.page ? { page: input.page } : {}),
   };
   return `${JSON.stringify(file, null, 2)}\n`;
 }
@@ -71,6 +76,12 @@ export function parseThemeFile(text: string): ThemeFileResult {
     return { ok: false, reason: "settings" };
   }
 
+  const widget = readOptionalBackground(candidate.widget);
+  const page = readOptionalBackground(candidate.page);
+  if (widget === null || page === null) {
+    return { ok: false, reason: "background" };
+  }
+
   const name =
     typeof candidate.name === "string" && candidate.name.trim() !== ""
       ? candidate.name.trim()
@@ -83,9 +94,69 @@ export function parseThemeFile(text: string): ThemeFileResult {
       ...(name ? { name } : {}),
       collection: collection?.id ?? null,
       settings,
+      ...(widget ? { widget } : {}),
+      ...(page ? { page } : {}),
     },
     collectionName: collection?.name ?? null,
   };
+}
+
+/** Direções que o app sabe desenhar (ver BackgroundStyle). */
+const DIRECTIONS = ["diagonal", "vertical", "horizontal", "radial", "custom"] as const;
+
+/** Hex de 6 dígitos: é o que o app escreve, e é o que a matemática de contraste entende. */
+const HEX = /^#[0-9a-fA-F]{6}$/;
+
+/**
+ * Lê um fundo opcional do arquivo.
+ *
+ * Três respostas possíveis: `undefined` quando o arquivo não traz esse fundo (o tema usa o do
+ * app), o fundo ajustado quando ele é válido, e `null` quando ele existe mas está torto — aí o
+ * arquivo inteiro é recusado, porque aplicar um tema com o fundo pela metade é pior que não
+ * aplicar. Os números fora da faixa são ajustados, como nas cores livres.
+ */
+function readOptionalBackground(value: unknown): BackgroundStyle | null | undefined {
+  if (value === undefined || value === null) {
+    return undefined;
+  }
+  if (typeof value !== "object") {
+    return null;
+  }
+
+  const raw = value as Record<string, unknown>;
+  const type = raw.type;
+  if (type !== "solid" && type !== "gradient") {
+    return null;
+  }
+  const colors = [raw.color, raw.from, raw.to];
+  if (colors.some((color) => typeof color !== "string" || !HEX.test(color))) {
+    return null;
+  }
+  const alphas = [raw.alpha, raw.fromAlpha, raw.toAlpha];
+  if (alphas.some((alpha) => typeof alpha !== "number" || !Number.isFinite(alpha))) {
+    return null;
+  }
+
+  const angle = typeof raw.angle === "number" && Number.isFinite(raw.angle) ? raw.angle : 135;
+  const direction = DIRECTIONS.includes(raw.direction as (typeof DIRECTIONS)[number])
+    ? (raw.direction as BackgroundStyle["direction"])
+    : "diagonal";
+
+  return {
+    type,
+    color: raw.color as string,
+    alpha: clampPercent(raw.alpha as number),
+    from: raw.from as string,
+    fromAlpha: clampPercent(raw.fromAlpha as number),
+    to: raw.to as string,
+    toAlpha: clampPercent(raw.toAlpha as number),
+    direction,
+    angle: Math.min(360, Math.max(0, Math.round(angle))),
+  };
+}
+
+function clampPercent(value: number): number {
+  return Math.min(100, Math.max(0, Math.round(value)));
 }
 
 /** As cores livres precisam ter forma de número; a faixa é ajustada depois, pelo clamp. */

@@ -156,6 +156,21 @@ export const texts = {
       worstPair: (pair: string) => `Ponto mais frágil: ${pair}.`,
       hint: "Aumente o brilho ou reduza a saturação para melhorar.",
     },
+    fileSection: "Tema em arquivo",
+    fileHint:
+      "Baixe o seu tema num arquivo .enois-theme para guardar ou mandar para alguém — é o mesmo arquivo que o marketplace vende. Importar aplica o arquivo aqui.",
+    fileExport: "Exportar tema",
+    fileImport: "Importar tema",
+    fileImported: "Tema importado.",
+    fileErrors: {
+      json: "O arquivo não é um tema do Énóis (não é um JSON válido).",
+      format: "O arquivo não é um tema do Énóis.",
+      version:
+        "Este tema foi feito numa versão mais nova do Énóis — atualize o app para importá-lo.",
+      collection: "Este tema usa uma coleção que este app não tem.",
+      settings: "As cores deste tema estão inválidas.",
+      background: "O fundo deste tema está inválido.",
+    },
     reset: "Restaurar padrão",
     done: "Pronto",
   },
