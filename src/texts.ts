@@ -468,6 +468,7 @@ export const texts = {
     menu: {
       trigger: "Menu da conta",
       profile: "Ver perfil",
+      wallet: "Carteira",
       changeEmail: "Alterar e-mail",
       changePassword: "Trocar senha",
       support: "Ajuda e suporte",
@@ -925,7 +926,6 @@ export const texts = {
     },
     share: "Compartilhar",
     shareCopied: "Link da publicação copiado!",
-    editCover: "Editar capa",
     editPhoto: "Editar foto",
     comments: {
       empty: "Nenhum comentário ainda. Seja o primeiro a comentar.",
@@ -1965,6 +1965,40 @@ export const texts = {
     exportFileName: "tema.enois-theme",
     importError: "Arquivo inválido — use um .enois-theme exportado do Énóis.",
     galleryLink: "Temas da comunidade",
+
+  wallet: {
+    seoTitle: "Carteira · Énóis",
+    back: "Voltar",
+    title: "Faíscas",
+    chaveLabel: "Sua chave",
+    pay: "Pagar",
+    payTitle: "Pagar com faíscas",
+    toLabel: "Chave de destino (username)",
+    toPlaceholder: "ex.: mari-silva",
+    amountLabel: "Quantidade de faíscas",
+    messageLabel: "Mensagem (opcional)",
+    messagePlaceholder: "Por que você está enviando?",
+    irreversible:
+      "A transferência é instantânea e não tem reversão — confira o nome e o valor com calma.",
+    confirm: "Confirmar transferência",
+    sent: "Faíscas enviadas!",
+    transferError: "Não foi possível transferir. Confira a chave e o saldo.",
+    history: "Extrato",
+    notice:
+      "A faísca existe só dentro do Énóis: circula entre pessoas e vale nos marketplaces da plataforma. Transferências são instantâneas e sem reversão.",
+    historyEmpty: "Sem movimentações ainda. A faísca circula quando a comunidade circula.",
+    kind: {
+      AIRDROP: "Distribuição inicial",
+      GENESIS_TREASURY: "Gênese",
+      TRANSFER_OUT: "Transferência enviada",
+      TRANSFER_IN: "Transferência recebida",
+      REWARD: "Recompensa",
+      PURCHASE: "Compra",
+      SALE: "Venda",
+      REFUND: "Reembolso",
+      ADJUSTMENT: "Ajuste",
+    } as Record<string, string>,
+  },
 
   themeGallery: {
     seoTitle: "Temas da comunidade · Énóis",

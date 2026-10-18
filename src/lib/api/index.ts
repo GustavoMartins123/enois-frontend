@@ -19,6 +19,7 @@ export { reportsApi, REPORT_REASONS } from "./reports";
 export { sanctionsApi } from "./sanctions";
 export { companiesApi } from "./companies";
 export { themesApi } from "./themes";
+export { walletApi } from "./wallet";
 export { rankingApi } from "./ranking";
 export { usersApi } from "./users";
 export { recommendationsApi } from "./recommendations";
