@@ -5,6 +5,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { ARTICLE_BODY_MAX_LENGTH, POST_TYPES } from "@/constants/post-types";
+import { postContentLimit } from "@/constants/post-content-limits";
 import { texts } from "@/texts";
 import type { CreatePostInput } from "@/types/application/feed/create-post-input";
 import type { FeedTab } from "@/types/application/feed/feed-tab";
@@ -252,7 +253,7 @@ function Home() {
                   }}
                   placeholder={texts.feed.composer.placeholder}
                   className="flex-1 resize-none rounded-2xl border-border-soft bg-surface-1 px-3 py-2 text-sm font-normal"
-                  maxLength={1200}
+                  maxLength={postContentLimit(postType)}
                   toolbar
                 />
               )}

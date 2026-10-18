@@ -6,6 +6,7 @@ import { Link } from "@tanstack/react-router";
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { POST_SEALS, postSeal } from "@/constants/post-seals";
 import { usePostCardStore } from "@/stores/post-card.store";
+import { postContentLimit } from "@/constants/post-content-limits";
 import { texts } from "@/texts";
 import type { PostCardProps } from "@/types/components/post/post-card-props";
 import { BookOpen, FileText, MoreHorizontal, Pencil, Tag, Trash2 } from "lucide-react";
@@ -450,7 +451,7 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
 
               <MentionTextarea
                 value={draft}
-                maxLength={1200}
+                maxLength={postContentLimit(post.type)}
                 toolbar
                 onChange={(value) => setDraft(value)}
                 placeholder={texts.posts.owner.editDescription}
