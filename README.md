@@ -1,6 +1,17 @@
-# Connect Grow
+# Énóis — frontend
 
-Connect Grow e uma plataforma de networking profissional focada em conexoes humanas, mentoria, comunidades, vagas e eventos.
+A interface do **Énóis** ([enois.ia.br](https://enois.ia.br)): a rede social brasileira para quem
+trabalha com tecnologia. Feed, comunidades, vagas, mentoria, eventos, blogs, carteira (Faísca),
+jogos indie e o painel de moderação — tudo no mesmo app, com identidade própria e sem práticas
+predatórias.
+
+Este repositório é o **frontend**. A API, as regras de negócio e a moderação vivem no
+[`enois-backend`](https://github.com/Rede-ENois/enois-backend) — nada aqui decide permissão, limite
+ou propriedade: a tela pede, o backend decide.
+
+**Começando agora?** Leia o [`CONTRIBUTING.md`](CONTRIBUTING.md) (convenções e como rodar) e o
+[`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md). Falha de segurança tem canal próprio no
+[`SECURITY.md`](SECURITY.md) — não vira issue pública.
 
 ## Stack
 
@@ -203,3 +214,43 @@ Os itens abaixo sao os que **nao** dependem disso:
    push estiver desligado, a opcao "Ativar notificacoes no celular" nem aparece no menu. Ao mudar o `sw.js`,
    **incremente `VERSION`** nele: e isso que descarta o cache antigo e recarrega o app.
    No iOS o push so funciona com o app instalado na tela de inicio (iOS 16.4+).
+
+## Estrutura do projeto
+
+```
+src/
+  routes/        # uma rota por arquivo (TanStack Router) — a tela em si
+  components/    # componentes compartilhados (ui/ = base do design system)
+  lib/           # regras que não são React: api/, rich-text/, theme/, feed/
+  stores/        # estado de tela que sobrevive à navegação (zustand)
+  types/         # um tipo por arquivo, espelhando o módulo (regra do lint)
+  constants/     # listas e catálogos (selos, emojis, temas, opções de vaga)
+  texts.ts       # todo texto que a pessoa lê
+docs/            # notas de arquitetura e decisões
+eslint/          # regras próprias do projeto (type-boundaries, jsx-content-spacing)
+```
+
+## Convenções
+
+Estão no [`CONTRIBUTING.md`](CONTRIBUTING.md), com o porquê de cada uma: comentário explica o motivo,
+texto de tela mora em `texts.ts`, um tipo por arquivo, sem dependência nova sem justificativa, e o
+cuidado com rota que é página e mãe ao mesmo tempo (a que "não abre" quando falta o `<Outlet/>`).
+
+## Testes
+
+```bash
+npx vitest run                # tudo
+npx vitest run src/lib/rich-text/parse.test.ts   # um arquivo
+```
+
+Os testes cobrem lógica pura — parser de formatação, inserção no cursor, cálculo de contraste de
+tema, montagem de e-mail. O que aparece na tela se confere no navegador, com backend de verdade: é o
+que a PR precisa descrever.
+
+## Licença
+
+**GNU General Public License v3.0** — o texto completo está em [`LICENSE`](LICENSE).
+
+Copyright (C) 2026 Énóis (Rede-ENois). Este programa é software livre: você pode redistribuí-lo e/ou
+modificá-lo sob os termos da GPL-3.0, **sem nenhuma garantia**. O backend segue a mesma licença, para
+os dois repositórios ficarem sob o mesmo regime.

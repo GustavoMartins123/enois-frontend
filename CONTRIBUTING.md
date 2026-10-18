@@ -1,0 +1,84 @@
+# Como contribuir
+
+Obrigado pelo interesse. Este é o frontend do **Énóis** (React 19 + TanStack Start, SSR). O backend
+fica no repositório `enois-backend` — muita coisa só faz sentido com os dois no ar (veja o README).
+
+Antes de começar: leia o [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md). Falha de segurança **não** vira
+issue — o canal está no [`SECURITY.md`](SECURITY.md).
+
+## Rodando
+
+```bash
+npm install
+npm run dev
+```
+
+Para apontar num backend local, siga a seção "Como rodar localmente" do README (o proxy do dev
+precisa do `BACKEND_TARGET` e o backend precisa subir com `--server.servlet.context-path=/api`).
+
+## Antes de abrir a PR
+
+```bash
+npm run lint         # eslint (inclui as regras locais)
+npm run typecheck    # tsc --noEmit
+npx vitest run       # testes de lógica pura
+npm run build        # build de produção
+```
+
+**Nada disso vê a tela.** Se a mudança aparece para quem usa, abra o navegador e olhe — e conte na PR
+o que você viu. Build verde com tela quebrada é o jeito mais fácil de publicar um bug.
+
+## Convenções da casa
+
+**Comentário explica o porquê, não o quê.** O código já diz o que faz. O comentário existe para a
+decisão que não é óbvia: por que esse limite, por que essa ordem, o que quebrava antes. Em português,
+com o mesmo tom do resto do arquivo.
+
+**Texto de tela nunca é literal no componente.** Tudo que a pessoa lê mora em `src/texts.ts`. Um
+rótulo solto no JSX vira string duplicada e divergente na segunda tela que precisar dele.
+
+**Um tipo por arquivo, em `src/types/**`.** A regra `local/type-boundaries` recusa `type`/`interface`
+fora de lá; o caminho do arquivo espelha o módulo (`types/application/games/game-view.ts`).
+
+**Espaçamento de JSX** (`local/jsx-content-spacing`): irmãos **com** conteúdo ficam separados por
+linha em branco; elementos sem conteúdo (auto-fechados) ficam agrupados, sem linha em branco. É
+auto-corrigível: `npx eslint <arquivo> --fix`.
+
+**Formatação**: prettier cuida (100 colunas, aspas duplas, imports ordenados por grupo). Rode
+`npx prettier --write <arquivo>` nos arquivos que você tocou — **não** no repositório inteiro: isso
+reformata código alheio e polui o diff.
+
+**Sem dependência nova sem justificativa.** Este projeto já resolveu coisas grandes com o que tem
+(o parser de markdown é nosso, o seletor de emojis é uma lista, a medida do quadro é CSS + DOM). Se
+você acha que precisa de uma biblioteca, diga na PR o que ela resolve que o resto não resolve.
+
+**Rota que é página e mãe ao mesmo tempo.** No roteamento por arquivo, uma rota vira mãe da outra
+pelo nome (`vagas.tsx` é mãe de `vagas.$jobId.tsx`). Mãe com componente **precisa** devolver
+`<Outlet/>` quando a filha casa, senão a filha não renderiza e a URL muda sem a tela mudar — é o
+"clico e não abre nada". Os dois idiomas aceitos estão em `vagas.tsx` (`useMatchRoute`, com
+`fuzzy: true` quando a filha tem filha) e em `blog.$username_.$postId.tsx` (o `_` no nome do arquivo
+quebra o aninhamento).
+
+**Acessibilidade não é extra.** Botão só com ícone leva `title` **e** `aria-label`; quadro isolado
+leva `title`; diálogo leva título. O resto do padrão está nos componentes de `src/components/ui`.
+
+## Testes
+
+Vitest para lógica pura (parser, formatação, cálculo, inserção no cursor): `npx vitest run <arquivo>`.
+Componente com tela e sessão se verifica no navegador, com backend de verdade — é o que a PR deve
+descrever.
+
+## Commits e PRs
+
+- Um assunto por PR. PR grande de coisa não relacionada é PR que ninguém revisa.
+- Mensagem no imperativo e com escopo: `fix(blog): o post do blog abre, com conteúdo e ações`.
+  O corpo explica o que estava errado antes — não o que o diff já mostra.
+- Descreva na PR **como você verificou**. "Roda" não é verificação.
+- Nunca suba segredo, token, `.env` preenchido ou print de conversa privada.
+
+## Árvore compartilhada
+
+Se você trabalha na mesma cópia do repositório que outra pessoa (ou outro agente): não rode
+`eslint --fix`, `prettier --write` nem `git checkout` no repositório inteiro, e não commite arquivos
+que não são seus. Rode as ferramentas no arquivo que você tocou e olhe `git status` antes de
+`git add`.
