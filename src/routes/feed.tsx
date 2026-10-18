@@ -3,6 +3,7 @@ import { type ChangeEvent, type FormEvent, useCallback, useRef, useState } from 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import { postContentLimit } from "@/constants/post-content-limits";
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { ARTICLE_BODY_MAX_LENGTH, POST_TYPES } from "@/constants/post-types";
 import { postContentLimit } from "@/constants/post-content-limits";
