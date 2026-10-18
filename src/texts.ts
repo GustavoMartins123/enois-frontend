@@ -729,6 +729,8 @@ export const texts = {
     loadMore: "Carregar mais",
     empty: "Nada por aqui ainda. Publicações da sua rede aparecem neste feed.",
     composer: {
+      publishedOffer: "Publicado! Que tal levar esse insight para o LinkedIn também?",
+      linkedinShare: "Compartilhar no LinkedIn",
       placeholder: "Compartilhe algo que aprendeu hoje...",
       types: {
         insight: "Insight",

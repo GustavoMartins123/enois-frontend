@@ -1,8 +1,9 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, type ReactNode, useState } from "react";
 
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import type { OAuthProvider } from "@/types/application/auth/oauth-provider";
 import type { TwoFactorChallenge } from "@/types/application/auth/two-factor";
 import type { AuthFormProps } from "@/types/routes/auth/auth-form-props";
 import type { FieldProps } from "@/types/routes/auth/field-props";
@@ -204,42 +205,63 @@ function TabBtn({ active, children, onClick }: TabBtnProps) {
   );
 }
 
-/** Entrada social: somente Google. Apple foi desativado (ver ENABLED_OAUTH_PROVIDERS). */
+/** Entrada social: os provedores habilitados em ENABLED_OAUTH_PROVIDERS (Google, LinkedIn). */
 function SocialButtons({ mode }: SocialButtonsProps) {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const startGoogle = async () => {
-    setLoading(true);
+  const start = async (provider: OAuthProvider) => {
+    setLoading(provider);
     setError(null);
     try {
       // O backend registra state + nonce no servidor e devolve a URL de autorização.
       // `mode` faz o backend recusar cadastro com e-mail que já existe, em vez de entrar na conta.
-      const start = await authApi.oauthStart("GOOGLE", mode);
+      const start = await authApi.oauthStart(provider, mode);
       window.location.href = start.authorizationUrl;
     } catch (err) {
-      // Sem o aplicativo aprovado no Google o start falha: explicamos em vez de vazar o erro cru.
+      // Sem o aplicativo aprovado no provedor o start falha: explicamos em vez de vazar o erro cru.
       const detail = err instanceof ApiError && import.meta.env.DEV ? ` (${err.message})` : "";
       setError(`${texts.auth.social.pendingApproval}${detail}`);
-      setLoading(false);
+      setLoading(null);
     }
   };
 
+  const providerButton = (provider: OAuthProvider, icon: ReactNode, label: string) => (
+    <button
+      type="button"
+      onClick={() => start(provider)}
+      disabled={loading !== null}
+      className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium transition hover:bg-muted disabled:opacity-50"
+    >
+      {loading === provider ? <Loader2 className="h-4 w-4 animate-spin" /> : icon}
+      <>{label}</>
+    </button>
+  );
+
   return (
     <div className="grid grid-cols-1 gap-2">
-      <button
-        type="button"
-        onClick={startGoogle}
-        disabled={loading}
-        className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium transition hover:bg-muted disabled:opacity-50"
-      >
-        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
-        <>{mode === "signup" ? texts.auth.social.googleSignup : texts.auth.social.google}</>
-      </button>
+      {providerButton(
+        "GOOGLE",
+        <GoogleIcon />,
+        mode === "signup" ? texts.auth.social.googleSignup : texts.auth.social.google,
+      )}
+      {providerButton(
+        "LINKEDIN",
+        <LinkedinIcon />,
+        mode === "signup" ? texts.auth.social.linkedinSignup : texts.auth.social.linkedin,
+      )}
       {error && (
         <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p>
       )}
     </div>
+  );
+}
+
+function LinkedinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="#0A66C2" aria-hidden>
+      <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z" />
+    </svg>
   );
 }
 
@@ -686,8 +708,16 @@ function TwoFactorForm({
 
         {error ? <ErrorBanner error={error} /> : null}
 
-        <Button type="submit" className="w-full rounded-full gap-2" disabled={loading || !code.trim()}>
-          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+        <Button
+          type="submit"
+          className="w-full rounded-full gap-2"
+          disabled={loading || !code.trim()}
+        >
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <ShieldCheck className="h-4 w-4" />
+          )}
 
           <>{texts.auth.twoFactor.confirm}</>
         </Button>
@@ -698,7 +728,9 @@ function TwoFactorForm({
           </Button>
         )}
 
-        <p className="text-center text-xs text-muted-foreground">{texts.auth.twoFactor.recoveryHint}</p>
+        <p className="text-center text-xs text-muted-foreground">
+          {texts.auth.twoFactor.recoveryHint}
+        </p>
       </form>
     </div>
   );

@@ -25,7 +25,7 @@ import {
   X,
 } from "lucide-react";
 
-import { eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
+import { authApi, eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
@@ -110,6 +110,7 @@ function Home() {
   const [postType, setPostType] = useState<PostView["type"]>("INSIGHT");
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [publishError, setPublishError] = useState<string | null>(null);
+  const [linkedinUrl, setLinkedinUrl] = useState<string | null>(null);
   // Tipo de publicação e o que manda: Página mostra o editor de HTML, Artigo mostra o editor do
   // texto longo, os demais usam o campo de cima. O seletor de tipos abre em painel recolhido — com
   // dez tipos, uma fileira de botões ocupava o composer inteiro e empurrava o texto para longe.
@@ -144,7 +145,7 @@ function Home() {
         const results = await upload.uploadAll(media.map((m) => ({ file: m.file })));
         mediaIds = results.map((r) => r.mediaId);
       }
-      await createPost.mutateAsync({
+      const created = await createPost.mutateAsync({
         content: pageMode ? "" : content,
         type: postType,
         mediaIds,
@@ -152,8 +153,24 @@ function Home() {
         ...(articleMode ? { articleBody } : {}),
         mentionedUserIds: pageMode ? [] : mentionedUserIds,
       });
+      // "Também no LinkedIn": com o LinkedIn vinculado, oferece o compartilhamento pelo
+      // diálogo oficial do LinkedIn com o link público do post (o OG preview completa o resto).
+      // A publicação via API do LinkedIn exige aprovação no programa de parceiros — o
+      // diálogo oficial é o caminho que já funciona hoje para qualquer perfil.
+      try {
+        const postId = (created as { id?: string })?.id;
+        if (postId) {
+          const linked = await authApi.oauthProviders();
+          if (linked.some((l) => l.provider === "LINKEDIN")) {
+            setLinkedinUrl(`${texts.siteUrl}/post/${postId}`);
+          }
+        }
+      } catch {
+        // sem a checagem, simplesmente não oferta — a publicação no énois já aconteceu
+      }
       setDraft("");
       setMentionedUserIds([]);
+      setLinkedinUrl(null);
       setPostType("INSIGHT");
       setMedia([]);
       setPostType("INSIGHT");
@@ -403,6 +420,24 @@ function Home() {
                   />
                 )}
               </div>
+
+              {linkedinUrl && (
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-primary-soft px-3 py-2">
+                  <span className="text-xs font-normal text-primary">
+                    {texts.feed.composer.publishedOffer}
+                  </span>
+
+                  <a
+                    href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(linkedinUrl)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setLinkedinUrl(null)}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground transition hover:opacity-90"
+                  >
+                    {texts.feed.composer.linkedinShare} ↗
+                  </a>
+                </div>
+              )}
 
               <div className="flex items-center gap-2">
                 {/* O motivo da recusa fica na linha de baixo, inteiro: antes ele saía truncado em
