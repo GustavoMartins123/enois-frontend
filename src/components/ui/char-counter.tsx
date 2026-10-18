@@ -32,8 +32,11 @@ export function CharCounter({
         className,
       )}
       aria-live="polite"
+      aria-atomic="true"
     >
-      {remaining > 0 ? texts.common.charactersLeft(remaining) : texts.common.charactersLimitReached}
+      {texts.common.charactersProgress(length, max)}
+      {nearLimit && ` · ${texts.common.charactersLeft(remaining)}`}
+      {remaining <= 0 && ` · ${texts.common.charactersLimitReached}`}
     </p>
   );
 }
