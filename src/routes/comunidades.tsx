@@ -12,7 +12,7 @@ import { Loader2, Plus, Search, Star, Users } from "lucide-react";
 
 import { communitiesApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
-import { requireAuth } from "@/lib/require-auth";
+import { useAuth, useIsAuthenticated } from "@/lib/use-auth";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -34,7 +34,6 @@ import { CommunityCard } from "@/components/community-card";
 import { COMMUNITY_FAVORITES_KEY } from "@/components/community-favorite-button";
 
 export const Route = createFileRoute("/comunidades")({
-  beforeLoad: requireAuth,
   head: () => ({ meta: [{ title: texts.communities.seoTitle }] }),
   component: Comunidades,
 });
@@ -43,6 +42,8 @@ function Comunidades() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const matchRoute = useMatchRoute();
+  const isAuthenticated = useIsAuthenticated();
+  const { requireAuth: needsLogin } = useAuth();
   const [topic, setTopic] = useState<CommunityTopic | undefined>(undefined);
   const [search, setSearch] = useState("");
   const [query, setQuery] = useState("");
@@ -76,11 +77,12 @@ function Comunidades() {
   const nextCursor = communitiesData?.nextCursor ?? null;
 
   // Favoritas têm seção própria no início da página; a lista principal não repete
-  // nenhuma delas (remover o favorito devolve o card para o fluxo comum).
+  // nenhuma delas (remover o favorito devolve o card para o fluxo comum). Só pedem sessão:
+  // visitante vê a lista pública sem 401 no console.
   const { data: favoritesData } = useQuery({
     queryKey: COMMUNITY_FAVORITES_KEY,
     queryFn: () => communitiesApi.favorites(),
-    enabled: !isDetail,
+    enabled: !isDetail && isAuthenticated,
   });
 
   // As comunidades em que a pessoa já está vêm ANTES de tudo (pedido de quem usa: as primeiras
@@ -88,7 +90,7 @@ function Comunidades() {
   const { data: mineData } = useQuery({
     queryKey: ["my-communities"],
     queryFn: () => communitiesApi.mine(50),
-    enabled: !isDetail,
+    enabled: !isDetail && isAuthenticated,
   });
 
   useEffect(() => {
@@ -174,7 +176,14 @@ function Comunidades() {
             <p className="mt-1 text-sm text-muted-foreground">{texts.communities.description}</p>
           </div>
 
-          <CreateCommunityDialog open={open} onOpenChange={setOpen}>
+          <CreateCommunityDialog
+            open={open}
+            onOpenChange={(o) => {
+              // Visitante nao abre o formulario: manda para o login.
+              if (o && !needsLogin()) return;
+              setOpen(o);
+            }}
+          >
             <Button className="rounded-full gap-1.5">
               <Plus className="h-4 w-4" />
 
@@ -224,7 +233,9 @@ function Comunidades() {
                   joinPending={join.isPending}
                   leavePending={leave.isPending}
                   ownerBlocked={ownerBlockedId === c.id}
-                  onJoin={join.mutate}
+                  onJoin={(id) => {
+                    if (needsLogin()) join.mutate(id);
+                  }}
                   onLeave={setLeaveTarget}
                 />
               ))}
@@ -248,7 +259,9 @@ function Comunidades() {
                   joinPending={join.isPending}
                   leavePending={leave.isPending}
                   ownerBlocked={ownerBlockedId === c.id}
-                  onJoin={join.mutate}
+                  onJoin={(id) => {
+                    if (needsLogin()) join.mutate(id);
+                  }}
                   onLeave={setLeaveTarget}
                 />
               ))}
@@ -264,7 +277,9 @@ function Comunidades() {
               joinPending={join.isPending}
               leavePending={leave.isPending}
               ownerBlocked={ownerBlockedId === c.id}
-              onJoin={join.mutate}
+              onJoin={(id) => {
+                if (needsLogin()) join.mutate(id);
+              }}
               onLeave={setLeaveTarget}
             />
           ))}

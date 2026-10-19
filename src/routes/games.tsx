@@ -340,7 +340,7 @@ function SubmitButton() {
   const submit = useMutation({
     mutationFn: () =>
       gamesApi.submit({
-        slug: form.slug.trim().toLowerCase(),
+        slug: form.slug.trim().toLowerCase() || undefined,
         title: form.title.trim(),
         url: form.url.trim(),
         description: form.description.trim() || undefined,
@@ -392,7 +392,14 @@ function SubmitButton() {
                   placeholder="kawaiigame"
                   value={form.slug}
                   onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                  maxLength={60}
+                  pattern="[a-zA-Z0-9-]*"
+                  title="Só letras, números e hífen. Pode deixar vazio."
                 />
+
+                <span className="mt-1 block text-xs text-text-subtle">
+                  Só letras, números e hífen. Deixe vazio para gerar do título.
+                </span>
               </label>
 
               <label className="block text-sm">
@@ -439,9 +446,7 @@ function SubmitButton() {
               </Button>
 
               <Button
-                disabled={
-                  submit.isPending || !form.title.trim() || !form.slug.trim() || !form.url.trim()
-                }
+                disabled={submit.isPending || !form.title.trim() || !form.url.trim()}
                 onClick={() => submit.mutate()}
               >
                 Enviar para moderação
