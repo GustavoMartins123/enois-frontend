@@ -453,3 +453,15 @@ em denúncia). Admin/moderação: somente leitura visual.
   Único erro de rede: `429` de um crop do CDN de mídia (externo, não é a página).
 - **Próximo lote:** `/blogs` e `/eventos` em 1280 com os 60 temas; depois repetir a tentativa da
   sessão protegida.
+
+## Rodada 27 — 2026-10-19 12:5x
+
+- **Sessão:** válida de novo (cópia viva do Firefox, mtime 12:29). Lote protegido executado.
+- **Lote A protegido COMPLETO:** as mesmas 27 rotas da rodada 25 nos **6 viewports restantes**
+  (320×568, 414×896, 768×1024, 1024×768, 1440×900, 1920×1080) × claro/escuro =
+  **324 verificações, ZERO problemas** (overflow horizontal, console/pageerror, requisições
+  falhas, bounce para `/entrar` e variáveis de tema vazias). Somado à rodada 25, o Lote A
+  protegido agora cobre os **9 viewports**.
+- **Nenhuma correção de app.**
+- **Próximo lote:** Lote B protegido — 60 temas × 2 modos a 390px nas rotas protegidas, começando
+  por `/feed`, `/carteira` e `/marketplace`; depois `/blogs` e `/eventos` a 1280 com os 60 temas.
