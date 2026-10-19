@@ -751,7 +751,9 @@ function Profile() {
               </Section>
             )}
 
-            {rankingData && rankingData.length > 0 && (
+            {/* Ranking OPCIONAL (pedido via suporte): quem desligou nas configuracoes nao ve a
+                secao — a preferencia e de quem LE, nao do perfil visitado. */}
+            {me?.showRanking !== false && rankingData && rankingData.length > 0 && (
               <Section title={texts.profile.sections.ranking} icon={Trophy}>
                 <div className="space-y-2">
                   {rankingData.slice(0, 5).map((u, i) => (

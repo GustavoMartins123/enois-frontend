@@ -1383,6 +1383,9 @@ export const texts = {
     avatarFallback: "Avatar",
     edit: {
       usernameTaken: "Este username já está em uso",
+      showRanking: "Mostrar o ranking no perfil",
+      showRankingHint:
+        "Desligue para não ver a seção de ranking quando abrir um perfil. Sua conta continua no ranking normalmente.",
       title: "Editar perfil",
       tabs: {
         info: "Informações",

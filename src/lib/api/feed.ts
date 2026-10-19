@@ -28,7 +28,7 @@ export const feedApi = {
   // demais tipos. Num artigo o corpo e obrigatorio tambem na edicao.
   update: (
     postId: string,
-    data: { content: string; tags?: string[]; pageHtml?: string; articleBody?: string },
+    data: { content: string; tags?: string[]; pageHtml?: string; articleBody?: string; type?: string },
   ) => api.patch<PostView>(`/feed/posts/${postId}`, data),
 
   /** Desfaz a exclusão do próprio post (soft delete reversível). */
