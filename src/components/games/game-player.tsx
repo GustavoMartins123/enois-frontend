@@ -1,4 +1,11 @@
-import { type CSSProperties, useCallback, useEffect, useReducer, useRef } from "react";
+import {
+  type CSSProperties,
+  useCallback,
+  useEffect,
+  useReducer,
+  useRef,
+  useSyncExternalStore,
+} from "react";
 
 import { texts } from "@/texts";
 import type { GamePlayerProps } from "@/types/components/games/game-player-props";
@@ -16,6 +23,8 @@ import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
+
+const subscribeNothing = () => () => {};
 
 const ASPECT: Record<string, string> = {
   WIDESCREEN: "16 / 9",
@@ -45,6 +54,13 @@ export function GamePlayer({
   const frame = useRef<HTMLIFrameElement>(null);
   const identityPending = useRef(false);
   const latest = useRef({ identity, onShareRequest, onSpendRequest });
+  // No servidor (e na hidratação) o quadro não existe: o sandbox depende da origem do Énóis, que só
+  // o navegador conhece.
+  const hydrated = useSyncExternalStore(
+    subscribeNothing,
+    () => true,
+    () => false,
+  );
   const origin = gameOrigin(url);
   const started = state.status !== "idle";
   const t = texts.games.game;
@@ -54,7 +70,7 @@ export function GamePlayer({
   });
 
   useEffect(() => {
-    if (!started || !origin) return;
+    if (!started || !origin || !hydrated) return;
 
     const listener = (event: MessageEvent) => {
       const frameWindow = frame.current?.contentWindow;
@@ -79,7 +95,10 @@ export function GamePlayer({
           else identityPending.current = true;
           break;
         case "enois:share":
-          handlers.onShareRequest?.({ texto: message.texto, imagem: message.imagem });
+          handlers.onShareRequest?.({
+            texto: message.texto,
+            imagem: message.imagem,
+          });
           break;
         case "enois:spend":
           handlers.onSpendRequest?.({
@@ -93,7 +112,7 @@ export function GamePlayer({
 
     window.addEventListener("message", listener);
     return () => window.removeEventListener("message", listener);
-  }, [started, origin]);
+  }, [started, origin, hydrated]);
 
   // O jogo pode pedir a identidade antes de o token chegar do servidor.
   useEffect(() => {
@@ -159,7 +178,7 @@ export function GamePlayer({
         )}
         style={{ "--game-aspect": ASPECT[aspect ?? ""] ?? "16 / 9" } as CSSProperties}
       >
-        {started && origin ? (
+        {started && origin && hydrated ? (
           <iframe
             key={state.session}
             ref={frame}
@@ -175,6 +194,8 @@ export function GamePlayer({
               focusFrame();
             }}
           />
+        ) : started && origin ? (
+          <div className="h-full w-full bg-primary-soft" />
         ) : (
           <button
             type="button"
