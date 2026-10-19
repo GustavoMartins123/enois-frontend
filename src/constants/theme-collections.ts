@@ -474,7 +474,7 @@ export const THEME_COLLECTIONS: ThemeCollection[] = [
           card: "0 8px 24px rgb(20 50 90 / 0.18), inset 0 1px 0 rgb(255 255 255 / 0.7)",
         },
         radius: "6px",
-        text: { strong: "#10243a", subtle: "#35506b", date: "#6b84a0" },
+        text: { strong: "#10243a", subtle: "#35506b", date: "#4a647f" },
       }),
       dark: palette({
         background: "linear-gradient(160deg, #14243a, #0b1524)",
