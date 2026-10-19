@@ -25,8 +25,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
+import { MentionTextarea } from "@/components/mention-textarea";
 import { ReactionPicker } from "@/components/post/reaction-picker";
 import { ReportDialog } from "@/components/post/report-dialog";
+import { RichText } from "@/components/post/rich-text";
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { UserAvatar } from "@/components/user-avatar";
 import { UserBadges } from "@/components/user-badge";
@@ -306,12 +308,14 @@ function GroupFeed({ group }: { group: GroupView }) {
         <>
           {activeTopic && activeTopic.status === "OPEN" && (
             <div className="space-y-2 rounded-2xl border border-border-soft bg-surface-card p-4">
-              <Textarea
+              <MentionTextarea
                 value={content}
-                onChange={(event) => setContent(event.target.value)}
+                onChange={(value) => setContent(value)}
                 placeholder={texts.groups.composerPlaceholder}
                 maxLength={1200}
-                className="min-h-20"
+                className="min-h-20 rounded-lg border border-border-soft bg-transparent px-3 py-2 text-sm text-text-strong"
+                rows={4}
+                toolbar
               />
 
               <div className="flex justify-end">
@@ -449,7 +453,10 @@ function GroupPostItem({
         <UserBadges badges={post.authorBadges} />
       </div>
 
-      <p className="mt-2 whitespace-pre-line text-sm text-text-strong">{post.content}</p>
+      <RichText
+        content={post.content}
+        className="mt-2 whitespace-pre-line break-words text-sm text-text-strong"
+      />
 
       <div className="mt-2 flex items-center gap-3 text-xs text-text-subtle">
         <ReactionPicker
@@ -525,7 +532,10 @@ function GroupPostItem({
                       <UserBadges badges={item.authorBadges} />
                     </p>
 
-                    <p className="whitespace-pre-line text-sm text-text-strong">{item.content}</p>
+                    <RichText
+                      content={item.content}
+                      className="whitespace-pre-line break-words text-sm text-text-strong"
+                    />
                   </div>
                 </li>
               ))}
@@ -533,11 +543,14 @@ function GroupPostItem({
           )}
 
           <div className="flex items-end gap-2">
-            <Input
+            <MentionTextarea
               value={comment}
-              onChange={(event) => setComment(event.target.value)}
+              onChange={(value) => setComment(value)}
               placeholder={texts.groups.commentPlaceholder}
               maxLength={1200}
+              className="min-h-10 rounded-lg border border-border-soft bg-transparent px-3 py-2 text-sm text-text-strong"
+              rows={1}
+              toolbar
             />
 
             <Button

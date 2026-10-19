@@ -507,24 +507,22 @@ function CommunityDetail() {
 
             {articleMode && (
               <div className="mt-3 rounded-2xl border border-border-soft bg-surface-1 p-3">
-                <label
-                  htmlFor="community-article-body"
-                  className="mb-1 block text-sm font-normal text-text-subtle"
-                >
+                <span className="mb-1 block text-sm font-normal text-text-subtle">
                   {texts.feed.composer.article.bodyLabel}
-                </label>
+                </span>
 
                 <p className="mb-2 text-sm font-normal text-text-subtle">
                   {texts.feed.composer.article.bodyHint}
                 </p>
 
-                <Textarea
-                  id="community-article-body"
+                <MentionTextarea
                   value={articleBody}
                   maxLength={ARTICLE_BODY_MAX_LENGTH}
-                  onChange={(event) => setArticleBody(event.target.value)}
+                  onChange={(value) => setArticleBody(value)}
                   placeholder={texts.feed.composer.article.bodyPlaceholder}
-                  className="min-h-[220px]"
+                  className="min-h-[220px] rounded-lg border border-border-soft bg-transparent px-3 py-2 text-sm text-text-strong"
+                  rows={8}
+                  toolbar
                 />
               </div>
             )}

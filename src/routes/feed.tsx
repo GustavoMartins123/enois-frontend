@@ -3,9 +3,9 @@ import { type ChangeEvent, type FormEvent, useCallback, useRef, useState } from 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import { postContentLimit } from "@/constants/post-content-limits";
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { ARTICLE_BODY_MAX_LENGTH, POST_TYPES } from "@/constants/post-types";
-import { postContentLimit } from "@/constants/post-content-limits";
 import { texts } from "@/texts";
 import type { CreatePostInput } from "@/types/application/feed/create-post-input";
 import type { FeedTab } from "@/types/application/feed/feed-tab";
@@ -17,6 +17,7 @@ import {
   Calendar,
   ChevronDown,
   ChevronRight,
+  Clock,
   Code2,
   FileText,
   Film,
@@ -25,7 +26,6 @@ import {
   TrendingUp,
   UserPlus,
   X,
-  Clock,
 } from "lucide-react";
 
 import { authApi, eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
@@ -36,7 +36,6 @@ import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Pill } from "@/components/ui/pill";
-import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
 import { HtmlEditor } from "@/components/html-editor";
@@ -283,24 +282,22 @@ function Home() {
 
             {articleMode && (
               <div className="mt-3 rounded-2xl border border-border-soft bg-surface-1 p-3">
-                <label
-                  htmlFor="composer-article-body"
-                  className="mb-1 block text-sm font-normal text-text-subtle"
-                >
+                <span className="mb-1 block text-sm font-normal text-text-subtle">
                   {texts.feed.composer.article.bodyLabel}
-                </label>
+                </span>
 
                 <p className="mb-2 text-sm font-normal text-text-subtle">
                   {texts.feed.composer.article.bodyHint}
                 </p>
 
-                <Textarea
-                  id="composer-article-body"
+                <MentionTextarea
                   value={articleBody}
                   maxLength={ARTICLE_BODY_MAX_LENGTH}
-                  onChange={(event) => setArticleBody(event.target.value)}
+                  onChange={(value) => setArticleBody(value)}
                   placeholder={texts.feed.composer.article.bodyPlaceholder}
-                  className="min-h-[220px]"
+                  className="min-h-[220px] rounded-lg border border-border-soft bg-transparent px-3 py-2 text-sm text-text-strong"
+                  rows={8}
+                  toolbar
                 />
               </div>
             )}
