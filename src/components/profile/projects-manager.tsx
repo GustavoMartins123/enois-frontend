@@ -339,6 +339,10 @@ export function ProjectsManager({ open, onOpenChange, username, onSaved }: Proje
                   emptyPreview={texts.profile.projects.empty}
                   frameTitle={texts.profile.projects.htmlFrame}
                   maxLength={20000}
+                  // A prévia é uma janela do editor com altura de CARD (320px, rola por dentro) —
+                  // com a moldura de celular padrão ela ficava com ~900px e empurrava o rodapé
+                  // do diálogo para fora da tela.
+                  previewClassName="mt-3 h-[320px] overflow-hidden rounded-xl border border-border-soft"
                 />
               </div>
             )}
