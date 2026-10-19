@@ -1,8 +1,8 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** em andamento — rodadas 1 a 9 executadas. A matriz ainda tem lotes
-> pendentes (rotas protegidas nos viewports novos, Lote B nas demais rotas e Lote C nas 4 páginas
-> restantes em 1280px).
+> **Status (2026-10-19):** em andamento — rodadas 1 a 10 executadas. A matriz ainda tem lotes
+> pendentes (rotas protegidas nos viewports novos, Lote B nas rotas públicas restantes e Lote C
+> nas 3 páginas protegidas em 1280px).
 
 ## Objetivo
 
@@ -66,9 +66,8 @@ em denúncia). Admin/moderação: somente leitura visual.
 | Lote | Rotas | Viewports | Temas | Status |
 |---|---|---|---|---|
 | A | 23 em 390/768/1280 (rodada 1) + 17 públicas e 10 dinâmicas nos outros 6 viewports (rodada 2) | 320, 360, 390, 414, 768, 1024, 1280, 1440, 1920 | claro/escuro padrão | parcial — rotas protegidas nos viewports novos bloqueadas pela sessão expirada |
-| B | `/`, `/empresas`, `/perfil/aminadojava`, `/post/...`, `/developers`, `/vagas`, `/empresa/n-is`, `/blogs` (960 combinações) | 390px | 60 × 2 | 8 rotas concluídas; faltam as demais |
-| C | `/`, `/perfil`, `/post/...`, `/developers`, `/vagas`, `/empresa/n-is` (720 combinações) | 1280px | 60 × 2 | 6 páginas-chave concluídas; faltam 4 |
-| — | `/feed`, `/carteira`, `/marketplace` (protegidas) e `/games` | 1280px | 60 × 2 | pendente |
+| B | `/`, `/empresas`, `/perfil/aminadojava`, `/post/...`, `/developers`, `/vagas`, `/empresa/n-is`, `/blogs`, `/sobre`, `/temas` (1200 combinações) | 390px | 60 × 2 | 10 rotas concluídas; faltam as demais |
+| C | `/`, `/perfil`, `/post/...`, `/developers`, `/vagas`, `/empresa/n-is`, `/games` (840 combinações) | 1280px | 60 × 2 | 7 páginas-chave concluídas; faltam 3 protegidas |
 
 ## Rodada 1 — 2026-10-19
 
@@ -210,6 +209,18 @@ em denúncia). Admin/moderação: somente leitura visual.
   (pública) e `/feed`, `/carteira` e `/marketplace` (protegidas).
 - **Próximo lote:** Lote C em `/games`; as três protegidas quando a sessão estiver fresca; Lote B
   nas rotas públicas restantes.
+
+## Rodada 10 — 2026-10-19
+
+- **Sessão:** ainda expirada; rotas protegidas seguem bloqueadas.
+- **Lote C (1280px):** `/games` × 60 temas × 2 modos = **120 combinações, todas limpas**. Fecha o
+  Lote C público: 7 páginas-chave, **840 combinações**. Faltam só `/feed`, `/carteira` e
+  `/marketplace` (protegidas, dependem de sessão fresca).
+- **Lote B (390px):** `/sobre` e `/temas` = **240 combinações, todas limpas**. Cobertura acumulada:
+  10 rotas / **1200 combinações**.
+- **Próximo lote:** Lote B nas rotas públicas restantes (`/contato`, `/termos`, `/privacidade`,
+  `/diretrizes`, `/entrar`, `/eventos`, `/games/aminadojava`, `/blog/...`, `/auth/*`, etc.); Lote C
+  nas três protegidas e rotas protegidas nos viewports restantes quando houver sessão fresca.
 
 ## Achados e correções
 
