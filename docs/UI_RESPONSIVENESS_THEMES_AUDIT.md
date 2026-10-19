@@ -445,5 +445,11 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Nenhuma correção de app.**
 - **Deploy verificado:** o chunk `moderador-C5XiF0Ez.js` já é servido com as chamadas novas
   (`/admin/moderators` e `/moderation/sanction-proposals`), confirmando o rollout do painel.
+- **Painel de moderador verificado em produção (sessão restaurada):** `/moderador` em 390 e 1280,
+  tema escuro, 9 abas, **zero overflow**. Aba Candidaturas mostra “Adicionar moderador”, a lista de
+  moderadores e a fila (`GET /api/admin/moderators` 200); aba Usuários mostra a punição direta do
+  admin e “Votações abertas” (`GET /api/moderation/sanction-proposals` 200). `moderatorCount=2` e
+  `minModeratorsForSanction=10`, então a votação está corretamente bloqueada antes do mínimo.
+  Único erro de rede: `429` de um crop do CDN de mídia (externo, não é a página).
 - **Próximo lote:** `/blogs` e `/eventos` em 1280 com os 60 temas; depois repetir a tentativa da
   sessão protegida.
