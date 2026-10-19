@@ -1,6 +1,6 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** em andamento — rodadas 1 a 23 executadas. O Lote B público está
+> **Status (2026-10-19):** em andamento — rodadas 1 a 24 executadas. O Lote B público está
 > completo; restam as rotas/páginas protegidas (Lote A nos viewports novos, Lote B em 390px e
 > Lote C em 1280px), que dependem de uma sessão fresca do Firefox.
 
@@ -365,6 +365,14 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Sessão:** ainda expirada; rotas protegidas seguem bloqueadas.
 - **Regressão em celular deitado:** 22 rotas públicas × claro/escuro × **844×390** e **667×375**
   = **88 verificações, todas limpas** (overflow, console e HTTP). Nenhum achado.
+- **Nenhuma correção.** Continua pendente apenas o lote protegido.
+
+## Rodada 24 — 2026-10-19
+
+- **Sessão:** ainda expirada; rotas protegidas seguem bloqueadas.
+- **Lote B estendido a 320px:** 60 temas × 2 modos × `/` e `/perfil/aminadojava` em **320×568** =
+  **240 combinações, todas limpas** (contraste e overflow). O tema padrão já tinha sido validado
+  em 320 no Lote A; agora todos os temas também.
 - **Nenhuma correção.** Continua pendente apenas o lote protegido.
 
 ## Achados e correções
