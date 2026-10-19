@@ -383,7 +383,10 @@ function GamePage() {
                         {texts.games.game.play}
                       </span>
 
-                      <span className="mt-1 block text-xs text-text-subtle">
+                      {/* Sobre o bg-primary-soft, o texto sutil pode ficar abaixo de 3:1 em temas
+                          de soft escuro (silver-jonny dava 2.8:1); o primary-text é calculado
+                          justamente contra esse fundo. */}
+                      <span className="mt-1 block text-xs text-primary-text">
                         {texts.games.game.external}
                       </span>
                     </>
