@@ -23,6 +23,7 @@ import { useThemeSync } from "@/lib/theme/use-theme-sync";
 
 import { ToastProvider } from "@/components/ui/toast";
 
+import { HealthyUsageGuard } from "@/components/healthy-usage/healthy-usage-guard";
 import { InstallPwaBanner } from "@/components/install-pwa-banner";
 
 import appCss from "../styles.css?url";
@@ -200,6 +201,7 @@ function RootInsideProvider() {
     <ToastProvider>
       <Outlet />
       <InstallPwaBanner />
+      <HealthyUsageGuard />
     </ToastProvider>
   );
 }

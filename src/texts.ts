@@ -640,6 +640,7 @@ export const texts = {
       moderator: "Painel de moderador",
       sanctions: "Penalidades",
       linkedAccounts: "Contas vinculadas",
+      healthyUsage: "Uso saudável",
       security: "Segurança e verificação",
       deleteAccount: "Excluir conta",
       logout: "Sair",
@@ -651,6 +652,24 @@ export const texts = {
       pushUnavailable: "Este dispositivo não suporta notificações no celular.",
       pushServerOff: "As notificações no celular ainda não estão disponíveis.",
       pushError: "Não foi possível ativar as notificações. Tente novamente.",
+    },
+    healthyUsage: {
+      title: "Uso saudável",
+      description:
+        "Defina um limite de tempo para receber um lembrete gentil de pausa enquanto usa o Énóis.",
+      switchLabel: "Ativar lembrete de pausa",
+      switchHint: "O contador roda em segundo plano nesta sessão; fechar o app zera o tempo.",
+      minutesLabel: "Lembrar depois de",
+      minutesUnit: "minutos",
+      minutesHint: "Escolha entre 1 e 240 minutos. O tempo configurado continua salvo.",
+      save: "Salvar",
+      saved: "Preferência de uso saudável salva.",
+      reminderTitle: "Hora de uma pausa",
+      reminderBody:
+        "Ops, acho que já passou um tempo que você tá scrollando. Vamos dar uma parada?",
+      noise:
+        "Ei, respira! Bebe uma água, olha pela janela e volta quando quiser. Eu também preciso de uma pausa. 🌿",
+      reminderCta: "Vou dar uma pausa",
     },
     changeEmail: {
       title: "Alterar e-mail",
