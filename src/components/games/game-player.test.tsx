@@ -79,7 +79,7 @@ describe("GamePlayer — ciclo de vida", () => {
     expect(frame.getAttribute("allow")).toBe("fullscreen; gamepad; autoplay");
     expect(frame.getAttribute("referrerpolicy")).toBe("no-referrer");
     expect(player().dataset.status).toBe("loading");
-    expect(onStart).toHaveBeenCalledWith(false);
+    expect(onStart).toHaveBeenCalledWith(false, 1);
   });
 
   it("enois:loading mostra o progresso", () => {
@@ -117,7 +117,7 @@ describe("GamePlayer — ciclo de vida", () => {
     act(() => (alert.querySelector("button") as HTMLButtonElement).click());
     expect(player().dataset.status).toBe("loading");
     expect(iframe()).not.toBe(first);
-    expect(onStart).toHaveBeenLastCalledWith(true);
+    expect(onStart).toHaveBeenLastCalledWith(true, 2);
   });
 
   it("progresso inválido é descartado sem mudar a tela", () => {
@@ -273,7 +273,7 @@ describe("GamePlayer — origem e janela", () => {
 
 describe("GamePlayer — mensagens que já existiam", () => {
   it("identity responde só ao quadro e só com a origem exata", () => {
-    render({ identity: "tok_opaco" });
+    render({ identity: { session: 1, token: "tok_opaco" } });
     play();
     const post = vi.spyOn(iframe()!.contentWindow!, "postMessage");
 
@@ -289,9 +289,37 @@ describe("GamePlayer — mensagens que já existiam", () => {
     send({ type: "enois:identity" });
     expect(post).not.toHaveBeenCalled();
 
-    render({ identity: "tok_novo" });
+    render({ identity: { session: 1, token: "tok_novo" } });
     expect(post).toHaveBeenCalledTimes(1);
     expect(post).toHaveBeenCalledWith({ type: "enois:identity", token: "tok_novo" }, GAME_ORIGIN);
+  });
+
+  it("token da sessão anterior não é entregue depois de Tentar de novo", () => {
+    render({ identity: { session: 1, token: "tok_sessao_1" } });
+    play();
+    send({ type: "enois:error", version: 1 });
+    act(() => (host.querySelector('[role="alert"] button') as HTMLButtonElement).click());
+    const post = vi.spyOn(iframe()!.contentWindow!, "postMessage");
+
+    send({ type: "enois:identity" });
+    expect(post).not.toHaveBeenCalled();
+
+    render({ identity: { session: 2, token: "tok_sessao_2" } });
+    expect(post).toHaveBeenCalledTimes(1);
+    expect(post).toHaveBeenCalledWith(
+      { type: "enois:identity", token: "tok_sessao_2" },
+      GAME_ORIGIN,
+    );
+  });
+
+  it("pedidos chegam com a sessão do quadro que os fez", () => {
+    const onSpendRequest = vi.fn();
+    render({ onSpendRequest });
+    play();
+    send({ type: "enois:error", version: 1 });
+    act(() => (host.querySelector('[role="alert"] button') as HTMLButtonElement).click());
+    send({ type: "enois:spend", amount: 5, requestId: "r-2" });
+    expect(onSpendRequest).toHaveBeenCalledWith({ amount: 5, motivo: "", requestId: "r-2" }, 2);
   });
 
   it("sem identity (moderação) o pedido é ignorado", () => {
@@ -312,12 +340,15 @@ describe("GamePlayer — mensagens que já existiam", () => {
     send({ type: "enois:spend", amount: 5, motivo: "Poção", requestId: "r-1" });
     send({ type: "enois:spend", amount: -5, requestId: "r-2" });
 
-    expect(onShareRequest).toHaveBeenCalledWith({
-      texto: "Nível 10!",
-      imagem: "data:image/png;base64,AAAA",
-    });
+    expect(onShareRequest).toHaveBeenCalledWith(
+      { texto: "Nível 10!", imagem: "data:image/png;base64,AAAA" },
+      1,
+    );
     expect(onSpendRequest).toHaveBeenCalledTimes(1);
-    expect(onSpendRequest).toHaveBeenCalledWith({ amount: 5, motivo: "Poção", requestId: "r-1" });
+    expect(onSpendRequest).toHaveBeenCalledWith(
+      { amount: 5, motivo: "Poção", requestId: "r-1" },
+      1,
+    );
   });
 
   it("mensagens de outra origem não pedem nada", () => {

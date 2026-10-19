@@ -63,6 +63,7 @@ export function GamePlayer({
   );
   const origin = gameOrigin(url);
   const started = state.status !== "idle";
+  const session = state.session;
   const t = texts.games.game;
 
   useEffect(() => {
@@ -91,36 +92,36 @@ export function GamePlayer({
           break;
         case "enois:identity":
           if (handlers.identity === undefined) break;
-          if (handlers.identity) frameWindow.postMessage(identityReply(handlers.identity), origin);
-          else identityPending.current = true;
+          if (handlers.identity?.session === session) {
+            frameWindow.postMessage(identityReply(handlers.identity.token), origin);
+          } else {
+            identityPending.current = true;
+          }
           break;
         case "enois:share":
-          handlers.onShareRequest?.({
-            texto: message.texto,
-            imagem: message.imagem,
-          });
+          handlers.onShareRequest?.({ texto: message.texto, imagem: message.imagem }, session);
           break;
         case "enois:spend":
-          handlers.onSpendRequest?.({
-            amount: message.amount,
-            motivo: message.motivo,
-            requestId: message.requestId,
-          });
+          handlers.onSpendRequest?.(
+            { amount: message.amount, motivo: message.motivo, requestId: message.requestId },
+            session,
+          );
           break;
       }
     };
 
     window.addEventListener("message", listener);
     return () => window.removeEventListener("message", listener);
-  }, [started, origin, hydrated]);
+  }, [started, origin, hydrated, session]);
 
   // O jogo pode pedir a identidade antes de o token chegar do servidor.
   useEffect(() => {
     const frameWindow = frame.current?.contentWindow;
-    if (!identity || !origin || !frameWindow || !identityPending.current) return;
+    if (!identity || identity.session !== session || !origin || !frameWindow) return;
+    if (!identityPending.current) return;
     identityPending.current = false;
-    frameWindow.postMessage(identityReply(identity), origin);
-  }, [identity, origin]);
+    frameWindow.postMessage(identityReply(identity.token), origin);
+  }, [identity, session, origin]);
 
   useEffect(() => {
     if (state.session === 0) return;
@@ -141,7 +142,7 @@ export function GamePlayer({
   const start = (retry: boolean) => {
     identityPending.current = false;
     dispatch({ type: "start" });
-    onStart?.(retry);
+    onStart?.(retry, session + 1);
   };
 
   const enterFullscreen = () => {
