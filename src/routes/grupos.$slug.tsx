@@ -1,30 +1,34 @@
-import { useState } from "react";
+import { type ChangeEvent, useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
+import { PROFILE_HTML_MAX_LENGTH } from "@/constants/profile";
 import { REACTION_EMOJIS } from "@/constants/reaction-emojis";
 import { texts } from "@/texts";
 import type { GroupMember } from "@/types/application/group/group-member";
 import type { GroupPost } from "@/types/application/group/group-post";
 import type { GroupView } from "@/types/application/group/group-view";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
-import { Flag, Loader2, MessageCircle, Plus, Smile, Trash2, Users } from "lucide-react";
+import { Camera, Flag, Loader2, MessageCircle, Plus, Smile, Trash2, Users } from "lucide-react";
 
 import { groupsApi } from "@/lib/api";
 import { getSessionToken } from "@/lib/api-client";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { getCurrentUserId } from "@/lib/current-user";
+import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Pill } from "@/components/ui/pill";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
+import { HtmlEditor } from "@/components/html-editor";
 import { MentionTextarea } from "@/components/mention-textarea";
 import { ReactionPicker } from "@/components/post/reaction-picker";
 import { ReportDialog } from "@/components/post/report-dialog";
@@ -118,16 +122,30 @@ function GrupoPage() {
           )}
 
           <div className="space-y-3 p-4 sm:p-5">
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-xl font-semibold tracking-tight text-text-strong">
-                {group.name}
-              </h1>
+            <div className="flex flex-wrap items-center gap-3">
+              {group.avatar ? (
+                <img
+                  src={resolveCdnUrl(group.avatar)}
+                  alt=""
+                  className="h-12 w-12 shrink-0 rounded-xl object-cover"
+                />
+              ) : (
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                  <Users className="h-5 w-5" />
+                </span>
+              )}
 
-              <span className="rounded-full border border-border-soft px-2 py-0.5 text-xs text-text-subtle">
-                {group.joinMode === "OPEN"
-                  ? texts.groups.joinModeOpen
-                  : texts.groups.joinModeApproval}
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="text-xl font-semibold tracking-tight text-text-strong">
+                  {group.name}
+                </h1>
+
+                <span className="rounded-full border border-border-soft px-2 py-0.5 text-xs text-text-subtle">
+                  {group.joinMode === "OPEN"
+                    ? texts.groups.joinModeOpen
+                    : texts.groups.joinModeApproval}
+                </span>
+              </div>
             </div>
 
             <p className="flex items-center gap-1.5 text-sm text-text-subtle">
@@ -600,6 +618,17 @@ function EditGroupDialog({
   const [name, setName] = useState(group.name);
   const [description, setDescription] = useState(group.description ?? "");
   const [joinMode, setJoinMode] = useState<"OPEN" | "APPROVAL">(group.joinMode);
+  const [avatar, setAvatar] = useState(group.avatar ?? "");
+  const [banner, setBanner] = useState(group.banner ?? "");
+  const [bannerHtml, setBannerHtml] = useState(group.bannerHtml ?? "");
+  // Capa foto OU HTML (igual ao perfil): a escolha decide o que vai no PATCH.
+  const [bannerMode, setBannerMode] = useState<"photo" | "html">(
+    group.bannerHtml ? "html" : "photo",
+  );
+  const avatarUpload = useMediaUpload();
+  const bannerUpload = useMediaUpload();
+  const avatarRef = useRef<HTMLInputElement>(null);
+  const bannerRef = useRef<HTMLInputElement>(null);
 
   const save = useMutation({
     mutationFn: () =>
@@ -607,6 +636,17 @@ function EditGroupDialog({
         name: name.trim(),
         description: description.trim() || null,
         joinMode,
+        // Campo presente aplica (e "" remove); ausente (undefined) mantém o atual no servidor.
+        avatar: avatar === (group.avatar ?? "") ? undefined : avatar,
+        banner:
+          bannerMode === "photo"
+            ? banner === (group.banner ?? "")
+              ? undefined
+              : banner
+            : group.banner
+              ? ""
+              : undefined,
+        bannerHtml: bannerMode === "html" ? bannerHtml : group.bannerHtml ? "" : undefined,
       }),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["group", group.slug] });
@@ -616,14 +656,95 @@ function EditGroupDialog({
     onError: () => toast(texts.groups.saveError, "error"),
   });
 
+  const uploadImage = async (file: File, kind: "avatar" | "banner") => {
+    try {
+      const result = await (kind === "avatar" ? avatarUpload : bannerUpload).upload(
+        file,
+        kind === "avatar" ? "AVATAR" : "COVER",
+      );
+      if (kind === "avatar") {
+        setAvatar(result.cdnUrl);
+      } else {
+        setBanner(result.cdnUrl);
+        setBannerMode("photo");
+      }
+    } catch {
+      toast(texts.groups.uploadError, "error");
+    }
+  };
+
+  const chooseFile = (kind: "avatar" | "banner") => (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) void uploadImage(file, kind);
+    event.target.value = "";
+  };
+
+  const uploading =
+    avatarUpload.state.status === "uploading" || bannerUpload.state.status === "uploading";
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-h-[90vh] max-w-md overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="font-normal">{texts.groups.editTitle}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
+          <div className="space-y-1.5">
+            <Label>{texts.groups.logo}</Label>
+
+            <p className="text-xs font-normal text-text-subtle">{texts.groups.logoHint}</p>
+
+            <div className="flex items-center gap-3">
+              {avatar ? (
+                <img
+                  src={resolveCdnUrl(avatar)}
+                  alt=""
+                  className="h-14 w-14 shrink-0 rounded-xl object-cover"
+                />
+              ) : (
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                  <Users className="h-5 w-5" />
+                </span>
+              )}
+
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-auto rounded-full gap-1.5"
+                  disabled={uploading}
+                  onClick={() => avatarRef.current?.click()}
+                >
+                  <Camera className="h-3.5 w-3.5" />
+
+                  <>{avatar ? texts.groups.changeImage : texts.groups.addLogo}</>
+                </Button>
+
+                {avatar && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="w-auto rounded-full"
+                    onClick={() => setAvatar("")}
+                  >
+                    {texts.groups.removeImage}
+                  </Button>
+                )}
+              </div>
+            </div>
+
+            <input
+              ref={avatarRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={chooseFile("avatar")}
+            />
+          </div>
+
           <div className="space-y-1.5">
             <Label htmlFor="editGroupName">{texts.groups.name}</Label>
 
@@ -644,6 +765,87 @@ function EditGroupDialog({
               onChange={(event) => setDescription(event.target.value)}
               maxLength={600}
               className="min-h-20"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <p className="text-sm font-medium text-text-strong">{texts.groups.bannerLabel}</p>
+
+            <p className="text-xs font-normal text-text-subtle">{texts.groups.bannerHint}</p>
+
+            <div className="flex gap-1.5" role="tablist" aria-label={texts.groups.bannerLabel}>
+              <Pill active={bannerMode === "photo"} onClick={() => setBannerMode("photo")}>
+                <>{texts.groups.bannerPhoto}</>
+              </Pill>
+
+              <Pill active={bannerMode === "html"} onClick={() => setBannerMode("html")}>
+                <>{texts.groups.bannerHtml}</>
+              </Pill>
+            </div>
+
+            {bannerMode === "html" ? (
+              <div className="rounded-2xl border border-border-soft bg-surface-1 p-3">
+                <HtmlEditor
+                  id="group-banner-html"
+                  value={bannerHtml}
+                  onChange={setBannerHtml}
+                  label={texts.groups.bannerLabel}
+                  description={texts.groups.bannerHint}
+                  placeholder="<div style='padding:24px'>Capa do grupo</div>"
+                  emptyPreview="Sem cabeçalho HTML. A capa em foto (se houver) continua valendo."
+                  frameTitle={texts.groups.bannerLabel}
+                  maxLength={PROFILE_HTML_MAX_LENGTH}
+                  previewClassName="mt-3 h-40 w-full"
+                />
+              </div>
+            ) : banner ? (
+              <div className="group relative overflow-hidden rounded-xl border border-border-soft">
+                <img src={resolveCdnUrl(banner)} alt="" className="h-28 w-full object-cover" />
+
+                {/* No toque não existe hover: abaixo de md as ações ficam sempre visíveis. */}
+                <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 transition md:opacity-0 md:group-hover:opacity-100">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    className="w-auto rounded-full"
+                    disabled={uploading}
+                    onClick={() => bannerRef.current?.click()}
+                  >
+                    {texts.groups.changeImage}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="w-auto rounded-full"
+                    onClick={() => setBanner("")}
+                  >
+                    {texts.groups.removeImage}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full rounded-full gap-1.5"
+                disabled={uploading}
+                onClick={() => bannerRef.current?.click()}
+              >
+                <Camera className="h-4 w-4" />
+
+                <>{texts.groups.addBanner}</>
+              </Button>
+            )}
+
+            <input
+              ref={bannerRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={chooseFile("banner")}
             />
           </div>
 
@@ -676,7 +878,7 @@ function EditGroupDialog({
 
           <Button
             className="w-full rounded-full"
-            disabled={!name.trim() || save.isPending}
+            disabled={!name.trim() || save.isPending || uploading}
             onClick={() => save.mutate()}
           >
             {save.isPending ? texts.groups.saving : texts.groups.save}

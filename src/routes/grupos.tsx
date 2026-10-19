@@ -1,15 +1,16 @@
-import { useState } from "react";
+import { type ChangeEvent, useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, createFileRoute, useMatchRoute, useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { GroupView } from "@/types/application/group/group-view";
-import { ChevronRight, Loader2, Plus, Search, Users } from "lucide-react";
+import { Camera, ChevronRight, Loader2, Plus, Search, Users } from "lucide-react";
 
 import { groupsApi } from "@/lib/api";
 import { getSessionToken } from "@/lib/api-client";
 import { resolveCdnUrl } from "@/lib/api/media";
+import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -168,6 +169,34 @@ function CreateGroupDialog({
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [joinMode, setJoinMode] = useState<"OPEN" | "APPROVAL">("APPROVAL");
+  const [avatar, setAvatar] = useState("");
+  const [banner, setBanner] = useState("");
+  const avatarUpload = useMediaUpload();
+  const bannerUpload = useMediaUpload();
+  const avatarRef = useRef<HTMLInputElement>(null);
+  const bannerRef = useRef<HTMLInputElement>(null);
+
+  const uploadImage = async (file: File, kind: "avatar" | "banner") => {
+    try {
+      const result = await (kind === "avatar" ? avatarUpload : bannerUpload).upload(
+        file,
+        kind === "avatar" ? "AVATAR" : "COVER",
+      );
+      if (kind === "avatar") setAvatar(result.cdnUrl);
+      else setBanner(result.cdnUrl);
+    } catch {
+      toast(texts.groups.uploadError, "error");
+    }
+  };
+
+  const chooseFile = (kind: "avatar" | "banner") => (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) void uploadImage(file, kind);
+    event.target.value = "";
+  };
+
+  const uploading =
+    avatarUpload.state.status === "uploading" || bannerUpload.state.status === "uploading";
 
   const create = useMutation({
     mutationFn: () =>
@@ -175,6 +204,8 @@ function CreateGroupDialog({
         name: name.trim(),
         description: description.trim() || null,
         joinMode,
+        avatar: avatar || null,
+        banner: banner || null,
       }),
     onSuccess: (group) => {
       void queryClient.invalidateQueries({ queryKey: ["groups"] });
@@ -193,7 +224,48 @@ function CreateGroupDialog({
           <DialogDescription>{texts.groups.createDescription}</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="max-h-[80vh] space-y-4 overflow-y-auto">
+          <div className="space-y-1.5">
+            <Label>{texts.groups.logo}</Label>
+
+            <p className="text-xs font-normal text-text-subtle">{texts.groups.logoHint}</p>
+
+            <div className="flex items-center gap-3">
+              {avatar ? (
+                <img
+                  src={resolveCdnUrl(avatar)}
+                  alt=""
+                  className="h-14 w-14 shrink-0 rounded-xl object-cover"
+                />
+              ) : (
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary-soft text-primary">
+                  <Users className="h-5 w-5" />
+                </span>
+              )}
+
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="w-auto rounded-full gap-1.5"
+                disabled={uploading}
+                onClick={() => avatarRef.current?.click()}
+              >
+                <Camera className="h-3.5 w-3.5" />
+
+                <>{avatar ? texts.groups.changeImage : texts.groups.addLogo}</>
+              </Button>
+            </div>
+
+            <input
+              ref={avatarRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={chooseFile("avatar")}
+            />
+          </div>
+
           <div className="space-y-1.5">
             <Label htmlFor="groupName">{texts.groups.name}</Label>
 
@@ -217,6 +289,63 @@ function CreateGroupDialog({
               maxLength={600}
               className="min-h-20"
             />
+          </div>
+
+          <div className="space-y-1.5">
+            <p className="text-sm font-medium text-text-strong">{texts.groups.bannerLabel}</p>
+
+            <p className="text-xs font-normal text-text-subtle">{texts.groups.bannerHint}</p>
+
+            {banner ? (
+              <div className="group relative overflow-hidden rounded-xl border border-border-soft">
+                <img src={resolveCdnUrl(banner)} alt="" className="h-24 w-full object-cover" />
+
+                <div className="absolute inset-0 flex items-center justify-center gap-2 bg-black/40 transition md:opacity-0 md:group-hover:opacity-100">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    className="w-auto rounded-full"
+                    disabled={uploading}
+                    onClick={() => bannerRef.current?.click()}
+                  >
+                    {texts.groups.changeImage}
+                  </Button>
+
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="w-auto rounded-full"
+                    onClick={() => setBanner("")}
+                  >
+                    {texts.groups.removeImage}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full rounded-full gap-1.5"
+                disabled={uploading}
+                onClick={() => bannerRef.current?.click()}
+              >
+                <Camera className="h-4 w-4" />
+
+                <>{texts.groups.addBanner}</>
+              </Button>
+            )}
+
+            <input
+              ref={bannerRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={chooseFile("banner")}
+            />
+
+            <p className="text-xs font-normal text-text-subtle">{texts.groups.bannerHtmlHint}</p>
           </div>
 
           <div className="space-y-2">
@@ -248,7 +377,7 @@ function CreateGroupDialog({
 
           <Button
             className="w-full rounded-full"
-            disabled={!name.trim() || create.isPending}
+            disabled={!name.trim() || create.isPending || uploading}
             onClick={() => create.mutate()}
           >
             {create.isPending ? texts.groups.creating : texts.groups.createAction}

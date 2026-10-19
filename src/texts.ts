@@ -86,6 +86,7 @@ export const texts = {
     bannerHint: "Uma foto de capa ou um cabeçalho em HTML.",
     bannerPhoto: "Foto",
     bannerHtml: "HTML",
+    bannerHtmlHint: "Dá para trocar por um cabeçalho em HTML depois, na edição do grupo.",
     addLogo: "Escolher logo",
     changeImage: "Trocar",
     removeImage: "Remover",
