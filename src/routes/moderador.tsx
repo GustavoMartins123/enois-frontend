@@ -6,11 +6,28 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { texts } from "@/texts";
 import type { ModeratorApplicationView } from "@/types/application/moderation/moderator-application-view";
 import type { ModeratorMeView } from "@/types/application/moderation/moderator-me-view";
-import { ArrowLeft, Check, Gavel, Shield, ShieldCheck, X } from "lucide-react";
+import type { ModeratorTabId } from "@/types/routes/moderador/moderator-tab-id";
+import {
+  ArrowLeft,
+  Bug,
+  Check,
+  Flag,
+  Gamepad2,
+  Gavel,
+  LifeBuoy,
+  Mail,
+  Scale,
+  Shield,
+  ShieldAlert,
+  ShieldCheck,
+  UserCheck,
+  X,
+} from "lucide-react";
 
 import { moderationApi } from "@/lib/api";
 import { reportsAdminApi } from "@/lib/api/reports-admin";
 import { requireAuth } from "@/lib/require-auth";
+import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -21,6 +38,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
+import { AppealsSection } from "@/components/moderation/appeals-section";
+import { DisputesSection } from "@/components/moderation/disputes-section";
+import { EmailLogSection } from "@/components/moderation/email-log-section";
+import { GamesReviewSection } from "@/components/moderation/games-review-section";
+import { SupportTicketsSection } from "@/components/moderation/support-tickets-section";
 
 export const Route = createFileRoute("/moderador")({
   beforeLoad: requireAuth,
@@ -28,16 +50,35 @@ export const Route = createFileRoute("/moderador")({
   component: Moderador,
 });
 
+const ALL_TABS: { id: ModeratorTabId; label: string; icon: typeof Flag; adminOnly: boolean }[] = [
+  { id: "reports", label: texts.moderator.tabs.reports, icon: Flag, adminOnly: false },
+  { id: "games", label: texts.moderator.tabs.games, icon: Gamepad2, adminOnly: false },
+  { id: "support", label: texts.moderator.tabs.support, icon: LifeBuoy, adminOnly: true },
+  { id: "issues", label: texts.moderator.tabs.issues, icon: Bug, adminOnly: true },
+  { id: "appeals", label: texts.moderator.tabs.appeals, icon: ShieldAlert, adminOnly: true },
+  { id: "disputes", label: texts.moderator.tabs.disputes, icon: Scale, adminOnly: true },
+  {
+    id: "applications",
+    label: texts.moderator.tabs.applications,
+    icon: UserCheck,
+    adminOnly: true,
+  },
+  { id: "users", label: texts.moderator.tabs.users, icon: Gavel, adminOnly: true },
+  { id: "emails", label: texts.moderator.tabs.emails, icon: Mail, adminOnly: true },
+];
+
 /**
  * Painel de moderador.
  *
  * - Sem papel: mostra a credibilidade e, se elegível (> 500), o formulário de candidatura.
- * - Moderador aprovado: a fila de denúncias com o voto de punir/descartar.
- * - Admin: tudo acima + candidaturas pendentes + punição direta de qualquer usuário.
+ * - Moderador aprovado: denúncias e fila de jogos.
+ * - Admin: todas as filas, candidaturas, punição direta e log de e-mails.
  *
  * Quem decide o papel é o backend; esta tela só reflete `/moderation/me`.
  */
 function Moderador() {
+  const [tab, setTab] = useState<ModeratorTabId>("reports");
+
   const {
     data: me,
     isLoading,
@@ -69,6 +110,8 @@ function Moderador() {
   }
 
   const canModerate = me.moderator || me.admin;
+  const visibleTabs = ALL_TABS.filter((item) => me.admin || !item.adminOnly);
+  const activeTab = visibleTabs.some((item) => item.id === tab) ? tab : "reports";
 
   return (
     <AppContainer>
@@ -106,11 +149,43 @@ function Moderador() {
           <p className="text-sm text-muted-foreground">{texts.moderator.description}</p>
         </header>
 
-        {canModerate ? <ReportsSection admin={me.admin} /> : <ApplicationSection me={me} />}
+        {canModerate ? (
+          <div className="space-y-4">
+            <div className="flex gap-1 overflow-x-auto pb-1" role="tablist">
+              {visibleTabs.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === item.id}
+                  onClick={() => setTab(item.id)}
+                  className={cn(
+                    "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition",
+                    activeTab === item.id
+                      ? "bg-primary text-primary-foreground"
+                      : "border border-border-soft text-text-subtle hover:border-primary/50 hover:text-primary",
+                  )}
+                >
+                  <item.icon className="h-3.5 w-3.5" />
 
-        {me.admin && <ApplicationsSection />}
+                  <>{item.label}</>
+                </button>
+              ))}
+            </div>
 
-        {me.admin && <SanctionSection />}
+            {activeTab === "reports" && <ReportsSection admin={me.admin} />}
+            {activeTab === "games" && <GamesReviewSection />}
+            {me.admin && activeTab === "support" && <SupportTicketsSection />}
+            {me.admin && activeTab === "issues" && <SupportTicketsSection lockedCategory="BUG" />}
+            {me.admin && activeTab === "appeals" && <AppealsSection />}
+            {me.admin && activeTab === "disputes" && <DisputesSection />}
+            {me.admin && activeTab === "applications" && <ApplicationsSection />}
+            {me.admin && activeTab === "users" && <SanctionSection />}
+            {me.admin && activeTab === "emails" && <EmailLogSection />}
+          </div>
+        ) : (
+          <ApplicationSection me={me} />
+        )}
       </div>
     </AppContainer>
   );

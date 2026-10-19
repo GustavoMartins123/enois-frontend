@@ -1,3 +1,5 @@
+import type { EmailLogView } from "@/types/application/moderation/email-log-view";
+import type { GameReviewView } from "@/types/application/moderation/game-review-view";
 import type { ModeratorApplicationView } from "@/types/application/moderation/moderator-application-view";
 import type { ModeratorMeView } from "@/types/application/moderation/moderator-me-view";
 import type { ModeratorPanelReportView } from "@/types/application/moderation/moderator-panel-report-view";
@@ -47,4 +49,16 @@ export const moderationApi = {
       type,
       reason,
     }),
+
+  /** Fila de jogos enviados pela comunidade (moderador ou admin). */
+  games: (limit = 30) => api.get<GameReviewView[]>(`/moderation/games?limit=${limit}`),
+
+  approveGame: (gameId: string, note?: string) =>
+    api.post<{ id: string; status: string }>(`/moderation/games/${gameId}/approve`, { note }),
+
+  rejectGame: (gameId: string, note: string) =>
+    api.post<{ id: string; status: string }>(`/moderation/games/${gameId}/reject`, { note }),
+
+  /** Metadados dos e-mails enviados (admin). O corpo não é armazenado. */
+  emails: (limit = 50) => api.get<EmailLogView[]>(`/admin/emails?limit=${limit}`),
 };
