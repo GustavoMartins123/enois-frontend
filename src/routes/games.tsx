@@ -427,7 +427,9 @@ function SubmitButton() {
 
             {submit.isError && (
               <p className="mt-3 text-sm text-red-500">
-                Não foi possível enviar — confere o link (precisa ser https) e o slug.
+                {submit.error instanceof Error
+                  ? submit.error.message
+                  : "Não foi possível enviar o jogo. Tente novamente."}
               </p>
             )}
 
