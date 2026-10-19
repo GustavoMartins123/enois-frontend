@@ -203,6 +203,20 @@ async function fromGame(
   });
 }
 
+// Outra aba escrevendo no localStorage: o navegador entrega um evento storage por chave alterada.
+async function otherTabWrites(entries: Record<string, string | null>) {
+  await act(async () => {
+    for (const [key, newValue] of Object.entries(entries)) {
+      const oldValue = localStorage.getItem(key);
+      if (newValue === null) localStorage.removeItem(key);
+      else localStorage.setItem(key, newValue);
+      window.dispatchEvent(
+        new StorageEvent("storage", { key, oldValue, newValue, storageArea: localStorage }),
+      );
+    }
+  });
+}
+
 beforeEach(() => {
   localStorage.clear();
   server.state.games = {
@@ -456,6 +470,32 @@ describe("favoritos e a sessão de quem lê", () => {
     await waitFor(() =>
       expect(favoriteButton()?.textContent).toContain(texts.games.game.unfavorite),
     );
+  });
+
+  it("E: outra aba troca a conta A pela B sem passar por sessão vazia", async () => {
+    storeSession({ token: "tok_ana" });
+    await open("jogo-a");
+    await waitFor(() =>
+      expect(favoriteButton()?.textContent).toContain(texts.games.game.unfavorite),
+    );
+
+    await otherTabWrites({ session_token: "tok_bia", session_id: "sessao-da-bia" });
+    await waitFor(() => expect(favoriteButton()?.textContent).toContain(texts.games.game.favorite));
+  });
+
+  it("E: renovar o token em outra aba não zera a cache", async () => {
+    storeSession({ token: "tok_ana" });
+    await open("jogo-a");
+    await waitFor(() =>
+      expect(favoriteButton()?.textContent).toContain(texts.games.game.unfavorite),
+    );
+    await flush();
+    const before = vi.mocked(gamesApi.bySlug).mock.calls.length;
+
+    await otherTabWrites({ session_token: "tok_ana_renovado", refresh_token: "r2" });
+    await flush();
+    expect(vi.mocked(gamesApi.bySlug).mock.calls.length).toBe(before);
+    expect(favoriteButton()?.textContent).toContain(texts.games.game.unfavorite);
   });
 
   it("F: falha na API não finge que guardou", async () => {

@@ -1,6 +1,7 @@
 import type { RequestOptions } from "@/types/application/api/request-options";
 
 import { resetSessionScopedData } from "./query-client";
+import { dropSessionKey } from "./session-key";
 
 /**
  * Base da API.
@@ -162,6 +163,7 @@ export function clearSession() {
   localStorage.removeItem("session_expires_at");
   localStorage.removeItem("refresh_expires_at");
   localStorage.removeItem("current_user");
+  dropSessionKey();
   if (hadSession) resetSessionScopedData();
 }
 

@@ -1,6 +1,7 @@
 import type { AuthUser } from "@/types/application/auth/auth-user";
 
 import { resetSessionScopedData } from "./query-client";
+import { renewSessionKey } from "./session-key";
 
 type SessionPayload = {
   token: string;
@@ -29,5 +30,8 @@ export function storeSession({
   if (expiresAt) localStorage.setItem("session_expires_at", expiresAt);
   if (refreshExpiresAt) localStorage.setItem("refresh_expires_at", refreshExpiresAt);
   if (user) localStorage.setItem("current_user", JSON.stringify(user));
-  if (previousToken !== token) resetSessionScopedData();
+  if (previousToken !== token) {
+    renewSessionKey();
+    resetSessionScopedData();
+  }
 }
