@@ -107,49 +107,42 @@ le `process.env.IMAGEKIT_PRIVATE_KEY`).
 | `VITE_IMAGEKIT_URL_ENDPOINT` | build | `.env` versionado |
 | `IMAGEKIT_PRIVATE_KEY` | runtime | **Secret do container — nunca commitar** |
 
-## Acoes manuais necessarias
+## Pendencias (o que falta)
 
-**Estado do deploy (18/10 00:5x): o BACKEND esta no ar e atualizado; o FRONT ainda nao sobe.**
-Falta uma linha no IAM.
+**Estado do deploy (19/10): push em `main` = deploy automatico nos dois repositorios.**
+A infra foi consertada pelo raposo em 18/10 (trust policy + pull do ECR + ArgoCD); nao e preciso
+`gh workflow run` nem editar o manifest do GitOps — so pushar. Diagnostico de deploy se faz por
+sondas publicas: `GET /api/version` no backend e os chunks servidos no front.
 
-- O GitHub Actions foi **religado** nos dois repositorios e o backend ja deploya normalmente
-  (o manifesto esta em `enois/backend:dc44362`, o commit do curriculo + agilizar envio).
-- O **front** falha em todos os runs no passo `⚙️ Configurar Credenciais AWS via OIDC` com
-  `Not authorized to perform sts:AssumeRoleWithWebIdentity`. Nao e build: os dois workflows
-  ficaram **identicos** (mesmo papel `arn:aws:iam::818928662779:role/forest-dev-enois-ecr`,
-  mesmas permissoes) e o backend assume o papel sem problema — ou seja, a **trust policy do
-  papel aceita o repositorio do backend e nao o do front**.
+### Infra / org (quem tem acesso a AWS ou ao cluster)
 
-**O que falta (quem tem acesso a AWS):** incluir o repositorio do front na trust policy do
-papel `forest-dev-enois-ecr`, aceitando
+1. **TLS do ALB** — trocar a politica para `ELBSecurityPolicy-TLS13-1-2-2021-06`
+   (desliga TLS 1.0/1.1, liga TLS 1.3 e remove suites com RSA estatica — achados F-03/F-07 do pentest).
+2. **Ocultar o header `Server: awselb`** (achado F-08).
+3. **AWS WAF** — nao ha WAF hoje; rate-based rules + managed rulesets.
+4. **Rotacionar o `LINKEDIN_CLIENT_SECRET`** — ele esta em plaintext no manifest do GitOps;
+   criar um Secret k8s (padrao do `enois-llm-secret`) e rotacionar o valor no LinkedIn.
+5. **DNS de `developers.enois.ia.br`** — a pagina esta pronta; falta CNAME + TLS no ingress
+   (hoje NXDOMAIN).
+6. **Rotacionar a `IMAGEKIT_PRIVATE_KEY`** (esteve no historico do Git) e a senha do banco —
+   ver README do backend.
+7. **Limpar os dados de teste em producao** — precisa de acesso ao banco ou de um endpoint admin.
 
-```
-repo:Rede-ENois/enois-frontend:*
-```
+### Produto / juridico
 
-(hoje ela aceita `repo:Rede-ENois/enois-backend:*` — foi por isso que o backend voltou a
-deployar e o front nao). Alternativa, se preferirem um papel por repositorio: criar o
-equivalente para o front e trocar a linha `role-to-assume` do workflow deste repositorio.
+- **Fase 6/7 do plano (cambio real)** — bloqueada no juridico (VASP/BACEN); fora de escopo.
+- **Sincronizacao automatica do LinkedIn** — pela API o LinkedIn so entrega nome/e-mail/foto;
+  historico completo exige aprovacao no Partner Program. Hoje: "Colar o perfil" (sem arquivo)
+  ou o ZIP da exportacao.
 
-Depois disso nao precisa de commit novo: dispare o workflow (`gh workflow run "Build, Push and
-GitOps Deploy" --ref main`) ou espere o proximo push. A `main` ja tem tudo pronto — incluindo
-o markdown em todos os campos de texto, os selos, os emblemas, os blogs, o audio nos
-comentarios, o curriculo no perfil e o "agilizar envio" das vagas.
+### Backlog de produto ainda nao construido
 
-Os itens abaixo sao os que **nao** dependem disso:
+- Etapas e feedback de candidatura nas vagas + curriculo em PDF.
+- Auditoria e balanceamento antifraude da credibilidade (em andamento — so analise, sem mudar a formula).
+- Issues publicas + roadmap (pedido do feedback hub).
+- Audio nos comentarios.
+- `@everyone` nas comunidades (decisao de produto).
 
-0. **Criar o secret `GITOPS_TOKEN` neste repositorio** (`florestaencantada/enois-frontend` →
-   Settings → Secrets and variables → Actions). Sem ele o job "GitOps Update" falha com
-   `Input required and not supplied: token`, o manifesto nao e atualizado e o front **nao sofre
-   rollout** (a imagem ate e publicada no ECR, mas a tag do manifesto nunca muda). Use um PAT
-   fine-grained com leitura/escrita em `florestaencantada/integration_gitops`. O repositorio do
-   backend ja tem esse secret — o valor pode ser o mesmo.
-1. **Rotacionar a `IMAGEKIT_PRIVATE_KEY`.** Ela estava commitada em `.env` e ja foi exposta no historico do
-   Git. Gere uma nova no painel do ImageKit, revogue a antiga e configure a nova como variavel de ambiente
-   do container (Secret no EKS). Ela foi removida do `.env` do HEAD, mas o historico continua com o valor.
-2. **Conferir/atualizar `VITE_IMAGEKIT_PUBLIC_KEY` / `VITE_IMAGEKIT_URL_ENDPOINT`** em `.env`
-   (`.env.example` traz o formato). `VITE_IMAGEKIT_URL_ENDPOINT` nao estava definida antes e caia no
-   fallback hard-coded.
 ### Telas de autenticacao (contratos com o backend)
 
 - `/entrar` — cadastro e login. O **cadastro nao entra direto**: abre a tela "Confirme seu e-mail"
