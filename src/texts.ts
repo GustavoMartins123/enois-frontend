@@ -539,6 +539,8 @@ export const texts = {
         serverKey:
           "A publicação no LinkedIn ainda não está disponível nesta instalação. Avise o time de suporte.",
         reconnect: "Reconectar LinkedIn",
+        reconnectHint:
+          'Se o LinkedIn mostrar “Ocorreu um erro”, o app do Énóis ainda não tem o produto "Share on LinkedIn" (w_member_social) aprovado. É uma aprovação do LinkedIn, não um problema da sua conta.',
         saved: "Preferência de sincronização salva.",
         promptTitle: "Sincronizar publicações com o LinkedIn?",
         promptBody:
