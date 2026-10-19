@@ -60,11 +60,13 @@ export function palette(spec: PaletteSpec): ThemeCollectionTokens {
           : relativeLuminance(softRgb) < relativeLuminance(primaryRgb);
   const softFinal = softNoLadoCerto ? (spec.soft ?? mixPadrao) : mixPadrao;
   const softFinalRgb = softNoLadoCerto ? softRgb : mixSoft;
+  const mutedRgb = hexToRgb(fundoSolido(muted));
   const secondary = spec.secondary ?? `color-mix(in oklab, ${primary} 45%, ${bgSolido})`;
-  // O texto que usa o destaque como COR (links, "Entrar") não pode sumir quando o
-  // primário do tema é claro demais (amarelo, ciano) para o fundo — e também não
-  // pode empatar com o soft nos combos bg-primary-soft + text-primary.
-  const primaryText = textSafeAccent(primaryRgb, [backgroundRgb, softFinalRgb]);
+  // O texto que usa o destaque como COR (links, "Entrar", chips de habilidade) não pode
+  // sumir quando o primário do tema é claro demais para o fundo — e também não pode
+  // empatar com o soft (bg-primary-soft) nem com a superfície-2 (chips
+  // bg-surface-2 + text-primary), por isso os três entram na conta.
+  const primaryText = textSafeAccent(primaryRgb, [backgroundRgb, softFinalRgb, mutedRgb]);
 
   return {
     // Destaque

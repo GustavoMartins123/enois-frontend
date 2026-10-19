@@ -45,7 +45,9 @@ export const typeMeta: Record<PostView["type"], PostTypeMeta> = {
   },
   MOMENT: {
     label: texts.posts.types.moment,
-    className: "bg-secondary/30 text-secondary-foreground",
+    // O fundo é o secundário a 30% (um tom pálido sobre a página): o texto do secundário
+    // cheio não vale aqui; o texto forte garante contraste nos dois modos de todos os temas.
+    className: "bg-secondary/30 text-text-strong",
     classAvatar: "",
   },
   DIVERTIDO: {

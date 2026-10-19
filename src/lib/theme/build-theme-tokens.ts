@@ -122,7 +122,11 @@ function surfaceChroma(chroma: number, mode: Theme, extra = 0): number {
 export function buildAccentTokens(
   accent: ThemeAccent,
   mode: Theme,
-  opts?: { alpha?: number; backdropRgb?: { r: number; g: number; b: number } },
+  opts?: {
+    alpha?: number;
+    backdropRgb?: { r: number; g: number; b: number };
+    surface2Rgb?: { r: number; g: number; b: number };
+  },
 ): Partial<ThemeTokenMap> {
   const { hue } = accent;
   const lightness = effectiveAccentLightness(accent, mode);
@@ -150,11 +154,12 @@ export function buildAccentTokens(
     "--primary": tinted(oklch(lightness, chroma, hue)),
     "--primary-foreground": primaryForeground,
     // O texto que usa o destaque como COR (links, "Entrar") lê a versão legível contra
-    // o fundo E o soft (combos bg-primary-soft + text-primary); o primário vivo fica
-    // para os PREENCHIMENTOS (botões).
+    // o fundo, o soft (bg-primary-soft) e a superfície-2 (chips bg-surface-2); o primário
+    // vivo fica para os PREENCHIMENTOS (botões).
     "--primary-text": textSafeAccent(effectivePrimary, [
       backdrop,
       oklchToRgb(mode === "dark" ? 0.26 : 0.95, mode === "dark" ? 0.06 : 0.04, hue),
+      ...(opts?.surface2Rgb ? [opts.surface2Rgb] : []),
     ]),
     "--primary-soft": oklch(mode === "dark" ? 0.26 : 0.95, mode === "dark" ? 0.06 : 0.04, hue),
     "--secondary": tinted(
@@ -195,7 +200,13 @@ export function buildThemeTokens(settings: ThemeSettings, mode: Theme): ThemeTok
   const surface = (extraC: number, lightnessValue: number, hueShift = 0) =>
     oklch(lightnessValue, surfaceChroma(background.chroma, mode, extraC), surfaceHue + hueShift);
 
-  const accentTokens = buildAccentTokens(accent, mode);
+  const surface2Rgb = oklchToRgb(
+    mode === "dark" ? 0.29 : 0.93,
+    surfaceChroma(background.chroma, mode, mode === "dark" ? 0.045 : 0.008),
+    surfaceHue + (mode === "dark" ? 8 : 0),
+  );
+
+  const accentTokens = buildAccentTokens(accent, mode, { surface2Rgb });
 
   const surfaceTokens =
     mode === "dark"
