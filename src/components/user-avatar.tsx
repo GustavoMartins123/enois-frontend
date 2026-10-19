@@ -13,11 +13,11 @@ function getInitials(name: string): string {
   return `${first}${last}`.toUpperCase();
 }
 
-export function UserAvatar({ src, alt, className, fallback, fallbackClassName }: UserAvatarProps) {
+export function UserAvatar({ src, alt, className, fallback, fallbackClassName, frame }: UserAvatarProps) {
   const label = alt ?? texts.profile.avatarFallback;
   const resolved = resolveCdnUrl(src);
   return (
-    <Avatar className={className}>
+    <Avatar className={className} data-avatar-frame={frame || undefined}>
       {resolved && <AvatarImage src={resolved} alt={label} />}
       <AvatarFallback
         className={

@@ -62,7 +62,7 @@ export function AccountMenu({ profile }: AccountMenuProps) {
             className="flex items-center gap-2 rounded-full p-1 pr-3 transition hover:bg-surface-2"
             aria-label={texts.account.menu.trigger}
           >
-            <UserAvatar src={profile.avatar} alt={profile.name} className="h-8 w-8" />
+            <UserAvatar frame={profile.avatarFrame} src={profile.avatar} alt={profile.name} className="h-8 w-8" />
 
             <span className="hidden text-sm font-normal text-text-strong sm:inline">
               {texts.common.profile}
@@ -75,7 +75,7 @@ export function AccountMenu({ profile }: AccountMenuProps) {
           className="w-[min(calc(100vw-2rem),17rem)] overflow-hidden rounded-2xl border-border-soft bg-surface-card p-0 shadow-card"
         >
           <div className="flex items-center gap-3 border-b border-border-soft px-4 py-3">
-            <UserAvatar src={profile.avatar} alt={profile.name} className="h-9 w-9" />
+            <UserAvatar frame={profile.avatarFrame} src={profile.avatar} alt={profile.name} className="h-9 w-9" />
 
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-text-strong">{profile.name}</p>

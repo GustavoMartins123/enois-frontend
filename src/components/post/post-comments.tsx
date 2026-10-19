@@ -311,6 +311,7 @@ export function PostComments({ postId }: PostIdProps) {
 
       <form onSubmit={submit} className="mt-4 flex items-start gap-2 sm:gap-2.5">
         <UserAvatar
+          frame={currentUser?.avatarFrame}
           src={currentUser?.avatar}
           alt={currentUser?.name}
           className="h-8 w-8 shrink-0"

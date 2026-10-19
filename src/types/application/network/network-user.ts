@@ -4,6 +4,7 @@ export type NetworkUser = {
   name: string;
   headline: string;
   avatar: string | null;
+  avatarFrame?: string | null;
   connections: number;
   followers: number;
   connected: boolean;
