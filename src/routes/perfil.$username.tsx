@@ -520,7 +520,7 @@ function Profile() {
 
             <div className="mt-4">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="break-words text-xl font-normal tracking-tight text-text-strong">
+                <h1 className="min-w-0 break-words text-xl font-normal tracking-tight text-text-strong">
                   {user.name}
                 </h1>
 
