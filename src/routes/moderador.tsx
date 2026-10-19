@@ -9,6 +9,7 @@ import type { ModeratorMeView } from "@/types/application/moderation/moderator-m
 import { ArrowLeft, Check, Gavel, Shield, ShieldCheck, X } from "lucide-react";
 
 import { moderationApi } from "@/lib/api";
+import { reportsAdminApi } from "@/lib/api/reports-admin";
 import { requireAuth } from "@/lib/require-auth";
 
 import { Button } from "@/components/ui/button";
@@ -274,6 +275,27 @@ function ReportsSection({ admin }: { admin: boolean }) {
     onError: () => toast(texts.moderator.reports.voteError, "error"),
   });
 
+  const [removeTarget, setRemoveTarget] = useState<string | null>(null);
+
+  // Ações diretas do admin no card: remover a postagem (approve do fluxo, que apaga o post) e
+  // avisar o autor (a denúncia é revisada e o conteúdo fica). Nenhuma delas bane a conta.
+  const adminAction = useMutation({
+    mutationFn: ({ reportId, action }: { reportId: string; action: "remove" | "warn" }) =>
+      action === "remove"
+        ? reportsAdminApi.deletePost(reportId, "Removido pelo painel de moderador")
+        : reportsAdminApi.warn(reportId),
+    onSuccess: (_result, variables) => {
+      toast(
+        variables.action === "remove"
+          ? texts.moderator.reports.removeDone
+          : texts.moderator.reports.warnDone,
+        "success",
+      );
+      void queryClient.invalidateQueries({ queryKey: ["moderator", "reports"] });
+    },
+    onError: () => toast(texts.moderator.reports.actionError, "error"),
+  });
+
   return (
     <section className="space-y-3">
       <h2 className="text-sm font-semibold uppercase tracking-widest text-text-subtle">
@@ -378,10 +400,59 @@ function ReportsSection({ admin }: { admin: boolean }) {
                   <>{texts.moderator.reports.dismiss}</>
                 </Button>
               </div>
+
+              {admin && (
+                <div className="flex flex-wrap items-center gap-2 border-t border-border-soft pt-2">
+                  <span className="text-xs font-medium uppercase tracking-wide text-text-subtle">
+                    {texts.moderator.reports.adminActions}
+                  </span>
+
+                  {report.targetType === "POST" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full"
+                      disabled={adminAction.isPending}
+                      onClick={() => setRemoveTarget(report.reportId)}
+                    >
+                      {texts.moderator.reports.removePost}
+                    </Button>
+                  )}
+
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-full"
+                    disabled={adminAction.isPending}
+                    onClick={() =>
+                      adminAction.mutate({ reportId: report.reportId, action: "warn" })
+                    }
+                  >
+                    {texts.moderator.reports.warn}
+                  </Button>
+                </div>
+              )}
             </li>
           ))}
         </ul>
       )}
+
+      <ConfirmDialog
+        open={removeTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setRemoveTarget(null);
+        }}
+        title={texts.moderator.reports.removeTitle}
+        description={texts.moderator.reports.removeBody}
+        confirmLabel={texts.moderator.reports.removePost}
+        destructive
+        pending={adminAction.isPending}
+        onConfirm={() => {
+          if (!removeTarget) return;
+          adminAction.mutate({ reportId: removeTarget, action: "remove" });
+          setRemoveTarget(null);
+        }}
+      />
     </section>
   );
 }
