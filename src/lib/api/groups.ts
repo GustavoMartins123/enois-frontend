@@ -62,6 +62,14 @@ export const groupsApi = {
   reorderTopics: (groupId: string, topicIds: string[]) =>
     api.post<PageResponse<GroupTopic>>(`/groups/${groupId}/topics/reorder`, { topicIds }),
 
+  pinned: (groupId: string) => api.get<GroupPost>(`/groups/${groupId}/pinned`),
+
+  pin: (groupId: string, postId: string) =>
+    api.post<GroupPost>(`/groups/${groupId}/posts/${postId}/pin`),
+
+  unpin: (groupId: string, postId: string) =>
+    api.delete<StatusResponse>(`/groups/${groupId}/posts/${postId}/pin`),
+
   posts: (groupId: string, topicId?: string, cursor?: string | null, limit = 20) =>
     api.get<PageResponse<GroupPost>>(
       `/groups/${groupId}/posts${buildQuery({ topicId, cursor, limit })}`,

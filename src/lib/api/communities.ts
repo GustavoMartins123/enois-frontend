@@ -19,6 +19,13 @@ export const communitiesApi = {
   update: (communityId: string, data: Partial<CreateCommunityInput>) =>
     api.patch<Community>(`/communities/${communityId}`, data),
 
+  pinned: (communityId: string) => api.get<PostView>(`/communities/${communityId}/pin`),
+
+  pin: (communityId: string, postId: string) =>
+    api.post<PostView>(`/communities/${communityId}/pin`, { postId }),
+
+  unpin: (communityId: string) => api.delete<StatusResponse>(`/communities/${communityId}/pin`),
+
   join: (communityId: string) => api.post<StatusResponse>(`/communities/${communityId}/members`),
 
   leave: (communityId: string) => api.delete<StatusResponse>(`/communities/${communityId}/members`),
@@ -34,7 +41,8 @@ export const communitiesApi = {
     api.delete<StatusResponse>(`/communities/${communityId}/favorite`),
 
   /** Comunidades das quais o usuário participa (menu lateral). */
-  mine: (limit = 20) => api.get<PageResponse<Community>>(`/communities/mine${buildQuery({ limit })}`),
+  mine: (limit = 20) =>
+    api.get<PageResponse<Community>>(`/communities/mine${buildQuery({ limit })}`),
 
   /** Transfere a administração para outro membro (só o dono atual). */
   transfer: (communityId: string, newOwnerId: string) =>

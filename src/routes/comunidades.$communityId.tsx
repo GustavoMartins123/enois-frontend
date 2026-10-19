@@ -143,8 +143,18 @@ function CommunityDetail() {
     queryFn: () => communitiesApi.getFeed(community.id),
   });
 
+  // O fixado é um estado da comunidade (não do post), então vem de um endpoint próprio e pode
+  // não estar na página carregada do feed — por isso a lista é montada com ele na frente.
+  const { data: pinnedPost } = useQuery({
+    queryKey: ["community", community.id, "pinned"],
+    queryFn: () => communitiesApi.pinned(community.id).catch(() => null),
+  });
+
   const members = membersData?.items ?? [];
   const posts = feedData?.items ?? [];
+  const orderedPosts = pinnedPost
+    ? [pinnedPost, ...posts.filter((p) => p.id !== pinnedPost.id)]
+    : posts;
 
   const join = useMutation({
     mutationFn: () => communitiesApi.join(community.id),
@@ -264,6 +274,18 @@ function CommunityDetail() {
   const isMember = live.joined;
   const admins = members.filter((m) => m.role === "ADMIN");
   const isAdmin = currentUser ? admins.some((a) => a.userId === currentUser.id) : false;
+
+  const togglePin = useMutation({
+    mutationFn: (post: PostView) =>
+      pinnedPost?.id === post.id
+        ? communitiesApi.unpin(community.id)
+        : communitiesApi.pin(community.id, post.id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["community", community.id, "feed"] });
+      void queryClient.invalidateQueries({ queryKey: ["community", community.id, "pinned"] });
+    },
+    onError: () => toast(texts.posts.pin.error, "error"),
+  });
 
   return (
     <AppContainer>
@@ -668,14 +690,22 @@ function CommunityDetail() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">{texts.communities.detail.feed}</h2>
-            {posts.length === 0 ? (
+            {orderedPosts.length === 0 ? (
               <p className="surface-card p-8 text-center text-sm text-muted-foreground">
                 {isMember
                   ? texts.communities.detail.emptyMember
                   : texts.communities.detail.emptyGuest}
               </p>
             ) : (
-              posts.map((p) => <PostCard key={p.id} post={p} />)
+              orderedPosts.map((p) => (
+                <PostCard
+                  key={p.id}
+                  post={p}
+                  pinned={p.id === pinnedPost?.id}
+                  onTogglePin={isAdmin ? () => togglePin.mutate(p) : undefined}
+                  pinPending={togglePin.isPending}
+                />
+              ))
             )}
           </div>
 

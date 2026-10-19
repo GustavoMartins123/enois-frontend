@@ -10,7 +10,17 @@ import { ARTICLE_BODY_MAX_LENGTH } from "@/constants/post-types";
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { PostCardProps } from "@/types/components/post/post-card-props";
-import { BookOpen, Clock, FileText, MoreHorizontal, Pencil, Tag, Trash2 } from "lucide-react";
+import {
+  BookOpen,
+  Clock,
+  FileText,
+  MoreHorizontal,
+  Pencil,
+  Pin,
+  PinOff,
+  Tag,
+  Trash2,
+} from "lucide-react";
 
 import { communitiesApi, feedApi } from "@/lib/api";
 import { sealsApi } from "@/lib/api/seals";
@@ -46,7 +56,13 @@ import { typeMeta } from "./post/type-meta";
  */
 const POST_COMPACT_THRESHOLD = 400;
 
-export function PostCard({ post, fullPost = false }: PostCardProps) {
+export function PostCard({
+  post,
+  fullPost = false,
+  pinned = false,
+  onTogglePin,
+  pinPending = false,
+}: PostCardProps) {
   const { requireAuth, user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -229,6 +245,27 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
         />
 
         <div className="flex items-center gap-1.5">
+          {pinned && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-medium text-primary">
+              <Pin className="h-3 w-3" aria-hidden />
+
+              <>{texts.posts.pin.pinned}</>
+            </span>
+          )}
+
+          {onTogglePin && (
+            <button
+              type="button"
+              onClick={onTogglePin}
+              disabled={pinPending}
+              title={pinned ? texts.posts.pin.unpin : texts.posts.pin.pin}
+              aria-label={pinned ? texts.posts.pin.unpin : texts.posts.pin.pin}
+              className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-muted hover:text-primary disabled:opacity-50"
+            >
+              {pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+            </button>
+          )}
+
           <span
             className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${meta.className}`}
           >

@@ -10,7 +10,18 @@ import type { GroupMember } from "@/types/application/group/group-member";
 import type { GroupPost } from "@/types/application/group/group-post";
 import type { GroupView } from "@/types/application/group/group-view";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
-import { Camera, Flag, Loader2, MessageCircle, Plus, Smile, Trash2, Users } from "lucide-react";
+import {
+  Camera,
+  Flag,
+  Loader2,
+  MessageCircle,
+  Pin,
+  PinOff,
+  Plus,
+  Smile,
+  Trash2,
+  Users,
+} from "lucide-react";
 
 import { groupsApi } from "@/lib/api";
 import { getSessionToken } from "@/lib/api-client";
@@ -239,7 +250,18 @@ function GroupFeed({ group }: { group: GroupView }) {
     queryFn: () => groupsApi.posts(group.id, activeTopicId ?? undefined),
     enabled: Boolean(activeTopicId),
   });
+
+  // O fixado pode ser de um tópico que não está aberto (ou de uma página antiga): vem do endpoint
+  // próprio e é colocado na frente, sem duplicar quando ele já está na lista.
+  const { data: pinnedPost } = useQuery({
+    queryKey: ["group-pinned", group.id],
+    queryFn: () => groupsApi.pinned(group.id).catch(() => null),
+    enabled: group.joined,
+  });
   const posts = postsData?.items ?? [];
+  const orderedPosts = pinnedPost
+    ? [pinnedPost, ...posts.filter((p) => p.id !== pinnedPost.id)]
+    : posts;
 
   const invalidatePosts = () => {
     void queryClient.invalidateQueries({ queryKey: ["group-posts", group.id] });
@@ -356,12 +378,13 @@ function GroupFeed({ group }: { group: GroupView }) {
             <p className="text-sm text-text-subtle">{texts.groups.feedEmpty}</p>
           ) : (
             <ul className="space-y-3">
-              {posts.map((post) => (
+              {orderedPosts.map((post) => (
                 <GroupPostItem
                   key={post.id}
                   groupId={group.id}
                   post={post}
                   canModerate={canModerate}
+                  canPin={canManage}
                 />
               ))}
             </ul>
@@ -406,10 +429,12 @@ function GroupPostItem({
   groupId,
   post,
   canModerate,
+  canPin,
 }: {
   groupId: string;
   post: GroupPost;
   canModerate: boolean;
+  canPin: boolean;
 }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -428,6 +453,22 @@ function GroupPostItem({
     onError: () => toast(texts.groups.removePostError, "error"),
   });
 
+  // Um único fixado por grupo: fixar outro substitui o anterior no backend.
+  const pin = useMutation({
+    mutationFn: async () => {
+      if (post.pinned) {
+        await groupsApi.unpin(groupId, post.id);
+        return;
+      }
+      await groupsApi.pin(groupId, post.id);
+    },
+    onSuccess: () => {
+      invalidate();
+      void queryClient.invalidateQueries({ queryKey: ["group-pinned", groupId] });
+    },
+    onError: () => toast(texts.posts.pin.error, "error"),
+  });
+
   const { data: commentsData, isLoading: commentsLoading } = useQuery({
     queryKey: ["group-comments", groupId, post.id],
     queryFn: () => groupsApi.comments(groupId, post.id),
@@ -438,6 +479,7 @@ function GroupPostItem({
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ["group-posts", groupId] });
     void queryClient.invalidateQueries({ queryKey: ["group-comments", groupId, post.id] });
+    void queryClient.invalidateQueries({ queryKey: ["group-pinned", groupId] });
   };
 
   const react = useMutation({
@@ -470,6 +512,14 @@ function GroupPostItem({
         <span className="text-sm font-medium text-text-strong">{post.authorName ?? ""}</span>
 
         <UserBadges badges={post.authorBadges} />
+
+        {post.pinned && (
+          <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2 py-0.5 text-xs font-medium text-primary">
+            <Pin className="h-3 w-3" aria-hidden />
+
+            <>{texts.posts.pin.pinned}</>
+          </span>
+        )}
       </div>
 
       <RichText
@@ -502,6 +552,20 @@ function GroupPostItem({
 
           <>{`${texts.groups.commentsTitle} (${post.comments})`}</>
         </button>
+
+        {canPin && (
+          <button
+            type="button"
+            onClick={() => pin.mutate()}
+            disabled={pin.isPending}
+            title={post.pinned ? texts.posts.pin.unpin : texts.posts.pin.pin}
+            className="inline-flex items-center gap-1 rounded-full px-2 py-1 transition hover:text-primary disabled:opacity-50"
+          >
+            {post.pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+
+            <>{post.pinned ? texts.posts.pin.unpin : texts.posts.pin.pin}</>
+          </button>
+        )}
 
         {(post.authorId === currentUserId || canModerate) && (
           <button
