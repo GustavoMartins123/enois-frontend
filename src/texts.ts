@@ -1569,6 +1569,11 @@ export const texts = {
       favorites: (count: number) => `${count} na biblioteca`,
       share: "Compartilhar",
       shareCopied: "Link do jogo copiado!",
+      plays: (count: number) =>
+        `${count} ${count === 1 ? "partida iniciada" : "partidas iniciadas"}`,
+      players: (count: number) => `${count} ${count === 1 ? "jogador" : "jogadores"}`,
+      statsHint:
+        "Partida iniciada conta cada vez que alguém aperta Jogar — não prova que o jogo terminou de carregar. Jogador conta cada conta uma vez; quem joga sem entrar conta a cada partida.",
       stats: (plays: number, players: number) =>
         plays === 1
           ? "1 sessão"
