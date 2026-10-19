@@ -1,7 +1,7 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** em andamento — rodada 1 executada (lote A parcial). O agendamento está
-> ativo nesta sessão; a auditoria continua nos próximos lotes até a matriz ficar limpa.
+> **Status (2026-10-19):** em andamento — rodadas 1 e 2 executadas. A matriz ainda tem lotes
+> pendentes (rotas protegidas nos viewports novos, Lote B nas demais rotas e Lote C em 1280px).
 
 ## Objetivo
 
@@ -64,8 +64,8 @@ em denúncia). Admin/moderação: somente leitura visual.
 
 | Lote | Rotas | Viewports | Temas | Status |
 |---|---|---|---|---|
-| A | 23 (11 públicas + 12 protegidas/dinâmicas) | 390, 768, 1280 | claro/escuro padrão | parcial — falta 320, 360, 414, 1024, 1440, 1920 e rotas dinâmicas |
-| B | — | 390px | 60 × 2 | pendente |
+| A | 23 em 390/768/1280 (rodada 1) + 17 públicas e 10 dinâmicas nos outros 6 viewports (rodada 2) | 320, 360, 390, 414, 768, 1024, 1280, 1440, 1920 | claro/escuro padrão | parcial — rotas protegidas nos viewports novos bloqueadas pela sessão expirada |
+| B | `/` e `/empresas` (240 combinações) | 390px | 60 × 2 | concluído nesses 2; faltam as demais rotas |
 | C | 10 páginas-chave | 1280px | 60 × 2 | pendente |
 
 ## Rodada 1 — 2026-10-19
@@ -87,9 +87,36 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Próximo lote:** repetir `/rede` nos viewports restantes; rotas dinâmicas (jogos, vagas,
   comunidades, grupos, blog); depois Lote B (60 temas × 2 modos a 390px).
 
+## Rodada 2 — 2026-10-19
+
+- **Sessão:** a cópia do Firefox expirou (401 no access e no refresh); as rotas protegidas ficaram
+  bloqueadas nesta rodada e foram testadas como visitante apenas para redirect/layout.
+- **Cobertura:** 17 rotas públicas × 6 viewports restantes (320, 360, 414, 1024, 1440, 1920) +
+  10 rotas dinâmicas públicas × 390/768/1280 = **132 verificações**.
+- **Resultado:** 0 HTTP ≠ 200; **1 overflow real**; 18 redirects esperados para `/entrar` (rotas
+  protegidas sem sessão); 401/404 de recursos são ruído de visitante.
+- **Achado:** a home tinha **16px de overflow em 320px** — os dois botões de autenticação não
+  cabiam ao lado da marca.
+- **Correção:** "Entrar" some abaixo de 360px (o caminho continua no fluxo de criar conta, que abre
+  as duas abas) e os paddings dos botões encolhem — commit `1eeb0e5` (cherry-pick de `21c6d6c`).
+  **Re-teste: `scrollWidth` = 320 em um viewport de 320px** após o rollout.
+- **Temas:** **240 combinações** (60 temas × 2 modos × `/` e `/empresas`) a 390px. **224 limpas +
+  16 falsos positivos** de contraste: todos em temas com fundo em degradê (`vaporwave`, `synthwave`,
+  `aero-glass`, `frutiger-aero`, `y2k`, `blahaj` dark). O auditor lia `backgroundColor` transparente
+  e caía no branco; corrigindo a leitura para as paradas do `linear-gradient`, as 16 passam
+  (**0 problemas reais**). A correção é do auditor (`/tmp/pwtest/theme-recheck.mjs`), não do app.
+- **Próximo lote:** rotas protegidas nos viewports restantes com sessão fresca; Lote B nas demais
+  rotas; Lote C em 1280px.
+
 ## Achados e correções
 
-_(preencher por rodada: data/hora, rota/viewport/tema, problema, correção, commit, verificação)_
+- **Rodada 1 — `/rede`:** overflow de 387px em 390px e 21px em 768px (nome longo sem quebra
+  esticava o card da grade). Corrigido com `min-w-0` + `break-words` (`0aa50f5`), verificado 0px.
+- **Rodada 2 — home em 320px:** overflow de 16px no header (dois botões de autenticação não
+  cabiam). "Entrar" some abaixo de 360px e paddings encolhem (`1eeb0e5`), verificado `sw=320`.
+- **Rodada 2 — falso positivo de tema:** 16 combinações de temas com degradê acusaram contraste
+  por leitura errada do fundo no auditor; nenhuma correção de app necessária. Auditor ajustado
+  para ler as paradas do gradiente.
 
 ## Limitações
 
