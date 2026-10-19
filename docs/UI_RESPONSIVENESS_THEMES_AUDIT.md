@@ -573,3 +573,15 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Próximo lote:** as demais rotas protegidas a 390px (`/denuncias`, `/salvos`, `/blogs`,
   `/seguranca`, `/suporte`, `/temas`, `/mentoria`, `/rede`, `/notificações`, `/moderador`) e as
   páginas-chave protegidas a 1280 com os 60 temas.
+
+## Rodada 36 — 2026-10-19 19:0x
+
+- **Sessão válida** (cópia 18:28) durante todo o lote.
+- **Lote B protegido:** `/denuncias`, `/salvos` e `/suporte` a 390×844, 60 temas × claro/escuro =
+  **360 verificações, ZERO problemas** (overflow, contraste, variáveis de tema, console e HTTP).
+- **Nenhuma correção de app.**
+- **Segurança relacionada (fora do layout):** o e-mail do usuário no log de e-mails e nos tickets
+  de suporte passou a ser mascarado no backend (`f***@dominio.com`), commit `0cd833b`; o painel
+  não recebe mais o endereço completo. Teste `PiiMaskTests` verde; CI do backend em andamento.
+- **Próximo lote:** `/blogs`, `/seguranca`, `/temas`, `/mentoria` e `/rede` a 390px; depois as
+  páginas-chave protegidas a 1280.
