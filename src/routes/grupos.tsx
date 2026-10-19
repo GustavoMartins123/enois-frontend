@@ -195,8 +195,8 @@ function CreateGroupDialog({
     event.target.value = "";
   };
 
-  const uploading =
-    avatarUpload.state.status === "uploading" || bannerUpload.state.status === "uploading";
+  // O hook devolve o estado ESPALHADO ({ status, progress, ... }), não aninhado em `.state`.
+  const uploading = avatarUpload.status === "uploading" || bannerUpload.status === "uploading";
 
   const create = useMutation({
     mutationFn: () =>
