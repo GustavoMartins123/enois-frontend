@@ -430,3 +430,20 @@ em denúncia). Admin/moderação: somente leitura visual.
   `/feed` redirecionou para `/entrar`. Sem credenciais não há como refazer o lote protegido nesta
   rodada — a correção está no ar e o lote completo (108 verificações) foi executado antes da
   expiração.
+
+## Rodada 26 — 2026-10-19 12:2x
+
+- **Sessão:** expirada de novo (`/api/me` 401); lote protegido bloqueado, segue o público.
+- **Lote C ampliado:** `/empresas` em **1280×800**, 60 temas × claro/escuro = **120 combinações**.
+  Medido overflow horizontal, presença real de `--background`/`--primary` e contraste WCAG
+  (composição de alpha; sem falsos positivos de gradiente).
+  - **117 limpas.** 3 acusações iniciais foram **corrida de renderização**, não bug: `win2000`
+    claro/escuro caíram com “execution context destroyed” (a página recarregou durante a medição)
+    e `aero-glass` claro leu as vars vazias antes de o tema aplicar. Reexecutadas com espera maior:
+    `--background`/`--primary` presentes nos três (ex.: win2000 claro `#d4d0c8`/`#3a6ea5`,
+    aero claro gradiente `#cfe4f7→#9cc2e8`/`#1e6bb8`) e **`sw=cw=1280`, zero overflow**.
+- **Nenhuma correção de app.**
+- **Deploy verificado:** o chunk `moderador-C5XiF0Ez.js` já é servido com as chamadas novas
+  (`/admin/moderators` e `/moderation/sanction-proposals`), confirmando o rollout do painel.
+- **Próximo lote:** `/blogs` e `/eventos` em 1280 com os 60 temas; depois repetir a tentativa da
+  sessão protegida.
