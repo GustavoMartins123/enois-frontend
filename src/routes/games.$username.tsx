@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import { ExternalLink, Gamepad2, Users } from "lucide-react";
@@ -19,13 +19,27 @@ export const Route = createFileRoute("/games/$username")({
 });
 
 /**
+ * /games/$username também é rota-mãe de /games/$username/$gameSlug (a página do jogo): precisa
+ * devolver o filho pelo Outlet, senão a página do criador engole o player.
+ */
+function DeveloperPage() {
+  const { username } = Route.useParams();
+  const matchRoute = useMatchRoute();
+  return matchRoute({ to: "/games/$username", params: { username }, fuzzy: false }) ? (
+    <CreatorPage />
+  ) : (
+    <Outlet />
+  );
+}
+
+/**
  * A página do criador.
  *
  * Não é uma segunda identidade: nome, @, foto e emblema vêm do perfil do Énóis, e o que é do Games
  * (nome de estúdio, chamada, bio, links) fica ao lado. Quem não preencheu nada e não tem jogo
  * publicado não ganha página — o backend devolve 404 em vez de mostrar um perfil vazio.
  */
-function DeveloperPage() {
+function CreatorPage() {
   const { username } = Route.useParams();
   const { requireAuth } = useAuth();
   const queryClient = useQueryClient();

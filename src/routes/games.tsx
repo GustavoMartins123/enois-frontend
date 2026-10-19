@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
 
 import { GAME_GENRES, GAME_STAGES } from "@/constants/game-options";
 import { texts } from "@/texts";
 import type { GameView } from "@/types/application/games/game-view";
-import { ExternalLink, Gamepad2, Send , Rocket } from "lucide-react";
+import { ExternalLink, Gamepad2, Rocket, Send } from "lucide-react";
 
 import { gamesApi } from "@/lib/api";
 import { formatFaisca } from "@/lib/faisca";
@@ -25,12 +25,22 @@ export const Route = createFileRoute("/games")({
 });
 
 /**
+ * /games é a rota-MÃE de /games/$username e /games/$username/$gameSlug. Sem devolver o
+ * <Outlet/>, o hub engolia as filhas: clicar num jogo trocava a URL e continuava mostrando a
+ * lista — o "não abre o player" relatado. O hub em si mora no GamesHub.
+ */
+function Games() {
+  const matchRoute = useMatchRoute();
+  return matchRoute({ to: "/games", fuzzy: false }) ? <GamesHub /> : <Outlet />;
+}
+
+/**
  * Agregador de jogos (Parte E do plano): o Énóis NÃO hospeda jogo nenhum — o criador
  * envia o LINK de onde o jogo já está publicado (itch.io, site próprio), a moderação
  * revisa e o jogo roda EMBUTIDO no Énóis, num quadro isolado, com a página do criador
  * em /games/{username}.
  */
-function Games() {
+function GamesHub() {
   const authenticated = isAuthenticated();
   const [query, setQuery] = useState("");
   const [genre, setGenre] = useState("");
@@ -453,7 +463,10 @@ function SubmitButton() {
  * curadoria, com os jogos resolvidos dentro.
  */
 function ColecoesSection() {
-  const colecoes = useQuery({ queryKey: ["games", "colecoes"], queryFn: () => gamesApi.colecoes(20) });
+  const colecoes = useQuery({
+    queryKey: ["games", "colecoes"],
+    queryFn: () => gamesApi.colecoes(20),
+  });
   const itens = colecoes.data ?? [];
   if (colecoes.isLoading || itens.length === 0) return null;
 
