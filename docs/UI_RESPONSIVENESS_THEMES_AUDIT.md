@@ -1,9 +1,7 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** auditoria ainda não iniciada. O agendamento precisa ser criado
-> em uma **sessão nova** do flatt — esta sessão já pertence a uma tarefa agendada e o sistema
-> recusa criar outra automação dentro dela. Este arquivo é a fonte de verdade do escopo e do
-> progresso; a sessão nova deve lê-lo antes de começar e atualizá-lo a cada rodada.
+> **Status (2026-10-19):** em andamento — rodada 1 executada (lote A parcial). O agendamento está
+> ativo nesta sessão; a auditoria continua nos próximos lotes até a matriz ficar limpa.
 
 ## Objetivo
 
@@ -66,9 +64,28 @@ em denúncia). Admin/moderação: somente leitura visual.
 
 | Lote | Rotas | Viewports | Temas | Status |
 |---|---|---|---|---|
-| A | — | — | claro/escuro padrão | pendente |
+| A | 23 (11 públicas + 12 protegidas/dinâmicas) | 390, 768, 1280 | claro/escuro padrão | parcial — falta 320, 360, 414, 1024, 1440, 1920 e rotas dinâmicas |
 | B | — | 390px | 60 × 2 | pendente |
 | C | 10 páginas-chave | 1280px | 60 × 2 | pendente |
+
+## Rodada 1 — 2026-10-19
+
+- **Ambiente:** produção, sessão real de `aminadojava` injetada no Playwright, sem ações de escrita.
+- **Cobertura:** 23 rotas × 3 viewports (390×844, 768×1024, 1280×800) = **102 verificações**.
+- **Resultado:** 0 HTTP ≠ 200; **2 overflows reais**; 3 erros de rede 502 transitórios; nenhum erro
+  de console de aplicação (hidratação pré-existente filtrada).
+- **Achado:** `/rede` com overflow de **387px em 390px** e **21px em 768px**. Causa: o card da grade
+  crescia pelo `min-content` de um nome longo sem quebra (`min-width:auto`), a mesma armadilha do
+  card de membros.
+- **Correção:** `min-w-0` no card/coluna e `break-words` nos links do nome — commit `0aa50f5`
+  (cherry-pick de `4e8c408`). **Re-teste em produção: 0px de overflow em 390px e 768px** após o
+  rollout.
+- **Painel central (mesma data):** 9 abas renderizadas em 390 e 1280, zero overflow e zero erros;
+  formulário de suporte com as 5 categorias em 390, zero overflow.
+- **Ruído:** três `502` em recursos (developers, feed, mentoria) sem impacto de layout; erros de
+  hidratação (`#418/#423`) são pré-existentes e foram filtrados.
+- **Próximo lote:** repetir `/rede` nos viewports restantes; rotas dinâmicas (jogos, vagas,
+  comunidades, grupos, blog); depois Lote B (60 temas × 2 modos a 390px).
 
 ## Achados e correções
 
@@ -76,8 +93,10 @@ _(preencher por rodada: data/hora, rota/viewport/tema, problema, correção, com
 
 ## Limitações
 
-_(rotas que não renderizarem logadas por hydration/sessão, com o motivo e o que foi validado no
-lugar — SSR, chunk, API ou teste de integração. Não inventar verificação.)_
+- A heurística de "Entrar" no corpo não serve para detectar sessão: páginas logadas ainda exibem
+  SSR de visitante em alguns casos (hidratação pré-existente). A sessão foi validada por
+  `/api/me` e pelo painel do moderador renderizado com as 9 abas.
+- O lote 1 usou o tema padrão; todos os 60 temas entram nos lotes B/C.
 
 ## Conclusão (só quando)
 
