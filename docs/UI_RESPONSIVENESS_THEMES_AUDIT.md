@@ -509,3 +509,15 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Nenhuma correção de app.**
 - **Próximo lote:** `/vagas`, `/eventos` e `/mensagens` a 390px com os 60 temas; depois
   `/blogs` e `/eventos` a 1280.
+
+## Rodada 31 — 2026-10-19 17:3x
+
+- **Lote B protegido continua:** `/vagas` e `/eventos` a 390×844 nos 60 temas × claro/escuro
+  = 240 verificações planejadas. **228 limpas, 12 achados — todos ambientais** (`AUTH-BOUNCE`/
+  `NAVERR`): a sessão expirou por volta do tema 36 (`listras-amarelas`), e `/eventos` passou a
+  redirecionar para `/entrar`. Nenhum problema de overflow, contraste ou tema aplicado.
+- Os 35 primeiros temas fecharam as duas rotas limpas; com as rodadas 28-30, `/feed`, `/carteira`,
+  `/marketplace`, `/perfil`, `/post`, `/vagas` e `/eventos` já têm cobertura de temas no mobile.
+- **Nenhuma correção de app.**
+- **Próximo lote:** re-copiar a sessão e fechar `/eventos` (temas 36-60) e `/mensagens`; depois as
+  demais rotas protegidas.
