@@ -1,6 +1,6 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** em andamento — rodadas 1 a 16 executadas. O Lote B público está
+> **Status (2026-10-19):** em andamento — rodadas 1 a 17 executadas. O Lote B público está
 > completo; restam as rotas/páginas protegidas (Lote A nos viewports novos, Lote B em 390px e
 > Lote C em 1280px), que dependem de uma sessão fresca do Firefox.
 
@@ -282,6 +282,16 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Pendência única:** rotas/páginas protegidas (Lote A nos viewports novos, Lote B em 390px e
   Lote C em 1280px) — dependem de uma sessão fresca do Firefox. O agendamento segue tentando a
   cada rodada.
+
+## Rodada 17 — 2026-10-19
+
+- **Sessão:** ainda expirada; rotas protegidas seguem bloqueadas.
+- **Regressão pública (estabilidade):** 22 rotas públicas × claro/escuro × 390/1280 = **88
+  verificações, 87 limpas e 1 502 transitório** em `/privacidade` dark 1280 (sem overflow, com
+  `--primary`); repetido 3×, sempre 200 e sem erro — ruído de rede.
+- **Nenhuma correção.** O Lote B público segue completo (22 rotas / 2640 combinações) e o Lote C
+  público tem 7 páginas (840 combinações).
+- **Pendência única:** o lote protegido, dependente de sessão fresca do Firefox.
 
 ## Achados e correções
 
