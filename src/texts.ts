@@ -2392,7 +2392,7 @@ export const texts = {
     emails: {
       title: "E-mails enviados",
       description:
-        "Metadados dos envios feitos pela plataforma a partir de agora. O corpo da mensagem não é armazenado.",
+        "Metadados dos envios feitos pela plataforma a partir de agora. O corpo da mensagem não é armazenado; e-mails de 2FA não são listados.",
       empty: "Nenhum e-mail registrado ainda.",
       all: "Todos",
       sent: "Enviados",
