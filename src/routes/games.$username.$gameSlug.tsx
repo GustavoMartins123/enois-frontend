@@ -230,7 +230,7 @@ function GamePage() {
 
         <header className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="text-2xl font-semibold tracking-tight text-text-strong">{g.title}</h1>
+            <h1 className="min-w-0 break-words text-2xl font-semibold tracking-tight text-text-strong">{g.title}</h1>
 
             <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-text-subtle">
               <Link

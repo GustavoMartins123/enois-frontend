@@ -87,7 +87,7 @@ function DeveloperPage() {
             />
 
             <div className="min-w-0 flex-1">
-              <h1 className="flex flex-wrap items-center gap-1.5 text-xl font-semibold tracking-tight text-text-strong">
+              <h1 className="flex min-w-0 flex-wrap items-center gap-1.5 break-words text-xl font-semibold tracking-tight text-text-strong">
                 <>{dev.displayName || dev.name}</>
 
                 <UserBadges badges={dev.badges} badge={dev.badge} />
