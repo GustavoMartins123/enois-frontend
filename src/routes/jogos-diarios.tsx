@@ -3,9 +3,15 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { Boxes, CheckCircle2, Flame, Gamepad2, Map, Trophy, Type } from "lucide-react";
+import { Boxes, CheckCircle2, Flame, Gamepad2, Map, Sparkles, Trophy, Type } from "lucide-react";
 
-import { dailyBlocksApi, dailyMazeApi, dailyWordsApi } from "@/lib/api/daily-games";
+import {
+  dailyBlocksApi,
+  dailyGamesRewardsApi,
+  dailyMazeApi,
+  dailyWordsApi,
+} from "@/lib/api/daily-games";
+import { formatFaisca } from "@/lib/faisca";
 import { requireAuth } from "@/lib/require-auth";
 
 import { AppContainer } from "@/components/app-container";
@@ -35,6 +41,10 @@ function DailyGames() {
   const blocks = useQuery({
     queryKey: ["daily-games", "blocks", "today"],
     queryFn: () => dailyBlocksApi.today(),
+  });
+  const prizes = useQuery({
+    queryKey: ["daily-games", "rewards", "prizes"],
+    queryFn: () => dailyGamesRewardsApi.prizes(),
   });
 
   const wordsWon = words.data?.status === "WON";
@@ -107,6 +117,29 @@ function DailyGames() {
               />
             </div>
           </div>
+          {/* Prêmios em faísca do dia */}
+          {prizes.data && prizes.data.tiers.length > 0 && (
+            <div className="mt-3 rounded-lg border border-border/60 bg-muted/30 p-3 sm:p-4">
+              <div className="flex items-center gap-1.5 text-xs sm:text-sm font-medium">
+                <Sparkles className="h-4 w-4 text-primary" />
+                Prêmios em faíscas
+              </div>
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1.5">
+                {prizes.data.tiers.map((tier) => (
+                  <span key={tier.label} className="text-xs text-muted-foreground">
+                    {tier.label}:{" "}
+                    <span className="font-semibold text-foreground">
+                      {formatFaisca(tier.amount)}
+                    </span>
+                  </span>
+                ))}
+              </div>
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                O placar fecha e as faíscas caem na carteira depois que o dia termina — quem
+                completa o desafio, mesmo fora do top 10, recebe.
+              </p>
+            </div>
+          )}
         </header>
 
         {/* Seletor de Abas dos Jogos */}

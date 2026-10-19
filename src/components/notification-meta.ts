@@ -6,6 +6,7 @@ import {
   GraduationCap,
   Heart,
   MessageCircle,
+  Sparkles,
   UserPlus,
 } from "lucide-react";
 
@@ -22,4 +23,5 @@ export const notificationMeta: Record<string, NotificationMeta> = {
   event: { icon: Calendar, className: "bg-growth/15 text-growth" },
   job: { icon: Briefcase, className: "bg-opportunity/20 text-opportunity-foreground" },
   mentoring: { icon: GraduationCap, className: "bg-primary-soft text-primary" },
+  jogo_diario: { icon: Sparkles, className: "bg-growth/15 text-growth" },
 };

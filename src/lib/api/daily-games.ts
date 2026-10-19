@@ -88,3 +88,11 @@ export function previousChallengeDate(date: string): string {
   value.setUTCDate(value.getUTCDate() - 1);
   return value.toISOString().slice(0, 10);
 }
+
+export type GamePrizeTable = {
+  tiers: { label: string; amount: number }[];
+};
+
+export const dailyGamesRewardsApi = {
+  prizes: () => api.get<GamePrizeTable>("/daily-games/rewards/prizes"),
+};
