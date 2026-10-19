@@ -153,12 +153,6 @@ export function AccountMenu({ profile }: AccountMenuProps) {
               <>{texts.account.menu.myReports}</>
             </Link>
 
-            <Link to="/moderador" onClick={() => setMenuOpen(false)} className={ITEM_CLASS}>
-              <Gavel className="h-4 w-4" />
-
-              <>{texts.account.menu.moderator}</>
-            </Link>
-
             <Link to="/penalidades" onClick={() => setMenuOpen(false)} className={ITEM_CLASS}>
               <ShieldAlert className="h-4 w-4" />
 
@@ -176,6 +170,12 @@ export function AccountMenu({ profile }: AccountMenuProps) {
 
               <>{texts.account.menu.linkedAccounts}</>
             </button>
+
+            <Link to="/moderador" onClick={() => setMenuOpen(false)} className={ITEM_CLASS}>
+              <Gavel className="h-4 w-4" />
+
+              <>{texts.account.menu.moderator}</>
+            </Link>
 
             <PushToggle onClose={() => setMenuOpen(false)} />
           </div>
