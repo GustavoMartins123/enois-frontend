@@ -1,7 +1,7 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** em andamento — rodadas 1 a 8 executadas. A matriz ainda tem lotes
-> pendentes (rotas protegidas nos viewports novos, Lote B nas demais rotas e Lote C nas 6 páginas
+> **Status (2026-10-19):** em andamento — rodadas 1 a 9 executadas. A matriz ainda tem lotes
+> pendentes (rotas protegidas nos viewports novos, Lote B nas demais rotas e Lote C nas 4 páginas
 > restantes em 1280px).
 
 ## Objetivo
@@ -67,7 +67,8 @@ em denúncia). Admin/moderação: somente leitura visual.
 |---|---|---|---|---|
 | A | 23 em 390/768/1280 (rodada 1) + 17 públicas e 10 dinâmicas nos outros 6 viewports (rodada 2) | 320, 360, 390, 414, 768, 1024, 1280, 1440, 1920 | claro/escuro padrão | parcial — rotas protegidas nos viewports novos bloqueadas pela sessão expirada |
 | B | `/`, `/empresas`, `/perfil/aminadojava`, `/post/...`, `/developers`, `/vagas`, `/empresa/n-is`, `/blogs` (960 combinações) | 390px | 60 × 2 | 8 rotas concluídas; faltam as demais |
-| C | `/`, `/perfil/aminadojava`, `/post/...`, `/developers` (480 combinações) | 1280px | 60 × 2 | 4 páginas-chave concluídas; faltam 6 |
+| C | `/`, `/perfil`, `/post/...`, `/developers`, `/vagas`, `/empresa/n-is` (720 combinações) | 1280px | 60 × 2 | 6 páginas-chave concluídas; faltam 4 |
+| — | `/feed`, `/carteira`, `/marketplace` (protegidas) e `/games` | 1280px | 60 × 2 | pendente |
 
 ## Rodada 1 — 2026-10-19
 
@@ -199,6 +200,16 @@ em denúncia). Admin/moderação: somente leitura visual.
   **480 combinações**.
 - **Próximo lote:** Lote C em `/vagas`, `/empresa` e `/games` (públicas); `/feed`, `/carteira` e
   `/marketplace` quando a sessão estiver fresca; Lote B nas rotas públicas restantes.
+
+## Rodada 9 — 2026-10-19
+
+- **Sessão:** ainda expirada; rotas protegidas seguem bloqueadas.
+- **Lote C (1280px):** 60 temas × 2 modos × `/vagas` e `/empresa/n-is` = **240 combinações, todas
+  limpas** (contraste e overflow). Nenhum achado, nenhuma correção.
+- **Cobertura do Lote C:** 6 páginas-chave concluídas — **720 combinações**. Faltam `/games`
+  (pública) e `/feed`, `/carteira` e `/marketplace` (protegidas).
+- **Próximo lote:** Lote C em `/games`; as três protegidas quando a sessão estiver fresca; Lote B
+  nas rotas públicas restantes.
 
 ## Achados e correções
 
