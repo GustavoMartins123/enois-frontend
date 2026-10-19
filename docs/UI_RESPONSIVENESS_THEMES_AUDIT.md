@@ -585,3 +585,12 @@ em denúncia). Admin/moderação: somente leitura visual.
   não recebe mais o endereço completo. Teste `PiiMaskTests` verde; CI do backend em andamento.
 - **Próximo lote:** `/blogs`, `/seguranca`, `/temas`, `/mentoria` e `/rede` a 390px; depois as
   páginas-chave protegidas a 1280.
+
+## Rodada 37 — 2026-10-19 20:5x
+
+- **Sessão válida** durante todo o lote.
+- **Lote B protegido:** `/blogs`, `/seguranca` e `/temas` a 390×844, 60 temas × claro/escuro =
+  **360 verificações, ZERO problemas** (overflow, contraste, variáveis, console e HTTP).
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/mentoria`, `/rede` e `/jogos-diarios` a 390px; depois as rotas de jogos,
+  denúncias administrativas e as páginas-chave protegidas a 1280.
