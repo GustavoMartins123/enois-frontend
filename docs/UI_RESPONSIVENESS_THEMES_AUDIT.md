@@ -1,7 +1,7 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** em andamento — rodadas 1, 2, 3 e 4 executadas. A matriz ainda tem
-> lotes pendentes (rotas protegidas nos viewports novos, Lote B nas demais rotas e Lote C em 1280px).
+> **Status (2026-10-19):** em andamento — rodadas 1 a 5 executadas. A matriz ainda tem lotes
+> pendentes (rotas protegidas nos viewports novos, Lote B nas demais rotas e Lote C em 1280px).
 
 ## Objetivo
 
@@ -65,7 +65,7 @@ em denúncia). Admin/moderação: somente leitura visual.
 | Lote | Rotas | Viewports | Temas | Status |
 |---|---|---|---|---|
 | A | 23 em 390/768/1280 (rodada 1) + 17 públicas e 10 dinâmicas nos outros 6 viewports (rodada 2) | 320, 360, 390, 414, 768, 1024, 1280, 1440, 1920 | claro/escuro padrão | parcial — rotas protegidas nos viewports novos bloqueadas pela sessão expirada |
-| B | `/`, `/empresas`, `/perfil/aminadojava`, `/post/...`, `/developers`, `/vagas` (720 combinações) | 390px | 60 × 2 | 6 rotas concluídas; faltam as demais |
+| B | `/`, `/empresas`, `/perfil/aminadojava`, `/post/...`, `/developers`, `/vagas`, `/empresa/n-is`, `/blogs` (960 combinações) | 390px | 60 × 2 | 8 rotas concluídas; faltam as demais |
 | C | 10 páginas-chave | 1280px | 60 × 2 | pendente |
 
 ## Rodada 1 — 2026-10-19
@@ -134,6 +134,15 @@ em denúncia). Admin/moderação: somente leitura visual.
   auditor, não do app.
 - **Próximo lote:** Lote B nas rotas públicas restantes; Lote C em 1280px; rotas protegidas com
   sessão fresca.
+
+## Rodada 5 — 2026-10-19
+
+- **Sessão:** ainda expirada; rotas protegidas seguem bloqueadas.
+- **Lote B:** 60 temas × 2 modos × `/empresa/n-is` e `/blogs` a 390px = **240 combinações, todas
+  limpas** (contraste e overflow). Nenhum achado, nenhuma correção.
+- **Cobertura acumulada do Lote B:** 8 rotas / **960 combinações**.
+- **Próximo lote:** Lote B nas rotas públicas restantes; início do Lote C em 1280px; rotas
+  protegidas com sessão fresca.
 
 ## Achados e correções
 
