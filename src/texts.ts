@@ -1544,6 +1544,7 @@ export const texts = {
       play: "Jogar",
       playAgain: "Jogar de novo",
       fullscreen: "Tela cheia",
+      mobileHint: "No celular, use Tela cheia (ou gire o aparelho) para jogar com mais espaço.",
       openAtOrigin: "Abrir no site do criador",
       loading: "Carregando o jogo…",
       /** O quadro não avisa quando o site recusa incorporação: a pessoa decide tentar de novo. */

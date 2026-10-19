@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
+import { GameIcon } from "@/components/game-icon";
 
 export const Route = createFileRoute("/games")({
   head: () => ({ meta: [{ title: "Jogos · Énóis" }] }),
@@ -209,7 +210,7 @@ function GamesHub() {
                   params={{ username: g.username ?? "", gameSlug: g.slug }}
                   className="surface-card flex items-center gap-3 p-4 transition hover:border-primary"
                 >
-                  <GameCover cover={g.cover} />
+                  <GameCover cover={g.cover} url={g.url} />
 
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold">{g.title}</span>
@@ -243,15 +244,8 @@ function GamesHub() {
   );
 }
 
-function GameCover({ cover }: { cover?: string | null }) {
-  if (cover) {
-    return <img src={cover} alt="" className="h-12 w-12 shrink-0 rounded-xl object-cover" />;
-  }
-  return (
-    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary-soft">
-      <Gamepad2 className="h-5 w-5 text-primary-text" />
-    </span>
-  );
+function GameCover({ cover, url }: { cover?: string | null; url?: string | null }) {
+  return <GameIcon cover={cover} url={url} />;
 }
 
 /** Os jogos de quem está logado, com o status da moderação, o reenvio e o impulso. */

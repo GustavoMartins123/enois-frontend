@@ -1,10 +1,18 @@
-import { useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { Bookmark, ExternalLink, Gamepad2, Loader2, Maximize2, Share2, Sparkles } from "lucide-react";
+import {
+  Bookmark,
+  ExternalLink,
+  Gamepad2,
+  Loader2,
+  Maximize2,
+  Share2,
+  Sparkles,
+} from "lucide-react";
 
 import { gamesApi, mediaApi } from "@/lib/api";
 import { formatFaisca } from "@/lib/faisca";
@@ -98,7 +106,15 @@ function GamePage() {
   // Publica a conquista: a imagem (dataURL do jogo) sobe pela mídia normal e o post leva as
   // tags do jogo. O clique aqui é o que publica — o jogo só pede.
   const compartilhar = useMutation({
-    mutationFn: async ({ gameId, texto, imagem }: { gameId: string; texto: string; imagem: string | null }) => {
+    mutationFn: async ({
+      gameId,
+      texto,
+      imagem,
+    }: {
+      gameId: string;
+      texto: string;
+      imagem: string | null;
+    }) => {
       let mediaIds: string[] = [];
       if (imagem) {
         const blob = await (await fetch(imagem)).blob();
@@ -109,11 +125,16 @@ function GamePage() {
           size: arquivo.size,
           purpose: "POST_IMAGE",
         });
-        if (resultado.provider === "S3") {
-          await mediaApi.uploadToSignedUrl(resultado.uploadUrl, arquivo, resultado.uploadHeaders ?? {});
-        } else {
-          await mediaApi.uploadToImageKit(resultado.cdnUrl, arquivo);
+        if (resultado.provider !== "S3") {
+          throw new Error(
+            "O envio de mídia está temporariamente desativado enquanto o armazenamento é migrado.",
+          );
         }
+        await mediaApi.uploadToSignedUrl(
+          resultado.uploadUrl,
+          arquivo,
+          resultado.uploadHeaders ?? {},
+        );
         mediaIds = [resultado.id];
       }
       return gamesApi.compartilhar(gameId, texto, mediaIds);
@@ -133,9 +154,14 @@ function GamePage() {
     return () => clearTimeout(timer);
   }, [playing, failed]);
 
-  const [compartilhamento, setCompartilhamento] = useState<{ texto: string; imagem: string | null } | null>(null);
+  const [compartilhamento, setCompartilhamento] = useState<{
+    texto: string;
+    imagem: string | null;
+  } | null>(null);
   const [identidade, setIdentidade] = useState<string | null>(null);
-  const [gasto, setGasto] = useState<{ amount: number; motivo: string; requestId: string } | null>(null);
+  const [gasto, setGasto] = useState<{ amount: number; motivo: string; requestId: string } | null>(
+    null,
+  );
 
   // G-share: o jogo (iframe de OUTRA origem, sem sessão nenhuma) pede o compartilhamento por
   // postMessage; a página valida a origem contra o endereço registrado do jogo, mostra a PRÉVIA
@@ -167,7 +193,11 @@ function GamePage() {
         return;
       }
       // O jogo PEDE um gasto: NADA sai daqui sem a pessoa confirmar na plataforma.
-      if (dado?.type === "enois:spend" && typeof dado.amount === "number" && typeof dado.requestId === "string") {
+      if (
+        dado?.type === "enois:spend" &&
+        typeof dado.amount === "number" &&
+        typeof dado.requestId === "string"
+      ) {
         if (dado.amount > 0 && Number.isSafeInteger(dado.amount)) {
           setGasto({
             amount: dado.amount,
@@ -178,7 +208,10 @@ function GamePage() {
         return;
       }
       if (dado?.type !== "enois:share" || typeof dado.texto !== "string") return;
-      const imagem = typeof dado.imagem === "string" && dado.imagem.startsWith("data:image/") ? dado.imagem : null;
+      const imagem =
+        typeof dado.imagem === "string" && dado.imagem.startsWith("data:image/")
+          ? dado.imagem
+          : null;
       setCompartilhamento({ texto: dado.texto.slice(0, 600), imagem });
     };
     window.addEventListener("message", listener);
@@ -230,7 +263,9 @@ function GamePage() {
 
         <header className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="min-w-0 break-words text-2xl font-semibold tracking-tight text-text-strong">{g.title}</h1>
+            <h1 className="min-w-0 break-words text-2xl font-semibold tracking-tight text-text-strong">
+              {g.title}
+            </h1>
 
             <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-text-subtle">
               <Link
@@ -300,7 +335,13 @@ function GamePage() {
 
         {/* O player: clique para jogar (nada roda sozinho), proporção do criador e tela cheia. */}
         <div className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
-          <div className="relative w-full" style={{ aspectRatio: ASPECT[g.aspect] ?? "16 / 9" }}>
+          {/* No celular o quadro 16:9 fica com ~200px de altura e o menu do jogo não cabe (o
+              botão de iniciar sai da tela). Por isso, em telas pequenas, ele usa 70% da altura e
+              volta à proporção do criador a partir de sm. */}
+          <div
+            className="relative w-full max-sm:h-[70svh] max-sm:min-h-80 sm:aspect-[var(--game-aspect)]"
+            style={{ "--game-aspect": ASPECT[g.aspect] ?? "16 / 9" } as CSSProperties}
+          >
             {playing && playable && !failed ? (
               <iframe
                 ref={frame}
@@ -308,6 +349,7 @@ function GamePage() {
                 title={g.title}
                 className="h-full w-full border-0"
                 allow="fullscreen; gamepad; autoplay"
+                allowFullScreen
                 sandbox="allow-scripts allow-same-origin allow-pointer-lock"
                 referrerPolicy="no-referrer"
               />
@@ -353,6 +395,10 @@ function GamePage() {
               </button>
             )}
           </div>
+
+          <p className="border-t border-border-soft px-3 py-2 text-xs text-text-subtle sm:hidden">
+            {texts.games.game.mobileHint}
+          </p>
 
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border-soft px-3 py-2">
             <p className="text-xs text-text-subtle">
@@ -415,15 +461,20 @@ function GamePage() {
               </p>
 
               <p className="mt-1 text-xs text-text-subtle">
-                O gasto só acontece com a sua confirmação. O jogo nunca acessa a sua conta nem a
-                sua sessão — ele apenas pediu.
+                O gasto só acontece com a sua confirmação. O jogo nunca acessa a sua conta nem a sua
+                sessão — ele apenas pediu.
               </p>
 
               <div className="mt-4 flex justify-end gap-2">
                 <Button variant="ghost" className="rounded-full" onClick={() => setGasto(null)}>
                   Recusar
                 </Button>
-                <Button className="rounded-full" disabled={confirmarGasto.isPending} onClick={() => confirmarGasto.mutate()}>
+
+                <Button
+                  className="rounded-full"
+                  disabled={confirmarGasto.isPending}
+                  onClick={() => confirmarGasto.mutate()}
+                >
                   {confirmarGasto.isPending ? "Confirmando…" : "Confirmar gasto"}
                 </Button>
               </div>
@@ -452,14 +503,19 @@ function GamePage() {
               )}
 
               <p className="mt-2 text-xs text-text-subtle">
-                Publica no seu feed com a tag do jogo <span className="font-medium">{g.title}</span>.
-                A imagem e o texto vêm do jogo — confira antes de publicar.
+                Publica no seu feed com a tag do jogo <span className="font-medium">{g.title}</span>
+                . A imagem e o texto vêm do jogo — confira antes de publicar.
               </p>
 
               <div className="mt-4 flex justify-end gap-2">
-                <Button variant="ghost" className="rounded-full" onClick={() => setCompartilhamento(null)}>
+                <Button
+                  variant="ghost"
+                  className="rounded-full"
+                  onClick={() => setCompartilhamento(null)}
+                >
                   Cancelar
                 </Button>
+
                 <Button
                   className="rounded-full"
                   disabled={compartilhar.isPending}

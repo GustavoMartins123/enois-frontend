@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/use-auth";
 import { Button } from "@/components/ui/button";
 
 import { AppContainer } from "@/components/app-container";
+import { GameIcon } from "@/components/game-icon";
 import { UserAvatar } from "@/components/user-avatar";
 import { UserBadges } from "@/components/user-badge";
 
@@ -181,17 +182,7 @@ function CreatorPage() {
                   params={{ username: dev.username, gameSlug: game.slug }}
                   className="surface-card flex items-center gap-3 p-3 transition hover:border-primary"
                 >
-                  {game.cover ? (
-                    <img
-                      src={game.cover}
-                      alt=""
-                      className="h-12 w-12 shrink-0 rounded-xl object-cover"
-                    />
-                  ) : (
-                    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary-soft">
-                      <Gamepad2 className="h-5 w-5 text-primary-text" />
-                    </span>
-                  )}
+                  <GameIcon cover={game.cover} url={game.url} />
 
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold text-text-strong">
