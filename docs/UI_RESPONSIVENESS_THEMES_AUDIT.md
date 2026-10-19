@@ -1,6 +1,6 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** em andamento — rodadas 1 e 2 executadas. A matriz ainda tem lotes
+> **Status (2026-10-19):** em andamento — rodadas 1, 2 e 3 executadas. A matriz ainda tem lotes
 > pendentes (rotas protegidas nos viewports novos, Lote B nas demais rotas e Lote C em 1280px).
 
 ## Objetivo
@@ -65,7 +65,7 @@ em denúncia). Admin/moderação: somente leitura visual.
 | Lote | Rotas | Viewports | Temas | Status |
 |---|---|---|---|---|
 | A | 23 em 390/768/1280 (rodada 1) + 17 públicas e 10 dinâmicas nos outros 6 viewports (rodada 2) | 320, 360, 390, 414, 768, 1024, 1280, 1440, 1920 | claro/escuro padrão | parcial — rotas protegidas nos viewports novos bloqueadas pela sessão expirada |
-| B | `/` e `/empresas` (240 combinações) | 390px | 60 × 2 | concluído nesses 2; faltam as demais rotas |
+| B | `/`, `/empresas`, `/perfil/aminadojava`, `/post/...` (480 combinações) | 390px | 60 × 2 | 4 rotas concluídas; faltam as demais |
 | C | 10 páginas-chave | 1280px | 60 × 2 | pendente |
 
 ## Rodada 1 — 2026-10-19
@@ -107,6 +107,22 @@ em denúncia). Admin/moderação: somente leitura visual.
   (**0 problemas reais**). A correção é do auditor (`/tmp/pwtest/theme-recheck.mjs`), não do app.
 - **Próximo lote:** rotas protegidas nos viewports restantes com sessão fresca; Lote B nas demais
   rotas; Lote C em 1280px.
+
+## Rodada 3 — 2026-10-19
+
+- **Sessão:** ainda expirada; rotas protegidas continuam bloqueadas nesta rodada.
+- **Modo escuro real:** 10 rotas públicas × 390/1280 com `theme: "dark"` injetado = **20
+  verificações, 0 problemas**. (O lote anterior com `colorScheme: dark` não muda o tema do app:
+  o padrão é light; os 75 checks serviram só para confirmar layout, e os 401/404 de recursos são
+  ruído de visitante.)
+- **Lote B:** 60 temas × 2 modos × `/perfil/aminadojava` e `/post/...` a 390px = **240 combinações,
+  239 limpas e 1 problema real**: em **blahaj light** a data do post (`#8ba4b5`) ficava em **2.5:1**
+  sobre o fundo azul-claro. Trocada por `#6b8699` (**3.4:1** no pior ponto do degradê) — commit
+  `a8c7d67` (cherry-pick de `3b92e05`). **Re-teste em produção: 3.66:1** sobre a superfície.
+- **Transiente:** `/games/aminadojava` em 1280 apareceu uma vez sem CSS vars com um 502; repetido
+  3× na sequência, sempre 200 e com as vars — ruído de rede, não bug.
+- **Próximo lote:** Lote B nas rotas restantes; Lote C em 1280px; rotas protegidas quando a sessão
+  do Firefox estiver fresca.
 
 ## Achados e correções
 
