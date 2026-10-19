@@ -1,6 +1,6 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** em andamento — rodadas 1 a 10 executadas. A matriz ainda tem lotes
+> **Status (2026-10-19):** em andamento — rodadas 1 a 11 executadas. A matriz ainda tem lotes
 > pendentes (rotas protegidas nos viewports novos, Lote B nas rotas públicas restantes e Lote C
 > nas 3 páginas protegidas em 1280px).
 
@@ -66,7 +66,7 @@ em denúncia). Admin/moderação: somente leitura visual.
 | Lote | Rotas | Viewports | Temas | Status |
 |---|---|---|---|---|
 | A | 23 em 390/768/1280 (rodada 1) + 17 públicas e 10 dinâmicas nos outros 6 viewports (rodada 2) | 320, 360, 390, 414, 768, 1024, 1280, 1440, 1920 | claro/escuro padrão | parcial — rotas protegidas nos viewports novos bloqueadas pela sessão expirada |
-| B | `/`, `/empresas`, `/perfil/aminadojava`, `/post/...`, `/developers`, `/vagas`, `/empresa/n-is`, `/blogs`, `/sobre`, `/temas` (1200 combinações) | 390px | 60 × 2 | 10 rotas concluídas; faltam as demais |
+| B | `/`, `/empresas`, `/perfil/aminadojava`, `/post/...`, `/developers`, `/vagas`, `/empresa/n-is`, `/blogs`, `/sobre`, `/temas`, `/contato`, `/termos` (1440 combinações) | 390px | 60 × 2 | 12 rotas concluídas; faltam as demais |
 | C | `/`, `/perfil`, `/post/...`, `/developers`, `/vagas`, `/empresa/n-is`, `/games` (840 combinações) | 1280px | 60 × 2 | 7 páginas-chave concluídas; faltam 3 protegidas |
 
 ## Rodada 1 — 2026-10-19
@@ -221,6 +221,14 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Próximo lote:** Lote B nas rotas públicas restantes (`/contato`, `/termos`, `/privacidade`,
   `/diretrizes`, `/entrar`, `/eventos`, `/games/aminadojava`, `/blog/...`, `/auth/*`, etc.); Lote C
   nas três protegidas e rotas protegidas nos viewports restantes quando houver sessão fresca.
+
+## Rodada 11 — 2026-10-19
+
+- **Sessão:** ainda expirada; rotas protegidas seguem bloqueadas.
+- **Lote B (390px):** `/contato` e `/termos` = **240 combinações, todas limpas**. Cobertura
+  acumulada: 12 rotas / **1440 combinações**.
+- **Próximo lote:** Lote B em `/privacidade` e `/diretrizes`; depois `/entrar`, `/eventos`,
+  `/games/aminadojava`, `/blog/...` e `/auth/*`.
 
 ## Achados e correções
 
