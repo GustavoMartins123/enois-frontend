@@ -1584,6 +1584,7 @@ export const texts = {
     seoTitle: "Comunidades · Énóis",
     title: "Comunidades",
     description: "Encontre grupos profissionais, fóruns temáticos e círculos de mentoria.",
+    searchPlaceholder: "Pesquisar comunidades",
     createCommunity: "Criar comunidade",
     myTitle: "Suas comunidades",
     created: "Comunidade criada.",

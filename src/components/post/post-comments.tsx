@@ -147,12 +147,18 @@ export function PostComments({ postId }: PostIdProps) {
     setDraft(postId, draft ? `${draft}\n${url}` : url);
   };
 
+  // O servidor entrega do mais novo para o mais antigo (cursor), mas a leitura de uma thread
+  // fica confusa assim. Ordenamos por data crescente no cliente e, ao carregar páginas
+  // anteriores, mesclamos mantendo o mais antigo no topo.
+  const oldestFirst = (items: CommentView[]) =>
+    [...items].sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
+
   const loadFirstPage = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const page = await commentsApi.list(postId, null, PAGE_SIZE);
-      setComments(postId, page.items);
+      setComments(postId, oldestFirst(page.items));
       setCursor(page.nextCursor);
       setHasMore(Boolean(page.nextCursor));
     } catch {
@@ -171,7 +177,7 @@ export function PostComments({ postId }: PostIdProps) {
     setLoadingMore(true);
     try {
       const page = await commentsApi.list(postId, cursor, PAGE_SIZE);
-      setComments(postId, [...comments, ...page.items]);
+      setComments(postId, oldestFirst([...comments, ...page.items]));
       setCursor(page.nextCursor);
       setHasMore(Boolean(page.nextCursor));
     } catch {
