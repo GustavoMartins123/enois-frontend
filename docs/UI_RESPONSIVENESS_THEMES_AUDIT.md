@@ -521,3 +521,15 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Nenhuma correção de app.**
 - **Próximo lote:** re-copiar a sessão e fechar `/eventos` (temas 36-60) e `/mensagens`; depois as
   demais rotas protegidas.
+
+## Rodada 32 — 2026-10-19 17:5x
+
+- **Sessão protegida bloqueada:** a cópia do Firefox segue com mtime 17:18 e o access token
+  responde 401; sem credencial nova não há como continuar as rotas logadas nesta rodada. Segui
+  com o lote público.
+- **Lote C público:** `/empresa/n-is` (detalhe da empresa) em **1280×800**, 60 temas × claro/escuro
+  = **120 combinações, ZERO problemas** — overflow, contraste WCAG, `--background`/`--primary`
+  aplicados, console e HTTP.
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/eventos` (temas 36–60) e `/mensagens` quando houver sessão nova; no público,
+  `/games/{user}/{slug}` e `/marketplace` a 1280 com os 60 temas.
