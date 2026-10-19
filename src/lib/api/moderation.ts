@@ -5,6 +5,8 @@ import type { ModeratorMeView } from "@/types/application/moderation/moderator-m
 import type { ModeratorPanelReportView } from "@/types/application/moderation/moderator-panel-report-view";
 import type { ModeratorSanctionResult } from "@/types/application/moderation/moderator-sanction-result";
 import type { ModeratorVoteResult } from "@/types/application/moderation/moderator-vote-result";
+import type { SanctionProposalDecision } from "@/types/application/moderation/sanction-proposal-decision";
+import type { SanctionProposalView } from "@/types/application/moderation/sanction-proposal-view";
 
 import { api } from "../api-client";
 
@@ -41,8 +43,35 @@ export const moderationApi = {
       note,
     }),
 
+  /** Moderadores ativos (admin). */
+  moderators: (limit = 200) =>
+    api.get<ModeratorApplicationView[]>(`/admin/moderators?limit=${limit}`),
+
+  appoint: (username: string, note?: string) =>
+    api.post<ModeratorApplicationView>("/admin/moderators", { username, note }),
+
   revoke: (userId: string, note?: string) =>
     api.post<ModeratorApplicationView>(`/admin/moderators/${userId}/revoke`, { note }),
+
+  /** Punição por votação: só existe com 10+ moderadores; o limiar é >50% dos ativos. */
+  sanctionProposals: (limit = 50) =>
+    api.get<SanctionProposalView[]>(`/moderation/sanction-proposals?limit=${limit}`),
+
+  proposeSanction: (username: string, type: "RESTRICTION" | "BAN", reason: string) =>
+    api.post<SanctionProposalView>("/moderation/sanction-proposals", {
+      username,
+      type,
+      reason,
+    }),
+
+  voteSanction: (proposalId: string, vote: "APPROVE" | "REJECT", note?: string) =>
+    api.post<SanctionProposalDecision>(`/moderation/sanction-proposals/${proposalId}/vote`, {
+      vote,
+      note,
+    }),
+
+  cancelSanction: (proposalId: string) =>
+    api.post<SanctionProposalView>(`/admin/sanction-proposals/${proposalId}/cancel`, {}),
 
   sanctionUser: (username: string, type: "RESTRICTION" | "BAN", reason: string) =>
     api.post<ModeratorSanctionResult>(`/admin/users/${encodeURIComponent(username)}/sanction`, {

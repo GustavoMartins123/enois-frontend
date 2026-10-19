@@ -7,10 +7,8 @@ import { texts } from "@/texts";
 import type { ModeratorApplicationView } from "@/types/application/moderation/moderator-application-view";
 import type { ModeratorMeView } from "@/types/application/moderation/moderator-me-view";
 import type { ModeratorTabId } from "@/types/routes/moderador/moderator-tab-id";
-import type {
-  SanctionProposalDecision,
-  SanctionProposalView,
-} from "@/types/application/moderation/sanction-proposal-view";
+import type { SanctionProposalDecision } from "@/types/application/moderation/sanction-proposal-decision";
+import type { SanctionProposalView } from "@/types/application/moderation/sanction-proposal-view";
 import {
   ArrowLeft,
   Bug,

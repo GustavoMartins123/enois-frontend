@@ -7,5 +7,9 @@ export type ModeratorMeView = {
   eligible: boolean;
   moderator: boolean;
   admin: boolean;
+  /** Quantos moderadores aprovados existem hoje. */
+  moderatorCount: number;
+  /** A partir deste número a punição por votação passa a existir. */
+  minModeratorsForSanction: number;
   application: ModeratorApplicationView | null;
 };
