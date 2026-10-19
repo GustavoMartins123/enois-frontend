@@ -675,8 +675,7 @@ export const texts = {
         "Rede social gratuita para profissionais e comunidades: sem anúncios, sem planos pagos e com um feed que termina quando o conteúdo acaba. Conversas, mentoria, eventos e vagas.",
       ogDescription:
         "Sem anúncio, sem paywall e sem esteira infinita. Uma rede social em construção com as pessoas, e aberta para quem quiser ajudar.",
-      ogImageAlt:
-        'Página inicial do Énóis com a frase "Uma rede social não precisa viver da sua atenção".',
+      ogImageAlt: "Identidade visual do Énóis com seu símbolo e slogan.",
     },
     /**
      * Números da comunidade. A janela vai escrita por extenso de propósito: é o número de quem
@@ -2616,7 +2615,7 @@ export const texts = {
   },
 
   pwa: {
-    themeColor: "#7c38ee",
+    themeColor: "#6746f5",
     offlineTitle: "Você está offline",
     offlineDescription:
       "Não conseguimos falar com o servidor. Verifique sua conexão e tente de novo.",

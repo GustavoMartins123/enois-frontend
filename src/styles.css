@@ -51,7 +51,7 @@
   --font-sans: "Manrope", sans-serif;
   --shadow-soft: 0 1px 2px oklch(0.2 0.05 290 / 0.04), 0 4px 16px oklch(0.2 0.05 290 / 0.04);
   --shadow-card: 0 1px 3px oklch(0.2 0.05 290 / 0.06), 0 8px 24px -8px oklch(0.2 0.05 290 / 0.08);
-  --gradient-primary: linear-gradient(135deg, oklch(0.52 0.22 295), oklch(0.68 0.18 310));
+  --gradient-primary: linear-gradient(135deg, #6746f5, #4325b8);
   --gradient-soft: linear-gradient(135deg, oklch(0.97 0.02 295), oklch(0.96 0.03 310));
   --color-highlight-insight: var(--highlight-insight);
   --color-highlight-insight-text: var(--highlight-insight-text);
@@ -71,16 +71,16 @@
 
 :root {
   --radius: 0.875rem;
-  --background: #f9f8ff;
-  --foreground: #18181b;
+  --background: #faf9ff;
+  --foreground: #21173a;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.2 0.02 280);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.2 0.02 280);
-  --primary: oklch(0.54 0.25 293);
+  --primary: #6746f5;
   --primary-foreground: oklch(0.99 0.005 290);
-  --primary-text: oklch(0.54 0.25 293);
-  --primary-soft: oklch(0.95 0.04 295);
+  --primary-text: #5736db;
+  --primary-soft: #eee8ff;
   --secondary: oklch(0.82 0.1 305);
   --secondary-foreground: oklch(0.25 0.05 290);
   --muted: oklch(0.96 0.008 280);
@@ -91,7 +91,7 @@
   --destructive-foreground: oklch(0.99 0.005 290);
   --border: oklch(0.92 0.01 285);
   --input: oklch(0.92 0.01 285);
-  --ring: oklch(0.52 0.22 295);
+  --ring: #6746f5;
   --growth: oklch(0.62 0.16 155);
   --growth-foreground: oklch(0.99 0.005 290);
   --opportunity: oklch(0.72 0.18 55);
@@ -135,9 +135,9 @@
   --card-foreground: oklch(0.96 0.008 280);
   --popover: oklch(0.21 0.025 285);
   --popover-foreground: oklch(0.96 0.008 280);
-  --primary: oklch(0.7 0.18 300);
+  --primary: #a78bfa;
   --primary-foreground: oklch(0.16 0.02 285);
-  --primary-text: oklch(0.7 0.18 300);
+  --primary-text: #a78bfa;
   --primary-soft: oklch(0.26 0.06 295);
   --secondary: oklch(0.32 0.08 300);
   --secondary-foreground: oklch(0.96 0.008 280);

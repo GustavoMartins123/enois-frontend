@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { ArrowRight, ArrowUpRight, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 
 import { statsApi } from "@/lib/api";
 
@@ -16,9 +16,8 @@ import { ApoieBanner } from "@/components/apoie-banner";
 
 export const Route = createFileRoute("/")({
   head: () => {
-    // Miniatura da portinha: é o que aparece quando alguém compartilha enois.ia.br. A imagem é uma
-    // captura de verdade desta página (1200x630, a proporção que as plataformas recortam).
-    const shareImage = `${texts.siteUrl}/landing/og.png`;
+    // Cartão de marca usado ao compartilhar a página inicial.
+    const shareImage = `${texts.siteUrl}/landing/brand-og.png`;
     return {
       meta: [
         { title: texts.landing.seo.title },
@@ -65,13 +64,7 @@ function Landing() {
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-lg">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
           <Link to="/" className="flex items-center gap-2" aria-label={texts.brand.name}>
-            <span
-              aria-hidden
-              className="grid h-8 w-8 place-items-center rounded-lg text-primary-foreground"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-            </span>
+            <img src="/brand/mark-primary.svg" alt="" className="h-9 w-9 shrink-0" />
 
             <span className="text-base font-semibold tracking-tight">
               {texts.brand.prefix}
@@ -523,13 +516,7 @@ function Landing() {
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)]">
             <div>
               <Link to="/" className="flex items-center gap-2" aria-label={texts.brand.name}>
-                <span
-                  aria-hidden
-                  className="grid h-8 w-8 place-items-center rounded-lg text-primary-foreground"
-                  style={{ background: "var(--gradient-primary)" }}
-                >
-                  <Sparkles className="h-3.5 w-3.5" />
-                </span>
+                <img src="/brand/mark-primary.svg" alt="" className="h-9 w-9 shrink-0" />
 
                 <span className="text-base font-semibold tracking-tight">
                   {texts.brand.prefix}
