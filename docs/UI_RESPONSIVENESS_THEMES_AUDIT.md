@@ -560,3 +560,16 @@ em denúncia). Admin/moderação: somente leitura visual.
   são as páginas que exigem sessão (`/feed`, `/perfil`, `/post`, `/carteira`, `/vagas`).
 - **Próximo lote:** quando houver sessão nova, `/eventos` (temas 36–60), `/mensagens` e as
   páginas-chave protegidas a 1280 com os 60 temas.
+
+## Rodada 35 — 2026-10-19 18:4x
+
+- **Sessão renovada** (cópia do Firefox com mtime 18:28; `/api/me` 200).
+- **`/eventos` fechado a 390px:** os 25 temas restantes (36–60) × claro/escuro = **50 combinações,
+  ZERO problemas**. Somado à rodada 31, `/eventos` cobre os 60 temas × 2 modos.
+- **`/mensagens` a 390px:** 60 temas × claro/escuro = **120 verificações, 119 limpas e 1 falso
+  positivo**. Em **terminal claro**, “Selecionar” e “Nova” acusaram 1,1:1 porque a cadeia inteira
+  de ancestrais é transparente e o auditor caiu no branco de fallback; no DOM real o texto é
+  `#b8ffc8` sobre o fundo `#050805` (contraste alto). Nenhuma correção.
+- **Próximo lote:** as demais rotas protegidas a 390px (`/denuncias`, `/salvos`, `/blogs`,
+  `/seguranca`, `/suporte`, `/temas`, `/mentoria`, `/rede`, `/notificações`, `/moderador`) e as
+  páginas-chave protegidas a 1280 com os 60 temas.

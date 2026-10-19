@@ -1469,6 +1469,9 @@ export const texts = {
       write: "Escrever",
       publish: "Publicar",
       published: "Post publicado. Quem segue seu blog foi avisado.",
+      notifySubscribers: "Avisar os assinantes por e-mail",
+      notifySubscribersHint:
+        "Quem assina o seu blog recebe um e-mail com este post (além da notificação no app). Dá para desativar só para este post.",
       updated: "Post atualizado.",
       editPost: "Editar post",
       savePost: "Salvar post",
@@ -1631,6 +1634,7 @@ export const texts = {
     actionError: "Não foi possível concluir. Tente novamente.",
     favorite: "Favoritar",
     unfavorite: "Remover dos favoritos",
+    mineTitle: "Minhas comunidades",
     favoritesTitle: "Favoritas",
     topics: {
       all: "Todas",
