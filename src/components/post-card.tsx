@@ -3,17 +3,18 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
+import { postContentLimit } from "@/constants/post-content-limits";
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { POST_SEALS, postSeal } from "@/constants/post-seals";
+import { ARTICLE_BODY_MAX_LENGTH } from "@/constants/post-types";
 import { usePostCardStore } from "@/stores/post-card.store";
-import { postContentLimit } from "@/constants/post-content-limits";
-import { hideExternalPageUrls } from "@/lib/shared-links";
 import { texts } from "@/texts";
 import type { PostCardProps } from "@/types/components/post/post-card-props";
-import { BookOpen, FileText, MoreHorizontal, Pencil, Tag, Trash2 , Clock } from "lucide-react";
+import { BookOpen, Clock, FileText, MoreHorizontal, Pencil, Tag, Trash2 } from "lucide-react";
 
 import { communitiesApi, feedApi } from "@/lib/api";
 import { sealsApi } from "@/lib/api/seals";
+import { hideExternalPageUrls } from "@/lib/shared-links";
 import { useAuth } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
 
@@ -76,17 +77,22 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [draft, setDraft] = useState(post.content);
   const [pageDraft, setPageDraft] = useState(post.pageHtml ?? "");
+  const [bodyDraft, setBodyDraft] = useState(post.articleBody ?? "");
 
   // A listagem (e a resposta da publicação) não carrega o corpo da página: ele pode ter dezenas de
   // milhares de caracteres e não teria por que viajar no feed inteiro. Quem tem uma página pede o
   // post único — a mesma chave de cache da página do post, então lá já vem pronto.
   const needsPage = post.type === "PAGE" && !post.pageHtml;
+  // O corpo do artigo tem o mesmo problema: só a leitura do post único o traz, e a edição precisa
+  // dele (o backend exige o corpo em ARTICLE) — na lista ele não viaja.
+  const needsArticleBody = post.type === "ARTICLE" && !post.articleBody;
   const { data: pagePost, isLoading: pageLoading } = useQuery({
     queryKey: ["post", post.id],
     queryFn: () => feedApi.get(post.id),
-    enabled: needsPage,
+    enabled: needsPage || needsArticleBody,
   });
   const pageHtml = post.pageHtml ?? pagePost?.pageHtml ?? "";
+  const articleBody = post.articleBody ?? pagePost?.articleBody ?? "";
   // As ações do post (reagir, comentar, compartilhar, salvar, denunciar) moram no `PostActions` —
   // a mesma peça que o post do blog usa. Aqui fica só o card, que é quem inicializa o estado dele.
   const initializePostCard = usePostCardStore((state) => state.initializePostCard);
@@ -104,8 +110,17 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
   // A página chega depois do card (requisição própria): preenche o rascunho da edição quando ela
   // aparece, sem atropelar o que o autor já está digitando no diálogo aberto.
   useEffect(() => {
-    if (!editOpen) setPageDraft(pageHtml);
-  }, [editOpen, pageHtml]);
+    if (!editOpen) {
+      setPageDraft(pageHtml);
+      setBodyDraft(articleBody);
+    }
+  }, [editOpen, pageHtml, articleBody]);
+
+  // O corpo do artigo pode chegar depois de o diálogo abrir: preenche só o campo ainda vazio,
+  // para não atropelar quem já começou a editar.
+  useEffect(() => {
+    if (editOpen && !bodyDraft && articleBody) setBodyDraft(articleBody);
+  }, [editOpen, articleBody, bodyDraft]);
 
   // Post proprio: editar o texto e excluir. O backend confere o dono; a UI so evita mostrar para os outros.
   const editPost = useMutation({
@@ -113,9 +128,10 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
       feedApi.update(post.id, {
         content: draft.trim(),
         tags: post.tags,
-        // Numa pagina o HTML vai junto (o backend recusa edicao de PAGE sem ele); nos outros
-        // tipos o campo nem e enviado.
+        // Numa pagina o HTML vai junto (o backend recusa edicao de PAGE sem ele); num artigo
+        // acontece o mesmo com o corpo. Nos outros tipos os campos nem sao enviados.
         ...(post.type === "PAGE" ? { pageHtml: pageDraft } : {}),
+        ...(post.type === "ARTICLE" ? { articleBody: bodyDraft } : {}),
       }),
     onSuccess: () => {
       setEditOpen(false);
@@ -160,8 +176,9 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
   const handleSaveEdit = () => {
     const contentUnchanged = draft.trim() === post.content;
     const pageUnchanged = post.type !== "PAGE" || pageDraft === (post.pageHtml ?? "");
+    const bodyUnchanged = post.type !== "ARTICLE" || bodyDraft.trim() === articleBody.trim();
 
-    if (!draft.trim() || (contentUnchanged && pageUnchanged)) {
+    if (!draft.trim() || (contentUnchanged && pageUnchanged && bodyUnchanged)) {
       setEditOpen(false);
       return;
     }
@@ -492,6 +509,30 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
                 </div>
               )}
 
+              {post.type === "ARTICLE" && (
+                <div>
+                  <label
+                    htmlFor={`article-body-${post.id}`}
+                    className="mb-1 block text-xs font-normal text-text-subtle"
+                  >
+                    {texts.feed.composer.article.bodyLabel}
+                  </label>
+
+                  <Textarea
+                    id={`article-body-${post.id}`}
+                    value={bodyDraft}
+                    maxLength={ARTICLE_BODY_MAX_LENGTH}
+                    onChange={(event) => setBodyDraft(event.target.value)}
+                    placeholder={
+                      pageLoading
+                        ? texts.posts.page.loading
+                        : texts.feed.composer.article.bodyPlaceholder
+                    }
+                    className="min-h-[160px]"
+                  />
+                </div>
+              )}
+
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -506,7 +547,8 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
                   disabled={
                     editPost.isPending ||
                     !draft.trim() ||
-                    (post.type === "PAGE" && !pageDraft.trim())
+                    (post.type === "PAGE" && !pageDraft.trim()) ||
+                    (post.type === "ARTICLE" && !bodyDraft.trim())
                   }
                   onClick={handleSaveEdit}
                 >

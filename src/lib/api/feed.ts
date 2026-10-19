@@ -23,9 +23,12 @@ export const feedApi = {
   listByUserId: (userId: string, cursor?: string | null, limit = 20) =>
     api.get<PageResponse<PostView>>(`/users/${userId}/posts${buildQuery({ cursor, limit })}`),
 
-  // `pageHtml` so vai em post do tipo PAGE; o backend descarta em qualquer outro tipo.
-  update: (postId: string, data: { content: string; tags?: string[]; pageHtml?: string }) =>
-    api.patch<PostView>(`/feed/posts/${postId}`, data),
+  // `pageHtml` so vai em post do tipo PAGE e `articleBody` so em ARTICLE; o backend descarta nos
+  // demais tipos. Num artigo o corpo e obrigatorio tambem na edicao.
+  update: (
+    postId: string,
+    data: { content: string; tags?: string[]; pageHtml?: string; articleBody?: string },
+  ) => api.patch<PostView>(`/feed/posts/${postId}`, data),
 
   /** Desfaz a exclusão do próprio post (soft delete reversível). */
   restore: (postId: string) => api.post<PostView>(`/feed/posts/${postId}/restore`),
