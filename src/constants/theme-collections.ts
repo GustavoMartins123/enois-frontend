@@ -1,17 +1,29 @@
+import type { RgbColor } from "@/types/preferences/rgb-color";
 import type { ThemeCollection } from "@/types/preferences/theme-collection";
 import type { PaletteSpec } from "@/types/preferences/theme-collection-palette-spec";
 import type { ThemeCollectionTokens } from "@/types/preferences/theme-collection-tokens";
-import type { RgbColor } from "@/types/preferences/rgb-color";
 
 import { withAlpha } from "@/lib/theme/build-background-style";
-import {
-  hexToRgb,
-  relativeLuminance,
-  textSafeAccent,
-} from "@/lib/theme/color";
+import { hexToRgb, readableForeground, relativeLuminance, textSafeAccent } from "@/lib/theme/color";
+
+/**
+ * Coleção temática: identidades visuais completas, uma por entrada.
+ *
+ * Cada tema é dados — tokens por modo e, quando precisa, CSS estrutural próprio.
+ * Nenhum componente da aplicação conhece tema: quem respeita os tokens respeita
+ * todos os temas, e um tema novo entra aqui sem tocar em mais nada. Temas com
+ * identidade presa a um só modo (Terminal, Vaporwave e Synthwave são escuros por
+ * natureza) repetem os mesmos tokens nos dois modos — o botão claro/escuro não
+ * muda a cara deles de propósito, e a descrição da galeria avisa.
+ */
+import { THEME_COLLECTIONS_EXTRA } from "./theme-collections-extra";
 
 /** Mistura `color-mix(in srgb, a p%, b)` canal a canal (o que o CSS faz, sem CSS). */
-function mixSrgb(a: { r: number; g: number; b: number }, b: { r: number; g: number; b: number }, p: number) {
+function mixSrgb(
+  a: { r: number; g: number; b: number },
+  b: { r: number; g: number; b: number },
+  p: number,
+) {
   return {
     r: a.r * p + b.r * (1 - p),
     g: a.g * p + b.g * (1 - p),
@@ -90,14 +102,20 @@ export function palette(spec: PaletteSpec): ThemeCollectionTokens {
   const mixPadrao = `color-mix(in srgb, ${primary} 14%, ${bgSolido})`;
   const mixSoft = mixSrgb(primaryRgb, backgroundRgb, 0.14);
   const softRgb = spec.soft ? corSobre(spec.soft, backgroundRgb) : mixSoft;
-  const softNoLadoCerto =
-    claro ? relativeLuminance(softRgb) > relativeLuminance(primaryRgb)
-          : relativeLuminance(softRgb) < relativeLuminance(primaryRgb);
+  const softNoLadoCerto = claro
+    ? relativeLuminance(softRgb) > relativeLuminance(primaryRgb)
+    : relativeLuminance(softRgb) < relativeLuminance(primaryRgb);
   const softFinal = softNoLadoCerto ? (spec.soft ?? mixPadrao) : mixPadrao;
   const softFinalRgb = softNoLadoCerto ? softRgb : mixSoft;
   const mutedRgb = corSobre(muted, backgroundRgb);
   const bgStops = paradasDoFundo(spec.background, backgroundRgb);
   const secondary = spec.secondary ?? `color-mix(in oklab, ${primary} 45%, ${bgSolido})`;
+  // O accent é um PREENCHIMENTO (selo DIVERTIDO): o texto em cima dele precisa ser
+  // escolhido pela luminância do accent, não herdado do texto da página. Sem isso, um
+  // tema escuro com accent claro (grafite) ficava com branco sobre cinza-claro (1.7:1).
+  const accentValue = spec.accent ?? muted;
+  const accentRgb = corSobre(accentValue, backgroundRgb);
+  const accentForeground = spec.onAccent ?? readableForeground(accentRgb, 0).css;
   // O texto que usa o destaque como COR (links, "Entrar", chips de habilidade) não pode
   // sumir quando o primário do tema é claro demais para o fundo — e também não pode
   // empatar com o soft (bg-primary-soft), com a superfície-2 (chips bg-surface-2) nem
@@ -108,13 +126,14 @@ export function palette(spec: PaletteSpec): ThemeCollectionTokens {
   // não ficar em 2.0–2.9:1 em temas de superfície clara/escura.
   const surfaceSolidRgb = hexToRgb(surface);
   const surfaceAlpha = Math.min(100, Math.max(0, spec.surfaceAlpha ?? 100)) / 100;
-  const surfaceRgb = surfaceAlpha >= 1
-    ? surfaceSolidRgb
-    : {
-        r: surfaceSolidRgb.r * surfaceAlpha + backgroundRgb.r * (1 - surfaceAlpha),
-        g: surfaceSolidRgb.g * surfaceAlpha + backgroundRgb.g * (1 - surfaceAlpha),
-        b: surfaceSolidRgb.b * surfaceAlpha + backgroundRgb.b * (1 - surfaceAlpha),
-      };
+  const surfaceRgb =
+    surfaceAlpha >= 1
+      ? surfaceSolidRgb
+      : {
+          r: surfaceSolidRgb.r * surfaceAlpha + backgroundRgb.r * (1 - surfaceAlpha),
+          g: surfaceSolidRgb.g * surfaceAlpha + backgroundRgb.g * (1 - surfaceAlpha),
+          b: surfaceSolidRgb.b * surfaceAlpha + backgroundRgb.b * (1 - surfaceAlpha),
+        };
   const dateText = textSafeAccent(hexToRgb(spec.text.date), [surfaceRgb, backgroundRgb]);
 
   return {
@@ -125,8 +144,8 @@ export function palette(spec: PaletteSpec): ThemeCollectionTokens {
     "--primary-soft": softFinal,
     "--secondary": secondary,
     "--secondary-foreground": spec.onSecondary ?? onPrimary,
-    "--accent": spec.accent ?? muted,
-    "--accent-foreground": spec.onAccent ?? spec.text.strong,
+    "--accent": accentValue,
+    "--accent-foreground": accentForeground,
     "--ring": spec.ring ?? primary,
     "--gradient-primary":
       spec.gradient ??
@@ -213,18 +232,6 @@ const BEVEL_RULE_BUTTON =
   ".bg-primary { box-shadow: inset -1px -1px var(--bevel-dark), inset 1px 1px var(--bevel-light) }";
 const BEVEL_RULE_SOFT =
   ".surface-card, .bg-surface-card, .bg-card, .bg-popover { box-shadow: inset -1px -1px var(--bevel-dark), inset 1px 1px var(--bevel-light) }";
-
-/**
- * Coleção temática: identidades visuais completas, uma por entrada.
- *
- * Cada tema é dados — tokens por modo e, quando precisa, CSS estrutural próprio.
- * Nenhum componente da aplicação conhece tema: quem respeita os tokens respeita
- * todos os temas, e um tema novo entra aqui sem tocar em mais nada. Temas com
- * identidade presa a um só modo (Terminal, Vaporwave e Synthwave são escuros por
- * natureza) repetem os mesmos tokens nos dois modos — o botão claro/escuro não
- * muda a cara deles de propósito, e a descrição da galeria avisa.
- */
-import { THEME_COLLECTIONS_EXTRA } from "./theme-collections-extra";
 
 export const THEME_COLLECTIONS: ThemeCollection[] = [
   ...THEME_COLLECTIONS_EXTRA,
