@@ -1,6 +1,6 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** em andamento — rodadas 1 a 17 executadas. O Lote B público está
+> **Status (2026-10-19):** em andamento — rodadas 1 a 18 executadas. O Lote B público está
 > completo; restam as rotas/páginas protegidas (Lote A nos viewports novos, Lote B em 390px e
 > Lote C em 1280px), que dependem de uma sessão fresca do Firefox.
 
@@ -292,6 +292,19 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Nenhuma correção.** O Lote B público segue completo (22 rotas / 2640 combinações) e o Lote C
   público tem 7 páginas (840 combinações).
 - **Pendência única:** o lote protegido, dependente de sessão fresca do Firefox.
+
+## Rodada 18 — 2026-10-19
+
+- **Sessão:** ainda expirada; rotas protegidas seguem bloqueadas.
+- **Estados interativos públicos (390/1280):**
+  - `/entrar`: alternância criar conta ↔ entrar funciona; campos de nome/e-mail e senha presentes;
+    **zero overflow** nos dois viewports.
+  - `/auth/callback` sem parâmetros: cai no estado de erro “Não foi possível concluir o login
+    social”, **zero overflow**.
+  - `/#proposta`: o link da landing rola até a seção com topo em **80px**, acima do header sticky
+    (57px) — sem conteúdo escondido.
+  - `/temas`: estado vazio correto (“Nenhum tema publicado ainda.”), **zero overflow**.
+- **Nenhuma correção.** Continua pendente apenas o lote protegido (sessão expirada).
 
 ## Achados e correções
 
