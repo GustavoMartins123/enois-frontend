@@ -1563,6 +1563,7 @@ export const texts = {
       },
       favorite: "Guardar na biblioteca",
       unfavorite: "Tirar da biblioteca",
+      favoriteError: "Não foi possível atualizar a biblioteca agora.",
       favorites: (count: number) => `${count} na biblioteca`,
       share: "Compartilhar",
       shareCopied: "Link do jogo copiado!",

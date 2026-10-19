@@ -1,5 +1,7 @@
 import type { RequestOptions } from "@/types/application/api/request-options";
 
+import { resetSessionScopedData } from "./query-client";
+
 /**
  * Base da API.
  *
@@ -154,11 +156,13 @@ if (typeof window !== "undefined") {
 }
 
 export function clearSession() {
+  const hadSession = localStorage.getItem("session_token") !== null;
   localStorage.removeItem("session_token");
   localStorage.removeItem("refresh_token");
   localStorage.removeItem("session_expires_at");
   localStorage.removeItem("refresh_expires_at");
   localStorage.removeItem("current_user");
+  if (hadSession) resetSessionScopedData();
 }
 
 async function request<T>(

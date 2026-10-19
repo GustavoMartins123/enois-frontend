@@ -17,6 +17,7 @@ const { createRoot } = await import("react-dom/client");
 const { QueryClient: QueryClientImpl, QueryClientProvider } = await import("@tanstack/react-query");
 const { Outlet, RouterProvider, createMemoryHistory, createRootRoute, createRoute, createRouter } =
   await import("@tanstack/react-router");
+const { clearSession } = await import("@/lib/api-client");
 const { registerBrowserQueryClient } = await import("@/lib/query-client");
 const { storeSession } = await import("@/lib/session");
 const { ToastProvider } = await import("@/components/ui/toast");
@@ -29,10 +30,7 @@ const server = vi.hoisted(() => {
     games: {} as Record<string, { id: string; slug: string; url: string; title: string }>,
     favorites: new Map<string, Set<string>>(),
     failFavorite: false,
-    pendingIdentity: [] as {
-      gameId: string;
-      resolve: (token: string) => void;
-    }[],
+    pendingIdentity: [] as { gameId: string; resolve: (token: string) => void }[],
   };
   const token = () => localStorage.getItem("session_token");
   return { state, token };
@@ -127,11 +125,7 @@ function makeRouter(path: string) {
     },
   });
   const others = ["/games", "/games/$username", "/entrar"].map((p) =>
-    createRoute({
-      getParentRoute: () => rootRoute,
-      path: p,
-      component: () => null,
-    }),
+    createRoute({ getParentRoute: () => rootRoute, path: p, component: () => null }),
   );
   return createRouter({
     routeTree: rootRoute.addChildren([gameRoute, ...others]),
@@ -212,18 +206,8 @@ async function fromGame(
 beforeEach(() => {
   localStorage.clear();
   server.state.games = {
-    "jogo-a": {
-      id: "game_a",
-      slug: "jogo-a",
-      url: "https://jogo-a.exemplo.com/",
-      title: "Jogo A",
-    },
-    "jogo-b": {
-      id: "game_b",
-      slug: "jogo-b",
-      url: "https://jogo-b.exemplo.com/",
-      title: "Jogo B",
-    },
+    "jogo-a": { id: "game_a", slug: "jogo-a", url: "https://jogo-a.exemplo.com/", title: "Jogo A" },
+    "jogo-b": { id: "game_b", slug: "jogo-b", url: "https://jogo-b.exemplo.com/", title: "Jogo B" },
   };
   server.state.favorites = new Map([["tok_ana", new Set(["game_a"])]]);
   server.state.failFavorite = false;
@@ -249,11 +233,7 @@ describe("pedidos do jogo presos ao jogo que os fez", () => {
   it("A: confirmar sem trocar de jogo chama só o endpoint do jogo A", async () => {
     await open("jogo-a");
     await startGame();
-    await fromGame("jogo-a", {
-      type: "enois:spend",
-      amount: 5000,
-      requestId: "r-a",
-    });
+    await fromGame("jogo-a", { type: "enois:spend", amount: 5000, requestId: "r-a" });
     await waitFor(() => expect(dialog()).not.toBeNull());
 
     await act(async () => button(texts.games.game.spend.confirm)!.click());
@@ -264,11 +244,7 @@ describe("pedidos do jogo presos ao jogo que os fez", () => {
   it("B: pedido de gasto do jogo A não sobrevive à navegação para o jogo B", async () => {
     await open("jogo-a");
     await startGame();
-    await fromGame("jogo-a", {
-      type: "enois:spend",
-      amount: 5000,
-      requestId: "r-a",
-    });
+    await fromGame("jogo-a", { type: "enois:spend", amount: 5000, requestId: "r-a" });
     await waitFor(() => expect(dialog()).not.toBeNull());
 
     await navigateTo("jogo-b");
@@ -319,17 +295,10 @@ describe("pedidos do jogo presos ao jogo que os fez", () => {
   it("D: troca de gameId no mesmo endereço tira o pedido aberto da tela", async () => {
     await open("jogo-a");
     await startGame();
-    await fromGame("jogo-a", {
-      type: "enois:spend",
-      amount: 5000,
-      requestId: "r-a",
-    });
+    await fromGame("jogo-a", { type: "enois:spend", amount: 5000, requestId: "r-a" });
     await waitFor(() => expect(dialog()).not.toBeNull());
 
-    server.state.games["jogo-a"] = {
-      ...server.state.games["jogo-a"],
-      id: "game_a2",
-    };
+    server.state.games["jogo-a"] = { ...server.state.games["jogo-a"], id: "game_a2" };
     await act(async () => queryClient.invalidateQueries({ queryKey: ["games", "slug"] }));
     await waitFor(() => expect(dialog()).toBeNull());
     expect(gamesApi.spend).not.toHaveBeenCalled();
@@ -338,17 +307,9 @@ describe("pedidos do jogo presos ao jogo que os fez", () => {
   it("E: segundo pedido com o diálogo aberto não substitui o primeiro", async () => {
     await open("jogo-a");
     await startGame();
-    await fromGame("jogo-a", {
-      type: "enois:spend",
-      amount: 1000,
-      requestId: "r-1",
-    });
+    await fromGame("jogo-a", { type: "enois:spend", amount: 1000, requestId: "r-1" });
     await waitFor(() => expect(dialog()?.textContent).toContain("1 faíscas"));
-    await fromGame("jogo-a", {
-      type: "enois:spend",
-      amount: 999000,
-      requestId: "r-2",
-    });
+    await fromGame("jogo-a", { type: "enois:spend", amount: 999000, requestId: "r-2" });
     expect(dialog()?.textContent).toContain("1 faíscas");
     expect(dialog()?.textContent).not.toContain("999");
 
@@ -360,11 +321,7 @@ describe("pedidos do jogo presos ao jogo que os fez", () => {
   it("F: recusar e cancelar não chamam endpoint nenhum", async () => {
     await open("jogo-a");
     await startGame();
-    await fromGame("jogo-a", {
-      type: "enois:spend",
-      amount: 5000,
-      requestId: "r-a",
-    });
+    await fromGame("jogo-a", { type: "enois:spend", amount: 5000, requestId: "r-a" });
     await waitFor(() => expect(dialog()).not.toBeNull());
     await act(async () => button(texts.games.game.spend.refuse)!.click());
     await waitFor(() => expect(dialog()).toBeNull());
@@ -414,5 +371,163 @@ describe("pedidos do jogo presos ao jogo que os fez", () => {
     await act(async () => server.state.pendingIdentity[0].resolve("tok_atrasado"));
     await flush();
     expect(post).not.toHaveBeenCalled();
+  });
+});
+
+describe("favoritos e a sessão de quem lê", () => {
+  const favoriteButton = () =>
+    button(texts.games.game.favorite) ?? button(texts.games.game.unfavorite);
+
+  it("A: visitante vê favorited=false", async () => {
+    await open("jogo-a");
+    await waitFor(() => expect(favoriteButton()?.textContent).toContain(texts.games.game.favorite));
+  });
+
+  it("B: entrar numa conta que já guardou mostra Tirar da biblioteca", async () => {
+    await open("jogo-a");
+    await waitFor(() => expect(favoriteButton()?.textContent).toContain(texts.games.game.favorite));
+
+    await act(async () => storeSession({ token: "tok_ana" }));
+    await waitFor(() =>
+      expect(favoriteButton()?.textContent).toContain(texts.games.game.unfavorite),
+    );
+  });
+
+  it("C: desfavoritar deixa tela e API de acordo", async () => {
+    storeSession({ token: "tok_ana" });
+    await open("jogo-a");
+    await waitFor(() =>
+      expect(favoriteButton()?.textContent).toContain(texts.games.game.unfavorite),
+    );
+
+    await act(async () => favoriteButton()!.click());
+    await waitFor(() => expect(favoriteButton()?.textContent).toContain(texts.games.game.favorite));
+    expect(gamesApi.unfavorite).toHaveBeenCalledWith("game_a");
+    expect(gamesApi.favorite).not.toHaveBeenCalled();
+    expect(server.state.favorites.get("tok_ana")?.has("game_a")).toBe(false);
+  });
+
+  it("D: sair não deixa os dados da sessão anterior na cache", async () => {
+    storeSession({ token: "tok_ana" });
+    await open("jogo-a");
+    await waitFor(() =>
+      expect(favoriteButton()?.textContent).toContain(texts.games.game.unfavorite),
+    );
+
+    await act(async () => clearSession());
+    const cached = queryClient
+      .getQueryCache()
+      .getAll()
+      .map((query) => query.state.data as { favorited?: boolean } | undefined);
+    expect(cached.some((data) => data?.favorited === true)).toBe(false);
+    expect(queryClient.getQueryData(["me"])).toBeUndefined();
+    await waitFor(() => expect(favoriteButton()?.textContent).toContain(texts.games.game.favorite));
+  });
+
+  it("E: trocar da conta A para a B não leva os favoritos de A", async () => {
+    storeSession({ token: "tok_ana" });
+    await open("jogo-a");
+    await waitFor(() =>
+      expect(favoriteButton()?.textContent).toContain(texts.games.game.unfavorite),
+    );
+
+    await act(async () => {
+      clearSession();
+      storeSession({ token: "tok_bia" });
+    });
+    await waitFor(() => expect(favoriteButton()?.textContent).toContain(texts.games.game.favorite));
+  });
+
+  it("E: entrar em outra aba também troca o que esta aba mostra", async () => {
+    await open("jogo-a");
+    await waitFor(() => expect(favoriteButton()?.textContent).toContain(texts.games.game.favorite));
+
+    localStorage.setItem("session_token", "tok_ana");
+    await act(async () => {
+      window.dispatchEvent(
+        new StorageEvent("storage", {
+          key: "session_token",
+          oldValue: null,
+          newValue: "tok_ana",
+          storageArea: localStorage,
+        }),
+      );
+    });
+    await waitFor(() =>
+      expect(favoriteButton()?.textContent).toContain(texts.games.game.unfavorite),
+    );
+  });
+
+  it("F: falha na API não finge que guardou", async () => {
+    storeSession({ token: "tok_bia" });
+    server.state.failFavorite = true;
+    await open("jogo-a");
+    await waitFor(() => expect(favoriteButton()?.textContent).toContain(texts.games.game.favorite));
+
+    await act(async () => favoriteButton()!.click());
+    await waitFor(() =>
+      expect(document.body.textContent).toContain(texts.games.game.favoriteError),
+    );
+    expect(favoriteButton()?.textContent).toContain(texts.games.game.favorite);
+    expect(server.state.favorites.get("tok_bia")).toBeUndefined();
+  });
+});
+
+// No servidor não existe window, document nem localStorage: esconde os três enquanto o HTML sai.
+function withoutBrowser<T>(render: () => T): T {
+  const names = ["window", "document", "localStorage", "sessionStorage"] as const;
+  const saved = names.map((name) => Object.getOwnPropertyDescriptor(globalThis, name));
+  for (const name of names) {
+    Object.defineProperty(globalThis, name, { configurable: true, value: undefined });
+  }
+  try {
+    return render();
+  } finally {
+    names.forEach((name, i) => Object.defineProperty(globalThis, name, saved[i]!));
+  }
+}
+
+describe("hidratação da página do jogo", () => {
+  it("G: o HTML do servidor hidrata sem diferença, com e sem sessão", async () => {
+    const { renderToString } = await import("react-dom/server");
+    const { hydrateRoot } = await import("react-dom/client");
+
+    for (const sessionToken of [null, "tok_ana"]) {
+      if (sessionToken) localStorage.setItem("session_token", sessionToken);
+      const tree = (client: QueryClient, appRouter: ReturnType<typeof makeRouter>) => (
+        <QueryClientProvider client={client}>
+          <ToastProvider>
+            <RouterProvider router={appRouter} />
+          </ToastProvider>
+        </QueryClientProvider>
+      );
+
+      const serverRouter = makeRouter("/games/dev/jogo-a");
+      await serverRouter.load();
+      const html = withoutBrowser(() => renderToString(tree(new QueryClientImpl(), serverRouter)));
+      expect(html).toContain(texts.games.loading);
+
+      const clientRouter = makeRouter("/games/dev/jogo-a");
+      await clientRouter.load();
+      const container = document.createElement("div");
+      container.innerHTML = html;
+      document.body.appendChild(container);
+      const recoverable = vi.fn();
+      const consoleError = vi.spyOn(console, "error");
+      let hydrated!: ReturnType<typeof hydrateRoot>;
+      await act(async () => {
+        hydrated = hydrateRoot(container, tree(queryClient, clientRouter), {
+          onRecoverableError: recoverable,
+        });
+      });
+      await waitFor(() => expect(container.querySelector("h1")?.textContent).toBe("Jogo A"));
+
+      expect(recoverable).not.toHaveBeenCalled();
+      expect(consoleError).not.toHaveBeenCalled();
+      consoleError.mockRestore();
+      await act(async () => hydrated.unmount());
+      container.remove();
+      queryClient.clear();
+    }
   });
 });

@@ -8,6 +8,7 @@ import type { GameIdentityBinding } from "@/types/application/games/game-identit
 import type { GamePendingRequest } from "@/types/application/games/game-pending-request";
 import type { GameShareRequest } from "@/types/application/games/game-share-request";
 import type { GameSpendRequest } from "@/types/application/games/game-spend-request";
+import type { GameView } from "@/types/application/games/game-view";
 import { Bookmark, Gamepad2, Share2, Sparkles } from "lucide-react";
 
 import { gamesApi, mediaApi } from "@/lib/api";
@@ -64,6 +65,7 @@ function GameDetailContent({ username, gameSlug }: { username: string; gameSlug:
   const game = useQuery({
     queryKey: slugKey,
     queryFn: () => gamesApi.bySlug(username, gameSlug),
+    staleTime: 0,
   });
   const gameId = game.data?.id;
 
@@ -103,12 +105,16 @@ function GameDetailContent({ username, gameSlug }: { username: string; gameSlug:
   const favorite = useMutation({
     mutationFn: (vars: { gameId: string; favorited: boolean }) =>
       vars.favorited ? gamesApi.unfavorite(vars.gameId) : gamesApi.favorite(vars.gameId),
-    onSuccess: (_resposta, vars) => {
+    onSuccess: (resposta, vars) => {
+      queryClient.setQueryData<GameView>(slugKey, (atual) =>
+        atual?.id === vars.gameId
+          ? { ...atual, favorited: resposta.favorited, favorites: resposta.favorites }
+          : atual,
+      );
       void queryClient.invalidateQueries({ queryKey: slugKey });
-      void queryClient.invalidateQueries({
-        queryKey: ["games", "stats", vars.gameId],
-      });
+      void queryClient.invalidateQueries({ queryKey: ["games", "stats", vars.gameId] });
     },
+    onError: () => toast(t.favoriteError, "error"),
   });
 
   const compartilhar = useMutation({
@@ -116,9 +122,7 @@ function GameDetailContent({ username, gameSlug }: { username: string; gameSlug:
       let mediaIds: string[] = [];
       if (pedido.imagem) {
         const blob = await (await fetch(pedido.imagem)).blob();
-        const arquivo = new File([blob], "conquista.png", {
-          type: blob.type || "image/png",
-        });
+        const arquivo = new File([blob], "conquista.png", { type: blob.type || "image/png" });
         const resultado = await mediaApi.requestUpload({
           fileName: `media/${crypto.randomUUID()}/conquista.png`,
           mimeType: arquivo.type,
@@ -266,10 +270,7 @@ function GameDetailContent({ username, gameSlug }: { username: string; gameSlug:
           tallOnMobile
           identity={
             identidadeAtiva
-              ? {
-                  session: identidadeAtiva.session,
-                  token: identidadeAtiva.token,
-                }
+              ? { session: identidadeAtiva.session, token: identidadeAtiva.token }
               : null
           }
           stats={
