@@ -21,4 +21,8 @@ export const supportApi = {
   /** Triagem: move o ticket entre aberto/em andamento/resolvido. */
   adminUpdate: (id: string, data: { status?: SupportStatus; category?: SupportCategory }) =>
     api.patch<SupportRequestView>(`/admin/support/${id}`, data),
+
+  /** Resposta oficial: grava no ticket, envia ao e-mail de contato e notifica no app. */
+  adminReply: (id: string, message: string) =>
+    api.post<SupportRequestView>(`/admin/support/${id}/reply`, { message }),
 };

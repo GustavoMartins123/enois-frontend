@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { LoadingState } from "@/components/ui/loading-state";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 
 const CATEGORIES: SupportCategory[] = ["BUG", "ACCOUNT", "CONTENT", "IDEA", "OTHER"];
@@ -191,11 +192,72 @@ export function SupportTicketsSection({ lockedCategory }: { lockedCategory?: Sup
                   </Button>
                 )}
               </div>
+
+              {ticket.adminReply && (
+                <div className="rounded-xl border border-primary/30 bg-primary-soft px-3 py-2">
+                  <p className="text-xs font-medium text-primary-text">
+                    {texts.moderator.support.adminReplyLabel}
+                  </p>
+
+                  <p className="mt-1 whitespace-pre-wrap break-words text-sm text-text-strong">
+                    {ticket.adminReply}
+                  </p>
+
+                  {ticket.repliedAt && (
+                    <p className="mt-1 text-xs text-text-subtle">
+                      {new Date(ticket.repliedAt).toLocaleString("pt-BR")}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <TicketReply ticketId={ticket.id} />
             </li>
           ))}
         </ul>
       )}
     </section>
+  );
+}
+
+function TicketReply({ ticketId }: { ticketId: string }) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [message, setMessage] = useState("");
+
+  const reply = useMutation({
+    mutationFn: () => supportApi.adminReply(ticketId, message.trim()),
+    onSuccess: () => {
+      toast(texts.moderator.support.replySent, "success");
+      setMessage("");
+      void queryClient.invalidateQueries({ queryKey: ["moderator", "support"] });
+    },
+    onError: () => toast(texts.moderator.support.replyError, "error"),
+  });
+
+  return (
+    <div className="space-y-2 rounded-xl border border-border-soft bg-surface-1 p-3">
+      <p className="text-xs font-medium uppercase tracking-wide text-text-subtle">
+        {texts.moderator.support.replyTitle}
+      </p>
+
+      <Textarea
+        value={message}
+        onChange={(event) => setMessage(event.target.value)}
+        rows={3}
+        maxLength={4000}
+        placeholder={texts.moderator.support.replyPlaceholder}
+      />
+
+      <Button
+        size="sm"
+        className="rounded-full"
+        disabled={reply.isPending || message.trim().length < 5}
+        onClick={() => reply.mutate()}
+      >
+        {reply.isPending ? texts.common.sending : texts.moderator.support.replyAction}
+      </Button>
+    </div>
   );
 }
 

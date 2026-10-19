@@ -10,5 +10,8 @@ export type SupportRequestView = {
   imageUrl: string | null;
   category: SupportCategory;
   status: SupportStatus;
+  adminReply: string | null;
+  repliedBy: string | null;
+  repliedAt: string | null;
   createdAt: string;
 };
