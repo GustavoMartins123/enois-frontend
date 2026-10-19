@@ -4,7 +4,22 @@ import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { AccountMenuProps } from "@/types/components/account/account-menu-props";
-import { Flag, KeyRound, Store, Zap, LifeBuoy, Link2, LogOut, Mail, ShieldAlert, ShieldCheck, ShieldOff, Trash2, User } from "lucide-react";
+import {
+  Flag,
+  Gavel,
+  KeyRound,
+  LifeBuoy,
+  Link2,
+  LogOut,
+  Mail,
+  ShieldAlert,
+  ShieldCheck,
+  ShieldOff,
+  Store,
+  Trash2,
+  User,
+  Zap,
+} from "lucide-react";
 
 import { logout } from "@/lib/logout";
 import { cn } from "@/lib/utils";
@@ -138,6 +153,12 @@ export function AccountMenu({ profile }: AccountMenuProps) {
               <>{texts.account.menu.myReports}</>
             </Link>
 
+            <Link to="/moderador" onClick={() => setMenuOpen(false)} className={ITEM_CLASS}>
+              <Gavel className="h-4 w-4" />
+
+              <>{texts.account.menu.moderator}</>
+            </Link>
+
             <Link to="/penalidades" onClick={() => setMenuOpen(false)} className={ITEM_CLASS}>
               <ShieldAlert className="h-4 w-4" />
 
@@ -193,7 +214,6 @@ export function AccountMenu({ profile }: AccountMenuProps) {
       />
       <ChangePasswordDialog open={showChangePassword} onOpenChange={setShowChangePassword} />
       <DeleteAccountDialog open={showDeleteAccount} onOpenChange={setShowDeleteAccount} />
-
       <LinkedAccountsDialog open={showLinkedAccounts} onOpenChange={setShowLinkedAccounts} />
     </>
   );

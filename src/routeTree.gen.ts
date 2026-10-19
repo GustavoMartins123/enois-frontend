@@ -20,6 +20,7 @@ import { Route as SalvosRouteImport } from './routes/salvos'
 import { Route as RedeRouteImport } from './routes/rede'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PenalidadesRouteImport } from './routes/penalidades'
+import { Route as ModeradorRouteImport } from './routes/moderador'
 import { Route as ModeracaoRouteImport } from './routes/moderacao'
 import { Route as MentoriaRouteImport } from './routes/mentoria'
 import { Route as MensagensRouteImport } from './routes/mensagens'
@@ -111,6 +112,11 @@ const PrivacidadeRoute = PrivacidadeRouteImport.update({
 const PenalidadesRoute = PenalidadesRouteImport.update({
   id: '/penalidades',
   path: '/penalidades',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ModeradorRoute = ModeradorRouteImport.update({
+  id: '/moderador',
+  path: '/moderador',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ModeracaoRoute = ModeracaoRouteImport.update({
@@ -320,6 +326,7 @@ export interface FileRoutesByFullPath {
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
   '/moderacao': typeof ModeracaoRouteWithChildren
+  '/moderador': typeof ModeradorRoute
   '/penalidades': typeof PenalidadesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
@@ -370,6 +377,7 @@ export interface FileRoutesByTo {
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
   '/moderacao': typeof ModeracaoRouteWithChildren
+  '/moderador': typeof ModeradorRoute
   '/penalidades': typeof PenalidadesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
@@ -421,6 +429,7 @@ export interface FileRoutesById {
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
   '/moderacao': typeof ModeracaoRouteWithChildren
+  '/moderador': typeof ModeradorRoute
   '/penalidades': typeof PenalidadesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
@@ -473,6 +482,7 @@ export interface FileRouteTypes {
     | '/mensagens'
     | '/mentoria'
     | '/moderacao'
+    | '/moderador'
     | '/penalidades'
     | '/privacidade'
     | '/rede'
@@ -523,6 +533,7 @@ export interface FileRouteTypes {
     | '/mensagens'
     | '/mentoria'
     | '/moderacao'
+    | '/moderador'
     | '/penalidades'
     | '/privacidade'
     | '/rede'
@@ -573,6 +584,7 @@ export interface FileRouteTypes {
     | '/mensagens'
     | '/mentoria'
     | '/moderacao'
+    | '/moderador'
     | '/penalidades'
     | '/privacidade'
     | '/rede'
@@ -624,6 +636,7 @@ export interface RootRouteChildren {
   MensagensRoute: typeof MensagensRoute
   MentoriaRoute: typeof MentoriaRoute
   ModeracaoRoute: typeof ModeracaoRouteWithChildren
+  ModeradorRoute: typeof ModeradorRoute
   PenalidadesRoute: typeof PenalidadesRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   RedeRoute: typeof RedeRoute
@@ -722,6 +735,13 @@ declare module '@tanstack/react-router' {
       path: '/penalidades'
       fullPath: '/penalidades'
       preLoaderRoute: typeof PenalidadesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/moderador': {
+      id: '/moderador'
+      path: '/moderador'
+      fullPath: '/moderador'
+      preLoaderRoute: typeof ModeradorRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/moderacao': {
@@ -1090,6 +1110,7 @@ const rootRouteChildren: RootRouteChildren = {
   MensagensRoute: MensagensRoute,
   MentoriaRoute: MentoriaRoute,
   ModeracaoRoute: ModeracaoRouteWithChildren,
+  ModeradorRoute: ModeradorRoute,
   PenalidadesRoute: PenalidadesRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   RedeRoute: RedeRoute,

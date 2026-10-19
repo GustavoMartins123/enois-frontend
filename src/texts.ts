@@ -632,6 +632,7 @@ export const texts = {
       support: "Ajuda e suporte",
       blockedUsers: "Usuários bloqueados",
       myReports: "Minhas denúncias",
+      moderator: "Painel de moderador",
       sanctions: "Penalidades",
       linkedAccounts: "Contas vinculadas",
       security: "Segurança e verificação",
@@ -2257,6 +2258,98 @@ export const texts = {
     moderationEmpty: "Nenhum recurso pendente.",
     decided: "Decisão registrada.",
     moderationError: "Não foi possível registrar a decisão.",
+  },
+
+  /**
+   * Painel de moderador: candidatura (credibilidade > 500 + aprovação) e votação das denúncias.
+   * Admins (allowlist de username no backend) decidem candidaturas e podem punir qualquer usuário.
+   */
+  moderator: {
+    seoTitle: "Painel de moderador · Énóis",
+    back: "Voltar",
+    title: "Painel de moderador",
+    description:
+      "Analise as denúncias e vote: punir remove o conteúdo e restringe o autor; descartar arquiva a denúncia. A votação fecha quando um lado atinge o quórum.",
+    adminBadge: "Admin",
+    moderatorBadge: "Moderador",
+    loading: "Carregando painel...",
+    error: "Não foi possível carregar o painel.",
+    eligibility: {
+      title: "Seja moderador",
+      description: (min: number) =>
+        `Quem tem mais de ${min} de credibilidade pode se candidatar. A candidatura é analisada por um administrador; aprovada, libera este painel.`,
+      reputation: (value: number, min: number) =>
+        `Sua credibilidade: ${value}. Para se candidatar é preciso mais de ${min}.`,
+      low: (min: number) =>
+        `Ainda não chegou lá. Participe das comunidades, receba recomendações e mantenha o perfil atualizado para ganhar credibilidade. O mínimo é mais de ${min}.`,
+      motivation: "Por que você quer moderar?",
+      motivationPlaceholder:
+        "Conte o que você faz na comunidade e como pretende analisar denúncias com justiça.",
+      experience: "Experiência com moderação (opcional)",
+      experiencePlaceholder: "Comunidades, projetos ou situações que já moderou...",
+      availability: "Disponibilidade (opcional)",
+      availabilityPlaceholder: "Ex.: algumas horas por semana, horários...",
+      apply: "Enviar candidatura",
+      sent: "Candidatura enviada. Você será avisado da decisão.",
+      error: "Não foi possível enviar a candidatura.",
+      pendingTitle: "Candidatura em análise",
+      pendingBody:
+        "Um administrador vai revisar sua candidatura. Você recebe uma notificação quando houver decisão.",
+      rejectedTitle: "Candidatura recusada",
+      revokedTitle: "Acesso de moderador revogado",
+      retry: "Enviar nova candidatura",
+    },
+    reports: {
+      title: "Denúncias aguardando revisão",
+      empty: "Nenhuma denúncia aguardando revisão.",
+      reason: "Motivo",
+      target: "Alvo",
+      reporter: "Denunciante",
+      author: "Autor",
+      noAuthor: "Autor não identificado",
+      noContent: "Conteúdo indisponível (pode ter sido removido).",
+      votes: (punish: number, dismiss: number, quorum: number) =>
+        `Punir: ${punish} · Descartar: ${dismiss} · Quórum: ${quorum}`,
+      myVote: (vote: "PUNISH" | "DISMISS") =>
+        vote === "PUNISH" ? "Seu voto: punir" : "Seu voto: descartar",
+      punish: "Votar para punir",
+      dismiss: "Votar para descartar",
+      voted: "Voto registrado.",
+      voteError: "Não foi possível registrar o voto.",
+      openReview: "Revisão completa (admin)",
+    },
+    admin: {
+      applicationsTitle: "Candidaturas a moderador",
+      applicationsEmpty: "Nenhuma candidatura pendente.",
+      applicant: "Candidato",
+      motivation: "Motivação",
+      experience: "Experiência",
+      availability: "Disponibilidade",
+      note: "Observação para o candidato (obrigatória ao recusar)",
+      notePlaceholder: "Explique a decisão...",
+      approve: "Aprovar",
+      reject: "Recusar",
+      approved: "Candidatura aprovada.",
+      rejected: "Candidatura recusada.",
+      decisionError: "Não foi possível registrar a decisão.",
+      sanctionTitle: "Punir um usuário",
+      sanctionDescription:
+        "Restrição tira o direito de publicar e comentar; banimento derruba as sessões e impede um novo login. A punição fica registrada e o usuário pode recorrer.",
+      username: "Username",
+      usernamePlaceholder: "ex.: aminadojava",
+      type: "Tipo de punição",
+      restriction: "Restrição (não publica nem comenta)",
+      ban: "Banimento (derruba a sessão)",
+      reason: "Motivo",
+      reasonPlaceholder: "Descreva o que aconteceu e por que a punição é necessária.",
+      apply: "Aplicar punição",
+      confirmTitle: "Confirmar punição",
+      confirmBody: (username: string, type: "RESTRICTION" | "BAN") =>
+        `Aplicar ${type === "BAN" ? "banimento" : "restrição"} em @${username}? A ação fica registrada.`,
+      done: (username: string, type: "RESTRICTION" | "BAN") =>
+        `@${username} punido com ${type === "BAN" ? "banimento" : "restrição"}.`,
+      error: "Não foi possível aplicar a punição.",
+    },
   },
 
   empresas: {
