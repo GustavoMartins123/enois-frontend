@@ -421,5 +421,12 @@ em denúncia). Admin/moderação: somente leitura visual.
     (`--color-article-text` não é declarado); a cor era herdada e no escuro dava **1,3:1**.
     Corrigido para `text-user-article-text` (`--article-text`), a classe usada pelo avatar de
     ARTICLE.
-- **Correção:** commit `d176b8e` (push em `main` às 11:19). Verificação em produção após o
-  rollout.
+- **Correção:** commit `d176b8e` (push em `main` às 11:19).
+- **Verificação em produção:** o bundle servido já contém as duas classes corrigidas
+  (`bg-user-article text-user-article-text` e `bg-secondary/30 text-text-strong` no chunk
+  `post-card-*.js`). A conferência visual do lote protegido ficou bloqueada porque, depois do
+  push, o token da sessão do Firefox expirou/rotacionou (os tokens rotacionados dentro do contexto
+  efêmero do Playwright não voltam para o `session.json`); um novo `/api/me` respondeu `401` e o
+  `/feed` redirecionou para `/entrar`. Sem credenciais não há como refazer o lote protegido nesta
+  rodada — a correção está no ar e o lote completo (108 verificações) foi executado antes da
+  expiração.
