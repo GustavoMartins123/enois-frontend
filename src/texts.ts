@@ -1551,6 +1551,19 @@ export const texts = {
       blocked:
         "O jogo não abriu aqui. O site do criador pode não permitir ser exibido dentro de outra página — abra na origem para jogar.",
       retry: "Tentar de novo",
+      player: {
+        loadingProgress: (progress: number) => `Carregando o jogo… ${progress}%`,
+        progressLabel: "Progresso do carregamento do jogo",
+        slow: "Está demorando mais que o normal. Jogos WebGL grandes podem levar alguns minutos, principalmente no celular — o jogo continua carregando.",
+        ready: "Jogo pronto.",
+        unverified:
+          "Se o jogo não aparecer, o site do criador pode não permitir ser exibido dentro do Énóis — use “Abrir no site do criador”.",
+        error: "O jogo avisou que não conseguiu iniciar.",
+        errorDetail: (message: string) => `O jogo avisou que não conseguiu iniciar: ${message}`,
+        fullscreenUnavailable:
+          "Tela cheia não está disponível neste navegador. Gire o aparelho ou abra no site do criador.",
+        unsupportedUrl: "Este endereço não pode ser aberto dentro do Énóis.",
+      },
       favorite: "Guardar na biblioteca",
       unfavorite: "Tirar da biblioteca",
       favorites: (count: number) => `${count} na biblioteca`,
