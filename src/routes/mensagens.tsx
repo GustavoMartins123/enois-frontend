@@ -590,7 +590,7 @@ function Mensagens() {
                     onChange={(e) => setText(e.target.value)}
                     onKeyDown={(e) => {
                       // Enter envia; Shift+Enter quebra linha (padrao de chat).
-                      if (e.key === "Enter" && !e.shiftKey) {
+                      if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
                         e.preventDefault();
                         handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
                       }
