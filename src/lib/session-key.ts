@@ -18,7 +18,7 @@ export function getSessionKey(): string | null {
 }
 
 export function renewSessionKey() {
-  const id = globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+  const id = globalThis.crypto.randomUUID();
   localStorage.setItem(SESSION_KEY, id);
   notify();
 }
