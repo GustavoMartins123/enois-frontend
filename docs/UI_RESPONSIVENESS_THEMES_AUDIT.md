@@ -1,6 +1,6 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** em andamento — rodadas 1 a 20 executadas. O Lote B público está
+> **Status (2026-10-19):** em andamento — rodadas 1 a 21 executadas. O Lote B público está
 > completo; restam as rotas/páginas protegidas (Lote A nos viewports novos, Lote B em 390px e
 > Lote C em 1280px), que dependem de uma sessão fresca do Firefox.
 
@@ -329,6 +329,21 @@ em denúncia). Admin/moderação: somente leitura visual.
   - `/empresas`, `/vagas` e `/blogs` não foram conclusivos no stress: os cards não usam os
     seletores testados (ou dependem de aba/dados carregados), então ficam para um teste dirigido,
     não como “limpos”.
+- **Nenhuma outra correção.** Continua pendente apenas o lote protegido.
+
+## Rodada 21 — 2026-10-19
+
+- **Sessão:** ainda expirada; rotas protegidas seguem bloqueadas.
+- **Stress dirigido de conteúdo longo:**
+  - **Achado real:** o `h1` do **detalhe da vaga** não quebrava palavra longa e estourava a página
+    em **1815px** no mobile (`scrollWidth` 2116, `clientWidth` 272). Corrigido com
+    `min-w-0 break-words` no `h1` (commit `87bf755`). **Verificado em produção:** 272px de largura,
+    224px de altura (quebrou em várias linhas), **0 overflow**.
+  - `/vagas` (lista): o título do card já usa `break-words`; o overflow do teste sintético vinha
+    de rótulos estáticos (CTA/chip) que foram alongados artificialmente — **não é conteúdo de
+    usuário**, então não é bug.
+  - `/blogs`: 13 cards testados, zero overflow. `/empresas`: os cards externos não carregaram no
+    teste (aba/dados) — inconclusivo, fica para um teste dirigido.
 - **Nenhuma outra correção.** Continua pendente apenas o lote protegido.
 
 ## Achados e correções
