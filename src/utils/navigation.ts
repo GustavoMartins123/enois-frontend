@@ -24,6 +24,12 @@ const routeDefinitions = [
     params: ["communityId"],
   },
   { source: "grupos", to: "/grupos/$slug", params: ["slug"] },
+  // Notificações de moderação ("Abrir painel") e de jogo ("Ver") apontam para estas rotas.
+  { source: "moderador", to: "/moderador" },
+  { source: "suporte", to: "/suporte" },
+  { source: "diretrizes", to: "/diretrizes" },
+  { source: "carteira", to: "/carteira" },
+  { source: "games", to: "/games/$username/$gameSlug", params: ["username", "gameSlug"] },
   { source: "feed", to: "/feed" },
   { source: "rede", to: "/rede" },
   { source: "mensagens", to: "/mensagens" },
