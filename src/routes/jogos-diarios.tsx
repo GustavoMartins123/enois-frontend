@@ -3,8 +3,9 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
-import { Boxes, CheckCircle2, Flame, Gamepad2, Map, Sparkles, Trophy, Type } from "lucide-react";
+import { ArrowRight, Boxes, CheckCircle2, Flame, Gamepad2, Map, Sparkles, Trophy, Type } from "lucide-react";
 
+import { gamesApi } from "@/lib/api";
 import {
   dailyBlocksApi,
   dailyGamesRewardsApi,
@@ -45,6 +46,11 @@ function DailyGames() {
   const prizes = useQuery({
     queryKey: ["daily-games", "rewards", "prizes"],
     queryFn: () => dailyGamesRewardsApi.prizes(),
+  });
+  // Jogos da comunidade com espaço próprio no hub (os mais jogados primeiro).
+  const community = useQuery({
+    queryKey: ["daily-games", "community-games"],
+    queryFn: () => gamesApi.catalog({ limit: 6, order: "plays" }),
   });
 
   const wordsWon = words.data?.status === "WON";
@@ -202,6 +208,70 @@ function DailyGames() {
           {activeTab === "maze" && <DailyMaze />}
           {activeTab === "blocks" && <DailyBlocks />}
         </div>
+
+        {/* Jogos da comunidade: espaço próprio DENTRO do hub, embaixo dos desafios do dia. */}
+        <section className="space-y-3" aria-label="Jogos da comunidade">
+          <div className="flex flex-wrap items-end justify-between gap-2">
+            <div>
+              <h2 className="flex items-center gap-2 text-lg font-semibold">
+                <Gamepad2 className="h-5 w-5 text-primary" /> Jogos da comunidade
+              </h2>
+
+              <p className="mt-1 text-xs text-muted-foreground">
+                Feitos por gente daqui. O Énóis não hospeda: cada jogo roda onde o criador publicou.
+              </p>
+            </div>
+
+            <Link
+              to="/games"
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary underline shrink-0"
+            >
+              Ver todos
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          {(community.data?.items.length ?? 0) === 0 ? (
+            <p className="surface-card rounded-xl p-4 text-sm text-text-subtle">
+              Nenhum jogo publicado ainda. Você fez um? Envie o link na aba Jogos.
+            </p>
+          ) : (
+            <ul className="grid gap-2 sm:grid-cols-2">
+              {community.data!.items.map((g) => (
+                <li key={g.id}>
+                  <Link
+                    to="/games/$username/$gameSlug"
+                    params={{ username: g.username ?? "", gameSlug: g.slug }}
+                    className="surface-card flex items-center gap-3 p-3 transition hover:border-primary"
+                  >
+                    {g.cover ? (
+                      <img
+                        src={g.cover}
+                        alt=""
+                        className="h-10 w-10 shrink-0 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary-soft">
+                        <Gamepad2 className="h-4 w-4 text-primary-text" />
+                      </span>
+                    )}
+
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold">{g.title}</span>
+
+                      <span className="block truncate text-xs text-text-subtle">
+                        {g.username ? `@${g.username}` : "criador da comunidade"}
+                        {g.plays > 0 && ` · ${g.plays} ${g.plays === 1 ? "partida" : "partidas"}`}
+                      </span>
+                    </span>
+
+                    <ArrowRight className="h-4 w-4 shrink-0 text-text-subtle" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </main>
     </AppContainer>
   );
