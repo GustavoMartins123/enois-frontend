@@ -1564,6 +1564,8 @@ export const texts = {
       favorite: "Guardar na biblioteca",
       unfavorite: "Tirar da biblioteca",
       favoriteError: "Não foi possível atualizar a biblioteca agora.",
+      accountChanged:
+        "Você trocou de conta. Use “Tentar de novo” para o jogo reconhecer a conta atual.",
       favorites: (count: number) => `${count} na biblioteca`,
       share: "Compartilhar",
       shareCopied: "Link do jogo copiado!",

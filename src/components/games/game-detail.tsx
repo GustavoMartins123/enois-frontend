@@ -13,6 +13,7 @@ import { Bookmark, Gamepad2, Share2, Sparkles } from "lucide-react";
 
 import { gamesApi, mediaApi } from "@/lib/api";
 import { formatFaisca } from "@/lib/faisca";
+import { getSessionKey, useSessionKey } from "@/lib/session-key";
 import { isAuthenticated, useAuth } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
 
@@ -55,6 +56,9 @@ function GameDetailContent({ username, gameSlug }: { username: string; gameSlug:
   const queryClient = useQueryClient();
   const [sessao, setSessao] = useState(0);
   const sessaoAtual = useRef(0);
+  const conta = useSessionKey();
+  const [contaDoQuadro, setContaDoQuadro] = useState<string | null>(null);
+  const [ultimoJogo, setUltimoJogo] = useState<GameView | null>(null);
   const [identidade, setIdentidade] = useState<GameIdentityBinding | null>(null);
   const [compartilhamento, setCompartilhamento] =
     useState<GamePendingRequest<GameShareRequest> | null>(null);
@@ -148,11 +152,13 @@ function GameDetailContent({ username, gameSlug }: { username: string; gameSlug:
     onError: () => toast(t.achievement.error, "error"),
   });
 
-  if (game.isLoading) {
-    return <p className="py-10 text-center text-sm text-text-subtle">{texts.games.loading}</p>;
-  }
+  // Trocar de sessão zera a cache e a resposta some até chegar a nova. O quadro não pode cair por
+  // isso: o player segue com os dados públicos do último jogo exibido, e o que depende de quem lê
+  // (favorito) só sai da resposta nova.
+  if (game.data && game.data !== ultimoJogo) setUltimoJogo(game.data);
+  const jogo = game.data ?? ultimoJogo;
 
-  if (game.isError || !game.data) {
+  if (game.isError) {
     return (
       <div className="surface-card mx-auto max-w-2xl p-8 text-center">
         <Gamepad2 className="mx-auto h-10 w-10 text-primary" />
@@ -168,12 +174,19 @@ function GameDetailContent({ username, gameSlug }: { username: string; gameSlug:
     );
   }
 
-  const g = game.data;
+  if (!jogo) {
+    return <p className="py-10 text-center text-sm text-text-subtle">{texts.games.loading}</p>;
+  }
+
+  const g = jogo;
+  const favorited = game.data?.favorited ?? false;
   const playable = g.status === "PUBLISHED";
   const gallery = [g.cover, ...g.mediaIds].filter(Boolean) as string[];
-  // Pedido de outro jogo ou de outra sessão do quadro não aparece nem pode ser confirmado.
+  // O quadro pertence à conta que apertou Jogar. Pedido de outro jogo, de outra sessão do quadro ou
+  // de um quadro aberto por outra conta não aparece nem pode ser confirmado.
+  const contaTrocou = sessao > 0 && contaDoQuadro !== conta;
   const doQuadroAtual = <T extends { gameId: string; session: number }>(pedido: T | null) =>
-    pedido && pedido.gameId === g.id && pedido.session === sessao ? pedido : null;
+    pedido && pedido.gameId === g.id && pedido.session === sessao && !contaTrocou ? pedido : null;
   const gastoAtivo = doQuadroAtual(gasto);
   const compartilhamentoAtivo = doQuadroAtual(compartilhamento);
   const identidadeAtiva = doQuadroAtual(identidade);
@@ -222,16 +235,16 @@ function GameDetailContent({ username, gameSlug }: { username: string; gameSlug:
             <Button
               variant="outline"
               size="sm"
-              className={cn("rounded-full gap-1.5", g.favorited && "text-primary")}
-              disabled={favorite.isPending}
+              className={cn("rounded-full gap-1.5", favorited && "text-primary")}
+              disabled={favorite.isPending || !game.data}
               onClick={() => {
                 if (!requireAuth()) return;
-                favorite.mutate({ gameId: g.id, favorited: g.favorited });
+                favorite.mutate({ gameId: g.id, favorited });
               }}
             >
               <Bookmark className="h-3.5 w-3.5" />
 
-              <>{g.favorited ? t.unfavorite : t.favorite}</>
+              <>{favorited ? t.unfavorite : t.favorite}</>
             </Button>
 
             <Button
@@ -261,6 +274,15 @@ function GameDetailContent({ username, gameSlug }: { username: string; gameSlug:
           </p>
         )}
 
+        {contaTrocou && (
+          <p
+            role="status"
+            className="rounded-xl bg-primary-soft px-4 py-2 text-sm text-text-strong"
+          >
+            {t.accountChanged}
+          </p>
+        )}
+
         <GamePlayer
           key={g.id}
           url={g.url}
@@ -284,8 +306,10 @@ function GameDetailContent({ username, gameSlug }: { username: string; gameSlug:
             // "Tentar de novo" recarrega o mesmo jogo: não é partida nova para a métrica, mas o
             // token de identidade é de uso único e o jogo recarregado vai pedir outro.
             const gameIdDaSessao = g.id;
+            const contaDaSessao = getSessionKey();
             sessaoAtual.current = session;
             setSessao(session);
+            setContaDoQuadro(contaDaSessao);
             setIdentidade(null);
             setGasto(null);
             setCompartilhamento(null);
@@ -293,7 +317,7 @@ function GameDetailContent({ username, gameSlug }: { username: string; gameSlug:
             if (isAuthenticated()) {
               emitirIdentidade.mutate(gameIdDaSessao, {
                 onSuccess: ({ token }) => {
-                  if (sessaoAtual.current !== session) return;
+                  if (sessaoAtual.current !== session || getSessionKey() !== contaDaSessao) return;
                   setIdentidade({ gameId: gameIdDaSessao, session, token });
                 },
               });

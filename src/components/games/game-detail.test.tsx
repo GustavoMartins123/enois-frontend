@@ -388,6 +388,82 @@ describe("pedidos do jogo presos ao jogo que os fez", () => {
   });
 });
 
+describe("pedidos do jogo presos à conta que iniciou o quadro", () => {
+  it("trocar de conta na mesma aba descarta o pedido aberto e os pedidos seguintes", async () => {
+    storeSession({ token: "tok_ana" });
+    await open("jogo-a");
+    await startGame();
+    await fromGame("jogo-a", { type: "enois:spend", amount: 5000, requestId: "r-ana" });
+    await waitFor(() => expect(dialog()).not.toBeNull());
+    const quadro = frame();
+
+    await act(async () => {
+      clearSession();
+      storeSession({ token: "tok_bia" });
+    });
+    await waitFor(() => expect(dialog()).toBeNull());
+    expect(document.body.textContent).toContain(texts.games.game.accountChanged);
+    expect(frame()).toBe(quadro);
+
+    await fromGame("jogo-a", { type: "enois:spend", amount: 5000, requestId: "r-depois" });
+    await fromGame("jogo-a", { type: "enois:share", texto: "da sessão antiga" });
+    await flush();
+    expect(dialog()).toBeNull();
+    expect(gamesApi.spend).not.toHaveBeenCalled();
+    expect(gamesApi.compartilhar).not.toHaveBeenCalled();
+
+    await act(async () => button(texts.games.game.retry)!.click());
+    await fromGame("jogo-a", { type: "enois:spend", amount: 5000, requestId: "r-bia" });
+    await waitFor(() => expect(dialog()).not.toBeNull());
+    await act(async () => button(texts.games.game.spend.confirm)!.click());
+    await waitFor(() => expect(gamesApi.spend).toHaveBeenCalledTimes(1));
+    expect(gamesApi.spend).toHaveBeenCalledWith("game_a", 5000, "", "r-bia");
+  });
+
+  it("trocar de conta em outra aba também descarta o pedido aberto", async () => {
+    storeSession({ token: "tok_ana" });
+    await open("jogo-a");
+    await startGame();
+    await fromGame("jogo-a", { type: "enois:share", texto: "conquista da ana" });
+    await waitFor(() => expect(dialog()).not.toBeNull());
+    const quadro = frame();
+
+    await otherTabWrites({ session_token: "tok_bia", session_id: "outra-sessao" });
+    await waitFor(() => expect(dialog()).toBeNull());
+    await waitFor(() => expect(button(texts.games.game.favorite)?.disabled).toBe(false));
+    expect(frame()).toBe(quadro);
+    expect(gamesApi.compartilhar).not.toHaveBeenCalled();
+  });
+
+  it("o token da conta anterior não é entregue depois da troca", async () => {
+    storeSession({ token: "tok_ana" });
+    await open("jogo-a");
+    await startGame();
+    await act(async () => server.state.pendingIdentity[0].resolve("tok_jogo_ana"));
+    await flush();
+
+    await act(async () => {
+      clearSession();
+      storeSession({ token: "tok_bia" });
+    });
+    const post = vi.spyOn(frame().contentWindow!, "postMessage");
+    await fromGame("jogo-a", { type: "enois:identity" });
+    await flush();
+    expect(post).not.toHaveBeenCalled();
+
+    await act(async () => button(texts.games.game.retry)!.click());
+    await waitFor(() => expect(server.state.pendingIdentity).toHaveLength(2));
+    const postNovo = vi.spyOn(frame().contentWindow!, "postMessage");
+    await fromGame("jogo-a", { type: "enois:identity" });
+    await act(async () => server.state.pendingIdentity[1].resolve("tok_jogo_bia"));
+    await waitFor(() => expect(postNovo).toHaveBeenCalledTimes(1));
+    expect(postNovo).toHaveBeenCalledWith(
+      { type: "enois:identity", token: "tok_jogo_bia" },
+      "https://jogo-a.exemplo.com",
+    );
+  });
+});
+
 describe("favoritos e a sessão de quem lê", () => {
   const favoriteButton = () =>
     button(texts.games.game.favorite) ?? button(texts.games.game.unfavorite);
