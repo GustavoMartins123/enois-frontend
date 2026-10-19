@@ -12,7 +12,7 @@
  * cliente recarrega sozinho quando o novo SW assume (ver src/lib/pwa.ts).
  */
 
-const VERSION = "enois-v6";
+const VERSION = "enois-v7";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGES_CACHE = `${VERSION}-pages`;
 
@@ -73,8 +73,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(title, {
       body: data.body || "",
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
+      icon: "/icons/brand-icon-192.png",
+      badge: "/icons/brand-icon-192.png",
       data: { url },
       tag: data.tag || undefined,
     }),
