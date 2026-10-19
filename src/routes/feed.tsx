@@ -184,6 +184,9 @@ function Home() {
         type: postType,
         content: pageMode ? "" : content,
         mediaIds,
+        // As menções viajam com o agendado e valem na PUBLICAÇÃO (quem foi marcado é avisado
+        // quando o post entra no ar, não quando foi agendado).
+        mentionedUserIds: pageMode ? [] : mentionedUserIds,
         ...(pageMode ? { pageHtml } : {}),
         ...(articleMode ? { articleBody } : {}),
         scheduledAt: new Date(scheduleAt).toISOString(),

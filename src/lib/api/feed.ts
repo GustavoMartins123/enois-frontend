@@ -54,6 +54,7 @@ export const feedApi = {
     articleBody?: string;
     tags?: string[];
     mediaIds?: string[];
+    mentionedUserIds?: string[];
     communityId?: string;
     scheduledAt: string;
   }) => api.post<ScheduledPostView>("/feed/scheduled", data),
