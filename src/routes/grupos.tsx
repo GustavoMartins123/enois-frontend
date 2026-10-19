@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
+import { Link, Outlet, createFileRoute, useMatchRoute, useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { GroupView } from "@/types/application/group/group-view";
@@ -40,11 +40,22 @@ function Grupos() {
   const [createOpen, setCreateOpen] = useState(false);
   const authenticated = Boolean(getSessionToken());
 
+  // Este arquivo é o PAI de /grupos/$slug: quando um grupo está na URL, quem responde é o filho
+  // (a página do grupo) — sem o Outlet, a lista engolia a navegação e ninguém conseguia ENTRAR
+  // num grupo: criar navegava para o detalhe e mostrava a lista de novo.
+  const matchRoute = useMatchRoute();
+  const isDetail = matchRoute({ to: "/grupos/$slug" });
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ["groups", query],
     queryFn: () => groupsApi.list(query.trim() || undefined),
+    enabled: !isDetail,
   });
   const groups = data?.items ?? [];
+
+  if (isDetail) {
+    return <Outlet />;
+  }
 
   return (
     <AppContainer>

@@ -511,24 +511,22 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
 
               {post.type === "ARTICLE" && (
                 <div>
-                  <label
-                    htmlFor={`article-body-${post.id}`}
-                    className="mb-1 block text-xs font-normal text-text-subtle"
-                  >
+                  <span className="mb-1 block text-xs font-normal text-text-subtle">
                     {texts.feed.composer.article.bodyLabel}
-                  </label>
+                  </span>
 
-                  <Textarea
-                    id={`article-body-${post.id}`}
+                  <MentionTextarea
                     value={bodyDraft}
                     maxLength={ARTICLE_BODY_MAX_LENGTH}
-                    onChange={(event) => setBodyDraft(event.target.value)}
+                    onChange={(value) => setBodyDraft(value)}
                     placeholder={
                       pageLoading
                         ? texts.posts.page.loading
                         : texts.feed.composer.article.bodyPlaceholder
                     }
-                    className="min-h-[160px]"
+                    className="min-h-[160px] rounded-lg border border-border-soft bg-transparent px-3 py-2 text-sm text-text-strong"
+                    rows={6}
+                    toolbar
                   />
                 </div>
               )}
