@@ -1,6 +1,6 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** em andamento — rodadas 1 a 19 executadas. O Lote B público está
+> **Status (2026-10-19):** em andamento — rodadas 1 a 20 executadas. O Lote B público está
 > completo; restam as rotas/páginas protegidas (Lote A nos viewports novos, Lote B em 390px e
 > Lote C em 1280px), que dependem de uma sessão fresca do Firefox.
 
@@ -315,6 +315,21 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Diálogo “Esqueci minha senha”:** abre pelo `/entrar?tab=login`, cabe inteiro na tela
   (358×288 em 390px; 448×288 em 1280px), **zero overflow** e dentro do viewport.
 - **Nenhuma correção.** Continua pendente apenas o lote protegido.
+
+## Rodada 20 — 2026-10-19
+
+- **Sessão:** ainda expirada; rotas protegidas seguem bloqueadas.
+- **Stress de conteúdo longo (sintético, 390/768/1280):** injetei nomes/títulos sem espaço nos
+  cards e no cabeçalho do perfil para achar a mesma classe de bug do `/rede`.
+  - **Achado real:** o `h1` do nome no perfil era flex item com `min-width:auto`; a palavra longa
+    não quebrava, o nome era clipado e o `h1` media 2072px. Corrigido com **`min-w-0`** no `h1`
+    (commit `c554a00`).
+  - **Verificado em produção:** `clientWidth=332`, `scrollWidth=332`, altura 196px (quebrou em
+    várias linhas), sem overflow; classe final `min-w-0 break-words ...`.
+  - `/empresas`, `/vagas` e `/blogs` não foram conclusivos no stress: os cards não usam os
+    seletores testados (ou dependem de aba/dados carregados), então ficam para um teste dirigido,
+    não como “limpos”.
+- **Nenhuma outra correção.** Continua pendente apenas o lote protegido.
 
 ## Achados e correções
 
