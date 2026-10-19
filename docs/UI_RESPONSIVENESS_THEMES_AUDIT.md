@@ -533,3 +533,18 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Nenhuma correção de app.**
 - **Próximo lote:** `/eventos` (temas 36–60) e `/mensagens` quando houver sessão nova; no público,
   `/games/{user}/{slug}` e `/marketplace` a 1280 com os 60 temas.
+
+## Rodada 33 — 2026-10-19 18:1x
+
+- **Sessão protegida ainda bloqueada** (cópia de 17:18, `/api/me` 401). Lote público.
+- **Lote C público:** `/games/aminadojava/https-kawaii-survivor-vercel-app` em **1280×800**, 60
+  temas × claro/escuro = **120 combinações**. **119 limpas, 1 achado real.**
+- **Achado:** no tema **silver-jonny escuro**, o rótulo “Jogo externo” usava `text-text-subtle`
+  sobre o botão `bg-primary-soft` (#5f5a03), dando **2,81:1**. O texto sutil é calculado contra o
+  fundo da página, não contra o soft.
+- **Correção mínima:** o rótulo passou a usar `text-primary-text`, que é derivado justamente contra
+  `--primary-soft`. Commit `fix(jogos)` (push `f5156df`), eslint/tsc sem erros novos.
+- **Verificação em produção:** no DOM real, silver-jonny escuro, o rótulo agora mede **6,63:1**
+  (as leituras de 2,81:1 eram pods antigos durante o rollout).
+- **Próximo lote:** `/marketplace` a 1280 com os 60 temas; quando houver sessão, `/eventos`
+  (temas 36–60) e `/mensagens`.
