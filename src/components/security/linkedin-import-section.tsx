@@ -159,19 +159,30 @@ export function LinkedinImportSection({ linkedinConectado = false }: { linkedinC
       </p>
 
       {!preview && (
-        <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border-soft px-3 py-1.5 text-xs text-text-subtle transition hover:text-text-strong">
-          {texts.account.linkedinImport.button}
-          <input
-            type="file"
-            accept=".zip"
-            className="hidden"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) importar.mutate(file);
-              event.target.value = "";
-            }}
-          />
-        </label>
+        <div className="flex flex-wrap gap-2">
+          <a
+            href="https://www.linkedin.com/psettings/member-data"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-soft px-3 py-1.5 text-xs text-text-subtle transition hover:text-text-strong"
+          >
+            {texts.account.linkedinImport.getArchive}
+          </a>
+
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border-soft px-3 py-1.5 text-xs text-text-subtle transition hover:text-text-strong">
+            {texts.account.linkedinImport.button}
+            <input
+              type="file"
+              accept=".zip"
+              className="hidden"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) importar.mutate(file);
+                event.target.value = "";
+              }}
+            />
+          </label>
+        </div>
       )}
 
       {importar.isPending && <p className="text-xs text-text-subtle">{texts.common.loading}</p>}
