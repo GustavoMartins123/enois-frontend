@@ -83,6 +83,14 @@ function Comunidades() {
     enabled: !isDetail,
   });
 
+  // As comunidades em que a pessoa já está vêm ANTES de tudo (pedido de quem usa: as primeiras
+  // exibidas são as nossas). Mesmo padrão das favoritas: seção fixa e fora do fluxo comum.
+  const { data: mineData } = useQuery({
+    queryKey: ["my-communities"],
+    queryFn: () => communitiesApi.mine(50),
+    enabled: !isDetail,
+  });
+
   useEffect(() => {
     if (!communitiesData?.items) return;
     setAllItems((prev) => {
@@ -104,12 +112,15 @@ function Comunidades() {
       (community.description ?? "").toLocaleLowerCase("pt-BR").includes(needle)
     );
   };
-  // Com um tópico ativo, a seção mostra só as favoritas daquele tópico.
+  // Com um tópico ativo, as seções fixas mostram só o daquele tópico.
   const pinnedFavorites = (favoritesData?.items ?? [])
     .filter((c) => (!topic || c.topic === topic) && matchesSearch(c))
     .map((c) => byId.get(c.id) ?? c);
-  const favoriteIds = new Set(pinnedFavorites.map((c) => c.id));
-  const gridItems = allItems.filter((c) => !favoriteIds.has(c.id));
+  const mineItems = (mineData?.items ?? [])
+    .filter((c) => (!topic || c.topic === topic) && matchesSearch(c))
+    .map((c) => byId.get(c.id) ?? c);
+  const pinnedIds = new Set([...mineItems, ...pinnedFavorites].map((c) => c.id));
+  const gridItems = allItems.filter((c) => !pinnedIds.has(c.id));
 
   const loadMore = () => {
     if (nextCursor && !isFetching) {
@@ -174,12 +185,13 @@ function Comunidades() {
 
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          {/* Sem `maxLength`: o contador que ele acende abaixo do campo cresce este container e
+              desloca a lupa (`top-1/2` passa a centrar no conjunto, não no input). */}
           <Input
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder={texts.communities.searchPlaceholder}
             className="pl-9"
-            maxLength={120}
             aria-label={texts.communities.searchPlaceholder}
           />
         </div>
@@ -195,6 +207,30 @@ function Comunidades() {
             </Pill>
           ))}
         </div>
+
+        {mineItems.length > 0 && (
+          <section className="space-y-3">
+            <h2 className="flex items-center gap-1.5 text-sm font-medium text-text-strong">
+              <Users className="h-4 w-4 text-primary" />
+
+              <>{texts.communities.mineTitle}</>
+            </h2>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {mineItems.map((c) => (
+                <CommunityCard
+                  key={c.id}
+                  community={c}
+                  joinPending={join.isPending}
+                  leavePending={leave.isPending}
+                  ownerBlocked={ownerBlockedId === c.id}
+                  onJoin={join.mutate}
+                  onLeave={setLeaveTarget}
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
         {pinnedFavorites.length > 0 && (
           <section className="space-y-3">
