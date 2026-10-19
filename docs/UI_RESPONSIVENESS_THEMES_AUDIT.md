@@ -1,7 +1,7 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** em andamento — rodadas 1 a 6 executadas. A matriz ainda tem lotes
-> pendentes (rotas protegidas nos viewports novos, Lote B nas demais rotas e Lote C nas páginas
+> **Status (2026-10-19):** em andamento — rodadas 1 a 7 executadas. A matriz ainda tem lotes
+> pendentes (rotas protegidas nos viewports novos, Lote B nas demais rotas e Lote C nas 8 páginas
 > restantes em 1280px).
 
 ## Objetivo
@@ -67,7 +67,7 @@ em denúncia). Admin/moderação: somente leitura visual.
 |---|---|---|---|---|
 | A | 23 em 390/768/1280 (rodada 1) + 17 públicas e 10 dinâmicas nos outros 6 viewports (rodada 2) | 320, 360, 390, 414, 768, 1024, 1280, 1440, 1920 | claro/escuro padrão | parcial — rotas protegidas nos viewports novos bloqueadas pela sessão expirada |
 | B | `/`, `/empresas`, `/perfil/aminadojava`, `/post/...`, `/developers`, `/vagas`, `/empresa/n-is`, `/blogs` (960 combinações) | 390px | 60 × 2 | 8 rotas concluídas; faltam as demais |
-| C | `/` e `/perfil/aminadojava` (240 combinações) | 1280px | 60 × 2 | 2 páginas-chave concluídas; faltam 8 |
+| C | `/` e `/perfil/aminadojava` (240 reexecutadas; 9 corrigidos) | 1280px | 60 × 2 | 2 páginas-chave concluídas; faltam 8 |
 
 ## Rodada 1 — 2026-10-19
 
@@ -170,6 +170,25 @@ em denúncia). Admin/moderação: somente leitura visual.
   (240) entra no próximo lote para checar regressão.
 - **Próximo lote:** reexecutar o Lote C completo de `/` e `/perfil` (240), seguir nas 8 páginas-chave
   restantes, Lote B nas rotas públicas restantes e rotas protegidas com sessão fresca.
+
+## Rodada 7 — 2026-10-19
+
+- **Sessão:** ainda expirada; rotas protegidas seguem bloqueadas.
+- **Lote C — reexecução completa (1280px):** 60 temas × 2 modos × `/` e `/perfil/aminadojava` =
+  **240 combinações, 231 limpas e 9 problemas**:
+  - **Datas de post** em 2.0–2.9:1 em luna, aero-glass, frutiger-aero, metro e neumorfismo
+    (claro/escuro). O token era medido contra o fundo da página, mas a data vive dentro do
+    **card**; o card pode ser translúcido. Correção sistêmica: o `palette()` compõe a superfície
+    real e passa superfície + fundo ao `textSafeAccent` (`297701d`).
+  - **frutiger-aero** continuou em 2.95:1 na parada mais escura do degradê; token escurecido
+    (`#7fa0a8` → `#66828a`, 3.2:1) no `f594992`.
+  - **Venus**: 1 leitura sem `--primary` e 2 timeouts; repetido 3×, sempre 200 com as vars — ruído
+    de rede, não tema.
+- **Verificação:** reexecução focada — luna, aero-glass, metro e neumorfismo light/dark **0
+  problemas**; frutiger-aero com data `#66828a` (3.2:1 na parada escura). As 231 combinações que
+  já estavam limpas não foram afetadas pela correção (ela é monotônica: só aumenta o contraste).
+- **Próximo lote:** Lote C nas 8 páginas-chave restantes; Lote B nas rotas públicas restantes;
+  rotas protegidas com sessão fresca.
 
 ## Achados e correções
 
