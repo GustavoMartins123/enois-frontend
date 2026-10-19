@@ -146,13 +146,10 @@ function GamePage() {
     onError: () => toast("Não foi possível publicar a conquista agora.", "error"),
   });
 
-  // O quadro não avisa quando o site recusa incorporação: se nada carregar em 12s, oferecemos a
-  // saída honesta (abrir na origem) em vez de deixar a pessoa olhando um retângulo vazio.
-  useEffect(() => {
-    if (!playing || failed) return;
-    const timer = setTimeout(() => setFailed(true), 12_000);
-    return () => clearTimeout(timer);
-  }, [playing, failed]);
+  // NÃO desmontar o iframe por tempo: o quadro não avisa quando o site recusa incorporação, mas
+  // também não avisa quando o jogo está carregando. O timer de 12s derrubava jogos que já estavam
+  // rodando (no celular o carregamento passa fácil disso) e parecia um crash do player. Quem
+  // recusar o quadro fica com a saída sempre visível no rodapé: "Abrir no site do criador".
 
   const [compartilhamento, setCompartilhamento] = useState<{
     texto: string;
