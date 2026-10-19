@@ -15,6 +15,7 @@ import type { MediaItem } from "@/types/routes/feed/media-item";
 import {
   BarChart3,
   Calendar,
+  CalendarClock,
   ChevronDown,
   ChevronRight,
   Clock,
@@ -34,8 +35,10 @@ import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Pill } from "@/components/ui/pill";
+import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { HtmlEditor } from "@/components/html-editor";
@@ -94,6 +97,7 @@ function useEvents() {
 
 function Home() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [tab, setTab] = useState<FeedTab>("FOR_YOU");
   const {
     data: feedData,
@@ -120,6 +124,9 @@ function Home() {
   const [typePickerOpen, setTypePickerOpen] = useState(false);
   const [pageHtml, setPageHtml] = useState("");
   const [articleBody, setArticleBody] = useState("");
+  // Agendamento: o post fica na fila do backend e só entra no feed na hora marcada.
+  const [schedulingOpen, setSchedulingOpen] = useState(false);
+  const [scheduleAt, setScheduleAt] = useState("");
   const pageMode = postType === "PAGE";
   const articleMode = postType === "ARTICLE";
   const currentType = POST_TYPES.find((option) => option.id === postType) ?? POST_TYPES[0];
@@ -132,6 +139,75 @@ function Home() {
       queryClient.invalidateQueries({ queryKey: ["feed"] });
     },
   });
+
+  const scheduledQuery = useQuery({
+    queryKey: ["feed", "scheduled"],
+    queryFn: () => feedApi.scheduled(),
+  });
+  const scheduledList = scheduledQuery.data ?? [];
+
+  const schedulePost = useMutation({
+    mutationFn: (data: Parameters<typeof feedApi.schedule>[0]) => feedApi.schedule(data),
+    onSuccess: (agendado) => {
+      toast(
+        texts.feed.composer.scheduleDone(new Date(agendado.scheduledAt).toLocaleString("pt-BR")),
+        "success",
+      );
+      void queryClient.invalidateQueries({ queryKey: ["feed", "scheduled"] });
+    },
+    onError: (error) => setPublishError(error.message),
+  });
+
+  const cancelScheduled = useMutation({
+    mutationFn: (id: string) => feedApi.cancelScheduled(id),
+    onSuccess: () => {
+      toast(texts.feed.composer.scheduleCancelled, "success");
+      void queryClient.invalidateQueries({ queryKey: ["feed", "scheduled"] });
+    },
+    onError: (error) => toast(error.message, "error"),
+  });
+
+  const schedulePublish = async () => {
+    const content = draft.trim();
+    if (pageMode ? !pageHtml.trim() : !content) return;
+    if (articleMode && !articleBody.trim()) return;
+    if (!scheduleAt) return;
+
+    setPublishError(null);
+    try {
+      let mediaIds: string[] = [];
+      if (!pageMode && media.length > 0) {
+        const results = await upload.uploadAll(media.map((m) => ({ file: m.file })));
+        mediaIds = results.map((r) => r.mediaId);
+      }
+      await schedulePost.mutateAsync({
+        type: postType,
+        content: pageMode ? "" : content,
+        mediaIds,
+        ...(pageMode ? { pageHtml } : {}),
+        ...(articleMode ? { articleBody } : {}),
+        scheduledAt: new Date(scheduleAt).toISOString(),
+      });
+      setDraft("");
+      setMentionedUserIds([]);
+      setPostType("INSIGHT");
+      setMedia([]);
+      setPageHtml("");
+      setArticleBody("");
+      setTypePickerOpen(false);
+      setScheduleAt("");
+      setSchedulingOpen(false);
+    } catch {
+      // o motivo já foi para o publishError pelo onError da mutation
+    }
+  };
+
+  // O mínimo do input datetime-local é AGORA+1min (o backend recusa mais perto que isso).
+  const minScheduleAt = new Date(
+    Date.now() + 60_000 - new Date().getTimezoneOffset() * 60_000,
+  )
+    .toISOString()
+    .slice(0, 16);
 
   const publishPost = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -465,6 +541,25 @@ function Home() {
                   </span>
                 )}
                 <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="rounded-full gap-1.5"
+                  disabled={
+                    (pageMode ? !pageHtml.trim() : !draft.trim()) ||
+                    (articleMode && !articleBody.trim()) ||
+                    createPost.isPending ||
+                    upload.status === "uploading"
+                  }
+                  onClick={() => setSchedulingOpen((open) => !open)}
+                  title={texts.feed.composer.scheduleHint}
+                >
+                  <CalendarClock className="h-3.5 w-3.5" />
+
+                  <>{texts.feed.composer.schedule}</>
+                </Button>
+
+                <Button
                   size="sm"
                   className="rounded-full"
                   disabled={
@@ -491,12 +586,92 @@ function Home() {
               </div>
             </div>
 
+            {schedulingOpen && (
+              <div className="mt-3 flex flex-wrap items-end gap-2 rounded-xl border border-border-soft bg-surface-1 p-3">
+                <label className="text-xs font-normal text-text-subtle">
+                  {texts.feed.composer.scheduleDate}
+                  <Input
+                    type="datetime-local"
+                    value={scheduleAt}
+                    min={minScheduleAt}
+                    onChange={(event) => setScheduleAt(event.target.value)}
+                    className="mt-1"
+                  />
+                </label>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  className="rounded-full"
+                  disabled={!scheduleAt || schedulePost.isPending || upload.status === "uploading"}
+                  onClick={schedulePublish}
+                >
+                  {schedulePost.isPending ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    texts.feed.composer.scheduleConfirm
+                  )}
+                </Button>
+
+                <p className="text-[11px] font-normal text-text-subtle">
+                  {texts.feed.composer.scheduleHint}
+                </p>
+              </div>
+            )}
+
             {publishError && (
               <p className="mt-2 rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs font-normal text-destructive">
                 {publishError}
               </p>
             )}
           </form>
+
+          {scheduledList.length > 0 && (
+            <section className="rounded-2xl border border-border-soft bg-surface-card p-4">
+              <h2 className="flex items-center gap-2 text-sm font-semibold text-text-strong">
+                <CalendarClock className="h-4 w-4 text-primary" />
+
+                <>{texts.feed.composer.scheduledTitle(scheduledList.length)}</>
+              </h2>
+
+              <ul className="mt-2 space-y-2">
+                {scheduledList.map((agendado) => (
+                  <li
+                    key={agendado.id}
+                    className="flex items-start justify-between gap-2 rounded-xl bg-surface-1 px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm text-text-strong">
+                        {agendado.content ||
+                          (agendado.pageHtml
+                            ? texts.feed.composer.scheduledPage
+                            : agendado.type)}
+                      </p>
+
+                      <p className="text-xs text-text-subtle">
+                        {texts.feed.composer.scheduledFor(
+                          new Date(agendado.scheduledAt).toLocaleString("pt-BR"),
+                        )}
+                        {agendado.lastError ? ` · ${agendado.lastError}` : ""}
+                      </p>
+                    </div>
+
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="rounded-full"
+                      title={texts.feed.composer.scheduleCancel}
+                      disabled={cancelScheduled.isPending}
+                      onClick={() => cancelScheduled.mutate(agendado.id)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           {/* Tabs */}
           <div className="flex flex-wrap items-center gap-1.5">

@@ -924,6 +924,17 @@ export const texts = {
     share: "Compartilhar",
     empty: "Nada por aqui ainda. Publicações da sua rede aparecem neste feed.",
     composer: {
+      schedule: "Agendar",
+      scheduleDate: "Data e hora",
+      scheduleConfirm: "Agendar publicação",
+      scheduleHint: "O post só entra no feed na hora marcada.",
+      scheduleDone: (date: string) => `Post agendado para ${date}.`,
+      scheduleCancelled: "Agendamento cancelado.",
+      scheduledTitle: (count: number) =>
+        `${count} ${count === 1 ? "post agendado" : "posts agendados"}`,
+      scheduledFor: (date: string) => `Vai ao ar em ${date}`,
+      scheduledPage: "Página agendada",
+      scheduleCancel: "Cancelar agendamento",
       publishedOffer: "Publicado! Que tal levar esse insight para o LinkedIn também?",
       linkedinShare: "Compartilhar no LinkedIn",
       placeholder: "Compartilhe algo que aprendeu hoje...",

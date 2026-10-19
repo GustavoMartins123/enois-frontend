@@ -6,6 +6,7 @@ import type { DeleteResult } from "@/types/application/feed/delete-result";
 import type { FeedTab } from "@/types/application/feed/feed-tab";
 import type { PostView } from "@/types/application/feed/post-view";
 import type { ReactionsResponse } from "@/types/application/feed/reactions-response";
+import type { ScheduledPostView } from "@/types/application/feed/scheduled-post-view";
 
 import { api, buildQuery } from "../api-client";
 
@@ -42,4 +43,24 @@ export const feedApi = {
 
   bulkDelete: (data: BulkDeleteInput) =>
     api.post<BulkDeleteResult>("/feed/posts/bulk-delete", data),
+
+  // --- agendamento: o post só existe no feed quando o horário chega ---
+
+  /** Marca um post para ir ao ar sozinho na data/hora escolhida (ISO 8601, UTC). */
+  schedule: (data: {
+    type: string;
+    content?: string;
+    pageHtml?: string;
+    articleBody?: string;
+    tags?: string[];
+    mediaIds?: string[];
+    communityId?: string;
+    scheduledAt: string;
+  }) => api.post<ScheduledPostView>("/feed/scheduled", data),
+
+  /** Os agendados de quem está logado, do mais próximo ao mais distante. */
+  scheduled: () => api.get<ScheduledPostView[]>("/feed/scheduled"),
+
+  cancelScheduled: (id: string) =>
+    api.delete<{ id: string; status: string }>(`/feed/scheduled/${encodeURIComponent(id)}`),
 };
