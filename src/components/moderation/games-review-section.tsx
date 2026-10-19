@@ -12,12 +12,7 @@ import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/loading-state";
 import { useToast } from "@/components/ui/toast";
 
-const ASPECT: Record<string, string> = {
-  WIDESCREEN: "16 / 9",
-  CLASSIC: "4 / 3",
-  SQUARE: "1 / 1",
-  PORTRAIT: "9 / 16",
-};
+import { GamePlayer } from "@/components/games/game-player";
 
 /** Fila de jogos enviados pela comunidade: testar no mesmo quadro isolado e aprovar/recusar. */
 export function GamesReviewSection() {
@@ -99,19 +94,7 @@ export function GamesReviewSection() {
                 <p className="break-all text-xs text-text-subtle">{g.url}</p>
 
                 {testando === g.id ? (
-                  <div
-                    className="relative w-full overflow-hidden rounded-xl border border-border-soft"
-                    style={{ aspectRatio: ASPECT[g.aspect ?? "WIDESCREEN"] ?? "16 / 9" }}
-                  >
-                    <iframe
-                      src={g.url}
-                      title={g.title}
-                      className="h-full w-full border-0"
-                      allow="fullscreen; gamepad; autoplay"
-                      sandbox="allow-scripts allow-same-origin allow-pointer-lock"
-                      referrerPolicy="no-referrer"
-                    />
-                  </div>
+                  <GamePlayer url={g.url} title={g.title} aspect={g.aspect} autoStart />
                 ) : (
                   <Button
                     variant="outline"

@@ -17,6 +17,7 @@ import { LoadingState } from "@/components/ui/loading-state";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
+import { GamePlayer } from "@/components/games/game-player";
 
 /**
  * Fila de recursos das penalidades automaticas. Somente administradores (REDE_ADMIN_EMAILS)
@@ -218,14 +219,6 @@ function DisputasSection() {
   );
 }
 
-/** A proporção do quadro, escolhida pelo criador — igual à da página do jogo. */
-const ASPECT: Record<string, string> = {
-  WIDESCREEN: "16 / 9",
-  CLASSIC: "4 / 3",
-  SQUARE: "1 / 1",
-  PORTRAIT: "9 / 16",
-};
-
 /**
  * A fila de jogos submetidos (E3 do plano): o revisor testa o jogo NO MESMO quadro isolado em
  * que ele vai rodar em produção e decide — aprovado entra no catálogo, recusado volta ao criador
@@ -312,19 +305,7 @@ function JogosSection() {
               <p className="break-all text-xs text-text-subtle">{g.url}</p>
 
               {testando === g.id ? (
-                <div
-                  className="relative w-full overflow-hidden rounded-xl border border-border-soft"
-                  style={{ aspectRatio: ASPECT[g.aspect] ?? "16 / 9" }}
-                >
-                  <iframe
-                    src={g.url}
-                    title={g.title}
-                    className="h-full w-full border-0"
-                    allow="fullscreen; gamepad; autoplay"
-                    sandbox="allow-scripts allow-same-origin allow-pointer-lock"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
+                <GamePlayer url={g.url} title={g.title} aspect={g.aspect} autoStart />
               ) : (
                 <div>
                   <Button
