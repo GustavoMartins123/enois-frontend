@@ -1002,6 +1002,13 @@ export const texts = {
   posts: {
     momentExpiry: (hours: number) => `some em ${hours}h`,
     momentExpiryTitle: "Momento se apaga sozinho em 24 horas",
+    /** Fixar UM post no topo do feed da comunidade/grupo (a administração faz isso). */
+    pin: {
+      pin: "Fixar no topo",
+      unpin: "Desafixar",
+      pinned: "Fixado",
+      error: "Não foi possível atualizar o fixado agora.",
+    },
     types: {
       insight: "Insight",
       question: "Pergunta",
@@ -2458,7 +2465,7 @@ export const texts = {
       decisionError: "Não foi possível registrar a decisão.",
       addModeratorTitle: "Adicionar moderador",
       addModeratorDescription:
-        "Nomeie alguém pelo username: a pessoa entra direto como moderador, sem candidatura.",
+        "Busque pelo nome ou @username: a pessoa entra direto como moderador, sem candidatura.",
       addModerator: "Adicionar",
       addModeratorError: "Não foi possível adicionar o moderador.",
       moderatorAdded: (username: string) => `@${username} agora é moderador.`,
@@ -2473,8 +2480,8 @@ export const texts = {
       sanctionTitle: "Punir um usuário",
       sanctionDescription:
         "Restrição tira o direito de publicar e comentar; banimento derruba as sessões e impede um novo login. A punição fica registrada e o usuário pode recorrer.",
-      username: "Username",
-      usernamePlaceholder: "ex.: aminadojava",
+      username: "Nome ou @username",
+      usernamePlaceholder: "Busque pelo nome ou @username",
       type: "Tipo de punição",
       restriction: "Restrição (não publica nem comenta)",
       ban: "Banimento (derruba a sessão)",

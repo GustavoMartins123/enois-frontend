@@ -45,6 +45,7 @@ import { AppContainer } from "@/components/app-container";
 import { AppealsSection } from "@/components/moderation/appeals-section";
 import { DisputesSection } from "@/components/moderation/disputes-section";
 import { EmailLogSection } from "@/components/moderation/email-log-section";
+import { UserPicker } from "@/components/user-picker";
 import { GamesReviewSection } from "@/components/moderation/games-review-section";
 import { SupportTicketsSection } from "@/components/moderation/support-tickets-section";
 
@@ -738,18 +739,19 @@ function AddModeratorForm({ onChanged }: { onChanged: () => void }) {
           appoint.mutate();
         }}
       >
-        <label className="block space-y-1">
+        <div className="space-y-1">
           <span className="text-sm font-medium text-text-strong">
             {texts.moderator.admin.username}
           </span>
 
-          <Input
+          {/* Busca por NOME ou @username (mesmo picker do Pagar da carteira): a escolha
+              resolve para o username — o identificador que a nomeação usa. */}
+          <UserPicker
             value={username}
-            onChange={(event) => setUsername(event.target.value)}
-            maxLength={80}
+            onChange={setUsername}
             placeholder={texts.moderator.admin.usernamePlaceholder}
           />
-        </label>
+        </div>
 
         <label className="block space-y-1">
           <span className="text-sm font-medium text-text-strong">
