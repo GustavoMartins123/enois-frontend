@@ -560,7 +560,7 @@ html:root.dark[data-theme="aero-glass"] .bg-surface-card, html:root.dark[data-th
           card: "0 6px 18px rgb(4 60 66 / 0.16), inset 0 1px 0 rgb(255 255 255 / 0.8)",
         },
         radius: "14px",
-        text: { strong: "#0c3340", subtle: "#416a75", date: "#7fa0a8" },
+        text: { strong: "#0c3340", subtle: "#416a75", date: "#66828a" },
       }),
       dark: palette({
         background: "linear-gradient(180deg, #0b2028, #123c33)",
