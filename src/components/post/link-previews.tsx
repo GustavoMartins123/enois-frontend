@@ -2,6 +2,7 @@ import { texts } from "@/texts";
 import type { PostView } from "@/types/application/feed/post-view";
 import type { LinkPreviewsProps } from "@/types/components/post/link-previews-props";
 
+import { withImageKitOriginal } from "@/lib/api/media";
 import { directMediaKind, gifMediaUrl } from "@/lib/shared-links";
 
 import { EmbedPlayer } from "./embed-player";
@@ -49,7 +50,13 @@ export function LinkPreviews({ content, autoplay = false }: LinkPreviewsProps) {
         const media = directMediaKind(url);
         if (media === "image") {
           return (
-            <a key={url} href={url} target="_blank" rel="noopener noreferrer" className="mt-2 block">
+            <a
+              key={url}
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 block"
+            >
               <img
                 src={url}
                 alt=""
@@ -60,10 +67,20 @@ export function LinkPreviews({ content, autoplay = false }: LinkPreviewsProps) {
           );
         }
         if (media === "video") {
-          return <video key={url} src={url} controls playsInline className="mt-2 max-h-72 max-w-full rounded-xl border border-border-soft" />;
+          return (
+            <video
+              key={url}
+              src={withImageKitOriginal(url)}
+              controls
+              playsInline
+              className="mt-2 max-h-72 max-w-full rounded-xl border border-border-soft"
+            />
+          );
         }
         if (media === "audio") {
-          return <audio key={url} src={url} controls className="mt-2 w-full" />;
+          return (
+            <audio key={url} src={withImageKitOriginal(url)} controls className="mt-2 w-full" />
+          );
         }
 
         return (
@@ -95,7 +112,9 @@ export function LinkPreviews({ content, autoplay = false }: LinkPreviewsProps) {
                 })()}
               </p>
 
-              <p className="truncate text-xs font-normal text-text-subtle">{texts.posts.video.openLabel}</p>
+              <p className="truncate text-xs font-normal text-text-subtle">
+                {texts.posts.video.openLabel}
+              </p>
             </div>
           </a>
         );

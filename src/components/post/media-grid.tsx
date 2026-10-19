@@ -5,7 +5,7 @@ import { useQueries } from "@tanstack/react-query";
 import type { PostView } from "@/types/application/feed/post-view";
 
 import { mediaApi } from "@/lib/api";
-import { resolveCdnUrl } from "@/lib/api/media";
+import { resolveCdnUrl, withImageKitOriginal } from "@/lib/api/media";
 import { useInView } from "@/lib/feed/use-in-view";
 
 /** Grade de mídias do post (vídeo único ou imagens) com visualização em tela cheia.
@@ -56,7 +56,7 @@ export function MediaGrid({
     return (
       <div className="rounded-xl border border-border-soft bg-surface-1 p-2">
         <audio
-          src={resolveCdnUrl(items[0].cdnUrl)}
+          src={withImageKitOriginal(items[0].cdnUrl)}
           controls
           preload="metadata"
           className="w-full"
@@ -70,7 +70,7 @@ export function MediaGrid({
       <div ref={videoRef} className="overflow-hidden rounded-xl border border-border-soft">
         <video
           ref={videoElement}
-          src={resolveCdnUrl(items[0].cdnUrl)}
+          src={withImageKitOriginal(items[0].cdnUrl)}
           // `muted` + `playsInline` são o que fazem o play automático ser aceito no navegador (e no
           // iOS, sem virar tela cheia): o som vem quando a pessoa quiser, pelo controle do vídeo.
           muted

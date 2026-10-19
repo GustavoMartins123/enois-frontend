@@ -18,6 +18,27 @@ export function resolveCdnUrl(url: string | null | undefined): string | undefine
   return `${IMAGEKIT_URL_ENDPOINT}${cleaned.startsWith("/") ? "" : "/"}${cleaned}`;
 }
 
+/**
+ * Vídeo/áudio do ImageKit tem de pedir o ORIGINAL (`tr=orig-true`).
+ *
+ * Sem esse parâmetro a entrega conta como transformação de vídeo; quando a cota da conta
+ * estoura, o CDN responde 403 com `ik-error: ELIMIT` e o player mostra um quadro quebrado. O
+ * arquivo original aceita Range normalmente (206), então o vídeo volta a tocar sem upgrade de
+ * plano. Em S3 (ou qualquer outro host) a URL fica intacta.
+ */
+export function withImageKitOriginal(url: string | null | undefined): string | undefined {
+  const resolved = resolveCdnUrl(url);
+  if (!resolved) return undefined;
+  try {
+    const parsed = new URL(resolved);
+    if (!parsed.hostname.endsWith("imagekit.io")) return resolved;
+    if (!parsed.searchParams.has("tr")) parsed.searchParams.set("tr", "orig-true");
+    return parsed.toString();
+  } catch {
+    return resolved;
+  }
+}
+
 const IMAGEKIT_HOST = (() => {
   try {
     return new URL(IMAGEKIT_URL_ENDPOINT).host;
