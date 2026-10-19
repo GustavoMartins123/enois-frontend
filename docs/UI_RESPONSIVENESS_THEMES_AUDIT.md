@@ -500,3 +500,12 @@ em denúncia). Admin/moderação: somente leitura visual.
   durante o rollout, em pods velhos.
 - **Próximo lote:** Lote B protegido das demais rotas a 390px (começando por `/perfil/aminadojava`,
   `/post/:id`, `/vagas`, `/eventos`, `/mensagens`), depois `/blogs` e `/eventos` a 1280.
+
+## Rodada 30 — 2026-10-19 14:2x
+
+- **Lote B protegido continua:** `/perfil/aminadojava` e `/post/post_396…` a 390×844 nos **60
+  temas × claro/escuro** = **240 verificações, ZERO problemas** (overflow, contraste, variáveis
+  de tema, console e sessão). Sessão válida durante todo o lote.
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/vagas`, `/eventos` e `/mensagens` a 390px com os 60 temas; depois
+  `/blogs` e `/eventos` a 1280.
