@@ -1,7 +1,7 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** em andamento — rodadas 1 a 7 executadas. A matriz ainda tem lotes
-> pendentes (rotas protegidas nos viewports novos, Lote B nas demais rotas e Lote C nas 8 páginas
+> **Status (2026-10-19):** em andamento — rodadas 1 a 8 executadas. A matriz ainda tem lotes
+> pendentes (rotas protegidas nos viewports novos, Lote B nas demais rotas e Lote C nas 6 páginas
 > restantes em 1280px).
 
 ## Objetivo
@@ -67,7 +67,7 @@ em denúncia). Admin/moderação: somente leitura visual.
 |---|---|---|---|---|
 | A | 23 em 390/768/1280 (rodada 1) + 17 públicas e 10 dinâmicas nos outros 6 viewports (rodada 2) | 320, 360, 390, 414, 768, 1024, 1280, 1440, 1920 | claro/escuro padrão | parcial — rotas protegidas nos viewports novos bloqueadas pela sessão expirada |
 | B | `/`, `/empresas`, `/perfil/aminadojava`, `/post/...`, `/developers`, `/vagas`, `/empresa/n-is`, `/blogs` (960 combinações) | 390px | 60 × 2 | 8 rotas concluídas; faltam as demais |
-| C | `/` e `/perfil/aminadojava` (240 reexecutadas; 9 corrigidos) | 1280px | 60 × 2 | 2 páginas-chave concluídas; faltam 8 |
+| C | `/`, `/perfil/aminadojava`, `/post/...`, `/developers` (480 combinações) | 1280px | 60 × 2 | 4 páginas-chave concluídas; faltam 6 |
 
 ## Rodada 1 — 2026-10-19
 
@@ -189,6 +189,16 @@ em denúncia). Admin/moderação: somente leitura visual.
   já estavam limpas não foram afetadas pela correção (ela é monotônica: só aumenta o contraste).
 - **Próximo lote:** Lote C nas 8 páginas-chave restantes; Lote B nas rotas públicas restantes;
   rotas protegidas com sessão fresca.
+
+## Rodada 8 — 2026-10-19
+
+- **Sessão:** ainda expirada; rotas protegidas seguem bloqueadas.
+- **Lote C (1280px):** 60 temas × 2 modos × `/post/post_7a1d...` e `/developers` = **240
+  combinações, todas limpas** (contraste e overflow). Nenhum achado, nenhuma correção.
+- **Cobertura do Lote C:** 4 páginas-chave concluídas (`/`, `/perfil`, `/post`, `/developers`) —
+  **480 combinações**.
+- **Próximo lote:** Lote C em `/vagas`, `/empresa` e `/games` (públicas); `/feed`, `/carteira` e
+  `/marketplace` quando a sessão estiver fresca; Lote B nas rotas públicas restantes.
 
 ## Achados e correções
 
