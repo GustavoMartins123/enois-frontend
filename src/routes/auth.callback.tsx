@@ -123,5 +123,10 @@ function errorMessage(code: string): string {
   if (normalized.includes("EMAIL_REQUIRED")) {
     return texts.auth.social.emailRequired;
   }
+  // LinkedIn recusou a permissao de publicacao (produto "Share on LinkedIn" ainda nao habilitado
+  // no aplicativo): o provedor devolve unauthorized_scope_error ANTES do login.
+  if (normalized.includes("SCOPE")) {
+    return texts.auth.social.linkedinScope;
+  }
   return texts.auth.social.callbackError;
 }

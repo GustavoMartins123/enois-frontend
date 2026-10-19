@@ -397,6 +397,9 @@ export const texts = {
       pendingApproval:
         "O login com Google está aguardando aprovação do OAuth e ainda não foi liberado. Entre com e-mail e senha por enquanto.",
       callbackError: "Não foi possível concluir o login social. Tente novamente.",
+      /** O LinkedIn recusou publicar em nome da pessoa: produto "Share on LinkedIn" pendente no app. */
+      linkedinScope:
+        "O LinkedIn ainda não liberou a publicação por este aplicativo. Nada mudou na sua conta — você pode reconectar mais tarde; o time já está vendo isso.",
       callbackLoading: "Concluindo o login...",
       callbackTitle: "Entrando · Énóis",
       cancelled: "Você cancelou o login. Nada foi alterado na sua conta.",
