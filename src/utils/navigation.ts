@@ -21,6 +21,7 @@ const routeDefinitions = [
     to: "/comunidades/$communityId",
     params: ["communityId"],
   },
+  { source: "grupos", to: "/grupos/$slug", params: ["slug"] },
   { source: "feed", to: "/feed" },
   { source: "rede", to: "/rede" },
   { source: "mensagens", to: "/mensagens" },

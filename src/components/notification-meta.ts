@@ -3,11 +3,16 @@ import {
   AtSign,
   Briefcase,
   Calendar,
+  Crown,
   GraduationCap,
   Heart,
   MessageCircle,
+  ShieldAlert,
   Sparkles,
+  UserCheck,
+  UserMinus,
   UserPlus,
+  UserX,
 } from "lucide-react";
 
 export const notificationMeta: Record<string, NotificationMeta> = {
@@ -24,4 +29,15 @@ export const notificationMeta: Record<string, NotificationMeta> = {
   job: { icon: Briefcase, className: "bg-opportunity/20 text-opportunity-foreground" },
   mentoring: { icon: GraduationCap, className: "bg-primary-soft text-primary" },
   jogo_diario: { icon: Sparkles, className: "bg-growth/15 text-growth" },
+  // Grupos: entrada, decisão de pedido, moderação e estado do grupo.
+  group_join_request: { icon: UserPlus, className: "bg-primary-soft text-primary" },
+  group_join_approved: { icon: UserCheck, className: "bg-growth/15 text-growth" },
+  group_join_rejected: { icon: UserX, className: "bg-destructive/10 text-destructive" },
+  group_member_joined: { icon: UserPlus, className: "bg-primary-soft text-primary" },
+  group_member_removed: { icon: UserMinus, className: "bg-destructive/10 text-destructive" },
+  group_ownership_transferred: { icon: Crown, className: "bg-accent text-accent-foreground" },
+  new_group_comment: { icon: MessageCircle, className: "bg-primary-soft text-primary" },
+  new_group_reply: { icon: MessageCircle, className: "bg-primary-soft text-primary" },
+  group_content_removed: { icon: ShieldAlert, className: "bg-destructive/10 text-destructive" },
+  group_status_changed: { icon: ShieldAlert, className: "bg-accent text-accent-foreground" },
 };
