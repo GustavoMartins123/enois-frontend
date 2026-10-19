@@ -12,7 +12,7 @@
  * cliente recarrega sozinho quando o novo SW assume (ver src/lib/pwa.ts).
  */
 
-const VERSION = "enois-v5";
+const VERSION = "enois-v6";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGES_CACHE = `${VERSION}-pages`;
 
@@ -21,9 +21,9 @@ const PRECACHE = [
   "/brand/mark-primary.svg",
   "/manifest.webmanifest",
   "/favicon.ico",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
-  "/icons/icon-maskable-512.png",
+  "/icons/brand-icon-192.png",
+  "/icons/brand-icon-512.png",
+  "/icons/brand-icon-maskable-512.png",
   "/icons/apple-touch-icon.png",
 ];
 
