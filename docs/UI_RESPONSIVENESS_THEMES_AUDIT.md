@@ -1,8 +1,8 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** em andamento — rodadas 1 a 13 executadas. A matriz ainda tem lotes
-> pendentes (rotas protegidas nos viewports novos, Lote B nas rotas públicas restantes e Lote C
-> nas 3 páginas protegidas em 1280px).
+> **Status (2026-10-19):** em andamento — rodadas 1 a 14 executadas. A matriz ainda tem lotes
+> pendentes (rotas protegidas nos viewports novos, Lote B em poucas rotas públicas e Lote C nas 3
+> páginas protegidas em 1280px).
 
 ## Objetivo
 
@@ -66,7 +66,7 @@ em denúncia). Admin/moderação: somente leitura visual.
 | Lote | Rotas | Viewports | Temas | Status |
 |---|---|---|---|---|
 | A | 23 em 390/768/1280 (rodada 1) + 17 públicas e 10 dinâmicas nos outros 6 viewports (rodada 2) | 320, 360, 390, 414, 768, 1024, 1280, 1440, 1920 | claro/escuro padrão | parcial — rotas protegidas nos viewports novos bloqueadas pela sessão expirada |
-| B | `/`, `/empresas`, `/perfil/aminadojava`, `/post/...`, `/developers`, `/vagas`, `/empresa/n-is`, `/blogs`, `/sobre`, `/temas`, `/contato`, `/termos`, `/privacidade`, `/diretrizes`, `/entrar`, `/games/aminadojava` (1920 combinações) | 390px | 60 × 2 | 16 rotas concluídas; faltam as demais |
+| B | `/`, `/empresas`, `/perfil/aminadojava`, `/post/...`, `/developers`, `/vagas`, `/empresa/n-is`, `/blogs`, `/sobre`, `/temas`, `/contato`, `/termos`, `/privacidade`, `/diretrizes`, `/entrar`, `/games/aminadojava`, `/vagas/ext_Jobicy_155744`, `/blog/andre-marcondes-teixeira` (2160 combinações) | 390px | 60 × 2 | 18 rotas concluídas; faltam as demais |
 | C | `/`, `/perfil`, `/post/...`, `/developers`, `/vagas`, `/empresa/n-is`, `/games` (840 combinações) | 1280px | 60 × 2 | 7 páginas-chave concluídas; faltam 3 protegidas |
 
 ## Rodada 1 — 2026-10-19
@@ -250,6 +250,15 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Cobertura do Lote B:** 16 rotas / **1920 combinações**.
 - **Próximo lote:** `/blog/...`, `/auth/reset`, `/auth/verify`, `/vagas/$jobId`, `/games` e
   `/eventos` (testa o redirect quando sem sessão); protegidas quando houver sessão fresca.
+
+## Rodada 14 — 2026-10-19
+
+- **Sessão:** ainda expirada; rotas protegidas seguem bloqueadas.
+- **Lote B (390px):** `/vagas/ext_Jobicy_155744` e `/blog/andre-marcondes-teixeira` = **240
+  combinações, todas limpas** (contraste e overflow). Nenhum achado, nenhuma correção.
+- **Cobertura do Lote B:** 18 rotas / **2160 combinações**.
+- **Próximo lote:** `/auth/reset`, `/auth/verify`, `/games`, `/eventos` (redirect) e as protegidas
+  quando houver sessão fresca.
 
 ## Achados e correções
 
