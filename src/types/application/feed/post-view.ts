@@ -10,6 +10,7 @@ export type PostView = {
   /** Todos os emblemas (até 5), na ordem escolhida: acompanham o nome em todo lugar. */
   authorBadges?: string[] | null;
   authorAvatar: string | null;
+  authorAvatarFrame?: string | null;
   type:
     | "INSIGHT"
     | "ARTICLE"

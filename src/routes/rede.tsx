@@ -149,6 +149,7 @@ function Rede() {
                 <div className="-mt-10 px-5 pb-5">
                   <UserAvatar
                     src={u.avatar}
+                    frame={u.avatarFrame}
                     alt={u.name}
                     className="mx-auto h-20 w-20 ring-4 ring-card"
                   />

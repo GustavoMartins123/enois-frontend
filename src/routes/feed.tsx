@@ -241,6 +241,7 @@ function Home() {
           >
             <div className="flex items-start gap-3">
               <UserAvatar
+                frame={profileUser?.avatarFrame}
                 src={profileUser?.avatar}
                 alt={profileUser?.name ?? texts.feed.you}
                 className="h-11 w-11"
@@ -544,6 +545,7 @@ function Home() {
 
               <div className="-mt-7 px-4 pb-4 text-center">
                 <UserAvatar
+                  frame={profileUser.avatarFrame}
                   src={profileUser.avatar}
                   alt={profileUser.name}
                   className="mx-auto h-16 w-16 ring-4 ring-surface-card"
@@ -595,7 +597,7 @@ function Home() {
               <ul className="mt-4 space-y-3">
                 {suggestionList.map((u) => (
                   <li key={u.id} className="flex items-center gap-3">
-                    <UserAvatar src={u.avatar} alt={u.name} className="h-10 w-10" />
+                    <UserAvatar src={u.avatar} frame={u.avatarFrame} alt={u.name} className="h-10 w-10" />
 
                     <div className="min-w-0 flex-1">
                       <Link

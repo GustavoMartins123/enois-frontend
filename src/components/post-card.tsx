@@ -220,6 +220,7 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
           authorBadge={post.authorBadge}
           authorBadges={post.authorBadges}
           authorAvatar={post.authorAvatar}
+          authorAvatarFrame={post.authorAvatarFrame}
           createdAt={post.createdAt}
           community={post.community}
           fallbackClassName={meta.classAvatar}

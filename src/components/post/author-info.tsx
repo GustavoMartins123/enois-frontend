@@ -13,6 +13,7 @@ export function AuthorInfo({
   authorUsername,
   authorName,
   authorAvatar,
+  authorAvatarFrame,
   authorBadge,
   authorBadges,
   createdAt,
@@ -25,6 +26,7 @@ export function AuthorInfo({
     <div className="flex items-start gap-3">
       <Link to="/perfil/$username" params={{ username: authorUsername }}>
         <UserAvatar
+          frame={authorAvatarFrame}
           src={authorAvatar}
           alt={authorName}
           fallbackClassName={fallbackClassName}

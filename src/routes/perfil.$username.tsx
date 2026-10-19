@@ -345,6 +345,7 @@ function Profile() {
             <div className="-mt-12 flex flex-wrap items-end justify-between gap-3 sm:-mt-14 sm:gap-4">
               <div className="group relative">
                 <UserAvatar
+                  frame={user.avatarFrame}
                   src={resolveCdnUrl(user.avatar)}
                   alt={user.name}
                   className={`h-24 w-24 ring-4 sm:h-28 sm:w-28 ${FRAME_RING[user.avatarFrame ?? ""] ?? "ring-surface-card"}`}
@@ -849,7 +850,7 @@ function RecommendationItem({ recommendation }: RecommendationItemProps) {
   return (
     <div className="rounded-xl bg-surface-1 p-3">
       <div className="flex items-center gap-2 mb-2">
-        <UserAvatar src={recommender?.avatar} alt={recommender?.name} className="h-6 w-6" />
+        <UserAvatar frame={recommender?.avatarFrame} src={recommender?.avatar} alt={recommender?.name} className="h-6 w-6" />
 
         <span className="text-xs font-medium text-text-strong">
           {recommender?.name ?? texts.profile.userFallback}

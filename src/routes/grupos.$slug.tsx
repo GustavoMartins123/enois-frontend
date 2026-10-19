@@ -444,6 +444,7 @@ function GroupPostItem({
       <div className="flex items-center gap-2">
         <UserAvatar
           src={post.authorAvatar}
+          frame={post.authorAvatarFrame}
           alt={post.authorName ?? ""}
           className="h-8 w-8 shrink-0"
         />
@@ -521,6 +522,7 @@ function GroupPostItem({
                 <li key={item.id} className="flex items-start gap-2">
                   <UserAvatar
                     src={item.authorAvatar}
+                    frame={item.authorAvatarFrame}
                     alt={item.authorName ?? ""}
                     className="h-6 w-6 shrink-0"
                   />

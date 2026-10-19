@@ -6,6 +6,7 @@ export type GroupComment = {
   authorName: string | null;
   authorUsername: string | null;
   authorAvatar: string | null;
+  authorAvatarFrame?: string | null;
   authorBadges: string[];
   parentCommentId: string | null;
   content: string;
