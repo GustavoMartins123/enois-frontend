@@ -42,6 +42,32 @@ function fundoSolido(valor: string): string {
   return "#ffffff";
 }
 
+/**
+ * Cor EFETIVA de um token que pode ser translúcido, composta sobre o fundo da página.
+ *
+ * `fundoSolido` ignora o alpha, e isso engana a conta de contraste: um branco a 38%
+ * sobre um azul claro é um azul quase branco, não branco puro; um azul a 14% sobre o
+ * mesmo fundo é um azul pálido, não o azul cheio. O texto só pode ser escolhido contra
+ * o que a pessoa realmente vê.
+ */
+function corSobre(valor: string, backdrop: RgbColor): RgbColor {
+  const hex = valor.match(/#([0-9a-fA-F]{6})\b/);
+  if (hex) return hexToRgb(`#${hex[1]}`);
+  const match = valor.match(
+    /rgba?\(\s*([\d.]+)[,\s]+([\d.]+)[,\s]+([\d.]+)(?:\s*[,/]\s*([\d.]+))?\s*\)/,
+  );
+  if (!match) return backdrop;
+  const r = Number(match[1]) / 255;
+  const g = Number(match[2]) / 255;
+  const b = Number(match[3]) / 255;
+  const alpha = match[4] === undefined ? 1 : Math.min(1, Math.max(0, Number(match[4])));
+  return {
+    r: r * alpha + backdrop.r * (1 - alpha),
+    g: g * alpha + backdrop.g * (1 - alpha),
+    b: b * alpha + backdrop.b * (1 - alpha),
+  };
+}
+
 export function palette(spec: PaletteSpec): ThemeCollectionTokens {
   const { primary, onPrimary, surface, muted, border } = spec;
   const bgSolido = fundoSolido(spec.background);
@@ -54,13 +80,13 @@ export function palette(spec: PaletteSpec): ThemeCollectionTokens {
   const claro = relativeLuminance(backgroundRgb) > relativeLuminance(primaryRgb);
   const mixPadrao = `color-mix(in srgb, ${primary} 14%, ${bgSolido})`;
   const mixSoft = mixSrgb(primaryRgb, backgroundRgb, 0.14);
-  const softRgb = spec.soft ? hexToRgb(fundoSolido(spec.soft)) : mixSoft;
+  const softRgb = spec.soft ? corSobre(spec.soft, backgroundRgb) : mixSoft;
   const softNoLadoCerto =
     claro ? relativeLuminance(softRgb) > relativeLuminance(primaryRgb)
           : relativeLuminance(softRgb) < relativeLuminance(primaryRgb);
   const softFinal = softNoLadoCerto ? (spec.soft ?? mixPadrao) : mixPadrao;
   const softFinalRgb = softNoLadoCerto ? softRgb : mixSoft;
-  const mutedRgb = hexToRgb(fundoSolido(muted));
+  const mutedRgb = corSobre(muted, backgroundRgb);
   const secondary = spec.secondary ?? `color-mix(in oklab, ${primary} 45%, ${bgSolido})`;
   // O texto que usa o destaque como COR (links, "Entrar", chips de habilidade) não pode
   // sumir quando o primário do tema é claro demais para o fundo — e também não pode
@@ -728,7 +754,7 @@ html:root.dark[data-theme="aero-glass"] .bg-surface-card, html:root.dark[data-th
           card: "0 2px 6px rgb(40 50 90 / 0.18), inset 0 1px 0 #ffffff",
         },
         radius: "10px",
-        text: { strong: "#16182b", subtle: "#4d5570", date: "#8b93ad" },
+        text: { strong: "#16182b", subtle: "#4d5570", date: "#6f7894" },
         extra: { "--bevel-light": "#ffffff", "--bevel-dark": "#c8d2e4" },
       }),
       dark: palette({
