@@ -103,6 +103,19 @@ export function palette(spec: PaletteSpec): ThemeCollectionTokens {
   // empatar com o soft (bg-primary-soft), com a superfície-2 (chips bg-surface-2) nem
   // com a parada mais escura de um fundo em degradê, por isso todos entram na conta.
   const primaryText = textSafeAccent(primaryRgb, [...bgStops, softFinalRgb, mutedRgb]);
+  // A data do post fica dentro do CARD, não no fundo da página: o token do tema é
+  // ajustado contra a superfície real (composta, quando o card é translúcido) para
+  // não ficar em 2.0–2.9:1 em temas de superfície clara/escura.
+  const surfaceSolidRgb = hexToRgb(surface);
+  const surfaceAlpha = Math.min(100, Math.max(0, spec.surfaceAlpha ?? 100)) / 100;
+  const surfaceRgb = surfaceAlpha >= 1
+    ? surfaceSolidRgb
+    : {
+        r: surfaceSolidRgb.r * surfaceAlpha + backgroundRgb.r * (1 - surfaceAlpha),
+        g: surfaceSolidRgb.g * surfaceAlpha + backgroundRgb.g * (1 - surfaceAlpha),
+        b: surfaceSolidRgb.b * surfaceAlpha + backgroundRgb.b * (1 - surfaceAlpha),
+      };
+  const dateText = textSafeAccent(hexToRgb(spec.text.date), [surfaceRgb, backgroundRgb]);
 
   return {
     // Destaque
@@ -148,7 +161,7 @@ export function palette(spec: PaletteSpec): ThemeCollectionTokens {
     "--muted-foreground": spec.text.subtle,
     "--text-strong": spec.text.strong,
     "--text-subtle": spec.text.subtle,
-    "--text-date": spec.text.date,
+    "--text-date": dateText,
     // Estrutura. Os raios DERIVADOS (sm/md/xl/2xl/3xl) são calc(var(--radius) ± N) no CSS
     // da marca — com raio 0 eles devolviam pixels (2xl = +8) e os cartões do Win95/Metro
     // continuavam arredondados. O tema emite os seis coerentes com o raio dele.
