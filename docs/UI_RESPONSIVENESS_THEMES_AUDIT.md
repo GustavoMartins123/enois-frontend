@@ -1,6 +1,6 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** em andamento — rodadas 1 a 21 executadas. O Lote B público está
+> **Status (2026-10-19):** em andamento — rodadas 1 a 22 executadas. O Lote B público está
 > completo; restam as rotas/páginas protegidas (Lote A nos viewports novos, Lote B em 390px e
 > Lote C em 1280px), que dependem de uma sessão fresca do Firefox.
 
@@ -344,6 +344,20 @@ em denúncia). Admin/moderação: somente leitura visual.
     usuário**, então não é bug.
   - `/blogs`: 13 cards testados, zero overflow. `/empresas`: os cards externos não carregaram no
     teste (aba/dados) — inconclusivo, fica para um teste dirigido.
+- **Nenhuma outra correção.** Continua pendente apenas o lote protegido.
+
+## Rodada 22 — 2026-10-19
+
+- **Sessão:** ainda expirada; rotas protegidas seguem bloqueadas.
+- **Stress dirigido em empresa, criador de jogos e blog:**
+  - **Achado real:** o `h1` do **nome da empresa** (`/empresa/n-is`) era clipado (`clientWidth`
+    2569, altura 32, sem quebra). Corrigido com `min-w-0 break-words` no `h1`; os `h1` de
+    criador/jogo também ganharam a mesma proteção (commit `8766f7d`). **Verificado em produção:**
+    332px de largura, 256px de altura (quebrou em várias linhas), **0 overflow**.
+  - `/games/aminadojava` cai no catálogo (não há perfil de dev para esse username), então o
+    overflow sintético ali era o título estático “Jogos”, não conteúdo de usuário.
+  - `/blogs` (13 cards) e `/blog/andre...` sem overflow. `/empresas`: os cards externos não
+    carregaram no teste; inconclusivo.
 - **Nenhuma outra correção.** Continua pendente apenas o lote protegido.
 
 ## Achados e correções
