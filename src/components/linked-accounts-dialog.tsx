@@ -11,10 +11,9 @@ import type { OAuthProvider } from "@/types/application/auth/oauth-provider";
 import type { LinkedAccountsDialogProps } from "@/types/components/account/linked-accounts-dialog-props";
 import { Link2, Link2Off, Loader2 } from "lucide-react";
 
-import { ApiError, authApi } from "@/lib/api";
+import { ApiError, authApi, linkedInIntegrationApi } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
-import { LinkedinImportSection } from "@/components/security/linkedin-import-section";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +21,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
+import { useToast } from "@/components/ui/toast";
+
+import { LinkedinImportSection } from "@/components/security/linkedin-import-section";
 
 /**
  * Contas vinculadas: mostra o que já está ligado e permite vincular/desvincular.
@@ -55,8 +58,27 @@ export function LinkedAccountsDialog({ open, onOpenChange }: LinkedAccountsDialo
   const link = useMutation({
     mutationFn: (provider: OAuthProvider) => authApi.oauthLinkStart(provider),
     onSuccess: (start) => {
+      // No LinkedIn o vínculo pede w_member_social; ao voltar para o feed, a página pergunta se a
+      // pessoa quer sincronizar as publicações (ver LinkedInSyncPrompt).
+      if (start.provider === "LINKEDIN") localStorage.setItem("linkedin_link_pending", "1");
       window.location.href = start.authorizationUrl;
     },
+  });
+
+  const linkedinLinked = linked.some((item) => item.provider === "LINKEDIN");
+  const { data: linkedinStatus } = useQuery({
+    queryKey: ["linkedin-integration"],
+    queryFn: () => linkedInIntegrationApi.status(),
+    enabled: open && linkedinLinked,
+  });
+  const { toast } = useToast();
+  const setSync = useMutation({
+    mutationFn: (enabled: boolean) => linkedInIntegrationApi.setPostSync(enabled),
+    onSuccess: (status) => {
+      queryClient.setQueryData(["linkedin-integration"], status);
+      toast(texts.auth.links.linkedinSync.saved);
+    },
+    onError: () => toast(texts.auth.links.linkedinSync.unavailable, "error"),
   });
 
   // Cada ação tem a sua mensagem: dizer "não foi possível desvincular" quando o clique foi em
@@ -153,6 +175,49 @@ export function LinkedAccountsDialog({ open, onOpenChange }: LinkedAccountsDialo
           <p className="mt-2 rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
             {errorMessage}
           </p>
+        )}
+
+        {linkedinLinked && linkedinStatus && (
+          <div className="mt-2 rounded-xl border border-border-soft px-3 py-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-text-strong">
+                  {texts.auth.links.linkedinSync.toggle}
+                </p>
+
+                <p className="text-xs font-normal text-text-subtle">
+                  {texts.auth.links.linkedinSync.toggleHint}
+                </p>
+              </div>
+
+              <Switch
+                checked={linkedinStatus.postSync}
+                disabled={setSync.isPending || !linkedinStatus.canPost}
+                onCheckedChange={(checked) => setSync.mutate(checked)}
+              />
+            </div>
+
+            {!linkedinStatus.canPost && (
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <p className="text-xs font-normal text-text-subtle">
+                  {linkedinStatus.reason === "SERVER_KEY_MISSING"
+                    ? texts.auth.links.linkedinSync.serverKey
+                    : texts.auth.links.linkedinSync.notReady}
+                </p>
+                {linkedinStatus.reason !== "SERVER_KEY_MISSING" && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-auto shrink-0 rounded-full"
+                    disabled={link.isPending}
+                    onClick={() => link.mutate("LINKEDIN")}
+                  >
+                    {texts.auth.links.linkedinSync.reconnect}
+                  </Button>
+                )}
+              </div>
+            )}
+          </div>
         )}
 
         {/* A importação mora AQUI: conectou o LinkedIn, o próximo passo natural está na mesma tela.

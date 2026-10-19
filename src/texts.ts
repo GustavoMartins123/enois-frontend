@@ -513,6 +513,25 @@ export const texts = {
         `O ${provider} ainda não está configurado no Énóis. Tente novamente mais tarde.`,
       /** Nome do provedor quando a tela não sabe qual foi (o rótulo vem de OAUTH_PROVIDER_LABELS). */
       providerFallback: "provedor",
+      /** Publicação automática no LinkedIn (produto "Share on LinkedIn"). */
+      linkedinSync: {
+        title: "Publicar no LinkedIn",
+        description:
+          "Suas publicações no Énóis podem ir também para o seu feed do LinkedIn, com o link do post original.",
+        toggle: "Publicar minhas publicações no LinkedIn",
+        toggleHint: "Cada post novo vira um post no LinkedIn com o link do Énóis.",
+        notReady: "Reconecte o LinkedIn para autorizar a publicação em seu nome.",
+        serverKey:
+          "A publicação no LinkedIn ainda não está disponível nesta instalação. Avise o time de suporte.",
+        reconnect: "Reconectar LinkedIn",
+        saved: "Preferência de sincronização salva.",
+        promptTitle: "Sincronizar publicações com o LinkedIn?",
+        promptBody:
+          "Suas próximas publicações no Énóis podem ser publicadas também no seu feed do LinkedIn, com o link para o post original. Você pode mudar isso depois em Contas vinculadas.",
+        yes: "Sim, sincronizar",
+        no: "Não, obrigado",
+        unavailable: "Não foi possível ligar a sincronização agora.",
+      },
     },
     terms: {
       prefix: "Ao continuar, você concorda com os ",
