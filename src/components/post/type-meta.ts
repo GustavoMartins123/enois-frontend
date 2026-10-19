@@ -10,7 +10,9 @@ export const typeMeta: Record<PostView["type"], PostTypeMeta> = {
   },
   QUESTION: {
     label: texts.posts.types.question,
-    className: "bg-secondary/30 text-secondary-foreground",
+    // Fundo é o secundário translúcido sobre o cartão: o foreground cheio do secundário
+    // (que contrasta com o secundário sólido) fica ilegível em temas de tom claro no escuro.
+    className: "bg-secondary/30 text-text-strong",
     classAvatar: "",
   },
   PROJECT: {
@@ -63,6 +65,6 @@ export const typeMeta: Record<PostView["type"], PostTypeMeta> = {
   BLOG: {
     label: texts.blog.feed.badge,
     className: "bg-highlight-article text-highlight-article-text",
-    classAvatar: "bg-user-article text-article-text",
+    classAvatar: "bg-user-article text-user-article-text",
   },
 };
