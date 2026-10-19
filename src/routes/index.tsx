@@ -91,13 +91,18 @@ function Landing() {
           <div className="flex items-center gap-1">
             <ThemeToggle />
 
-            <Button asChild variant="ghost" size="sm" className="rounded-full px-3 text-sm">
+            <Button
+              asChild
+              variant="ghost"
+              size="sm"
+              className="hidden rounded-full px-3 text-sm min-[360px]:inline-flex"
+            >
               <Link to="/entrar" search={{ tab: "login" }}>
                 {texts.common.enter}
               </Link>
             </Button>
 
-            <Button asChild size="sm" className="rounded-full px-4 text-sm">
+            <Button asChild size="sm" className="rounded-full px-3 text-sm sm:px-4">
               <Link to="/entrar" search={{ tab: "signup" }}>
                 {texts.common.createAccount}
               </Link>
