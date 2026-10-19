@@ -27,7 +27,7 @@ export const THEME_COLLECTIONS_EXTRA: ThemeCollection[] = [
         accent: "#f9c6d2",
         onAccent: "#5a2735",
         ring: "#F5A9B8",
-        text: { strong: "#14324a", subtle: "#5a7a92", date: "#8ba4b5" },
+        text: { strong: "#14324a", subtle: "#5a7a92", date: "#6b8699" },
         soft: "#fde1e8",
         gradient: "linear-gradient(135deg, #5BCEFA 0%, #F5A9B8 100%)",
         shadows: {
