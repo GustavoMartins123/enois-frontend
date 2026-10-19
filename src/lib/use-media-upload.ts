@@ -33,11 +33,12 @@ export function useMediaUpload() {
 
       // O servidor diz para onde subir: com S3 é uma URL assinada (PUT direto); sem isso, o fluxo
       // multipart do ImageKit de sempre. O front não adivinha pelo formato da URL.
-      if (provider === "S3") {
-        await mediaApi.uploadToSignedUrl(uploadUrl, file, uploadHeaders ?? {});
-      } else {
-        await mediaApi.uploadToImageKit(cdnUrl, file);
+      if (provider !== "S3") {
+        throw new Error(
+          "O envio de mídia está temporariamente desativado enquanto o armazenamento é migrado.",
+        );
       }
+      await mediaApi.uploadToSignedUrl(uploadUrl, file, uploadHeaders ?? {});
 
       setState({ status: "done", progress: 100 });
       return { mediaId: id, cdnUrl };
@@ -66,11 +67,12 @@ export function useMediaUpload() {
         // Mesma bifurcação do upload avulso: quem manda no caminho é o provedor que o servidor
         // respondeu, não o formato da URL. Aqui subia sempre pelo ImageKit — com o storage em S3,
         // o compositor (que usa este caminho para TODOS os anexos) falhava.
-        if (provider === "S3") {
-          await mediaApi.uploadToSignedUrl(uploadUrl, file, uploadHeaders ?? {});
-        } else {
-          await mediaApi.uploadToImageKit(cdnUrl, file);
+        if (provider !== "S3") {
+          throw new Error(
+            "O envio de mídia está temporariamente desativado enquanto o armazenamento é migrado.",
+          );
         }
+        await mediaApi.uploadToSignedUrl(uploadUrl, file, uploadHeaders ?? {});
         results.push({ mediaId: id, cdnUrl });
         setState((s) => ({ ...s, progress: Math.round(((i + 1) / files.length) * 100) }));
       } catch (err) {
