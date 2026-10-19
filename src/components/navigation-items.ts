@@ -9,6 +9,7 @@ import {
   GraduationCap,
   Gamepad2,
   Home,
+  Joystick,
   MessageCircle,
   Users,
   UsersRound,
@@ -27,5 +28,6 @@ export const navigationItems = [
   { to: "/mentoria", label: texts.navigation.items.mentoring, icon: GraduationCap },
   { to: "/eventos", label: texts.navigation.items.events, icon: Calendar },
   { to: "/jogos-diarios", label: "Jogos diários", icon: Gamepad2 },
+  { to: "/games", label: "Jogos da comunidade", icon: Joystick },
 ];
 
