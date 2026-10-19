@@ -151,14 +151,24 @@ function Profile() {
   const user = liveProfile ?? loaderUser;
   const isOwnProfile = me?.id === user.id;
 
-  // Selo "Dev de jogos" (G2 do plano dos games): só existe se a pessoa tem página de criador no
-  // Games — o backend devolve 404 para quem não tem, e aí o chip nem aparece.
+  // Selo "Dev de jogos" (G2 do plano dos games): só aparece quando a pessoa TEM presença de dev
+  // de verdade — jogo publicado ou página de criador preenchida. O DONO da conta recebe 200 do
+  // backend mesmo sem nada (é a mesma rota que alimenta o painel para montar a página), então a
+  // resposta sozinha não basta: sem conteúdo, o chip não existe nem no próprio perfil.
   const { data: gamesDev } = useQuery({
     queryKey: ["games", "developer", user.username],
     queryFn: () => gamesApi.developer(user.username),
     retry: false,
     staleTime: 300_000,
   });
+  const temPaginaDeDev = Boolean(
+    gamesDev &&
+      (gamesDev.games.length > 0 ||
+        gamesDev.displayName ||
+        gamesDev.headline ||
+        gamesDev.bio ||
+        gamesDev.links.length > 0),
+  );
 
   // O currículo só existe na projeção do DONO (/me): o perfil público não traz, de propósito.
   const { data: myProfile } = useQuery({
@@ -554,7 +564,7 @@ function Profile() {
                     {texts.profile.mentorAvailable}
                   </span>
                 )}
-                {gamesDev && (
+                {temPaginaDeDev && (
                   <Link
                     to="/games/$username"
                     params={{ username: user.username }}
