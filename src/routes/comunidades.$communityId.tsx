@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 
 import { TOPICS, TOPIC_LABELS } from "@/constants/community-topics";
+import { postContentLimit } from "@/constants/post-content-limits";
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { ARTICLE_BODY_MAX_LENGTH, POST_TYPES } from "@/constants/post-types";
 import { PROFILE_HTML_MAX_LENGTH } from "@/constants/profile";
@@ -504,7 +505,7 @@ function CommunityDetail() {
                 }}
                 placeholder={texts.communities.detail.composerPlaceholder}
                 className="min-h-20 rounded-2xl border border-border bg-muted/40 px-3 py-2 text-sm font-normal"
-                maxLength={1200}
+                maxLength={postContentLimit(postType)}
                 toolbar
               />
             )}

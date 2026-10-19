@@ -9,8 +9,8 @@ import type { PostView } from "@/types/application/feed/post-view";
 import { api, buildQuery } from "../api-client";
 
 export const communitiesApi = {
-  list: (topic?: CommunityTopic, cursor?: string | null, limit = 20) =>
-    api.get<PageResponse<Community>>(`/communities${buildQuery({ topic, cursor, limit })}`),
+  list: (topic?: CommunityTopic, cursor?: string | null, limit = 20, q?: string) =>
+    api.get<PageResponse<Community>>(`/communities${buildQuery({ topic, cursor, limit, q })}`),
 
   get: (communityId: string) => api.get<Community>(`/communities/${communityId}`),
 

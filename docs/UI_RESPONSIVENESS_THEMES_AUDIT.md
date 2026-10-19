@@ -500,3 +500,63 @@ em denúncia). Admin/moderação: somente leitura visual.
   durante o rollout, em pods velhos.
 - **Próximo lote:** Lote B protegido das demais rotas a 390px (começando por `/perfil/aminadojava`,
   `/post/:id`, `/vagas`, `/eventos`, `/mensagens`), depois `/blogs` e `/eventos` a 1280.
+
+## Rodada 30 — 2026-10-19 14:2x
+
+- **Lote B protegido continua:** `/perfil/aminadojava` e `/post/post_396…` a 390×844 nos **60
+  temas × claro/escuro** = **240 verificações, ZERO problemas** (overflow, contraste, variáveis
+  de tema, console e sessão). Sessão válida durante todo o lote.
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/vagas`, `/eventos` e `/mensagens` a 390px com os 60 temas; depois
+  `/blogs` e `/eventos` a 1280.
+
+## Rodada 31 — 2026-10-19 17:3x
+
+- **Lote B protegido continua:** `/vagas` e `/eventos` a 390×844 nos 60 temas × claro/escuro
+  = 240 verificações planejadas. **228 limpas, 12 achados — todos ambientais** (`AUTH-BOUNCE`/
+  `NAVERR`): a sessão expirou por volta do tema 36 (`listras-amarelas`), e `/eventos` passou a
+  redirecionar para `/entrar`. Nenhum problema de overflow, contraste ou tema aplicado.
+- Os 35 primeiros temas fecharam as duas rotas limpas; com as rodadas 28-30, `/feed`, `/carteira`,
+  `/marketplace`, `/perfil`, `/post`, `/vagas` e `/eventos` já têm cobertura de temas no mobile.
+- **Nenhuma correção de app.**
+- **Próximo lote:** re-copiar a sessão e fechar `/eventos` (temas 36-60) e `/mensagens`; depois as
+  demais rotas protegidas.
+
+## Rodada 32 — 2026-10-19 17:5x
+
+- **Sessão protegida bloqueada:** a cópia do Firefox segue com mtime 17:18 e o access token
+  responde 401; sem credencial nova não há como continuar as rotas logadas nesta rodada. Segui
+  com o lote público.
+- **Lote C público:** `/empresa/n-is` (detalhe da empresa) em **1280×800**, 60 temas × claro/escuro
+  = **120 combinações, ZERO problemas** — overflow, contraste WCAG, `--background`/`--primary`
+  aplicados, console e HTTP.
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/eventos` (temas 36–60) e `/mensagens` quando houver sessão nova; no público,
+  `/games/{user}/{slug}` e `/marketplace` a 1280 com os 60 temas.
+
+## Rodada 33 — 2026-10-19 18:1x
+
+- **Sessão protegida ainda bloqueada** (cópia de 17:18, `/api/me` 401). Lote público.
+- **Lote C público:** `/games/aminadojava/https-kawaii-survivor-vercel-app` em **1280×800**, 60
+  temas × claro/escuro = **120 combinações**. **119 limpas, 1 achado real.**
+- **Achado:** no tema **silver-jonny escuro**, o rótulo “Jogo externo” usava `text-text-subtle`
+  sobre o botão `bg-primary-soft` (#5f5a03), dando **2,81:1**. O texto sutil é calculado contra o
+  fundo da página, não contra o soft.
+- **Correção mínima:** o rótulo passou a usar `text-primary-text`, que é derivado justamente contra
+  `--primary-soft`. Commit `fix(jogos)` (push `f5156df`), eslint/tsc sem erros novos.
+- **Verificação em produção:** no DOM real, silver-jonny escuro, o rótulo agora mede **6,63:1**
+  (as leituras de 2,81:1 eram pods antigos durante o rollout).
+- **Próximo lote:** `/marketplace` a 1280 com os 60 temas; quando houver sessão, `/eventos`
+  (temas 36–60) e `/mensagens`.
+
+## Rodada 34 — 2026-10-19 18:3x
+
+- **Sessão protegida ainda bloqueada** (mesma cópia, 401). Lote público.
+- **Lote C público:** `/marketplace` em **1280×800**, 60 temas × claro/escuro = **120 combinações,
+  ZERO problemas** (overflow, contraste WCAG, variáveis aplicadas, console e HTTP).
+- **Nenhuma correção de app.**
+- Com isso, os principais pontos públicos a 1280 estão fechados: home, `/empresas`,
+  `/empresa/{slug}`, `/games/{user}/{slug}`, `/marketplace` e `/developers`. O que falta no Lote C
+  são as páginas que exigem sessão (`/feed`, `/perfil`, `/post`, `/carteira`, `/vagas`).
+- **Próximo lote:** quando houver sessão nova, `/eventos` (temas 36–60), `/mensagens` e as
+  páginas-chave protegidas a 1280 com os 60 temas.

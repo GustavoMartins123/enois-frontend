@@ -8,7 +8,7 @@ import { texts } from "@/texts";
 import type { Community } from "@/types/application/community/community";
 import type { CommunityTopic } from "@/types/application/community/community-topic";
 import type { CreateCommunityDialogProps } from "@/types/routes/communities/create-community-dialog-props";
-import { Loader2, Plus, Star, Users } from "lucide-react";
+import { Loader2, Plus, Search, Star, Users } from "lucide-react";
 
 import { communitiesApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
@@ -44,6 +44,8 @@ function Comunidades() {
   const { toast } = useToast();
   const matchRoute = useMatchRoute();
   const [topic, setTopic] = useState<CommunityTopic | undefined>(undefined);
+  const [search, setSearch] = useState("");
+  const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [allItems, setAllItems] = useState<Community[]>([]);
@@ -53,9 +55,21 @@ function Comunidades() {
   cursorRef.current = cursor;
   const isDetail = matchRoute({ to: "/comunidades/$communityId" });
 
+  // A busca é do servidor (nome/descrição em todas as páginas), com 300 ms de debounce para
+  // não disparar uma requisição por tecla.
+  useEffect(() => {
+    const timer = setTimeout(() => setQuery(search.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    setCursor(undefined);
+    setAllItems([]);
+  }, [query]);
+
   const { data: communitiesData, isFetching } = useQuery({
-    queryKey: ["communities", topic, cursor],
-    queryFn: () => communitiesApi.list(topic, cursor),
+    queryKey: ["communities", topic, query, cursor],
+    queryFn: () => communitiesApi.list(topic, cursor, 20, query || undefined),
     enabled: !isDetail,
   });
 
@@ -82,9 +96,17 @@ function Comunidades() {
   }, [communitiesData]);
 
   const byId = new Map(allItems.map((c) => [c.id, c]));
+  const matchesSearch = (community: Community) => {
+    if (!query) return true;
+    const needle = query.toLocaleLowerCase("pt-BR");
+    return (
+      community.name.toLocaleLowerCase("pt-BR").includes(needle) ||
+      (community.description ?? "").toLocaleLowerCase("pt-BR").includes(needle)
+    );
+  };
   // Com um tópico ativo, a seção mostra só as favoritas daquele tópico.
   const pinnedFavorites = (favoritesData?.items ?? [])
-    .filter((c) => !topic || c.topic === topic)
+    .filter((c) => (!topic || c.topic === topic) && matchesSearch(c))
     .map((c) => byId.get(c.id) ?? c);
   const favoriteIds = new Set(pinnedFavorites.map((c) => c.id));
   const gridItems = allItems.filter((c) => !favoriteIds.has(c.id));
@@ -148,6 +170,18 @@ function Comunidades() {
               <>{texts.communities.createCommunity}</>
             </Button>
           </CreateCommunityDialog>
+        </div>
+
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder={texts.communities.searchPlaceholder}
+            className="pl-9"
+            maxLength={120}
+            aria-label={texts.communities.searchPlaceholder}
+          />
         </div>
 
         <div className="flex flex-wrap gap-2">

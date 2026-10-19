@@ -211,7 +211,7 @@ export function GamePlayer({
                 {origin ? t.play : t.player.unsupportedUrl}
               </span>
 
-              <span className="mt-1 block text-xs text-text-subtle">{t.external}</span>
+              <span className="mt-1 block text-xs text-primary-text">{t.external}</span>
             </span>
           </button>
         )}

@@ -159,7 +159,11 @@ function renderInline(nodes: RichNode[], linkClass: string): ReactNode {
         );
 
       case "italic":
-        return <em key={index}>{inner}</em>;
+        return (
+          <em key={index} className="italic">
+            {inner}
+          </em>
+        );
 
       case "strike":
         return <s key={index}>{inner}</s>;
