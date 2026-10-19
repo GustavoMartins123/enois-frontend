@@ -1,6 +1,6 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** em andamento — rodadas 1 a 18 executadas. O Lote B público está
+> **Status (2026-10-19):** em andamento — rodadas 1 a 19 executadas. O Lote B público está
 > completo; restam as rotas/páginas protegidas (Lote A nos viewports novos, Lote B em 390px e
 > Lote C em 1280px), que dependem de uma sessão fresca do Firefox.
 
@@ -305,6 +305,16 @@ em denúncia). Admin/moderação: somente leitura visual.
     (57px) — sem conteúdo escondido.
   - `/temas`: estado vazio correto (“Nenhum tema publicado ainda.”), **zero overflow**.
 - **Nenhuma correção.** Continua pendente apenas o lote protegido (sessão expirada).
+
+## Rodada 19 — 2026-10-19
+
+- **Sessão:** ainda expirada; rotas protegidas seguem bloqueadas.
+- **Busca/filtros públicos (390/1280):** digitar “java” em `/vagas`, `/empresas` e `/games` não
+  gera overflow nem erro de console; `/blogs` não tem busca (lista direta). Os estados de filtro
+  continuam legíveis nos dois viewports.
+- **Diálogo “Esqueci minha senha”:** abre pelo `/entrar?tab=login`, cabe inteiro na tela
+  (358×288 em 390px; 448×288 em 1280px), **zero overflow** e dentro do viewport.
+- **Nenhuma correção.** Continua pendente apenas o lote protegido.
 
 ## Achados e correções
 
