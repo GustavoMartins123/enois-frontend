@@ -399,3 +399,27 @@ em denúncia). Admin/moderação: somente leitura visual.
 2. Consolidar o super relatório neste arquivo.
 3. `CronList` para localizar a automação, `CronDelete` para apagá-la.
 4. Só então enviar o relatório final para a Mel, confirmando a exclusão do agendamento.
+
+## Rodada 25 — 2026-10-19 11:19
+
+- **Sessão autenticada: FUNCIONOU.** O `data.sqlite` do Firefox foi atualizado às 10:58; o
+  `session_token` respondeu `200` em `GET /api/me` (aminadojava). Pela primeira vez o lote
+  protegido pôde ser executado de verdade em produção.
+- **Lote protegido (A, ampliado):** 27 rotas × 2 viewports (390×844 e 1280×800) × claro/escuro =
+  **108 verificações**. Rotas: `/blog/:user`, `/blogs`, `/bloqueados`, `/carteira`, `/comunidades`,
+  `/comunidades/:id`, `/denuncias`, `/eventos`, `/feed`, `/games/:user`, `/games/:user/:slug`,
+  `/games/painel`, `/jogos-diarios`, `/mensagens`, `/mentoria`, `/moderacao`, `/moderador`,
+  `/penalidades`, `/perfil/:user`, `/post/:id`, `/rede`, `/salvos`, `/seguranca`, `/suporte`,
+  `/temas`, `/vagas` e `/vagas/minhas`. IDs reais colhidos da API pública; `/moderacao/:reportId` e
+  `/vagas/:jobId/candidaturas` ficaram fora por não haver denúncia/interna vaga no momento.
+- **Achados reais (2 causas, 4 ocorrências):**
+  - selo **Pergunta** (`bg-secondary/30 text-secondary-foreground`) e ícones de **mensagem** nas
+    notificações: o `foreground` do secundário contrasta com o secundário **sólido**, mas não com
+    os 30% sobre o cartão. Em blahaj escuro dava **1,1:1** (`#4a1420` sobre `#122334`) no `/feed` e
+    no `/salvos`. Trocado para `text-text-strong` (a mesma solução já usada pelo selo MOMENT).
+  - avatar de **artigo** usava a classe `text-article-text`, que **não existe** no mapa de cores
+    (`--color-article-text` não é declarado); a cor era herdada e no escuro dava **1,3:1**.
+    Corrigido para `text-user-article-text` (`--article-text`), a classe usada pelo avatar de
+    ARTICLE.
+- **Correção:** commit `d176b8e` (push em `main` às 11:19). Verificação em produção após o
+  rollout.
