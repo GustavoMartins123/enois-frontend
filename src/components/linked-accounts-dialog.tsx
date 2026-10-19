@@ -215,6 +215,11 @@ export function LinkedAccountsDialog({ open, onOpenChange }: LinkedAccountsDialo
                     {texts.auth.links.linkedinSync.reconnect}
                   </Button>
                 )}
+                {linkedinStatus.reason !== "SERVER_KEY_MISSING" && (
+                  <p className="mt-1 basis-full text-xs text-text-subtle">
+                    {texts.auth.links.linkedinSync.reconnectHint}
+                  </p>
+                )}
               </div>
             )}
           </div>
