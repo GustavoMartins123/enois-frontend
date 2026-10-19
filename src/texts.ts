@@ -2236,6 +2236,9 @@ export const texts = {
     confirm: "Confirmar transferência",
     sent: "Faíscas enviadas!",
     transferError: "Não foi possível transferir. Confira a chave e o saldo.",
+    insufficientSparks: "Você não tem faíscas suficientes para esse valor.",
+    recipientNotFound: "Não encontramos esse username. Confira a chave de destino.",
+    selfTransfer: "Você não pode transferir faíscas para você mesmo.",
     history: "Extrato",
     notice:
       "A faísca existe só dentro do Énóis: circula entre pessoas e vale nos marketplaces da plataforma. Transferências são instantâneas e sem reversão.",

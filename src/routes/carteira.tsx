@@ -44,7 +44,22 @@ function Carteira() {
       toast(texts.wallet.sent, "success");
       void queryClient.invalidateQueries({ queryKey: ["carteira"] });
     },
-    onError: () => toast(texts.wallet.transferError, "error"),
+    onError: (error: unknown) => {
+      const apiError = error as { code?: string; message?: string };
+      // O motivo vem do backend (teto de conta nova, saldo, destinatário) — mostrar o
+      // genérico escondia justamente a explicação de que a transferência foi recusada.
+      const message =
+        apiError.code === "NEW_ACCOUNT_LIMIT" && apiError.message
+          ? apiError.message
+          : apiError.code === "INSUFFICIENT_SPARKS"
+            ? texts.wallet.insufficientSparks
+            : apiError.code === "USER_NOT_FOUND"
+              ? texts.wallet.recipientNotFound
+              : apiError.code === "SELF_TRANSFER"
+                ? texts.wallet.selfTransfer
+                : texts.wallet.transferError;
+      toast(message, "error");
+    },
   });
 
   const [contestar, setContestar] = useState<{ refId: string; motivo: string; descricao: string } | null>(null);
