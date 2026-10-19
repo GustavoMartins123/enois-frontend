@@ -57,6 +57,26 @@ export function randomUUID(): string {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
+/**
+ * Fingerprint leve do dispositivo: hash de sinais que bots em proxies distintos compartilham
+ * (mesmo User-Agent, idioma, resolução). Não é biometria — é só o bastante para agrupar
+ * cadastros do mesmo navegador atrás de IPs diferentes.
+ */
+function deviceFingerprint(): string {
+  if (typeof window === "undefined") return "";
+  const signals = [
+    navigator.userAgent,
+    navigator.language,
+    `${screen.width}x${screen.height}`,
+    Intl.DateTimeFormat().resolvedOptions().timeZone,
+  ].join("|");
+  let hash = 0;
+  for (let i = 0; i < signals.length; i++) {
+    hash = ((hash << 5) - hash + signals.charCodeAt(i)) | 0;
+  }
+  return (hash >>> 0).toString(36);
+}
+
 function idemKey(): Record<string, string> {
   return { "Idempotency-Key": randomUUID() };
 }
@@ -181,6 +201,10 @@ async function request<T>(
   if (opts?.idempotent) {
     Object.assign(headers, idemKey());
   }
+  if (opts?.fingerprint) {
+    const fp = deviceFingerprint();
+    if (fp) headers["X-Device-Fingerprint"] = fp;
+  }
 
   let response: Response;
   try {
@@ -275,7 +299,8 @@ async function request<T>(
 
 export const api = {
   get: <T>(path: string) => request<T>("GET", path),
-  post: <T>(path: string, body?: unknown) => request<T>("POST", path, body, { idempotent: true }),
+  post: <T>(path: string, body?: unknown, opts?: RequestOptions) =>
+    request<T>("POST", path, body, { idempotent: true, ...opts }),
   put: <T>(path: string, body?: unknown) => request<T>("PUT", path, body, { idempotent: true }),
   patch: <T>(path: string, body?: unknown) => request<T>("PATCH", path, body, { idempotent: true }),
   delete: <T>(path: string) => request<T>("DELETE", path, null, { idempotent: true }),
