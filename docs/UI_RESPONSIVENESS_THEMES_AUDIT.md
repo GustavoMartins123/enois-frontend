@@ -548,3 +548,15 @@ em denúncia). Admin/moderação: somente leitura visual.
   (as leituras de 2,81:1 eram pods antigos durante o rollout).
 - **Próximo lote:** `/marketplace` a 1280 com os 60 temas; quando houver sessão, `/eventos`
   (temas 36–60) e `/mensagens`.
+
+## Rodada 34 — 2026-10-19 18:3x
+
+- **Sessão protegida ainda bloqueada** (mesma cópia, 401). Lote público.
+- **Lote C público:** `/marketplace` em **1280×800**, 60 temas × claro/escuro = **120 combinações,
+  ZERO problemas** (overflow, contraste WCAG, variáveis aplicadas, console e HTTP).
+- **Nenhuma correção de app.**
+- Com isso, os principais pontos públicos a 1280 estão fechados: home, `/empresas`,
+  `/empresa/{slug}`, `/games/{user}/{slug}`, `/marketplace` e `/developers`. O que falta no Lote C
+  são as páginas que exigem sessão (`/feed`, `/perfil`, `/post`, `/carteira`, `/vagas`).
+- **Próximo lote:** quando houver sessão nova, `/eventos` (temas 36–60), `/mensagens` e as
+  páginas-chave protegidas a 1280 com os 60 temas.
