@@ -1,13 +1,27 @@
-import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from "react";
+import {
+  type FormEvent,
+  type KeyboardEvent,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { useQuery } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { UserSearchResult } from "@/types/application/user/user-search-result";
 import type { Props } from "@/types/components/mention-textarea/props";
+import type { MentionListSide } from "@/types/lib/mentions/list-placement";
 import type { RichTextFormat } from "@/types/lib/rich-text/rich-text-format";
 
 import { usersApi } from "@/lib/api";
+import {
+  MENTION_LIST_GAP,
+  MENTION_LIST_MAX_HEIGHT,
+  mentionListSide,
+  mentionListSpaceAbove,
+} from "@/lib/mentions/list-placement";
 import { applyFormat } from "@/lib/rich-text/apply-format";
 import { insertSnippet } from "@/lib/rich-text/insert-snippet";
 
@@ -18,6 +32,14 @@ import { UserAvatar } from "@/components/user-avatar";
 
 /** Altura mínima da caixa, em linhas de texto, para dar espaço de revisar o que foi escrito. */
 const MIN_ROWS = 4;
+
+/**
+ * O primeiro `<header>` da página pode ser o de um post. O que cobre a busca é o sticky do topo.
+ */
+function stickyHeaderBottom(node: HTMLElement): number {
+  const header = node.ownerDocument.querySelector("header.sticky");
+  return header?.getBoundingClientRect().bottom ?? 0;
+}
 
 /** Atalhos de teclado da formatacao; `mod` e Ctrl no Windows/Linux e Cmd no Mac. */
 const SHORTCUTS: Record<string, RichTextFormat> = {
@@ -36,12 +58,16 @@ export function MentionTextarea({
   rows,
   toolbar = false,
 }: Props) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [mentionQuery, setMentionQuery] = useState("");
   const [mentionIndex, setMentionIndex] = useState(-1);
+  const [listSide, setListSide] = useState<MentionListSide>("above");
 
   // Auto-expansao: cresce com o texto ate o teto (240px); dali em diante rola dentro.
-  useEffect(() => {
+  // Layout, não effect: a altura tem de estar aplicada antes da medida da lista, no mesmo frame.
+  useLayoutEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
     el.style.height = "auto";
@@ -60,20 +86,67 @@ export function MentionTextarea({
     setSelectedIdx(0);
   }, [results.length]);
 
+  const listOpen = mentionQuery.length >= 2 && results.length > 0;
+
   // Acompanha o texto: cresce conforme você escreve e encolhe ao apagar, nunca
   // ficando menor que MIN_ROWS linhas — assim dá pra reler e editar o que digitou.
-  useEffect(() => {
+  useLayoutEffect(() => {
     const el = textareaRef.current;
     if (!el) return;
 
     const styles = getComputedStyle(el);
-    const lineHeight = parseFloat(styles.lineHeight) || 20;
+    const parsedLineHeight = parseFloat(styles.lineHeight);
+    const lineHeight = Number.isFinite(parsedLineHeight) ? parsedLineHeight : 20;
     const verticalPadding = parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom);
     const minHeight = MIN_ROWS * lineHeight + verticalPadding;
 
     el.style.height = "auto";
     el.style.height = `${Math.max(el.scrollHeight, minHeight)}px`;
   }, [value]);
+
+  // O scroll não borbulha: sem capture, rolar um diálogo não reavalia o lado.
+  // Declarado depois dos efeitos de altura para medir o campo já crescido.
+  useLayoutEffect(() => {
+    if (!listOpen) return;
+
+    const measure = () => {
+      const node = rootRef.current;
+      if (!node) return;
+      const rect = node.getBoundingClientRect();
+      const next = mentionListSide(
+        mentionListSpaceAbove(rect.top, stickyHeaderBottom(node)),
+        window.innerHeight - rect.bottom,
+        MENTION_LIST_MAX_HEIGHT + MENTION_LIST_GAP,
+      );
+      setListSide((current) => (current === next ? current : next));
+    };
+
+    measure();
+    window.addEventListener("resize", measure);
+    window.addEventListener("scroll", measure, true);
+    return () => {
+      window.removeEventListener("resize", measure);
+      window.removeEventListener("scroll", measure, true);
+    };
+  }, [listOpen, value]);
+
+  // O campo continua a edição da menção. Fora da lista e do campo, o clique dispensa
+  // o painel — senão ele fica por cima de Tipo, abas e do resto da página.
+  useEffect(() => {
+    if (!listOpen) return;
+
+    const closeOnOutside = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (listRef.current?.contains(target)) return;
+      if (textareaRef.current?.contains(target)) return;
+      setMentionQuery("");
+      setMentionIndex(-1);
+    };
+
+    document.addEventListener("mousedown", closeOnOutside);
+    return () => document.removeEventListener("mousedown", closeOnOutside);
+  }, [listOpen]);
 
   const updateMention = (text: string, cursor: number) => {
     const before = text.slice(0, cursor);
@@ -193,7 +266,7 @@ export function MentionTextarea({
   };
 
   return (
-    <div className="relative min-w-0 flex-1">
+    <div ref={rootRef} className="relative min-w-0 flex-1">
       {toolbar && (
         <RichTextToolbar
           label={texts.posts.formatting.toolbar}
@@ -218,8 +291,14 @@ export function MentionTextarea({
           um so lugar decide o aviso de "perto do limite" e o "limite atingido". */}
       {maxLength !== undefined && <CharCounter length={value.length} max={maxLength} />}
 
-      {mentionQuery.length >= 2 && results.length > 0 && (
-        <div className="absolute bottom-full left-0 right-0 z-50 mb-1 max-h-48 overflow-y-auto rounded-xl border border-border bg-popover shadow-lg">
+      {/* `bottom-full` fixo cobria a busca do /feed: o composer fica sob o header. */}
+      {listOpen && (
+        <div
+          ref={listRef}
+          className={`absolute left-0 right-0 z-50 max-h-48 overflow-y-auto rounded-xl border border-border bg-popover shadow-lg ${
+            listSide === "below" ? "top-full mt-1" : "bottom-full mb-1"
+          }`}
+        >
           {results.map((user, i) => (
             <button
               key={user.id}
