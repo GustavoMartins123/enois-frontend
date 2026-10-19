@@ -1,13 +1,13 @@
 import { isOwnMediaUrl } from "@/lib/api/media";
 
-import { extractVideoId } from "@/components/post/extract-video-id";
-
 /**
  * Os links dentro de um post: o que vira MÍDIA/PREVIEW e o que sai do texto.
  *
  * Regra visual (pedido da Mel): depois de postado, o link cru NÃO aparece —
- * mídia (GIF, imagem, vídeo, áudio) roda direto no player e página externa vira
- * um card; clicar abre o site de origem. O texto cru continua no campo de edição.
+ * mídia direta (GIF, imagem, vídeo, áudio) roda no próprio texto, link de player
+ * (YouTube, Vimeo, Twitch, Spotify…) é representado pelo player logo abaixo e
+ * página externa vira um card. Clicar no card abre o site de origem. O texto cru
+ * continua no campo de edição.
  */
 
 export const SHARED_URL_REGEX = /https?:\/\/[^\s]+/g;
@@ -35,21 +35,20 @@ export function directMediaKind(url: string): "image" | "video" | "audio" | null
   return null;
 }
 
-/** O link vira player/imagem (não é "página externa" para esconder do texto)? */
-function rendersAsMedia(url: string): boolean {
+/** O link é mídia direta que o RichText desenha no próprio texto? */
+function rendersInline(url: string): boolean {
   if (isOwnMediaUrl(url)) return true; // a mídia da casa vira imagem no RichText
-  if (extractVideoId(url)) return true; // YouTube/Vimeo embedados
   if (gifMediaUrl(url)) return true;
   return directMediaKind(url) !== null;
 }
 
 /**
- * O texto do post SEM os links de página externa (somem do corpo depois de postar,
- * porque o card de preview os representa). Mídia e links da casa ficam — eles se
- * mostram por si.
+ * O texto do post SEM os links que outra peça representa: página externa vira
+ * card e link de player vira o player abaixo (o link cru não fica no corpo).
+ * Mídia direta fica — ela se mostra por si, renderizada pelo RichText.
  */
 export function hideExternalPageUrls(content: string): string {
-  const limpo = content.replace(SHARED_URL_REGEX, (url) => (rendersAsMedia(url) ? url : ""));
+  const limpo = content.replace(SHARED_URL_REGEX, (url) => (rendersInline(url) ? url : ""));
   return limpo
     .split("\n")
     .map((linha) => linha.replace(/[ \t]+$/g, ""))
