@@ -1,6 +1,7 @@
 import type { ThemeCollection } from "@/types/preferences/theme-collection";
 import type { PaletteSpec } from "@/types/preferences/theme-collection-palette-spec";
 import type { ThemeCollectionTokens } from "@/types/preferences/theme-collection-tokens";
+import type { RgbColor } from "@/types/preferences/rgb-color";
 
 import { withAlpha } from "@/lib/theme/build-background-style";
 import {
@@ -68,6 +69,14 @@ function corSobre(valor: string, backdrop: RgbColor): RgbColor {
   };
 }
 
+/** Todas as paradas de cor de um fundo (degradê ou cor sólida), já compostas. */
+function paradasDoFundo(valor: string, backdrop: RgbColor): RgbColor[] {
+  const found = [...valor.matchAll(/#[0-9a-fA-F]{6}\b|rgba?\([^)]*\)/g)].map((match) =>
+    corSobre(match[0], backdrop),
+  );
+  return found.length > 0 ? found : [backdrop];
+}
+
 export function palette(spec: PaletteSpec): ThemeCollectionTokens {
   const { primary, onPrimary, surface, muted, border } = spec;
   const bgSolido = fundoSolido(spec.background);
@@ -87,12 +96,13 @@ export function palette(spec: PaletteSpec): ThemeCollectionTokens {
   const softFinal = softNoLadoCerto ? (spec.soft ?? mixPadrao) : mixPadrao;
   const softFinalRgb = softNoLadoCerto ? softRgb : mixSoft;
   const mutedRgb = corSobre(muted, backgroundRgb);
+  const bgStops = paradasDoFundo(spec.background, backgroundRgb);
   const secondary = spec.secondary ?? `color-mix(in oklab, ${primary} 45%, ${bgSolido})`;
   // O texto que usa o destaque como COR (links, "Entrar", chips de habilidade) não pode
   // sumir quando o primário do tema é claro demais para o fundo — e também não pode
-  // empatar com o soft (bg-primary-soft) nem com a superfície-2 (chips
-  // bg-surface-2 + text-primary), por isso os três entram na conta.
-  const primaryText = textSafeAccent(primaryRgb, [backgroundRgb, softFinalRgb, mutedRgb]);
+  // empatar com o soft (bg-primary-soft), com a superfície-2 (chips bg-surface-2) nem
+  // com a parada mais escura de um fundo em degradê, por isso todos entram na conta.
+  const primaryText = textSafeAccent(primaryRgb, [...bgStops, softFinalRgb, mutedRgb]);
 
   return {
     // Destaque
