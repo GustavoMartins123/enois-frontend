@@ -570,6 +570,15 @@ function Landing() {
               <ul className="mt-4 space-y-2.5 text-sm">
                 <li>
                   <Link
+                    to="/sobre"
+                    className="text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    {texts.landing.footer.about}
+                  </Link>
+                </li>
+
+                <li>
+                  <Link
                     to="/privacidade"
                     className="text-muted-foreground transition-colors hover:text-foreground"
                   >
@@ -607,9 +616,16 @@ function Landing() {
             </div>
           </div>
 
-          <p className="mt-12 border-t border-border pt-6 text-xs text-muted-foreground">
-            {texts.landing.footer.copyright(new Date().getFullYear())}
-          </p>
+          <div className="mt-12 space-y-3 border-t border-border pt-6">
+            <p className="text-xs text-muted-foreground">
+              {texts.landing.footer.copyright(new Date().getFullYear())}
+            </p>
+
+            {/* Aviso de independência pedido pela Mel: afasta confusão com organizações homônimas. */}
+            <p className="max-w-3xl text-xs font-normal leading-relaxed text-muted-foreground">
+              {texts.about.disclaimer}
+            </p>
+          </div>
         </div>
       </footer>
     </div>

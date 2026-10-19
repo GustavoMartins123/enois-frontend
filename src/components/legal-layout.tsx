@@ -41,6 +41,10 @@ export function LegalLayout({ children }: WithRequiredChildren) {
           <p>{texts.legal.footer.copyright(new Date().getFullYear())}</p>
 
           <nav className="flex items-center gap-4">
+            <Link to="/sobre" className="transition-colors hover:text-foreground">
+              {texts.legal.footer.about}
+            </Link>
+
             <Link to="/termos" className="transition-colors hover:text-foreground">
               {texts.legal.footer.terms}
             </Link>
@@ -54,6 +58,11 @@ export function LegalLayout({ children }: WithRequiredChildren) {
             </Link>
           </nav>
         </div>
+
+        {/* Mesmo aviso do rodapé da landing: identidade do projeto, não promessa de marca. */}
+        <p className="mx-auto mt-4 max-w-4xl px-4 text-xs leading-relaxed text-muted-foreground sm:px-6">
+          {texts.about.disclaimer}
+        </p>
       </footer>
     </div>
   );

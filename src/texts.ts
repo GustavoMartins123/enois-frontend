@@ -850,8 +850,30 @@ export const texts = {
       terms: "Termos",
       contact: "Contato",
       api: "API pública",
+      about: "Sobre o énóis",
       home: "Início",
     },
+  },
+
+  /**
+   * Página "Sobre o énóis" e o aviso de independência que também aparece no rodapé.
+   *
+   * O texto do `disclaimer` é o pedido da Mel, palavra por palavra: ele existe para afastar
+   * confusão com organizações homônimas (por exemplo, a ONG de jornalismo de mesmo nome). Não é
+   * uma promessa de proteção de marca — é uma declaração de identidade do projeto.
+   */
+  about: {
+    seoTitle: "Sobre o énóis · Projeto independente e sem fins lucrativos",
+    seoDescription:
+      "O énóis é um projeto independente, comunitário e sem fins lucrativos. Leia o aviso de independência em relação a outras organizações e marcas de nome semelhante.",
+    title: "Sobre o énóis",
+    intro:
+      "Uma rede social gratuita para profissionais e comunidades, sem anúncios, sem paywall, em construção com quem usa.",
+    independenceTitle: "Projeto independente",
+    disclaimer:
+      "O énóis é um projeto independente, comunitário e sem fins lucrativos, desenvolvido com o objetivo de promover conexões e interações entre pessoas. Não possuímos vínculo, afiliação ou associação com outras organizações ou marcas de nome semelhante, salvo quando expressamente informado.",
+    contact: "Dúvidas sobre a identidade do projeto podem ser enviadas pela página de contato.",
+    back: "Voltar para a página inicial",
   },
 
   feed: {
@@ -2423,6 +2445,7 @@ export const texts = {
       terms: "Termos de Uso",
       privacy: "Política de Privacidade",
       guidelines: "Diretrizes da Comunidade",
+      about: "Sobre o énóis",
       lastUpdated: "Última atualização: ",
       backPrefix: "Voltar para a ",
       home: "página inicial",

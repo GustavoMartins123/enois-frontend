@@ -13,6 +13,7 @@ import { Route as VagasRouteImport } from './routes/vagas'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as TemasRouteImport } from './routes/temas'
 import { Route as SuporteRouteImport } from './routes/suporte'
+import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as ServicosRouteImport } from './routes/servicos'
 import { Route as SegurancaRouteImport } from './routes/seguranca'
 import { Route as SalvosRouteImport } from './routes/salvos'
@@ -74,6 +75,11 @@ const TemasRoute = TemasRouteImport.update({
 const SuporteRoute = SuporteRouteImport.update({
   id: '/suporte',
   path: '/suporte',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SobreRoute = SobreRouteImport.update({
+  id: '/sobre',
+  path: '/sobre',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ServicosRoute = ServicosRouteImport.update({
@@ -313,6 +319,7 @@ export interface FileRoutesByFullPath {
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
   '/servicos': typeof ServicosRoute
+  '/sobre': typeof SobreRoute
   '/suporte': typeof SuporteRoute
   '/temas': typeof TemasRoute
   '/termos': typeof TermosRoute
@@ -361,6 +368,7 @@ export interface FileRoutesByTo {
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
   '/servicos': typeof ServicosRoute
+  '/sobre': typeof SobreRoute
   '/suporte': typeof SuporteRoute
   '/temas': typeof TemasRoute
   '/termos': typeof TermosRoute
@@ -410,6 +418,7 @@ export interface FileRoutesById {
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
   '/servicos': typeof ServicosRoute
+  '/sobre': typeof SobreRoute
   '/suporte': typeof SuporteRoute
   '/temas': typeof TemasRoute
   '/termos': typeof TermosRoute
@@ -460,6 +469,7 @@ export interface FileRouteTypes {
     | '/salvos'
     | '/seguranca'
     | '/servicos'
+    | '/sobre'
     | '/suporte'
     | '/temas'
     | '/termos'
@@ -508,6 +518,7 @@ export interface FileRouteTypes {
     | '/salvos'
     | '/seguranca'
     | '/servicos'
+    | '/sobre'
     | '/suporte'
     | '/temas'
     | '/termos'
@@ -556,6 +567,7 @@ export interface FileRouteTypes {
     | '/salvos'
     | '/seguranca'
     | '/servicos'
+    | '/sobre'
     | '/suporte'
     | '/temas'
     | '/termos'
@@ -605,6 +617,7 @@ export interface RootRouteChildren {
   SalvosRoute: typeof SalvosRoute
   SegurancaRoute: typeof SegurancaRoute
   ServicosRoute: typeof ServicosRoute
+  SobreRoute: typeof SobreRoute
   SuporteRoute: typeof SuporteRoute
   TemasRoute: typeof TemasRoute
   TermosRoute: typeof TermosRoute
@@ -647,6 +660,13 @@ declare module '@tanstack/react-router' {
       path: '/suporte'
       fullPath: '/suporte'
       preLoaderRoute: typeof SuporteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sobre': {
+      id: '/sobre'
+      path: '/sobre'
+      fullPath: '/sobre'
+      preLoaderRoute: typeof SobreRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/servicos': {
@@ -1055,6 +1075,7 @@ const rootRouteChildren: RootRouteChildren = {
   SalvosRoute: SalvosRoute,
   SegurancaRoute: SegurancaRoute,
   ServicosRoute: ServicosRoute,
+  SobreRoute: SobreRoute,
   SuporteRoute: SuporteRoute,
   TemasRoute: TemasRoute,
   TermosRoute: TermosRoute,
