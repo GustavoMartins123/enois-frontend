@@ -1,7 +1,8 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** em andamento — rodadas 1 a 5 executadas. A matriz ainda tem lotes
-> pendentes (rotas protegidas nos viewports novos, Lote B nas demais rotas e Lote C em 1280px).
+> **Status (2026-10-19):** em andamento — rodadas 1 a 6 executadas. A matriz ainda tem lotes
+> pendentes (rotas protegidas nos viewports novos, Lote B nas demais rotas e Lote C nas páginas
+> restantes em 1280px).
 
 ## Objetivo
 
@@ -66,7 +67,7 @@ em denúncia). Admin/moderação: somente leitura visual.
 |---|---|---|---|---|
 | A | 23 em 390/768/1280 (rodada 1) + 17 públicas e 10 dinâmicas nos outros 6 viewports (rodada 2) | 320, 360, 390, 414, 768, 1024, 1280, 1440, 1920 | claro/escuro padrão | parcial — rotas protegidas nos viewports novos bloqueadas pela sessão expirada |
 | B | `/`, `/empresas`, `/perfil/aminadojava`, `/post/...`, `/developers`, `/vagas`, `/empresa/n-is`, `/blogs` (960 combinações) | 390px | 60 × 2 | 8 rotas concluídas; faltam as demais |
-| C | 10 páginas-chave | 1280px | 60 × 2 | pendente |
+| C | `/` e `/perfil/aminadojava` (240 combinações) | 1280px | 60 × 2 | 2 páginas-chave concluídas; faltam 8 |
 
 ## Rodada 1 — 2026-10-19
 
@@ -143,6 +144,32 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Cobertura acumulada do Lote B:** 8 rotas / **960 combinações**.
 - **Próximo lote:** Lote B nas rotas públicas restantes; início do Lote C em 1280px; rotas
   protegidas com sessão fresca.
+
+## Rodada 6 — 2026-10-19
+
+- **Sessão:** ainda expirada; rotas protegidas seguem bloqueadas.
+- **Lote C (início, 1280px):** 60 temas × 2 modos × `/` e `/perfil/aminadojava` = **240
+  combinações, 193 limpas e 47 problemas**:
+  - **Selo "Momento" em 1.0–1.2:1** em ~20 temas/modos: o texto usava o `secondary-foreground`
+    (cor do secundário CHEIO) sobre `bg-secondary/30` (um tom pálido). Trocado para
+    `text-text-strong`, que contrasta nos dois modos (commit `b6528af`).
+  - **Chips "Mentor disponível"/"Java"/"Spring Boot" em 2.8–3.0:1** em floresta, norte-frio,
+    prompt-do-dos etc.: `bg-surface-2 + text-primary`; o `--primary-text` não era calculado contra
+    a superfície-2. Agora ele entra na conta do `textSafeAccent` nos temas da galeria e nos
+    personalizados (`palette()` + `buildAccentTokens`).
+  - **1 exceção** em `estacao-preta light /perfil` (timeout de navegação); repetir na verificação.
+- **Correções subsequentes (mesma rodada):**
+  - `97f5b91`: cores translúcidas (`soft`/`muted` com alpha, como no Aero Glass) passam a ser
+    compostas sobre o fundo antes do cálculo; a data do Y2K claro também foi escurecida.
+  - `ecbef92`: o cálculo do `--primary-text` passou a considerar **todas as paradas** do fundo em
+    degradê (o chip caía na parada mais escura, não na primeira).
+  - `575d72d`: data do Aero Glass claro escurecida (`#6b84a0` → `#4a647f`).
+- **Verificação:** os 47 combos com problema foram reexecutados: 45 passaram na primeira
+  reexecução; os 2 restantes (Aero Glass light e Y2K light no `/perfil`) passaram após os commits
+  acima. Reexecução focada final: **0 problemas**. A reexecução completa do Lote C desta página
+  (240) entra no próximo lote para checar regressão.
+- **Próximo lote:** reexecutar o Lote C completo de `/` e `/perfil` (240), seguir nas 8 páginas-chave
+  restantes, Lote B nas rotas públicas restantes e rotas protegidas com sessão fresca.
 
 ## Achados e correções
 
