@@ -480,3 +480,23 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Nenhuma correção de app.**
 - **Próximo lote:** re-copiar a sessão viva e repetir os **15 temas restantes** (`oceano` → fim) nas
   três rotas; depois seguir para as demais rotas protegidas a 390px e `/blogs`/`/eventos` a 1280.
+
+## Rodada 29 — 2026-10-19 13:50
+
+- **Conclusão do lote iniciado na rodada 28:** os **15 temas restantes** (`oceano` → fim) em
+  `/feed`, `/carteira` e `/marketplace` a 390×844 × claro/escuro = **90 verificações** (sessão
+  re-copiada do Firefox e validada antes). **89 limpas, 1 achado real.**
+  Com isso, essas três rotas protegidas estão cobertas nos **60 temas × 2 modos** (360 combos).
+- **Achado real:** selo **Divertido** no `/feed`, tema **grafite escuro**, dava **1,74:1**
+  (`#f5f7fa` sobre `#b6bfc7`). Causa: no `palette()`, quando o tema não declara `onAccent`, o
+  `--accent-foreground` herdava `text.strong` — que é quase branco no escuro. O accent do grafite
+  é cinza-claro, então branco-sobre-claro. É a mesma classe do selo Pergunta, mas no token do
+  preenchimento.
+- **Correção estrutural:** `--accent-foreground` sem `onAccent` agora é derivado por
+  `readableForeground(accentRgb, 0)` (preto ou branco escolhido pela luminância do accent). Vale
+  para qualquer tema, não só grafite. Commit `3c8d0d3`; eslint e `tsc --noEmit` sem erros novos.
+- **Verificação em produção:** token novo servido (`--accent-foreground: oklch(0.16 0.02 0)`) e
+  contraste medido no DOM real do `/feed` em **10,44:1**; a leitura antiga de 1,74:1 só apareceu
+  durante o rollout, em pods velhos.
+- **Próximo lote:** Lote B protegido das demais rotas a 390px (começando por `/perfil/aminadojava`,
+  `/post/:id`, `/vagas`, `/eventos`, `/mensagens`), depois `/blogs` e `/eventos` a 1280.
