@@ -244,7 +244,10 @@ export function PostComments({ postId }: PostIdProps) {
     <section className="mt-4 border-t border-border-soft pt-4">
       <div
         ref={listRef}
-        className="max-h-[55vh] min-h-0 space-y-3 overflow-y-auto overscroll-contain pr-1"
+        // Sem `overscroll-contain`: quando a lista ainda não transborda, ele impede a propagação
+        // do toque para a página e o usuário não consegue rolar (relato em tablet/Fennec — o
+        // último post da viewport travava o scroll até fechar os comentários).
+        className="max-h-[55vh] min-h-0 space-y-3 overflow-y-auto pr-1"
       >
         {loading && (
           <p className="inline-flex items-center gap-2 py-4 text-sm font-normal text-text-subtle">
