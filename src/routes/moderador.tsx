@@ -7,6 +7,10 @@ import { texts } from "@/texts";
 import type { ModeratorApplicationView } from "@/types/application/moderation/moderator-application-view";
 import type { ModeratorMeView } from "@/types/application/moderation/moderator-me-view";
 import type { ModeratorTabId } from "@/types/routes/moderador/moderator-tab-id";
+import type {
+  SanctionProposalDecision,
+  SanctionProposalView,
+} from "@/types/application/moderation/sanction-proposal-view";
 import {
   ArrowLeft,
   Bug,
@@ -63,14 +67,14 @@ const ALL_TABS: { id: ModeratorTabId; label: string; icon: typeof Flag; adminOnl
     icon: UserCheck,
     adminOnly: true,
   },
-  { id: "users", label: texts.moderator.tabs.users, icon: Gavel, adminOnly: true },
+  { id: "users", label: texts.moderator.tabs.users, icon: Gavel, adminOnly: false },
   { id: "emails", label: texts.moderator.tabs.emails, icon: Mail, adminOnly: true },
 ];
 
 /**
  * Painel de moderador.
  *
- * - Sem papel: mostra a credibilidade e, se elegível (> 500), o formulário de candidatura.
+ * - Sem papel: mostra a credibilidade e, se elegível (>= 200), o formulário de candidatura.
  * - Moderador aprovado: denúncias e fila de jogos.
  * - Admin: todas as filas, candidaturas, punição direta e log de e-mails.
  *
@@ -180,7 +184,7 @@ function Moderador() {
             {me.admin && activeTab === "appeals" && <AppealsSection />}
             {me.admin && activeTab === "disputes" && <DisputesSection />}
             {me.admin && activeTab === "applications" && <ApplicationsSection />}
-            {me.admin && activeTab === "users" && <SanctionSection />}
+            {activeTab === "users" && <SanctionSection me={me} />}
             {me.admin && activeTab === "emails" && <EmailLogSection />}
           </div>
         ) : (
@@ -541,32 +545,66 @@ function ApplicationsSection() {
     retry: false,
   });
 
-  return (
-    <section className="space-y-3">
-      <h2 className="text-sm font-semibold uppercase tracking-widest text-text-subtle">
-        {texts.moderator.admin.applicationsTitle}
-      </h2>
+  const { data: moderators, isLoading: moderatorsLoading } = useQuery({
+    queryKey: ["moderator", "moderators"],
+    queryFn: () => moderationApi.moderators(),
+    retry: false,
+  });
 
-      {isLoading ? (
-        <LoadingState />
-      ) : (data?.length ?? 0) === 0 ? (
-        <p className="rounded-2xl border border-border-soft bg-surface-card p-4 text-sm text-text-subtle">
-          {texts.moderator.admin.applicationsEmpty}
-        </p>
-      ) : (
-        <ul className="space-y-3">
-          {data!.map((application) => (
-            <ApplicationCard
-              key={application.id}
-              application={application}
-              onDecided={() => {
-                void queryClient.invalidateQueries({ queryKey: ["moderator", "applications"] });
-              }}
-            />
-          ))}
-        </ul>
-      )}
-    </section>
+  const invalidate = () => {
+    void queryClient.invalidateQueries({ queryKey: ["moderator", "applications"] });
+    void queryClient.invalidateQueries({ queryKey: ["moderator", "moderators"] });
+    void queryClient.invalidateQueries({ queryKey: ["moderator", "me"] });
+  };
+
+  return (
+    <div className="space-y-5">
+      <AddModeratorForm onChanged={invalidate} />
+
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold uppercase tracking-widest text-text-subtle">
+          {texts.moderator.admin.moderatorsTitle}
+        </h2>
+
+        {moderatorsLoading ? (
+          <LoadingState />
+        ) : (moderators?.length ?? 0) === 0 ? (
+          <p className="rounded-2xl border border-border-soft bg-surface-card p-4 text-sm text-text-subtle">
+            {texts.moderator.admin.moderatorsEmpty}
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {moderators!.map((moderator) => (
+              <ModeratorRow key={moderator.userId} moderator={moderator} onChanged={invalidate} />
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold uppercase tracking-widest text-text-subtle">
+          {texts.moderator.admin.applicationsTitle}
+        </h2>
+
+        {isLoading ? (
+          <LoadingState />
+        ) : (data?.length ?? 0) === 0 ? (
+          <p className="rounded-2xl border border-border-soft bg-surface-card p-4 text-sm text-text-subtle">
+            {texts.moderator.admin.applicationsEmpty}
+          </p>
+        ) : (
+          <ul className="space-y-3">
+            {data!.map((application) => (
+              <ApplicationCard
+                key={application.id}
+                application={application}
+                onDecided={invalidate}
+              />
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
   );
 }
 
@@ -664,7 +702,163 @@ function ApplicationCard({
   );
 }
 
-function SanctionSection() {
+/** Nomeação direta: o admin digita o username e a pessoa já entra como moderadora. */
+function AddModeratorForm({ onChanged }: { onChanged: () => void }) {
+  const { toast } = useToast();
+  const [username, setUsername] = useState("");
+  const [note, setNote] = useState("");
+
+  const appoint = useMutation({
+    mutationFn: () => moderationApi.appoint(username.trim(), note.trim() || undefined),
+    onSuccess: (result) => {
+      toast(
+        texts.moderator.admin.moderatorAdded(result.username ?? username.trim()),
+        "success",
+      );
+      setUsername("");
+      setNote("");
+      onChanged();
+    },
+    onError: () => toast(texts.moderator.admin.addModeratorError, "error"),
+  });
+
+  return (
+    <section className="space-y-3 rounded-2xl border border-border-soft bg-surface-card p-4">
+      <h2 className="text-base font-medium">{texts.moderator.admin.addModeratorTitle}</h2>
+
+      <p className="text-sm text-muted-foreground">
+        {texts.moderator.admin.addModeratorDescription}
+      </p>
+
+      <form
+        className="space-y-3"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (username.trim().length === 0) return;
+          appoint.mutate();
+        }}
+      >
+        <label className="block space-y-1">
+          <span className="text-sm font-medium text-text-strong">
+            {texts.moderator.admin.username}
+          </span>
+
+          <Input
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            maxLength={80}
+            placeholder={texts.moderator.admin.usernamePlaceholder}
+          />
+        </label>
+
+        <label className="block space-y-1">
+          <span className="text-sm font-medium text-text-strong">
+            {texts.moderator.admin.note}
+          </span>
+
+          <Input
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+            maxLength={1000}
+            placeholder={texts.moderator.admin.notePlaceholder}
+          />
+        </label>
+
+        <Button
+          type="submit"
+          size="sm"
+          className="rounded-full"
+          disabled={appoint.isPending || username.trim().length === 0}
+        >
+          {texts.moderator.admin.addModerator}
+        </Button>
+      </form>
+    </section>
+  );
+}
+
+function ModeratorRow({
+  moderator,
+  onChanged,
+}: {
+  moderator: ModeratorApplicationView;
+  onChanged: () => void;
+}) {
+  const { toast } = useToast();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const revoke = useMutation({
+    mutationFn: () => moderationApi.revoke(moderator.userId),
+    onSuccess: () => {
+      toast(texts.moderator.admin.revoked, "success");
+      setConfirmOpen(false);
+      onChanged();
+    },
+    onError: () => toast(texts.moderator.admin.revokeError, "error"),
+  });
+
+  const label = moderator.name ?? moderator.username ?? moderator.userId;
+
+  return (
+    <li className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border-soft bg-surface-card p-3">
+      <div className="min-w-0">
+        <p className="truncate text-sm text-text-strong">{label}</p>
+
+        {moderator.username && (
+          <p className="truncate text-xs text-text-subtle">@{moderator.username}</p>
+        )}
+      </div>
+
+      <Button
+        size="sm"
+        variant="destructive"
+        className="rounded-full"
+        disabled={revoke.isPending}
+        onClick={() => setConfirmOpen(true)}
+      >
+        {texts.moderator.admin.revoke}
+      </Button>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={texts.moderator.admin.revokeTitle}
+        description={texts.moderator.admin.revokeBody(moderator.username ?? label)}
+        confirmLabel={texts.moderator.admin.revoke}
+        destructive
+        pending={revoke.isPending}
+        onConfirm={() => revoke.mutate()}
+      />
+    </li>
+  );
+}
+
+function SanctionSection({ me }: { me: ModeratorMeView }) {
+  const votingEnabled = me.moderatorCount >= me.minModeratorsForSanction;
+
+  return (
+    <div className="space-y-4">
+      {me.admin && <DirectSanctionForm />}
+
+      {me.moderator &&
+        (votingEnabled ? (
+          <SanctionVoting />
+        ) : (
+          <section className="space-y-2 rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-5">
+            <h2 className="text-base font-medium">{texts.moderator.sanction.lockedTitle}</h2>
+
+            <p className="text-sm text-muted-foreground">
+              {texts.moderator.sanction.locked(me.moderatorCount, me.minModeratorsForSanction)}
+            </p>
+          </section>
+        ))}
+
+      <SanctionProposalQueue me={me} votingEnabled={votingEnabled} />
+    </div>
+  );
+}
+
+function DirectSanctionForm() {
   const { toast } = useToast();
   const [username, setUsername] = useState("");
   const [type, setType] = useState<"RESTRICTION" | "BAN">("RESTRICTION");
@@ -758,5 +952,293 @@ function SanctionSection() {
         }}
       />
     </section>
+  );
+}
+
+/** Proposta de punição: o moderação vota e o limiar é recalculado pelo backend. */
+function SanctionVoting() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [username, setUsername] = useState("");
+  const [type, setType] = useState<"RESTRICTION" | "BAN">("RESTRICTION");
+  const [reason, setReason] = useState("");
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const propose = useMutation({
+    mutationFn: () => moderationApi.proposeSanction(username.trim(), type, reason.trim()),
+    onSuccess: () => {
+      toast(texts.moderator.sanction.proposed, "success");
+      setUsername("");
+      setReason("");
+      setType("RESTRICTION");
+      void queryClient.invalidateQueries({ queryKey: ["moderator", "sanction-proposals"] });
+    },
+    onError: (error) =>
+      toast(
+        error instanceof Error ? error.message : texts.moderator.sanction.proposeError,
+        "error",
+      ),
+  });
+
+  const valid = username.trim().length > 0 && reason.trim().length >= 10;
+
+  return (
+    <section className="space-y-3 rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-5">
+      <h2 className="text-base font-medium">{texts.moderator.sanction.title}</h2>
+
+      <p className="text-sm text-muted-foreground">{texts.moderator.sanction.description}</p>
+
+      <form
+        className="space-y-3"
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (!valid) return;
+          setConfirmOpen(true);
+        }}
+      >
+        <label className="block space-y-1">
+          <span className="text-sm font-medium text-text-strong">
+            {texts.moderator.sanction.target}
+          </span>
+
+          <Input
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            maxLength={80}
+            placeholder={texts.moderator.sanction.targetPlaceholder}
+          />
+        </label>
+
+        <label className="block space-y-1">
+          <span className="text-sm font-medium text-text-strong">
+            {texts.moderator.sanction.type}
+          </span>
+
+          <select
+            value={type}
+            onChange={(event) => setType(event.target.value as "RESTRICTION" | "BAN")}
+            className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
+          >
+            <option value="RESTRICTION">{texts.moderator.admin.restriction}</option>
+
+            <option value="BAN">{texts.moderator.admin.ban}</option>
+          </select>
+        </label>
+
+        <label className="block space-y-1">
+          <span className="text-sm font-medium text-text-strong">
+            {texts.moderator.sanction.reason}
+          </span>
+
+          <Textarea
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+            maxLength={1000}
+            rows={3}
+            placeholder={texts.moderator.sanction.reasonPlaceholder}
+          />
+        </label>
+
+        <Button type="submit" variant="destructive" className="rounded-full" disabled={!valid}>
+          {texts.moderator.sanction.propose}
+        </Button>
+      </form>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onOpenChange={setConfirmOpen}
+        title={texts.moderator.admin.confirmTitle}
+        description={texts.moderator.admin.confirmBody(username.trim(), type)}
+        confirmLabel={texts.moderator.sanction.propose}
+        destructive
+        pending={propose.isPending}
+        onConfirm={() => {
+          setConfirmOpen(false);
+          propose.mutate();
+        }}
+      />
+    </section>
+  );
+}
+
+function SanctionProposalQueue({
+  me,
+  votingEnabled,
+}: {
+  me: ModeratorMeView;
+  votingEnabled: boolean;
+}) {
+  const { data, isLoading } = useQuery({
+    queryKey: ["moderator", "sanction-proposals"],
+    queryFn: () => moderationApi.sanctionProposals(),
+    retry: false,
+  });
+
+  return (
+    <section className="space-y-3">
+      <h2 className="text-sm font-semibold uppercase tracking-widest text-text-subtle">
+        {texts.moderator.sanction.queueTitle}
+      </h2>
+
+      {isLoading ? (
+        <LoadingState />
+      ) : (data?.length ?? 0) === 0 ? (
+        <p className="rounded-2xl border border-border-soft bg-surface-card p-4 text-sm text-text-subtle">
+          {texts.moderator.sanction.empty}
+        </p>
+      ) : (
+        <ul className="space-y-3">
+          {data!.map((proposal) => (
+            <SanctionProposalCard
+              key={proposal.id}
+              proposal={proposal}
+              me={me}
+              votingEnabled={votingEnabled}
+            />
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+function SanctionProposalCard({
+  proposal,
+  me,
+  votingEnabled,
+}: {
+  proposal: SanctionProposalView;
+  me: ModeratorMeView;
+  votingEnabled: boolean;
+}) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [note, setNote] = useState("");
+  const [confirmCancel, setConfirmCancel] = useState(false);
+
+  const vote = useMutation({
+    mutationFn: (value: "APPROVE" | "REJECT") =>
+      moderationApi.voteSanction(proposal.id, value, note.trim() || undefined),
+    onSuccess: (result: SanctionProposalDecision) => {
+      toast(result.message || texts.moderator.sanction.voted, "success");
+      setNote("");
+      void queryClient.invalidateQueries({ queryKey: ["moderator", "sanction-proposals"] });
+      void queryClient.invalidateQueries({ queryKey: ["moderator", "me"] });
+    },
+    onError: () => toast(texts.moderator.sanction.voteError, "error"),
+  });
+
+  const cancel = useMutation({
+    mutationFn: () => moderationApi.cancelSanction(proposal.id),
+    onSuccess: () => {
+      toast(texts.moderator.sanction.cancelled, "success");
+      setConfirmCancel(false);
+      void queryClient.invalidateQueries({ queryKey: ["moderator", "sanction-proposals"] });
+    },
+    onError: () => toast(texts.moderator.sanction.cancelError, "error"),
+  });
+
+  return (
+    <li className="space-y-3 rounded-2xl border border-border-soft bg-surface-card p-4">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div className="min-w-0">
+          <p className="text-sm text-text-strong">
+            <span className="font-medium">@{proposal.targetUsername}</span>
+            {proposal.targetName && <span className="text-text-subtle"> · {proposal.targetName}</span>}
+          </p>
+
+          {proposal.proposer && (
+            <p className="text-xs text-text-subtle">
+              {texts.moderator.sanction.proposedBy(proposal.proposer)}
+            </p>
+          )}
+        </div>
+
+        <span className="rounded-full border border-border-soft px-2.5 py-1 text-xs font-medium text-text-subtle">
+          {proposal.type === "BAN"
+            ? texts.moderator.admin.ban
+            : texts.moderator.admin.restriction}
+        </span>
+      </div>
+
+      <p className="whitespace-pre-wrap text-sm text-text-strong">{proposal.reason}</p>
+
+      <p className="text-sm text-text-subtle">
+        {texts.moderator.sanction.progress(
+          proposal.approveVotes,
+          proposal.rejectVotes,
+          proposal.requiredVotes,
+        )}
+      </p>
+
+      {proposal.myVote && (
+        <p className="text-xs text-text-subtle">
+          {proposal.myVote === "APPROVE"
+            ? texts.moderator.sanction.myVoteApprove
+            : texts.moderator.sanction.myVoteReject}
+        </p>
+      )}
+
+      {me.moderator && votingEnabled && proposal.status === "PENDING" && (
+        <div className="space-y-2">
+          <Input
+            value={note}
+            onChange={(event) => setNote(event.target.value)}
+            maxLength={1000}
+            placeholder={texts.moderator.sanction.notePlaceholder}
+          />
+
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              className="rounded-full"
+              disabled={vote.isPending}
+              onClick={() => vote.mutate("APPROVE")}
+            >
+              <Check className="mr-1 h-3.5 w-3.5" />
+
+              <>{texts.moderator.sanction.approve}</>
+            </Button>
+
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-full"
+              disabled={vote.isPending}
+              onClick={() => vote.mutate("REJECT")}
+            >
+              <X className="mr-1 h-3.5 w-3.5" />
+
+              <>{texts.moderator.sanction.reject}</>
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {me.admin && proposal.status === "PENDING" && (
+        <>
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-full"
+            disabled={cancel.isPending}
+            onClick={() => setConfirmCancel(true)}
+          >
+            {texts.moderator.sanction.cancel}
+          </Button>
+
+          <ConfirmDialog
+            open={confirmCancel}
+            onOpenChange={setConfirmCancel}
+            title={texts.moderator.sanction.cancelTitle}
+            description={texts.moderator.sanction.cancelBody(proposal.targetUsername)}
+            confirmLabel={texts.moderator.sanction.cancel}
+            destructive
+            pending={cancel.isPending}
+            onConfirm={() => cancel.mutate()}
+          />
+        </>
+      )}
+    </li>
   );
 }

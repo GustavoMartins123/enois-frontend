@@ -2281,7 +2281,7 @@ export const texts = {
   },
 
   /**
-   * Painel de moderador: candidatura (credibilidade > 500 + aprovação) e votação das denúncias.
+   * Painel de moderador: candidatura (credibilidade >= 200 + aprovação) e votação das denúncias.
    * Admins (allowlist de username no backend) decidem candidaturas e podem punir qualquer usuário.
    */
   moderator: {
@@ -2297,11 +2297,11 @@ export const texts = {
     eligibility: {
       title: "Seja moderador",
       description: (min: number) =>
-        `Quem tem mais de ${min} de credibilidade pode se candidatar. A candidatura é analisada por um administrador; aprovada, libera este painel.`,
+        `Quem tem pelo menos ${min} de credibilidade pode se candidatar. A candidatura é analisada por um administrador; aprovada, libera este painel.`,
       reputation: (value: number, min: number) =>
-        `Sua credibilidade: ${value}. Para se candidatar é preciso mais de ${min}.`,
+        `Sua credibilidade: ${value}. Para se candidatar é preciso pelo menos ${min}.`,
       low: (min: number) =>
-        `Ainda não chegou lá. Participe das comunidades, receba recomendações e mantenha o perfil atualizado para ganhar credibilidade. O mínimo é mais de ${min}.`,
+        `Ainda não chegou lá. Participe das comunidades, receba recomendações e mantenha o perfil atualizado para ganhar credibilidade. O mínimo é ${min}.`,
       motivation: "Por que você quer moderar?",
       motivationPlaceholder:
         "Conte o que você faz na comunidade e como pretende analisar denúncias com justiça.",
@@ -2408,6 +2408,40 @@ export const texts = {
       redacted: "Conteúdo sensível (redigido)",
       status: { SENT: "Enviado", FAILED: "Falhou" } as Record<string, string>,
     },
+    sanction: {
+      title: "Punição por votação",
+      description:
+        "Moderadores propõem e votam. A punição só é aplicada quando mais da metade dos moderadores ativos concorda.",
+      lockedTitle: "Votação ainda não disponível",
+      locked: (count: number, min: number) =>
+        `Hoje são ${count} moderador(es); a votação de punição abre a partir de ${min}. Antes disso, somente administradores podem punir.`,
+      target: "Username do usuário",
+      targetPlaceholder: "ex.: aminadojava",
+      type: "Tipo de punição",
+      reason: "Motivo",
+      reasonPlaceholder: "Descreva o que aconteceu e por que a punição é necessária.",
+      propose: "Abrir votação",
+      proposed: "Votação aberta. Os moderadores podem votar no painel.",
+      proposeError: "Não foi possível abrir a votação.",
+      queueTitle: "Votações abertas",
+      empty: "Nenhuma votação de punição aberta.",
+      progress: (approve: number, reject: number, required: number) =>
+        `Concordam: ${approve} · Rejeitam: ${reject} · Necessário: ${required}`,
+      approve: "Concordar",
+      reject: "Rejeitar",
+      notePlaceholder: "Justificativa do seu voto (opcional)",
+      voted: "Voto registrado.",
+      voteError: "Não foi possível registrar o voto.",
+      myVoteApprove: "Seu voto: concordar",
+      myVoteReject: "Seu voto: rejeitar",
+      cancel: "Encerrar votação",
+      cancelTitle: "Encerrar a votação",
+      cancelBody: (username: string) =>
+        `Encerrar a votação de punição contra @${username}? Ninguém será punido por esta proposta.`,
+      cancelled: "Votação encerrada.",
+      cancelError: "Não foi possível encerrar a votação.",
+      proposedBy: (username: string) => `Proposta de @${username}`,
+    },
     admin: {
       applicationsTitle: "Candidaturas a moderador",
       applicationsEmpty: "Nenhuma candidatura pendente.",
@@ -2422,6 +2456,20 @@ export const texts = {
       approved: "Candidatura aprovada.",
       rejected: "Candidatura recusada.",
       decisionError: "Não foi possível registrar a decisão.",
+      addModeratorTitle: "Adicionar moderador",
+      addModeratorDescription:
+        "Nomeie alguém pelo username: a pessoa entra direto como moderador, sem candidatura.",
+      addModerator: "Adicionar",
+      addModeratorError: "Não foi possível adicionar o moderador.",
+      moderatorAdded: (username: string) => `@${username} agora é moderador.`,
+      moderatorsTitle: "Moderadores ativos",
+      moderatorsEmpty: "Nenhum moderador ativo.",
+      revoke: "Remover",
+      revokeTitle: "Remover moderador",
+      revokeBody: (username: string) =>
+        `Remover @${username} do time de moderação? A pessoa perde o acesso ao painel.`,
+      revoked: "Moderador removido.",
+      revokeError: "Não foi possível remover o moderador.",
       sanctionTitle: "Punir um usuário",
       sanctionDescription:
         "Restrição tira o direito de publicar e comentar; banimento derruba as sessões e impede um novo login. A punição fica registrada e o usuário pode recorrer.",
