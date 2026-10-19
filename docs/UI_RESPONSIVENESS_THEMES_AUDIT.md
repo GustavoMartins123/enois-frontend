@@ -1,6 +1,6 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** em andamento — rodadas 1 a 22 executadas. O Lote B público está
+> **Status (2026-10-19):** em andamento — rodadas 1 a 23 executadas. O Lote B público está
 > completo; restam as rotas/páginas protegidas (Lote A nos viewports novos, Lote B em 390px e
 > Lote C em 1280px), que dependem de uma sessão fresca do Firefox.
 
@@ -359,6 +359,13 @@ em denúncia). Admin/moderação: somente leitura visual.
   - `/blogs` (13 cards) e `/blog/andre...` sem overflow. `/empresas`: os cards externos não
     carregaram no teste; inconclusivo.
 - **Nenhuma outra correção.** Continua pendente apenas o lote protegido.
+
+## Rodada 23 — 2026-10-19
+
+- **Sessão:** ainda expirada; rotas protegidas seguem bloqueadas.
+- **Regressão em celular deitado:** 22 rotas públicas × claro/escuro × **844×390** e **667×375**
+  = **88 verificações, todas limpas** (overflow, console e HTTP). Nenhum achado.
+- **Nenhuma correção.** Continua pendente apenas o lote protegido.
 
 ## Achados e correções
 
