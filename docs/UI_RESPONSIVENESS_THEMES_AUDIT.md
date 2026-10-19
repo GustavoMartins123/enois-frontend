@@ -465,3 +465,18 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Nenhuma correção de app.**
 - **Próximo lote:** Lote B protegido — 60 temas × 2 modos a 390px nas rotas protegidas, começando
   por `/feed`, `/carteira` e `/marketplace`; depois `/blogs` e `/eventos` a 1280 com os 60 temas.
+
+## Rodada 28 — 2026-10-19 13:40
+
+- **Lote B protegido (início):** `/feed`, `/carteira` e `/marketplace` a **390×844**, nos 60 temas
+  × claro/escuro (360 combinações). A sessão foi re-copiada do Firefox (mtime 13:04) e validada
+  (`/api/me` 200) antes do lote.
+- **Resultado:** os **45 primeiros temas** (todos os 12 base + 33 extras, até `deserto-ao-entardecer`)
+  fecharam **270 combinações limpas** — zero overflow, contraste OK e variáveis de tema aplicadas.
+- **Limitação ambiental:** a sessão expirou no tema 46 (`oceano`). As 90 combinações seguintes
+  (e parte das 294 “limpas”) viraram `AUTH-BOUNCE` para `/entrar` ou `NAVERR` de contexto destruído;
+  **não são bugs de layout**. As duas leituras de `CSS-VARS-VAZIAS` (`lavanda`, `tinta`) caíram já
+  dentro da janela sem sessão e ficam inconclusivas, não como achado real.
+- **Nenhuma correção de app.**
+- **Próximo lote:** re-copiar a sessão viva e repetir os **15 temas restantes** (`oceano` → fim) nas
+  três rotas; depois seguir para as demais rotas protegidas a 390px e `/blogs`/`/eventos` a 1280.
