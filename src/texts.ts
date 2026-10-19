@@ -2399,6 +2399,7 @@ export const texts = {
       failed: "Falhas",
       to: "Para",
       error: "Erro",
+      redacted: "Conteúdo sensível (redigido)",
       status: { SENT: "Enviado", FAILED: "Falhou" } as Record<string, string>,
     },
     admin: {

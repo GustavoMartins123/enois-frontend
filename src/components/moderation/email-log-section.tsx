@@ -89,7 +89,9 @@ export function EmailLogSection() {
                 </span>
               </div>
 
-              <p className="text-sm font-medium text-text-strong">{email.subject}</p>
+              <p className="text-sm font-medium text-text-strong">
+                {email.kind === "TWO_FACTOR" ? texts.moderator.emails.redacted : email.subject}
+              </p>
 
               <p className="text-xs text-text-subtle">
                 {texts.moderator.emails.to}: {email.toEmail}
