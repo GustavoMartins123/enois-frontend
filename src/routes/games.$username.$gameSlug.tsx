@@ -1,36 +1,32 @@
-import { type CSSProperties, useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import {
-  Bookmark,
-  ExternalLink,
-  Gamepad2,
-  Loader2,
-  Maximize2,
-  Share2,
-  Sparkles,
-} from "lucide-react";
+import type { GameShareRequest } from "@/types/application/games/game-share-request";
+import type { GameSpendRequest } from "@/types/application/games/game-spend-request";
+import { Bookmark, Gamepad2, Share2, Sparkles } from "lucide-react";
 
 import { gamesApi, mediaApi } from "@/lib/api";
 import { formatFaisca } from "@/lib/faisca";
-import { useAuth } from "@/lib/use-auth";
+import { isAuthenticated, useAuth } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
-
-/** A proporção do quadro, escolhida pelo criador (o jogo decide como quer aparecer). */
-const ASPECT: Record<string, string> = {
-  WIDESCREEN: "16 / 9",
-  CLASSIC: "4 / 3",
-  SQUARE: "1 / 1",
-  PORTRAIT: "9 / 16",
-};
+import { GamePlayer } from "@/components/games/game-player";
+import { GameStatsLine } from "@/components/games/game-stats-line";
 
 const STAGE_LABEL: Record<string, string> = {
   IN_DEVELOPMENT: "Em desenvolvimento",
@@ -46,78 +42,72 @@ export const Route = createFileRoute("/games/$username/$gameSlug")({
 });
 
 /**
- * A página do jogo e o player.
- *
- * O Énóis NÃO hospeda: o quadro carrega o endereço onde o criador publicou, com sandbox mínimo e
- * tela cheia explícita. O que a tela garante: **nenhum botão mente sobre o estado do jogo** (jogo
- * fora do ar não aparece como jogável), a sessão é contada pelo servidor quando alguém aperta jogar,
- * e o site de origem pode recusar o quadro — aí a tela explica e oferece abrir na origem em vez de
- * fingir que o jogo quebrou.
+ * O Énóis NÃO hospeda: o quadro carrega o endereço onde o criador publicou. O jogo só PEDE
+ * identidade, gasto e compartilhamento; gasto e publicação acontecem com o clique da pessoa.
  */
 function GamePage() {
   const { username, gameSlug } = Route.useParams();
   const { requireAuth } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [playing, setPlaying] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const frame = useRef<HTMLIFrameElement>(null);
+  const [identidade, setIdentidade] = useState<string | null>(null);
+  const [compartilhamento, setCompartilhamento] = useState<GameShareRequest | null>(null);
+  const [gasto, setGasto] = useState<GameSpendRequest | null>(null);
+  const t = texts.games.game;
 
   const game = useQuery({
     queryKey: ["games", "slug", username, gameSlug],
     queryFn: () => gamesApi.bySlug(username, gameSlug),
   });
+  const gameId = game.data?.id;
+
+  const stats = useQuery({
+    queryKey: ["games", "stats", gameId],
+    queryFn: () => gamesApi.stats(gameId!),
+    enabled: Boolean(gameId),
+  });
 
   const updates = useQuery({
-    queryKey: ["games", "updates", game.data?.id],
-    queryFn: () => gamesApi.updates(game.data!.id),
-    enabled: Boolean(game.data?.id),
+    queryKey: ["games", "updates", gameId],
+    queryFn: () => gamesApi.updates(gameId!),
+    enabled: Boolean(gameId),
   });
 
   const play = useMutation({
-    mutationFn: (gameId: string) => gamesApi.play(gameId),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["games", "slug", username, gameSlug] }),
+    mutationFn: (id: string) => gamesApi.play(id),
+    onSuccess: (_resposta, id) =>
+      queryClient.invalidateQueries({ queryKey: ["games", "stats", id] }),
   });
 
-  // A identidade do jogo é emitida ao começar a jogar (o iframe recebe por postMessage).
   const emitirIdentidade = useMutation({
-    mutationFn: (gameId: string) => gamesApi.identity(gameId),
-    onSuccess: (dados) => setIdentidade(dados.token),
+    mutationFn: (id: string) => gamesApi.identity(id),
   });
 
   const confirmarGasto = useMutation({
-    mutationFn: () => gamesApi.spend(g.id, gasto!.amount, gasto!.motivo, gasto!.requestId),
+    mutationFn: ({ id, pedido }: { id: string; pedido: GameSpendRequest }) =>
+      gamesApi.spend(id, pedido.amount, pedido.motivo, pedido.requestId),
     onSuccess: () => {
       setGasto(null);
-      toast("Gasto confirmado — as faíscas saíram da sua carteira.", "success");
+      toast(t.spend.done, "success");
       void queryClient.invalidateQueries({ queryKey: ["carteira"] });
     },
-    onError: () => toast("Não foi possível confirmar o gasto agora.", "error"),
+    onError: () => toast(t.spend.error, "error"),
   });
 
   const favorite = useMutation({
     mutationFn: (vars: { gameId: string; favorited: boolean }) =>
       vars.favorited ? gamesApi.unfavorite(vars.gameId) : gamesApi.favorite(vars.gameId),
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["games", "slug", username, gameSlug] }),
+    onSuccess: (_resposta, vars) => {
+      void queryClient.invalidateQueries({ queryKey: ["games", "slug", username, gameSlug] });
+      void queryClient.invalidateQueries({ queryKey: ["games", "stats", vars.gameId] });
+    },
   });
 
-  // Publica a conquista: a imagem (dataURL do jogo) sobe pela mídia normal e o post leva as
-  // tags do jogo. O clique aqui é o que publica — o jogo só pede.
   const compartilhar = useMutation({
-    mutationFn: async ({
-      gameId,
-      texto,
-      imagem,
-    }: {
-      gameId: string;
-      texto: string;
-      imagem: string | null;
-    }) => {
+    mutationFn: async ({ id, pedido }: { id: string; pedido: GameShareRequest }) => {
       let mediaIds: string[] = [];
-      if (imagem) {
-        const blob = await (await fetch(imagem)).blob();
+      if (pedido.imagem) {
+        const blob = await (await fetch(pedido.imagem)).blob();
         const arquivo = new File([blob], "conquista.png", { type: blob.type || "image/png" });
         const resultado = await mediaApi.requestUpload({
           fileName: `media/${crypto.randomUUID()}/conquista.png`,
@@ -126,9 +116,7 @@ function GamePage() {
           purpose: "POST_IMAGE",
         });
         if (resultado.provider !== "S3") {
-          throw new Error(
-            "O envio de mídia está temporariamente desativado enquanto o armazenamento é migrado.",
-          );
+          throw new Error(t.achievement.uploadsDisabled);
         }
         await mediaApi.uploadToSignedUrl(
           resultado.uploadUrl,
@@ -137,83 +125,14 @@ function GamePage() {
         );
         mediaIds = [resultado.id];
       }
-      return gamesApi.compartilhar(gameId, texto, mediaIds);
+      return gamesApi.compartilhar(id, pedido.texto, mediaIds);
     },
     onSuccess: () => {
       setCompartilhamento(null);
-      toast("Conquista publicada no seu feed!", "success");
+      toast(t.achievement.done, "success");
     },
-    onError: () => toast("Não foi possível publicar a conquista agora.", "error"),
+    onError: () => toast(t.achievement.error, "error"),
   });
-
-  // NÃO desmontar o iframe por tempo: o quadro não avisa quando o site recusa incorporação, mas
-  // também não avisa quando o jogo está carregando. O timer de 12s derrubava jogos que já estavam
-  // rodando (no celular o carregamento passa fácil disso) e parecia um crash do player. Quem
-  // recusar o quadro fica com a saída sempre visível no rodapé: "Abrir no site do criador".
-
-  const [compartilhamento, setCompartilhamento] = useState<{
-    texto: string;
-    imagem: string | null;
-  } | null>(null);
-  const [identidade, setIdentidade] = useState<string | null>(null);
-  const [gasto, setGasto] = useState<{ amount: number; motivo: string; requestId: string } | null>(
-    null,
-  );
-
-  // G-share: o jogo (iframe de OUTRA origem, sem sessão nenhuma) pede o compartilhamento por
-  // postMessage; a página valida a origem contra o endereço registrado do jogo, mostra a PRÉVIA
-  // e só publica com o clique da pessoa — o texto/mídia entram no feed dela, a sessão nunca
-  // atravessa a borda do quadro. Protocolo: { type: "enois:share", texto, imagem? }.
-  useEffect(() => {
-    if (!playing || !game.data?.url) return;
-    let origemDoJogo = "";
-    try {
-      origemDoJogo = new URL(game.data.url).origin;
-    } catch {
-      return;
-    }
-    const listener = (e: MessageEvent) => {
-      if (e.origin !== origemDoJogo) return;
-      const dado = e.data as {
-        type?: string;
-        texto?: unknown;
-        imagem?: unknown;
-        amount?: unknown;
-        motivo?: unknown;
-        requestId?: unknown;
-      };
-      // O jogo PEDE a identidade (ele nunca recebe a sessão): respondemos só com o token opaco.
-      if (dado?.type === "enois:identity") {
-        if (identidade && e.source) {
-          (e.source as Window).postMessage({ type: "enois:identity", token: identidade }, e.origin);
-        }
-        return;
-      }
-      // O jogo PEDE um gasto: NADA sai daqui sem a pessoa confirmar na plataforma.
-      if (
-        dado?.type === "enois:spend" &&
-        typeof dado.amount === "number" &&
-        typeof dado.requestId === "string"
-      ) {
-        if (dado.amount > 0 && Number.isSafeInteger(dado.amount)) {
-          setGasto({
-            amount: dado.amount,
-            motivo: typeof dado.motivo === "string" ? dado.motivo.slice(0, 200) : "",
-            requestId: dado.requestId.slice(0, 120),
-          });
-        }
-        return;
-      }
-      if (dado?.type !== "enois:share" || typeof dado.texto !== "string") return;
-      const imagem =
-        typeof dado.imagem === "string" && dado.imagem.startsWith("data:image/")
-          ? dado.imagem
-          : null;
-      setCompartilhamento({ texto: dado.texto.slice(0, 600), imagem });
-    };
-    window.addEventListener("message", listener);
-    return () => window.removeEventListener("message", listener);
-  }, [playing, game.data?.url, identidade]);
 
   if (game.isLoading) {
     return (
@@ -278,12 +197,10 @@ function GamePage() {
               </span>
 
               <span className="rounded-full border border-border-soft px-2 py-0.5 text-xs">
-                {g.distribution === "PAID"
-                  ? texts.games.game.priceSoon(g.priceCoins)
-                  : texts.games.game.free}
+                {g.distribution === "PAID" ? t.priceSoon(g.priceCoins) : t.free}
               </span>
 
-              {g.version && <span className="text-xs">{texts.games.game.version(g.version)}</span>}
+              {g.version && <span className="text-xs">{t.version(g.version)}</span>}
             </p>
           </div>
 
@@ -300,7 +217,7 @@ function GamePage() {
             >
               <Bookmark className="h-3.5 w-3.5" />
 
-              <>{g.favorited ? texts.games.game.unfavorite : texts.games.game.favorite}</>
+              <>{g.favorited ? t.unfavorite : t.favorite}</>
             </Button>
 
             <Button
@@ -311,9 +228,9 @@ function GamePage() {
                 const url = `${window.location.origin}/games/${g.username ?? username}/${g.slug}`;
                 try {
                   await navigator.clipboard.writeText(url);
-                  toast(texts.games.game.shareCopied, "success");
+                  toast(t.shareCopied, "success");
                 } catch {
-                  toast(texts.games.game.shareCopied, "error");
+                  toast(t.shareCopied, "error");
                 }
               }}
             >
@@ -326,204 +243,134 @@ function GamePage() {
 
         {!playable && (
           <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
-            {g.status === "SUSPENDED" ? texts.games.game.suspended : texts.games.game.notPublished}
+            {g.status === "SUSPENDED" ? t.suspended : t.notPublished}
           </p>
         )}
 
-        {/* O player: clique para jogar (nada roda sozinho), proporção do criador e tela cheia. */}
-        <div className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
-          {/* No celular o quadro 16:9 fica com ~200px de altura e o menu do jogo não cabe (o
-              botão de iniciar sai da tela). Por isso, em telas pequenas, ele usa 70% da altura e
-              volta à proporção do criador a partir de sm. */}
-          <div
-            className="relative w-full max-sm:h-[70svh] max-sm:min-h-80 sm:aspect-[var(--game-aspect)]"
-            style={{ "--game-aspect": ASPECT[g.aspect] ?? "16 / 9" } as CSSProperties}
-          >
-            {playing && playable && !failed ? (
-              <iframe
-                ref={frame}
-                src={g.url}
-                title={g.title}
-                className="h-full w-full border-0"
-                allow="fullscreen; gamepad; autoplay"
-                allowFullScreen
-                sandbox="allow-scripts allow-same-origin allow-pointer-lock"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <button
-                type="button"
-                className="grid h-full w-full place-items-center bg-primary-soft text-center"
-                disabled={!playable}
-                onClick={() => {
-                  setPlaying(true);
-                  setFailed(false);
-                  play.mutate(g.id);
-                  emitirIdentidade.mutate(g.id);
-                }}
-              >
-                <span>
-                  {failed ? (
-                    <>
-                      <p className="mx-auto max-w-sm px-4 text-sm text-text-strong">
-                        {texts.games.game.blocked}
-                      </p>
+        <GamePlayer
+          key={g.id}
+          url={g.url}
+          title={g.title}
+          aspect={g.aspect}
+          playable={playable}
+          tallOnMobile
+          identity={identidade}
+          stats={
+            <GameStatsLine
+              plays={stats.data?.plays ?? g.plays}
+              players={stats.data?.players ?? null}
+              favorites={stats.data?.favorites ?? g.favorites}
+            />
+          }
+          onStart={(retry) => {
+            // "Tentar de novo" recarrega o mesmo jogo: não é partida nova para a métrica, mas o
+            // token de identidade é de uso único e o jogo recarregado vai pedir outro.
+            if (!retry) play.mutate(g.id);
+            setIdentidade(null);
+            if (isAuthenticated()) {
+              emitirIdentidade.mutate(g.id, { onSuccess: (dados) => setIdentidade(dados.token) });
+            }
+          }}
+          onShareRequest={(pedido) => setCompartilhamento((atual) => atual ?? pedido)}
+          onSpendRequest={(pedido) => setGasto((atual) => atual ?? pedido)}
+        />
 
-                      <span className="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-                        <ExternalLink className="h-4 w-4" />
+        <Dialog
+          open={gasto !== null}
+          onOpenChange={(open) => {
+            if (!open && !confirmarGasto.isPending) setGasto(null);
+          }}
+        >
+          <DialogContent className="sm:max-w-sm">
+            <DialogHeader>
+              <DialogTitle>{t.spend.title}</DialogTitle>
 
-                        <>{texts.games.game.openAtOrigin}</>
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Gamepad2 className="mx-auto h-10 w-10 text-primary-text" />
+              <DialogDescription>{t.spend.notice}</DialogDescription>
+            </DialogHeader>
 
-                      <span className="mt-2 block text-sm font-medium text-primary-text">
-                        {texts.games.game.play}
-                      </span>
-
-                      <span className="mt-1 block text-xs text-text-subtle">
-                        {texts.games.game.external}
-                      </span>
-                    </>
-                  )}
-                </span>
-              </button>
-            )}
-          </div>
-
-          <p className="border-t border-border-soft px-3 py-2 text-xs text-text-subtle sm:hidden">
-            {texts.games.game.mobileHint}
-          </p>
-
-          <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border-soft px-3 py-2">
-            <p className="text-xs text-text-subtle">
-              {texts.games.game.stats(g.plays, g.plays)}
-              {g.favorites > 0 && ` · ${texts.games.game.favorites(g.favorites)}`}
-            </p>
-
-            <div className="flex gap-1.5">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="rounded-full gap-1.5 text-xs"
-                onClick={() => {
-                  setFailed(false);
-                  setPlaying(true);
-                }}
-              >
-                {play.isPending ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Gamepad2 className="h-3.5 w-3.5" />
-                )}
-
-                <>{texts.games.game.retry}</>
-              </Button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                className="rounded-full gap-1.5 text-xs"
-                onClick={() => frame.current?.requestFullscreen?.().catch(() => undefined)}
-              >
-                <Maximize2 className="h-3.5 w-3.5" />
-
-                <>{texts.games.game.fullscreen}</>
-              </Button>
-
-              <a
-                href={g.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-text-subtle transition hover:bg-muted hover:text-foreground"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-
-                <>{texts.games.game.openAtOrigin}</>
-              </a>
-            </div>
-          </div>
-        </div>
-
-        {gasto && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="w-full max-w-sm rounded-2xl border border-border-soft bg-surface-card p-5">
-              <h3 className="text-base font-semibold">O jogo quer gastar faíscas</h3>
-
-              <p className="mt-2 text-sm text-text-strong">
-                <span className="font-semibold">{formatFaisca(gasto.amount)} faíscas</span>
+            {gasto && (
+              <p className="text-sm text-text-strong">
+                <span className="font-semibold">{t.spend.amount(formatFaisca(gasto.amount))}</span>
                 {gasto.motivo ? ` — ${gasto.motivo}` : ""}
               </p>
+            )}
 
-              <p className="mt-1 text-xs text-text-subtle">
-                O gasto só acontece com a sua confirmação. O jogo nunca acessa a sua conta nem a sua
-                sessão — ele apenas pediu.
-              </p>
+            <DialogFooter className="gap-2">
+              <Button
+                variant="ghost"
+                className="rounded-full"
+                disabled={confirmarGasto.isPending}
+                onClick={() => setGasto(null)}
+              >
+                {t.spend.refuse}
+              </Button>
 
-              <div className="mt-4 flex justify-end gap-2">
-                <Button variant="ghost" className="rounded-full" onClick={() => setGasto(null)}>
-                  Recusar
-                </Button>
+              <Button
+                className="rounded-full"
+                disabled={confirmarGasto.isPending}
+                onClick={() => gasto && confirmarGasto.mutate({ id: g.id, pedido: gasto })}
+              >
+                {confirmarGasto.isPending ? t.spend.confirming : t.spend.confirm}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
-                <Button
-                  className="rounded-full"
-                  disabled={confirmarGasto.isPending}
-                  onClick={() => confirmarGasto.mutate()}
-                >
-                  {confirmarGasto.isPending ? "Confirmando…" : "Confirmar gasto"}
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {compartilhamento && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="w-full max-w-md rounded-2xl border border-border-soft bg-surface-card p-5">
-              <h3 className="flex items-center gap-2 text-base font-semibold">
+        <Dialog
+          open={compartilhamento !== null}
+          onOpenChange={(open) => {
+            if (!open && !compartilhar.isPending) setCompartilhamento(null);
+          }}
+        >
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
-                Compartilhar conquista
-              </h3>
 
-              <p className="mt-2 rounded-xl bg-surface-2 p-3 text-sm text-text-strong">
-                {compartilhamento.texto}
-              </p>
+                <>{t.achievement.title}</>
+              </DialogTitle>
 
-              {compartilhamento.imagem && (
-                <img
-                  src={compartilhamento.imagem}
-                  alt=""
-                  className="mt-2 max-h-48 w-full rounded-xl border border-border-soft object-contain"
-                />
-              )}
+              <DialogDescription>{t.achievement.notice(g.title)}</DialogDescription>
+            </DialogHeader>
 
-              <p className="mt-2 text-xs text-text-subtle">
-                Publica no seu feed com a tag do jogo <span className="font-medium">{g.title}</span>
-                . A imagem e o texto vêm do jogo — confira antes de publicar.
-              </p>
+            {compartilhamento && (
+              <>
+                <p className="whitespace-pre-line rounded-xl bg-surface-2 p-3 text-sm text-text-strong">
+                  {compartilhamento.texto}
+                </p>
 
-              <div className="mt-4 flex justify-end gap-2">
-                <Button
-                  variant="ghost"
-                  className="rounded-full"
-                  onClick={() => setCompartilhamento(null)}
-                >
-                  Cancelar
-                </Button>
+                {compartilhamento.imagem && (
+                  <img
+                    src={compartilhamento.imagem}
+                    alt={t.achievement.imageAlt}
+                    className="max-h-48 w-full rounded-xl border border-border-soft object-contain"
+                  />
+                )}
+              </>
+            )}
 
-                <Button
-                  className="rounded-full"
-                  disabled={compartilhar.isPending}
-                  onClick={() => compartilhar.mutate({ gameId: g.id, ...compartilhamento })}
-                >
-                  {compartilhar.isPending ? "Publicando…" : "Publicar no feed"}
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+            <DialogFooter className="gap-2">
+              <Button
+                variant="ghost"
+                className="rounded-full"
+                disabled={compartilhar.isPending}
+                onClick={() => setCompartilhamento(null)}
+              >
+                {t.achievement.cancel}
+              </Button>
+
+              <Button
+                className="rounded-full"
+                disabled={compartilhar.isPending}
+                onClick={() =>
+                  compartilhamento && compartilhar.mutate({ id: g.id, pedido: compartilhamento })
+                }
+              >
+                {compartilhar.isPending ? t.achievement.publishing : t.achievement.publish}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {gallery.length > 1 && (
           <div className="flex gap-2 overflow-x-auto pb-1">
@@ -539,7 +386,7 @@ function GamePage() {
         )}
 
         <section className="surface-card space-y-3 p-4 sm:p-5">
-          <h2 className="text-base font-medium">{texts.games.game.about}</h2>
+          <h2 className="text-base font-medium">{t.about}</h2>
 
           <p className="whitespace-pre-line text-sm font-normal text-muted-foreground">
             {g.description}
@@ -549,7 +396,7 @@ function GamePage() {
             {g.genres.length > 0 && (
               <div>
                 <dt className="text-xs font-medium uppercase tracking-wide text-text-subtle">
-                  {texts.games.game.genres}
+                  {t.genres}
                 </dt>
 
                 <dd className="text-text-strong">{g.genres.join(", ")}</dd>
@@ -559,7 +406,7 @@ function GamePage() {
             {g.languages.length > 0 && (
               <div>
                 <dt className="text-xs font-medium uppercase tracking-wide text-text-subtle">
-                  {texts.games.game.languages}
+                  {t.languages}
                 </dt>
 
                 <dd className="text-text-strong">{g.languages.join(", ")}</dd>
@@ -569,7 +416,7 @@ function GamePage() {
             {g.controls && (
               <div>
                 <dt className="text-xs font-medium uppercase tracking-wide text-text-subtle">
-                  {texts.games.game.controls}
+                  {t.controls}
                 </dt>
 
                 <dd className="text-text-strong">{g.controls}</dd>
@@ -579,7 +426,7 @@ function GamePage() {
             {g.requirements && (
               <div>
                 <dt className="text-xs font-medium uppercase tracking-wide text-text-subtle">
-                  {texts.games.game.requirements}
+                  {t.requirements}
                 </dt>
 
                 <dd className="text-text-strong">{g.requirements}</dd>
@@ -589,7 +436,7 @@ function GamePage() {
             {g.contentWarnings && (
               <div>
                 <dt className="text-xs font-medium uppercase tracking-wide text-text-subtle">
-                  {texts.games.game.warnings}
+                  {t.warnings}
                 </dt>
 
                 <dd className="text-text-strong">{g.contentWarnings}</dd>
@@ -599,10 +446,10 @@ function GamePage() {
         </section>
 
         <section className="surface-card space-y-3 p-4 sm:p-5">
-          <h2 className="text-base font-medium">{texts.games.game.updates}</h2>
+          <h2 className="text-base font-medium">{t.updates}</h2>
 
           {(updates.data?.length ?? 0) === 0 ? (
-            <p className="text-sm font-normal text-text-subtle">{texts.games.game.noUpdates}</p>
+            <p className="text-sm font-normal text-text-subtle">{t.noUpdates}</p>
           ) : (
             <ul className="space-y-3">
               {updates.data!.map((update) => (
@@ -611,7 +458,7 @@ function GamePage() {
                     {update.title}
                     {update.version && (
                       <span className="ml-2 text-xs font-normal text-text-subtle">
-                        {texts.games.game.version(update.version)}
+                        {t.version(update.version)}
                       </span>
                     )}
                   </p>
