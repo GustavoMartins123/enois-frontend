@@ -1434,6 +1434,7 @@ export const texts = {
       followers: (count: number) => `${count} ${count === 1 ? "seguidor" : "seguidores"}`,
       follow: "Acompanhar",
       following: "Acompanhando",
+      devChip: "Dev de jogos",
       editPage: "Editar minha página",
       about: "Sobre",
       links: "Links",

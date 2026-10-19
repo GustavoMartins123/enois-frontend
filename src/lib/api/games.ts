@@ -137,4 +137,21 @@ export const gamesApi = {
     }),
   /** Coleções temáticas curadas (G3) com os jogos resolvidos. */
   colecoes: (limit = 20) => api.get<ColecaoView[]>(`/games/colecoes?limit=${limit}`),
+
+  // --- moderação (fila em /moderacao; a API devolve 403 para quem não decide) ---
+
+  /** Jogos SUBMITTED esperando revisão. */
+  pendentes: (limit = 30) => api.get<GameView[]>(`/admin/games?limit=${limit}`),
+
+  aprovar: (gameId: string, note?: string) =>
+    api.post<{ id: string; status: string }>(
+      `/admin/games/${encodeURIComponent(gameId)}/approve`,
+      { note: note?.trim() || undefined },
+    ),
+
+  rejeitar: (gameId: string, note?: string) =>
+    api.post<{ id: string; status: string }>(
+      `/admin/games/${encodeURIComponent(gameId)}/reject`,
+      { note: note?.trim() || undefined },
+    ),
 };

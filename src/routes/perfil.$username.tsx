@@ -13,6 +13,7 @@ import {
   Camera,
   Clock,
   Flag,
+  Gamepad2,
   Image as ImageIcon,
   Link as LinkIcon,
   MapPin,
@@ -30,6 +31,7 @@ import {
 import {
   ApiError,
   feedApi,
+  gamesApi,
   messagesApi,
   networkApi,
   profileApi,
@@ -148,6 +150,15 @@ function Profile() {
 
   const user = liveProfile ?? loaderUser;
   const isOwnProfile = me?.id === user.id;
+
+  // Selo "Dev de jogos" (G2 do plano dos games): só existe se a pessoa tem página de criador no
+  // Games — o backend devolve 404 para quem não tem, e aí o chip nem aparece.
+  const { data: gamesDev } = useQuery({
+    queryKey: ["games", "developer", user.username],
+    queryFn: () => gamesApi.developer(user.username),
+    retry: false,
+    staleTime: 300_000,
+  });
 
   // O currículo só existe na projeção do DONO (/me): o perfil público não traz, de propósito.
   const { data: myProfile } = useQuery({
@@ -541,6 +552,17 @@ function Profile() {
                   <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-normal text-primary">
                     {texts.profile.mentorAvailable}
                   </span>
+                )}
+                {gamesDev && (
+                  <Link
+                    to="/games/$username"
+                    params={{ username: user.username }}
+                    className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-normal text-primary hover:underline"
+                  >
+                    <Gamepad2 className="h-3 w-3" />
+
+                    <>{texts.games.developer.devChip}</>
+                  </Link>
                 )}
               </div>
 
