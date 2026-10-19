@@ -1,8 +1,8 @@
 # Auditoria visual — todas as páginas, responsividade e temas
 
-> **Status (2026-10-19):** em andamento — rodadas 1 a 15 executadas. A matriz ainda tem lotes
-> pendentes (rotas protegidas nos viewports novos, Lote B em `/games`/`/eventos` e Lote C nas 3
-> páginas protegidas em 1280px).
+> **Status (2026-10-19):** em andamento — rodadas 1 a 16 executadas. O Lote B público está
+> completo; restam as rotas/páginas protegidas (Lote A nos viewports novos, Lote B em 390px e
+> Lote C em 1280px), que dependem de uma sessão fresca do Firefox.
 
 ## Objetivo
 
@@ -66,7 +66,8 @@ em denúncia). Admin/moderação: somente leitura visual.
 | Lote | Rotas | Viewports | Temas | Status |
 |---|---|---|---|---|
 | A | 23 em 390/768/1280 (rodada 1) + 17 públicas e 10 dinâmicas nos outros 6 viewports (rodada 2) | 320, 360, 390, 414, 768, 1024, 1280, 1440, 1920 | claro/escuro padrão | parcial — rotas protegidas nos viewports novos bloqueadas pela sessão expirada |
-| B | 20 rotas públicas (2400 combinações) | 390px | 60 × 2 | 20 rotas concluídas; faltam `/games`, `/eventos` e as protegidas |
+| B | 22 rotas públicas (2640 combinações) | 390px | 60 × 2 | público completo; faltam as rotas protegidas |
+| — | Rotas protegidas (Lote A nos viewports novos, Lote B em 390, Lote C em 1280) | todos | 60 × 2 | bloqueado por sessão expirada |
 | C | `/`, `/perfil`, `/post/...`, `/developers`, `/vagas`, `/empresa/n-is`, `/games` (840 combinações) | 1280px | 60 × 2 | 7 páginas-chave concluídas; faltam 3 protegidas |
 
 ## Rodada 1 — 2026-10-19
@@ -269,6 +270,18 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Cobertura do Lote B:** 20 rotas públicas / **2400 combinações**.
 - **Próximo lote:** `/games` e `/eventos` fecham o Lote B público; as protegidas dependem de
   sessão fresca.
+
+## Rodada 16 — 2026-10-19
+
+- **Sessão:** ainda expirada; rotas protegidas seguem bloqueadas.
+- **Lote B (390px):** `/games` e `/eventos` = **240 combinações, 239 limpas e 1 falso positivo
+  transitório**: `listras-amarelas light /games` apareceu uma vez sem `--primary`; repetido 3×,
+  sempre 200 com as vars. `/eventos` sem sessão redireciona para `/entrar` — o layout testado foi
+  o da tela de login, sem problemas.
+- **Lote B público: completo** — 22 rotas / **2640 combinações**.
+- **Pendência única:** rotas/páginas protegidas (Lote A nos viewports novos, Lote B em 390px e
+  Lote C em 1280px) — dependem de uma sessão fresca do Firefox. O agendamento segue tentando a
+  cada rodada.
 
 ## Achados e correções
 
