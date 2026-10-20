@@ -69,6 +69,8 @@ function GamePage() {
   const [failed, setFailed] = useState(false);
   const [editing, setEditing] = useState(false);
   const [newUpdate, setNewUpdate] = useState(false);
+  // A dica de tela cheia no celular é um aviso, não conteúdo: some sozinha depois de 3s.
+  const [showMobileHint, setShowMobileHint] = useState(true);
   const frame = useRef<HTMLIFrameElement>(null);
   const navigate = useNavigate();
 
@@ -176,6 +178,11 @@ function GamePage() {
   const [gasto, setGasto] = useState<{ amount: number; motivo: string; requestId: string } | null>(
     null,
   );
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setShowMobileHint(false), 3000);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   // G-share: o jogo (iframe de OUTRA origem, sem sessão nenhuma) pede o compartilhamento por
   // postMessage; a página valida a origem contra o endereço registrado do jogo, mostra a PRÉVIA
@@ -449,9 +456,11 @@ function GamePage() {
             )}
           </div>
 
-          <p className="border-t border-border-soft px-3 py-2 text-xs text-text-subtle sm:hidden">
-            {texts.games.game.mobileHint}
-          </p>
+          {showMobileHint && (
+            <p className="border-t border-border-soft px-3 py-2 text-xs text-text-subtle sm:hidden">
+              {texts.games.game.mobileHint}
+            </p>
+          )}
 
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border-soft px-3 py-2">
             <p className="text-xs text-text-subtle">
