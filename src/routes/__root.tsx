@@ -91,7 +91,12 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      {
+        name: "viewport",
+        // `interactive-widget` faz o layout encolher com o teclado em vez de rolar a página toda;
+        // no chat, é o que mantém cabeçalho e mensagens no lugar e sobe só o campo de texto.
+        content: "width=device-width, initial-scale=1, interactive-widget=resizes-content",
+      },
       { title: texts.root.seo.title },
       {
         name: "description",
