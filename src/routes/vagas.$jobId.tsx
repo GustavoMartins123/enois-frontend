@@ -262,9 +262,9 @@ function JobDetail() {
                 {job.level}
               </span>
 
-              {formatSalary(job.salary, job.currency) && (
+              {(job.salaryLabel || formatSalary(job.salary, job.currency)) && (
                 <span className="rounded-full border border-border-soft px-2.5 py-1">
-                  {formatSalary(job.salary, job.currency)}
+                  {job.salaryLabel ?? formatSalary(job.salary, job.currency)}
                 </span>
               )}
             </div>

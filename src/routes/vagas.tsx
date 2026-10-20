@@ -58,6 +58,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
+import { CreateExternalJobDialog } from "@/components/create-external-job-dialog";
 import { InfiniteScroll } from "@/components/infinite-scroll";
 
 export const Route = createFileRoute("/vagas")({
@@ -119,6 +120,7 @@ function Vagas() {
   const [aba, setAba] = useState<"enois" | "externas" | "salvas">("enois");
   const [plataforma, setPlataforma] = useState("");
   const [showCreate, setShowCreate] = useState(false);
+  const [showExternal, setShowExternal] = useState(false);
   const [reportTarget, setReportTarget] = useState<Job | null>(null);
 
   const reputation = user?.reputation ?? 0;
@@ -241,6 +243,18 @@ function Vagas() {
               >
                 {texts.jobs.myJobs}
               </Link>
+
+              {/* Vaga achada em outro site: cadastra aqui e o botão do card leva ao link. */}
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-full gap-1.5"
+                onClick={() => setShowExternal(true)}
+              >
+                <ExternalLink className="h-4 w-4" />
+
+                <>{texts.jobs.external.registerButton}</>
+              </Button>
 
               <Button
                 size="sm"
@@ -489,9 +503,9 @@ function Vagas() {
                 <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
                   {j.level}
                 </span>
-                {formatSalary(j.salary, j.currency) && (
+                {(j.salaryLabel || formatSalary(j.salary, j.currency)) && (
                   <span className="rounded-full bg-growth/15 px-2.5 py-1 font-medium text-growth">
-                    {formatSalary(j.salary, j.currency)}
+                    {j.salaryLabel ?? formatSalary(j.salary, j.currency)}
                   </span>
                 )}
               </div>
@@ -599,6 +613,7 @@ function Vagas() {
       </div>
 
       <CreateJobDialog open={showCreate} onOpenChange={setShowCreate} />
+      <CreateExternalJobDialog open={showExternal} onOpenChange={setShowExternal} />
       <ReportJobDialog job={reportTarget} onOpenChange={(open) => !open && setReportTarget(null)} />
     </AppContainer>
   );
@@ -615,7 +630,9 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
   const [location, setLocation] = useState<string>(JOB_LOCATIONS[0]);
   const [type, setType] = useState<string>(JOB_TYPES[0]);
   const [level, setLevel] = useState<string>(JOB_LEVELS[0]);
-  const [salary, setSalary] = useState("");
+  const [salaryMin, setSalaryMin] = useState("");
+  const [salaryMax, setSalaryMax] = useState("");
+  const [salaryPeriod, setSalaryPeriod] = useState("MONTH");
   const [currency, setCurrency] = useState<CurrencyCode>("BRL");
   const [skills, setSkills] = useState("");
   const [description, setDescription] = useState("");
@@ -638,7 +655,9 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
     setLocation(JOB_LOCATIONS[0]);
     setType(JOB_TYPES[0]);
     setLevel(JOB_LEVELS[0]);
-    setSalary("");
+    setSalaryMin("");
+    setSalaryMax("");
+    setSalaryPeriod("MONTH");
     setCurrency("BRL");
     setSkills("");
     setDescription("");
@@ -655,13 +674,16 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
       location,
       type,
       level,
-      salary: salary.trim() || undefined,
+      // O backend só aceita vaga com descrição e valor (item 5 do backlog).
+      salaryMin: salaryMin.trim(),
+      salaryMax: salaryMax.trim() || undefined,
+      salaryPeriod,
+      description: description.trim(),
       currency,
       skills: skills
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean),
-      description: description.trim() || undefined,
       communityAgreement: agreed,
       applicationFields: fields
         .filter((field) => field.label.trim() !== "")
@@ -673,7 +695,12 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
     });
   };
 
-  const valid = title.trim() !== "" && company.trim() !== "" && agreed;
+  const valid =
+    title.trim() !== "" &&
+    company.trim() !== "" &&
+    agreed &&
+    description.trim() !== "" &&
+    salaryMin.trim() !== "";
 
   return (
     <Dialog
@@ -802,7 +829,7 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
                 {texts.jobs.fields.salary}
               </Label>
 
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <select
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value as CurrencyCode)}
@@ -817,11 +844,36 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
                 </select>
 
                 <Input
-                  value={salary}
-                  onChange={(e) => setSalary(e.target.value)}
-                  placeholder={texts.jobs.fields.salaryPlaceholder}
-                  className="bg-muted"
+                  value={salaryMin}
+                  onChange={(e) => setSalaryMin(e.target.value)}
+                  inputMode="decimal"
+                  placeholder={texts.jobs.fields.salaryMinPlaceholder}
+                  className="w-32 bg-muted"
+                  aria-label={texts.jobs.fields.salaryMin}
                 />
+                <Input
+                  value={salaryMax}
+                  onChange={(e) => setSalaryMax(e.target.value)}
+                  inputMode="decimal"
+                  placeholder={texts.jobs.fields.salaryMaxPlaceholder}
+                  className="w-32 bg-muted"
+                  aria-label={texts.jobs.fields.salaryMax}
+                />
+
+                <select
+                  value={salaryPeriod}
+                  onChange={(e) => setSalaryPeriod(e.target.value)}
+                  className={cn(SELECT_CLASS, "w-32 shrink-0")}
+                  aria-label={texts.jobs.fields.salaryPeriod}
+                >
+                  <option value="HOUR">{texts.jobs.fields.salaryPeriodHour}</option>
+
+                  <option value="DAY">{texts.jobs.fields.salaryPeriodDay}</option>
+
+                  <option value="MONTH">{texts.jobs.fields.salaryPeriodMonth}</option>
+
+                  <option value="YEAR">{texts.jobs.fields.salaryPeriodYear}</option>
+                </select>
               </div>
 
               <p className="text-xs font-normal text-text-subtle">
