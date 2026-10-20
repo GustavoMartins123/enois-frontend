@@ -203,11 +203,18 @@ export function PostComments({ postId }: PostIdProps) {
     setSending(true);
     try {
       let mediaIds: string[] = [];
+      let finalContent = content;
       if (media.length > 0) {
         const results = await upload.uploadAll(media.map((m) => ({ file: m.file })));
         mediaIds = results.map((r) => r.mediaId);
+        // Mídia NO MEIO do texto (item 9): mesmo caminho do post — o marcador pendente inserido
+        // pelo autor vira o id real no upload; pendente sem anexo restante some.
+        finalContent = finalContent.replace(/\{\{media:pendente-(\d+)\}\}/g, (_marker, index) => {
+          const uploaded = mediaIds[Number(index)];
+          return uploaded ? `{{media:${uploaded}}}` : "";
+        });
       }
-      const created = await commentsApi.create(postId, content, replyToId, mentions, mediaIds);
+      const created = await commentsApi.create(postId, finalContent, replyToId, mentions, mediaIds);
       addComment(postId, created);
       updateCommentCount(postId, 1);
       setDraft(postId, "");
@@ -378,6 +385,16 @@ export function PostComments({ postId }: PostIdProps) {
                     aria-label={texts.posts.comments.removeMedia}
                   >
                     <X className="h-3 w-3" />
+                  </button>
+
+                  {/* Item 9: insere o marcador no ponto do texto (o pendente vira id real no upload). */}
+                  <button
+                    type="button"
+                    title={texts.posts.comments.insertInText}
+                    onClick={() => setDraft(postId, `${draft}{{media:pendente-${i}}}`)}
+                    className="mt-1 flex w-full items-center justify-center gap-1 rounded-lg border border-dashed border-primary/40 px-1 py-0.5 text-[10px] font-normal text-primary transition hover:bg-primary/10"
+                  >
+                    {texts.posts.comments.insertInText}
                   </button>
                 </div>
               ))}

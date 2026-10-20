@@ -57,8 +57,34 @@ import { MentionTextarea } from "@/components/mention-textarea";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
 
+/** Todas as abas válidas da tela inicial (a URL carrega a escolhida). */
+const HOME_TABS: HomeTab[] = [
+  "FOR_YOU",
+  "ALL",
+  "FOLLOWING",
+  "RECENT",
+  "PROJECTS",
+  "NEWS",
+  "TUTORIALS",
+  "OPPORTUNITIES",
+  "REVIEWS",
+  "FUN",
+  "CORPORATE",
+];
+
 export const Route = createFileRoute("/feed")({
   beforeLoad: requireAuth,
+  /**
+   * A aba vive na URL (`/feed?aba=ALL`): abrir uma publicação e voltar restaura a MESMA aba em que
+   * a pessoa estava — antes o retorno caía sempre em "Para você".
+   */
+  validateSearch: (search: Record<string, unknown>) => {
+    const aba =
+      typeof search.aba === "string" && HOME_TABS.includes(search.aba as HomeTab)
+        ? (search.aba as HomeTab)
+        : "FOR_YOU";
+    return { aba };
+  },
   head: () => ({
     meta: [
       { title: texts.feed.seo.title },
@@ -110,7 +136,15 @@ function useEvents() {
 function Home() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [tab, setTab] = useState<HomeTab>("FOR_YOU");
+  // A aba vem da URL; trocar de aba REPLACES o histórico (o "voltar" continua voltando para a
+  // página anterior, e não passeando pelas abas).
+  const { aba } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const tab: HomeTab = aba;
+  const setTab = (next: HomeTab) => {
+    if (next === tab) return;
+    void navigate({ search: { aba: next }, replace: true });
+  };
   const {
     data: feedData,
     // Somente a PRIMEIRA carga mostra o esqueleto. `isFetching` tambem fica true ao paginar, e
@@ -245,9 +279,7 @@ function Home() {
   };
 
   // O mínimo do input datetime-local é AGORA+1min (o backend recusa mais perto que isso).
-  const minScheduleAt = new Date(
-    Date.now() + 60_000 - new Date().getTimezoneOffset() * 60_000,
-  )
+  const minScheduleAt = new Date(Date.now() + 60_000 - new Date().getTimezoneOffset() * 60_000)
     .toISOString()
     .slice(0, 16);
 
@@ -262,12 +294,20 @@ function Home() {
     setPublishError(null);
     try {
       let mediaIds: string[] = [];
+      let finalContent = content;
       if (!pageMode && media.length > 0) {
         const results = await upload.uploadAll(media.map((m) => ({ file: m.file })));
         mediaIds = results.map((r) => r.mediaId);
+        // Mídia NO MEIO do texto (item 9): o composer insere `{{media:pendente-N}}` enquanto a
+        // mídia ainda não subiu; aqui cada pendente vira o id real da mídia que ele representa.
+        // Pendente sem anexo (o usuário removeu o arquivo) some do texto — não há o que renderizar.
+        finalContent = finalContent.replace(/\{\{media:pendente-(\d+)\}\}/g, (marker, index) => {
+          const uploaded = mediaIds[Number(index)];
+          return uploaded ? `{{media:${uploaded}}}` : "";
+        });
       }
       const created = await createPost.mutateAsync({
-        content: pageMode ? "" : content,
+        content: pageMode ? "" : finalContent,
         type: postType,
         mediaIds,
         ...(pageMode ? { pageHtml } : {}),
@@ -583,6 +623,22 @@ function Home() {
                     onClick={() => fileRef.current?.click()}
                   />
                 )}
+
+                {/* Item 9: cada anexo ganha "inserir no texto" — o marcador pendente vira a
+                    mídia real no momento do upload, e ela aparece exatamente onde o autor quis. */}
+                {!pageMode &&
+                  media.map((item, index) => (
+                    <button
+                      key={`${item.preview}-${index}`}
+                      type="button"
+                      title={texts.feed.composer.insertInText}
+                      className="inline-flex items-center gap-1 rounded-full border border-dashed border-primary/40 px-2.5 py-1 text-xs font-normal text-primary transition hover:bg-primary/10"
+                      onClick={() => setDraft((current) => `${current}{{media:pendente-${index}}}`)}
+                    >
+                      <Image className="h-3.5 w-3.5" />
+                      {texts.feed.composer.insertMedia(index + 1)}
+                    </button>
+                  ))}
               </div>
 
               {linkedinUrl && (
@@ -719,9 +775,7 @@ function Home() {
                     <div className="min-w-0">
                       <p className="truncate text-sm text-text-strong">
                         {agendado.content ||
-                          (agendado.pageHtml
-                            ? texts.feed.composer.scheduledPage
-                            : agendado.type)}
+                          (agendado.pageHtml ? texts.feed.composer.scheduledPage : agendado.type)}
                       </p>
 
                       <p className="text-xs text-text-subtle">
@@ -874,7 +928,12 @@ function Home() {
               <ul className="mt-4 space-y-3">
                 {suggestionList.map((u) => (
                   <li key={u.id} className="flex items-center gap-3">
-                    <UserAvatar src={u.avatar} frame={u.avatarFrame} alt={u.name} className="h-10 w-10" />
+                    <UserAvatar
+                      src={u.avatar}
+                      frame={u.avatarFrame}
+                      alt={u.name}
+                      className="h-10 w-10"
+                    />
 
                     <div className="min-w-0 flex-1">
                       <Link

@@ -1051,6 +1051,8 @@ export const texts = {
     empty: "Nada por aqui ainda. Publicações da sua rede aparecem neste feed.",
     composer: {
       topic: "Assunto",
+      insertInText: "Inserir no texto",
+      insertMedia: (number: number) => `Inserir mídia ${number} no texto`,
       topicNone: "Sem assunto",
       topicHint: "Liga o post ao que a gente quer ver (ou não quer) na personalização.",
       schedule: "Agendar",
@@ -1305,6 +1307,7 @@ export const texts = {
       viewProfile: (name: string) => `Abrir o perfil de ${name}`,
       attachMedia: "Anexar imagem",
       removeMedia: "Remover mídia",
+      insertInText: "Inserir no texto",
       gif: "GIF",
       gifTitle: "Adicionar GIF",
       gifHint: "Cole o link do Giphy ou Tenor — ele aparece como GIF no comentário.",

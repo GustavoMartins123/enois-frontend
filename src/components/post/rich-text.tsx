@@ -6,10 +6,12 @@ import type { RichTextProps } from "@/types/components/post/rich-text-props";
 import type { RichNode } from "@/types/lib/rich-text/rich-node";
 
 import { isOwnMediaUrl, withImageKitOriginal } from "@/lib/api/media";
+import { splitByInlineMedia } from "@/lib/rich-text/inline-media";
 import { parseRichText } from "@/lib/rich-text/parse";
 import { directMediaKind, gifMediaUrl } from "@/lib/shared-links";
 import { cn } from "@/lib/utils";
 
+import { InlineMedia } from "./inline-media";
 import { SpoilerText } from "./spoiler-text";
 
 /**
@@ -24,18 +26,37 @@ import { SpoilerText } from "./spoiler-text";
  * servidor de terceiro sai como link, porque imagem remota carrega sozinha e entrega o IP de quem
  * lê para quem publicou.
  */
-export function RichText({ content, className, linkClassName }: RichTextProps) {
-  const blocks = useMemo(() => parseRichText(content), [content]);
+export function RichText({ content, className, linkClassName, mediaIds }: RichTextProps) {
   const linkClass = linkClassName ?? "text-primary hover:underline";
+
+  // Imagem NO MEIO do texto (item 9): quando há mídias anexadas, o conteúdo é dividido nos
+  // marcadores `{{media:id}}` e cada um vira a mídia no ponto exato; o texto entre eles passa
+  // pelo mesmo pipeline de sempre. Sem marcador (ou sem mídias), é o caminho antigo, intacto.
+  const chunks = useMemo(
+    () =>
+      mediaIds?.length ? splitByInlineMedia(content) : [{ kind: "text" as const, text: content }],
+    [content, mediaIds],
+  );
 
   return (
     <div className={className}>
-      {blocks.map((block, key) => renderBlock(block, key, linkClass))}
+      {chunks.map((chunk, chunkKey) => {
+        // Um marcador cuja mídia não está na lista do post NÃO renderiza (o backend já recusa
+        // na gravação; aqui é a segunda trava) — o texto ao redor continua.
+        if (chunk.kind === "media") {
+          return mediaIds?.includes(chunk.mediaId) ? (
+            <InlineMedia key={`media-${chunkKey}`} mediaId={chunk.mediaId} />
+          ) : null;
+        }
+        return parseRichText(chunk.text).map((block, key) =>
+          renderBlock(block, `${chunkKey}-${key}`, linkClass),
+        );
+      })}
     </div>
   );
 }
 
-function renderBlock(block: RichNode, key: number, linkClass: string): ReactNode {
+function renderBlock(block: RichNode, key: React.Key, linkClass: string): ReactNode {
   switch (block.kind) {
     case "heading":
       return (
