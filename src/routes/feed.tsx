@@ -1,4 +1,4 @@
-import { type ChangeEvent, type FormEvent, useCallback, useRef, useState } from "react";
+import { type ChangeEvent, type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
@@ -10,10 +10,13 @@ import { texts } from "@/texts";
 import type { CreatePostInput } from "@/types/application/feed/create-post-input";
 import type { FeedTab } from "@/types/application/feed/feed-tab";
 import type { PostView } from "@/types/application/feed/post-view";
+import type { ActiveIdentity } from "@/types/lib/active-identity";
 import type { ComposerActionProps } from "@/types/routes/feed/composer-action-props";
+import type { HomeTab } from "@/types/routes/feed/home-tab";
 import type { MediaItem } from "@/types/routes/feed/media-item";
 import {
   BarChart3,
+  Briefcase,
   Calendar,
   CalendarClock,
   ChevronDown,
@@ -29,7 +32,12 @@ import {
   X,
 } from "lucide-react";
 
-import { authApi, eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
+import {
+  effectiveIdentity,
+  readActiveIdentity,
+  subscribeActiveIdentity,
+} from "@/lib/active-identity";
+import { authApi, corporateApi, eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
@@ -64,11 +72,14 @@ export const Route = createFileRoute("/feed")({
 
 const FEED_PAGE_SIZE = 20;
 
-function useFeed(tab: FeedTab) {
+function useFeed(tab: HomeTab) {
   // Pagina por cursor: o backend devolve nextCursor e o scroll infinito busca a proxima pagina.
   return useInfiniteQuery({
     queryKey: ["feed", tab],
-    queryFn: ({ pageParam }) => feedApi.list(pageParam ?? null, FEED_PAGE_SIZE, tab),
+    queryFn: ({ pageParam }) =>
+      tab === "CORPORATE"
+        ? feedApi.corporate(pageParam ?? null, FEED_PAGE_SIZE)
+        : feedApi.list(pageParam ?? null, FEED_PAGE_SIZE, tab),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
@@ -98,7 +109,7 @@ function useEvents() {
 function Home() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [tab, setTab] = useState<FeedTab>("FOR_YOU");
+  const [tab, setTab] = useState<HomeTab>("FOR_YOU");
   const {
     data: feedData,
     // Somente a PRIMEIRA carga mostra o esqueleto. `isFetching` tambem fica true ao paginar, e
@@ -111,6 +122,13 @@ function Home() {
   const { data: profile } = useProfile();
   const { data: suggestions } = useSuggestions();
   const { data: eventsData } = useEvents();
+  const [chosenIdentity, setChosenIdentity] = useState<ActiveIdentity>(() => readActiveIdentity());
+  useEffect(() => subscribeActiveIdentity(() => setChosenIdentity(readActiveIdentity())), []);
+  const { data: corporate } = useQuery({
+    queryKey: ["business-profile"],
+    queryFn: () => corporateApi.me(),
+  });
+  const identity = effectiveIdentity(chosenIdentity, corporate);
 
   const [draft, setDraft] = useState("");
   const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([]);
@@ -127,9 +145,23 @@ function Home() {
   // Agendamento: o post fica na fila do backend e só entra no feed na hora marcada.
   const [schedulingOpen, setSchedulingOpen] = useState(false);
   const [scheduleAt, setScheduleAt] = useState("");
+  // A identidade ativa manda no tipo: profissional publica BUSINESS (destino: feed
+  // corporativo); voltar para social tira o BUSINESS da seleção.
+  useEffect(() => {
+    if (identity === "CORPORATE") {
+      setPostType("BUSINESS");
+    } else {
+      setPostType((current) => (current === "BUSINESS" ? "INSIGHT" : current));
+    }
+  }, [identity]);
+
   const pageMode = postType === "PAGE";
   const articleMode = postType === "ARTICLE";
-  const currentType = POST_TYPES.find((option) => option.id === postType) ?? POST_TYPES[0];
+  const availableTypes =
+    identity === "CORPORATE"
+      ? POST_TYPES.filter((option) => option.id === "BUSINESS")
+      : POST_TYPES.filter((option) => option.id !== "BUSINESS");
+  const currentType = availableTypes.find((option) => option.id === postType) ?? availableTypes[0];
   const fileRef = useRef<HTMLInputElement>(null);
   const upload = useMediaUpload();
 
@@ -332,6 +364,14 @@ function Home() {
               {/* No modo pagina o campo de texto sai de cena: a pagina e o conteudo, e pedir um
                   texto "de post" junto faria a publicacao ser as duas coisas ao mesmo tempo. Quem
                   quiser uma legenda escreve dentro do proprio HTML. */}
+              {identity === "CORPORATE" && (
+                <div className="mb-2 flex w-full items-center gap-2 rounded-xl bg-primary/10 px-3 py-2 text-xs text-text-strong">
+                  <Briefcase className="h-3.5 w-3.5" />
+
+                  <span>{texts.feed.composer.corporateDestination(corporate?.name ?? "")}</span>
+                </div>
+              )}
+
               {!pageMode && (
                 <MentionTextarea
                   value={draft}
@@ -482,7 +522,7 @@ function Home() {
                   {typePickerOpen && (
                     <div className="absolute bottom-full left-0 z-40 mb-1 w-[min(22rem,80vw)] rounded-2xl border border-border-soft bg-popover p-2 shadow-lg">
                       <div className="flex flex-wrap gap-1.5">
-                        {POST_TYPES.map((option) => (
+                        {availableTypes.map((option) => (
                           <ComposerAction
                             key={option.id}
                             icon={option.icon}
@@ -701,6 +741,12 @@ function Home() {
             <Pill active={tab === "PROJECTS"} onClick={() => setTab("PROJECTS")}>
               {texts.feed.tabs.projects}
             </Pill>
+
+            {corporate?.exists && corporate.status === "ACTIVE" && (
+              <Pill active={tab === "CORPORATE"} onClick={() => setTab("CORPORATE")}>
+                {texts.feed.tabs.corporate}
+              </Pill>
+            )}
           </div>
 
           <div className="space-y-4">

@@ -18,6 +18,7 @@ import { Route as ServicosRouteImport } from './routes/servicos'
 import { Route as SegurancaRouteImport } from './routes/seguranca'
 import { Route as SalvosRouteImport } from './routes/salvos'
 import { Route as RedeRouteImport } from './routes/rede'
+import { Route as ProfissionalRouteImport } from './routes/profissional'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PenalidadesRouteImport } from './routes/penalidades'
 import { Route as ModeradorRouteImport } from './routes/moderador'
@@ -102,6 +103,11 @@ const SalvosRoute = SalvosRouteImport.update({
 const RedeRoute = RedeRouteImport.update({
   id: '/rede',
   path: '/rede',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfissionalRoute = ProfissionalRouteImport.update({
+  id: '/profissional',
+  path: '/profissional',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
@@ -329,6 +335,7 @@ export interface FileRoutesByFullPath {
   '/moderador': typeof ModeradorRoute
   '/penalidades': typeof PenalidadesRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/profissional': typeof ProfissionalRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
@@ -380,6 +387,7 @@ export interface FileRoutesByTo {
   '/moderador': typeof ModeradorRoute
   '/penalidades': typeof PenalidadesRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/profissional': typeof ProfissionalRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
@@ -432,6 +440,7 @@ export interface FileRoutesById {
   '/moderador': typeof ModeradorRoute
   '/penalidades': typeof PenalidadesRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/profissional': typeof ProfissionalRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
@@ -485,6 +494,7 @@ export interface FileRouteTypes {
     | '/moderador'
     | '/penalidades'
     | '/privacidade'
+    | '/profissional'
     | '/rede'
     | '/salvos'
     | '/seguranca'
@@ -536,6 +546,7 @@ export interface FileRouteTypes {
     | '/moderador'
     | '/penalidades'
     | '/privacidade'
+    | '/profissional'
     | '/rede'
     | '/salvos'
     | '/seguranca'
@@ -587,6 +598,7 @@ export interface FileRouteTypes {
     | '/moderador'
     | '/penalidades'
     | '/privacidade'
+    | '/profissional'
     | '/rede'
     | '/salvos'
     | '/seguranca'
@@ -639,6 +651,7 @@ export interface RootRouteChildren {
   ModeradorRoute: typeof ModeradorRoute
   PenalidadesRoute: typeof PenalidadesRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
+  ProfissionalRoute: typeof ProfissionalRoute
   RedeRoute: typeof RedeRoute
   SalvosRoute: typeof SalvosRoute
   SegurancaRoute: typeof SegurancaRoute
@@ -721,6 +734,13 @@ declare module '@tanstack/react-router' {
       path: '/rede'
       fullPath: '/rede'
       preLoaderRoute: typeof RedeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profissional': {
+      id: '/profissional'
+      path: '/profissional'
+      fullPath: '/profissional'
+      preLoaderRoute: typeof ProfissionalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacidade': {
@@ -1113,6 +1133,7 @@ const rootRouteChildren: RootRouteChildren = {
   ModeradorRoute: ModeradorRoute,
   PenalidadesRoute: PenalidadesRoute,
   PrivacidadeRoute: PrivacidadeRoute,
+  ProfissionalRoute: ProfissionalRoute,
   RedeRoute: RedeRoute,
   SalvosRoute: SalvosRoute,
   SegurancaRoute: SegurancaRoute,

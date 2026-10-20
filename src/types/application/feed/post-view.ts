@@ -21,6 +21,7 @@ export type PostView = {
     | "NEWS"
     | "TUTORIAL"
     | "REVIEW"
+    | "BUSINESS"
     | "DIVERTIDO"
     | "MOMENT"
     /** Ponteiro de um post de blog: o conteúdo mora em /blog/{username}. */
