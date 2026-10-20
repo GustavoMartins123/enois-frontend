@@ -10,7 +10,7 @@ import type { RegisterMentorFormProps } from "@/types/routes/mentoring/register-
 import { Calendar, CheckCircle2, Loader2, Sparkles, Star } from "lucide-react";
 
 import { ApiError, mentorsApi, profileApi } from "@/lib/api";
-import { getCurrentUserId, useCurrentUser } from "@/lib/current-user";
+import { useCurrentUser } from "@/lib/current-user";
 import { requireAuth } from "@/lib/require-auth";
 
 import { Badge } from "@/components/ui/badge";
@@ -56,7 +56,10 @@ function Mentoria() {
 
   const mentors = mentorsData?.items ?? [];
 
-  const currentUserId = getCurrentUserId();
+  // `useCurrentUser` (e não o getter síncrono) para o botão recalcular quando o perfil chega:
+  // no primeiro render o cache ainda está vazio e o perfil do mentor não era reconhecido.
+  const { data: me } = useCurrentUser();
+  const currentUserId = me?.id ?? null;
   // Quem já tem perfil de mentor edita o existente; "criar" de novo batia em 409 e a tela
   // escondia o motivo atrás de um erro genérico.
   const myMentor = mentors.find((m) => m.userId === currentUserId);
