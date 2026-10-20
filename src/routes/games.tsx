@@ -210,7 +210,7 @@ function GamesHub() {
                   params={{ username: g.username ?? "", gameSlug: g.slug }}
                   className="surface-card flex min-w-0 items-center gap-3 p-4 transition hover:border-primary"
                 >
-                  <GameCover cover={g.cover} url={g.url} />
+                  <GameCover cover={g.cover} icon={g.icon} url={g.url} />
 
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold">{g.title}</span>
@@ -244,8 +244,16 @@ function GamesHub() {
   );
 }
 
-function GameCover({ cover, url }: { cover?: string | null; url?: string | null }) {
-  return <GameIcon cover={cover} url={url} />;
+function GameCover({
+  cover,
+  icon,
+  url,
+}: {
+  cover?: string | null;
+  icon?: string | null;
+  url?: string | null;
+}) {
+  return <GameIcon cover={cover} icon={icon} url={url} />;
 }
 
 /** Os jogos de quem está logado, com o status da moderação, o reenvio e o impulso. */
