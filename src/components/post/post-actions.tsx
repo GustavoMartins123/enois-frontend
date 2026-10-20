@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
-import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { PostActionsProps } from "@/types/components/post/post-actions-props";
-import { Bookmark, Flag, Heart, MessageSquare, Share2 } from "lucide-react";
+import { Bookmark, Flag, Heart, MessageSquare, Share2, Smile } from "lucide-react";
 
 import { REACTION_EMOJIS, feedApi, reactionsApi } from "@/lib/api";
+import { usePostReaction } from "@/lib/reactions/use-post-reaction";
 import { useAuth } from "@/lib/use-auth";
 
 import { useToast } from "@/components/ui/toast";
@@ -41,6 +41,10 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
   const postCounters = card?.postCounters ?? post.counters;
   const reactionStatus = card?.reactionStatus ?? post.currentUserReaction ?? null;
   const showReport = card?.showReport ?? false;
+  const { toggle: toggleReaction } = usePostReaction(post.id);
+  // Enquanto há reação em andamento, o estado otimista manda — a prop do feed não sobrescreve.
+  const reactionPendingRef = useRef(false);
+  reactionPendingRef.current = card?.reactionPending ?? false;
 
   useEffect(() => {
     initializePostCard(post);
@@ -48,6 +52,7 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
   }, [disposePostCard, initializePostCard, post]);
 
   useEffect(() => {
+    if (reactionPendingRef.current) return;
     setReactionStatus(post.id, post.currentUserReaction ?? null);
   }, [post.currentUserReaction, post.id, setReactionStatus]);
 
@@ -67,23 +72,6 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
       setSaved(savedData.items.some((p) => p.id === post.id));
     }
   }, [savedData, post.id]);
-
-  const handleReaction = async (type: ReactionType) => {
-    if (!requireAuth()) return;
-    try {
-      if (reactionStatus === type) {
-        const result = await reactionsApi.removeReaction(post.id);
-        setReactionStatus(post.id, null);
-        if ("counters" in result) setPostCounters(post.id, result.counters!);
-      } else {
-        const result = await reactionsApi.react(post.id, type);
-        setReactionStatus(post.id, type);
-        if ("counters" in result) setPostCounters(post.id, result.counters!);
-      }
-    } catch {
-      // silently fail
-    }
-  };
 
   const handleSave = async () => {
     if (!requireAuth()) return;
@@ -127,7 +115,7 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
         <div className="flex flex-wrap">
           <ReactionPicker
             activeType={reactionStatus}
-            onReact={handleReaction}
+            onReact={toggleReaction}
             buttonClassName={`flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground ${
               reactionStatus ? "text-primary" : ""
             }`}
@@ -144,11 +132,25 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
             )}
           </ReactionPicker>
 
+          {/* Contador "ver quem reagiu": sem fundo/borda de propósito — é um link de texto, não
+              pílula. O número é sempre visível; a palavra some em telas estreitas. */}
           <button
+            type="button"
             onClick={() => setShowReactions(post.id, true)}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 text-xs tabular-nums transition hover:bg-muted hover:text-foreground text-muted-foreground"
+            title={texts.posts.reactions.seeWho(postCounters.reactions)}
+            aria-label={texts.posts.reactions.seeWho(postCounters.reactions)}
+            aria-haspopup="dialog"
+            className="flex h-9 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 text-muted-foreground transition hover:bg-muted hover:text-foreground hover:underline decoration-dotted underline-offset-4"
           >
-            {postCounters.reactions}
+            <Smile className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
+
+            <span className="text-xs font-medium leading-none tabular-nums">
+              {postCounters.reactions}
+            </span>
+
+            <span className="hidden text-xs sm:inline">
+              {texts.posts.reactions.noun(postCounters.reactions)}
+            </span>
           </button>
 
           <button

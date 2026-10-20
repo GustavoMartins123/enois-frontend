@@ -5,7 +5,6 @@ import type { CreatePostInput } from "@/types/application/feed/create-post-input
 import type { DeleteResult } from "@/types/application/feed/delete-result";
 import type { FeedTab } from "@/types/application/feed/feed-tab";
 import type { PostView } from "@/types/application/feed/post-view";
-import type { ReactionsResponse } from "@/types/application/feed/reactions-response";
 import type { ScheduledPostView } from "@/types/application/feed/scheduled-post-view";
 
 import { api, buildQuery } from "../api-client";
@@ -38,7 +37,13 @@ export const feedApi = {
   // demais tipos. Num artigo o corpo e obrigatorio tambem na edicao.
   update: (
     postId: string,
-    data: { content: string; tags?: string[]; pageHtml?: string; articleBody?: string; type?: string },
+    data: {
+      content: string;
+      tags?: string[];
+      pageHtml?: string;
+      articleBody?: string;
+      type?: string;
+    },
   ) => api.patch<PostView>(`/feed/posts/${postId}`, data),
 
   /** Desfaz a exclusão do próprio post (soft delete reversível). */
@@ -48,8 +53,6 @@ export const feedApi = {
 
   listSaved: (cursor?: string | null, limit = 20) =>
     api.get<PageResponse<PostView>>(`/feed/saved${buildQuery({ cursor, limit })}`),
-
-  listReactions: (postId: string) => api.get<ReactionsResponse>(`/feed/posts/${postId}/reactions`),
 
   bulkDelete: (data: BulkDeleteInput) =>
     api.post<BulkDeleteResult>("/feed/posts/bulk-delete", data),
