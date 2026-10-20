@@ -1,18 +1,20 @@
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react";
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import type { MediaItem } from "@/types/routes/feed/media-item";
 import type { ConversationHeaderProps } from "@/types/routes/messages/conversation-header-props";
 import type { ConversationItemProps } from "@/types/routes/messages/conversation-item-props";
 import type { SendMessageInput } from "@/types/routes/messages/send-message-input";
-import { ArrowLeft, Search, Send } from "lucide-react";
+import { ArrowLeft, Image as ImageIcon, Search, Send, X } from "lucide-react";
 
 import { messagesApi, networkApi, profileApi } from "@/lib/api";
 import { getCurrentUserId } from "@/lib/current-user";
 import { requireAuth } from "@/lib/require-auth";
 import { insertSnippet } from "@/lib/rich-text/insert-snippet";
+import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -21,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
+import { MediaGrid } from "@/components/post/media-grid";
 import { RichText } from "@/components/post/rich-text";
 import { UserAvatar } from "@/components/user-avatar";
 import { UserBadges } from "@/components/user-badge";
@@ -40,9 +43,12 @@ function Mensagens() {
   const currentUserId = getCurrentUserId();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const upload = useMediaUpload();
   const [activeId, setActiveId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [text, setText] = useState("");
+  const [media, setMedia] = useState<MediaItem[]>([]);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
   const [inboxTab, setInboxTab] = useState<"all" | "jobs" | "people" | "archived">("all");
   const [selecting, setSelecting] = useState(false);
@@ -115,12 +121,13 @@ function Mensagens() {
   const filteredUsers = (searchResults?.items ?? []).filter((u) => u.id !== currentUserId);
 
   const sendMessage = useMutation({
-    mutationFn: ({ conversationId, text }: SendMessageInput) =>
-      messagesApi.sendMessage(conversationId, text),
+    mutationFn: ({ conversationId, text, mediaIds }: SendMessageInput) =>
+      messagesApi.sendMessage(conversationId, text, mediaIds),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["messages", activeConversation?.id] });
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
       setText("");
+      setMedia([]);
     },
   });
 
@@ -184,15 +191,60 @@ function Mensagens() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["conversations"] }),
   });
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (!activeConversation) return;
     const content = text.trim();
-    if (!content || !activeConversation) return;
-    sendMessage.mutate({ conversationId: activeConversation.id, text: content });
+    if (!content && media.length === 0) return;
+    setUploadError(null);
+    try {
+      let mediaIds: string[] = [];
+      if (media.length > 0) {
+        const results = await upload.uploadAll(media.map((item) => ({ file: item.file })));
+        mediaIds = results.map((result) => result.mediaId);
+      }
+      sendMessage.mutate({ conversationId: activeConversation.id, text: content, mediaIds });
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : texts.messages.mediaError);
+    }
+  };
+
+  const addMediaFiles = (files: File[]) => {
+    const images = files.filter((file) => file.type.startsWith("image/"));
+    if (images.length === 0) return;
+    setMedia((current) => {
+      const room = 4 - current.length;
+      if (room <= 0) {
+        setUploadError(texts.messages.mediaLimit);
+        return current;
+      }
+      setUploadError(null);
+      return [
+        ...current,
+        ...images.slice(0, room).map((file) => ({
+          type: "image" as const,
+          file,
+          preview: URL.createObjectURL(file),
+        })),
+      ];
+    });
+  };
+
+  const handleMediaSelect = (event: ChangeEvent<HTMLInputElement>) => {
+    addMediaFiles(Array.from(event.target.files ?? []));
+    event.target.value = "";
+  };
+
+  const removeMediaItem = (index: number) => {
+    setMedia((current) => {
+      URL.revokeObjectURL(current[index].preview);
+      return current.filter((_, i) => i !== index);
+    });
   };
 
   // Campo de mensagem cresce com o texto (teto 128px) e volta a 1 linha ao enviar.
   const messageInputRef = useRef<HTMLTextAreaElement>(null);
+  const mediaInputRef = useRef<HTMLInputElement>(null);
   useEffect(() => {
     const el = messageInputRef.current;
     if (!el) return;
@@ -530,11 +582,19 @@ function Mensagens() {
                                 : "rounded-bl-md bg-card text-foreground"
                             } ${selectedMessages.has(m.id) ? "ring-2 ring-destructive/70" : ""}`}
                           >
-                            <RichText
-                              content={m.text}
-                              className="break-words"
-                              linkClassName="break-all underline underline-offset-2"
-                            />
+                            {m.text.trim().length > 0 && (
+                              <RichText
+                                content={m.text}
+                                className="break-words"
+                                linkClassName="break-all underline underline-offset-2"
+                              />
+                            )}
+
+                            {m.mediaIds && m.mediaIds.length > 0 && (
+                              <div className="mt-1">
+                                <MediaGrid mediaIds={m.mediaIds} compact />
+                              </div>
+                            )}
 
                             <p
                               className={`mt-1 text-xs ${isMe ? "text-primary-foreground/70" : "text-muted-foreground"}`}
@@ -581,38 +641,87 @@ function Mensagens() {
                   </div>
                 </div>
               ) : (
-                <form
-                  onSubmit={handleSubmit}
-                  className="flex items-end gap-2 border-t border-border p-3"
-                >
-                  <textarea
-                    value={text}
-                    onChange={(e) => setText(e.target.value)}
-                    onKeyDown={(e) => {
-                      // Enter envia; Shift+Enter quebra linha (padrao de chat).
-                      if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
-                        e.preventDefault();
-                        handleSubmit(e as unknown as React.FormEvent<HTMLFormElement>);
-                      }
-                    }}
-                    ref={messageInputRef}
-                    rows={1}
-                    placeholder={texts.messages.inputPlaceholder}
-                    className="max-h-32 min-h-[40px] w-full resize-none rounded-2xl bg-muted px-4 py-2.5 text-sm outline-none"
-                  />
-                  <EmojiPicker
-                    onPick={insertEmoji}
-                    buttonTitle={texts.posts.formatting.emoji}
-                    buttonClassName="grid h-10 w-10 shrink-0 place-items-center rounded-full text-text-subtle transition hover:bg-muted hover:text-foreground"
-                  />
+                <form onSubmit={handleSubmit} className="border-t border-border p-3">
+                  {media.length > 0 && (
+                    <div className="mb-2 flex flex-wrap gap-2">
+                      {media.map((item, index) => (
+                        <div key={item.preview} className="relative">
+                          <img
+                            src={item.preview}
+                            alt=""
+                            className="h-16 w-16 rounded-lg border border-border-soft object-cover"
+                          />
 
-                  <button
-                    type="submit"
-                    disabled={!text.trim() || sendMessage.isPending}
-                    className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
-                  >
-                    <Send className="h-4 w-4" />
-                  </button>
+                          <button
+                            type="button"
+                            onClick={() => removeMediaItem(index)}
+                            className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-foreground text-background shadow"
+                            aria-label={texts.messages.removeMedia}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {uploadError && <p className="mb-2 text-xs text-destructive">{uploadError}</p>}
+
+                  <div className="flex items-end gap-2">
+                    <input
+                      ref={mediaInputRef}
+                      type="file"
+                      accept="image/*"
+                      multiple
+                      className="hidden"
+                      onChange={handleMediaSelect}
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => mediaInputRef.current?.click()}
+                      className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-text-subtle transition hover:bg-muted hover:text-foreground"
+                      aria-label={texts.messages.attachMedia}
+                    >
+                      <ImageIcon className="h-4 w-4" />
+                    </button>
+
+                    <textarea
+                      value={text}
+                      onChange={(e) => setText(e.target.value)}
+                      onKeyDown={(e) => {
+                        // Enter envia; Shift+Enter quebra linha (padrao de chat).
+                        if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
+                          e.preventDefault();
+                          void handleSubmit(e as unknown as FormEvent<HTMLFormElement>);
+                        }
+                      }}
+                      onPaste={(event) => {
+                        const files = Array.from(event.clipboardData?.files ?? []);
+                        if (files.some((file) => file.type.startsWith("image/"))) {
+                          event.preventDefault();
+                          addMediaFiles(files);
+                        }
+                      }}
+                      ref={messageInputRef}
+                      rows={1}
+                      placeholder={texts.messages.inputPlaceholder}
+                      className="max-h-32 min-h-[40px] w-full resize-none rounded-2xl bg-muted px-4 py-2.5 text-sm outline-none"
+                    />
+                    <EmojiPicker
+                      onPick={insertEmoji}
+                      buttonTitle={texts.posts.formatting.emoji}
+                      buttonClassName="grid h-10 w-10 shrink-0 place-items-center rounded-full text-text-subtle transition hover:bg-muted hover:text-foreground"
+                    />
+
+                    <button
+                      type="submit"
+                      disabled={(!text.trim() && media.length === 0) || sendMessage.isPending}
+                      className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
+                    >
+                      <Send className="h-4 w-4" />
+                    </button>
+                  </div>
                 </form>
               )}
             </>

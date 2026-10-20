@@ -35,6 +35,7 @@ export function MentionTextarea({
   maxLength,
   rows,
   toolbar = false,
+  onPasteImages,
 }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [mentionQuery, setMentionQuery] = useState("");
@@ -208,6 +209,15 @@ export function MentionTextarea({
         value={value}
         onInput={handleInput}
         onKeyDown={handleKey}
+        onPaste={(event) => {
+          if (!onPasteImages) return;
+          const files = Array.from(event.clipboardData?.files ?? []).filter((file) =>
+            file.type.startsWith("image/"),
+          );
+          if (files.length === 0) return;
+          event.preventDefault();
+          onPasteImages(files);
+        }}
         placeholder={placeholder}
         className={`max-h-[240px] w-full resize-none overflow-y-auto ${className}`}
         maxLength={maxLength}
