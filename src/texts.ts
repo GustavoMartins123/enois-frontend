@@ -1397,6 +1397,8 @@ export const texts = {
     connectionsMeta: (count: number) => `· ${count} ${count === 1 ? "conexão" : "conexões"}`,
     reputation: (value: number) => `${value} reputação`,
     reputationMeta: (value: number) => `★ ${value} reputação`,
+    /** Posição na lista (a tela do ranking ainda usa; volta a ser a única forma). */
+    rankingPosition: (position: number) => `${position}º`,
     /** A lista é de chegada: cada linha mostra há quanto tempo a pessoa entrou. */
     joinedToday: "chegou hoje",
     joinedDaysAgo: (days: number) => `há ${days} ${days === 1 ? "dia" : "dias"}`,
@@ -1693,8 +1695,7 @@ export const texts = {
         players: "Pessoas distintas",
         favorites: "Na biblioteca",
         updates: "Novidades",
-        views: (total: number, days: number) =>
-          `${total} visualizações nos últimos ${days} dias`,
+        views: (total: number, days: number) => `${total} visualizações nos últimos ${days} dias`,
         chartLabel: (days: number) => `Gráfico de visualizações por dia (${days} dias)`,
         tooltip: (date: string, views: number, plays: number, players: number) =>
           `${date}: ${views} visualizações · ${plays} partidas · ${players} pessoas`,
