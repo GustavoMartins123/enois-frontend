@@ -52,14 +52,14 @@ function Servicos() {
         <div className="mb-4 flex gap-2">
           <button
             type="button"
-            className={`rounded-full px-3 py-1.5 text-sm font-medium ${tab === "ofertas" ? "bg-primary text-primary-text" : "bg-surface-2 text-text-subtle"}`}
+            className={`rounded-full px-3 py-1.5 text-sm font-medium ${tab === "ofertas" ? "bg-primary text-primary-foreground" : "bg-surface-2 text-text-subtle"}`}
             onClick={() => setTab("ofertas")}
           >
             Ofertas
           </button>
           <button
             type="button"
-            className={`rounded-full px-3 py-1.5 text-sm font-medium ${tab === "pedidos" ? "bg-primary text-primary-text" : "bg-surface-2 text-text-subtle"}`}
+            className={`rounded-full px-3 py-1.5 text-sm font-medium ${tab === "pedidos" ? "bg-primary text-primary-foreground" : "bg-surface-2 text-text-subtle"}`}
             onClick={() => setTab("pedidos")}
           >
             Pedidos abertos
