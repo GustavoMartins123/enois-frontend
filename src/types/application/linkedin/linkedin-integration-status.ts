@@ -6,4 +6,7 @@ export type LinkedInIntegrationStatus = {
   canPost: boolean;
   tokenExpiresAt: string | null;
   reason: "NOT_CONNECTED" | "SERVER_KEY_MISSING" | "TOKEN_EXPIRED" | null;
+  /** Resultado da última tentativa de share: "OK" ou o motivo curto ("HTTP_403", …). */
+  lastShareStatus: string | null;
+  lastShareAt: string | null;
 };

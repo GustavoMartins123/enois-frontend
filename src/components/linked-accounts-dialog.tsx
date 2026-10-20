@@ -197,6 +197,19 @@ export function LinkedAccountsDialog({ open, onOpenChange }: LinkedAccountsDialo
               />
             </div>
 
+            {/* O share falha em silêncio de propósito; o resultado da última tentativa é o que
+                deixa a pessoa diagnosticar sem suporte (relato: "ativei, publiquei e não foi"). */}
+            {linkedinStatus.lastShareStatus && (
+              <p className="mt-2 text-xs font-normal text-text-subtle">
+                {linkedinStatus.lastShareStatus === "OK"
+                  ? texts.auth.links.linkedinSync.lastShareOk
+                  : texts.auth.links.linkedinSync.lastShareFailed(linkedinStatus.lastShareStatus)}
+                {linkedinStatus.lastShareAt
+                  ? new Date(linkedinStatus.lastShareAt).toLocaleString("pt-BR")
+                  : null}
+              </p>
+            )}
+
             {!linkedinStatus.canPost && (
               <div className="mt-2 flex flex-wrap items-center gap-2">
                 <p className="text-xs font-normal text-text-subtle">

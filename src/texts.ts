@@ -538,6 +538,13 @@ export const texts = {
           "Suas publicações no Énóis podem ir também para o seu feed do LinkedIn, com o link do post original.",
         toggle: "Publicar minhas publicações no LinkedIn",
         toggleHint: "Cada post novo vira um post no LinkedIn com o link do Énóis.",
+        lastShareOk: "Última tentativa: o LinkedIn aceitou · ",
+        lastShareFailed: (detail: string) =>
+          detail === "HTTP_401" || detail === "HTTP_403"
+            ? "A última tentativa não foi: o LinkedIn recusou a permissão — reconecte o LinkedIn e publique de novo. · "
+            : detail === "HTTP_422"
+              ? "A última tentativa não foi: o LinkedIn recusou o conteúdo do post. · "
+              : `A última tentativa não foi (${detail}) — reconecte o LinkedIn e publique de novo. · `,
         notReady: "Reconecte o LinkedIn para autorizar a publicação em seu nome.",
         serverKey:
           "A publicação no LinkedIn ainda não está disponível nesta instalação. Avise o time de suporte.",
@@ -1776,6 +1783,23 @@ export const texts = {
     externalBadge: (platform: string) => `Vaga externa · ${platform}`,
     externalNotice: (platform: string) =>
       `Esta oportunidade foi publicada originalmente no ${platform}. A candidatura é feita na plataforma de origem.`,
+    /** Cadastro manual de vaga externa (achada em outro site) por quem está na comunidade. */
+    external: {
+      registerButton: "Cadastrar vaga externa",
+      registerTitle: "Cadastrar vaga externa",
+      registerDescription:
+        "Achou a vaga em outro site? Cadastre aqui: o Énóis lista e o botão leva direto para o link de origem.",
+      registerAction: "Cadastrar vaga",
+      registerError: "Não foi possível cadastrar a vaga externa.",
+      url: "Link da vaga",
+      urlHint: "A candidatura acontece na plataforma de origem, direto neste link.",
+      locationPlaceholder: "Remoto ou cidade",
+      myTitle: "Minhas vagas externas",
+      myEmpty: "Você ainda não cadastrou vagas externas.",
+      delete: "Excluir",
+      deleteConfirm:
+        "Excluir esta vaga externa? Ela deixa de aparecer para todo mundo — a vaga original continua no site de origem.",
+    },
     seoTitle: "Vagas · Énóis",
     title: "Oportunidades",
     description: "Vagas filtradas por nível, localização, tipo e habilidades.",
