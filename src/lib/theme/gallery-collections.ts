@@ -3,7 +3,7 @@ import type { GalleryThemePackage } from "@/types/lib/theme/gallery-theme-packag
 import type { ThemeCollection } from "@/types/preferences/theme-collection";
 import type { PaletteSpec } from "@/types/preferences/theme-collection-palette-spec";
 
-import { hexToRgb, readableForeground } from "./color";
+import { hexToRgb, readableForeground, rgbToHex } from "./color";
 
 /**
  * Temas da COMUNIDADE como coleções do motor de temas.
@@ -61,11 +61,16 @@ export function resolveGalleryCollection(id: string | null | undefined): ThemeCo
 }
 
 /**
- * Pacote → `ThemeCollection`. O pacote é um SUBCONJUNTO da paleta da casa; o que falta
- * é derivado aqui (`onPrimary` pela luminância do destaque, `muted` misturando superfície
- * e fundo, `text.date` a partir do texto sutil). Como o pacote vale para um modo só
- * (`modeDefault`), os mesmos tokens vão para claro e escuro — o tema não muda de cara ao
- * trocar o modo, que é o comportamento dos temas da casa presos a um modo.
+ * Pacote → `ThemeCollection`. O pacote é um SUBCONJUNTO da paleta da casa; o que ele não
+ * declara é derivado aqui (`onPrimary` pela luminância do destaque, `muted` misturando
+ * superfície e fundo, `text.date` a partir do texto sutil). Declaração do autor tem prioridade
+ * sobre a derivação: `muted` é o fundo do item selecionado da navegação (`--surface-2`), e um
+ * tema que escolhe essa cor espera vê-la na tela — derivação é plano B para o pacote antigo,
+ * não substituição do que foi publicado.
+ *
+ * Como o pacote vale para um modo só (`modeDefault`), os mesmos tokens vão para claro e escuro
+ * — o tema não muda de cara ao trocar o modo, que é o comportamento dos temas da casa presos a
+ * um modo.
  */
 export function buildGalleryCollection(theme: GalleryThemePackage): ThemeCollection {
   const pkg = parsePackage(theme.packageJson);
@@ -78,19 +83,20 @@ export function buildGalleryCollection(theme: GalleryThemePackage): ThemeCollect
   const primary = colorOr(raw.primary, "#7c3aed");
   const strong = colorOr(raw.text?.strong, dark ? "#f8f8f2" : "#111111");
   const subtle = colorOr(raw.text?.subtle, strong);
-  const onPrimary = readableForeground(hexToRgb(primary), 0).css;
+  const onPrimary = colorOr(raw.onPrimary, readableForeground(hexToRgb(primary), 0).css);
 
   const spec: PaletteSpec = {
     background,
     surface,
-    // "Blocos alternativos/hovers": uma mistura sólida entre superfície e fundo. Hex (e não
-    // color-mix) porque a expansão dos tokens faz matemática de contraste com esse valor.
-    muted: mixHex(surface, background, 0.6),
+    // "Blocos alternativos/hovers": sem declaração, uma mistura sólida entre superfície e
+    // fundo. Hex (e não color-mix) porque a expansão dos tokens faz matemática de contraste
+    // com esse valor.
+    muted: colorOr(raw.muted, mixHex(surface, background, 0.6)),
     border,
     primary,
     onPrimary,
     gradient: typeof raw.gradient === "string" ? raw.gradient : undefined,
-    text: { strong, subtle, date: subtle },
+    text: { strong, subtle, date: colorOr(raw.text?.date, subtle) },
   };
 
   const tokens = palette(spec);
@@ -115,10 +121,12 @@ function parsePackage(json: string): {
   palette?: {
     background?: string;
     surface?: string;
+    muted?: string;
     border?: string;
     primary?: string;
+    onPrimary?: string;
     gradient?: string;
-    text?: { strong?: string; subtle?: string };
+    text?: { strong?: string; subtle?: string; date?: string };
   };
 } {
   try {
@@ -136,14 +144,22 @@ function colorOr(value: string | undefined, fallback: string): string {
   return typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value) ? value : fallback;
 }
 
-/** Mistura `p` de `a` com `1-p` de `b`, canal a canal. */
+/**
+ * Mistura `p` de `a` com `1-p` de `b`, canal a canal.
+ *
+ * `hexToRgb` devolve canal em 0–1 (não 0–255), então a média é em 0–1 e quem volta para hex
+ * é `rgbToHex`. Misturar em 0–255 aqui arredondava todo canal para 0 e todo tema publicado
+ * ganhava `--muted`/`--surface-2` em `#000000` — o item selecionado da navegação em preto.
+ */
 function mixHex(a: string, b: string, p: number): string {
   const first = hexToRgb(a);
   const second = hexToRgb(b);
-  const channel = (x: number, y: number) => Math.round(x * p + y * (1 - p));
-  return `#${[channel(first.r, second.r), channel(first.g, second.g), channel(first.b, second.b)]
-    .map((value) => value.toString(16).padStart(2, "0"))
-    .join("")}`;
+  const channel = (x: number, y: number) => x * p + y * (1 - p);
+  return rgbToHex({
+    r: channel(first.r, second.r),
+    g: channel(first.g, second.g),
+    b: channel(first.b, second.b),
+  });
 }
 
 function readStored(): (GalleryThemePackage & { storedAt: number })[] {
