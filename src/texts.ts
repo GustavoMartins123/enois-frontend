@@ -2039,7 +2039,10 @@ export const texts = {
     applicationsCount: (count: number) =>
       `${count} candidatura${count === 1 ? "" : "s"} recebida${count === 1 ? "" : "s"}`,
     deleteJob: "Excluir vaga",
-    deleteConfirm: "Excluir esta vaga? As candidaturas recebidas também são removidas.",
+    abandonWarning: (count: number) =>
+      `Vaga excluída com ${count} candidato(s) sem resposta. Isso reduz a sua credibilidade.`,
+    deleteConfirm:
+      "Excluir esta vaga? As candidaturas recebidas também são removidas. Se houver candidatos sem resposta, excluir reduz a sua credibilidade.",
     myJobs: "Minhas vagas",
     myApplications: "Minhas candidaturas",
     myJobsEmpty: "Você ainda não publicou vagas.",

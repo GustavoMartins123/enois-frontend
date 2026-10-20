@@ -1,10 +1,11 @@
 import type { PageResponse } from "@/types/application/api/page-response";
 import type { StatusResponse } from "@/types/application/api/status-response";
+import type { CreateExternalJobInput } from "@/types/application/job/create-external-job-input";
 import type { CreateJobInput } from "@/types/application/job/create-job-input";
+import type { DeleteJobResult } from "@/types/application/job/delete-job-result";
 import type { Job } from "@/types/application/job/job";
 import type { JobApplication, JobApplicationInput } from "@/types/application/job/job-application";
 import type { ListJobsParams } from "@/types/application/job/list-jobs-params";
-
 import type { MyApplication } from "@/types/application/job/my-application";
 
 import { api, buildQuery } from "../api-client";
@@ -41,7 +42,16 @@ export const jobsApi = {
 
   update: (jobId: string, data: CreateJobInput) => api.put<Job>(`/jobs/${jobId}`, data),
 
-  remove: (jobId: string) => api.delete<void>(`/jobs/${jobId}`),
+  remove: (jobId: string) => api.delete<DeleteJobResult>(`/jobs/${jobId}`),
+
+  /** Cadastra uma vaga EXTERNA (achada em outro site): o Énóis lista e o botão vai ao link. */
+  submitExternal: (data: CreateExternalJobInput) => api.post<Job>("/jobs/external", data),
+
+  /** As vagas externas que EU cadastrei (com o direito de excluir). */
+  myExternal: () => api.get<Job[]>("/jobs/external/mine"),
+
+  /** Exclui uma vaga externa cadastrada por mim. */
+  removeExternal: (id: string) => api.delete<void>(`/jobs/external/${id}`),
 
   /** Encerra o processo seletivo: para de aceitar candidatura e preserva as recebidas. */
   close: (jobId: string) => api.post<Job>(`/jobs/${jobId}/close`),
