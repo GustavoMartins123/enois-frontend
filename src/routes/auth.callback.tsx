@@ -117,6 +117,11 @@ function errorMessage(code: string): string {
   if (normalized.includes("ACCESS_DENIED") || normalized.includes("USER_CANCELLED")) {
     return texts.auth.social.cancelled;
   }
+  // State vencido/consumido (passou dos 15 min no LinkedIn, voltar no navegador ou tentar de
+  // novo): a saida e repetir o clique — sempre funciona na primeira.
+  if (normalized.includes("INVALID_OAUTH_STATE") || normalized.includes("OAUTH_STATE_EXPIRED")) {
+    return texts.auth.social.stateExpired;
+  }
   if (normalized.includes("ACCOUNT_EXISTS_LINK_REQUIRED")) {
     return texts.auth.social.accountExists;
   }

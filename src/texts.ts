@@ -397,6 +397,9 @@ export const texts = {
       pendingApproval:
         "O login com Google está aguardando aprovação do OAuth e ainda não foi liberado. Entre com e-mail e senha por enquanto.",
       callbackError: "Não foi possível concluir o login social. Tente novamente.",
+      /** O convite de login social expira em 15 min e é de uso único (voltar/reusar cai aqui). */
+      stateExpired:
+        "Esta tentativa de login expirou ou já foi usada. Feche este aviso, volte para a tela de entrada e clique no botão de novo — funciona na primeira tentativa.",
       /** O LinkedIn recusou publicar em nome da pessoa: produto "Share on LinkedIn" pendente no app. */
       linkedinScope:
         "O LinkedIn ainda não liberou a publicação por este aplicativo. Nada mudou na sua conta — você pode reconectar mais tarde; o time já está vendo isso.",
