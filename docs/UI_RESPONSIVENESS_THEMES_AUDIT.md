@@ -674,3 +674,13 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Nenhuma correção de app.**
 - **Próximo lote:** `/moderador` e `/moderacao` a 390px (leitura) e as páginas-chave protegidas a
   1280 com os 60 temas.
+
+## Rodada 45 — 2026-10-19 23:1x
+
+- **Sessão válida** durante o lote (admin `aminadojava`).
+- **Lote B protegido:** `/moderador` a 390×844, 60 temas × claro/escuro =
+  **120 verificações, ZERO problemas** — painel de moderação (abas, cards e filas) legível e sem
+  overflow em todos os temas.
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/moderacao` e `/penalidades` a 390px; depois as páginas-chave protegidas a
+  1280 com os 60 temas.
