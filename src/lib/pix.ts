@@ -1,15 +1,25 @@
 /**
- * Pix "copia e cola" (BR Code EMV) da doação.
+ * Pix "copia e cola" (BR Code EMV) da doação — estático, SEM expiração.
  *
- * Os dados são da The Kof Foundation (a mesma empresa que mantém o Énóis) e o payload
- * é gerado EXATAMENTE pelo mesmo algoritmo da página de apoiar do Kof (TLV + CRC16-CCITT):
- * a chave entra como está (CNPJ formatado), sem valor (a pessoa escolhe quanto doa).
+ * O BR Code ESTÁTICO não tem data de validade: quem leva a cobrança é o próprio app do banco, e o
+ * payload não carrega vencimento (nada de campos de cobrança/due date). O que fazia o código ser
+ * recusado como "expirado" era a CHAVE: o campo 01 do bloco 26 tem que ser a chave exatamente como
+ * registrada no Pix — para CNPJ, os 14 DÍGITOS —, e não o CNPJ formatado com pontos e barra.
+ *
+ * O nome exibido é "Apoie o Énóis"; no payload o campo 59 segue a regra do EMV (maiúsculas, sem
+ * acento), então vira "APOIE O ENOIS".
  */
 
+/** CNPJ como aparece na tela (formatado). */
 export const PIX_KEY = "51.839.682/0001-61";
-export const PIX_NAME = "THE KOF FOUNDATION";
+
+/** A chave que vai NO PAYLOAD: só os dígitos, como registrada no Pix. */
+export const PIX_KEY_DIGITS = "51839682000161";
+
+/** Nome do recebedor (a tela mostra com acento; o EMV recebe a versão limpa). */
+export const PIX_NAME = "Apoie o Énóis";
 export const PIX_CITY = "SAO PAULO";
-export const PIX_TXID = "KOFDONATION";
+export const PIX_TXID = "APOIEENOIS";
 
 /** Campo TLV: id + tamanho em 2 dígitos + valor. */
 function tlv(id: string, value: string): string {
@@ -39,9 +49,12 @@ function limpar(valor: string, max: number): string {
     .trim();
 }
 
-/** O payload do BR Code (copia e cola), idêntico ao da página de apoiar do Kof. */
+/**
+ * O payload do BR Code (copia e cola). Estático de propósito: sem valor (a pessoa escolhe quanto
+ * doar) e sem vencimento — o mesmo código vale para sempre.
+ */
 export function pixCopiaECola(): string {
-  const conta = tlv("26", tlv("00", "br.gov.bcb.pix") + tlv("01", PIX_KEY));
+  const conta = tlv("26", tlv("00", "br.gov.bcb.pix") + tlv("01", PIX_KEY_DIGITS));
   const txid = tlv("62", tlv("05", PIX_TXID));
   const base =
     tlv("00", "01") +
@@ -53,5 +66,8 @@ export function pixCopiaECola(): string {
     tlv("59", limpar(PIX_NAME, 25)) +
     tlv("60", limpar(PIX_CITY, 15)) +
     txid;
-  return `${base}6304${crc16(base)}`;
+  // O CRC cobre o payload INTEIRO, incluindo o próprio campo 63/04 — calcular só sobre o "base"
+  // (sem o 6304) entrega um código que o app do banco recusa.
+  const comCrc = `${base}6304`;
+  return comCrc + crc16(comCrc);
 }

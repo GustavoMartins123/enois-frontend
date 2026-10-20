@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
-import QRCode from "qrcode";
+
 import { Copy, Heart, X } from "lucide-react";
+import QRCode from "qrcode";
 
 import { PIX_KEY, pixCopiaECola } from "@/lib/pix";
 
@@ -8,9 +9,9 @@ import { useToast } from "@/components/ui/toast";
 
 /**
  * O convite de doação no topo da home: o Énóis é gratuito e livre, e quem quiser ajuda
- * a manter assim com Pix. A chave é da The Kof Foundation (a mesma empresa) — o QR é o
- * mesmo BR Code da página de apoiar (kof-foundation.github.io/apoiar). Só Pix, como foi
- * pedido; o recolher fica guardado, mas volta sempre para quem não fechou.
+ * a manter assim com Pix. A chave é do Apoie o Énóis — o QR é o mesmo BR Code ESTÁTICO do
+ * cartão de apoio (sem vencimento). Só Pix, como foi pedido; o recolher fica guardado,
+ * mas volta sempre para quem não fechou.
  */
 const DISMISS_KEY = "apoie-enois-fechado";
 
@@ -27,7 +28,11 @@ export function ApoieBanner() {
 
   useEffect(() => {
     if (!aberto || qr) return;
-    QRCode.toDataURL(pixCopiaECola(), { width: 320, margin: 1, color: { dark: "#0b0d12", light: "#ffffff" } })
+    QRCode.toDataURL(pixCopiaECola(), {
+      width: 320,
+      margin: 1,
+      color: { dark: "#0b0d12", light: "#ffffff" },
+    })
       .then(setQr)
       .catch(() => setQr(null));
   }, [aberto, qr]);
@@ -51,8 +56,8 @@ export function ApoieBanner() {
         <Heart className="h-4 w-4 shrink-0 text-primary" />
 
         <p className="min-w-0 flex-1 text-sm text-text-strong">
-          Ajude o Énóis a permanecer <span className="font-semibold">sempre gratuito e livre para todos</span>{" "}
-          com uma doação.
+          Ajude o Énóis a permanecer{" "}
+          <span className="font-semibold">sempre gratuito e livre para todos</span> com uma doação.
         </p>
 
         <button
@@ -81,17 +86,17 @@ export function ApoieBanner() {
           <div className="grid gap-5 rounded-2xl border border-border-soft bg-surface-card p-5 sm:grid-cols-[auto_minmax(0,1fr)] sm:items-center sm:p-6">
             <div className="mx-auto w-fit rounded-xl bg-white p-2">
               {qr ? (
-                <img src={qr} alt="QR Code Pix da The Kof Foundation" className="h-44 w-44" />
+                <img src={qr} alt="QR Code Pix do Apoie o Énóis" className="h-44 w-44" />
               ) : (
                 <div className="h-44 w-44 animate-pulse rounded bg-muted" />
               )}
-              <p className="mt-1 text-center text-[11px] text-gray-500">The Kof Foundation</p>
+              <p className="mt-1 text-center text-[11px] text-gray-500">Apoie o Énóis</p>
             </div>
 
             <div className="space-y-3">
               <p className="text-sm text-text-strong">
-                Escaneia o QR no app do banco — ou copia o código Pix abaixo e cola na opção
-                "Pix copia e cola". A chave é o CNPJ da fundação.
+                Escaneia o QR no app do banco — ou copia o código Pix abaixo e cola na opção "Pix
+                copia e cola". A chave é o CNPJ do Apoie o Énóis.
               </p>
 
               <div className="flex items-start gap-2">
@@ -110,8 +115,8 @@ export function ApoieBanner() {
               </div>
 
               <p className="text-xs text-text-subtle">
-                Chave (CNPJ): <span className="font-mono">{PIX_KEY}</span> · The Kof Foundation ·
-                São Paulo. Qualquer valor ajuda — de coração, obrigado!
+                Chave (CNPJ): <span className="font-mono">{PIX_KEY}</span> · Apoie o Énóis · São
+                Paulo. Qualquer valor ajuda — de coração, obrigado!
               </p>
             </div>
           </div>
