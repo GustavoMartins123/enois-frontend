@@ -6,6 +6,7 @@ import type { CorporateProfileView } from "@/types/application/corporate/corpora
 import { ArrowLeft, Building2, Globe, Link as LinkIcon, MapPin, UserX } from "lucide-react";
 
 import { ApiError, corporateApi, feedApi } from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
 import { useAuth } from "@/lib/use-auth";
 
 import { Button } from "@/components/ui/button";
@@ -108,7 +109,7 @@ function ProfessionalProfile() {
             />
           ) : data.banner ? (
             <div className="h-36 w-full bg-surface-2 sm:h-44">
-              <img src={data.banner} alt="" className="h-full w-full object-cover" />
+              <img src={resolveCdnUrl(data.banner)} alt="" className="h-full w-full object-cover" />
             </div>
           ) : (
             <div className="h-24 w-full bg-gradient-to-r from-primary/20 via-surface-2 to-surface-1 sm:h-28" />
@@ -132,11 +133,13 @@ function ProfessionalProfile() {
             </div>
 
             <div className="space-y-1">
-              <h1 className="text-2xl font-semibold tracking-tight">{data.name}</h1>
+              <h1 className="break-words text-2xl font-semibold tracking-tight">{data.name}</h1>
 
               <p className="text-sm text-text-subtle">@{data.username}</p>
 
-              {data.headline && <p className="text-sm text-text-strong">{data.headline}</p>}
+              {data.headline && (
+                <p className="break-words text-sm text-text-strong">{data.headline}</p>
+              )}
             </div>
 
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-text-subtle">
@@ -155,7 +158,9 @@ function ProfessionalProfile() {
               )}
             </div>
 
-            {data.bio && <p className="whitespace-pre-line text-sm text-text-strong">{data.bio}</p>}
+            {data.bio && (
+              <p className="whitespace-pre-line break-words text-sm text-text-strong">{data.bio}</p>
+            )}
 
             {links.length > 0 && (
               <ul className="space-y-1">
