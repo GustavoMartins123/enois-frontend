@@ -606,6 +606,18 @@ export const texts = {
     forbidden: "Sessão sem acesso de admin para esta fila.",
   },
   personalization: {
+    likeTitle: "O que quero ver",
+    likeHint:
+      "Escolha os assuntos que você gostaria de encontrar com mais frequência. Eles ganham prioridade nas recomendações — o resto do feed continua aí.",
+    dislikeTitle: "Assuntos que não gosto",
+    dislikeHint:
+      "Assuntos que você prefere evitar nos seus feeds personalizados. Publicações sem assunto nunca são escondidas, e o conteúdo continua no ar para as outras pessoas.",
+    modulesTitle: "O que não quero ver",
+    modulesHint:
+      "Desative as áreas do Énóis que não fazem parte da experiência que você deseja. Nada é apagado — some só da sua interface, e volta quando reativar.",
+    eventsDependency: "Desativar Eventos desativa também o Acontecendo agora.",
+    saved: "Preferências salvas.",
+    saveError: "Não foi possível salvar as preferências. Tente novamente.",
     moduleOffTitle: "Esta área está desativada nas suas preferências",
     moduleOffBody:
       "Você desativou este módulo em Uso saudável. Nada foi apagado: os dados continuam guardados e voltam quando você reativar.",
