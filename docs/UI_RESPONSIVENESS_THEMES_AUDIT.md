@@ -646,3 +646,13 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Verificação em produção:** `/games` a 390px agora mede **`sw=390`/`cw=390`**, zero elementos
   passando da viewport; screenshot `/tmp/pwtest/games-mobile-fixed.png` com os cards em coluna
   única.
+
+## Rodada 42 — 2026-10-19 22:4x
+
+- **Sessão protegida expirada.** Lote público.
+- **`/games` a 390×844:** 60 temas × claro/escuro = **120 verificações, ZERO problemas** depois
+  da correção do grid (`grid-cols-1` + `min-w-0`, commit `aabf476`). Confirma que o catálogo
+  deixou de esticar e que a correção vale nos 60 temas.
+- **Nenhuma correção nova.**
+- **Próximo lote:** `/bloqueados` e rotas de jogos por criador quando houver sessão; no público,
+  `/servicos`, `/privacidade`, `/termos` e `/diretrizes`.
