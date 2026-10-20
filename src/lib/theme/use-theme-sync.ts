@@ -9,6 +9,7 @@ import { getSessionToken } from "@/lib/api-client";
 
 import { applyThemeSettings } from "./apply-theme";
 import { resolveThemeCollection } from "./build-collection-css";
+import { isGalleryCollectionId } from "./gallery-collections";
 import { syncThemeCollection } from "./sync-theme-collection";
 
 /**
@@ -95,8 +96,11 @@ function useThemeAccountSync(): void {
       setThemeCollection(fromAccount);
       return;
     }
-    if (themeCollection) {
+    if (themeCollection && !isGalleryCollectionId(themeCollection)) {
       // O daqui é mais novo (ou a conta não tem nada): sobe, em vez de aceitar o valor antigo.
+      // Tema da COMUNIDADE não sobe: o pacote mora neste navegador (o backend só conhece os
+      // temas da casa e recusaria o id) — a escolha vale localmente, e o próximo tema da casa
+      // que a pessoa escolher volta a sincronizar.
       void syncThemeCollection(themeCollection);
     }
   }, [token, data, themeCollection, themeCollectionUpdatedAt, setThemeCollection]);
