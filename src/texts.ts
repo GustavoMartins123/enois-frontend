@@ -2887,6 +2887,7 @@ export const texts = {
   },
   exportTheme: "Exportar tema",
   importTheme: "Importar tema",
+  sellTheme: "Vender no marketplace",
   exportFileName: "tema.enois-theme",
   importError: "Arquivo inválido — use um .enois-theme exportado do Énóis.",
   /** Arquivo de uma versão mais nova do app: recusar explicando é melhor que importar pela metade. */
