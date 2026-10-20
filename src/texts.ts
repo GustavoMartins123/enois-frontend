@@ -743,6 +743,7 @@ export const texts = {
       sanctions: "Penalidades",
       linkedAccounts: "Contas vinculadas",
       healthyUsage: "Uso saudável",
+      apoie: "Apoie o Énóis",
       security: "Segurança e verificação",
       deleteAccount: "Excluir conta",
       logout: "Sair",

@@ -9,6 +9,7 @@ import type { ActiveIdentity } from "@/types/lib/active-identity";
 import {
   Flag,
   Gavel,
+  Heart,
   HeartPulse,
   KeyRound,
   LifeBuoy,
@@ -122,11 +123,13 @@ export function AccountMenu({ profile }: AccountMenuProps) {
           </button>
         </PopoverTrigger>
 
+        {/* A aba já tem MUITAS opções: a lista rola por dentro (flex + min-h-0), com o cabeçalho
+            e as ações destrutivas sempre à vista. Sem isso o fim do menu ficava fora da tela. */}
         <PopoverContent
           align="end"
-          className="w-[min(calc(100vw-2rem),17rem)] overflow-hidden rounded-2xl border-border-soft bg-surface-card p-0 shadow-card"
+          className="flex max-h-[min(80dvh,44rem)] w-[min(calc(100vw-2rem),17rem)] flex-col overflow-hidden rounded-2xl border-border-soft bg-surface-card p-0 shadow-card"
         >
-          <div className="flex items-center gap-3 border-b border-border-soft px-4 py-3">
+          <div className="flex shrink-0 items-center gap-3 border-b border-border-soft px-4 py-3">
             <UserAvatar
               frame={profile.avatarFrame}
               src={profile.avatar}
@@ -172,7 +175,7 @@ export function AccountMenu({ profile }: AccountMenuProps) {
             </div>
           )}
 
-          <div className="py-1">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain py-1">
             <Link
               to="/perfil/$username"
               params={{ username: profile.username }}
@@ -263,9 +266,15 @@ export function AccountMenu({ profile }: AccountMenuProps) {
             </Link>
 
             <PushToggle onClose={() => setMenuOpen(false)} />
+
+            <Link to="/apoiar" onClick={() => setMenuOpen(false)} className={ITEM_CLASS}>
+              <Heart className="h-4 w-4 text-primary" />
+
+              <span className="text-primary">{texts.account.menu.apoie}</span>
+            </Link>
           </div>
 
-          <div className="border-t border-border-soft py-1">
+          <div className="shrink-0 border-t border-border-soft py-1">
             <button
               type="button"
               onClick={openDeleteAccount}
@@ -277,7 +286,7 @@ export function AccountMenu({ profile }: AccountMenuProps) {
             </button>
           </div>
 
-          <div className="border-t border-border-soft py-1">
+          <div className="shrink-0 border-t border-border-soft py-1">
             <button
               type="button"
               onClick={handleLogout}
