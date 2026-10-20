@@ -614,3 +614,14 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Nenhuma correção de app.**
 - **Próximo lote:** `/servicos`, `/privacidade`, `/termos` e `/diretrizes` no mesmo formato;
   quando houver sessão, `/mentoria`, `/rede` e `/jogos-diarios`.
+
+## Rodada 40 — 2026-10-19 21:4x
+
+- **Sessão renovada** (cópia do Firefox 21:18) e válida durante o lote.
+- **Lote B protegido:** `/mentoria` e `/rede` a 390×844, 60 temas × claro/escuro =
+  **240 verificações**. **239 limpas**; a única acusação (`frutiger-aero` claro em `/mentoria`,
+  vars vazias) foi **corrida de renderização** — reexecutada com espera maior: `--background`
+  em gradiente, `--primary #0aa1a8` e **`sw=cw=390`**. Nenhum bug real.
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/jogos-diarios`, `/games/painel` e `/bloqueados` a 390px; depois as rotas de
+  jogos por criador e as páginas-chave protegidas a 1280.
