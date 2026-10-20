@@ -14,9 +14,11 @@ import { Route as TermosRouteImport } from './routes/termos'
 import { Route as TemasRouteImport } from './routes/temas'
 import { Route as SuporteRouteImport } from './routes/suporte'
 import { Route as SobreRouteImport } from './routes/sobre'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as ServicosRouteImport } from './routes/servicos'
 import { Route as SegurancaRouteImport } from './routes/seguranca'
 import { Route as SalvosRouteImport } from './routes/salvos'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as RedeRouteImport } from './routes/rede'
 import { Route as ProfissionalRouteImport } from './routes/profissional'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
@@ -26,7 +28,9 @@ import { Route as ModeracaoRouteImport } from './routes/moderacao'
 import { Route as MentoriaRouteImport } from './routes/mentoria'
 import { Route as MensagensRouteImport } from './routes/mensagens'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
+import { Route as ManifestDotwebmanifestRouteImport } from './routes/manifest[.]webmanifest'
 import { Route as JogosDiariosRouteImport } from './routes/jogos-diarios'
+import { Route as HumansDottxtRouteImport } from './routes/humans[.]txt'
 import { Route as GruposRouteImport } from './routes/grupos'
 import { Route as GamesRouteImport } from './routes/games'
 import { Route as FeedRouteImport } from './routes/feed'
@@ -87,6 +91,11 @@ const SobreRoute = SobreRouteImport.update({
   path: '/sobre',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServicosRoute = ServicosRouteImport.update({
   id: '/servicos',
   path: '/servicos',
@@ -100,6 +109,11 @@ const SegurancaRoute = SegurancaRouteImport.update({
 const SalvosRoute = SalvosRouteImport.update({
   id: '/salvos',
   path: '/salvos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RedeRoute = RedeRouteImport.update({
@@ -147,9 +161,19 @@ const MarketplaceRoute = MarketplaceRouteImport.update({
   path: '/marketplace',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ManifestDotwebmanifestRoute = ManifestDotwebmanifestRouteImport.update({
+  id: '/manifest.webmanifest',
+  path: '/manifest.webmanifest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JogosDiariosRoute = JogosDiariosRouteImport.update({
   id: '/jogos-diarios',
   path: '/jogos-diarios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HumansDottxtRoute = HumansDottxtRouteImport.update({
+  id: '/humans.txt',
+  path: '/humans.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GruposRoute = GruposRouteImport.update({
@@ -340,7 +364,9 @@ export interface FileRoutesByFullPath {
   '/feed': typeof FeedRoute
   '/games': typeof GamesRouteWithChildren
   '/grupos': typeof GruposRouteWithChildren
+  '/humans.txt': typeof HumansDottxtRoute
   '/jogos-diarios': typeof JogosDiariosRoute
+  '/manifest.webmanifest': typeof ManifestDotwebmanifestRoute
   '/marketplace': typeof MarketplaceRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
@@ -350,9 +376,11 @@ export interface FileRoutesByFullPath {
   '/privacidade': typeof PrivacidadeRoute
   '/profissional': typeof ProfissionalRoute
   '/rede': typeof RedeRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
   '/servicos': typeof ServicosRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/suporte': typeof SuporteRoute
   '/temas': typeof TemasRoute
@@ -394,7 +422,9 @@ export interface FileRoutesByTo {
   '/feed': typeof FeedRoute
   '/games': typeof GamesRouteWithChildren
   '/grupos': typeof GruposRouteWithChildren
+  '/humans.txt': typeof HumansDottxtRoute
   '/jogos-diarios': typeof JogosDiariosRoute
+  '/manifest.webmanifest': typeof ManifestDotwebmanifestRoute
   '/marketplace': typeof MarketplaceRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
@@ -404,9 +434,11 @@ export interface FileRoutesByTo {
   '/privacidade': typeof PrivacidadeRoute
   '/profissional': typeof ProfissionalRoute
   '/rede': typeof RedeRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
   '/servicos': typeof ServicosRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/suporte': typeof SuporteRoute
   '/temas': typeof TemasRoute
@@ -449,7 +481,9 @@ export interface FileRoutesById {
   '/feed': typeof FeedRoute
   '/games': typeof GamesRouteWithChildren
   '/grupos': typeof GruposRouteWithChildren
+  '/humans.txt': typeof HumansDottxtRoute
   '/jogos-diarios': typeof JogosDiariosRoute
+  '/manifest.webmanifest': typeof ManifestDotwebmanifestRoute
   '/marketplace': typeof MarketplaceRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
@@ -459,9 +493,11 @@ export interface FileRoutesById {
   '/privacidade': typeof PrivacidadeRoute
   '/profissional': typeof ProfissionalRoute
   '/rede': typeof RedeRoute
+  '/robots.txt': typeof RobotsDottxtRoute
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
   '/servicos': typeof ServicosRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/suporte': typeof SuporteRoute
   '/temas': typeof TemasRoute
@@ -505,7 +541,9 @@ export interface FileRouteTypes {
     | '/feed'
     | '/games'
     | '/grupos'
+    | '/humans.txt'
     | '/jogos-diarios'
+    | '/manifest.webmanifest'
     | '/marketplace'
     | '/mensagens'
     | '/mentoria'
@@ -515,9 +553,11 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/profissional'
     | '/rede'
+    | '/robots.txt'
     | '/salvos'
     | '/seguranca'
     | '/servicos'
+    | '/sitemap.xml'
     | '/sobre'
     | '/suporte'
     | '/temas'
@@ -559,7 +599,9 @@ export interface FileRouteTypes {
     | '/feed'
     | '/games'
     | '/grupos'
+    | '/humans.txt'
     | '/jogos-diarios'
+    | '/manifest.webmanifest'
     | '/marketplace'
     | '/mensagens'
     | '/mentoria'
@@ -569,9 +611,11 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/profissional'
     | '/rede'
+    | '/robots.txt'
     | '/salvos'
     | '/seguranca'
     | '/servicos'
+    | '/sitemap.xml'
     | '/sobre'
     | '/suporte'
     | '/temas'
@@ -613,7 +657,9 @@ export interface FileRouteTypes {
     | '/feed'
     | '/games'
     | '/grupos'
+    | '/humans.txt'
     | '/jogos-diarios'
+    | '/manifest.webmanifest'
     | '/marketplace'
     | '/mensagens'
     | '/mentoria'
@@ -623,9 +669,11 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/profissional'
     | '/rede'
+    | '/robots.txt'
     | '/salvos'
     | '/seguranca'
     | '/servicos'
+    | '/sitemap.xml'
     | '/sobre'
     | '/suporte'
     | '/temas'
@@ -668,7 +716,9 @@ export interface RootRouteChildren {
   FeedRoute: typeof FeedRoute
   GamesRoute: typeof GamesRouteWithChildren
   GruposRoute: typeof GruposRouteWithChildren
+  HumansDottxtRoute: typeof HumansDottxtRoute
   JogosDiariosRoute: typeof JogosDiariosRoute
+  ManifestDotwebmanifestRoute: typeof ManifestDotwebmanifestRoute
   MarketplaceRoute: typeof MarketplaceRoute
   MensagensRoute: typeof MensagensRoute
   MentoriaRoute: typeof MentoriaRoute
@@ -678,9 +728,11 @@ export interface RootRouteChildren {
   PrivacidadeRoute: typeof PrivacidadeRoute
   ProfissionalRoute: typeof ProfissionalRoute
   RedeRoute: typeof RedeRoute
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
   SalvosRoute: typeof SalvosRoute
   SegurancaRoute: typeof SegurancaRoute
   ServicosRoute: typeof ServicosRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SobreRoute: typeof SobreRoute
   SuporteRoute: typeof SuporteRoute
   TemasRoute: typeof TemasRoute
@@ -734,6 +786,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SobreRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/servicos': {
       id: '/servicos'
       path: '/servicos'
@@ -753,6 +812,13 @@ declare module '@tanstack/react-router' {
       path: '/salvos'
       fullPath: '/salvos'
       preLoaderRoute: typeof SalvosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/rede': {
@@ -818,11 +884,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MarketplaceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/manifest.webmanifest': {
+      id: '/manifest.webmanifest'
+      path: '/manifest.webmanifest'
+      fullPath: '/manifest.webmanifest'
+      preLoaderRoute: typeof ManifestDotwebmanifestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/jogos-diarios': {
       id: '/jogos-diarios'
       path: '/jogos-diarios'
       fullPath: '/jogos-diarios'
       preLoaderRoute: typeof JogosDiariosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/humans.txt': {
+      id: '/humans.txt'
+      path: '/humans.txt'
+      fullPath: '/humans.txt'
+      preLoaderRoute: typeof HumansDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/grupos': {
@@ -1166,7 +1246,9 @@ const rootRouteChildren: RootRouteChildren = {
   FeedRoute: FeedRoute,
   GamesRoute: GamesRouteWithChildren,
   GruposRoute: GruposRouteWithChildren,
+  HumansDottxtRoute: HumansDottxtRoute,
   JogosDiariosRoute: JogosDiariosRoute,
+  ManifestDotwebmanifestRoute: ManifestDotwebmanifestRoute,
   MarketplaceRoute: MarketplaceRoute,
   MensagensRoute: MensagensRoute,
   MentoriaRoute: MentoriaRoute,
@@ -1176,9 +1258,11 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacidadeRoute: PrivacidadeRoute,
   ProfissionalRoute: ProfissionalRoute,
   RedeRoute: RedeRoute,
+  RobotsDottxtRoute: RobotsDottxtRoute,
   SalvosRoute: SalvosRoute,
   SegurancaRoute: SegurancaRoute,
   ServicosRoute: ServicosRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   SobreRoute: SobreRoute,
   SuporteRoute: SuporteRoute,
   TemasRoute: TemasRoute,
