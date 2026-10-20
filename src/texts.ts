@@ -397,6 +397,12 @@ export const texts = {
       pendingApproval:
         "O login com Google está aguardando aprovação do OAuth e ainda não foi liberado. Entre com e-mail e senha por enquanto.",
       callbackError: "Não foi possível concluir o login social. Tente novamente.",
+      /** O convite de login social expira em 15 min e é de uso único (voltar/reusar cai aqui). */
+      stateExpired:
+        "Esta tentativa de login expirou ou já foi usada. Feche este aviso, volte para a tela de entrada e clique no botão de novo — funciona na primeira tentativa.",
+      /** O LinkedIn recusou publicar em nome da pessoa: produto "Share on LinkedIn" pendente no app. */
+      linkedinScope:
+        "O LinkedIn ainda não liberou a publicação por este aplicativo. Nada mudou na sua conta — você pode reconectar mais tarde; o time já está vendo isso.",
       callbackLoading: "Concluindo o login...",
       callbackTitle: "Entrando · Énóis",
       cancelled: "Você cancelou o login. Nada foi alterado na sua conta.",
@@ -532,10 +538,19 @@ export const texts = {
           "Suas publicações no Énóis podem ir também para o seu feed do LinkedIn, com o link do post original.",
         toggle: "Publicar minhas publicações no LinkedIn",
         toggleHint: "Cada post novo vira um post no LinkedIn com o link do Énóis.",
+        lastShareOk: "Última tentativa: o LinkedIn aceitou · ",
+        lastShareFailed: (detail: string) =>
+          detail === "HTTP_401" || detail === "HTTP_403"
+            ? "A última tentativa não foi: o LinkedIn recusou a permissão — reconecte o LinkedIn e publique de novo. · "
+            : detail === "HTTP_422"
+              ? "A última tentativa não foi: o LinkedIn recusou o conteúdo do post. · "
+              : `A última tentativa não foi (${detail}) — reconecte o LinkedIn e publique de novo. · `,
         notReady: "Reconecte o LinkedIn para autorizar a publicação em seu nome.",
         serverKey:
           "A publicação no LinkedIn ainda não está disponível nesta instalação. Avise o time de suporte.",
         reconnect: "Reconectar LinkedIn",
+        reconnectHint:
+          'Se o LinkedIn mostrar “Ocorreu um erro”, o app do Énóis ainda não tem o produto "Share on LinkedIn" (w_member_social) aprovado. É uma aprovação do LinkedIn, não um problema da sua conta.',
         saved: "Preferência de sincronização salva.",
         promptTitle: "Sincronizar publicações com o LinkedIn?",
         promptBody:
@@ -635,6 +650,7 @@ export const texts = {
       moderator: "Painel de moderador",
       sanctions: "Penalidades",
       linkedAccounts: "Contas vinculadas",
+      healthyUsage: "Uso saudável",
       security: "Segurança e verificação",
       deleteAccount: "Excluir conta",
       logout: "Sair",
@@ -646,6 +662,24 @@ export const texts = {
       pushUnavailable: "Este dispositivo não suporta notificações no celular.",
       pushServerOff: "As notificações no celular ainda não estão disponíveis.",
       pushError: "Não foi possível ativar as notificações. Tente novamente.",
+    },
+    healthyUsage: {
+      title: "Uso saudável",
+      description:
+        "Defina um limite de tempo para receber um lembrete gentil de pausa enquanto usa o Énóis.",
+      switchLabel: "Ativar lembrete de pausa",
+      switchHint: "O contador roda em segundo plano nesta sessão; fechar o app zera o tempo.",
+      minutesLabel: "Lembrar depois de",
+      minutesUnit: "minutos",
+      minutesHint: "Escolha entre 1 e 240 minutos. O tempo configurado continua salvo.",
+      save: "Salvar",
+      saved: "Preferência de uso saudável salva.",
+      reminderTitle: "Hora de uma pausa",
+      reminderBody:
+        "Ops, acho que já passou um tempo que você tá scrollando. Vamos dar uma parada?",
+      noise:
+        "Ei, respira! Bebe uma água, olha pela janela e volta quando quiser. Eu também preciso de uma pausa. 🌿",
+      reminderCta: "Vou dar uma pausa",
     },
     changeEmail: {
       title: "Alterar e-mail",
@@ -1359,6 +1393,9 @@ export const texts = {
     avatarFallback: "Avatar",
     edit: {
       usernameTaken: "Este username já está em uso",
+      showRanking: "Mostrar o ranking no perfil",
+      showRankingHint:
+        "Desligue para não ver a seção de ranking quando abrir um perfil. Sua conta continua no ranking normalmente.",
       title: "Editar perfil",
       tabs: {
         info: "Informações",
@@ -1535,12 +1572,91 @@ export const texts = {
       view: "Ver página",
       saved: "Página salva.",
       error: "Não foi possível salvar agora.",
+      /** Upload de imagem do jogo/criador (a mensagem real do backend manda quando existe). */
+      uploadError: "Não foi possível enviar a imagem agora.",
+      uploadAvatar: "Trocar foto",
+      uploadCover: "Trocar capa",
+      removeAvatar: "Remover foto",
+      removeCover: "Remover capa",
+      avatarHint: "Sua foto na página de criador (o Énóis usa a do perfil se não houver).",
+      coverHint: "Capa do topo da sua página de criador.",
+      edit: "Editar",
+      analytics: "Números",
+      newUpdate: "Publicar novidade",
+      /** Os números de uso (gráfico + totais). */
+      analyticsGroup: {
+        title: "Números de uso",
+        plays: "Sessões",
+        players: "Pessoas distintas",
+        favorites: "Na biblioteca",
+        updates: "Novidades",
+        views: (total: number, days: number) =>
+          `${total} visualizações nos últimos ${days} dias`,
+        chartLabel: (days: number) => `Gráfico de visualizações por dia (${days} dias)`,
+        tooltip: (date: string, views: number, plays: number, players: number) =>
+          `${date}: ${views} visualizações · ${plays} partidas · ${players} pessoas`,
+        error: "Não foi possível carregar os números agora.",
+      },
+      newUpdateHint:
+        "Conte o que mudou nesta versão. Quem acompanha você recebe um aviso no Énóis.",
+      updateTitle: "Título da novidade",
+      updateTitlePlaceholder: "Versão 1.2 no ar",
+      updateBody: "O que mudou",
+      updateBodyPlaceholder: "Corrigi o bug do save, adicionei uma fase nova…",
+      updateVersion: "Versão (opcional)",
+      publishUpdate: "Publicar novidade",
+      updatePublished: "Novidade publicada.",
+      updateError: "Não foi possível publicar a novidade agora.",
       status: {
         SUBMITTED: "Na fila de revisão",
         PUBLISHED: "Publicado",
         REJECTED: "Recusado",
         SUSPENDED: "Fora do ar",
       },
+    },
+    /** Edição do jogo pelo dono (ficha, endereço, identidade visual e exclusão). */
+    editor: {
+      title: "Editar jogo",
+      description:
+        "A ficha completa, o endereço público e a identidade visual. Editar não passa pela moderação de novo.",
+      identityTitle: "Identidade visual",
+      icon: "Foto de perfil do jogo",
+      iconHint: "Aparece na loja no lugar do favicon do site de origem.",
+      removeIcon: "Remover foto do jogo",
+      uploadImage: "Enviar foto",
+      banner: "Banner da página",
+      uploadPhoto: "Enviar foto do banner",
+      removeBanner: "Remover banner",
+      bannerHint: "Ou desenhe um banner em HTML, abaixo — a foto tem prioridade.",
+      bannerHtml: "Banner em HTML/CSS (opcional)",
+      bannerHtmlHint:
+        "Roda isolado, sem script — o mesmo formato do banner do seu perfil. A foto acima vence o HTML.",
+      addressTitle: "Endereço e título",
+      titleField: "Título",
+      slug: "Endereço do jogo",
+      url: "Link do jogo (onde ele roda)",
+      fichaTitle: "Ficha",
+      shortDescription: "Descrição curta",
+      descriptionField: "Descrição",
+      genres: "Gêneros (separados por vírgula)",
+      languages: "Idiomas (separados por vírgula)",
+      controls: "Controles",
+      requirements: "Requisitos",
+      warnings: "Avisos de conteúdo",
+      tags: "Tags (separadas por vírgula)",
+      stage: "Estágio",
+      aspect: "Proporção do quadro",
+      distribution: "Distribuição",
+      paid: "Pago (faíscas)",
+      price: "Preço em faíscas",
+      version: "Versão",
+      websiteUrl: "Site do jogo",
+      supportUrl: "Suporte",
+      delete: "Excluir jogo",
+      deleteTitle: "Excluir este jogo?",
+      deleteConfirm:
+        "O jogo sai da loja para sempre, com novidades, favoritos e histórico de uso. Não dá para desfazer. Para tirar do ar sem apagar, a moderação pode suspender.",
+      deleted: "Jogo excluído da loja.",
     },
     /** Página do jogo e player. */
     game: {
@@ -1784,6 +1900,23 @@ export const texts = {
     externalBadge: (platform: string) => `Vaga externa · ${platform}`,
     externalNotice: (platform: string) =>
       `Esta oportunidade foi publicada originalmente no ${platform}. A candidatura é feita na plataforma de origem.`,
+    /** Cadastro manual de vaga externa (achada em outro site) por quem está na comunidade. */
+    external: {
+      registerButton: "Cadastrar vaga externa",
+      registerTitle: "Cadastrar vaga externa",
+      registerDescription:
+        "Achou a vaga em outro site? Cadastre aqui: o Énóis lista e o botão leva direto para o link de origem.",
+      registerAction: "Cadastrar vaga",
+      registerError: "Não foi possível cadastrar a vaga externa.",
+      url: "Link da vaga",
+      urlHint: "A candidatura acontece na plataforma de origem, direto neste link.",
+      locationPlaceholder: "Remoto ou cidade",
+      myTitle: "Minhas vagas externas",
+      myEmpty: "Você ainda não cadastrou vagas externas.",
+      delete: "Excluir",
+      deleteConfirm:
+        "Excluir esta vaga externa? Ela deixa de aparecer para todo mundo — a vaga original continua no site de origem.",
+    },
     seoTitle: "Vagas · Énóis",
     title: "Oportunidades",
     description: "Vagas filtradas por nível, localização, tipo e habilidades.",
@@ -2095,6 +2228,10 @@ export const texts = {
     selectConversation: "Selecione uma conversa ou comece uma nova para exibir as mensagens",
     noMessages: "Nenhuma mensagem ainda",
     inputPlaceholder: "Escreva uma mensagem...",
+    attachMedia: "Anexar imagem",
+    removeMedia: "Remover mídia",
+    mediaLimit: "Anexe no máximo 4 imagens por mensagem.",
+    mediaError: "Não foi possível enviar a imagem.",
     conversationFallback: "Conversa",
     loadMoreConversations: "Carregar conversas antigas",
     tabs: { all: "Todas", jobs: "Vagas", people: "Pessoas", archived: "Arquivadas" },

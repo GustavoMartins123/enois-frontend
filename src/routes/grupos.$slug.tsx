@@ -12,6 +12,8 @@ import type { GroupView } from "@/types/application/group/group-view";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import {
   Camera,
+  ChevronDown,
+  ChevronRight,
   Flag,
   Loader2,
   MessageCircle,
@@ -959,6 +961,8 @@ function AdminPanel({ group }: { group: GroupView }) {
   const { toast } = useToast();
   const [removeTarget, setRemoveTarget] = useState<GroupMember | null>(null);
   const [transferTarget, setTransferTarget] = useState<GroupMember | null>(null);
+  // Membros nascem FECHADOS (pedido de quem usa): a lista cresce e empurra o resto da página.
+  const [membersOpen, setMembersOpen] = useState(false);
 
   const { data: requestsData } = useQuery({
     queryKey: ["group-requests", group.id],
@@ -1066,52 +1070,68 @@ function AdminPanel({ group }: { group: GroupView }) {
       </div>
 
       <div className="space-y-2">
-        <h3 className="text-xs font-medium text-text-strong">{texts.groups.membersTitle}</h3>
+        <button
+          type="button"
+          onClick={() => setMembersOpen((value) => !value)}
+          aria-expanded={membersOpen}
+          className="flex w-full items-center gap-1.5 text-xs font-medium text-text-strong transition hover:opacity-80"
+        >
+          {membersOpen ? (
+            <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+          ) : (
+            <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+          )}
+          <>{texts.groups.membersTitle}</>
 
-        <ul className="space-y-2">
-          {members.map((member) => (
-            <li
-              key={member.userId}
-              className="flex flex-wrap items-center gap-2 rounded-xl bg-surface-1 px-3 py-2"
-            >
-              <UserAvatar
-                src={member.avatar}
-                alt={member.name ?? ""}
-                className="h-7 w-7 shrink-0"
-              />
+          <span className="font-normal text-text-subtle">({members.length})</span>
+        </button>
 
-              <span className="min-w-0 flex-1 truncate text-sm text-text-strong">
-                {nameOf(member)}
-              </span>
+        {membersOpen && (
+          <ul className="space-y-2">
+            {members.map((member) => (
+              <li
+                key={member.userId}
+                className="flex flex-wrap items-center gap-2 rounded-xl bg-surface-1 px-3 py-2"
+              >
+                <UserAvatar
+                  src={member.avatar}
+                  alt={member.name ?? ""}
+                  className="h-7 w-7 shrink-0"
+                />
 
-              <span className="text-xs text-text-subtle">{roleLabel(member.role)}</span>
+                <span className="min-w-0 flex-1 truncate text-sm text-text-strong">
+                  {nameOf(member)}
+                </span>
 
-              {member.role !== "OWNER" && (
-                <>
-                  {isOwner && (
+                <span className="text-xs text-text-subtle">{roleLabel(member.role)}</span>
+
+                {member.role !== "OWNER" && (
+                  <>
+                    {isOwner && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="w-auto rounded-full"
+                        onClick={() => setTransferTarget(member)}
+                      >
+                        {texts.groups.transfer}
+                      </Button>
+                    )}
+
                     <Button
                       size="sm"
-                      variant="outline"
-                      className="w-auto rounded-full"
-                      onClick={() => setTransferTarget(member)}
+                      variant="ghost"
+                      className="w-auto rounded-full text-destructive"
+                      onClick={() => setRemoveTarget(member)}
                     >
-                      {texts.groups.transfer}
+                      {texts.groups.removeMember}
                     </Button>
-                  )}
-
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="w-auto rounded-full text-destructive"
-                    onClick={() => setRemoveTarget(member)}
-                  >
-                    {texts.groups.removeMember}
-                  </Button>
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <ConfirmDialog

@@ -21,6 +21,8 @@ export type Profile = {
   portfolio: string | null;
   externalLinks: string[];
   openToWork: boolean;
+  /** Preferencia da conta: mostrar a secao de ranking no perfil (padrao true). */
+  showRanking?: boolean;
   isMentor: boolean;
   connectionsCount?: number;
   followersCount?: number;

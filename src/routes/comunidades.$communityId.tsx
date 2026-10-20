@@ -31,7 +31,6 @@ import {
 import { communitiesApi, feedApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { buildShareTags } from "@/lib/open-graph";
-import { requireAuth } from "@/lib/require-auth";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
@@ -62,7 +61,6 @@ import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/comunidades/$communityId")({
-  beforeLoad: requireAuth,
   loader: async ({ params }) => {
     try {
       return await communitiesApi.get(params.communityId);
@@ -90,7 +88,7 @@ export const Route = createFileRoute("/comunidades/$communityId")({
 function CommunityDetail() {
   const queryClient = useQueryClient();
   const community = Route.useLoaderData();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, requireAuth: needsLogin } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [draft, setDraft] = useState("");
@@ -414,7 +412,14 @@ function CommunityDetail() {
                   className="w-auto rounded-full whitespace-nowrap"
                   variant={viewerConfirmed && isMember ? "secondary" : "default"}
                   disabled={join.isPending || leave.isPending || !viewerConfirmed}
-                  onClick={() => (viewerConfirmed && isMember ? setLeaveOpen(true) : join.mutate())}
+                  onClick={() => {
+                    if (viewerConfirmed && isMember) {
+                      setLeaveOpen(true);
+                      return;
+                    }
+                    // Visitante nao tem sessao: manda para o login em vez de tomar 401.
+                    if (needsLogin()) join.mutate();
+                  }}
                 >
                   {!viewerConfirmed
                     ? "…"

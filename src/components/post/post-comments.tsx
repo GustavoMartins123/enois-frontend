@@ -118,9 +118,8 @@ export function PostComments({ postId }: PostIdProps) {
     if (recording && recordedSeconds >= 180) stopRecording();
   }, [recording, recordedSeconds]);
 
-  const addMedia = (event: ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files ?? []).filter((f) => f.type.startsWith("image/"));
-    event.target.value = "";
+  const addMediaFiles = (incoming: File[]) => {
+    const files = incoming.filter((f) => f.type.startsWith("image/"));
     if (files.length === 0) return;
     setMedia((current) => {
       const room = 4 - current.length;
@@ -138,6 +137,11 @@ export function PostComments({ postId }: PostIdProps) {
         })),
       ];
     });
+  };
+
+  const addMedia = (event: ChangeEvent<HTMLInputElement>) => {
+    addMediaFiles(Array.from(event.target.files ?? []));
+    event.target.value = "";
   };
 
   // O GIF entra como URL no proprio texto do comentario — o link-previews transforma em imagem — e
@@ -244,7 +248,10 @@ export function PostComments({ postId }: PostIdProps) {
     <section className="mt-4 border-t border-border-soft pt-4">
       <div
         ref={listRef}
-        className="max-h-[55vh] min-h-0 space-y-3 overflow-y-auto overscroll-contain pr-1"
+        // Sem `overscroll-contain`: quando a lista ainda não transborda, ele impede a propagação
+        // do toque para a página e o usuário não consegue rolar (relato em tablet/Fennec — o
+        // último post da viewport travava o scroll até fechar os comentários).
+        className="max-h-[55vh] min-h-0 space-y-3 overflow-y-auto pr-1"
       >
         {loading && (
           <p className="inline-flex items-center gap-2 py-4 text-sm font-normal text-text-subtle">
@@ -388,6 +395,7 @@ export function PostComments({ postId }: PostIdProps) {
               className="w-full resize-none border-0 bg-transparent px-2 py-1 text-sm font-normal outline-none"
               maxLength={800}
               toolbar
+              onPasteImages={addMediaFiles}
             />
 
             <div className="mt-1 flex items-center gap-1 px-1">

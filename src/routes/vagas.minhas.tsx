@@ -5,7 +5,16 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { Job } from "@/types/application/job/job";
-import { ArrowLeft, Briefcase, CheckCircle2, Loader2, Pencil, Trash2, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  Briefcase,
+  CheckCircle2,
+  ExternalLink,
+  Loader2,
+  Pencil,
+  Trash2,
+  Users,
+} from "lucide-react";
 
 import { ApiError, jobsApi } from "@/lib/api";
 import { applicationStatusLabel, statusTone } from "@/lib/job-application-status";
@@ -36,7 +45,13 @@ function MyJobs() {
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState<Job | null>(null);
   const [deleting, setDeleting] = useState<Job | null>(null);
+  const [deletingExternal, setDeletingExternal] = useState<Job | null>(null);
   const mine = useQuery({ queryKey: ["jobs", "mine"], queryFn: () => jobsApi.mine(undefined, 20) });
+  // Vagas externas cadastradas por mim: ficam fora de `mine` (que lista as vagas da casa).
+  const externals = useQuery({
+    queryKey: ["jobs", "external", "mine"],
+    queryFn: () => jobsApi.myExternal(),
+  });
   // Candidaturas COM o estado e o retorno do empregador (antes vinha só a vaga, e o "não
   // selecionado" com o motivo só existia no aviso).
   const applications = useQuery({
@@ -49,6 +64,14 @@ function MyJobs() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
       setDeleting(null);
+    },
+  });
+
+  const removeExternal = useMutation({
+    mutationFn: (id: string) => jobsApi.removeExternal(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["jobs"] });
+      setDeletingExternal(null);
     },
   });
 
@@ -181,6 +204,59 @@ function MyJobs() {
 
             <section className="surface-card p-4 sm:p-6">
               <h2 className="inline-flex items-center gap-2 text-xl font-semibold tracking-tight">
+                <ExternalLink className="h-5 w-5 text-primary" />
+
+                <>{texts.jobs.external.myTitle}</>
+              </h2>
+
+              {externals.isLoading ? (
+                <Loader2 className="mx-auto mt-4 h-5 w-5 animate-spin text-primary" />
+              ) : (externals.data ?? []).length === 0 ? (
+                <p className="mt-3 text-sm text-muted-foreground">{texts.jobs.external.myEmpty}</p>
+              ) : (
+                <ul className="mt-4 space-y-3">
+                  {(externals.data ?? []).map((job) => (
+                    <li key={job.id} className="rounded-xl border border-border-soft p-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-text-strong">{job.title}</p>
+
+                        <p className="mt-0.5 text-xs font-normal text-text-subtle">
+                          {job.company}
+                          {job.location ? ` · ${job.location}` : ""}
+                        </p>
+                      </div>
+
+                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                        <a
+                          href={job.sourceUrl ?? "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex h-9 items-center gap-1.5 rounded-full border border-border-soft px-3 text-sm font-medium transition hover:bg-muted"
+                        >
+                          <ExternalLink className="h-3.5 w-3.5" />
+
+                          <>{texts.jobs.visit}</>
+                        </a>
+
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="rounded-full gap-1.5 text-destructive"
+                          onClick={() => setDeletingExternal(job)}
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+
+                          <>{texts.jobs.external.delete}</>
+                        </Button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
+            <section className="surface-card p-4 sm:p-6">
+              <h2 className="inline-flex items-center gap-2 text-xl font-semibold tracking-tight">
                 <Briefcase className="h-5 w-5 text-primary" />
 
                 <>{texts.jobs.myApplications}</>
@@ -255,6 +331,16 @@ function MyJobs() {
         destructive
         pending={removeJob.isPending}
         onConfirm={() => deleting && removeJob.mutate(deleting.id)}
+      />
+      <ConfirmDialog
+        open={!!deletingExternal}
+        onOpenChange={(open) => !open && setDeletingExternal(null)}
+        title={texts.jobs.external.delete}
+        description={texts.jobs.external.deleteConfirm}
+        confirmLabel={texts.jobs.external.delete}
+        destructive
+        pending={removeExternal.isPending}
+        onConfirm={() => deletingExternal && removeExternal.mutate(deletingExternal.id)}
       />
     </AppContainer>
   );

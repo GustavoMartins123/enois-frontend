@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { GameIdentityBinding } from "@/types/application/games/game-identity-binding";
@@ -9,7 +9,7 @@ import type { GamePendingRequest } from "@/types/application/games/game-pending-
 import type { GameShareRequest } from "@/types/application/games/game-share-request";
 import type { GameSpendRequest } from "@/types/application/games/game-spend-request";
 import type { GameView } from "@/types/application/games/game-view";
-import { Bookmark, Gamepad2, Share2, Sparkles } from "lucide-react";
+import { Bookmark, Gamepad2, Newspaper, Pencil, Share2, Sparkles } from "lucide-react";
 
 import { gamesApi, mediaApi } from "@/lib/api";
 import { formatFaisca } from "@/lib/faisca";
@@ -28,8 +28,12 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/toast";
 
+import { GameIcon } from "@/components/game-icon";
+import { GameBanner } from "@/components/games/game-banner";
+import { GameEditorDialog } from "@/components/games/game-editor-dialog";
 import { GamePlayer } from "@/components/games/game-player";
 import { GameStatsLine } from "@/components/games/game-stats-line";
+import { GameUpdateDialog } from "@/components/games/game-update-dialog";
 
 const STAGE_LABEL: Record<string, string> = {
   IN_DEVELOPMENT: "Em desenvolvimento",
@@ -63,6 +67,9 @@ function GameDetailContent({ username, gameSlug }: { username: string; gameSlug:
   const [compartilhamento, setCompartilhamento] =
     useState<GamePendingRequest<GameShareRequest> | null>(null);
   const [gasto, setGasto] = useState<GamePendingRequest<GameSpendRequest> | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [newUpdate, setNewUpdate] = useState(false);
+  const navigate = useNavigate();
   const t = texts.games.game;
   const slugKey = ["games", "slug", username, gameSlug];
 
@@ -180,6 +187,7 @@ function GameDetailContent({ username, gameSlug }: { username: string; gameSlug:
 
   const g = jogo;
   const favorited = game.data?.favorited ?? false;
+  const owned = game.data?.owned ?? false;
   const playable = g.status === "PUBLISHED";
   const gallery = [g.cover, ...g.mediaIds].filter(Boolean) as string[];
   // O quadro pertence à conta que apertou Jogar. Pedido de outro jogo, de outra sessão do quadro ou
@@ -204,34 +212,66 @@ function GameDetailContent({ username, gameSlug }: { username: string; gameSlug:
           </Link>
         </p>
 
+        <GameBanner banner={g.banner} bannerHtml={g.bannerHtml} title={g.title} />
+
         <header className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="min-w-0 break-words text-2xl font-semibold tracking-tight text-text-strong">
-              {g.title}
-            </h1>
+          <div className="flex min-w-0 items-start gap-3">
+            <GameIcon icon={g.icon} cover={g.cover} url={g.url} className="h-14 w-14" />
 
-            <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-text-subtle">
-              <Link
-                to="/games/$username"
-                params={{ username }}
-                className="font-medium text-primary hover:underline"
-              >
-                {g.username ?? username}
-              </Link>
+            <div className="min-w-0">
+              <h1 className="min-w-0 break-words text-2xl font-semibold tracking-tight text-text-strong">
+                {g.title}
+              </h1>
 
-              <span className="rounded-full border border-border-soft px-2 py-0.5 text-xs">
-                {STAGE_LABEL[g.stage] ?? g.stage}
-              </span>
+              <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-text-subtle">
+                <Link
+                  to="/games/$username"
+                  params={{ username }}
+                  className="font-medium text-primary hover:underline"
+                >
+                  {g.username ?? username}
+                </Link>
 
-              <span className="rounded-full border border-border-soft px-2 py-0.5 text-xs">
-                {g.distribution === "PAID" ? t.priceSoon(g.priceCoins) : t.free}
-              </span>
+                <span className="rounded-full border border-border-soft px-2 py-0.5 text-xs">
+                  {STAGE_LABEL[g.stage] ?? g.stage}
+                </span>
 
-              {g.version && <span className="text-xs">{t.version(g.version)}</span>}
-            </p>
+                <span className="rounded-full border border-border-soft px-2 py-0.5 text-xs">
+                  {g.distribution === "PAID" ? t.priceSoon(g.priceCoins) : t.free}
+                </span>
+
+                {g.version && <span className="text-xs">{t.version(g.version)}</span>}
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-1.5">
+            {owned && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full gap-1.5"
+                  onClick={() => setEditing(true)}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+
+                  <>{texts.games.panel.edit}</>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full gap-1.5"
+                  onClick={() => setNewUpdate(true)}
+                >
+                  <Newspaper className="h-3.5 w-3.5" />
+
+                  <>{texts.games.panel.newUpdate}</>
+                </Button>
+              </>
+            )}
+
             <Button
               variant="outline"
               size="sm"
@@ -552,6 +592,19 @@ function GameDetailContent({ username, gameSlug }: { username: string; gameSlug:
           )}
         </section>
       </div>
+
+      {owned && editing && game.data && (
+        <GameEditorDialog
+          game={game.data}
+          open={editing}
+          onOpenChange={setEditing}
+          onDeleted={() => void navigate({ to: "/games" })}
+        />
+      )}
+
+      {owned && newUpdate && game.data && (
+        <GameUpdateDialog game={game.data} open={newUpdate} onOpenChange={setNewUpdate} />
+      )}
     </>
   );
 }

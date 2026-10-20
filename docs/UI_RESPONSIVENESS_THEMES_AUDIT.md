@@ -573,3 +573,178 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Próximo lote:** as demais rotas protegidas a 390px (`/denuncias`, `/salvos`, `/blogs`,
   `/seguranca`, `/suporte`, `/temas`, `/mentoria`, `/rede`, `/notificações`, `/moderador`) e as
   páginas-chave protegidas a 1280 com os 60 temas.
+
+## Rodada 36 — 2026-10-19 19:0x
+
+- **Sessão válida** (cópia 18:28) durante todo o lote.
+- **Lote B protegido:** `/denuncias`, `/salvos` e `/suporte` a 390×844, 60 temas × claro/escuro =
+  **360 verificações, ZERO problemas** (overflow, contraste, variáveis de tema, console e HTTP).
+- **Nenhuma correção de app.**
+- **Segurança relacionada (fora do layout):** o e-mail do usuário no log de e-mails e nos tickets
+  de suporte passou a ser mascarado no backend (`f***@dominio.com`), commit `0cd833b`; o painel
+  não recebe mais o endereço completo. Teste `PiiMaskTests` verde; CI do backend em andamento.
+- **Próximo lote:** `/blogs`, `/seguranca`, `/temas`, `/mentoria` e `/rede` a 390px; depois as
+  páginas-chave protegidas a 1280.
+
+## Rodada 37 — 2026-10-19 20:5x
+
+- **Sessão válida** durante todo o lote.
+- **Lote B protegido:** `/blogs`, `/seguranca` e `/temas` a 390×844, 60 temas × claro/escuro =
+  **360 verificações, ZERO problemas** (overflow, contraste, variáveis, console e HTTP).
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/mentoria`, `/rede` e `/jogos-diarios` a 390px; depois as rotas de jogos,
+  denúncias administrativas e as páginas-chave protegidas a 1280.
+
+## Rodada 38 — 2026-10-19 21:0x
+
+- **Sessão protegida expirada** (cópia de 19:55, 401). Lote público.
+- **Lote C público:** `/grupos/oracle-apex` em **1280×800**, 60 temas × claro/escuro =
+  **120 combinações**. **118 limpas**; as 2 acusações (`twomoons` claro e `silver-jonny` escuro)
+  foram **corrida de renderização** (“execution context destroyed”), reexecutadas com espera maior:
+  vars aplicadas e **`sw=cw=1280`**, zero overflow. Nenhum bug real.
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/mentoria`, `/rede` e `/jogos-diarios` a 390px quando houver sessão; no
+  público, `/blogs` e `/eventos` a 1280 com os 60 temas.
+
+## Rodada 39 — 2026-10-19 21:2x
+
+- **Sessão protegida expirada.** Lote público.
+- **Páginas estáticas a 390×844:** `/sobre` e `/contato` nos 60 temas × claro/escuro =
+  **240 verificações, ZERO problemas** (overflow, contraste, variáveis, console e HTTP).
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/servicos`, `/privacidade`, `/termos` e `/diretrizes` no mesmo formato;
+  quando houver sessão, `/mentoria`, `/rede` e `/jogos-diarios`.
+
+## Rodada 40 — 2026-10-19 21:4x
+
+- **Sessão renovada** (cópia do Firefox 21:18) e válida durante o lote.
+- **Lote B protegido:** `/mentoria` e `/rede` a 390×844, 60 temas × claro/escuro =
+  **240 verificações**. **239 limpas**; a única acusação (`frutiger-aero` claro em `/mentoria`,
+  vars vazias) foi **corrida de renderização** — reexecutada com espera maior: `--background`
+  em gradiente, `--primary #0aa1a8` e **`sw=cw=390`**. Nenhum bug real.
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/jogos-diarios`, `/games/painel` e `/bloqueados` a 390px; depois as rotas de
+  jogos por criador e as páginas-chave protegidas a 1280.
+
+## Rodada 41 — 2026-10-19 22:0x
+
+- **Sessão válida** durante todo o lote.
+- **Lote B protegido:** `/jogos-diarios` e `/games/painel` a 390×844, 60 temas × claro/escuro =
+  **240 verificações, ZERO problemas**.
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/bloqueados`, `/notificações` (se houver rota) e as rotas de jogos por criador
+  a 390px; depois as páginas-chave protegidas a 1280.
+
+## Correção reportada — 2026-10-19 22:2x
+
+- **Relato da Mel:** “a aba de jogos da comunidade tá feia no mobile”.
+- **Achado real:** o catálogo de `/games` tinha `grid gap-3 sm:grid-cols-2` **sem `grid-cols-1`
+  na base**; no mobile o track vira auto/min-content e cada card esticava para **~3236px**
+  (`scrollWidth` 3248 em 390). Era o mesmo trap do `/rede`, agora na grade de jogos.
+- **Correção mínima:** `grid grid-cols-1 gap-3 sm:grid-cols-2` + `min-w-0` no `li` e no link.
+  Commit `aabf476` (push `79f1fd2`).
+- **Verificação em produção:** `/games` a 390px agora mede **`sw=390`/`cw=390`**, zero elementos
+  passando da viewport; screenshot `/tmp/pwtest/games-mobile-fixed.png` com os cards em coluna
+  única.
+
+## Rodada 42 — 2026-10-19 22:4x
+
+- **Sessão protegida expirada.** Lote público.
+- **`/games` a 390×844:** 60 temas × claro/escuro = **120 verificações, ZERO problemas** depois
+  da correção do grid (`grid-cols-1` + `min-w-0`, commit `aabf476`). Confirma que o catálogo
+  deixou de esticar e que a correção vale nos 60 temas.
+- **Nenhuma correção nova.**
+- **Próximo lote:** `/bloqueados` e rotas de jogos por criador quando houver sessão; no público,
+  `/servicos`, `/privacidade`, `/termos` e `/diretrizes`.
+
+## Rodada 43 — 2026-10-19 22:5x
+
+- **Sessão renovada** (cópia do Firefox 22:10) e válida durante o lote.
+- **Lote B protegido:** `/bloqueados` e `/games/aminadojava` (página do criador) a 390×844,
+  60 temas × claro/escuro = **240 verificações, ZERO problemas**.
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/jogos-diarios` (já coberto), `/notificacoes` se houver rota dedicada, e as
+  rotas de jogos por criador com jogo (`/games/{user}/{slug}`); depois páginas-chave a 1280.
+
+## Rodada 44 — 2026-10-19 23:0x
+
+- **Sessão válida** durante o lote.
+- **Lote B protegido:** `/games/aminadojava/https-kawaii-survivor-vercel-app` (detalhe do jogo)
+  a 390×844, 60 temas × claro/escuro = **120 verificações, ZERO problemas**.
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/moderador` e `/moderacao` a 390px (leitura) e as páginas-chave protegidas a
+  1280 com os 60 temas.
+
+## Rodada 45 — 2026-10-19 23:1x
+
+- **Sessão válida** durante o lote (admin `aminadojava`).
+- **Lote B protegido:** `/moderador` a 390×844, 60 temas × claro/escuro =
+  **120 verificações, ZERO problemas** — painel de moderação (abas, cards e filas) legível e sem
+  overflow em todos os temas.
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/moderacao` e `/penalidades` a 390px; depois as páginas-chave protegidas a
+  1280 com os 60 temas.
+
+## Correções reportadas — 2026-10-20 00:0x
+
+- **GIF duplicado em posts e comentários:** o `RichText` já renderiza mídia direta (GIF/imagem/
+  vídeo/áudio); o `LinkPreviews` renderizava a MESMA URL logo abaixo. Agora ele ignora o que o
+  `rendersInline` já cobre e só cuida de players (YouTube/Vimeo) e cards de link. Testes de
+  `shared-links`: 8/8.
+- **Colar imagem na caixa de texto:** `MentionTextarea` ganhou `onPasteImages`; o composer do feed
+  e o de comentários sobem as imagens coladas pelo mesmo fluxo de anexo (limite de 4). O chat
+  também aceita Ctrl+V.
+- **Mídia nas mensagens diretas:** mensagens agora aceitam até 4 imagens com texto opcional
+  (V105, coluna `media_ids`); `POST /conversations/{id}/messages` recebe `mediaIds`, o view
+  devolve a lista e a bolha renderiza pelo `MediaGrid`. Teste `MessageMediaTests` 2/2 e backend
+  em produção com V105 aplicada.
+- Commits: backend `a7b2415` (push `93a88c7`); front `f76ae2c` + `bf305f7` (push `5a7f3a3`).
+
+## Rodada 46 — 2026-10-20 00:2x
+
+- **Sessão protegida ausente** (Firefox sem tokens). Lote público.
+- **`/privacidade` e `/termos` a 390×844:** 60 temas × claro/escuro = **240 verificações**.
+  **239 limpas**; a única acusação (`aero-glass` claro em `/privacidade`, vars vazias) foi
+  **corrida de renderização** — reexecutada com espera maior: `--background` em gradiente,
+  `--primary #1e6bb8`, **`sw=cw=390`**. Nenhum bug real.
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/servicos` e `/diretrizes` a 390; depois `/developers` e páginas-chave
+  protegidas a 1280.
+
+## Rodada 47 — 2026-10-20 00:4x
+
+- **Sessão protegida ausente.** Lote público.
+- **`/servicos` e `/diretrizes` a 390×844**, 60 temas × claro/escuro = **240 verificações**.
+- **Achado real (55 ocorrências, mesma causa):** a aba ativa (“Ofertas”) usava
+  `bg-primary text-primary-text`. O `primary-text` é calculado contra o FUNDO da página/soft, não
+  contra o preenchimento primário; em temas escuros dava **1,0–2,5:1** (terminal 1,2; contraste-puro
+  1,0). Trocado para **`text-primary-foreground`**, que é o token do texto sobre o primário.
+  Commit `f800a80` (push `1bf41ed`).
+- **Verificação em produção:** classe nova presente; contraste medido no DOM real:
+  terminal escuro **7,15:1**, win2000 escuro **5,39:1**. A única acusação fora dessa causa
+  (`oliva` claro, vars vazias) foi corrida de renderização — reexecutada com `--background #f8f7f2`,
+  `--primary #657337`, `sw=cw=390`.
+- **Próximo lote:** `/developers` a 1280 com os 60 temas; depois as páginas-chave protegidas.
+
+## Rodada 48 — 2026-10-20 00:5x
+
+- **Sessão protegida ausente.** Lote público.
+- **`/developers` a 1280×800**, 60 temas × claro/escuro = **120 verificações, ZERO problemas**.
+- Com isso, os pontos **públicos** do Lote C a 1280 estão fechados: home, `/empresas`,
+  `/empresa/{slug}`, `/games/{user}/{slug}`, `/marketplace`, `/developers` e `/grupos/{slug}`.
+  O que falta no Lote C são as páginas logadas (`/feed`, `/perfil`, `/post`, `/carteira`, `/vagas`).
+- **Nenhuma correção de app.**
+- **Próximo lote:** quando houver sessão, `/moderacao` e `/penalidades` a 390px e as páginas-chave
+  protegidas a 1280; no público, `/auth/*` (login/cadastro) a 390 com os 60 temas.
+
+## Rodada 49 — 2026-10-20 01:0x
+
+- **Sessão protegida ausente.** Lote público.
+- **`/entrar` a 390×844**, 60 temas × claro/escuro = **120 verificações**. Todas as 120 apareceram
+  como “AUTH-BOUNCE”, mas isso é **falso positivo do auditor**: a rota testada É `/entrar`; a
+  checagem de bounce foi feita para rotas logadas. Filtrando o bounce, **nenhuma ocorrência de
+  overflow, contraste, variável de tema ou console** (lista `non-bounce` vazia) — a página está
+  limpa nos 60 temas.
+- **Nenhuma correção de app.**
+- **Próximo lote:** corrigir a heurística no script (ignorar `/entrar` quando a rota é ela mesma)
+  e fechar `/moderacao`/`/penalidades` quando houver sessão.

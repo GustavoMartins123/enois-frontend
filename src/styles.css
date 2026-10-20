@@ -426,3 +426,29 @@
 @keyframes moldura-pulsar { 50% { border-color: #f5d0fe; box-shadow: inset 0 0 6px #c084fc; } }
 @keyframes moldura-solar { 50% { border-color: #fb7185; box-shadow: inset 0 0 6px #fbbf24; } }
 @media (prefers-reduced-motion: reduce) { [data-avatar-frame]::after { animation: none; } }
+
+/* ── Scrollbar na paleta do tema ─────────────────────────────────────────────
+   A barra padrão do navegador (cinza do SO) aparecia por cima de temas
+   coloridos e quebrava o visual (relato de suporte). Firefox usa
+   scrollbar-color; os pseudo-elementos -webkit cobrem Chromium/Safari. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}

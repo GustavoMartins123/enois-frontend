@@ -7,6 +7,7 @@ import type { AccountMenuProps } from "@/types/components/account/account-menu-p
 import {
   Flag,
   Gavel,
+  HeartPulse,
   KeyRound,
   LifeBuoy,
   Link2,
@@ -29,6 +30,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ChangeEmailDialog } from "./change-email-dialog";
 import { ChangePasswordDialog } from "./change-password-dialog";
 import { DeleteAccountDialog } from "./delete-account-dialog";
+import { HealthyUsageDialog } from "./healthy-usage/healthy-usage-dialog";
 import { LinkedAccountsDialog } from "./linked-accounts-dialog";
 import { PushToggle } from "./push-toggle";
 import { UserAvatar } from "./user-avatar";
@@ -42,6 +44,7 @@ export function AccountMenu({ profile }: AccountMenuProps) {
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   const [showLinkedAccounts, setShowLinkedAccounts] = useState(false);
+  const [showHealthyUsage, setShowHealthyUsage] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
 
   const openChangeEmail = () => {
@@ -57,6 +60,11 @@ export function AccountMenu({ profile }: AccountMenuProps) {
   const openLinkedAccounts = () => {
     setMenuOpen(false);
     setShowLinkedAccounts(true);
+  };
+
+  const openHealthyUsage = () => {
+    setMenuOpen(false);
+    setShowHealthyUsage(true);
   };
 
   const openDeleteAccount = () => {
@@ -77,7 +85,12 @@ export function AccountMenu({ profile }: AccountMenuProps) {
             className="flex items-center gap-2 rounded-full p-1 pr-3 transition hover:bg-surface-2"
             aria-label={texts.account.menu.trigger}
           >
-            <UserAvatar frame={profile.avatarFrame} src={profile.avatar} alt={profile.name} className="h-8 w-8" />
+            <UserAvatar
+              frame={profile.avatarFrame}
+              src={profile.avatar}
+              alt={profile.name}
+              className="h-8 w-8"
+            />
 
             <span className="hidden text-sm font-normal text-text-strong sm:inline">
               {texts.common.profile}
@@ -90,7 +103,12 @@ export function AccountMenu({ profile }: AccountMenuProps) {
           className="w-[min(calc(100vw-2rem),17rem)] overflow-hidden rounded-2xl border-border-soft bg-surface-card p-0 shadow-card"
         >
           <div className="flex items-center gap-3 border-b border-border-soft px-4 py-3">
-            <UserAvatar frame={profile.avatarFrame} src={profile.avatar} alt={profile.name} className="h-9 w-9" />
+            <UserAvatar
+              frame={profile.avatarFrame}
+              src={profile.avatar}
+              alt={profile.name}
+              className="h-9 w-9"
+            />
 
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-text-strong">{profile.name}</p>
@@ -171,6 +189,12 @@ export function AccountMenu({ profile }: AccountMenuProps) {
               <>{texts.account.menu.linkedAccounts}</>
             </button>
 
+            <button type="button" onClick={openHealthyUsage} className={ITEM_CLASS}>
+              <HeartPulse className="h-4 w-4" />
+
+              <>{texts.account.menu.healthyUsage}</>
+            </button>
+
             <Link to="/moderador" onClick={() => setMenuOpen(false)} className={ITEM_CLASS}>
               <Gavel className="h-4 w-4" />
 
@@ -215,6 +239,7 @@ export function AccountMenu({ profile }: AccountMenuProps) {
       <ChangePasswordDialog open={showChangePassword} onOpenChange={setShowChangePassword} />
       <DeleteAccountDialog open={showDeleteAccount} onOpenChange={setShowDeleteAccount} />
       <LinkedAccountsDialog open={showLinkedAccounts} onOpenChange={setShowLinkedAccounts} />
+      <HealthyUsageDialog open={showHealthyUsage} onOpenChange={setShowHealthyUsage} />
     </>
   );
 }

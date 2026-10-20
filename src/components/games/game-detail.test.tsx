@@ -59,7 +59,7 @@ vi.mock("@/lib/api", () => {
       mediaIds: [],
       plays: 0,
       favorites: favoritesOf(game.id),
-      owned: false,
+      owned: token() === "tok_dev",
       favorited: Boolean(mine?.has(game.id)),
     } satisfies GameView;
   };
@@ -586,6 +586,29 @@ describe("favoritos e a sessão de quem lê", () => {
     );
     expect(favoriteButton()?.textContent).toContain(texts.games.game.favorite);
     expect(server.state.favorites.get("tok_bia")).toBeUndefined();
+  });
+});
+
+describe("ferramentas do dono na página do jogo", () => {
+  it("só o dono vê Editar e Nova novidade", async () => {
+    storeSession({ token: "tok_ana" });
+    await open("jogo-a");
+    await waitFor(() => expect(button(texts.games.game.unfavorite)).toBeDefined());
+    expect(button(texts.games.panel.edit)).toBeUndefined();
+
+    await otherTabWrites({ session_token: "tok_dev", session_id: "sessao-do-dev" });
+    await waitFor(() => expect(button(texts.games.panel.edit)).toBeDefined());
+    expect(button(texts.games.panel.newUpdate)).toBeDefined();
+  });
+
+  it("trocar a conta do dono por outra tira os botões de edição", async () => {
+    storeSession({ token: "tok_dev" });
+    await open("jogo-a");
+    await waitFor(() => expect(button(texts.games.panel.edit)).toBeDefined());
+
+    await otherTabWrites({ session_token: "tok_bia", session_id: "sessao-da-bia" });
+    await waitFor(() => expect(button(texts.games.panel.edit)).toBeUndefined());
+    expect(button(texts.games.panel.newUpdate)).toBeUndefined();
   });
 });
 
