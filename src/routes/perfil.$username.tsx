@@ -337,7 +337,9 @@ function Profile() {
                 html={user.bannerHtml}
                 title={texts.profile.bannerHtml.frameTitle}
                 className="h-40 w-full rounded-none border-0 shadow-none sm:h-52"
-                clip
+                // Faixa fixa com ROLAGEM interna (pedido da comunidade): o HTML do autor não é
+                // mais cortado — se passar da altura, rola dentro da capa.
+                autoHeight={false}
               />
             ) : user.banner ? (
               <img

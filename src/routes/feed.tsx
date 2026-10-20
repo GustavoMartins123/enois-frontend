@@ -56,8 +56,22 @@ import { MentionTextarea } from "@/components/mention-textarea";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
 
+/** Abas válidas da tela inicial (a URL carrega a escolhida). */
+const HOME_TABS: HomeTab[] = ["FOR_YOU", "ALL", "FOLLOWING", "RECENT", "PROJECTS", "CORPORATE"];
+
 export const Route = createFileRoute("/feed")({
   beforeLoad: requireAuth,
+  /**
+   * A aba vive na URL (`/feed?aba=ALL`): abrir uma publicação e voltar restaura a MESMA aba em que
+   * a pessoa estava — antes o retorno caía sempre em "Para você".
+   */
+  validateSearch: (search: Record<string, unknown>) => {
+    const aba =
+      typeof search.aba === "string" && HOME_TABS.includes(search.aba as HomeTab)
+        ? (search.aba as HomeTab)
+        : "FOR_YOU";
+    return { aba };
+  },
   head: () => ({
     meta: [
       { title: texts.feed.seo.title },
@@ -109,7 +123,15 @@ function useEvents() {
 function Home() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [tab, setTab] = useState<HomeTab>("FOR_YOU");
+  // A aba vem da URL; trocar de aba REPLACES o histórico (o "voltar" continua voltando para a
+  // página anterior, e não passeando pelas abas).
+  const { aba } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const tab: HomeTab = aba;
+  const setTab = (next: HomeTab) => {
+    if (next === tab) return;
+    void navigate({ search: { aba: next }, replace: true });
+  };
   const {
     data: feedData,
     // Somente a PRIMEIRA carga mostra o esqueleto. `isFetching` tambem fica true ao paginar, e
@@ -238,9 +260,7 @@ function Home() {
   };
 
   // O mínimo do input datetime-local é AGORA+1min (o backend recusa mais perto que isso).
-  const minScheduleAt = new Date(
-    Date.now() + 60_000 - new Date().getTimezoneOffset() * 60_000,
-  )
+  const minScheduleAt = new Date(Date.now() + 60_000 - new Date().getTimezoneOffset() * 60_000)
     .toISOString()
     .slice(0, 16);
 
@@ -690,9 +710,7 @@ function Home() {
                     <div className="min-w-0">
                       <p className="truncate text-sm text-text-strong">
                         {agendado.content ||
-                          (agendado.pageHtml
-                            ? texts.feed.composer.scheduledPage
-                            : agendado.type)}
+                          (agendado.pageHtml ? texts.feed.composer.scheduledPage : agendado.type)}
                       </p>
 
                       <p className="text-xs text-text-subtle">
@@ -825,7 +843,12 @@ function Home() {
               <ul className="mt-4 space-y-3">
                 {suggestionList.map((u) => (
                   <li key={u.id} className="flex items-center gap-3">
-                    <UserAvatar src={u.avatar} frame={u.avatarFrame} alt={u.name} className="h-10 w-10" />
+                    <UserAvatar
+                      src={u.avatar}
+                      frame={u.avatarFrame}
+                      alt={u.name}
+                      className="h-10 w-10"
+                    />
 
                     <div className="min-w-0 flex-1">
                       <Link
