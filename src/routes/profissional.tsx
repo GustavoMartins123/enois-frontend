@@ -166,10 +166,25 @@ function Profissional() {
   const importFields = useMutation({
     mutationFn: () =>
       corporateApi.importFromSocial(Object.keys(chosen).filter((field) => chosen[field])),
-    onSuccess: () => {
+    onSuccess: (updated) => {
       toast(texts.corporate.imported, "success");
       setImportOpen(false);
       setChosen({});
+      // O import NÃO pode deixar o formulário no estado antigo: o PATCH de "Salvar" substitui
+      // o perfil inteiro, então os campos desatualizados apagariam a importação na hora em
+      // que a pessoa salvasse qualquer ajuste (era o "importei tudo e nada fica").
+      setForm({
+        username: updated.username,
+        name: updated.name,
+        headline: updated.headline,
+        bio: updated.bio,
+        location: updated.location,
+        industry: updated.industry,
+        externalLinks: updated.externalLinks,
+        avatar: updated.avatar,
+        banner: updated.banner,
+      });
+      setLoadedFor(updated.username);
       refresh();
     },
     onError: (error) =>
