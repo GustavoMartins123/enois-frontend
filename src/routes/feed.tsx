@@ -264,11 +264,10 @@ function Home() {
     }
   };
 
-  const handleMediaSelect = (e: ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+  const addMediaFiles = (files: File[]) => {
+    if (files.length === 0) return;
 
-    for (const file of Array.from(files)) {
+    for (const file of files) {
       const isVideo = file.type.startsWith("video/");
       const isImage = file.type.startsWith("image/");
       if (!isVideo && !isImage) continue;
@@ -283,6 +282,10 @@ function Home() {
       const preview = URL.createObjectURL(file);
       setMedia((prev) => [...prev, { type: isVideo ? "video" : "image", file, preview }]);
     }
+  };
+
+  const handleMediaSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    addMediaFiles(Array.from(e.target.files ?? []));
     e.target.value = "";
   };
 
@@ -340,6 +343,7 @@ function Home() {
                   className="flex-1 resize-none rounded-2xl border-border-soft bg-surface-1 px-3 py-2 text-sm font-normal"
                   maxLength={postContentLimit(postType)}
                   toolbar
+                  onPasteImages={addMediaFiles}
                 />
               )}
             </div>

@@ -36,7 +36,7 @@ export function directMediaKind(url: string): "image" | "video" | "audio" | null
 }
 
 /** O link é mídia direta que o RichText desenha no próprio texto? */
-function rendersInline(url: string): boolean {
+export function rendersInline(url: string): boolean {
   if (isOwnMediaUrl(url)) return true; // a mídia da casa vira imagem no RichText
   if (gifMediaUrl(url)) return true;
   return directMediaKind(url) !== null;

@@ -4,4 +4,5 @@ import type { Message } from "@/types/application/message/message";
 export type SendMessageInput = {
   conversationId: Conversation["id"];
   text: Message["text"];
+  mediaIds: Message["mediaIds"];
 };
