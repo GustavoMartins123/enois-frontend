@@ -11,6 +11,8 @@ export type Blog = {
   authorUsername: string;
   authorAvatar: string | null;
   authorBadge: string | null;
+  /** Todos os emblemas do autor (até 5), junto ao nome no cabeçalho. */
+  authorBadges?: string[] | null;
   posts: number;
   /** Se quem está lendo já segue o blog (false sem sessão). */
   subscribed: boolean;

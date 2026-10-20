@@ -13,6 +13,7 @@ import {
   Camera,
   Clock,
   Flag,
+  Gamepad2,
   Image as ImageIcon,
   Link as LinkIcon,
   MapPin,
@@ -30,6 +31,7 @@ import {
 import {
   ApiError,
   feedApi,
+  gamesApi,
   messagesApi,
   networkApi,
   profileApi,
@@ -148,6 +150,25 @@ function Profile() {
 
   const user = liveProfile ?? loaderUser;
   const isOwnProfile = me?.id === user.id;
+
+  // Selo "Dev de jogos" (G2 do plano dos games): só aparece quando a pessoa TEM presença de dev
+  // de verdade — jogo publicado ou página de criador preenchida. O DONO da conta recebe 200 do
+  // backend mesmo sem nada (é a mesma rota que alimenta o painel para montar a página), então a
+  // resposta sozinha não basta: sem conteúdo, o chip não existe nem no próprio perfil.
+  const { data: gamesDev } = useQuery({
+    queryKey: ["games", "developer", user.username],
+    queryFn: () => gamesApi.developer(user.username),
+    retry: false,
+    staleTime: 300_000,
+  });
+  const temPaginaDeDev = Boolean(
+    gamesDev &&
+      (gamesDev.games.length > 0 ||
+        gamesDev.displayName ||
+        gamesDev.headline ||
+        gamesDev.bio ||
+        gamesDev.links.length > 0),
+  );
 
   // O currículo só existe na projeção do DONO (/me): o perfil público não traz, de propósito.
   const { data: myProfile } = useQuery({
@@ -300,11 +321,14 @@ function Profile() {
           <div className="group relative">
             {user.bannerHtml ? (
               // Capa em HTML/CSS: mesmo espaço da foto (mesmas classes), sem moldura própria — quem
-              // recorta é o card, e o quadro já vem com sandbox sem scripts.
+              // recorta é o card, e o quadro já vem com sandbox sem scripts. `clip` é o delimitador:
+              // a capa é uma FAIXA da altura que o layout diz, e o HTML do autor é cortado nela —
+              // sem ele, um `height: 100vh` na capa realimentava a medida e crescia até tomar a tela.
               <SandboxedHtmlFrame
                 html={user.bannerHtml}
                 title={texts.profile.bannerHtml.frameTitle}
                 className="h-40 w-full rounded-none border-0 shadow-none sm:h-52"
+                clip
               />
             ) : user.banner ? (
               <img
@@ -331,6 +355,7 @@ function Profile() {
             <div className="-mt-12 flex flex-wrap items-end justify-between gap-3 sm:-mt-14 sm:gap-4">
               <div className="group relative">
                 <UserAvatar
+                  frame={user.avatarFrame}
                   src={resolveCdnUrl(user.avatar)}
                   alt={user.name}
                   className={`h-24 w-24 ring-4 sm:h-28 sm:w-28 ${FRAME_RING[user.avatarFrame ?? ""] ?? "ring-surface-card"}`}
@@ -505,7 +530,7 @@ function Profile() {
 
             <div className="mt-4">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="break-words text-xl font-normal tracking-tight text-text-strong">
+                <h1 className="min-w-0 break-words text-xl font-normal tracking-tight text-text-strong">
                   {user.name}
                 </h1>
 
@@ -538,6 +563,17 @@ function Profile() {
                   <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-normal text-primary">
                     {texts.profile.mentorAvailable}
                   </span>
+                )}
+                {temPaginaDeDev && (
+                  <Link
+                    to="/games/$username"
+                    params={{ username: user.username }}
+                    className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-normal text-primary hover:underline"
+                  >
+                    <Gamepad2 className="h-3 w-3" />
+
+                    <>{texts.games.developer.devChip}</>
+                  </Link>
                 )}
               </div>
 
@@ -585,13 +621,15 @@ function Profile() {
                 </h2>
 
                 {/* Sem borda, sem cantos e sem folga interna do quadro: o card dá o acabamento e o
-                    HTML do autor usa todo o resto do espaço. A altura é fixa porque medir o conteúdo
-                    de dentro exigiria script no quadro — e não há script nele. */}
+                    HTML do autor usa todo o resto do espaço. O quadro cresce com o conteúdo, mas
+                    com TETO: uma bio gigante — ou um `100vh` colado por engano — para de crescer
+                    aqui em vez de empurrar a página inteira para baixo. */}
                 <SandboxedHtmlFrame
                   html={user.bioHtml}
                   title={texts.profile.bioHtml.frameTitle}
                   className="h-[520px] w-full rounded-none border-0 bg-transparent shadow-none"
                   innerPadding={false}
+                  maxHeight={1200}
                 />
               </section>
             ) : (
@@ -713,7 +751,9 @@ function Profile() {
               </Section>
             )}
 
-            {rankingData && rankingData.length > 0 && (
+            {/* Ranking OPCIONAL (pedido via suporte): quem desligou nas configuracoes nao ve a
+                secao — a preferencia e de quem LE, nao do perfil visitado. */}
+            {me?.showRanking !== false && rankingData && rankingData.length > 0 && (
               <Section title={texts.profile.sections.ranking} icon={Trophy}>
                 <div className="space-y-2">
                   {rankingData.slice(0, 5).map((u, i) => (
@@ -822,7 +862,7 @@ function RecommendationItem({ recommendation }: RecommendationItemProps) {
   return (
     <div className="rounded-xl bg-surface-1 p-3">
       <div className="flex items-center gap-2 mb-2">
-        <UserAvatar src={recommender?.avatar} alt={recommender?.name} className="h-6 w-6" />
+        <UserAvatar frame={recommender?.avatarFrame} src={recommender?.avatar} alt={recommender?.name} className="h-6 w-6" />
 
         <span className="text-xs font-medium text-text-strong">
           {recommender?.name ?? texts.profile.userFallback}

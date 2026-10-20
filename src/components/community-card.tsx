@@ -51,7 +51,9 @@ export function CommunityCard({
             </div>
           </div>
 
-          <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">{c.description}</p>
+          {c.description && (
+            <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">{c.description}</p>
+          )}
 
           <div className="mt-4 flex items-center justify-between gap-2">
             <span className="inline-flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">

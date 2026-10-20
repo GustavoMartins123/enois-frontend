@@ -7,7 +7,10 @@ export type PostView = {
   authorUsername: string;
   authorName: string;
   authorBadge?: string | null;
+  /** Todos os emblemas (até 5), na ordem escolhida: acompanham o nome em todo lugar. */
+  authorBadges?: string[] | null;
   authorAvatar: string | null;
+  authorAvatarFrame?: string | null;
   type:
     | "INSIGHT"
     | "ARTICLE"
@@ -18,6 +21,7 @@ export type PostView = {
     | "NEWS"
     | "TUTORIAL"
     | "REVIEW"
+    | "DIVERTIDO"
     | "MOMENT"
     /** Ponteiro de um post de blog: o conteúdo mora em /blog/{username}. */
     | "BLOG";
@@ -46,4 +50,6 @@ export type PostView = {
   community?: PostCommunity | null;
   /** Quando o autor editou o post (nulo se nunca editado). */
   editedAt?: string | null;
+  /** Prazo do Momento (some sozinho em 24h); null nos demais tipos. */
+  expiresAt?: string | null;
 };

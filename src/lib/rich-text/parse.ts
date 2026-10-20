@@ -308,10 +308,16 @@ export function parseInline(text: string): RichNode[] {
       continue;
     }
 
-    // 6. Menção: `@nome` no começo ou depois de espaço (e-mail não vira menção).
+    // 6. Menção: `@nome` no começo ou depois de espaço (e-mail não vira menção). O username pode
+    // ter hífen (`@wesley-rodrigues`); o hífen só entra se estiver seguido de letra/número.
     if (char === "@" && !isWord(text[index - 1]) && isWord(text[index + 1])) {
       let end = index + 1;
-      while (end < text.length && isWord(text[end])) end += 1;
+      while (
+        end < text.length &&
+        (isWord(text[end]) || (text[end] === "-" && isWord(text[end + 1])))
+      ) {
+        end += 1;
+      }
       take({ kind: "mention", text: text.slice(index, end) }, end);
       continue;
     }

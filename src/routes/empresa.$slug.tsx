@@ -7,6 +7,7 @@ import { texts } from "@/texts";
 import { ArrowLeft, Globe, MapPin, Users } from "lucide-react";
 
 import { companiesApi } from "@/lib/api";
+import { CompanyEditDialog } from "@/components/company-edit-dialog";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { getCurrentUser } from "@/lib/current-user";
 
@@ -119,6 +120,7 @@ function Empresa() {
     queryKey: ["empresa", slug],
     queryFn: () => companiesApi.bySlug(slug),
   });
+  const [editOpen, setEditOpen] = useState(false);
 
   const propose = useMutation({
     mutationFn: () => companiesApi.propose(proposalFor!, proposalMessage),
@@ -140,6 +142,8 @@ function Empresa() {
   }
 
   const isMember = company.myRole != null;
+  const canEdit = company.myRole === "OWNER" || company.myRole === "ADMIN" || company.myRole === "EDITOR";
+  const canManageTeam = company.myRole === "OWNER" || company.myRole === "ADMIN";
 
   return (
     <AppContainer>
@@ -182,12 +186,18 @@ function Empresa() {
             </div>
 
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-semibold tracking-tight">{company.name}</h1>
+              <h1 className="min-w-0 break-words text-2xl font-semibold tracking-tight">{company.name}</h1>
 
               {company.myRole && (
                 <span className="rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary">
                   {texts.empresa.myRole}: {company.myRole}
                 </span>
+              )}
+
+              {canEdit && (
+                <Button size="sm" variant="outline" className="rounded-full" onClick={() => setEditOpen(true)}>
+                  {texts.empresa.editPanel.title}
+                </Button>
               )}
             </div>
 

@@ -8,11 +8,11 @@ import { texts } from "@/texts";
 import type { Community } from "@/types/application/community/community";
 import type { CommunityTopic } from "@/types/application/community/community-topic";
 import type { CreateCommunityDialogProps } from "@/types/routes/communities/create-community-dialog-props";
-import { Loader2, Plus, Star, Users } from "lucide-react";
+import { Loader2, Plus, Search, Star, Users } from "lucide-react";
 
 import { communitiesApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
-import { requireAuth } from "@/lib/require-auth";
+import { useAuth, useIsAuthenticated } from "@/lib/use-auth";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -34,7 +34,6 @@ import { CommunityCard } from "@/components/community-card";
 import { COMMUNITY_FAVORITES_KEY } from "@/components/community-favorite-button";
 
 export const Route = createFileRoute("/comunidades")({
-  beforeLoad: requireAuth,
   head: () => ({ meta: [{ title: texts.communities.seoTitle }] }),
   component: Comunidades,
 });
@@ -43,7 +42,11 @@ function Comunidades() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const matchRoute = useMatchRoute();
+  const isAuthenticated = useIsAuthenticated();
+  const { requireAuth: needsLogin } = useAuth();
   const [topic, setTopic] = useState<CommunityTopic | undefined>(undefined);
+  const [search, setSearch] = useState("");
+  const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [cursor, setCursor] = useState<string | undefined>(undefined);
   const [allItems, setAllItems] = useState<Community[]>([]);
@@ -53,20 +56,41 @@ function Comunidades() {
   cursorRef.current = cursor;
   const isDetail = matchRoute({ to: "/comunidades/$communityId" });
 
+  // A busca é do servidor (nome/descrição em todas as páginas), com 300 ms de debounce para
+  // não disparar uma requisição por tecla.
+  useEffect(() => {
+    const timer = setTimeout(() => setQuery(search.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  useEffect(() => {
+    setCursor(undefined);
+    setAllItems([]);
+  }, [query]);
+
   const { data: communitiesData, isFetching } = useQuery({
-    queryKey: ["communities", topic, cursor],
-    queryFn: () => communitiesApi.list(topic, cursor),
+    queryKey: ["communities", topic, query, cursor],
+    queryFn: () => communitiesApi.list(topic, cursor, 20, query || undefined),
     enabled: !isDetail,
   });
 
   const nextCursor = communitiesData?.nextCursor ?? null;
 
   // Favoritas têm seção própria no início da página; a lista principal não repete
-  // nenhuma delas (remover o favorito devolve o card para o fluxo comum).
+  // nenhuma delas (remover o favorito devolve o card para o fluxo comum). Só pedem sessão:
+  // visitante vê a lista pública sem 401 no console.
   const { data: favoritesData } = useQuery({
     queryKey: COMMUNITY_FAVORITES_KEY,
     queryFn: () => communitiesApi.favorites(),
-    enabled: !isDetail,
+    enabled: !isDetail && isAuthenticated,
+  });
+
+  // As comunidades em que a pessoa já está vêm ANTES de tudo (pedido de quem usa: as primeiras
+  // exibidas são as nossas). Mesmo padrão das favoritas: seção fixa e fora do fluxo comum.
+  const { data: mineData } = useQuery({
+    queryKey: ["my-communities"],
+    queryFn: () => communitiesApi.mine(50),
+    enabled: !isDetail && isAuthenticated,
   });
 
   useEffect(() => {
@@ -82,12 +106,23 @@ function Comunidades() {
   }, [communitiesData]);
 
   const byId = new Map(allItems.map((c) => [c.id, c]));
-  // Com um tópico ativo, a seção mostra só as favoritas daquele tópico.
+  const matchesSearch = (community: Community) => {
+    if (!query) return true;
+    const needle = query.toLocaleLowerCase("pt-BR");
+    return (
+      community.name.toLocaleLowerCase("pt-BR").includes(needle) ||
+      (community.description ?? "").toLocaleLowerCase("pt-BR").includes(needle)
+    );
+  };
+  // Com um tópico ativo, as seções fixas mostram só o daquele tópico.
   const pinnedFavorites = (favoritesData?.items ?? [])
-    .filter((c) => !topic || c.topic === topic)
+    .filter((c) => (!topic || c.topic === topic) && matchesSearch(c))
     .map((c) => byId.get(c.id) ?? c);
-  const favoriteIds = new Set(pinnedFavorites.map((c) => c.id));
-  const gridItems = allItems.filter((c) => !favoriteIds.has(c.id));
+  const mineItems = (mineData?.items ?? [])
+    .filter((c) => (!topic || c.topic === topic) && matchesSearch(c))
+    .map((c) => byId.get(c.id) ?? c);
+  const pinnedIds = new Set([...mineItems, ...pinnedFavorites].map((c) => c.id));
+  const gridItems = allItems.filter((c) => !pinnedIds.has(c.id));
 
   const loadMore = () => {
     if (nextCursor && !isFetching) {
@@ -141,13 +176,33 @@ function Comunidades() {
             <p className="mt-1 text-sm text-muted-foreground">{texts.communities.description}</p>
           </div>
 
-          <CreateCommunityDialog open={open} onOpenChange={setOpen}>
+          <CreateCommunityDialog
+            open={open}
+            onOpenChange={(o) => {
+              // Visitante nao abre o formulario: manda para o login.
+              if (o && !needsLogin()) return;
+              setOpen(o);
+            }}
+          >
             <Button className="rounded-full gap-1.5">
               <Plus className="h-4 w-4" />
 
               <>{texts.communities.createCommunity}</>
             </Button>
           </CreateCommunityDialog>
+        </div>
+
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          {/* Sem `maxLength`: o contador que ele acende abaixo do campo cresce este container e
+              desloca a lupa (`top-1/2` passa a centrar no conjunto, não no input). */}
+          <Input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder={texts.communities.searchPlaceholder}
+            className="pl-9"
+            aria-label={texts.communities.searchPlaceholder}
+          />
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -161,6 +216,32 @@ function Comunidades() {
             </Pill>
           ))}
         </div>
+
+        {mineItems.length > 0 && (
+          <section className="space-y-3">
+            <h2 className="flex items-center gap-1.5 text-sm font-medium text-text-strong">
+              <Users className="h-4 w-4 text-primary" />
+
+              <>{texts.communities.mineTitle}</>
+            </h2>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {mineItems.map((c) => (
+                <CommunityCard
+                  key={c.id}
+                  community={c}
+                  joinPending={join.isPending}
+                  leavePending={leave.isPending}
+                  ownerBlocked={ownerBlockedId === c.id}
+                  onJoin={(id) => {
+                    if (needsLogin()) join.mutate(id);
+                  }}
+                  onLeave={setLeaveTarget}
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
         {pinnedFavorites.length > 0 && (
           <section className="space-y-3">
@@ -178,7 +259,9 @@ function Comunidades() {
                   joinPending={join.isPending}
                   leavePending={leave.isPending}
                   ownerBlocked={ownerBlockedId === c.id}
-                  onJoin={join.mutate}
+                  onJoin={(id) => {
+                    if (needsLogin()) join.mutate(id);
+                  }}
                   onLeave={setLeaveTarget}
                 />
               ))}
@@ -194,7 +277,9 @@ function Comunidades() {
               joinPending={join.isPending}
               leavePending={leave.isPending}
               ownerBlocked={ownerBlockedId === c.id}
-              onJoin={join.mutate}
+              onJoin={(id) => {
+                if (needsLogin()) join.mutate(id);
+              }}
               onLeave={setLeaveTarget}
             />
           ))}
@@ -240,7 +325,8 @@ function CreateCommunityDialog({ children, open, onOpenChange }: CreateCommunity
   const [topic, setTopic] = useState<CommunityTopic>("TECNOLOGIA");
 
   const create = useMutation({
-    mutationFn: () => communitiesApi.create({ name, description, topic }),
+    mutationFn: () =>
+      communitiesApi.create({ name, description: description.trim() || null, topic }),
     onSuccess: () => {
       toast(texts.communities.created);
       queryClient.invalidateQueries({ queryKey: ["communities"] });
@@ -307,7 +393,7 @@ function CreateCommunityDialog({ children, open, onOpenChange }: CreateCommunity
 
           <Button
             className="w-full rounded-full"
-            disabled={!name.trim() || !description.trim() || create.isPending}
+            disabled={!name.trim() || create.isPending}
             onClick={() => create.mutate()}
           >
             {create.isPending ? texts.common.creating : texts.common.create}

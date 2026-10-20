@@ -9,13 +9,14 @@ import type { CommentItemProps } from "@/types/components/post/comment-item-prop
 
 import { REACTION_EMOJIS, commentsApi, profileApi, reactionsApi } from "@/lib/api";
 import { getCurrentUserId } from "@/lib/current-user";
+import { hideExternalPageUrls } from "@/lib/shared-links";
 
 import { Button } from "@/components/ui/button";
 import { ReadMore } from "@/components/ui/read-more";
-import { Textarea } from "@/components/ui/textarea";
 
+import { MentionTextarea } from "@/components/mention-textarea";
 import { UserAvatar } from "@/components/user-avatar";
-import { UserBadge } from "@/components/user-badge";
+import { UserBadges } from "@/components/user-badge";
 
 import { formatTime } from "./format-time";
 import { LinkPreviews } from "./link-previews";
@@ -126,7 +127,7 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
   );
 
   const avatar = (
-    <UserAvatar src={comment.authorAvatar} alt={comment.authorName} className="h-8 w-8 shrink-0" />
+    <UserAvatar frame={comment.authorAvatarFrame} src={comment.authorAvatar} alt={comment.authorName} className="h-8 w-8 shrink-0" />
   );
 
   return (
@@ -149,7 +150,7 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
           <div className="flex flex-wrap items-center gap-2">
             {profileLink}
 
-            <UserBadge badge={comment.authorBadge} />
+            <UserBadges badges={comment.authorBadges} badge={comment.authorBadge} />
             {replyingTo && (
               <span className="text-xs font-normal text-text-subtle">
                 {texts.posts.comments.replyingTo(replyingTo)}
@@ -163,12 +164,13 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
 
           {editing ? (
             <div className="mt-1 space-y-2">
-              <Textarea
+              <MentionTextarea
                 value={editDraft}
-                onChange={(event) => setEditDraft(event.target.value)}
+                onChange={(value) => setEditDraft(value)}
                 rows={3}
                 maxLength={1024}
-                className="border-border-soft bg-surface-card text-sm font-normal"
+                className="rounded-lg border border-border-soft bg-surface-card px-3 py-2 text-sm font-normal"
+                toolbar
               />
 
               {editError && <p className="text-xs text-destructive">{editError}</p>}
@@ -206,7 +208,7 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
                   lessLabel={texts.common.readLess}
                 >
                   <RichText
-                    content={content}
+                    content={hideExternalPageUrls(content)}
                     className="whitespace-pre-line break-words text-sm font-normal leading-relaxed text-text-strong"
                   />
                 </ReadMore>

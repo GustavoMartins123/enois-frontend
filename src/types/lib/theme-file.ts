@@ -1,3 +1,4 @@
+import type { BackgroundStyle } from "@/types/preferences/background-style";
 import type { ThemeSettings } from "@/types/preferences/theme-settings";
 
 /**
@@ -17,4 +18,8 @@ export type ThemeFile = {
   /** Coleção de base (ver constants/theme-collections.ts). `null` = só as cores livres. */
   collection: string | null;
   settings: ThemeSettings;
+  /** Cor de widget livre do tema. Ausente = automática (a do tema ou da marca). */
+  widget?: BackgroundStyle;
+  /** Plano de fundo livre do tema. Ausente = o do tema ou da marca. */
+  page?: BackgroundStyle;
 };

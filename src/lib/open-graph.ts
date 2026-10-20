@@ -1,7 +1,7 @@
 import type { PostView } from "@/types/application/feed/post-view";
 import type { ShareMeta } from "@/types/lib/open-graph/share-meta";
 
-import { resolveCdnUrl } from "@/lib/api/media";
+import { resolveCdnUrl, withImageKitOriginal } from "@/lib/api/media";
 
 /**
  * Monta o metadado da miniatura de um post compartilhado.
@@ -85,7 +85,7 @@ export function buildPostShareMeta(input: {
       : isVideo
         ? `Vídeo publicado por ${author}`
         : `Publicação de ${author}`,
-    videoUrl: mimeType === "video/mp4" ? (mediaUrl ?? null) : null,
+    videoUrl: mimeType === "video/mp4" ? (withImageKitOriginal(mediaUrl) ?? null) : null,
     type: isVideo ? "video.other" : "article",
   };
 }
@@ -101,7 +101,6 @@ function excerpt(text: string, limit: number): string {
   const lastSpace = cut.lastIndexOf(" ");
   return `${(lastSpace > limit * 0.6 ? cut.slice(0, lastSpace) : cut).trimEnd()}…`;
 }
-
 
 /** Metadados para paginas publicas, emitidos no HTML inicial do servidor. */
 export function buildShareTags(input: {

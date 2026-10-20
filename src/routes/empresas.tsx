@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { Building2, Plus, Search } from "lucide-react";
+import { ArrowLeft, Building2, Plus, Search } from "lucide-react";
 import { useState } from "react";
 
 import { companiesApi, jobsApi } from "@/lib/api";
@@ -55,10 +55,24 @@ function Empresas() {
 
   const companies = data ?? [];
   const myCompanies = mine ?? [];
+  // As abas (pedido da Mel): Énóis (páginas empresariais reais) primeiro; externas à parte.
+  const [aba, setAba] = useState<"enois" | "externas">("enois");
+  const visiveis = companies.filter((c) => (aba === "enois" ? c.origem !== "externa" : c.origem === "externa"));
 
   return (
     <AppContainer>
       <div className="mx-auto w-full max-w-4xl space-y-5">
+        {/* Mesmo "voltar" da tela de suporte: a página de empresas é alcançada pelo menu e não
+            tinha caminho de volta (relato de suporte). */}
+        <Link
+          to="/feed"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+
+          <>{texts.post.back}</>
+        </Link>
+
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">{texts.empresas.title}</h1>
 
@@ -75,6 +89,24 @@ function Empresas() {
             className="h-11 w-full rounded-full border border-border-soft bg-surface-card pl-9 pr-4 text-sm outline-none transition focus:border-primary"
           />
         </label>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {([
+            ["enois", "Empresas do Énóis"],
+            ["externas", "Plataformas externas"],
+          ] as const).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
+                aba === id ? "bg-primary text-primary-foreground" : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
+              }`}
+              onClick={() => setAba(id)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
 
         {logged && (
           <div className="surface-card space-y-3 p-5">
@@ -116,7 +148,7 @@ function Empresas() {
           </div>
         ) : (
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {companies.map((company) => (
+            {visiveis.map((company) => (
               <li key={company.name}>
                 <Link
                   to="/vagas"

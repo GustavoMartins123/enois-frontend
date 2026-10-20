@@ -1,8 +1,17 @@
+import type { SupportCategory } from "./support-category";
+import type { SupportStatus } from "./support-status";
+
 export type SupportRequestView = {
   id: string;
+  userId: string;
   subject: string;
   message: string;
   contactEmail: string;
-  status: string;
+  imageUrl: string | null;
+  category: SupportCategory;
+  status: SupportStatus;
+  adminReply: string | null;
+  repliedBy: string | null;
+  repliedAt: string | null;
   createdAt: string;
 };

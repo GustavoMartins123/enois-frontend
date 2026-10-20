@@ -21,7 +21,7 @@ import {
   Briefcase,
   CheckCircle2,
   CircleHelp,
-  ExternalLink,
+  Bookmark, ExternalLink,
   Flag,
   Lock,
   MapPin,
@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 
 import { jobsApi, reportsApi } from "@/lib/api";
+import { requireAuth } from "@/lib/require-auth";
 import { CURRENCIES, currencySymbol, formatSalary } from "@/lib/currency";
 import type { CurrencyCode } from "@/lib/currency";
 import { useCurrentUser } from "@/lib/current-user";
@@ -50,12 +51,14 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/toast";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Pill } from "@/components/ui/pill";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
+import { CreateExternalJobDialog } from "@/components/create-external-job-dialog";
 import { InfiniteScroll } from "@/components/infinite-scroll";
 
 export const Route = createFileRoute("/vagas")({
@@ -113,7 +116,11 @@ function Vagas() {
   const [skills, setSkills] = useState("");
   const [cursor, setCursor] = useState<string | null>(null);
   const [allJobs, setAllJobs] = useState<Job[]>([]);
+  // As abas (pedido da Mel): Énóis primeiro, sem misturar; externas e salvas têm as suas.
+  const [aba, setAba] = useState<"enois" | "externas" | "salvas">("enois");
+  const [plataforma, setPlataforma] = useState("");
   const [showCreate, setShowCreate] = useState(false);
+  const [showExternal, setShowExternal] = useState(false);
   const [reportTarget, setReportTarget] = useState<Job | null>(null);
 
   const reputation = user?.reputation ?? 0;
@@ -127,17 +134,34 @@ function Vagas() {
     skills: skills || undefined,
   };
 
-  const { data: jobsData, isFetching } = useQuery({
-    queryKey: ["jobs", filters, cursor],
-    queryFn: () => jobsApi.list({ ...filters, cursor, limit: 10 }),
+  const { data: jobsData, isFetching, isError } = useQuery({
+    queryKey: ["jobs", aba, plataforma, filters, cursor],
+    queryFn: () =>
+      aba === "externas"
+        ? jobsApi.list({ ...filters, platform: plataforma || undefined, source: "EXTERNAL", limit: 10 })
+        : jobsApi.list({ ...filters, source: "INTERNAL", cursor, limit: 10 }),
     // Cache no front: navegar/focar/voltar nao rebate no backend; 60s de frescor.
     staleTime: 60_000,
     placeholderData: (previous) => previous,
     // Na vaga (ou em "Minhas vagas") esta lista não aparece: não vale gastar a requisição.
-    enabled: !isChildRoute,
+    enabled: !isChildRoute && aba !== "salvas",
   });
 
-  const jobs = jobsData?.items ?? [];
+  const salvas = useQuery({
+    queryKey: ["jobs", "salvas"],
+    queryFn: () => jobsApi.saved(),
+    enabled: !isChildRoute && aba === "salvas",
+  });
+
+  const plataformas = useQuery({
+    queryKey: ["jobs", "platforms"],
+    queryFn: () => jobsApi.platforms(),
+    enabled: !isChildRoute && aba === "externas",
+  });
+
+  const jobs = aba === "externas" && plataforma
+    ? (jobsData?.items ?? [])
+    : jobsData?.items ?? [];
   const nextCursor = jobsData?.nextCursor ?? null;
 
   // Reset list when filters change
@@ -162,6 +186,15 @@ function Vagas() {
 
   const apply = useMutation({
     mutationFn: (jobId: string) => jobsApi.apply(jobId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["jobs"] }),
+  });
+
+  const saveMut = useMutation({
+    mutationFn: (jobId: string) => jobsApi.save(jobId),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["jobs"] }),
+  });
+  const unsave = useMutation({
+    mutationFn: (jobId: string) => jobsApi.removeSave(jobId),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["jobs"] }),
   });
 
@@ -210,6 +243,18 @@ function Vagas() {
               >
                 {texts.jobs.myJobs}
               </Link>
+
+              {/* Vaga achada em outro site: cadastra aqui e o botão do card leva ao link. */}
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-full gap-1.5"
+                onClick={() => setShowExternal(true)}
+              >
+                <ExternalLink className="h-4 w-4" />
+
+                <>{texts.jobs.external.registerButton}</>
+              </Button>
 
               <Button
                 size="sm"
@@ -349,6 +394,57 @@ function Vagas() {
           </div>
         </div>
 
+        {/* As abas (pedido da Mel): Énóis primeiro, sem misturar com agregadores. */}
+        <div className="flex flex-wrap items-center gap-2">
+          {([
+            ["enois", "Vagas do Énóis"],
+            ["externas", "Plataformas externas"],
+            ["salvas", "Salvas"],
+          ] as const).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
+                aba === id ? "bg-primary text-primary-foreground" : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
+              }`}
+              onClick={() => {
+                setAba(id);
+                setAllJobs([]);
+                setCursor(null);
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {aba === "externas" && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs text-text-subtle">Agregador:</span>
+            <button
+              type="button"
+              className={`rounded-full px-3 py-1 text-xs font-medium transition ${!plataforma ? "bg-primary text-primary-foreground" : "border border-border-soft text-text-subtle"}`}
+              onClick={() => { setPlataforma(""); setAllJobs([]); setCursor(null); }}
+            >
+              todas
+            </button>
+            {(plataformas.data ?? []).map((p) => (
+              <button
+                key={p}
+                type="button"
+                className={`rounded-full px-3 py-1 text-xs font-medium transition ${plataforma === p ? "bg-primary text-primary-foreground" : "border border-border-soft text-text-subtle hover:border-primary"}`}
+                onClick={() => { setPlataforma(p); setAllJobs([]); setCursor(null); }}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {aba === "salvas" ? (
+          <SalvasTab />
+        ) : (
+          <>
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {allJobs.map((j) => (
             <article key={j.id} className="surface-card flex flex-col p-5">
@@ -442,6 +538,25 @@ function Vagas() {
                     <>{texts.jobs.report.action}</>
                   </Button>
 
+                  {/* Favoritar (saves): o marcador fica nas vagas do Énóis (as externas
+                      somem das agregadores quando expiram — o save é para as da casa). */}
+                  {j.sourceType !== "EXTERNAL" && (
+                    <button
+                      type="button"
+                      aria-label={j.saved ? "Remover das salvas" : "Salvar vaga"}
+                      className={cn(
+                        "inline-flex h-9 w-9 items-center justify-center rounded-full border border-border-soft transition",
+                        j.saved ? "border-primary text-primary" : "text-text-subtle hover:border-primary hover:text-primary",
+                      )}
+                      onClick={() => {
+                        requireAuth();
+                        (j.saved ? unsave : saveMut).mutate(j.id);
+                      }}
+                    >
+                      <Bookmark className={cn("h-4 w-4", j.saved && "fill-current")} />
+                    </button>
+                  )}
+
                   {/* Vaga externa nao tem detalhe no enois (nao e persistida): so "Visitar vaga". */}
                   {j.sourceType !== "EXTERNAL" && (
                     <Link
@@ -492,18 +607,13 @@ function Vagas() {
 
         {isFetching && allJobs.length > 0 && <LoadingState className="py-6" />}
 
-        <InfiniteScroll
-          hasMore={!!nextCursor}
-          loading={isFetching}
-          onLoadMore={() => {
-            if (nextCursor) setCursor(nextCursor);
-          }}
-        />
-
         {!isFetching && allJobs.length === 0 && <EmptyState title={texts.jobs.empty} />}
+          </>
+        )}
       </div>
 
       <CreateJobDialog open={showCreate} onOpenChange={setShowCreate} />
+      <CreateExternalJobDialog open={showExternal} onOpenChange={setShowExternal} />
       <ReportJobDialog job={reportTarget} onOpenChange={(open) => !open && setReportTarget(null)} />
     </AppContainer>
   );
@@ -1000,5 +1110,62 @@ function ReportJobDialog({ job, onOpenChange }: ReportJobDialogProps) {
         )}
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** A aba SALVAS (pedido da Mel): internas e externas resolvidas, na ordem do save. */
+function SalvasTab() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const salvas = useQuery({ queryKey: ["jobs", "salvas"], queryFn: () => jobsApi.saved() });
+  const remove = useMutation({
+    mutationFn: (jobId: string) => jobsApi.removeSave(jobId),
+    onSuccess: () => {
+      toast("Vaga removida das salvas.", "success");
+      void queryClient.invalidateQueries({ queryKey: ["jobs", "salvas"] });
+    },
+  });
+
+  if (salvas.isLoading) return <LoadingState className="py-6" />;
+  const itens = salvas.data?.items ?? [];
+  if (itens.length === 0) {
+    return (
+      <p className="rounded-2xl border border-border-soft bg-surface-card p-6 text-sm text-text-subtle">
+        Nenhuma vaga salva ainda — aperta o marcador no cartão da vaga.
+      </p>
+    );
+  }
+
+  return (
+    <ul className="space-y-3">
+      {itens.map((j) => (
+        <li key={j.id} className="surface-card flex flex-wrap items-center gap-3 p-4">
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-semibold">{j.title}</span>
+            <span className="block truncate text-xs text-text-subtle">
+              {j.company ?? ""} {j.location ? `· ${j.location}` : ""}
+              {j.sourceType === "EXTERNAL" ? ` · ${texts.jobs.externalBadge(j.sourcePlatform ?? "plataforma externa")}` : ""}
+            </span>
+          </span>
+          {j.sourceType !== "EXTERNAL" && (
+            <Link
+              to="/vagas/$jobId"
+              params={{ jobId: j.id }}
+              className="rounded-full border border-border-soft px-3 py-1.5 text-sm font-medium transition hover:bg-muted"
+            >
+              {texts.jobs.details}
+            </Link>
+          )}
+          <button
+            type="button"
+            className="shrink-0 rounded-full border border-border-soft px-3 py-1.5 text-xs text-text-subtle transition hover:border-destructive hover:text-destructive"
+            disabled={remove.isPending}
+            onClick={() => remove.mutate(j.id)}
+          >
+            Remover
+          </button>
+        </li>
+      ))}
+    </ul>
   );
 }

@@ -11,7 +11,7 @@ import type { ForgotPasswordDialogProps } from "@/types/routes/auth/forgot-passw
 import type { LoginFormProps } from "@/types/routes/auth/login-form-props";
 import type { SocialButtonsProps } from "@/types/routes/auth/social-buttons-props";
 import type { TabBtnProps } from "@/types/routes/auth/tab-btn-props";
-import { ArrowRight, Eye, EyeOff, Loader2, MailCheck, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Loader2, MailCheck, ShieldCheck } from "lucide-react";
 import { z } from "zod";
 
 import { ApiError, authApi } from "@/lib/api";
@@ -82,9 +82,7 @@ function Auth() {
         />
 
         <Link to="/" className="relative flex items-center gap-2">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary-foreground/20 backdrop-blur">
-            <Sparkles className="h-4 w-4" />
-          </div>
+          <img src="/brand/mark-primary.svg" alt="" className="h-9 w-9 shrink-0" />
 
           <span className="text-lg font-semibold tracking-tight">
             <>{texts.brand.prefix}</>
@@ -128,12 +126,7 @@ function Auth() {
       <section className="flex flex-col px-6 py-10 sm:px-12">
         <div className="flex items-center justify-between lg:hidden">
           <Link to="/" className="flex items-center gap-2">
-            <div
-              className="grid h-9 w-9 place-items-center rounded-xl text-primary-foreground"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              <Sparkles className="h-4 w-4" />
-            </div>
+            <img src="/brand/mark-primary.svg" alt="" className="h-9 w-9 shrink-0" />
 
             <span className="font-semibold tracking-tight">
               <>{texts.brand.prefix}</>

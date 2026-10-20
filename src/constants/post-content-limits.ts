@@ -12,13 +12,14 @@ import type { PostView } from "@/types/application/feed/post-view";
  */
 const LIMITS: Record<PostView["type"], number> = {
   QUESTION: 400,
+  DIVERTIDO: 400,
+  MOMENT: 500,
   REVIEW: 600,
   PROJECT: 2000,
   NEWS: 2000,
   OPPORTUNITY: 1500,
   TUTORIAL: 5000,
   INSIGHT: 1200,
-  MOMENT: 1200,
   PAGE: 1200,
   ARTICLE: 1200,
   BLOG: 1200,

@@ -5,6 +5,7 @@ import type { CreatePostInput } from "@/types/application/feed/create-post-input
 import type { DeleteResult } from "@/types/application/feed/delete-result";
 import type { FeedTab } from "@/types/application/feed/feed-tab";
 import type { PostView } from "@/types/application/feed/post-view";
+import type { ScheduledPostView } from "@/types/application/feed/scheduled-post-view";
 
 import { api, buildQuery } from "../api-client";
 
@@ -22,9 +23,18 @@ export const feedApi = {
   listByUserId: (userId: string, cursor?: string | null, limit = 20) =>
     api.get<PageResponse<PostView>>(`/users/${userId}/posts${buildQuery({ cursor, limit })}`),
 
-  // `pageHtml` so vai em post do tipo PAGE; o backend descarta em qualquer outro tipo.
-  update: (postId: string, data: { content: string; tags?: string[]; pageHtml?: string }) =>
-    api.patch<PostView>(`/feed/posts/${postId}`, data),
+  // `pageHtml` so vai em post do tipo PAGE e `articleBody` so em ARTICLE; o backend descarta nos
+  // demais tipos. Num artigo o corpo e obrigatorio tambem na edicao.
+  update: (
+    postId: string,
+    data: {
+      content: string;
+      tags?: string[];
+      pageHtml?: string;
+      articleBody?: string;
+      type?: string;
+    },
+  ) => api.patch<PostView>(`/feed/posts/${postId}`, data),
 
   /** Desfaz a exclusão do próprio post (soft delete reversível). */
   restore: (postId: string) => api.post<PostView>(`/feed/posts/${postId}/restore`),
@@ -36,4 +46,25 @@ export const feedApi = {
 
   bulkDelete: (data: BulkDeleteInput) =>
     api.post<BulkDeleteResult>("/feed/posts/bulk-delete", data),
+
+  // --- agendamento: o post só existe no feed quando o horário chega ---
+
+  /** Marca um post para ir ao ar sozinho na data/hora escolhida (ISO 8601, UTC). */
+  schedule: (data: {
+    type: string;
+    content?: string;
+    pageHtml?: string;
+    articleBody?: string;
+    tags?: string[];
+    mediaIds?: string[];
+    mentionedUserIds?: string[];
+    communityId?: string;
+    scheduledAt: string;
+  }) => api.post<ScheduledPostView>("/feed/scheduled", data),
+
+  /** Os agendados de quem está logado, do mais próximo ao mais distante. */
+  scheduled: () => api.get<ScheduledPostView[]>("/feed/scheduled"),
+
+  cancelScheduled: (id: string) =>
+    api.delete<{ id: string; status: string }>(`/feed/scheduled/${encodeURIComponent(id)}`),
 };

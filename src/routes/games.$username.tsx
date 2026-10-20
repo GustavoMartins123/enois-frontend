@@ -1,22 +1,38 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import { ExternalLink, Gamepad2, Users } from "lucide-react";
 
 import { gamesApi } from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
 import { useAuth } from "@/lib/use-auth";
 
 import { Button } from "@/components/ui/button";
 
 import { AppContainer } from "@/components/app-container";
+import { GameIcon } from "@/components/game-icon";
 import { UserAvatar } from "@/components/user-avatar";
-import { UserBadge } from "@/components/user-badge";
+import { UserBadges } from "@/components/user-badge";
 
 export const Route = createFileRoute("/games/$username")({
   head: ({ params }) => ({ meta: [{ title: `${params.username} · Jogos · Énóis` }] }),
   component: DeveloperPage,
 });
+
+/**
+ * /games/$username também é rota-mãe de /games/$username/$gameSlug (a página do jogo): precisa
+ * devolver o filho pelo Outlet, senão a página do criador engole o player.
+ */
+function DeveloperPage() {
+  const { username } = Route.useParams();
+  const matchRoute = useMatchRoute();
+  return matchRoute({ to: "/games/$username", params: { username }, fuzzy: false }) ? (
+    <CreatorPage />
+  ) : (
+    <Outlet />
+  );
+}
 
 /**
  * A página do criador.
@@ -25,7 +41,7 @@ export const Route = createFileRoute("/games/$username")({
  * (nome de estúdio, chamada, bio, links) fica ao lado. Quem não preencheu nada e não tem jogo
  * publicado não ganha página — o backend devolve 404 em vez de mostrar um perfil vazio.
  */
-function DeveloperPage() {
+function CreatorPage() {
   const { username } = Route.useParams();
   const { requireAuth } = useAuth();
   const queryClient = useQueryClient();
@@ -73,8 +89,13 @@ function DeveloperPage() {
     <AppContainer>
       <div className="mx-auto w-full max-w-3xl space-y-5">
         <div className="surface-card overflow-hidden">
+          {/* resolveCdnUrl: a capa pode ser relativa (arquivo nosso) — sem isso ela não abria. */}
           {dev.cover ? (
-            <img src={dev.cover} alt="" className="h-32 w-full object-cover sm:h-40" />
+            <img
+              src={resolveCdnUrl(dev.cover)}
+              alt=""
+              className="h-32 w-full object-cover sm:h-40"
+            />
           ) : (
             <div className="h-20 w-full bg-primary-soft" />
           )}
@@ -87,10 +108,10 @@ function DeveloperPage() {
             />
 
             <div className="min-w-0 flex-1">
-              <h1 className="flex flex-wrap items-center gap-1.5 text-xl font-semibold tracking-tight text-text-strong">
+              <h1 className="flex min-w-0 flex-wrap items-center gap-1.5 break-words text-xl font-semibold tracking-tight text-text-strong">
                 <>{dev.displayName || dev.name}</>
 
-                <UserBadge badge={dev.badge} />
+                <UserBadges badges={dev.badges} badge={dev.badge} />
               </h1>
 
               <p className="text-sm text-text-subtle">
@@ -167,17 +188,7 @@ function DeveloperPage() {
                   params={{ username: dev.username, gameSlug: game.slug }}
                   className="surface-card flex items-center gap-3 p-3 transition hover:border-primary"
                 >
-                  {game.cover ? (
-                    <img
-                      src={game.cover}
-                      alt=""
-                      className="h-12 w-12 shrink-0 rounded-xl object-cover"
-                    />
-                  ) : (
-                    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary-soft">
-                      <Gamepad2 className="h-5 w-5 text-primary-text" />
-                    </span>
-                  )}
+                  <GameIcon cover={game.cover} icon={game.icon} url={game.url} />
 
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold text-text-strong">

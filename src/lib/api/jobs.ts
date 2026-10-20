@@ -1,5 +1,6 @@
 import type { PageResponse } from "@/types/application/api/page-response";
 import type { StatusResponse } from "@/types/application/api/status-response";
+import type { CreateExternalJobInput } from "@/types/application/job/create-external-job-input";
 import type { CreateJobInput } from "@/types/application/job/create-job-input";
 import type { Job } from "@/types/application/job/job";
 import type { JobApplication, JobApplicationInput } from "@/types/application/job/job-application";
@@ -14,6 +15,8 @@ export type CompanyDirectoryEntry = {
   name: string;
   logo: string;
   openJobs: number;
+  /** enois (página real) ou externa (agregador). */
+  origem?: "enois" | "externa" | null;
 };
 
 export const jobsApi = {
@@ -41,6 +44,15 @@ export const jobsApi = {
 
   remove: (jobId: string) => api.delete<void>(`/jobs/${jobId}`),
 
+  /** Cadastra uma vaga EXTERNA (achada em outro site): o Énóis lista e o botão vai ao link. */
+  submitExternal: (data: CreateExternalJobInput) => api.post<Job>("/jobs/external", data),
+
+  /** As vagas externas que EU cadastrei (com o direito de excluir). */
+  myExternal: () => api.get<Job[]>("/jobs/external/mine"),
+
+  /** Exclui uma vaga externa cadastrada por mim. */
+  removeExternal: (id: string) => api.delete<void>(`/jobs/external/${id}`),
+
   /** Encerra o processo seletivo: para de aceitar candidatura e preserva as recebidas. */
   close: (jobId: string) => api.post<Job>(`/jobs/${jobId}/close`),
 
@@ -64,6 +76,10 @@ export const jobsApi = {
   receivedApplications: (jobId: string, limit = 50) =>
     api.get<JobApplication[]>(`/jobs/${jobId}/applications${buildQuery({ limit })}`),
 
+  /** As vagas salvas (internas e externas resolvidas, na ordem do save). */
+  saved: () => api.get<PageResponse<Job>>(`/jobs/saved`),
+  /** Os agregadores disponíveis (o filtro da aba externas). */
+  platforms: () => api.get<string[]>(`/jobs/platforms`),
   save: (jobId: string) => api.post<StatusResponse>(`/jobs/${jobId}/saves`),
 
   removeSave: (jobId: string) => api.delete<StatusResponse>(`/jobs/${jobId}/saves`),

@@ -90,7 +90,12 @@ export function ReactionsDialog({ postId }: PostIdProps) {
 
           return (
             <li key={`${r.userId}-${r.type}`} className="flex h-12 items-center gap-3 px-3">
-              <UserAvatar src={avatar} alt={profile?.name} className="h-8 w-8 shrink-0" />
+              <UserAvatar
+                frame={profile?.avatarFrame}
+                src={avatar}
+                alt={profile?.name}
+                className="h-8 w-8 shrink-0"
+              />
 
               <span className="min-w-0 flex-1 truncate text-sm font-normal text-text-strong">
                 {profile?.name ?? texts.common.loading}

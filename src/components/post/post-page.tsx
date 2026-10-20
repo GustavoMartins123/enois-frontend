@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { CONTENT_ORIGIN, HAS_CONTENT_ORIGIN } from "@/constants/content-origin";
+import { PAGE_EMBED_HEIGHT } from "@/constants/post-page";
 import { texts } from "@/texts";
 import type { PostPageProps } from "@/types/components/post/post-page-props";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
@@ -13,10 +14,10 @@ import { SandboxedHtmlFrame } from "./sandboxed-html-frame";
 /**
  * A "mini pagina" dentro do post: o HTML colado pelo autor renderizado num quadro isolado.
  *
- * No modo embutido o quadro cresce ate o conteudo (a altura sai da medida do documento, sem rodar
- * script nenhum — ver SandboxedHtmlFrame), entao a pagina aparece inteira no post e quem rola e a
- * tela. Na origem de conteudo a medida nao e possivel (documento de outra origem) e o quadro segue
- * com altura fixa; quem quiser ler com folga abre o dialogo em tela cheia, que e uma janela.
+ * No modo embutido o quadro tem a altura de um post de ~800 caracteres (PAGE_EMBED_HEIGHT) e o que
+ * passar disso rola por dentro — a página não pode esticar o feed. Na origem de conteúdo o quadro já
+ * era uma janela fixa; o modo de reserva agora segue a mesma regra. Quem quiser ler com folga abre o
+ * diálogo em tela cheia, que é uma janela.
  *
  * O documento vem da ORIGEM DE CONTEUDO (`/pages/{id}`), separada da origem do app — e por isso o
  * quadro pode liberar script (o player de terceiros precisa) sem que o HTML colado alcance a sessao
@@ -30,7 +31,9 @@ export function PostPage({ postId, html }: PostPageProps) {
     // `-mx-*` cancela o padding do card do post: a página encosta nas laterais em vez de flutuar
     // dentro de uma moldura clara (era o que aparecia como "bordinha branca" em volta).
     <div className="-mx-4 mt-4 sm:-mx-5">
-      <div className="w-full overflow-hidden">
+      {/* Altura fixa de "post de ~800 caracteres": nos dois modos o que passar rola por dentro,
+          então a página nunca estica a lista. A largura continua a do post. */}
+      <div className="w-full overflow-hidden" style={{ height: PAGE_EMBED_HEIGHT }}>
         {pageUrl ? (
           // Origem separada: aqui o quadro PODE rodar script (o player vive dentro da página) sem
           // que isso dê acesso ao app — é a origem diferente, não a política, que garante o corte.
@@ -46,14 +49,16 @@ export function PostPage({ postId, html }: PostPageProps) {
             allowFullScreen
             referrerPolicy="no-referrer"
             loading="lazy"
-            className="h-[520px] w-full bg-white"
+            className="h-full w-full bg-white"
           />
         ) : (
           <SandboxedHtmlFrame
             html={html}
             title={texts.posts.page.frameTitle}
-            className="h-[520px] w-full"
+            className="h-full w-full"
             innerPadding={false}
+            // Janela, não faixa: a altura vem do contêiner e o excedente rola dentro do quadro.
+            autoHeight={false}
           />
         )}
       </div>

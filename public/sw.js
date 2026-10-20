@@ -12,17 +12,18 @@
  * cliente recarrega sozinho quando o novo SW assume (ver src/lib/pwa.ts).
  */
 
-const VERSION = "enois-v3";
+const VERSION = "enois-v7";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGES_CACHE = `${VERSION}-pages`;
 
 const PRECACHE = [
   "/offline.html",
+  "/brand/mark-primary.svg",
   "/manifest.webmanifest",
-  "/favicon.png",
-  "/icons/icon-192.png",
-  "/icons/icon-512.png",
-  "/icons/icon-maskable-512.png",
+  "/favicon.ico",
+  "/icons/brand-icon-192.png",
+  "/icons/brand-icon-512.png",
+  "/icons/brand-icon-maskable-512.png",
   "/icons/apple-touch-icon.png",
 ];
 
@@ -72,8 +73,8 @@ self.addEventListener("push", (event) => {
   event.waitUntil(
     self.registration.showNotification(title, {
       body: data.body || "",
-      icon: "/icons/icon-192.png",
-      badge: "/icons/icon-192.png",
+      icon: "/icons/brand-icon-192.png",
+      badge: "/icons/brand-icon-192.png",
       data: { url },
       tag: data.tag || undefined,
     }),

@@ -3,9 +3,9 @@ import { type ChangeEvent, type FormEvent, useCallback, useRef, useState } from 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import { postContentLimit } from "@/constants/post-content-limits";
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { ARTICLE_BODY_MAX_LENGTH, POST_TYPES } from "@/constants/post-types";
-import { postContentLimit } from "@/constants/post-content-limits";
 import { texts } from "@/texts";
 import type { CreatePostInput } from "@/types/application/feed/create-post-input";
 import type { FeedTab } from "@/types/application/feed/feed-tab";
@@ -15,7 +15,10 @@ import type { MediaItem } from "@/types/routes/feed/media-item";
 import {
   BarChart3,
   Calendar,
+  CalendarClock,
   ChevronDown,
+  ChevronRight,
+  Clock,
   Code2,
   FileText,
   Film,
@@ -32,13 +35,15 @@ import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Pill } from "@/components/ui/pill";
-import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { HtmlEditor } from "@/components/html-editor";
 import { InfiniteScroll } from "@/components/infinite-scroll";
+import { LinkedInSyncPrompt } from "@/components/linkedin-sync-prompt";
 import { MentionTextarea } from "@/components/mention-textarea";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
@@ -92,6 +97,7 @@ function useEvents() {
 
 function Home() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [tab, setTab] = useState<FeedTab>("FOR_YOU");
   const {
     data: feedData,
@@ -118,6 +124,9 @@ function Home() {
   const [typePickerOpen, setTypePickerOpen] = useState(false);
   const [pageHtml, setPageHtml] = useState("");
   const [articleBody, setArticleBody] = useState("");
+  // Agendamento: o post fica na fila do backend e só entra no feed na hora marcada.
+  const [schedulingOpen, setSchedulingOpen] = useState(false);
+  const [scheduleAt, setScheduleAt] = useState("");
   const pageMode = postType === "PAGE";
   const articleMode = postType === "ARTICLE";
   const currentType = POST_TYPES.find((option) => option.id === postType) ?? POST_TYPES[0];
@@ -130,6 +139,78 @@ function Home() {
       queryClient.invalidateQueries({ queryKey: ["feed"] });
     },
   });
+
+  const scheduledQuery = useQuery({
+    queryKey: ["feed", "scheduled"],
+    queryFn: () => feedApi.scheduled(),
+  });
+  const scheduledList = scheduledQuery.data ?? [];
+
+  const schedulePost = useMutation({
+    mutationFn: (data: Parameters<typeof feedApi.schedule>[0]) => feedApi.schedule(data),
+    onSuccess: (agendado) => {
+      toast(
+        texts.feed.composer.scheduleDone(new Date(agendado.scheduledAt).toLocaleString("pt-BR")),
+        "success",
+      );
+      void queryClient.invalidateQueries({ queryKey: ["feed", "scheduled"] });
+    },
+    onError: (error) => setPublishError(error.message),
+  });
+
+  const cancelScheduled = useMutation({
+    mutationFn: (id: string) => feedApi.cancelScheduled(id),
+    onSuccess: () => {
+      toast(texts.feed.composer.scheduleCancelled, "success");
+      void queryClient.invalidateQueries({ queryKey: ["feed", "scheduled"] });
+    },
+    onError: (error) => toast(error.message, "error"),
+  });
+
+  const schedulePublish = async () => {
+    const content = draft.trim();
+    if (pageMode ? !pageHtml.trim() : !content) return;
+    if (articleMode && !articleBody.trim()) return;
+    if (!scheduleAt) return;
+
+    setPublishError(null);
+    try {
+      let mediaIds: string[] = [];
+      if (!pageMode && media.length > 0) {
+        const results = await upload.uploadAll(media.map((m) => ({ file: m.file })));
+        mediaIds = results.map((r) => r.mediaId);
+      }
+      await schedulePost.mutateAsync({
+        type: postType,
+        content: pageMode ? "" : content,
+        mediaIds,
+        // As menções viajam com o agendado e valem na PUBLICAÇÃO (quem foi marcado é avisado
+        // quando o post entra no ar, não quando foi agendado).
+        mentionedUserIds: pageMode ? [] : mentionedUserIds,
+        ...(pageMode ? { pageHtml } : {}),
+        ...(articleMode ? { articleBody } : {}),
+        scheduledAt: new Date(scheduleAt).toISOString(),
+      });
+      setDraft("");
+      setMentionedUserIds([]);
+      setPostType("INSIGHT");
+      setMedia([]);
+      setPageHtml("");
+      setArticleBody("");
+      setTypePickerOpen(false);
+      setScheduleAt("");
+      setSchedulingOpen(false);
+    } catch {
+      // o motivo já foi para o publishError pelo onError da mutation
+    }
+  };
+
+  // O mínimo do input datetime-local é AGORA+1min (o backend recusa mais perto que isso).
+  const minScheduleAt = new Date(
+    Date.now() + 60_000 - new Date().getTimezoneOffset() * 60_000,
+  )
+    .toISOString()
+    .slice(0, 16);
 
   const publishPost = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -183,11 +264,10 @@ function Home() {
     }
   };
 
-  const handleMediaSelect = (e: ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+  const addMediaFiles = (files: File[]) => {
+    if (files.length === 0) return;
 
-    for (const file of Array.from(files)) {
+    for (const file of files) {
       const isVideo = file.type.startsWith("video/");
       const isImage = file.type.startsWith("image/");
       if (!isVideo && !isImage) continue;
@@ -202,6 +282,10 @@ function Home() {
       const preview = URL.createObjectURL(file);
       setMedia((prev) => [...prev, { type: isVideo ? "video" : "image", file, preview }]);
     }
+  };
+
+  const handleMediaSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    addMediaFiles(Array.from(e.target.files ?? []));
     e.target.value = "";
   };
 
@@ -227,6 +311,9 @@ function Home() {
 
   return (
     <AppContainer>
+      {/* Pergunta única ao voltar do vínculo com o LinkedIn (flag gravada pelo diálogo de contas). */}
+      <LinkedInSyncPrompt />
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-4">
           {/* Composer */}
@@ -236,6 +323,7 @@ function Home() {
           >
             <div className="flex items-start gap-3">
               <UserAvatar
+                frame={profileUser?.avatarFrame}
                 src={profileUser?.avatar}
                 alt={profileUser?.name ?? texts.feed.you}
                 className="h-11 w-11"
@@ -255,6 +343,7 @@ function Home() {
                   className="flex-1 resize-none rounded-2xl border-border-soft bg-surface-1 px-3 py-2 text-sm font-normal"
                   maxLength={postContentLimit(postType)}
                   toolbar
+                  onPasteImages={addMediaFiles}
                 />
               )}
             </div>
@@ -281,24 +370,22 @@ function Home() {
 
             {articleMode && (
               <div className="mt-3 rounded-2xl border border-border-soft bg-surface-1 p-3">
-                <label
-                  htmlFor="composer-article-body"
-                  className="mb-1 block text-sm font-normal text-text-subtle"
-                >
+                <span className="mb-1 block text-sm font-normal text-text-subtle">
                   {texts.feed.composer.article.bodyLabel}
-                </label>
+                </span>
 
                 <p className="mb-2 text-sm font-normal text-text-subtle">
                   {texts.feed.composer.article.bodyHint}
                 </p>
 
-                <Textarea
-                  id="composer-article-body"
+                <MentionTextarea
                   value={articleBody}
                   maxLength={ARTICLE_BODY_MAX_LENGTH}
-                  onChange={(event) => setArticleBody(event.target.value)}
+                  onChange={(value) => setArticleBody(value)}
                   placeholder={texts.feed.composer.article.bodyPlaceholder}
-                  className="min-h-[220px]"
+                  className="min-h-[220px] rounded-lg border border-border-soft bg-transparent px-3 py-2 text-sm text-text-strong"
+                  rows={8}
+                  toolbar
                 />
               </div>
             )}
@@ -385,6 +472,13 @@ function Home() {
                     />
                   </button>
 
+                  {currentType.id === "MOMENT" && (
+                    <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+                      <Clock className="h-3.5 w-3.5" />
+                      {currentType.hint}
+                    </p>
+                  )}
+
                   {typePickerOpen && (
                     <div className="absolute bottom-full left-0 z-40 mb-1 w-[min(22rem,80vw)] rounded-2xl border border-border-soft bg-popover p-2 shadow-lg">
                       <div className="flex flex-wrap gap-1.5">
@@ -454,6 +548,25 @@ function Home() {
                   </span>
                 )}
                 <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="rounded-full gap-1.5"
+                  disabled={
+                    (pageMode ? !pageHtml.trim() : !draft.trim()) ||
+                    (articleMode && !articleBody.trim()) ||
+                    createPost.isPending ||
+                    upload.status === "uploading"
+                  }
+                  onClick={() => setSchedulingOpen((open) => !open)}
+                  title={texts.feed.composer.scheduleHint}
+                >
+                  <CalendarClock className="h-3.5 w-3.5" />
+
+                  <>{texts.feed.composer.schedule}</>
+                </Button>
+
+                <Button
                   size="sm"
                   className="rounded-full"
                   disabled={
@@ -480,12 +593,92 @@ function Home() {
               </div>
             </div>
 
+            {schedulingOpen && (
+              <div className="mt-3 flex flex-wrap items-end gap-2 rounded-xl border border-border-soft bg-surface-1 p-3">
+                <label className="text-xs font-normal text-text-subtle">
+                  {texts.feed.composer.scheduleDate}
+                  <Input
+                    type="datetime-local"
+                    value={scheduleAt}
+                    min={minScheduleAt}
+                    onChange={(event) => setScheduleAt(event.target.value)}
+                    className="mt-1"
+                  />
+                </label>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  className="rounded-full"
+                  disabled={!scheduleAt || schedulePost.isPending || upload.status === "uploading"}
+                  onClick={schedulePublish}
+                >
+                  {schedulePost.isPending ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    texts.feed.composer.scheduleConfirm
+                  )}
+                </Button>
+
+                <p className="text-[11px] font-normal text-text-subtle">
+                  {texts.feed.composer.scheduleHint}
+                </p>
+              </div>
+            )}
+
             {publishError && (
               <p className="mt-2 rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs font-normal text-destructive">
                 {publishError}
               </p>
             )}
           </form>
+
+          {scheduledList.length > 0 && (
+            <section className="rounded-2xl border border-border-soft bg-surface-card p-4">
+              <h2 className="flex items-center gap-2 text-sm font-semibold text-text-strong">
+                <CalendarClock className="h-4 w-4 text-primary" />
+
+                <>{texts.feed.composer.scheduledTitle(scheduledList.length)}</>
+              </h2>
+
+              <ul className="mt-2 space-y-2">
+                {scheduledList.map((agendado) => (
+                  <li
+                    key={agendado.id}
+                    className="flex items-start justify-between gap-2 rounded-xl bg-surface-1 px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm text-text-strong">
+                        {agendado.content ||
+                          (agendado.pageHtml
+                            ? texts.feed.composer.scheduledPage
+                            : agendado.type)}
+                      </p>
+
+                      <p className="text-xs text-text-subtle">
+                        {texts.feed.composer.scheduledFor(
+                          new Date(agendado.scheduledAt).toLocaleString("pt-BR"),
+                        )}
+                        {agendado.lastError ? ` · ${agendado.lastError}` : ""}
+                      </p>
+                    </div>
+
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="rounded-full"
+                      title={texts.feed.composer.scheduleCancel}
+                      disabled={cancelScheduled.isPending}
+                      onClick={() => cancelScheduled.mutate(agendado.id)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           {/* Tabs */}
           <div className="flex flex-wrap items-center gap-1.5">
@@ -534,6 +727,7 @@ function Home() {
 
               <div className="-mt-7 px-4 pb-4 text-center">
                 <UserAvatar
+                  frame={profileUser.avatarFrame}
                   src={profileUser.avatar}
                   alt={profileUser.name}
                   className="mx-auto h-16 w-16 ring-4 ring-surface-card"
@@ -585,7 +779,7 @@ function Home() {
               <ul className="mt-4 space-y-3">
                 {suggestionList.map((u) => (
                   <li key={u.id} className="flex items-center gap-3">
-                    <UserAvatar src={u.avatar} alt={u.name} className="h-10 w-10" />
+                    <UserAvatar src={u.avatar} frame={u.avatarFrame} alt={u.name} className="h-10 w-10" />
 
                     <div className="min-w-0 flex-1">
                       <Link
@@ -631,18 +825,39 @@ function Home() {
               <ul className="mt-3 space-y-3">
                 {eventList.slice(0, 3).map((e) => (
                   <li key={e.id}>
-                    <p className="text-sm font-normal text-text-strong">{e.title}</p>
+                    {/* O item inteiro é o link para o evento. A seta é o que diz isso: sem ela, o
+                        título só reagia no hover e a linha parecia texto solto. */}
+                    <Link
+                      to="/eventos"
+                      search={{ evento: e.id }}
+                      className="group/ev flex items-start gap-2"
+                    >
+                      <span className="min-w-0 flex-1">
+                        <p className="text-sm font-normal text-text-strong underline-offset-2 group-hover/ev:underline">
+                          {e.title}
+                        </p>
 
-                    <p className="text-xs font-normal text-text-subtle">
-                      {texts.feed.sidebar.eventMeta(
-                        e.date,
-                        e.format,
-                        texts.feed.sidebar.confirmed(e.attendees),
-                      )}
-                    </p>
+                        <p className="text-xs font-normal text-text-subtle">
+                          {texts.feed.sidebar.eventMeta(
+                            e.date,
+                            e.format,
+                            texts.feed.sidebar.confirmed(e.attendees),
+                          )}
+                        </p>
+                      </span>
+
+                      <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-text-subtle transition group-hover/ev:translate-x-0.5 group-hover/ev:text-primary" />
+                    </Link>
                   </li>
                 ))}
               </ul>
+
+              <Link
+                to="/eventos"
+                className="mt-3 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+              >
+                {texts.feed.sidebar.seeAllEvents}
+              </Link>
             </div>
           )}
         </aside>

@@ -13,16 +13,20 @@ import { Route as VagasRouteImport } from './routes/vagas'
 import { Route as TermosRouteImport } from './routes/termos'
 import { Route as TemasRouteImport } from './routes/temas'
 import { Route as SuporteRouteImport } from './routes/suporte'
+import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as ServicosRouteImport } from './routes/servicos'
 import { Route as SegurancaRouteImport } from './routes/seguranca'
 import { Route as SalvosRouteImport } from './routes/salvos'
 import { Route as RedeRouteImport } from './routes/rede'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PenalidadesRouteImport } from './routes/penalidades'
+import { Route as ModeradorRouteImport } from './routes/moderador'
 import { Route as ModeracaoRouteImport } from './routes/moderacao'
 import { Route as MentoriaRouteImport } from './routes/mentoria'
 import { Route as MensagensRouteImport } from './routes/mensagens'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
+import { Route as JogosDiariosRouteImport } from './routes/jogos-diarios'
+import { Route as GruposRouteImport } from './routes/grupos'
 import { Route as GamesRouteImport } from './routes/games'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as EventosRouteImport } from './routes/eventos'
@@ -42,6 +46,7 @@ import { Route as VagasJobIdRouteImport } from './routes/vagas.$jobId'
 import { Route as PostPostIdRouteImport } from './routes/post.$postId'
 import { Route as PerfilUsernameRouteImport } from './routes/perfil.$username'
 import { Route as ModeracaoReportIdRouteImport } from './routes/moderacao.$reportId'
+import { Route as GruposSlugRouteImport } from './routes/grupos.$slug'
 import { Route as GamesPainelRouteImport } from './routes/games.painel'
 import { Route as GamesUsernameRouteImport } from './routes/games.$username'
 import { Route as EmpresaSlugRouteImport } from './routes/empresa.$slug'
@@ -74,6 +79,11 @@ const SuporteRoute = SuporteRouteImport.update({
   path: '/suporte',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SobreRoute = SobreRouteImport.update({
+  id: '/sobre',
+  path: '/sobre',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServicosRoute = ServicosRouteImport.update({
   id: '/servicos',
   path: '/servicos',
@@ -104,6 +114,11 @@ const PenalidadesRoute = PenalidadesRouteImport.update({
   path: '/penalidades',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ModeradorRoute = ModeradorRouteImport.update({
+  id: '/moderador',
+  path: '/moderador',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ModeracaoRoute = ModeracaoRouteImport.update({
   id: '/moderacao',
   path: '/moderacao',
@@ -122,6 +137,16 @@ const MensagensRoute = MensagensRouteImport.update({
 const MarketplaceRoute = MarketplaceRouteImport.update({
   id: '/marketplace',
   path: '/marketplace',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JogosDiariosRoute = JogosDiariosRouteImport.update({
+  id: '/jogos-diarios',
+  path: '/jogos-diarios',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GruposRoute = GruposRouteImport.update({
+  id: '/grupos',
+  path: '/grupos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GamesRoute = GamesRouteImport.update({
@@ -219,6 +244,11 @@ const ModeracaoReportIdRoute = ModeracaoReportIdRouteImport.update({
   path: '/$reportId',
   getParentRoute: () => ModeracaoRoute,
 } as any)
+const GruposSlugRoute = GruposSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => GruposRoute,
+} as any)
 const GamesPainelRoute = GamesPainelRouteImport.update({
   id: '/painel',
   path: '/painel',
@@ -290,16 +320,20 @@ export interface FileRoutesByFullPath {
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
   '/games': typeof GamesRouteWithChildren
+  '/grupos': typeof GruposRouteWithChildren
+  '/jogos-diarios': typeof JogosDiariosRoute
   '/marketplace': typeof MarketplaceRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
   '/moderacao': typeof ModeracaoRouteWithChildren
+  '/moderador': typeof ModeradorRoute
   '/penalidades': typeof PenalidadesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
   '/servicos': typeof ServicosRoute
+  '/sobre': typeof SobreRoute
   '/suporte': typeof SuporteRoute
   '/temas': typeof TemasRoute
   '/termos': typeof TermosRoute
@@ -312,6 +346,7 @@ export interface FileRoutesByFullPath {
   '/empresa/$slug': typeof EmpresaSlugRoute
   '/games/$username': typeof GamesUsernameRouteWithChildren
   '/games/painel': typeof GamesPainelRoute
+  '/grupos/$slug': typeof GruposSlugRoute
   '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
@@ -336,16 +371,20 @@ export interface FileRoutesByTo {
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
   '/games': typeof GamesRouteWithChildren
+  '/grupos': typeof GruposRouteWithChildren
+  '/jogos-diarios': typeof JogosDiariosRoute
   '/marketplace': typeof MarketplaceRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
   '/moderacao': typeof ModeracaoRouteWithChildren
+  '/moderador': typeof ModeradorRoute
   '/penalidades': typeof PenalidadesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
   '/servicos': typeof ServicosRoute
+  '/sobre': typeof SobreRoute
   '/suporte': typeof SuporteRoute
   '/temas': typeof TemasRoute
   '/termos': typeof TermosRoute
@@ -358,6 +397,7 @@ export interface FileRoutesByTo {
   '/empresa/$slug': typeof EmpresaSlugRoute
   '/games/$username': typeof GamesUsernameRouteWithChildren
   '/games/painel': typeof GamesPainelRoute
+  '/grupos/$slug': typeof GruposSlugRoute
   '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
@@ -383,16 +423,20 @@ export interface FileRoutesById {
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
   '/games': typeof GamesRouteWithChildren
+  '/grupos': typeof GruposRouteWithChildren
+  '/jogos-diarios': typeof JogosDiariosRoute
   '/marketplace': typeof MarketplaceRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
   '/moderacao': typeof ModeracaoRouteWithChildren
+  '/moderador': typeof ModeradorRoute
   '/penalidades': typeof PenalidadesRoute
   '/privacidade': typeof PrivacidadeRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
   '/servicos': typeof ServicosRoute
+  '/sobre': typeof SobreRoute
   '/suporte': typeof SuporteRoute
   '/temas': typeof TemasRoute
   '/termos': typeof TermosRoute
@@ -405,6 +449,7 @@ export interface FileRoutesById {
   '/empresa/$slug': typeof EmpresaSlugRoute
   '/games/$username': typeof GamesUsernameRouteWithChildren
   '/games/painel': typeof GamesPainelRoute
+  '/grupos/$slug': typeof GruposSlugRoute
   '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
@@ -431,16 +476,20 @@ export interface FileRouteTypes {
     | '/eventos'
     | '/feed'
     | '/games'
+    | '/grupos'
+    | '/jogos-diarios'
     | '/marketplace'
     | '/mensagens'
     | '/mentoria'
     | '/moderacao'
+    | '/moderador'
     | '/penalidades'
     | '/privacidade'
     | '/rede'
     | '/salvos'
     | '/seguranca'
     | '/servicos'
+    | '/sobre'
     | '/suporte'
     | '/temas'
     | '/termos'
@@ -453,6 +502,7 @@ export interface FileRouteTypes {
     | '/empresa/$slug'
     | '/games/$username'
     | '/games/painel'
+    | '/grupos/$slug'
     | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
@@ -477,16 +527,20 @@ export interface FileRouteTypes {
     | '/eventos'
     | '/feed'
     | '/games'
+    | '/grupos'
+    | '/jogos-diarios'
     | '/marketplace'
     | '/mensagens'
     | '/mentoria'
     | '/moderacao'
+    | '/moderador'
     | '/penalidades'
     | '/privacidade'
     | '/rede'
     | '/salvos'
     | '/seguranca'
     | '/servicos'
+    | '/sobre'
     | '/suporte'
     | '/temas'
     | '/termos'
@@ -499,6 +553,7 @@ export interface FileRouteTypes {
     | '/empresa/$slug'
     | '/games/$username'
     | '/games/painel'
+    | '/grupos/$slug'
     | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
@@ -523,16 +578,20 @@ export interface FileRouteTypes {
     | '/eventos'
     | '/feed'
     | '/games'
+    | '/grupos'
+    | '/jogos-diarios'
     | '/marketplace'
     | '/mensagens'
     | '/mentoria'
     | '/moderacao'
+    | '/moderador'
     | '/penalidades'
     | '/privacidade'
     | '/rede'
     | '/salvos'
     | '/seguranca'
     | '/servicos'
+    | '/sobre'
     | '/suporte'
     | '/temas'
     | '/termos'
@@ -545,6 +604,7 @@ export interface FileRouteTypes {
     | '/empresa/$slug'
     | '/games/$username'
     | '/games/painel'
+    | '/grupos/$slug'
     | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
@@ -570,16 +630,20 @@ export interface RootRouteChildren {
   EventosRoute: typeof EventosRoute
   FeedRoute: typeof FeedRoute
   GamesRoute: typeof GamesRouteWithChildren
+  GruposRoute: typeof GruposRouteWithChildren
+  JogosDiariosRoute: typeof JogosDiariosRoute
   MarketplaceRoute: typeof MarketplaceRoute
   MensagensRoute: typeof MensagensRoute
   MentoriaRoute: typeof MentoriaRoute
   ModeracaoRoute: typeof ModeracaoRouteWithChildren
+  ModeradorRoute: typeof ModeradorRoute
   PenalidadesRoute: typeof PenalidadesRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
   RedeRoute: typeof RedeRoute
   SalvosRoute: typeof SalvosRoute
   SegurancaRoute: typeof SegurancaRoute
   ServicosRoute: typeof ServicosRoute
+  SobreRoute: typeof SobreRoute
   SuporteRoute: typeof SuporteRoute
   TemasRoute: typeof TemasRoute
   TermosRoute: typeof TermosRoute
@@ -624,6 +688,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SuporteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sobre': {
+      id: '/sobre'
+      path: '/sobre'
+      fullPath: '/sobre'
+      preLoaderRoute: typeof SobreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/servicos': {
       id: '/servicos'
       path: '/servicos'
@@ -666,6 +737,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PenalidadesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/moderador': {
+      id: '/moderador'
+      path: '/moderador'
+      fullPath: '/moderador'
+      preLoaderRoute: typeof ModeradorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/moderacao': {
       id: '/moderacao'
       path: '/moderacao'
@@ -692,6 +770,20 @@ declare module '@tanstack/react-router' {
       path: '/marketplace'
       fullPath: '/marketplace'
       preLoaderRoute: typeof MarketplaceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jogos-diarios': {
+      id: '/jogos-diarios'
+      path: '/jogos-diarios'
+      fullPath: '/jogos-diarios'
+      preLoaderRoute: typeof JogosDiariosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/grupos': {
+      id: '/grupos'
+      path: '/grupos'
+      fullPath: '/grupos'
+      preLoaderRoute: typeof GruposRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/games': {
@@ -827,6 +919,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ModeracaoReportIdRouteImport
       parentRoute: typeof ModeracaoRoute
     }
+    '/grupos/$slug': {
+      id: '/grupos/$slug'
+      path: '/$slug'
+      fullPath: '/grupos/$slug'
+      preLoaderRoute: typeof GruposSlugRouteImport
+      parentRoute: typeof GruposRoute
+    }
     '/games/painel': {
       id: '/games/painel'
       path: '/painel'
@@ -943,6 +1042,17 @@ const GamesRouteChildren: GamesRouteChildren = {
 
 const GamesRouteWithChildren = GamesRoute._addFileChildren(GamesRouteChildren)
 
+interface GruposRouteChildren {
+  GruposSlugRoute: typeof GruposSlugRoute
+}
+
+const GruposRouteChildren: GruposRouteChildren = {
+  GruposSlugRoute: GruposSlugRoute,
+}
+
+const GruposRouteWithChildren =
+  GruposRoute._addFileChildren(GruposRouteChildren)
+
 interface ModeracaoRouteChildren {
   ModeracaoReportIdRoute: typeof ModeracaoReportIdRoute
 }
@@ -994,16 +1104,20 @@ const rootRouteChildren: RootRouteChildren = {
   EventosRoute: EventosRoute,
   FeedRoute: FeedRoute,
   GamesRoute: GamesRouteWithChildren,
+  GruposRoute: GruposRouteWithChildren,
+  JogosDiariosRoute: JogosDiariosRoute,
   MarketplaceRoute: MarketplaceRoute,
   MensagensRoute: MensagensRoute,
   MentoriaRoute: MentoriaRoute,
   ModeracaoRoute: ModeracaoRouteWithChildren,
+  ModeradorRoute: ModeradorRoute,
   PenalidadesRoute: PenalidadesRoute,
   PrivacidadeRoute: PrivacidadeRoute,
   RedeRoute: RedeRoute,
   SalvosRoute: SalvosRoute,
   SegurancaRoute: SegurancaRoute,
   ServicosRoute: ServicosRoute,
+  SobreRoute: SobreRoute,
   SuporteRoute: SuporteRoute,
   TemasRoute: TemasRoute,
   TermosRoute: TermosRoute,

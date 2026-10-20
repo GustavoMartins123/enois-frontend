@@ -1,6 +1,7 @@
-import { useMemo } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { useQueryClient } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 
 import { THEME_LIMITS } from "@/constants/theme-defaults";
 import { THEME_PRESETS } from "@/constants/theme-presets";
@@ -10,11 +11,12 @@ import type { AppearanceDialogProps } from "@/types/components/appearance/appear
 import type { ThemeAccent } from "@/types/preferences/theme-accent";
 import type { ThemeBackground } from "@/types/preferences/theme-background";
 import type { ThemePresetId } from "@/types/preferences/theme-preset-id";
-import { Moon, RotateCcw, Sun } from "lucide-react";
+import { Download, Moon, RotateCcw, Sun, Upload } from "lucide-react";
 
 import { resolveThemeCollection } from "@/lib/theme/build-collection-css";
 import { reportThemeContrast, sameThemeSettings } from "@/lib/theme/build-theme-tokens";
 import { syncThemeCollection } from "@/lib/theme/sync-theme-collection";
+import { THEME_FILE_EXTENSION, buildThemeFile, parseThemeFile } from "@/lib/theme/theme-file";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
@@ -63,6 +65,10 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
   const pageBackground = usePreferencesStore((state) => state.pageBackground);
   const setPageBackground = usePreferencesStore((state) => state.setPageBackground);
   const queryClient = useQueryClient();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [fileMessage, setFileMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(
+    null,
+  );
 
   const report = useMemo(() => reportThemeContrast(settings, theme), [settings, theme]);
 
@@ -74,6 +80,47 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
     // valor antigo do servidor e desfaria a troca em tela.
     queryClient.setQueryData(["me", "theme"], { theme: collectionId });
     void syncThemeCollection(collectionId);
+  };
+
+  /**
+   * Exportar: o tema atual vira um arquivo `.enois-theme`.
+   *
+   * Vai tudo o que a pessoa vê — a coleção (por referência), as cores livres e os dois fundos
+   * livres. O que NÃO vai é o que não é do tema: o modo claro/escuro fica de fora de propósito,
+   * porque o arquivo é o mesmo nos dois.
+   */
+  const handleExport = () => {
+    const text = buildThemeFile({
+      collection: themeCollection,
+      settings,
+      name: activeCollection?.name ?? null,
+      widget: widgetBackground,
+      page: pageBackground,
+    });
+    const objectUrl = URL.createObjectURL(new Blob([text], { type: "application/json" }));
+    const anchor = document.createElement("a");
+    anchor.href = objectUrl;
+    anchor.download = `${activeCollection?.id ?? "tema"}${THEME_FILE_EXTENSION}`;
+    anchor.click();
+    URL.revokeObjectURL(objectUrl);
+    setFileMessage(null);
+  };
+
+  /** Importar: aplica o arquivo inteiro (ou explica por que não deu) — nada pela metade. */
+  const handleImport = async (file: File) => {
+    const result = parseThemeFile(await file.text());
+    if (!result.ok) {
+      setFileMessage({ kind: "error", text: texts.appearance.fileErrors[result.reason] });
+      return;
+    }
+    setThemeSettings(result.file.settings);
+    setThemeCollection(result.file.collection);
+    setWidgetBackground(result.file.widget ?? null);
+    setPageBackground(result.file.page ?? null);
+    // Mesmo cuidado da grade de temas: o cache da conta acompanha na hora.
+    queryClient.setQueryData(["me", "theme"], { theme: result.file.collection });
+    void syncThemeCollection(result.file.collection);
+    setFileMessage({ kind: "ok", text: texts.appearance.fileImported });
   };
 
   const activePresetId = useMemo<ThemePresetId | null>(() => {
@@ -267,6 +314,66 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
 
             <ThemePreview />
             {!activeCollection && <ContrastNotice report={report} />}
+          </section>
+
+          <section className="space-y-2 border-t border-border-soft pt-3">
+            <h3 className="text-xs font-medium text-text-strong">{texts.appearance.fileSection}</h3>
+
+            <p className="text-xs font-normal text-text-subtle">{texts.appearance.fileHint}</p>
+
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="w-auto rounded-full gap-2 text-xs"
+                onClick={handleExport}
+              >
+                <Download className="h-3.5 w-3.5" />
+
+                <>{texts.exportTheme}</>
+              </Button>
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-auto rounded-full gap-2 text-xs"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Upload className="h-3.5 w-3.5" />
+
+                <>{texts.importTheme}</>
+              </Button>
+            </div>
+
+            <p className="text-xs font-normal text-text-subtle">
+              <Link to="/temas" className="text-primary-text hover:underline">
+                {texts.galleryLink}
+              </Link>
+            </p>
+
+            {/* O input fica escondido: quem abre é o botão de importar. */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".enois-theme,application/json"
+              className="hidden"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                event.target.value = "";
+                if (file) void handleImport(file);
+              }}
+            />
+
+            {fileMessage && (
+              <p
+                className={cn(
+                  "text-xs",
+                  fileMessage.kind === "ok" ? "text-growth" : "text-destructive",
+                )}
+              >
+                {fileMessage.text}
+              </p>
+            )}
           </section>
 
           <div className="flex flex-wrap justify-between gap-2 border-t border-border-soft pt-4">

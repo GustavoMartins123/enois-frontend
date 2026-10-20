@@ -118,9 +118,8 @@ export function PostComments({ postId }: PostIdProps) {
     if (recording && recordedSeconds >= 180) stopRecording();
   }, [recording, recordedSeconds]);
 
-  const addMedia = (event: ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files ?? []).filter((f) => f.type.startsWith("image/"));
-    event.target.value = "";
+  const addMediaFiles = (incoming: File[]) => {
+    const files = incoming.filter((f) => f.type.startsWith("image/"));
     if (files.length === 0) return;
     setMedia((current) => {
       const room = 4 - current.length;
@@ -140,6 +139,11 @@ export function PostComments({ postId }: PostIdProps) {
     });
   };
 
+  const addMedia = (event: ChangeEvent<HTMLInputElement>) => {
+    addMediaFiles(Array.from(event.target.files ?? []));
+    event.target.value = "";
+  };
+
   // O GIF entra como URL no proprio texto do comentario — o link-previews transforma em imagem — e
   // e assim que ele sempre funcionou aqui. Quem escolhe a URL e o seletor (busca no provedor ou link
   // colado no modo alternativo), que ja entrega so link aceito.
@@ -147,12 +151,18 @@ export function PostComments({ postId }: PostIdProps) {
     setDraft(postId, draft ? `${draft}\n${url}` : url);
   };
 
+  // O servidor entrega do mais novo para o mais antigo (cursor), mas a leitura de uma thread
+  // fica confusa assim. Ordenamos por data crescente no cliente e, ao carregar páginas
+  // anteriores, mesclamos mantendo o mais antigo no topo.
+  const oldestFirst = (items: CommentView[]) =>
+    [...items].sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
+
   const loadFirstPage = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const page = await commentsApi.list(postId, null, PAGE_SIZE);
-      setComments(postId, page.items);
+      setComments(postId, oldestFirst(page.items));
       setCursor(page.nextCursor);
       setHasMore(Boolean(page.nextCursor));
     } catch {
@@ -171,7 +181,7 @@ export function PostComments({ postId }: PostIdProps) {
     setLoadingMore(true);
     try {
       const page = await commentsApi.list(postId, cursor, PAGE_SIZE);
-      setComments(postId, [...comments, ...page.items]);
+      setComments(postId, oldestFirst([...comments, ...page.items]));
       setCursor(page.nextCursor);
       setHasMore(Boolean(page.nextCursor));
     } catch {
@@ -238,7 +248,10 @@ export function PostComments({ postId }: PostIdProps) {
     <section className="mt-4 border-t border-border-soft pt-4">
       <div
         ref={listRef}
-        className="max-h-[55vh] min-h-0 space-y-3 overflow-y-auto overscroll-contain pr-1"
+        // Sem `overscroll-contain`: quando a lista ainda não transborda, ele impede a propagação
+        // do toque para a página e o usuário não consegue rolar (relato em tablet/Fennec — o
+        // último post da viewport travava o scroll até fechar os comentários).
+        className="max-h-[55vh] min-h-0 space-y-3 overflow-y-auto pr-1"
       >
         {loading && (
           <p className="inline-flex items-center gap-2 py-4 text-sm font-normal text-text-subtle">
@@ -311,6 +324,7 @@ export function PostComments({ postId }: PostIdProps) {
 
       <form onSubmit={submit} className="mt-4 flex items-start gap-2 sm:gap-2.5">
         <UserAvatar
+          frame={currentUser?.avatarFrame}
           src={currentUser?.avatar}
           alt={currentUser?.name}
           className="h-8 w-8 shrink-0"
@@ -381,6 +395,7 @@ export function PostComments({ postId }: PostIdProps) {
               className="w-full resize-none border-0 bg-transparent px-2 py-1 text-sm font-normal outline-none"
               maxLength={800}
               toolbar
+              onPasteImages={addMediaFiles}
             />
 
             <div className="mt-1 flex items-center gap-1 px-1">

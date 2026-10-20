@@ -51,7 +51,7 @@
   --font-sans: "Manrope", sans-serif;
   --shadow-soft: 0 1px 2px oklch(0.2 0.05 290 / 0.04), 0 4px 16px oklch(0.2 0.05 290 / 0.04);
   --shadow-card: 0 1px 3px oklch(0.2 0.05 290 / 0.06), 0 8px 24px -8px oklch(0.2 0.05 290 / 0.08);
-  --gradient-primary: linear-gradient(135deg, oklch(0.52 0.22 295), oklch(0.68 0.18 310));
+  --gradient-primary: linear-gradient(135deg, #6746f5, #4325b8);
   --gradient-soft: linear-gradient(135deg, oklch(0.97 0.02 295), oklch(0.96 0.03 310));
   --color-highlight-insight: var(--highlight-insight);
   --color-highlight-insight-text: var(--highlight-insight-text);
@@ -71,16 +71,16 @@
 
 :root {
   --radius: 0.875rem;
-  --background: #f9f8ff;
-  --foreground: #18181b;
+  --background: #faf9ff;
+  --foreground: #21173a;
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.2 0.02 280);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.2 0.02 280);
-  --primary: oklch(0.54 0.25 293);
+  --primary: #6746f5;
   --primary-foreground: oklch(0.99 0.005 290);
-  --primary-text: oklch(0.54 0.25 293);
-  --primary-soft: oklch(0.95 0.04 295);
+  --primary-text: #5736db;
+  --primary-soft: #eee8ff;
   --secondary: oklch(0.82 0.1 305);
   --secondary-foreground: oklch(0.25 0.05 290);
   --muted: oklch(0.96 0.008 280);
@@ -91,7 +91,7 @@
   --destructive-foreground: oklch(0.99 0.005 290);
   --border: oklch(0.92 0.01 285);
   --input: oklch(0.92 0.01 285);
-  --ring: oklch(0.52 0.22 295);
+  --ring: #6746f5;
   --growth: oklch(0.62 0.16 155);
   --growth-foreground: oklch(0.99 0.005 290);
   --opportunity: oklch(0.72 0.18 55);
@@ -135,9 +135,9 @@
   --card-foreground: oklch(0.96 0.008 280);
   --popover: oklch(0.21 0.025 285);
   --popover-foreground: oklch(0.96 0.008 280);
-  --primary: oklch(0.7 0.18 300);
+  --primary: #a78bfa;
   --primary-foreground: oklch(0.16 0.02 285);
-  --primary-text: oklch(0.7 0.18 300);
+  --primary-text: #a78bfa;
   --primary-soft: oklch(0.26 0.06 295);
   --secondary: oklch(0.32 0.08 300);
   --secondary-foreground: oklch(0.96 0.008 280);
@@ -407,4 +407,59 @@
   .text-primary {
     color: var(--primary-text, var(--primary));
   }
+}
+
+/* ── Jogo de Palavras: animação de erro na linha ───────────────────────────── */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  15%       { transform: translateX(-6px); }
+  30%       { transform: translateX(6px); }
+  45%       { transform: translateX(-5px); }
+  60%       { transform: translateX(5px); }
+  75%       { transform: translateX(-3px); }
+  90%       { transform: translateX(3px); }
+}
+
+.animate-shake {
+  animation: shake 0.55s ease-in-out;
+}
+
+/* Molduras da loja: desenhadas sobre o avatar para funcionar em qualquer tamanho. */
+[data-avatar-frame]::after { content: ""; position: absolute; inset: 0; border: 3px solid var(--avatar-frame-color, transparent); border-radius: 50%; pointer-events: none; }
+[data-avatar-frame="moldura-ambar"] { --avatar-frame-color: #fbbf24; }
+[data-avatar-frame="moldura-esmeralda"] { --avatar-frame-color: #34d399; }
+[data-avatar-frame="moldura-violeta"] { --avatar-frame-color: #8b5cf6; }
+[data-avatar-frame="moldura-coral"] { --avatar-frame-color: #fb7185; }
+[data-avatar-frame="moldura-aurora"]::after { border-color: #a78bfa; animation: moldura-aurora 4s linear infinite; }
+[data-avatar-frame="moldura-pulsar"]::after { border-color: #a78bfa; animation: moldura-pulsar 2s ease-in-out infinite; }
+[data-avatar-frame="moldura-solar"]::after { border-color: #fbbf24; animation: moldura-solar 2.5s ease-in-out infinite; }
+@keyframes moldura-aurora { to { filter: hue-rotate(360deg); } }
+@keyframes moldura-pulsar { 50% { border-color: #f5d0fe; box-shadow: inset 0 0 6px #c084fc; } }
+@keyframes moldura-solar { 50% { border-color: #fb7185; box-shadow: inset 0 0 6px #fbbf24; } }
+@media (prefers-reduced-motion: reduce) { [data-avatar-frame]::after { animation: none; } }
+
+/* ── Scrollbar na paleta do tema ─────────────────────────────────────────────
+   A barra padrão do navegador (cinza do SO) aparecia por cima de temas
+   coloridos e quebrava o visual (relato de suporte). Firefox usa
+   scrollbar-color; os pseudo-elementos -webkit cobrem Chromium/Safari. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--muted-foreground);
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
 }

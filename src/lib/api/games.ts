@@ -1,6 +1,12 @@
 import type { DeveloperPage } from "@/types/application/games/developer-page";
+import type { GameAnalytics } from "@/types/application/games/game-analytics";
 import type { GameCatalogQuery } from "@/types/application/games/game-catalog-query";
 import type { GamePage } from "@/types/application/games/game-page";
+import type { GameStats } from "@/types/application/games/game-stats";
+import type { GameUpdateView } from "@/types/application/games/game-update-view";
+import type { GameView } from "@/types/application/games/game-view";
+
+import { api, buildQuery } from "../api-client";
 
 export type ColecaoView = {
   id: string;
@@ -9,11 +15,6 @@ export type ColecaoView = {
   jogos: GameView[];
   createdAt: string;
 };
-import type { GameStats } from "@/types/application/games/game-stats";
-import type { GameUpdateView } from "@/types/application/games/game-update-view";
-import type { GameView } from "@/types/application/games/game-view";
-
-import { api, buildQuery } from "../api-client";
 
 /**
  * Énóis Games: o catálogo, a página do criador, a biblioteca e o diário de desenvolvimento.
@@ -40,6 +41,9 @@ export const gamesApi = {
   /** A página pública do criador (perfil + jogos + quem acompanha). */
   developer: (username: string) =>
     api.get<DeveloperPage>(`/games/${encodeURIComponent(username)}/profile`),
+
+  /** A PRÓPRIA página de criador (o painel preenche o formulário sem saber o @). */
+  myDeveloperPage: () => api.get<DeveloperPage>("/games/profile/mine"),
 
   /** O dono edita a própria página de criador. */
   saveDeveloper: (data: {
@@ -89,6 +93,17 @@ export const gamesApi = {
 
   stats: (gameId: string) => api.get<GameStats>(`/games/${encodeURIComponent(gameId)}/stats`),
 
+  /**
+   * Números de uso do jogo (só o criador): totais + série diária de visualizações, partidas,
+   * jogadores distintos e compartilhamentos. `days` é a janela (1 a 90).
+   */
+  analytics: (gameId: string, days = 30) =>
+    api.get<GameAnalytics>(`/games/${encodeURIComponent(gameId)}/analytics?days=${days}`),
+
+  /** Tira o jogo da loja (só o dono): novidades, favoritos e histórico vão junto. */
+  remove: (gameId: string) =>
+    api.delete<{ id: string; status: string }>(`/games/${encodeURIComponent(gameId)}`),
+
   updates: (gameId: string) =>
     api.get<GameUpdateView[]>(`/games/${encodeURIComponent(gameId)}/updates`),
 
@@ -119,6 +134,46 @@ export const gamesApi = {
   /** Impulsiona o PRÓPRIO jogo: 5 faíscas por 7 dias no topo do catálogo (G2). */
   boost: (gameId: string) =>
     api.post<{ id: string; boosted: boolean }>(`/games/${encodeURIComponent(gameId)}/boost`, {}),
+  /** Identidade DO JOGO: token opaco (15 min, uso único) + pseudônimo — nunca a sessão. */
+  identity: (gameId: string) =>
+    api.post<{ token: string; expiresAt: string; playerRef: string }>(
+      `/games/${encodeURIComponent(gameId)}/identity`,
+      {},
+    ),
+  /** Gasto de faísca confirmado do nosso lado (idempotente pelo requestId do jogo). */
+  spend: (gameId: string, amount: number, motivo: string, requestId: string) =>
+    api.post<{ status: string; requestId?: string }>(
+      `/games/${encodeURIComponent(gameId)}/despesas`,
+      {
+        amount,
+        motivo,
+        requestId,
+      },
+    ),
+  /** G-share: publica a conquista no feed com a tag do jogo (o texto vem do jogo, o clique é humano). */
+  compartilhar: (gameId: string, texto: string, mediaIds?: string[]) =>
+    api.post<{ postId: string; status: string }>(
+      `/games/${encodeURIComponent(gameId)}/compartilhar`,
+      {
+        texto,
+        mediaIds: mediaIds ?? [],
+      },
+    ),
   /** Coleções temáticas curadas (G3) com os jogos resolvidos. */
   colecoes: (limit = 20) => api.get<ColecaoView[]>(`/games/colecoes?limit=${limit}`),
+
+  // --- moderação (fila em /moderacao; a API devolve 403 para quem não decide) ---
+
+  /** Jogos SUBMITTED esperando revisão. */
+  pendentes: (limit = 30) => api.get<GameView[]>(`/admin/games?limit=${limit}`),
+
+  aprovar: (gameId: string, note?: string) =>
+    api.post<{ id: string; status: string }>(`/admin/games/${encodeURIComponent(gameId)}/approve`, {
+      note: note?.trim() || undefined,
+    }),
+
+  rejeitar: (gameId: string, note?: string) =>
+    api.post<{ id: string; status: string }>(`/admin/games/${encodeURIComponent(gameId)}/reject`, {
+      note: note?.trim() || undefined,
+    }),
 };

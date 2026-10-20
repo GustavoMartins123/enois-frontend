@@ -8,4 +8,7 @@ import type { ThemeFile } from "@/types/lib/theme-file";
  */
 export type ThemeFileResult =
   | { ok: true; file: ThemeFile; collectionName: string | null }
-  | { ok: false; reason: "json" | "format" | "version" | "collection" | "settings" };
+  | {
+      ok: false;
+      reason: "json" | "format" | "version" | "collection" | "settings" | "background";
+    };

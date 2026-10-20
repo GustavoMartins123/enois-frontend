@@ -17,6 +17,7 @@ import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { UserPicker } from "@/components/user-picker";
+import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/carteira")({
   beforeLoad: requireAuth,
@@ -44,7 +45,22 @@ function Carteira() {
       toast(texts.wallet.sent, "success");
       void queryClient.invalidateQueries({ queryKey: ["carteira"] });
     },
-    onError: () => toast(texts.wallet.transferError, "error"),
+    onError: (error: unknown) => {
+      const apiError = error as { code?: string; message?: string };
+      // O motivo vem do backend (teto de conta nova, saldo, destinatário) — mostrar o
+      // genérico escondia justamente a explicação de que a transferência foi recusada.
+      const message =
+        apiError.code === "NEW_ACCOUNT_LIMIT" && apiError.message
+          ? apiError.message
+          : apiError.code === "INSUFFICIENT_SPARKS"
+            ? texts.wallet.insufficientSparks
+            : apiError.code === "USER_NOT_FOUND"
+              ? texts.wallet.recipientNotFound
+              : apiError.code === "SELF_TRANSFER"
+                ? texts.wallet.selfTransfer
+                : texts.wallet.transferError;
+      toast(message, "error");
+    },
   });
 
   const [contestar, setContestar] = useState<{ refId: string; motivo: string; descricao: string } | null>(null);
@@ -362,17 +378,26 @@ function Sparkline({ valores, subiu }: { valores: number[]; subiu: boolean }) {
  */
 function LojaSection() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const catalog = useQuery({ queryKey: ["loja"], queryFn: () => lojaApi.catalog() });
   const buy = useMutation({
     mutationFn: (id: string) => lojaApi.buy(id),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ["loja"] }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["loja"] });
+      void queryClient.invalidateQueries({ queryKey: ["carteira"] });
+      toast("Moldura comprada. Agora você pode equipá-la.", "success");
+    },
+    onError: () => toast("Não foi possível comprar a moldura. Confira seu saldo e tente novamente.", "error"),
   });
   const equip = useMutation({
     mutationFn: (id: string) => lojaApi.equip(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["loja"] });
-      void queryClient.invalidateQueries({ queryKey: ["perfil"] });
+      void queryClient.invalidateQueries({ queryKey: ["profile"] });
+      void queryClient.invalidateQueries({ queryKey: ["me"] });
+      void queryClient.invalidateQueries({ queryKey: ["feed"] });
     },
+    onError: () => toast("Não foi possível atualizar a moldura. Tente novamente.", "error"),
   });
 
   const itens = catalog.data ?? [];
@@ -385,13 +410,17 @@ function LojaSection() {
         <span className="text-xs font-medium uppercase tracking-widest">Loja · molduras de avatar</span>
       </div>
 
-      <ul className="grid gap-2 sm:grid-cols-2">
-        {itens.map((item) => (
+      {[
+        { label: "Simples", animated: false },
+        { label: "Animadas", animated: true },
+      ].map((category) => (
+      <div key={category.label} className="space-y-2">
+        <h3 className="text-sm font-semibold text-text-strong">{category.label}</h3>
+        <ul className="grid gap-2 sm:grid-cols-2">
+        {itens.filter((item) => ["moldura-aurora", "moldura-pulsar", "moldura-solar"].includes(item.id) === category.animated).map((item) => (
           <li key={item.id} className="rounded-xl border border-border-soft p-3">
             <div className="flex items-center gap-3">
-              <span className={`grid h-10 w-10 place-items-center rounded-full bg-violet-300 font-bold text-violet-900 ${item.cssRing}`}>
-                ✦
-              </span>
+              <UserAvatar frame={item.id} alt={item.name} fallback="✦" className="h-10 w-10" />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-semibold">{item.name}</span>
                 <span className="block truncate text-xs text-text-subtle">{item.description}</span>
@@ -402,9 +431,9 @@ function LojaSection() {
             </div>
             <div className="mt-2 flex justify-end gap-2">
               {item.equipped ? (
-                <span className="rounded-full bg-primary-soft px-2.5 py-1 text-xs font-medium text-primary-text">
-                  equipada
-                </span>
+                <Button size="sm" variant="outline" className="rounded-full" disabled={equip.isPending} onClick={() => equip.mutate("none")}>
+                  Desequipar
+                </Button>
               ) : item.owned ? (
                 <Button
                   size="sm"
@@ -428,9 +457,11 @@ function LojaSection() {
             </div>
           </li>
         ))}
-      </ul>
+        </ul>
+      </div>
+      ))}
 
-      <p className="text-xs text-text-subtle">A moldura equipada aparece no seu perfil.</p>
+      <p className="text-xs text-text-subtle">A moldura equipada acompanha seu avatar.</p>
     </section>
   );
 }

@@ -34,6 +34,8 @@ export function BlogPostDialog({ open, onOpenChange, post }: BlogPostDialogProps
   const [body, setBody] = useState("");
   const [format, setFormat] = useState<BlogPostFormat>("MARKDOWN");
   const [preview, setPreview] = useState(false);
+  // Só no post NOVO faz sentido perguntar: editar nunca reenvia e-mail.
+  const [avisar, setAvisar] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -42,6 +44,7 @@ export function BlogPostDialog({ open, onOpenChange, post }: BlogPostDialogProps
     setBody(post?.body ?? "");
     setFormat(post?.bodyFormat ?? "MARKDOWN");
     setPreview(false);
+    setAvisar(true);
     setError(null);
   }, [open, post]);
 
@@ -49,7 +52,7 @@ export function BlogPostDialog({ open, onOpenChange, post }: BlogPostDialogProps
     mutationFn: () =>
       post
         ? blogsApi.editPost(post.id, { title, body, format })
-        : blogsApi.publish({ title, body, format }),
+        : blogsApi.publish({ title, body, format, notifySubscribers: avisar }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["blog"] });
       queryClient.invalidateQueries({ queryKey: ["blogs"] });
@@ -144,6 +147,25 @@ export function BlogPostDialog({ open, onOpenChange, post }: BlogPostDialogProps
               maxLength={20_000}
               previewClassName="-mx-3 -mb-3 mt-3 h-[320px] w-full"
             />
+          )}
+
+          {!post && (
+            <label className="flex items-start gap-2 text-xs font-normal text-text-subtle">
+              <input
+                type="checkbox"
+                checked={avisar}
+                onChange={(event) => setAvisar(event.target.checked)}
+                className="mt-0.5"
+              />
+
+              <span>
+                <span className="block font-medium text-text-strong">
+                  {texts.blog.editor.notifySubscribers}
+                </span>
+
+                {texts.blog.editor.notifySubscribersHint}
+              </span>
+            </label>
           )}
 
           {error && <p className="text-xs text-destructive">{error}</p>}

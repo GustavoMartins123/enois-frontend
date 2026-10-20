@@ -15,12 +15,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 
-/** Título por alvo: o mesmo formulário serve para post, comentário, perfil e vaga. */
+/** Título por alvo: o mesmo formulário serve para post, comentário, perfil, vaga e grupo. */
 const REPORT_TITLES: Record<ReportTargetType, string> = {
   POST: texts.posts.report.title,
   COMMENT: texts.posts.report.titles.comment,
   USER: texts.posts.report.titles.profile,
   JOB: texts.jobs.report.title,
+  GROUP_POST: texts.groups.reportPost,
+  GROUP_COMMENT: texts.groups.reportComment,
 };
 
 /**

@@ -547,6 +547,9 @@ export const apiSections: ApiSection[] = [
  "description":"…","tags":"arcade,pixel"}`,
           response: `{"id":"game_…","slug":"kawaii-survivors","status":"SUBMITTED"}` },
         { method: "POST", path: "/games/{gameId}/resubmit", access: "auth", description: "Reenvia um jogo rejeitado para nova rodada." },
+        { method: "POST", path: "/games/{gameId}/compartilhar", access: "auth", description: "G-share: publica a conquista no feed com a tag do jogo (texto ≤ 600; teto de 12/dia por pessoa). O texto/mídia vêm do JOGO por postMessage e o APP publica com o clique do jogador — a sessão nunca atravessa o iframe.",
+          request: `{"texto":"Peguei nível 10 na fazendinha!","mediaIds":["media_…"]}`,
+          response: `{"postId":"post_…","status":"SHARED"}` },
         { method: "GET", path: "/admin/games?limit=30", access: "admin", description: "Fila de revisão." },
         { method: "POST", path: "/admin/games/{gameId}/approve", access: "admin", description: "Aprova e publica.", request: `{"note":"carrega e roda"}`, response: `{"id":"game_…","status":"PUBLISHED"}` },
         { method: "POST", path: "/admin/games/{gameId}/reject", access: "admin", description: "Recusa — o motivo é obrigatório e o criador lê.", request: `{"note":"o jogo não carrega"}`, response: `{"id":"game_…","status":"REJECTED"}` },
@@ -700,6 +703,23 @@ export const apiUseCases: ApiUseCase[] = [
       { note: "2. Compre (as faíscas saem da carteira e ficam retidas):", code: `curl -X POST ${P}/marketplace/mkt_…/buy -H "X-Session-Token: $TOKEN"` },
       { note: "3. Confirme depois de instalar o tema (libera 90% ao criador):", code: `curl -X POST ${P}/marketplace/purchases/mcmp_…/confirm -H "X-Session-Token: $TOKEN"` },
       { note: "Arrependeu dentro de 7 dias? /refund devolve 100%. Sem decisão, a liberação para o criador é automática." },
+    ],
+  },
+  {
+    id: "gshare",
+    title: "Jogos: compartilhar conquista no feed",
+    description:
+      "O jogo roda num iframe de OUTRA origem, sem sessão nenhuma. Para oferecer \"compartilhar conquista\", ele fala com a página pai por postMessage; a página valida a origem, mostra a prévia e publica com o CLIQUE do jogador — o jogo nunca publica sozinho.",
+    steps: [
+      { note: "1. Dentro do jogo (iframe), pede o compartilhamento:", code: `window.parent.postMessage({
+  type: "enois:share",
+  texto: "Peguei nível 10 na fazendinha!",
+  imagem: "data:image/png;base64,…"   // opcional
+}, "*");` },
+      { note: "2. A página do Énóis valida a origem, mostra a prévia ao jogador e, no clique, sobe a imagem pela mídia e publica:", code: `curl -X POST ${P}/games/game_…/compartilhar -H "X-Session-Token: $TOKEN" \\
+  -H "Content-Type: application/json" \\
+  -d '{"texto":"Peguei nível 10 na fazendinha!","mediaIds":["media_…"]}'` },
+      { note: "O post nasce no feed com as tags game + o slug do jogo. Teto de 12/dia (429 SHARE_LIMIT). Protocolo completo em docs/GAMES.md." },
     ],
   },
   {

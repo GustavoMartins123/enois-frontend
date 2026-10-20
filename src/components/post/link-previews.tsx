@@ -2,23 +2,10 @@ import { texts } from "@/texts";
 import type { PostView } from "@/types/application/feed/post-view";
 import type { LinkPreviewsProps } from "@/types/components/post/link-previews-props";
 
+import { rendersInline, trimTrailingPunctuation } from "@/lib/shared-links";
+
 import { EmbedPlayer } from "./embed-player";
 import { extractVideoId } from "./extract-video-id";
-
-/** URL de mídia direta de GIF (Giphy/Tenor) — renderiza a imagem, sem iframe. */
-function gifMediaUrl(url: string): string | null {
-  if (
-    /^https?:\/\/(media|i)\.giphy\.com\//.test(url) ||
-    /^https?:\/\/media\d*\.tenor\.com\//.test(url) ||
-    /\.gif(\?|$)/i.test(url)
-  ) {
-    return url;
-  }
-  // Página do Giphy: monta a mídia a partir do id no fim do slug.
-  const giphy = url.match(/giphy\.com\/(?:gifs\/)?[^/?#]*-([a-zA-Z0-9]+)\/?$/);
-  if (giphy) return `https://media.giphy.com/media/${giphy[1]}/giphy.gif`;
-  return null;
-}
 
 /** Renderiza preview de cada URL do conteúdo de um post (vídeo embedado ou card do link). */
 export function LinkPreviews({ content, autoplay = false }: LinkPreviewsProps) {
@@ -32,31 +19,14 @@ export function LinkPreviews({ content, autoplay = false }: LinkPreviewsProps) {
         if (seen.has(url)) return null;
         seen.add(url);
 
+        // GIF/imagem/vídeo/áudio de URL direta já são renderizados DENTRO do RichText; repetir
+        // aqui era o que fazia o GIF aparecer duas vezes no post e no comentário. A pontuação final
+        // sai antes da checagem: `.../giphy.gif.` (ponto da frase) tem que ser lido como o GIF dele.
+        if (rendersInline(trimTrailingPunctuation(url))) return null;
+
         const video = extractVideoId(url);
         if (video) {
           return <EmbedPlayer key={url} type={video.type} id={video.id} autoplay={autoplay} />;
-        }
-
-        const gif = gifMediaUrl(url);
-        if (gif) {
-          return (
-            <a
-              key={url}
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 block"
-            >
-              <img
-                src={gif}
-                alt="GIF"
-                loading="lazy"
-                // max-w-full evita o GIF empurrar a largura do comentario (quebra no celular,
-                // principalmente nas respostas aninhadas, onde o balao e mais estreito).
-                className="max-h-72 max-w-full h-auto w-auto rounded-xl border border-border-soft"
-              />
-            </a>
-          );
         }
 
         return (
@@ -88,7 +58,9 @@ export function LinkPreviews({ content, autoplay = false }: LinkPreviewsProps) {
                 })()}
               </p>
 
-              <p className="truncate text-xs font-normal text-text-subtle">{url}</p>
+              <p className="truncate text-xs font-normal text-text-subtle">
+                {texts.posts.video.openLabel}
+              </p>
             </div>
           </a>
         );

@@ -14,6 +14,12 @@ export type CompanyDetail = {
   projects: MicroProjectView[];
 };
 
+export type CompanyMember = {
+  userId: string;
+  role: "OWNER" | "ADMIN" | "EDITOR" | "RECRUITER";
+  createdAt: string;
+};
+
 export type MicroProjectView = {
   id: string;
   companyId: string;

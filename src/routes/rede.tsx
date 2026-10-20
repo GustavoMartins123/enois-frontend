@@ -143,12 +143,13 @@ function Rede() {
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {users.map((u) => (
-              <article key={u.id} className="surface-card overflow-hidden text-center">
+              <article key={u.id} className="surface-card min-w-0 overflow-hidden text-center">
                 <div className="h-16" style={{ background: "var(--gradient-soft)" }} />
 
-                <div className="-mt-10 px-5 pb-5">
+                <div className="-mt-10 min-w-0 px-5 pb-5">
                   <UserAvatar
                     src={u.avatar}
+                    frame={u.avatarFrame}
                     alt={u.name}
                     className="mx-auto h-20 w-20 ring-4 ring-card"
                   />
@@ -156,7 +157,7 @@ function Rede() {
                   <Link
                     to="/perfil/$username"
                     params={{ username: u.username }}
-                    className="mt-3 block font-semibold hover:underline"
+                    className="mt-3 block break-words font-semibold hover:underline"
                   >
                     {u.name}
                   </Link>
@@ -234,7 +235,7 @@ function RequestCard({ request, onAccept, onCancel }: RequestCardProps) {
           <Link
             to="/perfil/$username"
             params={{ username: user?.username ?? targetUserId }}
-            className="font-semibold hover:underline"
+            className="break-words font-semibold hover:underline"
           >
             {user?.name ?? texts.common.loading}
           </Link>

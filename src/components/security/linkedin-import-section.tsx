@@ -4,10 +4,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { LinkedinImportPreview } from "@/types/application/profile/linkedin-import-preview";
+import { ClipboardPaste } from "lucide-react";
 
 import { preferencesApi, profileApi, projectsApi } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 
 /**
@@ -16,22 +18,38 @@ import { useToast } from "@/components/ui/toast";
  * a pessoa marca o que quer e o app cria experiencias, formação, certificações e
  * projetos pelos endpoints normais.
  */
-export function LinkedinImportSection() {
+export function LinkedinImportSection({ linkedinConectado = false }: { linkedinConectado?: boolean }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [preview, setPreview] = useState<LinkedinImportPreview | null>(null);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
+  const [colando, setColando] = useState(false);
+  const [texto, setTexto] = useState("");
+
+  const aplicarPreview = (novo: LinkedinImportPreview) => {
+    setPreview(novo);
+    setSelected({
+      ...Object.fromEntries(novo.experiences.map((_, i) => [`exp${i}`, true])),
+      ...Object.fromEntries(novo.education.map((_, i) => [`edu${i}`, true])),
+      ...Object.fromEntries(novo.certifications.map((_, i) => [`cert${i}`, true])),
+      ...Object.fromEntries(novo.projects.map((_, i) => [`proj${i}`, true])),
+      ...(novo.profile ? { perfil: true } : {}),
+      ...(novo.skills?.length ? { skills: true } : {}),
+    });
+  };
 
   const importar = useMutation({
     mutationFn: (file: File) => preferencesApi.importLinkedinArchive(file),
-    onSuccess: (preview) => {
-      setPreview(preview);
-      setSelected({
-        ...Object.fromEntries(preview.experiences.map((_, i) => [`exp${i}`, true])),
-        ...Object.fromEntries(preview.education.map((_, i) => [`edu${i}`, true])),
-        ...Object.fromEntries(preview.certifications.map((_, i) => [`cert${i}`, true])),
-        ...Object.fromEntries(preview.projects.map((_, i) => [`proj${i}`, true])),
-      });
+    onSuccess: aplicarPreview,
+    onError: (error) => toast(error.message, "error"),
+  });
+
+  // O caminho SEM ARQUIVO: o texto do perfil colado direto (Ctrl+A/Ctrl+C no LinkedIn).
+  const importarTexto = useMutation({
+    mutationFn: (colado: string) => preferencesApi.importLinkedinText(colado),
+    onSuccess: (novo) => {
+      aplicarPreview(novo);
+      setColando(false);
     },
     onError: (error) => toast(error.message, "error"),
   });
@@ -92,6 +110,19 @@ export function LinkedinImportSection() {
           }),
         );
       });
+      // Perfil: os campos do Profile.csv e as skills entram num update único (parcial).
+      if (preview.profile && selected.perfil) {
+        const campos: Record<string, unknown> = {};
+        if (preview.profile.headline) campos.headline = preview.profile.headline;
+        if (preview.profile.location) campos.location = preview.profile.location;
+        if (preview.profile.summary) campos.bio = preview.profile.summary.slice(0, 2_000);
+        if (Object.keys(campos).length > 0) {
+          saves.push(profileApi.update(campos));
+        }
+      }
+      if (preview.skills?.length && selected.skills) {
+        saves.push(profileApi.update({ skills: preview.skills.slice(0, 50) }));
+      }
       await Promise.all(saves);
       return saves.length;
     },
@@ -108,6 +139,20 @@ export function LinkedinImportSection() {
 
   const linhas = preview
     ? [
+        ...(preview.profile
+          ? [
+              {
+                key: "perfil",
+                label:
+                  `Perfil: ${preview.profile.headline ?? "—"}` +
+                  (preview.profile.location ? ` · ${preview.profile.location}` : "") +
+                  (preview.profile.summary ? " · com o seu resumo" : ""),
+              },
+            ]
+          : []),
+        ...(preview.skills?.length
+          ? [{ key: "skills", label: `Habilidades: ${preview.skills.slice(0, 8).join(", ")}${preview.skills.length > 8 ? "…" : ""}` }]
+          : []),
         ...preview.experiences.map((exp, i) => ({
           key: `exp${i}`,
           label: `${exp.title ?? ""} — ${exp.company ?? ""}`,
@@ -125,22 +170,69 @@ export function LinkedinImportSection() {
     <div className="space-y-2 border-t border-border-soft pt-3">
       <p className="text-xs font-medium text-text-strong">{texts.account.linkedinImport.title}</p>
 
-      <p className="text-xs font-normal text-text-subtle">{texts.account.linkedinImport.hint}</p>
+      <p className="text-xs font-normal text-text-subtle">
+        {linkedinConectado ? texts.account.linkedinImport.hint : texts.account.linkedinImport.connectFirst}
+      </p>
 
       {!preview && (
-        <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border-soft px-3 py-1.5 text-xs text-text-subtle transition hover:text-text-strong">
-          {texts.account.linkedinImport.button}
-          <input
-            type="file"
-            accept=".zip"
-            className="hidden"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) importar.mutate(file);
-              event.target.value = "";
-            }}
-          />
-        </label>
+        <div className="space-y-2">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              variant={colando ? "default" : "outline"}
+              className="rounded-full gap-1.5"
+              onClick={() => setColando((atual) => !atual)}
+            >
+              <ClipboardPaste className="h-3.5 w-3.5" />
+
+              <>{texts.account.linkedinImport.pasteToggle}</>
+            </Button>
+
+            <a
+              href="https://www.linkedin.com/psettings/member-data"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-soft px-3 py-1.5 text-xs text-text-subtle transition hover:text-text-strong"
+            >
+              {texts.account.linkedinImport.getArchive}
+            </a>
+
+            <label className="inline-flex cursor-pointer items-center gap-2 rounded-full border border-border-soft px-3 py-1.5 text-xs text-text-subtle transition hover:text-text-strong">
+              {texts.account.linkedinImport.button}
+              <input
+                type="file"
+                accept=".zip"
+                className="hidden"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) importar.mutate(file);
+                  event.target.value = "";
+                }}
+              />
+            </label>
+          </div>
+
+          {colando && (
+            <div className="space-y-2">
+              <Textarea
+                value={texto}
+                onChange={(event) => setTexto(event.target.value)}
+                placeholder={texts.account.linkedinImport.pastePlaceholder}
+                className="min-h-32 text-xs"
+                maxLength={120_000}
+              />
+
+              <Button
+                size="sm"
+                className="rounded-full"
+                disabled={!texto.trim() || importarTexto.isPending}
+                onClick={() => importarTexto.mutate(texto)}
+              >
+                {texts.account.linkedinImport.pasteRead}
+              </Button>
+            </div>
+          )}
+        </div>
       )}
 
       {importar.isPending && <p className="text-xs text-text-subtle">{texts.common.loading}</p>}
@@ -150,6 +242,16 @@ export function LinkedinImportSection() {
           <p className="text-xs font-normal text-text-subtle">
             {texts.account.linkedinImport.found(preview.found)}
           </p>
+
+          {Object.keys(preview.semEstrutura ?? {}).length > 0 && (
+            <p className="text-[11px] leading-relaxed text-text-subtle">
+              {texts.account.linkedinImport.semEstrutura(
+                Object.entries(preview.semEstrutura)
+                  .map(([rotulo, n]) => `${n} ${rotulo.toLowerCase()}`)
+                  .join(", "),
+              )}
+            </p>
+          )}
 
           <div className="max-h-52 space-y-1 overflow-y-auto rounded-lg bg-surface-1 p-2">
             {linhas.map((linha) => (

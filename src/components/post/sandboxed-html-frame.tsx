@@ -30,9 +30,13 @@ export function SandboxedHtmlFrame({
   title,
   innerPadding = true,
   autoHeight = true,
+  maxHeight,
+  clip = false,
 }: SandboxedHtmlFrameProps) {
   const frame = useRef<HTMLIFrameElement>(null);
   const [measured, setMeasured] = useState<number | null>(null);
+  // Recorte nunca cresce: a altura vem da classe, e o HTML do autor se ajusta a ela ou é cortado.
+  const grows = autoHeight && !clip;
 
   /**
    * Altura do conteudo, medida do lado de fora.
@@ -47,7 +51,7 @@ export function SandboxedHtmlFrame({
     if (!doc) return;
     const body = doc.body;
     const root = doc.documentElement;
-    const altura = Math.ceil(
+    const conteudo = Math.ceil(
       Math.max(
         body?.scrollHeight ?? 0,
         body?.offsetHeight ?? 0,
@@ -55,11 +59,16 @@ export function SandboxedHtmlFrame({
         root?.offsetHeight ?? 0,
       ),
     );
-    if (altura > 0) setMeasured((atual) => (atual === altura ? atual : altura));
-  }, []);
+    if (conteudo <= 0) return;
+    // O teto é o que quebra a realimentação: sem ele, um `height: 100vh` no HTML do autor cresce
+    // junto com o quadro (o `vh` É a altura do quadro), o quadro cresce junto com o conteúdo, e a
+    // página não para mais de crescer. Com o teto, o quadro para — e o que sobra rola por dentro.
+    const altura = maxHeight ? Math.min(conteudo, maxHeight) : conteudo;
+    setMeasured((atual) => (atual === altura ? atual : altura));
+  }, [maxHeight]);
 
   useEffect(() => {
-    if (!autoHeight) return;
+    if (!grows) return;
     const element = frame.current;
     if (!element) return;
 
@@ -84,13 +93,13 @@ export function SandboxedHtmlFrame({
       observer?.disconnect();
       window.removeEventListener("resize", measure);
     };
-  }, [autoHeight, html, measure]);
+  }, [grows, html, measure]);
 
   return (
     <iframe
       ref={frame}
       title={title}
-      srcDoc={buildDocument(html, innerPadding)}
+      srcDoc={buildDocument(html, innerPadding, clip)}
       // Sem `allow-scripts` e sem `allow-same-origin`: e o que garante que o HTML colado nao roda
       // codigo. `allow-fullscreen` existe so para o botao de tela cheia do player de video, e
       // `autoplay` delega a permissao do autoplay que o autor pediu: midia muda toca sozinha (mesmo
@@ -109,7 +118,7 @@ export function SandboxedHtmlFrame({
       className={cn("w-full border-0 bg-transparent", className)}
       // A classe do chamador continua valendo como altura ate a medida chegar (o SSR nao mede):
       // o estilo em linha e que manda depois dela.
-      style={autoHeight && measured ? { height: measured } : undefined}
+      style={grows && measured ? { height: measured } : undefined}
     />
   );
 }
@@ -141,10 +150,13 @@ const FRAME_CSP = [
  * o que quiser. Fundo claro de proposito: uma pagina colada assume papel branco, e o quadro
  * precisa ler como "site dentro do post", nao como parte do tema do app.
  */
-function buildBaseCss(innerPadding: boolean): string {
+function buildBaseCss(innerPadding: boolean, clip: boolean): string {
   const padding = innerPadding ? "14px 16px" : "0";
+  // Faixa recortada (capa): o que passar da altura do quadro fica escondido em vez de virar barra
+  // de rolagem — barra dentro de uma capa denuncia que ali dentro tem uma página, e não uma faixa.
+  const overflow = clip ? "overflow:hidden" : "";
   return `*{box-sizing:border-box}
-html,body{margin:0}
+html,body{margin:0;${overflow}}
 body{background:transparent;color:light-dark(#1a1a1a,#e8e6ff);color-scheme:light dark;padding:${padding};overflow-wrap:break-word;
 font:400 14px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
 h1,h2,h3,h4,h5,h6{line-height:1.25;margin:.6em 0 .4em}
@@ -166,7 +178,7 @@ blockquote{margin:.6em 0;padding-left:12px;border-left:3px solid #ddd;color:#555
 border:1px dashed #cfcfd6;margin:.8em 0}`;
 }
 
-function buildDocument(html: string, innerPadding: boolean): string {
+function buildDocument(html: string, innerPadding: boolean, clip: boolean): string {
   return [
     '<!doctype html><html lang="pt-BR"><head>',
     `<meta http-equiv="Content-Security-Policy" content="${FRAME_CSP}">`,
@@ -174,7 +186,7 @@ function buildDocument(html: string, innerPadding: boolean): string {
     // telefone (e o print sai inteiro, sem rolagem).
     '<meta name="viewport" content="width=device-width, initial-scale=1">',
     '<base target="_blank">',
-    `<style>${buildBaseCss(innerPadding)}</style>`,
+    `<style>${buildBaseCss(innerPadding, clip)}</style>`,
     "</head><body>",
     html,
     "</body></html>",

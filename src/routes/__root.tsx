@@ -23,6 +23,9 @@ import { useThemeSync } from "@/lib/theme/use-theme-sync";
 
 import { ToastProvider } from "@/components/ui/toast";
 
+import { HealthyUsageGuard } from "@/components/healthy-usage/healthy-usage-guard";
+import { InstallPwaBanner } from "@/components/install-pwa-banner";
+
 import appCss from "../styles.css?url";
 
 function NotFoundComponent() {
@@ -88,7 +91,12 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      {
+        name: "viewport",
+        // `interactive-widget` faz o layout encolher com o teclado em vez de rolar a página toda;
+        // no chat, é o que mantém cabeçalho e mensagens no lugar e sobe só o campo de texto.
+        content: "width=device-width, initial-scale=1, interactive-widget=resizes-content",
+      },
       { title: texts.root.seo.title },
       {
         name: "description",
@@ -110,7 +118,8 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "manifest", href: "/manifest.webmanifest" },
-      { rel: "icon", href: "/favicon.png", type: "image/png" },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "icon", href: "/favicon.ico", type: "image/x-icon", sizes: "16x16 32x32 48x48" },
       { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
@@ -196,6 +205,8 @@ function RootInsideProvider() {
   return (
     <ToastProvider>
       <Outlet />
+      <InstallPwaBanner />
+      <HealthyUsageGuard />
     </ToastProvider>
   );
 }

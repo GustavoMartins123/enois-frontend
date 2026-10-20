@@ -1,15 +1,18 @@
+import { useState } from "react";
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { ArrowLeft, Gavel, ShieldAlert } from "lucide-react";
+import { ArrowLeft, Gamepad2, Gavel, ShieldAlert } from "lucide-react";
 
-import { sanctionsApi, walletApi } from "@/lib/api";
+import { gamesApi, sanctionsApi, walletApi } from "@/lib/api";
 import { formatFaisca } from "@/lib/faisca";
 import { requireAuth } from "@/lib/require-auth";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/loading-state";
 import { useToast } from "@/components/ui/toast";
 
@@ -76,6 +79,8 @@ function Moderacao() {
         </div>
 
         <DisputasSection />
+
+        <JogosSection />
 
         {isLoading ? (
           <LoadingState />
@@ -203,6 +208,163 @@ function DisputasSection() {
                   onClick={() => decidir.mutate({ id: d.id, deferir: false })}
                 >
                   Não procede (punir contestador)
+                </Button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  );
+}
+
+/** A proporção do quadro, escolhida pelo criador — igual à da página do jogo. */
+const ASPECT: Record<string, string> = {
+  WIDESCREEN: "16 / 9",
+  CLASSIC: "4 / 3",
+  SQUARE: "1 / 1",
+  PORTRAIT: "9 / 16",
+};
+
+/**
+ * A fila de jogos submetidos (E3 do plano): o revisor testa o jogo NO MESMO quadro isolado em
+ * que ele vai rodar em produção e decide — aprovado entra no catálogo, recusado volta ao criador
+ * com o motivo (que aparece no painel dele junto ao status). Somente administradores — para os
+ * demais a API devolve 403 e a seção nem aparece.
+ */
+function JogosSection() {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [testando, setTestando] = useState<string | null>(null);
+  const [motivos, setMotivos] = useState<Record<string, string>>({});
+
+  const { data: jogos, error, isLoading } = useQuery({
+    queryKey: ["games-pendentes"],
+    queryFn: () => gamesApi.pendentes(30),
+    retry: false,
+  });
+
+  const decidir = useMutation({
+    mutationFn: ({ id, aprovar, note }: { id: string; aprovar: boolean; note?: string }) =>
+      aprovar ? gamesApi.aprovar(id, note) : gamesApi.rejeitar(id, note),
+    onSuccess: (_resposta, vars) => {
+      toast(
+        vars.aprovar
+          ? "Jogo aprovado: já está no catálogo."
+          : "Jogo recusado: o motivo vai para o painel do criador.",
+        "success",
+      );
+      void queryClient.invalidateQueries({ queryKey: ["games-pendentes"] });
+    },
+    onError: () => toast("Não foi possível decidir sobre o jogo.", "error"),
+  });
+
+  // 403 = não é admin: a seção não existe para quem não decide.
+  if (error) return null;
+
+  return (
+    <section className="space-y-3" aria-label="Jogos esperando revisão">
+      <div className="flex items-center gap-2">
+        <Gamepad2 className="h-4 w-4 text-primary" />
+        <h2 className="text-sm font-semibold uppercase tracking-widest text-text-subtle">
+          Jogos esperando revisão
+        </h2>
+      </div>
+
+      {isLoading ? (
+        <LoadingState />
+      ) : (jogos?.length ?? 0) === 0 ? (
+        <p className="rounded-2xl border border-border-soft bg-surface-card p-4 text-sm text-text-subtle">
+          Nenhum jogo na fila de revisão.
+        </p>
+      ) : (
+        <ul className="space-y-3">
+          {jogos!.map((g) => (
+            <li
+              key={g.id}
+              className="space-y-3 rounded-2xl border border-border-soft bg-surface-card p-4"
+            >
+              <div className="flex gap-3">
+                {g.cover && (
+                  <img
+                    src={g.cover}
+                    alt=""
+                    className="h-14 w-24 shrink-0 rounded-lg border border-border-soft object-cover"
+                  />
+                )}
+
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold">{g.title}</p>
+
+                  <p className="text-xs text-text-subtle">
+                    @{g.username ?? g.userId} · {new Date(g.submittedAt).toLocaleDateString("pt-BR")}
+                    {g.tags ? ` · ${g.tags}` : ""}
+                  </p>
+                </div>
+              </div>
+
+              {g.description && (
+                <p className="whitespace-pre-line text-sm font-normal text-muted-foreground">
+                  {g.description}
+                </p>
+              )}
+
+              <p className="break-all text-xs text-text-subtle">{g.url}</p>
+
+              {testando === g.id ? (
+                <div
+                  className="relative w-full overflow-hidden rounded-xl border border-border-soft"
+                  style={{ aspectRatio: ASPECT[g.aspect] ?? "16 / 9" }}
+                >
+                  <iframe
+                    src={g.url}
+                    title={g.title}
+                    className="h-full w-full border-0"
+                    allow="fullscreen; gamepad; autoplay"
+                    sandbox="allow-scripts allow-same-origin allow-pointer-lock"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+              ) : (
+                <div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="rounded-full gap-1.5"
+                    onClick={() => setTestando(g.id)}
+                  >
+                    <Gamepad2 className="h-3.5 w-3.5" />
+
+                    <>{texts.games.game.play}</>
+                  </Button>
+                </div>
+              )}
+
+              <Input
+                value={motivos[g.id] ?? ""}
+                onChange={(e) => setMotivos((m) => ({ ...m, [g.id]: e.target.value }))}
+                placeholder="Motivo da decisão (opcional — quem recusa deve dizer por quê)"
+                maxLength={300}
+              />
+
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  size="sm"
+                  className="rounded-full"
+                  disabled={decidir.isPending}
+                  onClick={() => decidir.mutate({ id: g.id, aprovar: true, note: motivos[g.id] })}
+                >
+                  Aprovar
+                </Button>
+
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="rounded-full"
+                  disabled={decidir.isPending}
+                  onClick={() => decidir.mutate({ id: g.id, aprovar: false, note: motivos[g.id] })}
+                >
+                  Recusar
                 </Button>
               </div>
             </li>

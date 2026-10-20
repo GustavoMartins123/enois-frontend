@@ -45,4 +45,11 @@ export const preferencesApi = {
     }
     return (await response.json()) as LinkedinImportPreview;
   },
+
+  /**
+   * Sincronização SEM ARQUIVO: a pessoa cola o texto do próprio perfil do LinkedIn (o que o
+   * navegador copia) e o backend devolve o mesmo retrato para revisão.
+   */
+  importLinkedinText: (texto: string) =>
+    api.post<LinkedinImportPreview>("/me/import/linkedin/texto", { texto }),
 };

@@ -13,7 +13,22 @@ export type SandboxedHtmlFrameProps = {
   innerPadding?: boolean;
   /**
    * O quadro cresce até a altura do conteúdo (padrão) em vez de rolar por dentro. Quem é janela —
-   * a prévia do editor e a página em tela cheia — passa `false` e mantém a rolagem própria.
+   * a prévia do editor, a página em tela cheia e o quadro embutido no post — passa `false` e
+   * mantém a rolagem própria.
    */
   autoHeight?: boolean;
+  /**
+   * Teto da altura, em pixels, para o quadro que cresce. Bateu no teto, ele para de crescer e o
+   * que sobra passa a rolar por dentro (nada se perde).
+   *
+   * Sem teto, um `height: 100vh` no HTML do autor realimenta a medida — o `vh` é a altura do
+   * quadro, e o quadro é a altura do conteúdo — e a página vira uma faixa que cresce sem fim.
+   */
+  maxHeight?: number;
+  /**
+   * Recorta o que passar da altura em vez de crescer ou rolar. É o caso das CAPAS: o HTML é uma
+   * faixa, não uma página, e o que o autor mandar a mais é cortado na borda (como o `object-cover`
+   * faz com a foto). Implica não crescer.
+   */
+  clip?: boolean;
 };

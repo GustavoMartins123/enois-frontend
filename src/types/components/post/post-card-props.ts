@@ -8,4 +8,12 @@ export type PostCardProps = {
    * post longo não aparecia em lugar nenhum (a lista corta e a página do post usava o mesmo card).
    */
   fullPost?: boolean;
+
+  /** É o post fixado no topo da comunidade (mostra o selo "Fixado"). */
+  pinned?: boolean;
+
+  /** Presente para quem administra a comunidade: mostra o botão de fixar/desafixar. */
+  onTogglePin?: () => void;
+
+  pinPending?: boolean;
 };

@@ -5,8 +5,10 @@ import { redirect } from "@tanstack/react-router";
  * o guard de rota roda no SSR, onde nao existe localStorage, entao quem abre uma URL protegida
  * direto (deep link / aba restaurada) precisa ser barrado no cliente — ver o guard em __root.tsx.
  *
- * Ficam de fora, de proposito: `/perfil/$username` e `/post/$postId` (destino de link compartilhado)
- * e `/vagas` — a API de vagas e publica, entao listar e abrir uma vaga nao pode exigir sessao.
+ * Ficam de fora, de proposito: `/perfil/$username` e `/post/$postId` (destino de link compartilhado),
+ * `/vagas` — a API de vagas e publica, entao listar e abrir uma vaga nao pode exigir sessao — e
+ * `/comunidades` (listar e abrir comunidade e publico: o feed, os membros e o post fixado respondem
+ * para visitante; as acoes de escrever continuam exigindo conta no proprio clique).
  * Sem isso, quem estava com a sessao vencida era jogado no login ao tentar abrir a propria vaga.
  * As telas do dono (`/vagas/minhas`, `/vagas/$jobId/candidaturas`) continuam exigindo sessao pelo
  * `beforeLoad` da propria rota. Perfil e publicacao sao conteudo publico — quem recebe o link precisa abrir
@@ -14,11 +16,11 @@ import { redirect } from "@tanstack/react-router";
  * `requireAuth()` e mandam para o login.
  */
 const PROTECTED_ROUTES = [
+  "/jogos-diarios",
   "/feed",
   "/rede",
   "/salvos",
   "/mensagens",
-  "/comunidades",
   "/eventos",
   "/mentoria",
   "/suporte",

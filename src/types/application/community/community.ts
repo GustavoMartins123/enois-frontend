@@ -3,7 +3,8 @@ import type { CommunityTopic } from "./community-topic";
 export type Community = {
   id: string;
   name: string;
-  description: string;
+  /** Opcional: uma comunidade pode nascer só com o nome e ganhar descrição depois. */
+  description: string | null;
   topic: CommunityTopic;
   members: number;
   joined: boolean;
