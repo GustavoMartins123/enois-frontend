@@ -1,7 +1,7 @@
 import { type CSSProperties, useEffect, useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import {
@@ -10,6 +10,8 @@ import {
   Gamepad2,
   Loader2,
   Maximize2,
+  Newspaper,
+  Pencil,
   Share2,
   Sparkles,
 } from "lucide-react";
@@ -23,6 +25,10 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
+import { GameIcon } from "@/components/game-icon";
+import { GameBanner } from "@/components/games/game-banner";
+import { GameEditorDialog } from "@/components/games/game-editor-dialog";
+import { GameUpdateDialog } from "@/components/games/game-update-dialog";
 
 /** A proporção do quadro, escolhida pelo criador (o jogo decide como quer aparecer). */
 const ASPECT: Record<string, string> = {
@@ -61,7 +67,10 @@ function GamePage() {
   const queryClient = useQueryClient();
   const [playing, setPlaying] = useState(false);
   const [failed, setFailed] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [newUpdate, setNewUpdate] = useState(false);
   const frame = useRef<HTMLIFrameElement>(null);
+  const navigate = useNavigate();
 
   const game = useQuery({
     queryKey: ["games", "slug", username, gameSlug],
@@ -71,6 +80,14 @@ function GamePage() {
   const updates = useQuery({
     queryKey: ["games", "updates", game.data?.id],
     queryFn: () => gamesApi.updates(game.data!.id),
+    enabled: Boolean(game.data?.id),
+  });
+
+  // "Pessoas que jogaram" é DISTINTO (o backend conta quem jogou uma vez): a linha de números
+  // mostrava `plays` nos dois lugares, o que dizia que cada sessão era uma pessoa nova.
+  const stats = useQuery({
+    queryKey: ["games", "stats", game.data?.id],
+    queryFn: () => gamesApi.stats(game.data!.id),
     enabled: Boolean(game.data?.id),
   });
 
@@ -258,36 +275,72 @@ function GamePage() {
           </Link>
         </p>
 
+        {/* Banner do criador: foto ou HTML/CSS (a foto vence). */}
+        <GameBanner banner={g.banner} bannerHtml={g.bannerHtml} title={g.title} />
+
         <header className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="min-w-0 break-words text-2xl font-semibold tracking-tight text-text-strong">
-              {g.title}
-            </h1>
+          <div className="flex min-w-0 items-start gap-3">
+            <GameIcon icon={g.icon} cover={g.cover} url={g.url} className="h-14 w-14" />
 
-            <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-text-subtle">
-              <Link
-                to="/games/$username"
-                params={{ username }}
-                className="font-medium text-primary hover:underline"
-              >
-                {g.username ?? username}
-              </Link>
+            <div className="min-w-0">
+              <h1 className="min-w-0 break-words text-2xl font-semibold tracking-tight text-text-strong">
+                {g.title}
+              </h1>
 
-              <span className="rounded-full border border-border-soft px-2 py-0.5 text-xs">
-                {STAGE_LABEL[g.stage] ?? g.stage}
-              </span>
+              <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-text-subtle">
+                <Link
+                  to="/games/$username"
+                  params={{ username }}
+                  className="font-medium text-primary hover:underline"
+                >
+                  {g.username ?? username}
+                </Link>
 
-              <span className="rounded-full border border-border-soft px-2 py-0.5 text-xs">
-                {g.distribution === "PAID"
-                  ? texts.games.game.priceSoon(g.priceCoins)
-                  : texts.games.game.free}
-              </span>
+                <span className="rounded-full border border-border-soft px-2 py-0.5 text-xs">
+                  {STAGE_LABEL[g.stage] ?? g.stage}
+                </span>
 
-              {g.version && <span className="text-xs">{texts.games.game.version(g.version)}</span>}
-            </p>
+                <span className="rounded-full border border-border-soft px-2 py-0.5 text-xs">
+                  {g.distribution === "PAID"
+                    ? texts.games.game.priceSoon(g.priceCoins)
+                    : texts.games.game.free}
+                </span>
+
+                {g.version && (
+                  <span className="text-xs">{texts.games.game.version(g.version)}</span>
+                )}
+              </p>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-1.5">
+            {/* Dono: editar a ficha/identidade e publicar novidade daqui mesmo. */}
+            {g.owned && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full gap-1.5"
+                  onClick={() => setEditing(true)}
+                >
+                  <Pencil className="h-3.5 w-3.5" />
+
+                  <>{texts.games.panel.edit}</>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-full gap-1.5"
+                  onClick={() => setNewUpdate(true)}
+                >
+                  <Newspaper className="h-3.5 w-3.5" />
+
+                  <>{texts.games.panel.newUpdate}</>
+                </Button>
+              </>
+            )}
+
             <Button
               variant="outline"
               size="sm"
@@ -402,7 +455,8 @@ function GamePage() {
 
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border-soft px-3 py-2">
             <p className="text-xs text-text-subtle">
-              {texts.games.game.stats(g.plays, g.plays)}
+              {/* Jogadores DISTINTOS vêm de /stats (o `g.plays` é o total de sessões). */}
+              {texts.games.game.stats(g.plays, Number(stats.data?.players ?? 0))}
               {g.favorites > 0 && ` · ${texts.games.game.favorites(g.favorites)}`}
             </p>
 
@@ -638,6 +692,19 @@ function GamePage() {
           )}
         </section>
       </div>
+
+      {g.owned && editing && (
+        <GameEditorDialog
+          game={g}
+          open={editing}
+          onOpenChange={setEditing}
+          onDeleted={() => void navigate({ to: "/games" })}
+        />
+      )}
+
+      {g.owned && newUpdate && (
+        <GameUpdateDialog game={g} open={newUpdate} onOpenChange={setNewUpdate} />
+      )}
     </AppContainer>
   );
 }

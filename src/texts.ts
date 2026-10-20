@@ -1681,7 +1681,8 @@ export const texts = {
         players: "Pessoas distintas",
         favorites: "Na biblioteca",
         updates: "Novidades",
-        views: (total: number, days: number) => `${total} visualizações nos últimos ${days} dias`,
+        views: (total: number, days: number) =>
+          `${total} visualizações nos últimos ${days} dias`,
         chartLabel: (days: number) => `Gráfico de visualizações por dia (${days} dias)`,
         tooltip: (date: string, views: number, plays: number, players: number) =>
           `${date}: ${views} visualizações · ${plays} partidas · ${players} pessoas`,

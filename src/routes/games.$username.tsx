@@ -5,6 +5,7 @@ import { texts } from "@/texts";
 import { ExternalLink, Gamepad2, Users } from "lucide-react";
 
 import { gamesApi } from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
 import { useAuth } from "@/lib/use-auth";
 
 import { Button } from "@/components/ui/button";
@@ -88,8 +89,13 @@ function CreatorPage() {
     <AppContainer>
       <div className="mx-auto w-full max-w-3xl space-y-5">
         <div className="surface-card overflow-hidden">
+          {/* resolveCdnUrl: a capa pode ser relativa (arquivo nosso) — sem isso ela não abria. */}
           {dev.cover ? (
-            <img src={dev.cover} alt="" className="h-32 w-full object-cover sm:h-40" />
+            <img
+              src={resolveCdnUrl(dev.cover)}
+              alt=""
+              className="h-32 w-full object-cover sm:h-40"
+            />
           ) : (
             <div className="h-20 w-full bg-primary-soft" />
           )}
@@ -182,7 +188,7 @@ function CreatorPage() {
                   params={{ username: dev.username, gameSlug: game.slug }}
                   className="surface-card flex items-center gap-3 p-3 transition hover:border-primary"
                 >
-                  <GameIcon cover={game.cover} url={game.url} />
+                  <GameIcon cover={game.cover} icon={game.icon} url={game.url} />
 
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold text-text-strong">

@@ -43,6 +43,17 @@ export function rendersInline(url: string): boolean {
 }
 
 /**
+ * O endereço sem a pontuação final — `olha .../giphy.gif.` termina com o ponto DA FRASE, e o
+ * RichText já sabe disso (o parser não engole a pontuação no link).
+ *
+ * Quem extrai URLs por regex (`[^\s]+`) pega o ponto junto; sem tirá-lo, a checagem de mídia falha
+ * por um caractere e a mesma mídia aparece duas vezes (imagem no texto + card abaixo).
+ */
+export function trimTrailingPunctuation(url: string): string {
+  return url.replace(/[.,;:!?»”"')\]}]+$/, "");
+}
+
+/**
  * O texto do post SEM os links que outra peça representa: página externa vira
  * card e link de player vira o player abaixo (o link cru não fica no corpo).
  * Mídia direta fica — ela se mostra por si, renderizada pelo RichText.
