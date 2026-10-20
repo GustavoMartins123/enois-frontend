@@ -3,6 +3,7 @@ import { type ChangeEvent, type FormEvent, useCallback, useEffect, useRef, useSt
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import { TOPICS, TOPIC_LABELS } from "@/constants/community-topics";
 import { postContentLimit } from "@/constants/post-content-limits";
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { ARTICLE_BODY_MAX_LENGTH, POST_TYPES } from "@/constants/post-types";
@@ -88,6 +89,31 @@ export const Route = createFileRoute("/feed")({
 
 const FEED_PAGE_SIZE = 20;
 
+/**
+ * A última categoria usada fica guardada: quem publica sempre no mesmo assunto não precisa
+ * reescolher a cada post. Fica no navegador (como o rascunho) e some com o histórico limpo.
+ */
+const LAST_TOPIC_KEY = "connect-grow-last-topic";
+
+function readLastTopic(): string {
+  if (typeof localStorage === "undefined") return "";
+  try {
+    const saved = localStorage.getItem(LAST_TOPIC_KEY);
+    return saved && (TOPICS as readonly string[]).includes(saved) ? saved : "";
+  } catch {
+    return "";
+  }
+}
+
+function rememberTopic(value: string): void {
+  try {
+    if (value) localStorage.setItem(LAST_TOPIC_KEY, value);
+    else localStorage.removeItem(LAST_TOPIC_KEY);
+  } catch {
+    // modo privado/cota: a escolha vale só para esta sessão.
+  }
+}
+
 function useFeed(tab: HomeTab) {
   // Pagina por cursor: o backend devolve nextCursor e o scroll infinito busca a proxima pagina.
   return useInfiniteQuery({
@@ -157,6 +183,9 @@ function Home() {
   const [draft, setDraft] = useState("");
   const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([]);
   const [postType, setPostType] = useState<PostView["type"]>("INSIGHT");
+  // Assunto do post avulso (opcional): é o que liga o post a "O que quero ver"/"não gosto".
+  // Em comunidade o post herda o assunto DELA — lá o compositor é outro.
+  const [topic, setTopic] = useState<string>(() => readLastTopic());
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [linkedinUrl, setLinkedinUrl] = useState<string | null>(null);
@@ -246,6 +275,8 @@ function Home() {
         mentionedUserIds: pageMode ? [] : mentionedUserIds,
         ...(pageMode ? { pageHtml } : {}),
         ...(articleMode ? { articleBody } : {}),
+        // O assunto viaja com o agendado e vale quando ele entra no ar.
+        ...(topic ? { topic } : {}),
         scheduledAt: new Date(scheduleAt).toISOString(),
       });
       setDraft("");
@@ -289,6 +320,7 @@ function Home() {
         ...(pageMode ? { pageHtml } : {}),
         ...(articleMode ? { articleBody } : {}),
         mentionedUserIds: pageMode ? [] : mentionedUserIds,
+        ...(topic ? { topic } : {}),
       });
       // "Também no LinkedIn": com o LinkedIn vinculado, oferece o compartilhamento pelo
       // diálogo oficial do LinkedIn com o link público do post (o OG preview completa o resto).
@@ -382,14 +414,7 @@ function Home() {
     };
 
     requestAnimationFrame(() => requestAnimationFrame(restore));
-  }, [
-    feedLoading,
-    feedPosts.length,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    tab,
-  ]);
+  }, [feedLoading, feedPosts.length, fetchNextPage, hasNextPage, isFetchingNextPage, tab]);
 
   const loadNextPage = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -547,6 +572,29 @@ function Home() {
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border-soft pt-3 text-sm font-normal text-text-subtle">
               <div className="flex flex-wrap items-center gap-1.5">
+                {/* Categoria do post: guarda a última escolha para o próximo post já nascer nela. */}
+                <select
+                  value={topic}
+                  onChange={(event) => {
+                    setTopic(event.target.value);
+                    rememberTopic(event.target.value);
+                  }}
+                  aria-label={texts.feed.composer.topic}
+                  title={texts.feed.composer.topicHint}
+                  className={`max-w-[11rem] rounded-full px-3 py-1.5 text-sm font-normal outline-none transition ${
+                    topic
+                      ? "border border-primary/40 bg-primary/10 text-primary"
+                      : "border border-border-soft text-text-subtle hover:border-primary"
+                  }`}
+                >
+                  <option value="">{texts.feed.composer.topicNone}</option>
+                  {TOPICS.filter((option) => option !== "Todas").map((option) => (
+                    <option key={option} value={option}>
+                      {TOPIC_LABELS[option]}
+                    </option>
+                  ))}
+                </select>
+
                 {/* Seletor de tipo recolhido: mostra o tipo atual e abre a lista completa. */}
                 <div className="relative">
                   <button
