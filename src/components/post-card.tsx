@@ -25,6 +25,7 @@ import {
 
 import { communitiesApi, feedApi } from "@/lib/api";
 import { sealsApi } from "@/lib/api/seals";
+import { saveFeedScroll } from "@/lib/feed-scroll-restoration";
 import { hideExternalPageUrls } from "@/lib/shared-links";
 import { useAuth } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
@@ -59,6 +60,7 @@ const POST_COMPACT_THRESHOLD = 400;
 
 export function PostCard({
   post,
+  feedTab,
   fullPost = false,
   pinned = false,
   onTogglePin,
@@ -231,6 +233,8 @@ export function PostCard({
 
   return (
     <article
+      id={feedTab ? `feed-post-${post.id}` : undefined}
+      tabIndex={feedTab ? -1 : undefined}
       className={`min-w-0 border border-border-soft bg-surface-card p-4 transition sm:p-5 ${
         // Post de página: sem canto no card, porque o conteúdo tem de alcançar as bordas — o
         // arredondamento do card recortava os cantos da página e era o que sobrava de "rounding".
@@ -380,6 +384,12 @@ export function PostCard({
             <Link
               to="/post/$postId"
               params={{ postId: post.id }}
+              search={feedTab ? { feedTab } : undefined}
+              onClick={() => {
+                if (feedTab) {
+                  saveFeedScroll({ tab: feedTab, postId: post.id, scrollY: window.scrollY });
+                }
+              }}
               className="mt-1 inline-flex text-sm font-normal text-primary hover:underline"
             >
               <>{texts.common.readMore}</>
@@ -406,6 +416,12 @@ export function PostCard({
         <Link
           to="/post/$postId"
           params={{ postId: post.id }}
+          search={feedTab ? { feedTab } : undefined}
+          onClick={() => {
+            if (feedTab) {
+              saveFeedScroll({ tab: feedTab, postId: post.id, scrollY: window.scrollY });
+            }
+          }}
           className="mt-3 inline-flex items-center gap-1.5 text-sm font-normal text-primary hover:underline"
         >
           <FileText className="h-3.5 w-3.5" />

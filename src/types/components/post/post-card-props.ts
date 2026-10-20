@@ -1,7 +1,10 @@
 import type { PostView } from "@/types/application/feed/post-view";
+import type { HomeTab } from "@/types/routes/feed/home-tab";
 
 export type PostCardProps = {
   post: PostView;
+  /** Aba do feed de origem, usada para voltar ao mesmo filtro depois de abrir o post. */
+  feedTab?: HomeTab;
   /**
    * O card É a página do post (não um item de lista): mostra o texto inteiro e não oferece "Ler
    * mais" — o link levaria para a página em que a pessoa já está, e sem isto o texto completo de um
