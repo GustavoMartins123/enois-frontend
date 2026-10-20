@@ -7,6 +7,8 @@ import type { NotificationTab } from "@/types/components/notification/notificati
 import { Bell, CheckCheck } from "lucide-react";
 
 import { networkApi, notificationsApi } from "@/lib/api";
+import { isNotificationHidden } from "@/lib/notification-module";
+import { useDisabledModules } from "@/lib/use-personalization";
 import { cn } from "@/lib/utils";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -17,6 +19,8 @@ export function NotificationsPopover() {
   const queryClient = useQueryClient();
   const [notificationTab, setNotificationTab] = useState<NotificationTab>("novas");
   const [open, setOpen] = useState(false);
+
+  const disabledModules = useDisabledModules();
 
   const { data: notificationsData } = useQuery({
     queryKey: ["notifications"],
@@ -48,7 +52,11 @@ export function NotificationsPopover() {
     },
   });
 
-  const notificationList = notificationsData?.items ?? [];
+  // Módulo desativado não volta pela porta do sino: a notificação dele fica fora da lista
+  // (mesma fonte de verdade do menu — /me/preferences).
+  const notificationList = (notificationsData?.items ?? []).filter(
+    (notification) => !isNotificationHidden(notification.kind, disabledModules),
+  );
   const unreadCount = notificationList.filter((notification) => !notification.read).length;
   const displayedNotifications = notificationList.filter((notification) =>
     notificationTab === "novas" ? !notification.read : notification.read,
