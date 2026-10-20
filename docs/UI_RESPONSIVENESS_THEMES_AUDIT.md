@@ -736,3 +736,15 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Nenhuma correção de app.**
 - **Próximo lote:** quando houver sessão, `/moderacao` e `/penalidades` a 390px e as páginas-chave
   protegidas a 1280; no público, `/auth/*` (login/cadastro) a 390 com os 60 temas.
+
+## Rodada 49 — 2026-10-20 01:0x
+
+- **Sessão protegida ausente.** Lote público.
+- **`/entrar` a 390×844**, 60 temas × claro/escuro = **120 verificações**. Todas as 120 apareceram
+  como “AUTH-BOUNCE”, mas isso é **falso positivo do auditor**: a rota testada É `/entrar`; a
+  checagem de bounce foi feita para rotas logadas. Filtrando o bounce, **nenhuma ocorrência de
+  overflow, contraste, variável de tema ou console** (lista `non-bounce` vazia) — a página está
+  limpa nos 60 temas.
+- **Nenhuma correção de app.**
+- **Próximo lote:** corrigir a heurística no script (ignorar `/entrar` quando a rota é ela mesma)
+  e fechar `/moderacao`/`/penalidades` quando houver sessão.
