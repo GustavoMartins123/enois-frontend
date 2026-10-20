@@ -441,25 +441,29 @@
 /* ── Scrollbar na paleta do tema ─────────────────────────────────────────────
    A barra padrão do navegador (cinza do SO) aparecia por cima de temas
    coloridos e quebrava o visual (relato de suporte). Firefox usa
-   scrollbar-color; os pseudo-elementos -webkit cobrem Chromium/Safari. */
-* {
-  scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent;
-}
-::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 9999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
-}
-::-webkit-scrollbar-corner {
-  background: transparent;
+   scrollbar-color; os pseudo-elementos -webkit cobrem Chromium/Safari.
+   Dentro de @layer base para que `scrollbar-hide` (utilities) siga vencendo
+   onde é aplicado — regra sem camada sobreporia a utility. */
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--muted-foreground);
+  }
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
 }
