@@ -720,6 +720,11 @@ export const texts = {
       found: (count: number) => `${count} itens encontrados — marque o que quer importar:`,
       save: "Importar selecionados",
       done: (count: number) => `${count} itens importados do LinkedIn.`,
+      /** Reimportar não duplica: o que já estava no perfil é ignorado. */
+      nothingNew: "Nada novo: o que você marcou já está no seu perfil.",
+      /** O perfil tem teto por seção; o que não coube fica claro em vez de falhar pela metade. */
+      capReached:
+        "Alguns itens não couberam: o perfil aceita até 10 experiências, 10 formações e 10 certificações.",
     },
     menu: {
       trigger: "Menu da conta",
