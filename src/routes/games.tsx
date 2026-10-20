@@ -202,13 +202,13 @@ function GamesHub() {
             </p>
           </div>
         ) : (
-          <ul className="grid gap-3 sm:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {pages.map((g) => (
-              <li key={g.id}>
+              <li key={g.id} className="min-w-0">
                 <Link
                   to="/games/$username/$gameSlug"
                   params={{ username: g.username ?? "", gameSlug: g.slug }}
-                  className="surface-card flex items-center gap-3 p-4 transition hover:border-primary"
+                  className="surface-card flex min-w-0 items-center gap-3 p-4 transition hover:border-primary"
                 >
                   <GameCover cover={g.cover} url={g.url} />
 
