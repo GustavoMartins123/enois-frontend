@@ -25,6 +25,7 @@ import { ToastProvider } from "@/components/ui/toast";
 
 import { HealthyUsageGuard } from "@/components/healthy-usage/healthy-usage-guard";
 import { InstallPwaBanner } from "@/components/install-pwa-banner";
+import { ModuleDisabledGate } from "@/components/module-disabled-gate";
 
 import appCss from "../styles.css?url";
 
@@ -204,7 +205,10 @@ function RootInsideProvider() {
 
   return (
     <ToastProvider>
-      <Outlet />
+      <ModuleDisabledGate>
+        <Outlet />
+      </ModuleDisabledGate>
+
       <InstallPwaBanner />
       <HealthyUsageGuard />
     </ToastProvider>

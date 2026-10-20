@@ -605,6 +605,13 @@ export const texts = {
     alreadyReviewed: "Esta denúncia já foi revisada.",
     forbidden: "Sessão sem acesso de admin para esta fila.",
   },
+  personalization: {
+    moduleOffTitle: "Esta área está desativada nas suas preferências",
+    moduleOffBody:
+      "Você desativou este módulo em Uso saudável. Nada foi apagado: os dados continuam guardados e voltam quando você reativar.",
+    reenable: "Reativar esta área",
+    backToFeed: "Voltar ao feed",
+  },
   corporate: {
     seoTitle: "Perfil profissional · Énóis",
     title: "Perfil profissional",
