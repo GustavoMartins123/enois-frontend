@@ -514,6 +514,12 @@ function Vagas() {
 
                         <>{j.location}</>
                       </p>
+
+                      {j.sourceType === "EXTERNAL" && j.description && (
+                        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                          {j.description}
+                        </p>
+                      )}
                     </div>
                   </div>
 
