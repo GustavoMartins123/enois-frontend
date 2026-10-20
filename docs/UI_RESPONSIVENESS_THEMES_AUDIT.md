@@ -699,3 +699,14 @@ em denúncia). Admin/moderação: somente leitura visual.
   devolve a lista e a bolha renderiza pelo `MediaGrid`. Teste `MessageMediaTests` 2/2 e backend
   em produção com V105 aplicada.
 - Commits: backend `a7b2415` (push `93a88c7`); front `f76ae2c` + `bf305f7` (push `5a7f3a3`).
+
+## Rodada 46 — 2026-10-20 00:2x
+
+- **Sessão protegida ausente** (Firefox sem tokens). Lote público.
+- **`/privacidade` e `/termos` a 390×844:** 60 temas × claro/escuro = **240 verificações**.
+  **239 limpas**; a única acusação (`aero-glass` claro em `/privacidade`, vars vazias) foi
+  **corrida de renderização** — reexecutada com espera maior: `--background` em gradiente,
+  `--primary #1e6bb8`, **`sw=cw=390`**. Nenhum bug real.
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/servicos` e `/diretrizes` a 390; depois `/developers` e páginas-chave
+  protegidas a 1280.
