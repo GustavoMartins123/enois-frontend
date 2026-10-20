@@ -625,3 +625,12 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Nenhuma correção de app.**
 - **Próximo lote:** `/jogos-diarios`, `/games/painel` e `/bloqueados` a 390px; depois as rotas de
   jogos por criador e as páginas-chave protegidas a 1280.
+
+## Rodada 41 — 2026-10-19 22:0x
+
+- **Sessão válida** durante todo o lote.
+- **Lote B protegido:** `/jogos-diarios` e `/games/painel` a 390×844, 60 temas × claro/escuro =
+  **240 verificações, ZERO problemas**.
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/bloqueados`, `/notificações` (se houver rota) e as rotas de jogos por criador
+  a 390px; depois as páginas-chave protegidas a 1280.
