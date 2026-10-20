@@ -71,7 +71,7 @@ export function PostCard({
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
   // Só corta em lista: na página do post o texto inteiro é o conteúdo da página.
   const isCompact = !fullPost && post.content.length > POST_COMPACT_THRESHOLD;
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(fullPost);
   // Selos do post: vem em lote do backend (aqui e um post so; a listagem pode pedir varios de uma vez).
   const { data: seals } = useQuery({
     queryKey: ["seals", post.id],
