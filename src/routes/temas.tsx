@@ -1,12 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import { usePreferencesStore } from "@/stores/preferences.store";
 import { texts } from "@/texts";
 import { Palette, ShieldAlert } from "lucide-react";
 
 import { themesApi } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
-import { usePreferencesStore } from "@/stores/preferences.store";
+import { registerGalleryCollection } from "@/lib/theme/gallery-collections";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -22,7 +23,9 @@ export const Route = createFileRoute("/temas")({
 
 /** Miniatura real: renderiza os tokens do pacote (fundo, superfície, destaque). */
 function Miniatura({ packageJson }: { packageJson: string }) {
-  let bg = "#f5f5f5", surface = "#ffffff", primary = "#7c3aed";
+  let bg = "#f5f5f5",
+    surface = "#ffffff",
+    primary = "#7c3aed";
   try {
     const palette = JSON.parse(packageJson).palette;
     bg = palette.background ?? bg;
@@ -33,8 +36,14 @@ function Miniatura({ packageJson }: { packageJson: string }) {
   }
 
   return (
-    <div className="h-16 w-full rounded-md border border-border-soft p-1.5" style={{ background: bg }}>
-      <div className="flex h-full flex-col justify-center gap-1 rounded-sm p-1.5" style={{ background: surface }}>
+    <div
+      className="h-16 w-full rounded-md border border-border-soft p-1.5"
+      style={{ background: bg }}
+    >
+      <div
+        className="flex h-full flex-col justify-center gap-1 rounded-sm p-1.5"
+        style={{ background: surface }}
+      >
         <div className="h-1.5 w-2/3 rounded-full" style={{ background: primary }} />
         <div className="h-1 w-full rounded-full opacity-60" style={{ background: primary }} />
         <div className="mt-0.5 h-1 w-3/5 rounded-full opacity-40" style={{ background: primary }} />
@@ -46,7 +55,7 @@ function Miniatura({ packageJson }: { packageJson: string }) {
 function Galeria() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const setThemeSettings = usePreferencesStore((state) => state.setThemeSettings);
+  const setThemeCollection = usePreferencesStore((state) => state.setThemeCollection);
 
   const { data, isLoading } = useQuery({
     queryKey: ["theme-gallery"],
@@ -89,6 +98,7 @@ function Galeria() {
         ) : themes.length === 0 ? (
           <div className="rounded-2xl border border-border-soft bg-surface-card">
             <EmptyState icon={Palette} title="Nenhum tema publicado ainda." />
+
             <p className="pb-6 text-center text-xs text-text-subtle">
               Personalize o seu no menu de aparência e publique aqui.
             </p>
@@ -116,17 +126,14 @@ function Galeria() {
                     size="sm"
                     className="rounded-full"
                     onClick={() => {
-                      install.mutate(theme.id);
                       try {
-                        const pkg = JSON.parse(theme.packageJson);
-                        const accent = hexToHsv(pkg.palette?.primary ?? "#7c3aed");
-                        const bg = hexToHsv(pkg.palette?.background ?? "#ffffff");
-                        // O motor de temas é o mesmo do diálogo de aparência: accent +
-                        // fundo regeneram todos os tokens (o texto é derivado com contraste).
-                        setThemeSettings({
-                          accent: { hue: accent.h, chroma: Math.min(0.28, accent.s * 0.7), lightness: 0.5 },
-                          background: { hue: bg.h, chroma: Math.min(0.03, bg.s * 0.06) },
-                        });
+                        // O tema vira uma COLEÇÃO de verdade: o pacote é expandido nos mesmos
+                        // tokens dos temas da casa (superfície, borda, texto, relevos) e o motor
+                        // aplica tudo. Antes só um destaque/fundo eram derivados — um tema com
+                        // destaque parecido com o da marca parecia "não ter mudado nada".
+                        const collection = registerGalleryCollection(theme);
+                        setThemeCollection(collection.id);
+                        // Instalação conta uma vez (a chamada estava duplicada aqui).
                         install.mutate(theme.id);
                         toast("Tema aplicado!", "success");
                       } catch {
@@ -154,23 +161,4 @@ function Galeria() {
       </div>
     </AppContainer>
   );
-}
-
-function hexToHsv(hex: string): { h: number; s: number; v: number } {
-  const h = hex.replace("#", "");
-  const r = parseInt(h.slice(0, 2), 16) / 255;
-  const g = parseInt(h.slice(2, 4), 16) / 255;
-  const b = parseInt(h.slice(4, 6), 16) / 255;
-  const max = Math.max(r, g, b);
-  const min = Math.min(r, g, b);
-  const d = max - min;
-  let hue = 0;
-  if (d !== 0) {
-    if (max === r) hue = ((g - b) / d) % 6;
-    else if (max === g) hue = (b - r) / d + 2;
-    else hue = (r - g) / d + 4;
-    hue *= 60;
-    if (hue < 0) hue += 360;
-  }
-  return { h: hue, s: max === 0 ? 0 : d / max, v: max };
 }
