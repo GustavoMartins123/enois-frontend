@@ -1447,6 +1447,7 @@ export const texts = {
       saved: "Bio atualizada.",
       error: "Não foi possível salvar a bio. Tente novamente.",
       save: "Salvar bio",
+      preview: "Pré visualização"
     },
     projects: {
       title: "Projetos",
