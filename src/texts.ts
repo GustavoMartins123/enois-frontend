@@ -1791,19 +1791,57 @@ export const texts = {
       mobileHint: "No celular, use Tela cheia (ou gire o aparelho) para jogar com mais espaço.",
       openAtOrigin: "Abrir no site do criador",
       loading: "Carregando o jogo…",
-      /** O quadro não avisa quando o site recusa incorporação: a pessoa decide tentar de novo. */
-      blocked:
-        "O jogo não abriu aqui. O site do criador pode não permitir ser exibido dentro de outra página — abra na origem para jogar.",
       retry: "Tentar de novo",
+      player: {
+        loadingProgress: (progress: number) => `Carregando o jogo… ${progress}%`,
+        progressLabel: "Progresso do carregamento do jogo",
+        slow: "Está demorando mais que o normal. Jogos WebGL grandes podem levar alguns minutos, principalmente no celular — o jogo continua carregando.",
+        ready: "Jogo pronto.",
+        unverified:
+          "Se o jogo não aparecer, o site do criador pode não permitir ser exibido dentro do Énóis — use “Abrir no site do criador”.",
+        error: "O jogo avisou que não conseguiu iniciar.",
+        errorDetail: (message: string) => `O jogo avisou que não conseguiu iniciar: ${message}`,
+        fullscreenUnavailable:
+          "Tela cheia não está disponível neste navegador. Gire o aparelho ou abra no site do criador.",
+        unsupportedUrl: "Este endereço não pode ser aberto dentro do Énóis.",
+      },
       favorite: "Guardar na biblioteca",
       unfavorite: "Tirar da biblioteca",
+      favoriteError: "Não foi possível atualizar a biblioteca agora.",
+      accountChanged:
+        "Você trocou de conta. Use “Tentar de novo” para o jogo reconhecer a conta atual.",
       favorites: (count: number) => `${count} na biblioteca`,
       share: "Compartilhar",
       shareCopied: "Link do jogo copiado!",
-      stats: (plays: number, players: number) =>
-        plays === 1
-          ? "1 sessão"
-          : `${plays} sessões · ${players} ${players === 1 ? "pessoa jogou" : "pessoas jogaram"}`,
+      plays: (count: number) =>
+        `${count} ${count === 1 ? "partida iniciada" : "partidas iniciadas"}`,
+      players: (count: number) => `${count} ${count === 1 ? "jogador" : "jogadores"}`,
+      statsHint:
+        "Partida iniciada conta cada vez que alguém aperta Jogar — não prova que o jogo terminou de carregar. Jogador conta cada conta uma vez; quem joga sem entrar conta a cada partida.",
+      spend: {
+        title: "O jogo quer gastar faíscas",
+        amount: (value: string) => `${value} faíscas`,
+        notice:
+          "O gasto só acontece com a sua confirmação. O jogo nunca acessa a sua conta nem a sua sessão — ele apenas pediu.",
+        refuse: "Recusar",
+        confirm: "Confirmar gasto",
+        confirming: "Confirmando…",
+        done: "Gasto confirmado — as faíscas saíram da sua carteira.",
+        error: "Não foi possível confirmar o gasto agora.",
+      },
+      achievement: {
+        title: "Compartilhar conquista",
+        notice: (title: string) =>
+          `Publica no seu feed com a tag do jogo ${title}. A imagem e o texto vêm do jogo — confira antes de publicar.`,
+        imageAlt: "Imagem enviada pelo jogo",
+        cancel: "Cancelar",
+        publish: "Publicar no feed",
+        publishing: "Publicando…",
+        done: "Conquista publicada no seu feed!",
+        error: "Não foi possível publicar a conquista agora.",
+        uploadsDisabled:
+          "O envio de mídia está temporariamente desativado enquanto o armazenamento é migrado.",
+      },
       about: "Sobre o jogo",
       details: "Ficha",
       genres: "Gêneros",
