@@ -684,3 +684,18 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Nenhuma correção de app.**
 - **Próximo lote:** `/moderacao` e `/penalidades` a 390px; depois as páginas-chave protegidas a
   1280 com os 60 temas.
+
+## Correções reportadas — 2026-10-20 00:0x
+
+- **GIF duplicado em posts e comentários:** o `RichText` já renderiza mídia direta (GIF/imagem/
+  vídeo/áudio); o `LinkPreviews` renderizava a MESMA URL logo abaixo. Agora ele ignora o que o
+  `rendersInline` já cobre e só cuida de players (YouTube/Vimeo) e cards de link. Testes de
+  `shared-links`: 8/8.
+- **Colar imagem na caixa de texto:** `MentionTextarea` ganhou `onPasteImages`; o composer do feed
+  e o de comentários sobem as imagens coladas pelo mesmo fluxo de anexo (limite de 4). O chat
+  também aceita Ctrl+V.
+- **Mídia nas mensagens diretas:** mensagens agora aceitam até 4 imagens com texto opcional
+  (V105, coluna `media_ids`); `POST /conversations/{id}/messages` recebe `mediaIds`, o view
+  devolve a lista e a bolha renderiza pelo `MediaGrid`. Teste `MessageMediaTests` 2/2 e backend
+  em produção com V105 aplicada.
+- Commits: backend `a7b2415` (push `93a88c7`); front `f76ae2c` + `bf305f7` (push `5a7f3a3`).
