@@ -6,7 +6,7 @@ import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-ro
 import { GAME_GENRES, GAME_STAGES } from "@/constants/game-options";
 import { texts } from "@/texts";
 import type { GameView } from "@/types/application/games/game-view";
-import { ExternalLink, Gamepad2, Rocket, Send } from "lucide-react";
+import { ExternalLink, Gamepad2, Pencil, Rocket, Send, Star } from "lucide-react";
 
 import { gamesApi } from "@/lib/api";
 import { formatFaisca } from "@/lib/faisca";
@@ -19,6 +19,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
 import { GameIcon } from "@/components/game-icon";
+import { GameEditorDialog } from "@/components/games/game-editor-dialog";
 
 export const Route = createFileRoute("/games")({
   head: () => ({ meta: [{ title: "Jogos · Énóis" }] }),
@@ -81,11 +82,23 @@ function GamesHub() {
     );
   }, [catalog.data, cursor]);
 
+  const ratingIds = pages.map((game) => game.id);
+  const ratings = useQuery({
+    queryKey: ["games", "ratings", ratingIds.join(",")],
+    queryFn: () => gamesApi.ratings(ratingIds),
+    enabled: ratingIds.length > 0,
+    staleTime: 60_000,
+  });
+
   const mine = useQuery({
     queryKey: ["games", "mine"],
     queryFn: () => gamesApi.mine(),
     enabled: authenticated,
   });
+
+  // O jogo que está sendo editado na própria loja: quem publicou tem que poder editar daqui,
+  // sem caçar o endereço do painel.
+  const [editing, setEditing] = useState<GameView | null>(null);
 
   return (
     <AppContainer>
@@ -102,10 +115,24 @@ function GamesHub() {
               publicou — aqui só o convite.
             </p>
           </div>
-          {authenticated && <SubmitButton />}
+
+          {authenticated && (
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Link
+                to="/games/painel"
+                className="inline-flex h-9 items-center rounded-full border border-border-soft px-3 text-sm font-medium transition hover:bg-muted"
+              >
+                {texts.games.panel.title}
+              </Link>
+
+              <SubmitButton />
+            </div>
+          )}
         </header>
 
-        {mine.data && mine.data.length > 0 && <MyGames games={mine.data} />}
+        {mine.data && mine.data.length > 0 && (
+          <MyGames games={mine.data} onEdit={(game) => setEditing(game)} />
+        )}
 
         <ColecoesSection />
 
@@ -204,13 +231,13 @@ function GamesHub() {
         ) : (
           <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {pages.map((g) => (
-              <li key={g.id} className="min-w-0">
+              <li key={g.id} className="surface-card flex min-w-0 items-center gap-2 p-2">
                 <Link
                   to="/games/$username/$gameSlug"
                   params={{ username: g.username ?? "", gameSlug: g.slug }}
-                  className="surface-card flex min-w-0 items-center gap-3 p-4 transition hover:border-primary"
+                  className="flex min-w-0 flex-1 items-center gap-3 rounded-xl p-2 transition hover:bg-muted/50"
                 >
-                  <GameCover cover={g.cover} url={g.url} />
+                  <GameCover cover={g.cover} icon={g.icon} url={g.url} />
 
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold">{g.title}</span>
@@ -218,10 +245,34 @@ function GamesHub() {
                     <span className="block truncate text-sm text-text-subtle">
                       {g.description || " "}
                     </span>
+
+                    {ratings.data?.[g.id] && ratings.data[g.id].reviews > 0 && (
+                      <span className="mt-0.5 inline-flex items-center gap-1 text-xs text-text-subtle">
+                        <Star className="h-3 w-3 fill-opportunity text-opportunity" />
+
+                        <>{ratings.data[g.id].average.toFixed(1)}</>
+
+                        <span>({ratings.data[g.id].reviews})</span>
+                      </span>
+                    )}
                   </span>
 
                   <ExternalLink className="h-4 w-4 shrink-0 text-text-subtle" />
                 </Link>
+
+                {/* Meu jogo na loja: editar aqui mesmo (o backend marca `owned` no catálogo). */}
+                {g.owned && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="shrink-0 rounded-full gap-1.5"
+                    onClick={() => setEditing(g)}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+
+                    <>{texts.games.panel.edit}</>
+                  </Button>
+                )}
               </li>
             ))}
           </ul>
@@ -240,16 +291,38 @@ function GamesHub() {
           </div>
         )}
       </div>
+
+      {editing && (
+        <GameEditorDialog
+          game={editing}
+          open={editing !== null}
+          onOpenChange={(open) => !open && setEditing(null)}
+        />
+      )}
     </AppContainer>
   );
 }
 
-function GameCover({ cover, url }: { cover?: string | null; url?: string | null }) {
-  return <GameIcon cover={cover} url={url} />;
+function GameCover({
+  cover,
+  icon,
+  url,
+}: {
+  cover?: string | null;
+  icon?: string | null;
+  url?: string | null;
+}) {
+  return <GameIcon cover={cover} icon={icon} url={url} />;
 }
 
-/** Os jogos de quem está logado, com o status da moderação, o reenvio e o impulso. */
-function MyGames({ games }: { games: Awaited<ReturnType<typeof gamesApi.mine>> }) {
+/** Os jogos de quem está logado, com o status da moderação, o Editar, o reenvio e o impulso. */
+function MyGames({
+  games,
+  onEdit,
+}: {
+  games: Awaited<ReturnType<typeof gamesApi.mine>>;
+  onEdit: (game: GameView) => void;
+}) {
   const queryClient = useQueryClient();
   const resubmit = useMutation({
     mutationFn: (gameId: string) => gamesApi.resubmit(gameId),
@@ -266,7 +339,7 @@ function MyGames({ games }: { games: Awaited<ReturnType<typeof gamesApi.mine>> }
 
       <ul className="space-y-2">
         {games.map((g) => (
-          <li key={g.id} className="surface-card flex items-center gap-3 p-3">
+          <li key={g.id} className="surface-card flex flex-wrap items-center gap-2 p-3">
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-medium">{g.title}</span>
               {g.status === "REJECTED" && g.reviewNote && (
@@ -282,6 +355,19 @@ function MyGames({ games }: { games: Awaited<ReturnType<typeof gamesApi.mine>> }
               </span>
             )}
             <StatusBadge status={g.status} />
+
+            {/* Quem publicou edita: ficha, endereço, ícone/banner e o próprio excluir. */}
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-full gap-1.5"
+              onClick={() => onEdit(g)}
+            >
+              <Pencil className="h-3.5 w-3.5" />
+
+              <>{texts.games.panel.edit}</>
+            </Button>
+
             {g.status === "REJECTED" && (
               <Button
                 size="sm"

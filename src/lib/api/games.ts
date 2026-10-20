@@ -5,6 +5,7 @@ import type { GameCatalogQuery } from "@/types/application/games/game-catalog-qu
 import type { GameComment } from "@/types/application/games/game-comment";
 import type { GameComments } from "@/types/application/games/game-comments";
 import type { GamePage } from "@/types/application/games/game-page";
+import type { GameRatingSummary } from "@/types/application/games/game-rating-summary";
 import type { GameReview } from "@/types/application/games/game-review";
 import type { GameReviews } from "@/types/application/games/game-reviews";
 import type { GameStats } from "@/types/application/games/game-stats";
@@ -71,6 +72,12 @@ export const gamesApi = {
     api.post<GameReview>(`/games/${gameId}/reviews`, { rating, body }),
 
   deleteReview: (gameId: string) => api.delete<void>(`/games/${gameId}/reviews/mine`),
+
+  /** Nota/comentários em lote para os cards do catálogo. */
+  ratings: (ids: string[]) =>
+    api.get<Record<string, GameRatingSummary>>(
+      `/games/ratings?ids=${encodeURIComponent(ids.join(","))}`,
+    ),
 
   /** Comentários da página do jogo. */
   comments: (gameId: string, limit = 50) =>
