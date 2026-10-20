@@ -634,3 +634,15 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Nenhuma correção de app.**
 - **Próximo lote:** `/bloqueados`, `/notificações` (se houver rota) e as rotas de jogos por criador
   a 390px; depois as páginas-chave protegidas a 1280.
+
+## Correção reportada — 2026-10-19 22:2x
+
+- **Relato da Mel:** “a aba de jogos da comunidade tá feia no mobile”.
+- **Achado real:** o catálogo de `/games` tinha `grid gap-3 sm:grid-cols-2` **sem `grid-cols-1`
+  na base**; no mobile o track vira auto/min-content e cada card esticava para **~3236px**
+  (`scrollWidth` 3248 em 390). Era o mesmo trap do `/rede`, agora na grade de jogos.
+- **Correção mínima:** `grid grid-cols-1 gap-3 sm:grid-cols-2` + `min-w-0` no `li` e no link.
+  Commit `aabf476` (push `79f1fd2`).
+- **Verificação em produção:** `/games` a 390px agora mede **`sw=390`/`cw=390`**, zero elementos
+  passando da viewport; screenshot `/tmp/pwtest/games-mobile-fixed.png` com os cards em coluna
+  única.
