@@ -58,6 +58,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
+import { CreateExternalJobDialog } from "@/components/create-external-job-dialog";
 import { InfiniteScroll } from "@/components/infinite-scroll";
 
 export const Route = createFileRoute("/vagas")({
@@ -119,6 +120,7 @@ function Vagas() {
   const [aba, setAba] = useState<"enois" | "externas" | "salvas">("enois");
   const [plataforma, setPlataforma] = useState("");
   const [showCreate, setShowCreate] = useState(false);
+  const [showExternal, setShowExternal] = useState(false);
   const [reportTarget, setReportTarget] = useState<Job | null>(null);
 
   const reputation = user?.reputation ?? 0;
@@ -241,6 +243,18 @@ function Vagas() {
               >
                 {texts.jobs.myJobs}
               </Link>
+
+              {/* Vaga achada em outro site: cadastra aqui e o botão do card leva ao link. */}
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-full gap-1.5"
+                onClick={() => setShowExternal(true)}
+              >
+                <ExternalLink className="h-4 w-4" />
+
+                <>{texts.jobs.external.registerButton}</>
+              </Button>
 
               <Button
                 size="sm"
@@ -599,6 +613,7 @@ function Vagas() {
       </div>
 
       <CreateJobDialog open={showCreate} onOpenChange={setShowCreate} />
+      <CreateExternalJobDialog open={showExternal} onOpenChange={setShowExternal} />
       <ReportJobDialog job={reportTarget} onOpenChange={(open) => !open && setReportTarget(null)} />
     </AppContainer>
   );
