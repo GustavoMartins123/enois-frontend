@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { AccountMenuProps } from "@/types/components/account/account-menu-props";
+import type { ActiveIdentity } from "@/types/lib/active-identity";
 import {
   Flag,
   Gavel,
@@ -22,6 +24,13 @@ import {
   Zap,
 } from "lucide-react";
 
+import {
+  effectiveIdentity,
+  readActiveIdentity,
+  subscribeActiveIdentity,
+  writeActiveIdentity,
+} from "@/lib/active-identity";
+import { corporateApi } from "@/lib/api";
 import { logout } from "@/lib/logout";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +55,21 @@ export function AccountMenu({ profile }: AccountMenuProps) {
   const [showLinkedAccounts, setShowLinkedAccounts] = useState(false);
   const [showHealthyUsage, setShowHealthyUsage] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [chosenIdentity, setChosenIdentity] = useState<ActiveIdentity>(() => readActiveIdentity());
+
+  useEffect(() => subscribeActiveIdentity(() => setChosenIdentity(readActiveIdentity())), []);
+
+  // O perfil profissional define se a troca de identidade existe e vale.
+  const { data: corporate } = useQuery({
+    queryKey: ["business-profile"],
+    queryFn: () => corporateApi.me(),
+    enabled: menuOpen,
+  });
+  const identity = effectiveIdentity(chosenIdentity, corporate);
+  const chooseIdentity = (next: ActiveIdentity) => {
+    writeActiveIdentity(next);
+    setChosenIdentity(next);
+  };
 
   const openChangeEmail = () => {
     setMenuOpen(false);
@@ -117,6 +141,37 @@ export function AccountMenu({ profile }: AccountMenuProps) {
             </div>
           </div>
 
+          {/* Identidade ativa: só aparece quando há perfil profissional (a escolha é de
+              interface; o backend decide a autoria de cada publicação). */}
+          {corporate?.exists && (
+            <div className="border-b border-border-soft px-4 py-2">
+              <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-text-subtle">
+                {texts.account.menu.identity}
+              </p>
+
+              <div className="flex rounded-full border border-border-soft p-0.5">
+                {(["SOCIAL", "CORPORATE"] as const).map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    disabled={option === "CORPORATE" && corporate.status !== "ACTIVE"}
+                    onClick={() => chooseIdentity(option)}
+                    className={cn(
+                      "flex-1 rounded-full px-2 py-1 text-xs font-medium transition disabled:opacity-40",
+                      identity === option
+                        ? "bg-primary text-primary-foreground"
+                        : "text-text-subtle hover:text-text-strong",
+                    )}
+                  >
+                    {option === "SOCIAL"
+                      ? texts.account.menu.socialIdentity
+                      : texts.account.menu.corporateIdentity}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="py-1">
             <Link
               to="/perfil/$username"
@@ -127,6 +182,12 @@ export function AccountMenu({ profile }: AccountMenuProps) {
               <User className="h-4 w-4" />
 
               <>{texts.account.menu.profile}</>
+            </Link>
+
+            <Link to="/profissional" onClick={() => setMenuOpen(false)} className={ITEM_CLASS}>
+              <User className="h-4 w-4" />
+
+              <>{texts.account.menu.corporateProfile}</>
             </Link>
 
             <Link to="/carteira" onClick={() => setMenuOpen(false)} className={ITEM_CLASS}>
