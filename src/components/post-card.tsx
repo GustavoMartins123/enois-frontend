@@ -243,6 +243,7 @@ export function PostCard({
           authorName={post.authorName}
           authorBadge={post.authorBadge}
           authorBadges={post.authorBadges}
+          authorIdentity={post.authorIdentity}
           authorAvatar={post.authorAvatar}
           authorAvatarFrame={post.authorAvatarFrame}
           createdAt={post.createdAt}

@@ -1,13 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Camera, Image as ImageIcon } from "lucide-react";
 
 import { corporateApi } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
+import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,10 +42,16 @@ function Profissional() {
     location: "",
     industry: "",
     externalLinks: "",
+    avatar: "",
+    banner: "",
   });
   const [loadedFor, setLoadedFor] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
   const [chosen, setChosen] = useState<Record<string, boolean>>({});
+  const avatarUpload = useMediaUpload();
+  const bannerUpload = useMediaUpload();
+  const avatarRef = useRef<HTMLInputElement>(null);
+  const bannerRef = useRef<HTMLInputElement>(null);
 
   const { data: profile, isLoading } = useQuery({
     queryKey: ["business-profile"],
@@ -63,6 +70,8 @@ function Profissional() {
         location: profile.location,
         industry: profile.industry,
         externalLinks: profile.externalLinks,
+        avatar: profile.avatar,
+        banner: profile.banner,
       });
     }
   }, [profile, loadedFor]);
@@ -90,6 +99,9 @@ function Profissional() {
         location: form.location.trim(),
         industry: form.industry.trim(),
         externalLinks: form.externalLinks.trim(),
+        // O PATCH substitui o perfil inteiro: mandar sem estes dois apagaria foto e capa.
+        avatar: form.avatar,
+        banner: form.banner,
       });
     },
     onSuccess: () => {
@@ -119,6 +131,31 @@ function Profissional() {
     onError: (error) =>
       toast(error instanceof Error ? error.message : texts.corporate.saveError, "error"),
   });
+
+  /** Sobe a imagem e grava o perfil inteiro com o novo campo (o PATCH substitui tudo). */
+  const uploadImage = (file: File | undefined, purpose: "AVATAR" | "BANNER") => {
+    if (!file) return;
+    const upload = purpose === "AVATAR" ? avatarUpload : bannerUpload;
+    void upload
+      .upload(file, purpose)
+      .then(async (result) => {
+        const nextAvatar = purpose === "AVATAR" ? result.cdnUrl : form.avatar;
+        const nextBanner = purpose === "BANNER" ? result.cdnUrl : form.banner;
+        setForm((current) => ({ ...current, avatar: nextAvatar, banner: nextBanner }));
+        await corporateApi.updateDetails({
+          headline: form.headline.trim(),
+          bio: form.bio.trim(),
+          location: form.location.trim(),
+          industry: form.industry.trim(),
+          externalLinks: form.externalLinks.trim(),
+          avatar: nextAvatar,
+          banner: nextBanner,
+        });
+        toast(texts.corporate.saved, "success");
+        refresh();
+      })
+      .catch(() => toast(texts.corporate.uploadError, "error"));
+  };
 
   const { data: preview } = useQuery({
     queryKey: ["business-profile", "import-preview"],
@@ -220,9 +257,15 @@ function Profissional() {
         {profile.exists && (
           <>
             <div className="surface-card space-y-4 p-4 sm:p-6">
-              <div className="flex items-center gap-3">
+              {form.banner ? (
+                <div className="h-28 w-full overflow-hidden rounded-xl bg-surface-2">
+                  <img src={form.banner} alt="" className="h-full w-full object-cover" />
+                </div>
+              ) : null}
+
+              <div className="flex flex-wrap items-center gap-3">
                 <UserAvatar
-                  src={profile.avatar || undefined}
+                  src={form.avatar || undefined}
                   alt={profile.name}
                   className="h-12 w-12"
                 />
@@ -231,6 +274,56 @@ function Profissional() {
                   <p className="truncate font-medium text-text-strong">{profile.name}</p>
 
                   <p className="truncate text-sm text-text-subtle">@{profile.username}</p>
+                </div>
+
+                <div className="ml-auto flex flex-wrap gap-2">
+                  <input
+                    ref={avatarRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(event) => {
+                      uploadImage(event.target.files?.[0], "AVATAR");
+                      event.target.value = "";
+                    }}
+                  />
+
+                  <Button
+                    variant="outline"
+                    className="w-auto rounded-full"
+                    disabled={avatarUpload.status === "uploading"}
+                    onClick={() => avatarRef.current?.click()}
+                  >
+                    <Camera className="h-4 w-4" />
+
+                    {avatarUpload.status === "uploading"
+                      ? texts.corporate.uploading
+                      : texts.corporate.changeAvatar}
+                  </Button>
+
+                  <input
+                    ref={bannerRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(event) => {
+                      uploadImage(event.target.files?.[0], "BANNER");
+                      event.target.value = "";
+                    }}
+                  />
+
+                  <Button
+                    variant="outline"
+                    className="w-auto rounded-full"
+                    disabled={bannerUpload.status === "uploading"}
+                    onClick={() => bannerRef.current?.click()}
+                  >
+                    <ImageIcon className="h-4 w-4" />
+
+                    {bannerUpload.status === "uploading"
+                      ? texts.corporate.uploading
+                      : texts.corporate.changeBanner}
+                  </Button>
                 </div>
               </div>
 

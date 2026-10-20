@@ -11,6 +11,11 @@ export type PostView = {
   authorBadges?: string[] | null;
   authorAvatar: string | null;
   authorAvatarFrame?: string | null;
+  /**
+   * Identidade que assinou: a apresentação (nome/@/avatar) vem dela. Post CORPORATE leva ao
+   * perfil profissional; SOCIAL leva ao perfil social.
+   */
+  authorIdentity?: "SOCIAL" | "CORPORATE";
   type:
     | "INSIGHT"
     | "ARTICLE"

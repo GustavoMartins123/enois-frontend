@@ -44,6 +44,7 @@ import { Route as BlogsRouteImport } from './routes/blogs'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VagasMinhasRouteImport } from './routes/vagas.minhas'
 import { Route as VagasJobIdRouteImport } from './routes/vagas.$jobId'
+import { Route as ProfissionalUsernameRouteImport } from './routes/profissional_.$username'
 import { Route as PostPostIdRouteImport } from './routes/post.$postId'
 import { Route as PerfilUsernameRouteImport } from './routes/perfil.$username'
 import { Route as ModeracaoReportIdRouteImport } from './routes/moderacao.$reportId'
@@ -235,6 +236,11 @@ const VagasJobIdRoute = VagasJobIdRouteImport.update({
   path: '/$jobId',
   getParentRoute: () => VagasRoute,
 } as any)
+const ProfissionalUsernameRoute = ProfissionalUsernameRouteImport.update({
+  id: '/profissional_/$username',
+  path: '/profissional/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PostPostIdRoute = PostPostIdRouteImport.update({
   id: '/post/$postId',
   path: '/post/$postId',
@@ -357,6 +363,7 @@ export interface FileRoutesByFullPath {
   '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
+  '/profissional/$username': typeof ProfissionalUsernameRoute
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
   '/blog/$username/$postId': typeof BlogUsernamePostIdRoute
@@ -409,6 +416,7 @@ export interface FileRoutesByTo {
   '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
+  '/profissional/$username': typeof ProfissionalUsernameRoute
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
   '/blog/$username/$postId': typeof BlogUsernamePostIdRoute
@@ -462,6 +470,7 @@ export interface FileRoutesById {
   '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
+  '/profissional_/$username': typeof ProfissionalUsernameRoute
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
   '/blog/$username_/$postId': typeof BlogUsernamePostIdRoute
@@ -516,6 +525,7 @@ export interface FileRouteTypes {
     | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
+    | '/profissional/$username'
     | '/vagas/$jobId'
     | '/vagas/minhas'
     | '/blog/$username/$postId'
@@ -568,6 +578,7 @@ export interface FileRouteTypes {
     | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
+    | '/profissional/$username'
     | '/vagas/$jobId'
     | '/vagas/minhas'
     | '/blog/$username/$postId'
@@ -620,6 +631,7 @@ export interface FileRouteTypes {
     | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
+    | '/profissional_/$username'
     | '/vagas/$jobId'
     | '/vagas/minhas'
     | '/blog/$username_/$postId'
@@ -668,6 +680,7 @@ export interface RootRouteChildren {
   EmpresaSlugRoute: typeof EmpresaSlugRoute
   PerfilUsernameRoute: typeof PerfilUsernameRoute
   PostPostIdRoute: typeof PostPostIdRoute
+  ProfissionalUsernameRoute: typeof ProfissionalUsernameRoute
   BlogUsernamePostIdRoute: typeof BlogUsernamePostIdRoute
 }
 
@@ -918,6 +931,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VagasJobIdRouteImport
       parentRoute: typeof VagasRoute
     }
+    '/profissional_/$username': {
+      id: '/profissional_/$username'
+      path: '/profissional/$username'
+      fullPath: '/profissional/$username'
+      preLoaderRoute: typeof ProfissionalUsernameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/post/$postId': {
       id: '/post/$postId'
       path: '/post/$postId'
@@ -1150,6 +1170,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmpresaSlugRoute: EmpresaSlugRoute,
   PerfilUsernameRoute: PerfilUsernameRoute,
   PostPostIdRoute: PostPostIdRoute,
+  ProfissionalUsernameRoute: ProfissionalUsernameRoute,
   BlogUsernamePostIdRoute: BlogUsernamePostIdRoute,
 }
 export const routeTree = rootRouteImport

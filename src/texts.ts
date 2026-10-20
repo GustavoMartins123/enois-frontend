@@ -671,6 +671,19 @@ export const texts = {
       banner: "Capa",
       location: "Localização",
     },
+    changeAvatar: "Trocar foto",
+    changeBanner: "Trocar capa",
+    uploading: "Enviando...",
+    uploadError: "Não foi possível enviar a imagem. Tente novamente.",
+    publicProfile: {
+      title: "Perfil profissional",
+      notFoundTitle: "Perfil profissional não encontrado",
+      notFoundBody: "Este perfil pode não existir ou estar desativado.",
+      postsTitle: "Publicações",
+      empty: "Nenhuma publicação por aqui ainda.",
+      editMine: "Editar o meu perfil profissional",
+      backToFeed: "Voltar ao feed",
+    },
   },
   account: {
     identity: {
