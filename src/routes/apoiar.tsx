@@ -62,6 +62,77 @@ const MOTIVOS = [
   },
 ] as const;
 
+const CARTA = [
+  {
+    titulo: "Um papo reto com a comunidade",
+    paragrafos: [
+      "Cara, vamo lá. Precisamos conversar. Sobre o Énóis, sobre o que estamos construindo e sobre o tipo de internet que a gente quer ter de volta.",
+    ],
+  },
+  {
+    titulo: "Vamos falar da realidade",
+    paragrafos: [
+      "O Énóis é um projeto comunitário. Nosso servidor foi uma doação que recebemos, e sou muito grata por isso. Somos meia dúzia de pessoas tentando construir alguma coisa sem objetivo de lucro, trabalhando de graça e colocando dinheiro do próprio bolso quando dá.",
+      "Não tem uma empresa bilionária bancando a operação. Não tem uma sala cheia de executivos decidindo como extrair mais alguns centavos de cada usuário. Tem gente trabalhando porque acredita que a internet pode ser diferente.",
+      "E sim, nosso orçamento é o de uma coxinha. Às vezes nem sei se com refrigerante. Mas a gente está aqui. Fazendo o que consegue, melhorando o que dá e tentando construir algo que tenha um propósito além de gerar dinheiro.",
+    ],
+  },
+  {
+    titulo: "A internet que prometeram pra gente",
+    paragrafos: [
+      "Vocês já perceberam quantos temas gráficos do Énóis remetem aos sistemas antigos? Aquela estética não está ali só porque a gente gosta de computador velho. Embora eu goste mesmo. É saudade de uma internet que parecia nossa: em que as pessoas criavam sites, montavam comunidades, compartilhavam conhecimento e faziam coisas simplesmente porque tinham vontade. Sem precisar transformar tudo em marca pessoal, funil de vendas ou oportunidade de engajamento.",
+      "A gente cresceu ouvindo que o futuro seria incrível, que a tecnologia aproximaria as pessoas e que a internet daria espaço pra todo mundo. Olha só onde fomos parar: algoritmos disputando nossa atenção, plataformas tratando usuários como números e pessoas precisando performar uma versão profissional de si mesmas até pra falar que o café esfriou.",
+      "Eu não quero passar o resto da vida reclamando da internet que perdemos. Quero ajudar a construir a internet que gostaria de ter. Foi por isso que decidimos colocar a mão na massa. Não porque achamos que somos melhores que todo mundo, nem porque temos a fórmula mágica pra resolver os problemas da internet. Mas porque alguém precisa tentar.",
+    ],
+  },
+  {
+    titulo: "Sem vocês, isso aqui é só um site caro",
+    paragrafos: [
+      "Pode ter código bom, interface bonita, infraestrutura funcionando e um monte de funcionalidade. Sem pessoas, não existe comunidade. Existe só um site rodando num servidor consumindo dinheiro.",
+      "Por isso, peço um pouco de compreensão. Estamos fazendo isso com os recursos que temos. Vai ter coisa que quebra, funcionalidade que demora e decisão que a gente vai precisar rever. Não vou fingir que está tudo perfeito. O que posso prometer é que estamos trabalhando pra melhorar e que queremos ouvir quem está aqui. A gente não precisa concordar em tudo, mas precisa conseguir conversar.",
+    ],
+  },
+  {
+    titulo: "Liberdade não é licença pra estragar o espaço dos outros",
+    paragrafos: [
+      "Quero uma rede livre. Não quero um ambiente engessado, onde qualquer opinião diferente vira motivo pra punição. Crítica faz parte. Discordar faz parte. Apontar nossos erros faz parte, e eu espero que vocês façam isso.",
+      "Mas liberdade não é passe livre pra assediar pessoas, fazer spam, tentar derrubar a plataforma ou prejudicar a experiência de quem está aqui. Se vocês virem algo assim, denunciem. Nossa moderação leva essas situações a sério e precisa da ajuda de vocês pra identificar o que acontece na comunidade.",
+      "Isso não significa que a responsabilidade da equipe seja de vocês. Significa que a comunidade pode ajudar a impedir que meia dúzia de pessoas estrague algo que centenas estão tentando construir. Não vamos tratar abuso como se fosse apenas mais uma opinião. E não vamos tratar toda discordância como abuso também. Existe uma diferença enorme entre as duas coisas.",
+    ],
+  },
+  {
+    titulo: "Eu não quero que ninguém aqui seja descartável",
+    paragrafos: [
+      "Quando minha conta do LinkedIn foi hackeada, o sujeito mudou a identidade do perfil pra identidade dele. E a resposta que recebi do suporte foi basicamente: “Que pena, crie outra conta”.",
+      "Pensa nisso por um instante. Uma conta pode carregar anos de trabalho, contatos, conversas, oportunidades e uma parte enorme da história profissional de alguém. E a solução oferecida foi começar tudo de novo.",
+      "É exatamente esse tipo de coisa que eu não quero reproduzir aqui. Não quero que alguém relate um problema e sinta que está falando com uma parede. Não quero que uma pessoa seja reduzida a um número de protocolo porque não vale o custo de atendimento de uma plataforma gigante.",
+      "Talvez a gente não consiga resolver todos os problemas. Temos limitações reais. Mas podemos ouvir, investigar, dar retorno e tratar as pessoas com respeito. Cada usuário merece atenção. Cada desenvolvedor que compartilha seu trabalho merece reconhecimento. Cada pessoa merece ter espaço pra se expressar sem ser tratada como descartável.",
+    ],
+  },
+  {
+    titulo: "E ainda tem muita coisa vindo por aí",
+    paragrafos: [
+      "Estamos trabalhando em mais opções de personalização, inclusive na aba de Uso saudável. A ideia é permitir que vocês tenham mais controle sobre o que aparece na própria experiência. Quer escolher os assuntos que quer ver? Beleza. Quer evitar determinados conteúdos? Também. Quer desativar recursos que não fazem sentido pra você? É esse tipo de controle que queremos oferecer.",
+      "Não acho que todo mundo precise usar a rede do mesmo jeito. Uma pessoa pode amar comunidades enquanto outra só quer conversar com os amigos. Alguém pode querer acompanhar vagas e eventos, enquanto outra pessoa quer publicar textos e trocar ideia sobre tecnologia. A plataforma deve dar espaço pra essas diferenças, não obrigar todo mundo a consumir a mesma coisa.",
+    ],
+  },
+  {
+    titulo: "Então, o que eu peço a vocês?",
+    paragrafos: [
+      "Participem. Falem o que está ruim. Sugiram melhorias. Denunciem problemas. Compartilhem o projeto. Se souberem programar, contribuam com o código. Se não souberem, participem mesmo assim.",
+      "Não quero que vocês estejam aqui só pra consumir o que meia dúzia de pessoas publica. Quero que sintam que também podem ajudar a decidir os rumos desse espaço.",
+      "Não temos o dinheiro das big techs, nem a estrutura delas. Temos um orçamento de coxinha e uma quantidade limitada de horas no dia. Mas temos a oportunidade de construir algo sem precisar colocar o lucro acima das pessoas. E, sinceramente, acho que vale a pena tentar.",
+    ],
+  },
+  {
+    titulo: "Vamo nessa",
+    paragrafos: [
+      "Não queremos mais uma big tech. Queremos humanidade. A internet não precisa ser só aquilo que fizeram dela. Ainda dá pra criar, colaborar, conversar e construir alguma coisa que seja nossa.",
+      "A gente começou o trabalho. Agora, quero ver o que conseguimos fazer juntos. Vamo nessa. Énóis.",
+    ],
+  },
+] as const;
+
 function Apoiar() {
   const { toast } = useToast();
   const [qr, setQr] = useState<string | null>(null);
@@ -110,6 +181,50 @@ function Apoiar() {
               {textsApoie.subtitulo}
             </p>
           </div>
+        </section>
+
+        {/* Carta para a comunidade — conteúdo do post /post/post_3d0d9619913f42cbb5b8c0030ccd8805 */}
+        <section className="surface-card space-y-4 p-5 sm:p-6">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
+            {textsApoie.cartaEyebrow}
+          </p>
+
+          <h2 className="text-xl font-semibold tracking-tight text-text-strong">
+            {textsApoie.cartaTitulo}
+          </h2>
+
+          {CARTA.map((bloco) => (
+            <div
+              key={bloco.titulo}
+              className="space-y-2 border-t border-border-soft pt-4 first:border-0 first:pt-0"
+            >
+              <h3 className="text-sm font-semibold text-text-strong">{bloco.titulo}</h3>
+
+              {bloco.paragrafos.map((paragrafo) => (
+                <p key={paragrafo} className="text-sm leading-relaxed text-text-subtle">
+                  {paragrafo}
+                </p>
+              ))}
+            </div>
+          ))}
+
+          <a
+            href="https://github.com/Rede-ENois"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-between gap-3 rounded-xl border border-border-soft bg-surface-1 px-4 py-3 text-sm font-medium text-text-strong transition hover:border-primary hover:text-primary"
+          >
+            <span>
+              <span className="block text-xs font-normal text-text-subtle">
+                O código é de todo mundo
+              </span>
+              github.com/Rede-ENois
+            </span>
+
+            <span aria-hidden className="text-lg text-primary">
+              ↗
+            </span>
+          </a>
         </section>
 
         {/* Por que apoiar */}
@@ -216,6 +331,8 @@ const textsApoie = {
   titulo: "O Énóis é gratuito e livre. Quem puder, ajuda a manter assim.",
   subtitulo:
     "Sem anúncio, sem venda de dados e sem cobrança para usar. A rede é sustentada por quem acha que ela vale a pena — inclusive por quem só quer que ela continue existindo.",
+  cartaEyebrow: "Carta para a comunidade",
+  cartaTitulo: "Um papo reto sobre o Énóis",
   porQue: "Por que apoiar?",
   pixTitulo: "Doar com Pix",
   pixDescricao: "Escaneie o QR ou copie o código e cole no app do seu banco. Qualquer valor.",
@@ -231,5 +348,5 @@ const textsApoie = {
   compartilhar: "Compartilhar esta página",
   compartilharCopiado: "Link copiado — manda para quem curte a ideia.",
   compartilharErro: "Não deu para copiar o link agora.",
-  rodape: "Obrigado por manter o Énóis de pé. ❤",
+  rodape: "Feito por pessoas, para pessoas. Obrigado por manter o Énóis de pé. ❤",
 };
