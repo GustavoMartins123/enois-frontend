@@ -179,10 +179,14 @@ function GamePage() {
     null,
   );
 
+  // O contador começa quando o JOGO carrega (a dica só existe dentro do card). Se começasse no
+  // mount, o fetch podia demorar mais que 3s e a pessoa nunca via o aviso.
   useEffect(() => {
+    if (!game.data) return;
+    setShowMobileHint(true);
     const timer = window.setTimeout(() => setShowMobileHint(false), 3000);
     return () => window.clearTimeout(timer);
-  }, []);
+  }, [game.data]);
 
   // G-share: o jogo (iframe de OUTRA origem, sem sessão nenhuma) pede o compartilhamento por
   // postMessage; a página valida a origem contra o endereço registrado do jogo, mostra a PRÉVIA
