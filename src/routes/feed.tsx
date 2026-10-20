@@ -15,6 +15,7 @@ import type { ComposerActionProps } from "@/types/routes/feed/composer-action-pr
 import type { HomeTab } from "@/types/routes/feed/home-tab";
 import type { MediaItem } from "@/types/routes/feed/media-item";
 import {
+  ArrowUp,
   BarChart3,
   Briefcase,
   Calendar,
@@ -38,6 +39,7 @@ import {
   subscribeActiveIdentity,
 } from "@/lib/active-identity";
 import { authApi, corporateApi, eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
+import { clearFeedScroll, readFeedScroll } from "@/lib/feed-scroll-restoration";
 import { requireAuth } from "@/lib/require-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
@@ -57,6 +59,17 @@ import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/feed")({
+  validateSearch: (search: Record<string, unknown>): { tab?: HomeTab } => ({
+    tab:
+      search.tab === "FOR_YOU" ||
+      search.tab === "ALL" ||
+      search.tab === "FOLLOWING" ||
+      search.tab === "RECENT" ||
+      search.tab === "PROJECTS" ||
+      search.tab === "CORPORATE"
+        ? search.tab
+        : undefined,
+  }),
   beforeLoad: requireAuth,
   head: () => ({
     meta: [
@@ -107,9 +120,11 @@ function useEvents() {
 }
 
 function Home() {
+  const { tab: searchTab } = Route.useSearch();
+  const navigate = Route.useNavigate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [tab, setTab] = useState<HomeTab>("FOR_YOU");
+  const [tab, setTab] = useState<HomeTab>(searchTab ?? "FOR_YOU");
   const {
     data: feedData,
     // Somente a PRIMEIRA carga mostra o esqueleto. `isFetching` tambem fica true ao paginar, e
@@ -145,6 +160,7 @@ function Home() {
   // Agendamento: o post fica na fila do backend e só entra no feed na hora marcada.
   const [schedulingOpen, setSchedulingOpen] = useState(false);
   const [scheduleAt, setScheduleAt] = useState("");
+  const [showScrollTop, setShowScrollTop] = useState(false);
   // A identidade ativa manda no tipo: profissional publica BUSINESS (destino: feed
   // corporativo); voltar para social tira o BUSINESS da seleção.
   useEffect(() => {
@@ -154,6 +170,23 @@ function Home() {
       setPostType((current) => (current === "BUSINESS" ? "INSIGHT" : current));
     }
   }, [identity]);
+
+  useEffect(() => {
+    if (searchTab && searchTab !== tab) setTab(searchTab);
+  }, [searchTab, tab]);
+
+  useEffect(() => {
+    const updateScrollTopVisibility = () => setShowScrollTop(window.scrollY > 400);
+
+    updateScrollTopVisibility();
+    window.addEventListener("scroll", updateScrollTopVisibility, { passive: true });
+    return () => window.removeEventListener("scroll", updateScrollTopVisibility);
+  }, []);
+
+  const selectTab = (nextTab: HomeTab) => {
+    setTab(nextTab);
+    void navigate({ search: { tab: nextTab } });
+  };
 
   const pageMode = postType === "PAGE";
   const articleMode = postType === "ARTICLE";
@@ -331,6 +364,34 @@ function Home() {
   const mediaType = media.length > 0 ? (media[0].type === "image" ? "image" : "video") : null;
 
   const feedPosts = feedData?.pages.flatMap((page) => page.items) ?? [];
+
+  useEffect(() => {
+    if (feedLoading || feedPosts.length === 0 || typeof window === "undefined") return;
+
+    const savedScroll = readFeedScroll(tab);
+    if (!savedScroll) return;
+
+    const postElement = document.getElementById(`feed-post-${savedScroll.postId}`);
+    if (!postElement && hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
+      return;
+    }
+
+    clearFeedScroll();
+    const restore = () => {
+      window.scrollTo({ top: savedScroll.scrollY, behavior: "auto" });
+      postElement?.focus({ preventScroll: true });
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(restore));
+  }, [
+    feedLoading,
+    feedPosts.length,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    tab,
+  ]);
 
   const loadNextPage = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -722,28 +783,28 @@ function Home() {
 
           {/* Tabs */}
           <div className="flex flex-wrap items-center gap-1.5">
-            <Pill active={tab === "FOR_YOU"} onClick={() => setTab("FOR_YOU")}>
+            <Pill active={tab === "FOR_YOU"} onClick={() => selectTab("FOR_YOU")}>
               {texts.feed.tabs.forYou}
             </Pill>
 
-            <Pill active={tab === "ALL"} onClick={() => setTab("ALL")}>
+            <Pill active={tab === "ALL"} onClick={() => selectTab("ALL")}>
               {texts.feed.tabs.all}
             </Pill>
 
-            <Pill active={tab === "FOLLOWING"} onClick={() => setTab("FOLLOWING")}>
+            <Pill active={tab === "FOLLOWING"} onClick={() => selectTab("FOLLOWING")}>
               {texts.feed.tabs.following}
             </Pill>
 
-            <Pill active={tab === "RECENT"} onClick={() => setTab("RECENT")}>
+            <Pill active={tab === "RECENT"} onClick={() => selectTab("RECENT")}>
               {texts.feed.tabs.discussions}
             </Pill>
 
-            <Pill active={tab === "PROJECTS"} onClick={() => setTab("PROJECTS")}>
+            <Pill active={tab === "PROJECTS"} onClick={() => selectTab("PROJECTS")}>
               {texts.feed.tabs.projects}
             </Pill>
 
             {corporate?.exists && corporate.status === "ACTIVE" && (
-              <Pill active={tab === "CORPORATE"} onClick={() => setTab("CORPORATE")}>
+              <Pill active={tab === "CORPORATE"} onClick={() => selectTab("CORPORATE")}>
                 {texts.feed.tabs.corporate}
               </Pill>
             )}
@@ -751,7 +812,8 @@ function Home() {
 
           <div className="space-y-4">
             {feedLoading && <LoadingState />}
-            {!feedLoading && feedPosts.map((p) => <PostCard key={p.id} post={p} />)}
+            {!feedLoading &&
+              feedPosts.map((p) => <PostCard key={p.id} post={p} feedTab={tab} />)}
 
             {!feedLoading && feedPosts.length === 0 && <EmptyState title={texts.feed.empty} />}
 
@@ -908,6 +970,20 @@ function Home() {
           )}
         </aside>
       </div>
+
+      {showScrollTop && (
+        <Button
+          type="button"
+          size="icon"
+          variant="outline"
+          aria-label={texts.feed.scrollToTop}
+          title={texts.feed.scrollToTop}
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-6 right-4 z-40 rounded-full border-border-soft bg-surface-card/95 shadow-lg backdrop-blur-sm lg:right-[calc((100vw-min(100vw-3rem,80rem))/2+344px)]"
+        >
+          <ArrowUp className="h-4 w-4" aria-hidden />
+        </Button>
+      )}
     </AppContainer>
   );
 }
