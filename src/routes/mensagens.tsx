@@ -56,7 +56,7 @@ function Mensagens() {
   const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesScrollRef = useRef<HTMLDivElement>(null);
 
   // Veio de um link/perfil com uma conversa: abre ela direto.
   useEffect(() => {
@@ -81,7 +81,11 @@ function Mensagens() {
     refetchInterval: 15_000,
   });
 
-  const conversations = conversationsData?.pages.flatMap((page) => page.items) ?? [];
+  // O servidor ordena por updatedAt; reforçamos no cliente pelo horário da última mensagem —
+  // é isso que a pessoa enxerga na lista ("quem falou por último fica no topo").
+  const conversations = [...(conversationsData?.pages.flatMap((page) => page.items) ?? [])].sort(
+    (a, b) => (b.time ? Date.parse(b.time) : 0) - (a.time ? Date.parse(a.time) : 0),
+  );
   // Separa a caixa de entrada: conversas de vaga (candidatura) x conversas com pessoas.
   // Arquivadas não separa por tipo: é a lista de quem foi apagado "para mim", e ali a pessoa quer
   // reencontrar o que sumiu, não filtrar.
@@ -286,14 +290,17 @@ function Mensagens() {
   useEffect(() => {
     if (!newestMessageId || lastScrolledRef.current === newestMessageId) return;
     lastScrolledRef.current = newestMessageId;
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Rola DENTRO do quadro de mensagens: `scrollIntoView` fazia o navegador rolar a página
+    // inteira quando o teclado abria no mobile.
+    const el = messagesScrollRef.current;
+    if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
   }, [newestMessageId]);
 
   return (
     <AppContainer>
       {/* `dvh` nos dois tamanhos: `100vh` no desktop é o valor que não encolhe quando a barra
           do navegador aparece no celular, e aí o compositor ficava escondido atrás do teclado. */}
-      <div className="surface-card grid h-[calc(100dvh-11rem)] grid-cols-1 overflow-hidden md:h-[calc(100dvh-9rem)] md:grid-cols-[320px_minmax(0,1fr)]">
+      <div className="-my-4 grid h-[calc(100dvh-3.5rem)] grid-cols-1 overflow-hidden overscroll-none sm:-my-6 sm:h-[calc(100dvh-4rem)] md:my-0 md:h-[calc(100dvh-7rem)] md:grid-cols-[320px_minmax(0,1fr)] md:rounded-2xl md:border md:border-border-soft md:bg-surface-card md:shadow-card">
         <div
           className={`flex min-h-0 flex-col border-r border-border ${activeConversation ? "hidden md:flex" : "flex"}`}
         >
@@ -515,7 +522,10 @@ function Mensagens() {
                 onBack={() => setActiveId(null)}
               />
 
-              <div className="flex-1 overflow-y-auto overscroll-contain bg-muted/30 p-5">
+              <div
+                ref={messagesScrollRef}
+                className="flex-1 overflow-y-auto overscroll-contain bg-muted/30 p-5"
+              >
                 {hasOlderMessages && (
                   <div className="mb-4 flex justify-center">
                     <Button
@@ -606,7 +616,7 @@ function Mensagens() {
                       );
                     })
                   )}
-                  <div ref={messagesEndRef} />
+                  <div />
                 </div>
               </div>
 
@@ -641,7 +651,10 @@ function Mensagens() {
                   </div>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="border-t border-border p-3">
+                <form
+                  onSubmit={handleSubmit}
+                  className="border-t border-border px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]"
+                >
                   {media.length > 0 && (
                     <div className="mb-2 flex flex-wrap gap-2">
                       {media.map((item, index) => (
