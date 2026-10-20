@@ -68,14 +68,22 @@ export function HtmlEditor({
       {preview &&
         (value.trim() ? (
           <div className={previewClassName ?? `mt-3 ${PHONE_FRAME_CLASS}`}>
-            <SandboxedHtmlFrame
-              html={value}
-              title={frameTitle}
-              className="h-full"
-              innerPadding={innerPadding}
-              // A prévia é uma janela do editor (área fixa): aqui a rolagem de dentro é o esperado.
-              autoHeight={false}
-            />
+            <label
+              htmlFor="preview"
+              className="inline-flex items-center gap-1.5 text-xs font-normal text-text-subtle">
+              <>{texts.profile.bioHtml.preview}</>
+            </label>
+
+            <div id="preview">
+              <SandboxedHtmlFrame
+                html={value}
+                title={frameTitle}
+                className="h-full"
+                innerPadding={innerPadding}
+                // A prévia é uma janela do editor (área fixa): aqui a rolagem de dentro é o esperado.
+                autoHeight={false}
+              />
+            </div>
           </div>
         ) : (
           <p className="mt-3 rounded-xl border border-dashed border-border-soft px-3 py-6 text-center text-xs font-normal text-text-subtle">
