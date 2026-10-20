@@ -638,6 +638,10 @@ export const texts = {
     name: "Nome profissional",
     headline: "Headline",
     bio: "Sobre (profissional)",
+    bannerHtml: "Capa em HTML/CSS (opcional)",
+    bannerHtmlHint:
+      "Se preenchida, esta capa substitui a imagem. Roda isolada, como a capa do perfil social.",
+    bannerHtmlPlaceholder: '<div style="...">...</div>',
     location: "Localização",
     industry: "Indústria / área",
     externalLinks: "Links (separados por vírgula)",

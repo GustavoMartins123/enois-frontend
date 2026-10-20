@@ -5,5 +5,6 @@ export type CorporateImportPreview = {
   bio: string | null;
   avatar: string | null;
   banner: string | null;
+  bannerHtml: string | null;
   location: string | null;
 };
