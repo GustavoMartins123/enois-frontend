@@ -5,4 +5,5 @@ export type RegisterMentorFormProps = {
   isPending: boolean;
   initialExpertise?: string;
   initialPrice?: string;
+  initialBanner?: string;
 };

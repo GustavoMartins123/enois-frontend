@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
@@ -7,11 +7,21 @@ import { texts } from "@/texts";
 import type { CreateMentorInput } from "@/types/application/mentor/create-mentor-input";
 import type { MentorCardProps } from "@/types/routes/mentoring/mentor-card-props";
 import type { RegisterMentorFormProps } from "@/types/routes/mentoring/register-mentor-form-props";
-import { Calendar, CheckCircle2, Loader2, Sparkles, Star } from "lucide-react";
+import {
+  Calendar,
+  CheckCircle2,
+  Image as ImageIcon,
+  Loader2,
+  Sparkles,
+  Star,
+  Trash2,
+} from "lucide-react";
 
 import { ApiError, mentorsApi, profileApi } from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
 import { useCurrentUser } from "@/lib/current-user";
 import { requireAuth } from "@/lib/require-auth";
+import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -138,6 +148,7 @@ function Mentoria() {
                     isPending={saveMentor.isPending}
                     initialExpertise={myMentor?.expertise.join(", ")}
                     initialPrice={myMentor?.price}
+                    initialBanner={myMentor?.banner ?? undefined}
                   />
 
                   {createError && (
@@ -201,12 +212,73 @@ function RegisterMentorForm({
   isPending,
   initialExpertise,
   initialPrice,
+  initialBanner,
 }: RegisterMentorFormProps) {
   const [skillsText, setSkillsText] = useState(initialExpertise ?? "");
   const [price, setPrice] = useState(initialPrice ?? texts.mentoring.free);
+  const [banner, setBanner] = useState(initialBanner ?? "");
+  const [bannerError, setBannerError] = useState<string | null>(null);
+  const upload = useMediaUpload();
+  const bannerInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadBanner = async (file: File) => {
+    setBannerError(null);
+    try {
+      const result = await upload.upload(file, "MENTOR_BANNER");
+      setBanner(result.cdnUrl);
+    } catch (error) {
+      setBannerError(error instanceof Error ? error.message : texts.mentoring.bannerError);
+    }
+  };
 
   return (
     <div className="space-y-4 pt-2">
+      <div className="space-y-1.5">
+        <Label className="text-xs text-muted-foreground">{texts.mentoring.bannerLabel}</Label>
+
+        {banner ? (
+          <div className="relative overflow-hidden rounded-xl border border-border-soft">
+            <img src={resolveCdnUrl(banner)} alt="" className="h-28 w-full object-cover" />
+
+            <button
+              type="button"
+              onClick={() => setBanner("")}
+              className="absolute right-2 top-2 grid h-7 w-7 place-items-center rounded-full bg-background/90 text-destructive shadow"
+              aria-label={texts.mentoring.bannerRemove}
+            >
+              <Trash2 className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => bannerInputRef.current?.click()}
+            className="flex h-24 w-full items-center justify-center gap-2 rounded-xl border border-dashed border-border-soft text-sm text-text-subtle transition hover:bg-muted"
+          >
+            <ImageIcon className="h-4 w-4" />
+
+            <>
+              {upload.status === "uploading" ? texts.common.saving : texts.mentoring.bannerUpload}
+            </>
+          </button>
+        )}
+
+        <input
+          ref={bannerInputRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = "";
+            if (file) void uploadBanner(file);
+          }}
+        />
+
+        <p className="text-xs text-text-subtle">{texts.mentoring.bannerHint}</p>
+        {bannerError && <p className="text-xs text-destructive">{bannerError}</p>}
+      </div>
+
       <div className="space-y-1.5">
         <Label className="text-xs text-muted-foreground">{texts.mentoring.expertise}</Label>
 
@@ -237,7 +309,7 @@ function RegisterMentorForm({
             .split(",")
             .map((s) => s.trim())
             .filter(Boolean);
-          onSave({ expertise, price: price || texts.mentoring.free });
+          onSave({ expertise, price: price || texts.mentoring.free, banner: banner || null });
         }}
       >
         {isPending ? texts.common.saving : texts.common.save}
@@ -258,7 +330,15 @@ function MentorCard({ mentor, openSlots = false }: MentorCardProps & { openSlots
   });
 
   return (
-    <article className="surface-card mx-auto w-full max-w-5xl space-y-4 p-5">
+    <article className="surface-card mx-auto w-full max-w-5xl space-y-4 overflow-hidden p-5">
+      {mentor.banner && (
+        <img
+          src={resolveCdnUrl(mentor.banner)}
+          alt=""
+          className="-mx-5 -mt-5 mb-1 h-36 w-[calc(100%+2.5rem)] object-cover"
+        />
+      )}
+
       {/* Grid de 12 colunas a partir de md: antes o container era `flex` e os `md:col-span-*`
           não tinham efeito nenhum, então o card não se organizava como pretendido. */}
       <header className="grid grid-cols-1 gap-4 md:grid-cols-12">
@@ -528,6 +608,22 @@ function AddSlotDialog({
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
+  const { data: slotsData, isLoading: slotsLoading } = useQuery({
+    queryKey: ["mentor-slots", mentorId],
+    queryFn: () => mentorsApi.getSlots(mentorId),
+  });
+  const slots = slotsData?.items ?? [];
+
+  const removeSlot = useMutation({
+    mutationFn: (slotId: string) => mentorsApi.deleteSlot(mentorId, slotId),
+    onSuccess: () => {
+      setError(null);
+      queryClient.invalidateQueries({ queryKey: ["mentor-slots", mentorId] });
+      queryClient.invalidateQueries({ queryKey: ["mentors"] });
+    },
+    onError: () => setError(texts.mentoring.slotDeleteError),
+  });
+
   const createSlot = useMutation({
     mutationFn: () => {
       const startsAt = new Date(`${date}T${time}:00`);
@@ -563,21 +659,51 @@ function AddSlotDialog({
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="font-normal">{texts.mentoring.slotTitle}</DialogTitle>
+          <DialogTitle className="font-normal">{texts.mentoring.manageSlots}</DialogTitle>
         </DialogHeader>
 
-        {saved ? (
-          <div className="py-4 text-center">
-            <CheckCircle2 className="mx-auto h-9 w-9 text-growth" />
+        <div className="space-y-4 pt-2">
+          <div className="space-y-2">
+            <Label className="text-xs text-muted-foreground">{texts.mentoring.slotListTitle}</Label>
 
-            <p className="mt-3 text-sm text-muted-foreground">{texts.mentoring.slotSuccess}</p>
+            {slotsLoading ? (
+              <p className="text-sm text-text-subtle">{texts.mentoring.slotsLoading}</p>
+            ) : slots.length === 0 ? (
+              <p className="rounded-xl border border-border-soft px-3 py-3 text-sm text-text-subtle">
+                {texts.mentoring.slotEmpty}
+              </p>
+            ) : (
+              <ul className="space-y-1.5">
+                {slots.map((slot) => (
+                  <li
+                    key={slot.id}
+                    className="flex items-center justify-between gap-2 rounded-xl border border-border-soft px-3 py-2 text-sm"
+                  >
+                    <span className="min-w-0 truncate">
+                      {formatSlot(slot.startsAt)}
+                      {!slot.available && ` · ${texts.mentoring.slotBooked}`}
+                    </span>
 
-            <Button className="mt-5 w-full rounded-full" onClick={() => setSaved(false)}>
-              {texts.mentoring.slotNew}
-            </Button>
+                    {slot.available && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="shrink-0 rounded-full text-destructive"
+                        disabled={removeSlot.isPending}
+                        onClick={() => removeSlot.mutate(slot.id)}
+                      >
+                        <Trash2 className="mr-1 h-3.5 w-3.5" />
+
+                        <>{texts.mentoring.slotDelete}</>
+                      </Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
-        ) : (
-          <div className="space-y-4 pt-2">
+
+          <div className="space-y-4 border-t border-border-soft pt-4">
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground" htmlFor="slot-date">
                 {texts.mentoring.slotDate}
@@ -627,6 +753,8 @@ function AddSlotDialog({
               </div>
             </div>
 
+            {saved && <p className="text-sm text-growth">{texts.mentoring.slotSuccess}</p>}
+
             {error && (
               <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
                 {error}
@@ -638,13 +766,14 @@ function AddSlotDialog({
               disabled={!date || createSlot.isPending}
               onClick={() => {
                 setError(null);
+                setSaved(false);
                 createSlot.mutate();
               }}
             >
               {createSlot.isPending ? texts.common.saving : texts.mentoring.slotAction}
             </Button>
           </div>
-        )}
+        </div>
       </DialogContent>
     </Dialog>
   );
