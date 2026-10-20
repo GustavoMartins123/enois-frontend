@@ -14,6 +14,7 @@ import { LoadingState } from "@/components/ui/loading-state";
 
 import { AppContainer } from "@/components/app-container";
 import { PostCard } from "@/components/post-card";
+import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/profissional_/$username")({
@@ -99,7 +100,13 @@ function ProfessionalProfile() {
         <BackToFeed />
 
         <div className="surface-card overflow-hidden p-0">
-          {data.banner ? (
+          {data.bannerHtml ? (
+            <SandboxedHtmlFrame
+              html={data.bannerHtml}
+              title={texts.corporate.bannerHtml}
+              className="h-36 w-full sm:h-44"
+            />
+          ) : data.banner ? (
             <div className="h-36 w-full bg-surface-2 sm:h-44">
               <img src={data.banner} alt="" className="h-full w-full object-cover" />
             </div>

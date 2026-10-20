@@ -7,6 +7,7 @@ export type CorporateProfileView = {
   bio: string;
   avatar: string;
   banner: string;
+  bannerHtml: string;
   location: string;
   industry: string;
   externalLinks: string;

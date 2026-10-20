@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
+import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/profissional")({
@@ -44,6 +45,7 @@ function Profissional() {
     externalLinks: "",
     avatar: "",
     banner: "",
+    bannerHtml: "",
   });
   const [loadedFor, setLoadedFor] = useState<string | null>(null);
   const [importOpen, setImportOpen] = useState(false);
@@ -72,6 +74,7 @@ function Profissional() {
         externalLinks: profile.externalLinks,
         avatar: profile.avatar,
         banner: profile.banner,
+        bannerHtml: profile.bannerHtml,
       });
     }
   }, [profile, loadedFor]);
@@ -102,6 +105,7 @@ function Profissional() {
         // O PATCH substitui o perfil inteiro: mandar sem estes dois apagaria foto e capa.
         avatar: form.avatar,
         banner: form.banner,
+        bannerHtml: form.bannerHtml,
       });
     },
     onSuccess: () => {
@@ -150,6 +154,7 @@ function Profissional() {
           externalLinks: form.externalLinks.trim(),
           avatar: nextAvatar,
           banner: nextBanner,
+          bannerHtml: form.bannerHtml,
         });
         toast(texts.corporate.saved, "success");
         refresh();
@@ -183,6 +188,7 @@ function Profissional() {
         externalLinks: updated.externalLinks,
         avatar: updated.avatar,
         banner: updated.banner,
+        bannerHtml: updated.bannerHtml,
       });
       setLoadedFor(updated.username);
       refresh();
@@ -272,7 +278,13 @@ function Profissional() {
         {profile.exists && (
           <>
             <div className="surface-card space-y-4 p-4 sm:p-6">
-              {form.banner ? (
+              {form.bannerHtml.trim() ? (
+                <SandboxedHtmlFrame
+                  html={form.bannerHtml}
+                  title={texts.corporate.bannerHtml}
+                  className="h-28 w-full rounded-xl"
+                />
+              ) : form.banner ? (
                 <div className="h-28 w-full overflow-hidden rounded-xl bg-surface-2">
                   <img src={form.banner} alt="" className="h-full w-full object-cover" />
                 </div>
@@ -376,6 +388,23 @@ function Profissional() {
                   onChange={(event) => setForm({ ...form, bio: event.target.value })}
                   maxLength={2000}
                 />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs text-muted-foreground">
+                  {texts.corporate.bannerHtml}
+                </label>
+
+                <Textarea
+                  className={`${FIELD_CLASS} font-mono text-xs`}
+                  rows={6}
+                  value={form.bannerHtml}
+                  onChange={(event) => setForm({ ...form, bannerHtml: event.target.value })}
+                  maxLength={20000}
+                  placeholder={texts.corporate.bannerHtmlPlaceholder}
+                />
+
+                <p className="text-xs text-text-subtle">{texts.corporate.bannerHtmlHint}</p>
               </div>
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
