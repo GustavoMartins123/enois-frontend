@@ -1,5 +1,4 @@
 import { type FormEvent, type ReactNode, useRef, useState } from "react";
-import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
@@ -12,7 +11,8 @@ import type { ForgotPasswordDialogProps } from "@/types/routes/auth/forgot-passw
 import type { LoginFormProps } from "@/types/routes/auth/login-form-props";
 import type { SocialButtonsProps } from "@/types/routes/auth/social-buttons-props";
 import type { TabBtnProps } from "@/types/routes/auth/tab-btn-props";
-import { ArrowRight, Eye, EyeOff, Loader2, MailCheck, ShieldCheck } from "lucide-react";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
+import { ArrowRight, Loader2, MailCheck, ShieldCheck } from "lucide-react";
 import { z } from "zod";
 
 import { ApiError, authApi } from "@/lib/api";
@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 
 import { ErrorBanner } from "@/components/error-banner";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -340,6 +341,7 @@ function SignupForm(_props: AuthFormProps) {
           aria-hidden="true"
           className="absolute -left-[9999px] h-0 w-0 overflow-hidden opacity-0"
         />
+
         <Field label={texts.auth.fields.fullName} error={errors.name}>
           <Input
             name="name"
@@ -362,25 +364,15 @@ function SignupForm(_props: AuthFormProps) {
         </Field>
 
         <Field label={texts.auth.fields.password} error={errors.password}>
-          <div className="relative">
-            <Input
-              name="password"
-              type={show ? "text" : "password"}
-              placeholder={texts.auth.placeholders.newPassword}
-              autoComplete="new-password"
-              required
-              maxLength={128}
-            />
-
-            <button
-              type="button"
-              onClick={() => setShow((s) => !s)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-foreground"
-              aria-label={show ? texts.auth.password.hide : texts.auth.password.show}
-            >
-              {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
-          </div>
+          <PasswordInput
+            name="password"
+            revealed={show}
+            onToggle={() => setShow((value) => !value)}
+            placeholder={texts.auth.placeholders.newPassword}
+            autoComplete="new-password"
+            required
+            maxLength={128}
+          />
         </Field>
 
         <div className="space-y-1.5">
@@ -420,7 +412,11 @@ function SignupForm(_props: AuthFormProps) {
 
         {formError && <ErrorBanner error={formError} />}
         {TURNSTILE_SITE_KEY && (
-          <Turnstile ref={turnstileRef} siteKey={TURNSTILE_SITE_KEY} options={{ size: "flexible", theme: "dark" }} />
+          <Turnstile
+            ref={turnstileRef}
+            siteKey={TURNSTILE_SITE_KEY}
+            options={{ size: "flexible", theme: "dark" }}
+          />
         )}
         <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
           {loading ? (
@@ -607,30 +603,24 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
             </button>
           }
         >
-          <div className="relative">
-            <Input
-              name="password"
-              type={show ? "text" : "password"}
-              placeholder={texts.auth.placeholders.password}
-              autoComplete="current-password"
-              required
-              maxLength={128}
-            />
-
-            <button
-              type="button"
-              onClick={() => setShow((s) => !s)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-foreground"
-              aria-label={show ? texts.auth.password.hide : texts.auth.password.show}
-            >
-              {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
-          </div>
+          <PasswordInput
+            name="password"
+            revealed={show}
+            onToggle={() => setShow((value) => !value)}
+            placeholder={texts.auth.placeholders.password}
+            autoComplete="current-password"
+            required
+            maxLength={128}
+          />
         </Field>
 
         {formError && <ErrorBanner error={formError} />}
         {TURNSTILE_SITE_KEY && (
-          <Turnstile ref={loginTurnstileRef} siteKey={TURNSTILE_SITE_KEY} options={{ size: "flexible", theme: "dark" }} />
+          <Turnstile
+            ref={loginTurnstileRef}
+            siteKey={TURNSTILE_SITE_KEY}
+            options={{ size: "flexible", theme: "dark" }}
+          />
         )}
         <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
           {loading ? (

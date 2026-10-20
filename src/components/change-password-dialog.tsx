@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { ChangePasswordDialogProps } from "@/types/components/account/change-password-dialog-props";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 import { ApiError, authApi, clearSession } from "@/lib/api";
 
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 
 const MIN_LENGTH = 8;
 
@@ -132,25 +133,15 @@ export function ChangePasswordDialog({ open, onOpenChange }: ChangePasswordDialo
             <div className="space-y-1.5">
               <Label htmlFor="newPassword">{texts.account.changePassword.newPassword}</Label>
 
-              <div className="relative">
-                <Input
-                  id="newPassword"
-                  type={showPasswords ? "text" : "password"}
-                  autoComplete="new-password"
-                  value={newPassword}
-                  onChange={(event) => setNewPassword(event.target.value)}
-                  maxLength={128}
-                />
-
-                <button
-                  type="button"
-                  onClick={() => setShowPasswords((value) => !value)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-foreground"
-                  aria-label={showPasswords ? texts.auth.password.hide : texts.auth.password.show}
-                >
-                  {showPasswords ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
+              <PasswordInput
+                id="newPassword"
+                revealed={showPasswords}
+                onToggle={() => setShowPasswords((value) => !value)}
+                autoComplete="new-password"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+                maxLength={128}
+              />
             </div>
 
             <div className="space-y-1.5">

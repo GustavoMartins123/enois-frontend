@@ -3,14 +3,14 @@ import { type FormEvent, useState } from "react";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { ArrowRight, CheckCircle2, Eye, EyeOff, Loader2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 import { z } from "zod";
 
 import { ApiError, authApi } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 
 const searchSchema = z.object({
   token: z.string().optional(),
@@ -173,25 +173,15 @@ function ResetPassword() {
                 <div className="space-y-1.5">
                   <Label className="text-sm font-medium">{texts.auth.fields.newPassword}</Label>
 
-                  <div className="relative">
-                    <Input
-                      name="password"
-                      type={show ? "text" : "password"}
-                      placeholder={texts.auth.placeholders.newPassword}
-                      autoComplete="new-password"
-                      required
-                      maxLength={128}
-                    />
-
-                    <button
-                      type="button"
-                      onClick={() => setShow((s) => !s)}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-foreground"
-                      aria-label={show ? texts.auth.password.hide : texts.auth.password.show}
-                    >
-                      {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
+                  <PasswordInput
+                    name="password"
+                    revealed={show}
+                    onToggle={() => setShow((value) => !value)}
+                    placeholder={texts.auth.placeholders.newPassword}
+                    autoComplete="new-password"
+                    required
+                    maxLength={128}
+                  />
                   {errors.password && <p className="text-xs text-destructive">{errors.password}</p>}
                 </div>
 
