@@ -1,4 +1,4 @@
-import { type ChangeEvent, type FormEvent, useCallback, useRef, useState } from "react";
+import { type ChangeEvent, type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
@@ -10,10 +10,13 @@ import { texts } from "@/texts";
 import type { CreatePostInput } from "@/types/application/feed/create-post-input";
 import type { FeedTab } from "@/types/application/feed/feed-tab";
 import type { PostView } from "@/types/application/feed/post-view";
+import type { ActiveIdentity } from "@/types/lib/active-identity";
 import type { ComposerActionProps } from "@/types/routes/feed/composer-action-props";
+import type { HomeTab } from "@/types/routes/feed/home-tab";
 import type { MediaItem } from "@/types/routes/feed/media-item";
 import {
   BarChart3,
+  Briefcase,
   Calendar,
   CalendarClock,
   ChevronDown,
@@ -29,7 +32,12 @@ import {
   X,
 } from "lucide-react";
 
-import { authApi, eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
+import {
+  effectiveIdentity,
+  readActiveIdentity,
+  subscribeActiveIdentity,
+} from "@/lib/active-identity";
+import { authApi, corporateApi, eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
@@ -48,8 +56,22 @@ import { MentionTextarea } from "@/components/mention-textarea";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
 
+/** Abas válidas da tela inicial (a URL carrega a escolhida). */
+const HOME_TABS: HomeTab[] = ["FOR_YOU", "ALL", "FOLLOWING", "RECENT", "PROJECTS", "CORPORATE"];
+
 export const Route = createFileRoute("/feed")({
   beforeLoad: requireAuth,
+  /**
+   * A aba vive na URL (`/feed?aba=ALL`): abrir uma publicação e voltar restaura a MESMA aba em que
+   * a pessoa estava — antes o retorno caía sempre em "Para você".
+   */
+  validateSearch: (search: Record<string, unknown>) => {
+    const aba =
+      typeof search.aba === "string" && HOME_TABS.includes(search.aba as HomeTab)
+        ? (search.aba as HomeTab)
+        : "FOR_YOU";
+    return { aba };
+  },
   head: () => ({
     meta: [
       { title: texts.feed.seo.title },
@@ -64,11 +86,14 @@ export const Route = createFileRoute("/feed")({
 
 const FEED_PAGE_SIZE = 20;
 
-function useFeed(tab: FeedTab) {
+function useFeed(tab: HomeTab) {
   // Pagina por cursor: o backend devolve nextCursor e o scroll infinito busca a proxima pagina.
   return useInfiniteQuery({
     queryKey: ["feed", tab],
-    queryFn: ({ pageParam }) => feedApi.list(pageParam ?? null, FEED_PAGE_SIZE, tab),
+    queryFn: ({ pageParam }) =>
+      tab === "CORPORATE"
+        ? feedApi.corporate(pageParam ?? null, FEED_PAGE_SIZE)
+        : feedApi.list(pageParam ?? null, FEED_PAGE_SIZE, tab),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
@@ -98,7 +123,15 @@ function useEvents() {
 function Home() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [tab, setTab] = useState<FeedTab>("FOR_YOU");
+  // A aba vem da URL; trocar de aba REPLACES o histórico (o "voltar" continua voltando para a
+  // página anterior, e não passeando pelas abas).
+  const { aba } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const tab: HomeTab = aba;
+  const setTab = (next: HomeTab) => {
+    if (next === tab) return;
+    void navigate({ search: { aba: next }, replace: true });
+  };
   const {
     data: feedData,
     // Somente a PRIMEIRA carga mostra o esqueleto. `isFetching` tambem fica true ao paginar, e
@@ -111,6 +144,13 @@ function Home() {
   const { data: profile } = useProfile();
   const { data: suggestions } = useSuggestions();
   const { data: eventsData } = useEvents();
+  const [chosenIdentity, setChosenIdentity] = useState<ActiveIdentity>(() => readActiveIdentity());
+  useEffect(() => subscribeActiveIdentity(() => setChosenIdentity(readActiveIdentity())), []);
+  const { data: corporate } = useQuery({
+    queryKey: ["business-profile"],
+    queryFn: () => corporateApi.me(),
+  });
+  const identity = effectiveIdentity(chosenIdentity, corporate);
 
   const [draft, setDraft] = useState("");
   const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([]);
@@ -127,9 +167,23 @@ function Home() {
   // Agendamento: o post fica na fila do backend e só entra no feed na hora marcada.
   const [schedulingOpen, setSchedulingOpen] = useState(false);
   const [scheduleAt, setScheduleAt] = useState("");
+  // A identidade ativa manda no tipo: profissional publica BUSINESS (destino: feed
+  // corporativo); voltar para social tira o BUSINESS da seleção.
+  useEffect(() => {
+    if (identity === "CORPORATE") {
+      setPostType("BUSINESS");
+    } else {
+      setPostType((current) => (current === "BUSINESS" ? "INSIGHT" : current));
+    }
+  }, [identity]);
+
   const pageMode = postType === "PAGE";
   const articleMode = postType === "ARTICLE";
-  const currentType = POST_TYPES.find((option) => option.id === postType) ?? POST_TYPES[0];
+  const availableTypes =
+    identity === "CORPORATE"
+      ? POST_TYPES.filter((option) => option.id === "BUSINESS")
+      : POST_TYPES.filter((option) => option.id !== "BUSINESS");
+  const currentType = availableTypes.find((option) => option.id === postType) ?? availableTypes[0];
   const fileRef = useRef<HTMLInputElement>(null);
   const upload = useMediaUpload();
 
@@ -206,9 +260,7 @@ function Home() {
   };
 
   // O mínimo do input datetime-local é AGORA+1min (o backend recusa mais perto que isso).
-  const minScheduleAt = new Date(
-    Date.now() + 60_000 - new Date().getTimezoneOffset() * 60_000,
-  )
+  const minScheduleAt = new Date(Date.now() + 60_000 - new Date().getTimezoneOffset() * 60_000)
     .toISOString()
     .slice(0, 16);
 
@@ -332,6 +384,14 @@ function Home() {
               {/* No modo pagina o campo de texto sai de cena: a pagina e o conteudo, e pedir um
                   texto "de post" junto faria a publicacao ser as duas coisas ao mesmo tempo. Quem
                   quiser uma legenda escreve dentro do proprio HTML. */}
+              {identity === "CORPORATE" && (
+                <div className="mb-2 flex w-full items-center gap-2 rounded-xl bg-primary/10 px-3 py-2 text-xs text-text-strong">
+                  <Briefcase className="h-3.5 w-3.5" />
+
+                  <span>{texts.feed.composer.corporateDestination(corporate?.name ?? "")}</span>
+                </div>
+              )}
+
               {!pageMode && (
                 <MentionTextarea
                   value={draft}
@@ -482,7 +542,7 @@ function Home() {
                   {typePickerOpen && (
                     <div className="absolute bottom-full left-0 z-40 mb-1 w-[min(22rem,80vw)] rounded-2xl border border-border-soft bg-popover p-2 shadow-lg">
                       <div className="flex flex-wrap gap-1.5">
-                        {POST_TYPES.map((option) => (
+                        {availableTypes.map((option) => (
                           <ComposerAction
                             key={option.id}
                             icon={option.icon}
@@ -650,9 +710,7 @@ function Home() {
                     <div className="min-w-0">
                       <p className="truncate text-sm text-text-strong">
                         {agendado.content ||
-                          (agendado.pageHtml
-                            ? texts.feed.composer.scheduledPage
-                            : agendado.type)}
+                          (agendado.pageHtml ? texts.feed.composer.scheduledPage : agendado.type)}
                       </p>
 
                       <p className="text-xs text-text-subtle">
@@ -701,6 +759,12 @@ function Home() {
             <Pill active={tab === "PROJECTS"} onClick={() => setTab("PROJECTS")}>
               {texts.feed.tabs.projects}
             </Pill>
+
+            {corporate?.exists && corporate.status === "ACTIVE" && (
+              <Pill active={tab === "CORPORATE"} onClick={() => setTab("CORPORATE")}>
+                {texts.feed.tabs.corporate}
+              </Pill>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -779,7 +843,12 @@ function Home() {
               <ul className="mt-4 space-y-3">
                 {suggestionList.map((u) => (
                   <li key={u.id} className="flex items-center gap-3">
-                    <UserAvatar src={u.avatar} frame={u.avatarFrame} alt={u.name} className="h-10 w-10" />
+                    <UserAvatar
+                      src={u.avatar}
+                      frame={u.avatarFrame}
+                      alt={u.name}
+                      className="h-10 w-10"
+                    />
 
                     <div className="min-w-0 flex-1">
                       <Link

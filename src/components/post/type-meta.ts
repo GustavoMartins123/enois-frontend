@@ -67,4 +67,10 @@ export const typeMeta: Record<PostView["type"], PostTypeMeta> = {
     className: "bg-highlight-article text-highlight-article-text",
     classAvatar: "bg-user-article text-user-article-text",
   },
+  BUSINESS: {
+    label: texts.feed.composer.types.business,
+    // Destaque próprio do contexto profissional (o mesmo par usado pelos demais tipos).
+    className: "bg-highlight-news text-highlight-news-text",
+    classAvatar: "bg-user-news text-user-news-text",
+  },
 };

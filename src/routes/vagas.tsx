@@ -420,6 +420,20 @@ function Vagas() {
 
         {aba === "externas" && (
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              className={`rounded-full px-3 py-1 text-xs font-medium transition ${plataforma === "Comunidade" ? "bg-primary text-primary-foreground" : "border border-border-soft text-text-subtle hover:border-primary"}`}
+              onClick={() => {
+                setPlataforma(plataforma === "Comunidade" ? "" : "Comunidade");
+                setAllJobs([]);
+                setCursor(null);
+              }}
+            >
+              {texts.jobs.external.communityFilter}
+            </button>
+
+            <span className="mx-1 h-4 w-px bg-border-soft" aria-hidden />
+
             <span className="text-xs text-text-subtle">Agregador:</span>
             <button
               type="button"
@@ -570,9 +584,9 @@ function Vagas() {
 
                   {j.sourceType === "EXTERNAL" ? (
                     <a
-                      href={j.sourceUrl ?? "#"}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href={j.applyEmail ? `mailto:${j.applyEmail}` : (j.sourceUrl ?? "#")}
+                      target={j.applyEmail ? undefined : "_blank"}
+                      rel={j.applyEmail ? undefined : "noopener noreferrer"}
                       // text-primary-foreground e obrigatorio aqui: o bloco pai usa text-muted-foreground
                       // e, sem cor propria, o texto do botao herda o cinza sobre o roxo (ilegivel).
                       // Nao use o prefixo `!` de importante do Tailwind v3 — aqui e v4 (sufixo), a
@@ -581,7 +595,7 @@ function Vagas() {
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
 
-                      <>{texts.jobs.visit}</>
+                      <>{j.applyEmail ? texts.jobs.external.applyByEmail : texts.jobs.visit}</>
                     </a>
                   ) : j.applied ? (
                     <Button size="sm" variant="secondary" className="rounded-full gap-1.5" disabled>

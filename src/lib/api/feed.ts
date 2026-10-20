@@ -11,6 +11,16 @@ import type { ScheduledPostView } from "@/types/application/feed/scheduled-post-
 import { api, buildQuery } from "../api-client";
 
 export const feedApi = {
+  /** Feed corporativo: só o que as identidades profissionais assinam. */
+  corporate: (cursor?: string | null, limit = 20) =>
+    api.get<PageResponse<PostView>>(`/feed/corporate${buildQuery({ cursor: cursor ?? undefined, limit })}`),
+
+  /** Página pública de um perfil profissional: só as publicações BUSINESS daquele @. */
+  corporateByUsername: (username: string, cursor?: string | null, limit = 20) =>
+    api.get<PageResponse<PostView>>(
+      `/corporate/${encodeURIComponent(username)}/posts${buildQuery({ cursor: cursor ?? undefined, limit })}`,
+    ),
+
   list: (cursor?: string | null, limit = 20, tab?: FeedTab) =>
     api.get<PageResponse<PostView>>(`/feed${buildQuery({ cursor, limit, tab })}`),
 

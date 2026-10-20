@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { Star } from "lucide-react";
 import { Link, useRouterState } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { NavigationLinksProps } from "@/types/components/navigation/navigation-links-props";
+import { Star } from "lucide-react";
 
 import { communitiesApi } from "@/lib/api";
 import { getSessionToken } from "@/lib/api-client";
+import { useDisabledModules } from "@/lib/use-personalization";
 import { cn } from "@/lib/utils";
 
 import { COMMUNITY_FAVORITES_KEY } from "./community-favorite-button";
@@ -18,6 +19,8 @@ export function NavigationLinks({
   className,
 }: NavigationLinksProps) {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  // Módulos desativados nas preferências: a entrada some do menu (fonte única no backend).
+  const disabledModules = useDisabledModules();
 
   // Comunidades do usuário no menu: sem isso a pessoa só encontrava as suas indo em /comunidades
   // e procurando na lista.
@@ -42,37 +45,39 @@ export function NavigationLinks({
       data-collapsed={collapsed}
       className={cn("group/navigation flex flex-col gap-1", className)}
     >
-      {navigationItems.map((item) => {
-        const active = pathname === item.to || pathname.startsWith(`${item.to}/`);
-        const Icon = item.icon;
+      {navigationItems
+        .filter((item) => !item.module || !disabledModules.has(item.module))
+        .map((item) => {
+          const active = pathname === item.to || pathname.startsWith(`${item.to}/`);
+          const Icon = item.icon;
 
-        return (
-          <Link
-            key={item.to}
-            to={item.to}
-            onClick={onNavigate}
-            title={collapsed ? item.label : undefined}
-            className={cn(
-              "flex items-center gap-3 rounded-xl border-l-2 px-3 py-3 text-sm font-normal transition",
-              "group-data-[collapsed=true]/navigation:justify-center group-data-[collapsed=true]/navigation:gap-0 group-data-[collapsed=true]/navigation:px-0",
-              active
-                ? "border-primary bg-surface-2 text-primary"
-                : "border-transparent text-text-subtle hover:bg-surface-3 hover:text-text-strong",
-            )}
-          >
-            <Icon
+          return (
+            <Link
+              key={item.to}
+              to={item.to}
+              onClick={onNavigate}
+              title={collapsed ? item.label : undefined}
               className={cn(
-                "h-5 w-5 shrink-0 transition-colors lg:h-4 lg:w-4",
-                active && "text-primary",
+                "flex items-center gap-3 rounded-xl border-l-2 px-3 py-3 text-sm font-normal transition",
+                "group-data-[collapsed=true]/navigation:justify-center group-data-[collapsed=true]/navigation:gap-0 group-data-[collapsed=true]/navigation:px-0",
+                active
+                  ? "border-primary bg-surface-2 text-primary"
+                  : "border-transparent text-text-subtle hover:bg-surface-3 hover:text-text-strong",
               )}
-            />
+            >
+              <Icon
+                className={cn(
+                  "h-5 w-5 shrink-0 transition-colors lg:h-4 lg:w-4",
+                  active && "text-primary",
+                )}
+              />
 
-            <span className="whitespace-nowrap transition-all duration-300 group-data-[collapsed=true]/navigation:w-0 group-data-[collapsed=true]/navigation:overflow-hidden group-data-[collapsed=true]/navigation:opacity-0">
-              {item.label}
-            </span>
-          </Link>
-        );
-      })}
+              <span className="whitespace-nowrap transition-all duration-300 group-data-[collapsed=true]/navigation:w-0 group-data-[collapsed=true]/navigation:overflow-hidden group-data-[collapsed=true]/navigation:opacity-0">
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
 
       {!collapsed && myCommunities.length > 0 && (
         <div className="mt-1 space-y-0.5">

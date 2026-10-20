@@ -187,6 +187,14 @@ describe("GamePlayer — ciclo de vida", () => {
     expect(player().dataset.status).toBe("unverified");
     expect(iframe()).toBe(frame);
   });
+  it("a dica de tela cheia do celular some sozinha", () => {
+    vi.useFakeTimers();
+    render({ tallOnMobile: true });
+    expect(host.textContent).toContain(texts.games.game.mobileHint);
+
+    act(() => vi.advanceTimersByTime(3000));
+    expect(host.textContent).not.toContain(texts.games.game.mobileHint);
+  });
 });
 
 describe("GamePlayer — origem e janela", () => {

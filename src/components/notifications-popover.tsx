@@ -7,6 +7,8 @@ import type { NotificationTab } from "@/types/components/notification/notificati
 import { Bell, CheckCheck } from "lucide-react";
 
 import { networkApi, notificationsApi } from "@/lib/api";
+import { isNotificationHidden } from "@/lib/notification-module";
+import { useDisabledModules } from "@/lib/use-personalization";
 import { cn } from "@/lib/utils";
 
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -17,6 +19,8 @@ export function NotificationsPopover() {
   const queryClient = useQueryClient();
   const [notificationTab, setNotificationTab] = useState<NotificationTab>("novas");
   const [open, setOpen] = useState(false);
+
+  const disabledModules = useDisabledModules();
 
   const { data: notificationsData } = useQuery({
     queryKey: ["notifications"],
@@ -48,7 +52,27 @@ export function NotificationsPopover() {
     },
   });
 
-  const notificationList = notificationsData?.items ?? [];
+  // Quem AINDA tem pedido pendente. A notificação não guarda o estado do pedido: sem esta lista,
+  // o botão "Aceitar" continuava ativo no Histórico depois de aceito (e clicar de novo não tinha
+  // mais o que fazer). A chave é a mesma da página /rede, então as duas telas compartilham o cache.
+  const pendingRequests = useQuery({
+    queryKey: ["network", "requests"],
+    queryFn: () => networkApi.requests(null, 50),
+    enabled: open,
+  });
+  const pendingActorIds = pendingRequests.data
+    ? new Set(
+        pendingRequests.data.items
+          .filter((request) => request.status === "PENDING")
+          .map((request) => request.fromUserId),
+      )
+    : undefined;
+
+  // Módulo desativado não volta pela porta do sino: a notificação dele fica fora da lista
+  // (mesma fonte de verdade do menu — /me/preferences).
+  const notificationList = (notificationsData?.items ?? []).filter(
+    (notification) => !isNotificationHidden(notification.kind, disabledModules),
+  );
   const unreadCount = notificationList.filter((notification) => !notification.read).length;
   const displayedNotifications = notificationList.filter((notification) =>
     notificationTab === "novas" ? !notification.read : notification.read,
@@ -141,6 +165,8 @@ export function NotificationsPopover() {
                 notification={notification}
                 onMarkAsRead={(id) => markAsRead.mutate(id)}
                 onAcceptConnection={(actorId) => acceptConnection.mutate(actorId)}
+                stillPendingActorIds={pendingActorIds}
+                acceptingActorId={acceptConnection.isPending ? acceptConnection.variables : null}
                 onNavigate={() => setOpen(false)}
               />
             ))

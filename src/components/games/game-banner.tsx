@@ -34,7 +34,7 @@ export function GameBanner({
           title={`Banner de ${title}`}
           className="h-full"
           innerPadding={false}
-          clip
+          autoHeight={false}
         />
       </div>
     );

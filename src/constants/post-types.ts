@@ -1,6 +1,7 @@
 import { texts } from "@/texts";
 import {
   BadgeCheck,
+  Briefcase,
   BarChart3,
   Calendar,
   Code2,
@@ -38,6 +39,8 @@ export const POST_TYPES: { id: string; label: string; icon: LucideIcon; hint?: s
     hint: texts.feed.composer.types.momentHint,
   },
   { id: "PAGE", label: texts.feed.composer.page, icon: Code2 },
+  // Publicação corporativa: só aparece quando a identidade ativa é a profissional.
+  { id: "BUSINESS", label: texts.feed.composer.types.business, icon: Briefcase },
 ];
 
 /** Teto do texto do artigo — o mesmo do backend (`PublishPostService.MAX_ARTICLE_BODY`). */

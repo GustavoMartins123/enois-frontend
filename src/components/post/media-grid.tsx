@@ -85,7 +85,13 @@ export function MediaGrid({
 
   return (
     <>
-      <div className={`grid gap-2 ${items.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
+      {/* 1:1 (pedido da comunidade): a imagem ocupa um quadrado e o recorte é sempre o mesmo,
+          em vez da faixa de altura fixa que cortava fotos altas ou largas. */}
+      <div
+        className={`grid gap-2 ${items.length === 1 ? "grid-cols-1" : "grid-cols-2"} ${
+          compact ? "max-w-[280px]" : ""
+        }`}
+      >
         {items.map((m) => (
           <button
             key={m.id}
@@ -97,9 +103,7 @@ export function MediaGrid({
               src={resolveCdnUrl(m.cdnUrl)}
               alt=""
               loading="lazy"
-              className={`w-full object-cover bg-surface-1 transition hover:scale-105 ${
-                compact ? "h-28 sm:h-36" : "h-48"
-              }`}
+              className="aspect-square w-full bg-surface-1 object-cover transition hover:scale-105"
             />
           </button>
         ))}

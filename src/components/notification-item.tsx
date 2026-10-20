@@ -15,6 +15,8 @@ export function NotificationItem({
   notification,
   onMarkAsRead,
   onAcceptConnection,
+  stillPendingActorIds,
+  acceptingActorId,
   onNavigate,
 }: NotificationItemProps) {
   const navigate = useNavigate();
@@ -22,6 +24,12 @@ export function NotificationItem({
   const meta = notificationMeta[kind] ?? notificationMeta.connection;
   const Icon = meta.icon;
   const canAcceptConnection = kind === "connection_request" && Boolean(notification.actorId);
+  // Já aceito (ou recusado/removido) = não há mais o que aceitar. Sem a lista de pendentes
+  // (carregando/erro), mantém o botão como sempre esteve — some só com informação de verdade.
+  const stillPending =
+    stillPendingActorIds === undefined ||
+    (notification.actorId ? stillPendingActorIds.has(notification.actorId) : false);
+  const acceptingThis = acceptingActorId != null && acceptingActorId === notification.actorId;
 
   const markAsRead = () => {
     if (!notification.read) onMarkAsRead(notification.id);
@@ -139,7 +147,15 @@ export function NotificationItem({
                 <button
                   type="button"
                   onClick={handleAcceptConnection}
-                  className="rounded-full bg-primary px-3 py-1 text-xs font-normal text-primary-foreground transition hover:bg-primary/90"
+                  // Já aceito: o botão continua no Histórico, mas desabilitado (não dá para
+                  // aceitar duas vezes); enquanto aceita, evita o duplo clique.
+                  disabled={!stillPending || acceptingThis}
+                  className={cn(
+                    "rounded-full bg-primary px-3 py-1 text-xs font-normal text-primary-foreground transition",
+                    !stillPending || acceptingThis
+                      ? "cursor-default opacity-60"
+                      : "hover:bg-primary/90",
+                  )}
                 >
                   {notification.ctaLabel || texts.notifications.accept}
                 </button>

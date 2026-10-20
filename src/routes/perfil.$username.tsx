@@ -122,6 +122,15 @@ export const Route = createFileRoute("/perfil/$username")({
   component: Profile,
 });
 
+/** "chegou hoje" / "há 3 dias" a partir da data de entrada (nulo quando não há data). */
+function joinedLabel(joinedAt: string | null): string | null {
+  if (!joinedAt) return null;
+  const ms = Date.parse(joinedAt);
+  if (Number.isNaN(ms)) return null;
+  const days = Math.max(0, Math.floor((Date.now() - ms) / 86_400_000));
+  return days === 0 ? texts.profile.joinedToday : texts.profile.joinedDaysAgo(days);
+}
+
 function Profile() {
   const { user: loaderUser } = Route.useLoaderData();
   const { user: me, requireAuth } = useAuth();
@@ -163,11 +172,11 @@ function Profile() {
   });
   const temPaginaDeDev = Boolean(
     gamesDev &&
-      (gamesDev.games.length > 0 ||
-        gamesDev.displayName ||
-        gamesDev.headline ||
-        gamesDev.bio ||
-        gamesDev.links.length > 0),
+    (gamesDev.games.length > 0 ||
+      gamesDev.displayName ||
+      gamesDev.headline ||
+      gamesDev.bio ||
+      gamesDev.links.length > 0),
   );
 
   // O currículo só existe na projeção do DONO (/me): o perfil público não traz, de propósito.
@@ -328,7 +337,9 @@ function Profile() {
                 html={user.bannerHtml}
                 title={texts.profile.bannerHtml.frameTitle}
                 className="h-40 w-full rounded-none border-0 shadow-none sm:h-52"
-                clip
+                // Faixa fixa com ROLAGEM interna (pedido da comunidade): o HTML do autor não é
+                // mais cortado — se passar da altura, rola dentro da capa.
+                autoHeight={false}
               />
             ) : user.banner ? (
               <img
@@ -751,19 +762,18 @@ function Profile() {
               </Section>
             )}
 
-            {/* Ranking OPCIONAL (pedido via suporte): quem desligou nas configuracoes nao ve a
-                secao — a preferencia e de quem LE, nao do perfil visitado. */}
+            {/* A seção é OPCIONAL (pedido via suporte): quem desligou nas configurações não vê —
+                a preferência é de quem LÊ, não do perfil visitado. Desde 2026-10-20 a lista é de
+                CHEGADA (mais recentes primeiro), e o texto acima da lista diz isso. */}
             {me?.showRanking !== false && rankingData && rankingData.length > 0 && (
               <Section title={texts.profile.sections.ranking} icon={Trophy}>
-                <div className="space-y-2">
-                  {rankingData.slice(0, 5).map((u, i) => (
-                    <div key={u.id} className="flex items-center gap-3">
-                      <span
-                        className={`w-5 text-center text-sm font-normal ${i < 3 ? "text-opportunity" : "text-text-subtle"}`}
-                      >
-                        {texts.profile.rankingPosition(i + 1)}
-                      </span>
+                <p className="-mt-1 mb-2 text-xs font-normal text-text-subtle">
+                  {texts.profile.newMembersHint}
+                </p>
 
+                <div className="space-y-2">
+                  {rankingData.slice(0, 5).map((u) => (
+                    <div key={u.id} className="flex items-center gap-3">
                       <Link to="/perfil/$username" params={{ username: u.username }}>
                         <UserAvatar src={u.avatar} alt={u.name} className="h-8 w-8 shrink-0" />
                       </Link>
@@ -778,9 +788,13 @@ function Profile() {
                         </Link>
                       </div>
 
-                      <span className="text-xs font-normal text-opportunity-foreground">
-                        {u.reputation}
-                      </span>
+                      {/* A coluna da direita é QUANDO chegou (o número de reputação não descreve
+                          mais esta lista). */}
+                      {joinedLabel(u.joinedAt) && (
+                        <span className="shrink-0 text-xs font-normal text-text-subtle">
+                          {joinedLabel(u.joinedAt)}
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -862,7 +876,12 @@ function RecommendationItem({ recommendation }: RecommendationItemProps) {
   return (
     <div className="rounded-xl bg-surface-1 p-3">
       <div className="flex items-center gap-2 mb-2">
-        <UserAvatar frame={recommender?.avatarFrame} src={recommender?.avatar} alt={recommender?.name} className="h-6 w-6" />
+        <UserAvatar
+          frame={recommender?.avatarFrame}
+          src={recommender?.avatar}
+          alt={recommender?.name}
+          className="h-6 w-6"
+        />
 
         <span className="text-xs font-medium text-text-strong">
           {recommender?.name ?? texts.profile.userFallback}

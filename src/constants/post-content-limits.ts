@@ -22,6 +22,8 @@ const LIMITS: Record<PostView["type"], number> = {
   INSIGHT: 1200,
   PAGE: 1200,
   ARTICLE: 1200,
+  // Conteúdo profissional: mesmo teto do backend (PostContentLimits.BUSINESS).
+  BUSINESS: 2000,
   BLOG: 1200,
 };
 

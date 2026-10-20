@@ -4,6 +4,7 @@ import {
   useEffect,
   useReducer,
   useRef,
+  useState,
   useSyncExternalStore,
 } from "react";
 
@@ -25,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 
 const subscribeNothing = () => () => {};
+const MOBILE_HINT_MS = 3000;
 
 const ASPECT: Record<string, string> = {
   WIDESCREEN: "16 / 9",
@@ -53,6 +55,7 @@ export function GamePlayer({
   const container = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLIFrameElement>(null);
   const identityPending = useRef(false);
+  const [showMobileHint, setShowMobileHint] = useState(true);
   const latest = useRef({ identity, onShareRequest, onSpendRequest });
   // No servidor (e na hidratação) o quadro não existe: o sandbox depende da origem do Énóis, que só
   // o navegador conhece.
@@ -122,6 +125,11 @@ export function GamePlayer({
     identityPending.current = false;
     frameWindow.postMessage(identityReply(identity.token), origin);
   }, [identity, session, origin]);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setShowMobileHint(false), MOBILE_HINT_MS);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     if (state.session === 0) return;
@@ -277,7 +285,7 @@ export function GamePlayer({
         )}
       </div>
 
-      {tallOnMobile && (
+      {tallOnMobile && showMobileHint && (
         <p className="border-t border-border-soft px-3 py-2 text-xs text-text-subtle sm:hidden">
           {t.mobileHint}
         </p>

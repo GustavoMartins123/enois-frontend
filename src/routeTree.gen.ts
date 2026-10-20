@@ -18,6 +18,7 @@ import { Route as ServicosRouteImport } from './routes/servicos'
 import { Route as SegurancaRouteImport } from './routes/seguranca'
 import { Route as SalvosRouteImport } from './routes/salvos'
 import { Route as RedeRouteImport } from './routes/rede'
+import { Route as ProfissionalRouteImport } from './routes/profissional'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
 import { Route as PenalidadesRouteImport } from './routes/penalidades'
 import { Route as ModeradorRouteImport } from './routes/moderador'
@@ -43,6 +44,7 @@ import { Route as BlogsRouteImport } from './routes/blogs'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VagasMinhasRouteImport } from './routes/vagas.minhas'
 import { Route as VagasJobIdRouteImport } from './routes/vagas.$jobId'
+import { Route as ProfissionalUsernameRouteImport } from './routes/profissional_.$username'
 import { Route as PostPostIdRouteImport } from './routes/post.$postId'
 import { Route as PerfilUsernameRouteImport } from './routes/perfil.$username'
 import { Route as ModeracaoReportIdRouteImport } from './routes/moderacao.$reportId'
@@ -102,6 +104,11 @@ const SalvosRoute = SalvosRouteImport.update({
 const RedeRoute = RedeRouteImport.update({
   id: '/rede',
   path: '/rede',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfissionalRoute = ProfissionalRouteImport.update({
+  id: '/profissional',
+  path: '/profissional',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacidadeRoute = PrivacidadeRouteImport.update({
@@ -229,6 +236,11 @@ const VagasJobIdRoute = VagasJobIdRouteImport.update({
   path: '/$jobId',
   getParentRoute: () => VagasRoute,
 } as any)
+const ProfissionalUsernameRoute = ProfissionalUsernameRouteImport.update({
+  id: '/profissional_/$username',
+  path: '/profissional/$username',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PostPostIdRoute = PostPostIdRouteImport.update({
   id: '/post/$postId',
   path: '/post/$postId',
@@ -329,6 +341,7 @@ export interface FileRoutesByFullPath {
   '/moderador': typeof ModeradorRoute
   '/penalidades': typeof PenalidadesRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/profissional': typeof ProfissionalRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
@@ -350,6 +363,7 @@ export interface FileRoutesByFullPath {
   '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
+  '/profissional/$username': typeof ProfissionalUsernameRoute
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
   '/blog/$username/$postId': typeof BlogUsernamePostIdRoute
@@ -380,6 +394,7 @@ export interface FileRoutesByTo {
   '/moderador': typeof ModeradorRoute
   '/penalidades': typeof PenalidadesRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/profissional': typeof ProfissionalRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
@@ -401,6 +416,7 @@ export interface FileRoutesByTo {
   '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
+  '/profissional/$username': typeof ProfissionalUsernameRoute
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
   '/blog/$username/$postId': typeof BlogUsernamePostIdRoute
@@ -432,6 +448,7 @@ export interface FileRoutesById {
   '/moderador': typeof ModeradorRoute
   '/penalidades': typeof PenalidadesRoute
   '/privacidade': typeof PrivacidadeRoute
+  '/profissional': typeof ProfissionalRoute
   '/rede': typeof RedeRoute
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
@@ -453,6 +470,7 @@ export interface FileRoutesById {
   '/moderacao/$reportId': typeof ModeracaoReportIdRoute
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
+  '/profissional_/$username': typeof ProfissionalUsernameRoute
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
   '/blog/$username_/$postId': typeof BlogUsernamePostIdRoute
@@ -485,6 +503,7 @@ export interface FileRouteTypes {
     | '/moderador'
     | '/penalidades'
     | '/privacidade'
+    | '/profissional'
     | '/rede'
     | '/salvos'
     | '/seguranca'
@@ -506,6 +525,7 @@ export interface FileRouteTypes {
     | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
+    | '/profissional/$username'
     | '/vagas/$jobId'
     | '/vagas/minhas'
     | '/blog/$username/$postId'
@@ -536,6 +556,7 @@ export interface FileRouteTypes {
     | '/moderador'
     | '/penalidades'
     | '/privacidade'
+    | '/profissional'
     | '/rede'
     | '/salvos'
     | '/seguranca'
@@ -557,6 +578,7 @@ export interface FileRouteTypes {
     | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
+    | '/profissional/$username'
     | '/vagas/$jobId'
     | '/vagas/minhas'
     | '/blog/$username/$postId'
@@ -587,6 +609,7 @@ export interface FileRouteTypes {
     | '/moderador'
     | '/penalidades'
     | '/privacidade'
+    | '/profissional'
     | '/rede'
     | '/salvos'
     | '/seguranca'
@@ -608,6 +631,7 @@ export interface FileRouteTypes {
     | '/moderacao/$reportId'
     | '/perfil/$username'
     | '/post/$postId'
+    | '/profissional_/$username'
     | '/vagas/$jobId'
     | '/vagas/minhas'
     | '/blog/$username_/$postId'
@@ -639,6 +663,7 @@ export interface RootRouteChildren {
   ModeradorRoute: typeof ModeradorRoute
   PenalidadesRoute: typeof PenalidadesRoute
   PrivacidadeRoute: typeof PrivacidadeRoute
+  ProfissionalRoute: typeof ProfissionalRoute
   RedeRoute: typeof RedeRoute
   SalvosRoute: typeof SalvosRoute
   SegurancaRoute: typeof SegurancaRoute
@@ -655,6 +680,7 @@ export interface RootRouteChildren {
   EmpresaSlugRoute: typeof EmpresaSlugRoute
   PerfilUsernameRoute: typeof PerfilUsernameRoute
   PostPostIdRoute: typeof PostPostIdRoute
+  ProfissionalUsernameRoute: typeof ProfissionalUsernameRoute
   BlogUsernamePostIdRoute: typeof BlogUsernamePostIdRoute
 }
 
@@ -721,6 +747,13 @@ declare module '@tanstack/react-router' {
       path: '/rede'
       fullPath: '/rede'
       preLoaderRoute: typeof RedeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profissional': {
+      id: '/profissional'
+      path: '/profissional'
+      fullPath: '/profissional'
+      preLoaderRoute: typeof ProfissionalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacidade': {
@@ -897,6 +930,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/vagas/$jobId'
       preLoaderRoute: typeof VagasJobIdRouteImport
       parentRoute: typeof VagasRoute
+    }
+    '/profissional_/$username': {
+      id: '/profissional_/$username'
+      path: '/profissional/$username'
+      fullPath: '/profissional/$username'
+      preLoaderRoute: typeof ProfissionalUsernameRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/post/$postId': {
       id: '/post/$postId'
@@ -1113,6 +1153,7 @@ const rootRouteChildren: RootRouteChildren = {
   ModeradorRoute: ModeradorRoute,
   PenalidadesRoute: PenalidadesRoute,
   PrivacidadeRoute: PrivacidadeRoute,
+  ProfissionalRoute: ProfissionalRoute,
   RedeRoute: RedeRoute,
   SalvosRoute: SalvosRoute,
   SegurancaRoute: SegurancaRoute,
@@ -1129,6 +1170,7 @@ const rootRouteChildren: RootRouteChildren = {
   EmpresaSlugRoute: EmpresaSlugRoute,
   PerfilUsernameRoute: PerfilUsernameRoute,
   PostPostIdRoute: PostPostIdRoute,
+  ProfissionalUsernameRoute: ProfissionalUsernameRoute,
   BlogUsernamePostIdRoute: BlogUsernamePostIdRoute,
 }
 export const routeTree = rootRouteImport

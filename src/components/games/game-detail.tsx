@@ -30,8 +30,10 @@ import { useToast } from "@/components/ui/toast";
 
 import { GameIcon } from "@/components/game-icon";
 import { GameBanner } from "@/components/games/game-banner";
+import { GameCommentsSection } from "@/components/games/game-comments-section";
 import { GameEditorDialog } from "@/components/games/game-editor-dialog";
 import { GamePlayer } from "@/components/games/game-player";
+import { GameReviewsSection } from "@/components/games/game-reviews-section";
 import { GameStatsLine } from "@/components/games/game-stats-line";
 import { GameUpdateDialog } from "@/components/games/game-update-dialog";
 
@@ -554,6 +556,9 @@ function GameDetailContent({ username, gameSlug }: { username: string; gameSlug:
             )}
           </dl>
         </section>
+
+        <GameReviewsSection gameId={g.id} ownerId={g.userId} />
+        <GameCommentsSection gameId={g.id} ownerId={g.userId} />
 
         <section className="surface-card space-y-3 p-4 sm:p-5">
           <h2 className="text-base font-medium">{t.updates}</h2>
