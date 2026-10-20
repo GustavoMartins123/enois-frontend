@@ -665,3 +665,12 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Nenhuma correção de app.**
 - **Próximo lote:** `/jogos-diarios` (já coberto), `/notificacoes` se houver rota dedicada, e as
   rotas de jogos por criador com jogo (`/games/{user}/{slug}`); depois páginas-chave a 1280.
+
+## Rodada 44 — 2026-10-19 23:0x
+
+- **Sessão válida** durante o lote.
+- **Lote B protegido:** `/games/aminadojava/https-kawaii-survivor-vercel-app` (detalhe do jogo)
+  a 390×844, 60 temas × claro/escuro = **120 verificações, ZERO problemas**.
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/moderador` e `/moderacao` a 390px (leitura) e as páginas-chave protegidas a
+  1280 com os 60 temas.
