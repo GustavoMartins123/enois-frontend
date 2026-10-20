@@ -115,7 +115,7 @@ function Blogs() {
                 key={blog.slug}
                 to="/blog/$username"
                 params={{ username: blog.slug }}
-                className="surface-card block p-4 transition hover:border-primary/40 sm:p-5"
+                className="surface-card block min-w-0 p-4 transition hover:border-primary/40 sm:p-5"
               >
                 <div className="flex items-center gap-3">
                   <UserAvatar
@@ -125,7 +125,9 @@ function Blogs() {
                   />
 
                   <div className="min-w-0">
-                    <p className="truncate text-base font-semibold text-text-strong">
+                    {/* Duas linhas no celular: o título do blog é o que identifica o cantinho e
+                        truncar em uma linha comia boa parte dos nomes longos. */}
+                    <p className="line-clamp-2 break-words text-base font-semibold text-text-strong">
                       {blog.title}
                     </p>
 

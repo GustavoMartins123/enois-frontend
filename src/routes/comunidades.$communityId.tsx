@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 
 import { TOPICS, TOPIC_LABELS } from "@/constants/community-topics";
+import { postContentLimit } from "@/constants/post-content-limits";
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { ARTICLE_BODY_MAX_LENGTH, POST_TYPES } from "@/constants/post-types";
 import { PROFILE_HTML_MAX_LENGTH } from "@/constants/profile";
@@ -30,7 +31,6 @@ import {
 import { communitiesApi, feedApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { buildShareTags } from "@/lib/open-graph";
-import { requireAuth } from "@/lib/require-auth";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
@@ -61,7 +61,6 @@ import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/comunidades/$communityId")({
-  beforeLoad: requireAuth,
   loader: async ({ params }) => {
     try {
       return await communitiesApi.get(params.communityId);
@@ -89,7 +88,7 @@ export const Route = createFileRoute("/comunidades/$communityId")({
 function CommunityDetail() {
   const queryClient = useQueryClient();
   const community = Route.useLoaderData();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, requireAuth: needsLogin } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [draft, setDraft] = useState("");
@@ -143,8 +142,18 @@ function CommunityDetail() {
     queryFn: () => communitiesApi.getFeed(community.id),
   });
 
+  // O fixado é um estado da comunidade (não do post), então vem de um endpoint próprio e pode
+  // não estar na página carregada do feed — por isso a lista é montada com ele na frente.
+  const { data: pinnedPost } = useQuery({
+    queryKey: ["community", community.id, "pinned"],
+    queryFn: () => communitiesApi.pinned(community.id).catch(() => null),
+  });
+
   const members = membersData?.items ?? [];
   const posts = feedData?.items ?? [];
+  const orderedPosts = pinnedPost
+    ? [pinnedPost, ...posts.filter((p) => p.id !== pinnedPost.id)]
+    : posts;
 
   const join = useMutation({
     mutationFn: () => communitiesApi.join(community.id),
@@ -265,6 +274,18 @@ function CommunityDetail() {
   const admins = members.filter((m) => m.role === "ADMIN");
   const isAdmin = currentUser ? admins.some((a) => a.userId === currentUser.id) : false;
 
+  const togglePin = useMutation({
+    mutationFn: (post: PostView) =>
+      pinnedPost?.id === post.id
+        ? communitiesApi.unpin(community.id)
+        : communitiesApi.pin(community.id, post.id),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["community", community.id, "feed"] });
+      void queryClient.invalidateQueries({ queryKey: ["community", community.id, "pinned"] });
+    },
+    onError: () => toast(texts.posts.pin.error, "error"),
+  });
+
   return (
     <AppContainer>
       <div className="space-y-6">
@@ -286,7 +307,7 @@ function CommunityDetail() {
               title={texts.communities.detail.bannerHtml.frameTitle}
               className="h-48 w-full rounded-none border-0 shadow-none"
               innerPadding={false}
-              clip
+              autoHeight={false}
             />
           ) : live.cover ? (
             <img src={resolveCdnUrl(live.cover)} alt="" className="h-48 w-full object-cover" />
@@ -391,7 +412,14 @@ function CommunityDetail() {
                   className="w-auto rounded-full whitespace-nowrap"
                   variant={viewerConfirmed && isMember ? "secondary" : "default"}
                   disabled={join.isPending || leave.isPending || !viewerConfirmed}
-                  onClick={() => (viewerConfirmed && isMember ? setLeaveOpen(true) : join.mutate())}
+                  onClick={() => {
+                    if (viewerConfirmed && isMember) {
+                      setLeaveOpen(true);
+                      return;
+                    }
+                    // Visitante nao tem sessao: manda para o login em vez de tomar 401.
+                    if (needsLogin()) join.mutate();
+                  }}
                 >
                   {!viewerConfirmed
                     ? "…"
@@ -482,7 +510,7 @@ function CommunityDetail() {
                 }}
                 placeholder={texts.communities.detail.composerPlaceholder}
                 className="min-h-20 rounded-2xl border border-border bg-muted/40 px-3 py-2 text-sm font-normal"
-                maxLength={1200}
+                maxLength={postContentLimit(postType)}
                 toolbar
               />
             )}
@@ -507,24 +535,22 @@ function CommunityDetail() {
 
             {articleMode && (
               <div className="mt-3 rounded-2xl border border-border-soft bg-surface-1 p-3">
-                <label
-                  htmlFor="community-article-body"
-                  className="mb-1 block text-sm font-normal text-text-subtle"
-                >
+                <span className="mb-1 block text-sm font-normal text-text-subtle">
                   {texts.feed.composer.article.bodyLabel}
-                </label>
+                </span>
 
                 <p className="mb-2 text-sm font-normal text-text-subtle">
                   {texts.feed.composer.article.bodyHint}
                 </p>
 
-                <Textarea
-                  id="community-article-body"
+                <MentionTextarea
                   value={articleBody}
                   maxLength={ARTICLE_BODY_MAX_LENGTH}
-                  onChange={(event) => setArticleBody(event.target.value)}
+                  onChange={(value) => setArticleBody(value)}
                   placeholder={texts.feed.composer.article.bodyPlaceholder}
-                  className="min-h-[220px]"
+                  className="min-h-[220px] rounded-lg border border-border-soft bg-transparent px-3 py-2 text-sm text-text-strong"
+                  rows={8}
+                  toolbar
                 />
               </div>
             )}
@@ -670,14 +696,22 @@ function CommunityDetail() {
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_280px]">
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">{texts.communities.detail.feed}</h2>
-            {posts.length === 0 ? (
+            {orderedPosts.length === 0 ? (
               <p className="surface-card p-8 text-center text-sm text-muted-foreground">
                 {isMember
                   ? texts.communities.detail.emptyMember
                   : texts.communities.detail.emptyGuest}
               </p>
             ) : (
-              posts.map((p) => <PostCard key={p.id} post={p} />)
+              orderedPosts.map((p) => (
+                <PostCard
+                  key={p.id}
+                  post={p}
+                  pinned={p.id === pinnedPost?.id}
+                  onTogglePin={isAdmin ? () => togglePin.mutate(p) : undefined}
+                  pinPending={togglePin.isPending}
+                />
+              ))
             )}
           </div>
 

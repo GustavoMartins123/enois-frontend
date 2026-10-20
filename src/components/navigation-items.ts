@@ -6,23 +6,53 @@ import {
   Building2,
   Calendar,
   Compass,
+  Gamepad2,
   GraduationCap,
   Home,
+  Joystick,
   MessageCircle,
   Users,
   UsersRound,
 } from "lucide-react";
 
-export const navigationItems = [
-  { to: "/feed", label: texts.navigation.items.feed, icon: Home },
-  { to: "/rede", label: texts.navigation.items.network, icon: Users },
-  { to: "/comunidades", label: texts.navigation.items.communities, icon: Compass },
-  { to: "/grupos", label: texts.navigation.items.groups, icon: UsersRound },
-  { to: "/mensagens", label: texts.navigation.items.messages, icon: MessageCircle },
-  { to: "/salvos", label: texts.navigation.items.saved, icon: Bookmark },
-  { to: "/blogs", label: texts.navigation.items.blogs, icon: BookOpen },
-  { to: "/vagas", label: texts.navigation.items.jobs, icon: Briefcase },
-  { to: "/empresas", label: texts.navigation.items.companies, icon: Building2 },
-  { to: "/mentoria", label: texts.navigation.items.mentoring, icon: GraduationCap },
-  { to: "/eventos", label: texts.navigation.items.events, icon: Calendar },
+/** `module` é o identificador que o backend valida em /me/preferences (null = sempre visível). */
+export const navigationItems: {
+  to: string;
+  label: string;
+  icon: typeof Home;
+  module: string | null;
+}[] = [
+  { to: "/feed", label: texts.navigation.items.feed, icon: Home, module: null },
+  { to: "/rede", label: texts.navigation.items.network, icon: Users, module: null },
+  {
+    to: "/comunidades",
+    label: texts.navigation.items.communities,
+    icon: Compass,
+    module: "COMMUNITIES",
+  },
+  { to: "/grupos", label: texts.navigation.items.groups, icon: UsersRound, module: "GROUPS" },
+  {
+    to: "/mensagens",
+    label: texts.navigation.items.messages,
+    icon: MessageCircle,
+    module: "MESSAGES",
+  },
+  { to: "/salvos", label: texts.navigation.items.saved, icon: Bookmark, module: null },
+  { to: "/blogs", label: texts.navigation.items.blogs, icon: BookOpen, module: "BLOGS" },
+  { to: "/vagas", label: texts.navigation.items.jobs, icon: Briefcase, module: "JOBS" },
+  {
+    to: "/empresas",
+    label: texts.navigation.items.companies,
+    icon: Building2,
+    module: "COMPANIES",
+  },
+  {
+    to: "/mentoria",
+    label: texts.navigation.items.mentoring,
+    icon: GraduationCap,
+    module: "MENTORING",
+  },
+  { to: "/eventos", label: texts.navigation.items.events, icon: Calendar, module: "EVENTS" },
+  { to: "/jogos-diarios", label: "Jogos diários", icon: Gamepad2, module: "DAILY_GAMES" },
+  { to: "/games", label: "Jogos da comunidade", icon: Joystick, module: "COMMUNITY_GAMES" },
 ];

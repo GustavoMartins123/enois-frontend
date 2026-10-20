@@ -151,7 +151,7 @@ export function InstallPwaBanner() {
           className="fixed bottom-6 left-1/2 z-50 w-[calc(100%-2rem)] max-w-sm -translate-x-1/2 rounded-2xl border border-border-soft bg-surface-card p-3 shadow-lg animate-in fade-in-0 slide-in-from-bottom-8"
         >
           <div className="flex items-center gap-3">
-            <img src="/icons/icon-192.png" alt="" className="h-10 w-10 shrink-0 rounded-lg" />
+            <img src="/icons/brand-icon-192.png" alt="" className="h-10 w-10 shrink-0 rounded-lg" />
 
             <div className="min-w-0 flex-1">
               <p className="text-sm font-semibold text-text-strong">{texts.pwa.install.title}</p>

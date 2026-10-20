@@ -9,11 +9,12 @@ import type { CommentItemProps } from "@/types/components/post/comment-item-prop
 
 import { REACTION_EMOJIS, commentsApi, profileApi, reactionsApi } from "@/lib/api";
 import { getCurrentUserId } from "@/lib/current-user";
+import { hideExternalPageUrls } from "@/lib/shared-links";
 
 import { Button } from "@/components/ui/button";
 import { ReadMore } from "@/components/ui/read-more";
-import { Textarea } from "@/components/ui/textarea";
 
+import { MentionTextarea } from "@/components/mention-textarea";
 import { UserAvatar } from "@/components/user-avatar";
 import { UserBadges } from "@/components/user-badge";
 
@@ -22,8 +23,6 @@ import { LinkPreviews } from "./link-previews";
 import { MediaGrid } from "./media-grid";
 import { ReactionPicker } from "./reaction-picker";
 import { ReportDialog } from "./report-dialog";
-import { hideExternalPageUrls } from "@/lib/shared-links";
-
 import { RichText } from "./rich-text";
 
 /** Um comentário (com responder, reagir e excluir). */
@@ -128,7 +127,7 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
   );
 
   const avatar = (
-    <UserAvatar src={comment.authorAvatar} alt={comment.authorName} className="h-8 w-8 shrink-0" />
+    <UserAvatar frame={comment.authorAvatarFrame} src={comment.authorAvatar} alt={comment.authorName} className="h-8 w-8 shrink-0" />
   );
 
   return (
@@ -165,12 +164,13 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
 
           {editing ? (
             <div className="mt-1 space-y-2">
-              <Textarea
+              <MentionTextarea
                 value={editDraft}
-                onChange={(event) => setEditDraft(event.target.value)}
+                onChange={(value) => setEditDraft(value)}
                 rows={3}
                 maxLength={1024}
-                className="border-border-soft bg-surface-card text-sm font-normal"
+                className="rounded-lg border border-border-soft bg-surface-card px-3 py-2 text-sm font-normal"
+                toolbar
               />
 
               {editError && <p className="text-xs text-destructive">{editError}</p>}

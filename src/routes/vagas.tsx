@@ -58,6 +58,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
+import { CreateExternalJobDialog } from "@/components/create-external-job-dialog";
 import { InfiniteScroll } from "@/components/infinite-scroll";
 
 export const Route = createFileRoute("/vagas")({
@@ -119,6 +120,7 @@ function Vagas() {
   const [aba, setAba] = useState<"enois" | "externas" | "salvas">("enois");
   const [plataforma, setPlataforma] = useState("");
   const [showCreate, setShowCreate] = useState(false);
+  const [showExternal, setShowExternal] = useState(false);
   const [reportTarget, setReportTarget] = useState<Job | null>(null);
 
   const reputation = user?.reputation ?? 0;
@@ -241,6 +243,18 @@ function Vagas() {
               >
                 {texts.jobs.myJobs}
               </Link>
+
+              {/* Vaga achada em outro site: cadastra aqui e o botão do card leva ao link. */}
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-full gap-1.5"
+                onClick={() => setShowExternal(true)}
+              >
+                <ExternalLink className="h-4 w-4" />
+
+                <>{texts.jobs.external.registerButton}</>
+              </Button>
 
               <Button
                 size="sm"
@@ -406,6 +420,20 @@ function Vagas() {
 
         {aba === "externas" && (
           <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              className={`rounded-full px-3 py-1 text-xs font-medium transition ${plataforma === "Comunidade" ? "bg-primary text-primary-foreground" : "border border-border-soft text-text-subtle hover:border-primary"}`}
+              onClick={() => {
+                setPlataforma(plataforma === "Comunidade" ? "" : "Comunidade");
+                setAllJobs([]);
+                setCursor(null);
+              }}
+            >
+              {texts.jobs.external.communityFilter}
+            </button>
+
+            <span className="mx-1 h-4 w-px bg-border-soft" aria-hidden />
+
             <span className="text-xs text-text-subtle">Agregador:</span>
             <button
               type="button"
@@ -556,9 +584,9 @@ function Vagas() {
 
                   {j.sourceType === "EXTERNAL" ? (
                     <a
-                      href={j.sourceUrl ?? "#"}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                      href={j.applyEmail ? `mailto:${j.applyEmail}` : (j.sourceUrl ?? "#")}
+                      target={j.applyEmail ? undefined : "_blank"}
+                      rel={j.applyEmail ? undefined : "noopener noreferrer"}
                       // text-primary-foreground e obrigatorio aqui: o bloco pai usa text-muted-foreground
                       // e, sem cor propria, o texto do botao herda o cinza sobre o roxo (ilegivel).
                       // Nao use o prefixo `!` de importante do Tailwind v3 — aqui e v4 (sufixo), a
@@ -567,7 +595,7 @@ function Vagas() {
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
 
-                      <>{texts.jobs.visit}</>
+                      <>{j.applyEmail ? texts.jobs.external.applyByEmail : texts.jobs.visit}</>
                     </a>
                   ) : j.applied ? (
                     <Button size="sm" variant="secondary" className="rounded-full gap-1.5" disabled>
@@ -599,6 +627,7 @@ function Vagas() {
       </div>
 
       <CreateJobDialog open={showCreate} onOpenChange={setShowCreate} />
+      <CreateExternalJobDialog open={showExternal} onOpenChange={setShowExternal} />
       <ReportJobDialog job={reportTarget} onOpenChange={(open) => !open && setReportTarget(null)} />
     </AppContainer>
   );

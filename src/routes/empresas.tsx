@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { Building2, Plus, Search } from "lucide-react";
+import { ArrowLeft, Building2, Plus, Search } from "lucide-react";
 import { useState } from "react";
 
 import { companiesApi, jobsApi } from "@/lib/api";
@@ -62,6 +62,17 @@ function Empresas() {
   return (
     <AppContainer>
       <div className="mx-auto w-full max-w-4xl space-y-5">
+        {/* Mesmo "voltar" da tela de suporte: a página de empresas é alcançada pelo menu e não
+            tinha caminho de volta (relato de suporte). */}
+        <Link
+          to="/feed"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+
+          <>{texts.post.back}</>
+        </Link>
+
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight">{texts.empresas.title}</h1>
 

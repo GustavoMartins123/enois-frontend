@@ -23,8 +23,8 @@ export const messagesApi = {
       `/conversations/${conversationId}/messages${buildQuery({ cursor, limit })}`,
     ),
 
-  sendMessage: (conversationId: string, text: string) =>
-    api.post<Message>(`/conversations/${conversationId}/messages`, { text }),
+  sendMessage: (conversationId: string, text: string, mediaIds: string[] = []) =>
+    api.post<Message>(`/conversations/${conversationId}/messages`, { text, mediaIds }),
 
   markAsRead: (conversationId: string) => api.post<void>(`/conversations/${conversationId}/read`),
 

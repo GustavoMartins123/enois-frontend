@@ -10,6 +10,10 @@ import type { UpdateProfileRequest } from "@/types/application/profile/update-pr
 import { api } from "../api-client";
 
 export const profileApi = {
+  /** Liga/desliga a secao de ranking no perfil (preferencia da conta; padrao: mostrar). */
+  setRanking: (show: boolean) =>
+    api.put<{ id: string; status: string }>("/me/ranking", { show }),
+
   me: () => api.get<Profile>("/me"),
 
   get: (username: string) => api.get<Profile>(`/users/${username}`),

@@ -10,7 +10,9 @@ export const typeMeta: Record<PostView["type"], PostTypeMeta> = {
   },
   QUESTION: {
     label: texts.posts.types.question,
-    className: "bg-secondary/30 text-secondary-foreground",
+    // Fundo é o secundário translúcido sobre o cartão: o foreground cheio do secundário
+    // (que contrasta com o secundário sólido) fica ilegível em temas de tom claro no escuro.
+    className: "bg-secondary/30 text-text-strong",
     classAvatar: "",
   },
   PROJECT: {
@@ -45,7 +47,9 @@ export const typeMeta: Record<PostView["type"], PostTypeMeta> = {
   },
   MOMENT: {
     label: texts.posts.types.moment,
-    className: "bg-secondary/30 text-secondary-foreground",
+    // O fundo é o secundário a 30% (um tom pálido sobre a página): o texto do secundário
+    // cheio não vale aqui; o texto forte garante contraste nos dois modos de todos os temas.
+    className: "bg-secondary/30 text-text-strong",
     classAvatar: "",
   },
   DIVERTIDO: {
@@ -61,6 +65,12 @@ export const typeMeta: Record<PostView["type"], PostTypeMeta> = {
   BLOG: {
     label: texts.blog.feed.badge,
     className: "bg-highlight-article text-highlight-article-text",
-    classAvatar: "bg-user-article text-article-text",
+    classAvatar: "bg-user-article text-user-article-text",
+  },
+  BUSINESS: {
+    label: texts.feed.composer.types.business,
+    // Destaque próprio do contexto profissional (o mesmo par usado pelos demais tipos).
+    className: "bg-highlight-news text-highlight-news-text",
+    classAvatar: "bg-user-news text-user-news-text",
   },
 };

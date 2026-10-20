@@ -80,6 +80,18 @@ export const texts = {
     namePlaceholder: "Ex.: Turma do café",
     description: "Descrição",
     descriptionPlaceholder: "Do que o grupo trata?",
+    logo: "Logo do grupo",
+    logoHint: "Uma imagem quadrada (JPG ou PNG).",
+    bannerLabel: "Banner do grupo",
+    bannerHint: "Uma foto de capa ou um cabeçalho em HTML.",
+    bannerPhoto: "Foto",
+    bannerHtml: "HTML",
+    bannerHtmlHint: "Dá para trocar por um cabeçalho em HTML depois, na edição do grupo.",
+    addLogo: "Escolher logo",
+    changeImage: "Trocar",
+    removeImage: "Remover",
+    addBanner: "Escolher banner",
+    uploadError: "Não foi possível enviar a imagem. Tente novamente.",
     joinModeLabel: "Como as pessoas entram",
     openLabel: "Aberto — entra na hora",
     approvalLabel: "Por aprovação — você decide",
@@ -385,6 +397,12 @@ export const texts = {
       pendingApproval:
         "O login com Google está aguardando aprovação do OAuth e ainda não foi liberado. Entre com e-mail e senha por enquanto.",
       callbackError: "Não foi possível concluir o login social. Tente novamente.",
+      /** O convite de login social expira em 15 min e é de uso único (voltar/reusar cai aqui). */
+      stateExpired:
+        "Esta tentativa de login expirou ou já foi usada. Feche este aviso, volte para a tela de entrada e clique no botão de novo — funciona na primeira tentativa.",
+      /** O LinkedIn recusou publicar em nome da pessoa: produto "Share on LinkedIn" pendente no app. */
+      linkedinScope:
+        "O LinkedIn ainda não liberou a publicação por este aplicativo. Nada mudou na sua conta — você pode reconectar mais tarde; o time já está vendo isso.",
       callbackLoading: "Concluindo o login...",
       callbackTitle: "Entrando · Énóis",
       cancelled: "Você cancelou o login. Nada foi alterado na sua conta.",
@@ -513,6 +531,34 @@ export const texts = {
         `O ${provider} ainda não está configurado no Énóis. Tente novamente mais tarde.`,
       /** Nome do provedor quando a tela não sabe qual foi (o rótulo vem de OAUTH_PROVIDER_LABELS). */
       providerFallback: "provedor",
+      /** Publicação automática no LinkedIn (produto "Share on LinkedIn"). */
+      linkedinSync: {
+        title: "Publicar no LinkedIn",
+        description:
+          "Suas publicações no Énóis podem ir também para o seu feed do LinkedIn, com o link do post original.",
+        toggle: "Publicar minhas publicações no LinkedIn",
+        toggleHint: "Cada post novo vira um post no LinkedIn com o link do Énóis.",
+        lastShareOk: "Última tentativa: o LinkedIn aceitou · ",
+        lastShareFailed: (detail: string) =>
+          detail === "HTTP_401" || detail === "HTTP_403"
+            ? "A última tentativa não foi: o LinkedIn recusou a permissão — reconecte o LinkedIn e publique de novo. · "
+            : detail === "HTTP_422"
+              ? "A última tentativa não foi: o LinkedIn recusou o conteúdo do post. · "
+              : `A última tentativa não foi (${detail}) — reconecte o LinkedIn e publique de novo. · `,
+        notReady: "Reconecte o LinkedIn para autorizar a publicação em seu nome.",
+        serverKey:
+          "A publicação no LinkedIn ainda não está disponível nesta instalação. Avise o time de suporte.",
+        reconnect: "Reconectar LinkedIn",
+        reconnectHint:
+          'Se o LinkedIn mostrar “Ocorreu um erro”, o app do Énóis ainda não tem o produto "Share on LinkedIn" (w_member_social) aprovado. É uma aprovação do LinkedIn, não um problema da sua conta.',
+        saved: "Preferência de sincronização salva.",
+        promptTitle: "Sincronizar publicações com o LinkedIn?",
+        promptBody:
+          "Suas próximas publicações no Énóis podem ser publicadas também no seu feed do LinkedIn, com o link para o post original. Você pode mudar isso depois em Contas vinculadas.",
+        yes: "Sim, sincronizar",
+        no: "Não, obrigado",
+        unavailable: "Não foi possível ligar a sincronização agora.",
+      },
     },
     terms: {
       prefix: "Ao continuar, você concorda com os ",
@@ -559,6 +605,86 @@ export const texts = {
     alreadyReviewed: "Esta denúncia já foi revisada.",
     forbidden: "Sessão sem acesso de admin para esta fila.",
   },
+  personalization: {
+    likeTitle: "O que quero ver",
+    likeHint:
+      "Escolha os assuntos que você gostaria de encontrar com mais frequência. Eles ganham prioridade nas recomendações — o resto do feed continua aí.",
+    dislikeTitle: "Assuntos que não gosto",
+    dislikeHint:
+      "Assuntos que você prefere evitar nos seus feeds personalizados. Publicações sem assunto nunca são escondidas, e o conteúdo continua no ar para as outras pessoas.",
+    modulesTitle: "O que não quero ver",
+    modulesHint:
+      "Desative as áreas do Énóis que não fazem parte da experiência que você deseja. Nada é apagado — some só da sua interface, e volta quando reativar.",
+    eventsDependency: "Desativar Eventos desativa também o Acontecendo agora.",
+    saved: "Preferências salvas.",
+    saveError: "Não foi possível salvar as preferências. Tente novamente.",
+    moduleOffTitle: "Esta área está desativada nas suas preferências",
+    moduleOffBody:
+      "Você desativou este módulo em Uso saudável. Nada foi apagado: os dados continuam guardados e voltam quando você reativar.",
+    reenable: "Reativar esta área",
+    backToFeed: "Voltar ao feed",
+  },
+  corporate: {
+    seoTitle: "Perfil profissional · Énóis",
+    title: "Perfil profissional",
+    subtitle:
+      "Uma versão profissional da mesma conta: a sua apresentação de trabalho, com @ próprio. Faixas, reputação e seguidores continuam sendo os da sua conta.",
+    loading: "Carregando...",
+    notCreatedTitle: "Você ainda não tem um perfil profissional",
+    notCreatedBody:
+      "Crie para publicar no feed corporativo, se candidatar a vagas com a sua identidade de trabalho e ter um @ profissional próprio.",
+    username: "@ profissional",
+    usernameHint: "3 a 30 caracteres: letras, números, ponto, hífen ou underline.",
+    name: "Nome profissional",
+    headline: "Headline",
+    bio: "Sobre (profissional)",
+    location: "Localização",
+    industry: "Indústria / área",
+    externalLinks: "Links (separados por vírgula)",
+    create: "Criar perfil profissional",
+    save: "Salvar",
+    saved: "Perfil profissional salvo.",
+    saveError: "Não foi possível salvar. Tente novamente.",
+    activate: "Ativar perfil",
+    activated: "Perfil profissional ativo.",
+    deactivate: "Desativar",
+    deactivated: "Perfil profissional desativado. Nada foi apagado.",
+    statusLabel: "Estado",
+    status: {
+      DRAFT: "Rascunho (só você vê)",
+      ACTIVE: "Ativo (aparece para todos)",
+      DISABLED: "Desativado (só você vê)",
+    },
+    activateHint: "Para ativar, preencha a headline.",
+    importTitle: "Trazer do perfil social",
+    importBody:
+      "Escolha o que quer trazer. Nada é copiado sem a sua escolha: marque só o que fizer sentido publicar profissionalmente.",
+    importPreviewError: "Não foi possível carregar a prévia do perfil social.",
+    importEmpty: "O seu perfil social não tem nada que possa ser trazido.",
+    importConfirm: "Trazer selecionados",
+    imported: "Campos trazidos do perfil social.",
+    importField: {
+      name: "Nome",
+      headline: "Headline",
+      bio: "Sobre",
+      avatar: "Foto de perfil",
+      banner: "Capa",
+      location: "Localização",
+    },
+    changeAvatar: "Trocar foto",
+    changeBanner: "Trocar capa",
+    uploading: "Enviando...",
+    uploadError: "Não foi possível enviar a imagem. Tente novamente.",
+    publicProfile: {
+      title: "Perfil profissional",
+      notFoundTitle: "Perfil profissional não encontrado",
+      notFoundBody: "Este perfil pode não existir ou estar desativado.",
+      postsTitle: "Publicações",
+      empty: "Nenhuma publicação por aqui ainda.",
+      editMine: "Editar o meu perfil profissional",
+      backToFeed: "Voltar ao feed",
+    },
+  },
   account: {
     identity: {
       title: "Nome e identidade",
@@ -580,24 +706,43 @@ export const texts = {
       semEstrutura: (lista: string) =>
         `Também vieram no arquivo, mas ainda não têm um lugar no perfil do Énóis: ${lista}.`,
       connectFirst: "Conecte o LinkedIn para importar seus dados.",
-      title: "Importar do LinkedIn",
-      hint: "Baixe o arquivo de dados no LinkedIn (Configurações → Obter uma cópia dos seus dados) e suba aqui: o app lê experiências, formação, certificações e projetos para você revisar antes de salvar.",
-      button: "Enviar arquivo do LinkedIn",
+      title: "Sincronizar com LinkedIn",
+      hint: "O vínculo confirma a identidade pelo login. Experiências, certificações e projetos o LinkedIn só entrega no arquivo de dados (pela API vem só o básico — nome e e-mail — salvo aprovação no programa de parceiros deles). Sem baixar nada: copie o texto do seu perfil e cole; ou use o ZIP da exportação. O app mostra a prévia de tudo antes de salvar.",
+      button: "Enviar o ZIP do LinkedIn",
+      getArchive: "Baixar meu arquivo no LinkedIn",
+      /** O serviço aceita até 5 MB; avisar antes evita subir um arquivo que será recusado. */
+      tooLarge: (mb: number) =>
+        `O arquivo passa de ${mb} MB. Use o arquivo BÁSICO da exportação do LinkedIn (o completo vem com senha e é enorme).`,
+      pasteToggle: "Colar o perfil",
+      pastePlaceholder:
+        "Abra seu perfil no LinkedIn, selecione tudo (Ctrl+A), copie e cole aqui — o app extrai experiências, formação, certificações e projetos.",
+      pasteRead: "Ler o perfil colado",
       found: (count: number) => `${count} itens encontrados — marque o que quer importar:`,
       save: "Importar selecionados",
       done: (count: number) => `${count} itens importados do LinkedIn.`,
+      /** Reimportar não duplica: o que já estava no perfil é ignorado. */
+      nothingNew: "Nada novo: o que você marcou já está no seu perfil.",
+      /** O perfil tem teto por seção; o que não coube fica claro em vez de falhar pela metade. */
+      capReached:
+        "Alguns itens não couberam: o perfil aceita até 10 experiências, 10 formações e 10 certificações.",
     },
     menu: {
       trigger: "Menu da conta",
       profile: "Ver perfil",
+      identity: "Identidade",
+      socialIdentity: "Social",
+      corporateIdentity: "Profissional",
+      corporateProfile: "Perfil profissional",
       wallet: "Carteira",
       changeEmail: "Alterar e-mail",
       changePassword: "Trocar senha",
       support: "Ajuda e suporte",
       blockedUsers: "Usuários bloqueados",
       myReports: "Minhas denúncias",
+      moderator: "Painel de moderador",
       sanctions: "Penalidades",
       linkedAccounts: "Contas vinculadas",
+      healthyUsage: "Uso saudável",
       security: "Segurança e verificação",
       deleteAccount: "Excluir conta",
       logout: "Sair",
@@ -609,6 +754,24 @@ export const texts = {
       pushUnavailable: "Este dispositivo não suporta notificações no celular.",
       pushServerOff: "As notificações no celular ainda não estão disponíveis.",
       pushError: "Não foi possível ativar as notificações. Tente novamente.",
+    },
+    healthyUsage: {
+      title: "Uso saudável",
+      description:
+        "Defina um limite de tempo para receber um lembrete gentil de pausa enquanto usa o Énóis.",
+      switchLabel: "Ativar lembrete de pausa",
+      switchHint: "O contador roda em segundo plano nesta sessão; fechar o app zera o tempo.",
+      minutesLabel: "Lembrar depois de",
+      minutesUnit: "minutos",
+      minutesHint: "Escolha entre 1 e 240 minutos. O tempo configurado continua salvo.",
+      save: "Salvar",
+      saved: "Preferência de uso saudável salva.",
+      reminderTitle: "Hora de uma pausa",
+      reminderBody:
+        "Ops, acho que já passou um tempo que você tá scrollando. Vamos dar uma parada?",
+      noise:
+        "Ei, respira! Bebe uma água, olha pela janela e volta quando quiser. Eu também preciso de uma pausa. 🌿",
+      reminderCta: "Vou dar uma pausa",
     },
     changeEmail: {
       title: "Alterar e-mail",
@@ -675,8 +838,7 @@ export const texts = {
         "Rede social gratuita para profissionais e comunidades: sem anúncios, sem planos pagos e com um feed que termina quando o conteúdo acaba. Conversas, mentoria, eventos e vagas.",
       ogDescription:
         "Sem anúncio, sem paywall e sem esteira infinita. Uma rede social em construção com as pessoas, e aberta para quem quiser ajudar.",
-      ogImageAlt:
-        'Página inicial do Énóis com a frase "Uma rede social não precisa viver da sua atenção".',
+      ogImageAlt: "Identidade visual do Énóis com seu símbolo e slogan.",
     },
     /**
      * Números da comunidade. A janela vai escrita por extenso de propósito: é o número de quem
@@ -850,8 +1012,30 @@ export const texts = {
       terms: "Termos",
       contact: "Contato",
       api: "API pública",
+      about: "Sobre o énóis",
       home: "Início",
     },
+  },
+
+  /**
+   * Página "Sobre o énóis" e o aviso de independência que também aparece no rodapé.
+   *
+   * O texto do `disclaimer` é o pedido da Mel, palavra por palavra: ele existe para afastar
+   * confusão com organizações homônimas (por exemplo, a ONG de jornalismo de mesmo nome). Não é
+   * uma promessa de proteção de marca — é uma declaração de identidade do projeto.
+   */
+  about: {
+    seoTitle: "Sobre o énóis · Projeto independente e sem fins lucrativos",
+    seoDescription:
+      "O énóis é um projeto independente, comunitário e sem fins lucrativos. Leia o aviso de independência em relação a outras organizações e marcas de nome semelhante.",
+    title: "Sobre o énóis",
+    intro:
+      "Uma rede social gratuita para profissionais e comunidades, sem anúncios, sem paywall, em construção com quem usa.",
+    independenceTitle: "Projeto independente",
+    disclaimer:
+      "O énóis é um projeto independente, comunitário e sem fins lucrativos, desenvolvido com o objetivo de promover conexões e interações entre pessoas. Não possuímos vínculo, afiliação ou associação com outras organizações ou marcas de nome semelhante, salvo quando expressamente informado.",
+    contact: "Dúvidas sobre a identidade do projeto podem ser enviadas pela página de contato.",
+    back: "Voltar para a página inicial",
   },
 
   feed: {
@@ -863,15 +1047,31 @@ export const texts = {
     loadingMore: "Carregando mais publicações...",
     endOfFeed: "Você chegou ao fim do feed.",
     loadMore: "Carregar mais",
+    scrollToTop: "Voltar ao topo",
     share: "Compartilhar",
     empty: "Nada por aqui ainda. Publicações da sua rede aparecem neste feed.",
     composer: {
+      topic: "Assunto",
+      topicNone: "Sem assunto",
+      topicHint: "Liga o post ao que a gente quer ver (ou não quer) na personalização.",
+      schedule: "Agendar",
+      scheduleDate: "Data e hora",
+      scheduleConfirm: "Agendar publicação",
+      scheduleHint: "O post só entra no feed na hora marcada.",
+      scheduleDone: (date: string) => `Post agendado para ${date}.`,
+      scheduleCancelled: "Agendamento cancelado.",
+      scheduledTitle: (count: number) =>
+        `${count} ${count === 1 ? "post agendado" : "posts agendados"}`,
+      scheduledFor: (date: string) => `Vai ao ar em ${date}`,
+      scheduledPage: "Página agendada",
+      scheduleCancel: "Cancelar agendamento",
       publishedOffer: "Publicado! Que tal levar esse insight para o LinkedIn também?",
       linkedinShare: "Compartilhar no LinkedIn",
       placeholder: "Compartilhe algo que aprendeu hoje...",
       types: {
         insight: "Insight",
         article: "Artigo",
+        business: "Corporativo",
         question: "Pergunta",
         project: "Projeto",
         opportunity: "Oportunidade",
@@ -908,13 +1108,21 @@ export const texts = {
       pageDescription:
         "Uma página é uma coisa ou outra: o HTML dela é o conteúdo do post, sem texto separado. Imagem, vídeo e áudio por link https tocam dentro dela; scripts, formulários e requisições externas não rodam. Link de YouTube, Vimeo, Twitch, Dailymotion ou Spotify vira player embutido logo abaixo da página — o quadro em si não executa script, então o player é montado pelo próprio énóis. Documento (PDF) vira link e abre no visualizador do navegador.",
       pageEmpty: "Cole um HTML para ver a pré-visualização.",
+      corporateDestination: (name: string) =>
+        `Publicando como ${name} — esta publicação vai para o feed corporativo.`,
     },
     tabs: {
       forYou: "Para você",
+      news: "Notícias",
+      tutorials: "Tutoriais",
+      opportunities: "Oportunidades",
+      reviews: "Avaliações",
+      fun: "Diversão",
       all: "Tudo",
       following: "Seguindo",
       discussions: "Discussões",
       projects: "Projetos",
+      corporate: "Corporativo",
     },
     sidebar: {
       connections: "Conexões",
@@ -933,6 +1141,13 @@ export const texts = {
   posts: {
     momentExpiry: (hours: number) => `some em ${hours}h`,
     momentExpiryTitle: "Momento se apaga sozinho em 24 horas",
+    /** Fixar UM post no topo do feed da comunidade/grupo (a administração faz isso). */
+    pin: {
+      pin: "Fixar no topo",
+      unpin: "Desafixar",
+      pinned: "Fixado",
+      error: "Não foi possível atualizar o fixado agora.",
+    },
     types: {
       insight: "Insight",
       question: "Pergunta",
@@ -1032,8 +1247,23 @@ export const texts = {
     reactions: {
       title: "Reações",
       empty: "Nenhuma reação ainda",
+      /** Estado vazio de uma aba por tipo (o tipo existe no resumo, mas ninguém está nele). */
+      emptyType: "Ninguém reagiu com isso ainda",
+      /** Aba geral do diálogo. */
+      all: "Todas",
+      /** Marca a própria linha na lista de quem reagiu. */
+      you: "(você)",
       react: "Reagir",
+      reactWith: (emoji: string) => `Reagir com ${emoji}`,
+      removeWith: (emoji: string) => `Remover reação ${emoji}`,
       reactedWith: (emoji: string) => `Reagiu com ${emoji}`,
+      /** Palavra do contador (sem número): o número é renderizado à parte. */
+      noun: (count: number) => (count === 1 ? "reação" : "reações"),
+      /** Rótulo acessível do contador "ver quem reagiu". */
+      seeWho: (count: number) => `Ver quem reagiu (${count} ${count === 1 ? "reação" : "reações"})`,
+      error: "Não foi possível reagir. Tente novamente.",
+      permissionError: "Você não tem permissão para reagir neste post.",
+      loadError: "Não foi possível carregar as reações.",
       emojis: {
         LIKE: "👍",
         LOVE: "❤️",
@@ -1188,7 +1418,11 @@ export const texts = {
     connectionsMeta: (count: number) => `· ${count} ${count === 1 ? "conexão" : "conexões"}`,
     reputation: (value: number) => `${value} reputação`,
     reputationMeta: (value: number) => `★ ${value} reputação`,
+    /** Posição na lista (a tela do ranking ainda usa; volta a ser a única forma). */
     rankingPosition: (position: number) => `${position}º`,
+    /** A lista é de chegada: cada linha mostra há quanto tempo a pessoa entrou. */
+    joinedToday: "chegou hoje",
+    joinedDaysAgo: (days: number) => `há ${days} ${days === 1 ? "dia" : "dias"}`,
     recommendationQuote: (comment: string) => `"${comment}"`,
     uploadingIndicator: "...",
     imageUploadError: "Não foi possível enviar a imagem. Tente novamente.",
@@ -1266,6 +1500,8 @@ export const texts = {
       ranking: "Ranking",
       links: "Links",
     },
+    /** O título continua "Ranking"; a linha abaixo dele diz QUEM está ali (chegada, não disputa). */
+    newMembersHint: "Quem está chegando agora — os mais recentes primeiro.",
     noPosts: "Ainda não há publicações.",
     availabilityUnknown: "Não informada",
     recommendDescription: "Recomende este perfil para ajudar a comunidade.",
@@ -1283,6 +1519,9 @@ export const texts = {
     avatarFallback: "Avatar",
     edit: {
       usernameTaken: "Este username já está em uso",
+      showRanking: "Mostrar o ranking no perfil",
+      showRankingHint:
+        "Desligue para não ver a seção de ranking (quem está chegando agora) ao abrir um perfil.",
       title: "Editar perfil",
       tabs: {
         info: "Informações",
@@ -1393,6 +1632,9 @@ export const texts = {
       write: "Escrever",
       publish: "Publicar",
       published: "Post publicado. Quem segue seu blog foi avisado.",
+      notifySubscribers: "Avisar os assinantes por e-mail",
+      notifySubscribersHint:
+        "Quem assina o seu blog recebe um e-mail com este post (além da notificação no app). Dá para desativar só para este post.",
       updated: "Post atualizado.",
       editPost: "Editar post",
       savePost: "Salvar post",
@@ -1434,6 +1676,7 @@ export const texts = {
       followers: (count: number) => `${count} ${count === 1 ? "seguidor" : "seguidores"}`,
       follow: "Acompanhar",
       following: "Acompanhando",
+      devChip: "Dev de jogos",
       editPage: "Editar minha página",
       about: "Sobre",
       links: "Links",
@@ -1455,6 +1698,40 @@ export const texts = {
       view: "Ver página",
       saved: "Página salva.",
       error: "Não foi possível salvar agora.",
+      /** Upload de imagem do jogo/criador (a mensagem real do backend manda quando existe). */
+      uploadError: "Não foi possível enviar a imagem agora.",
+      uploadAvatar: "Trocar foto",
+      uploadCover: "Trocar capa",
+      removeAvatar: "Remover foto",
+      removeCover: "Remover capa",
+      avatarHint: "Sua foto na página de criador (o Énóis usa a do perfil se não houver).",
+      coverHint: "Capa do topo da sua página de criador.",
+      edit: "Editar",
+      analytics: "Números",
+      newUpdate: "Publicar novidade",
+      /** Os números de uso (gráfico + totais). */
+      analyticsGroup: {
+        title: "Números de uso",
+        plays: "Sessões",
+        players: "Pessoas distintas",
+        favorites: "Na biblioteca",
+        updates: "Novidades",
+        views: (total: number, days: number) => `${total} visualizações nos últimos ${days} dias`,
+        chartLabel: (days: number) => `Gráfico de visualizações por dia (${days} dias)`,
+        tooltip: (date: string, views: number, plays: number, players: number) =>
+          `${date}: ${views} visualizações · ${plays} partidas · ${players} pessoas`,
+        error: "Não foi possível carregar os números agora.",
+      },
+      newUpdateHint:
+        "Conte o que mudou nesta versão. Quem acompanha você recebe um aviso no Énóis.",
+      updateTitle: "Título da novidade",
+      updateTitlePlaceholder: "Versão 1.2 no ar",
+      updateBody: "O que mudou",
+      updateBodyPlaceholder: "Corrigi o bug do save, adicionei uma fase nova…",
+      updateVersion: "Versão (opcional)",
+      publishUpdate: "Publicar novidade",
+      updatePublished: "Novidade publicada.",
+      updateError: "Não foi possível publicar a novidade agora.",
       status: {
         SUBMITTED: "Na fila de revisão",
         PUBLISHED: "Publicado",
@@ -1462,26 +1739,109 @@ export const texts = {
         SUSPENDED: "Fora do ar",
       },
     },
+    /** Edição do jogo pelo dono (ficha, endereço, identidade visual e exclusão). */
+    editor: {
+      title: "Editar jogo",
+      description:
+        "A ficha completa, o endereço público e a identidade visual. Editar não passa pela moderação de novo.",
+      identityTitle: "Identidade visual",
+      icon: "Foto de perfil do jogo",
+      iconHint: "Aparece na loja no lugar do favicon do site de origem.",
+      removeIcon: "Remover foto do jogo",
+      uploadImage: "Enviar foto",
+      banner: "Banner da página",
+      uploadPhoto: "Enviar foto do banner",
+      removeBanner: "Remover banner",
+      bannerHint: "Ou desenhe um banner em HTML, abaixo — a foto tem prioridade.",
+      bannerHtml: "Banner em HTML/CSS (opcional)",
+      bannerHtmlHint:
+        "Roda isolado, sem script — o mesmo formato do banner do seu perfil. A foto acima vence o HTML.",
+      addressTitle: "Endereço e título",
+      titleField: "Título",
+      slug: "Endereço do jogo",
+      url: "Link do jogo (onde ele roda)",
+      fichaTitle: "Ficha",
+      shortDescription: "Descrição curta",
+      descriptionField: "Descrição",
+      genres: "Gêneros (separados por vírgula)",
+      languages: "Idiomas (separados por vírgula)",
+      controls: "Controles",
+      requirements: "Requisitos",
+      warnings: "Avisos de conteúdo",
+      tags: "Tags (separadas por vírgula)",
+      stage: "Estágio",
+      aspect: "Proporção do quadro",
+      distribution: "Distribuição",
+      paid: "Pago (faíscas)",
+      price: "Preço em faíscas",
+      version: "Versão",
+      websiteUrl: "Site do jogo",
+      supportUrl: "Suporte",
+      delete: "Excluir jogo",
+      deleteTitle: "Excluir este jogo?",
+      deleteConfirm:
+        "O jogo sai da loja para sempre, com novidades, favoritos e histórico de uso. Não dá para desfazer. Para tirar do ar sem apagar, a moderação pode suspender.",
+      deleted: "Jogo excluído da loja.",
+    },
     /** Página do jogo e player. */
     game: {
       play: "Jogar",
       playAgain: "Jogar de novo",
       fullscreen: "Tela cheia",
+      mobileHint: "No celular, use Tela cheia (ou gire o aparelho) para jogar com mais espaço.",
       openAtOrigin: "Abrir no site do criador",
       loading: "Carregando o jogo…",
-      /** O quadro não avisa quando o site recusa incorporação: a pessoa decide tentar de novo. */
-      blocked:
-        "O jogo não abriu aqui. O site do criador pode não permitir ser exibido dentro de outra página — abra na origem para jogar.",
       retry: "Tentar de novo",
+      player: {
+        loadingProgress: (progress: number) => `Carregando o jogo… ${progress}%`,
+        progressLabel: "Progresso do carregamento do jogo",
+        slow: "Está demorando mais que o normal. Jogos WebGL grandes podem levar alguns minutos, principalmente no celular — o jogo continua carregando.",
+        ready: "Jogo pronto.",
+        unverified:
+          "Se o jogo não aparecer, o site do criador pode não permitir ser exibido dentro do Énóis — use “Abrir no site do criador”.",
+        error: "O jogo avisou que não conseguiu iniciar.",
+        errorDetail: (message: string) => `O jogo avisou que não conseguiu iniciar: ${message}`,
+        fullscreenUnavailable:
+          "Tela cheia não está disponível neste navegador. Gire o aparelho ou abra no site do criador.",
+        unsupportedUrl: "Este endereço não pode ser aberto dentro do Énóis.",
+      },
       favorite: "Guardar na biblioteca",
       unfavorite: "Tirar da biblioteca",
+      favoriteError: "Não foi possível atualizar a biblioteca agora.",
+      accountChanged:
+        "Você trocou de conta. Use “Tentar de novo” para o jogo reconhecer a conta atual.",
       favorites: (count: number) => `${count} na biblioteca`,
       share: "Compartilhar",
       shareCopied: "Link do jogo copiado!",
-      stats: (plays: number, players: number) =>
-        plays === 1
-          ? "1 sessão"
-          : `${plays} sessões · ${players} ${players === 1 ? "pessoa jogou" : "pessoas jogaram"}`,
+      plays: (count: number) =>
+        `${count} ${count === 1 ? "partida iniciada" : "partidas iniciadas"}`,
+      players: (count: number) => `${count} ${count === 1 ? "jogador" : "jogadores"}`,
+      statsHint:
+        "Partida iniciada conta cada vez que alguém aperta Jogar — não prova que o jogo terminou de carregar. Jogador conta cada conta uma vez; quem joga sem entrar conta a cada partida.",
+      spend: {
+        title: "O jogo quer gastar faíscas",
+        amount: (value: string) => `${value} faíscas`,
+        notice:
+          "O gasto só acontece com a sua confirmação. O jogo nunca acessa a sua conta nem a sua sessão — ele apenas pediu.",
+        refuse: "Recusar",
+        confirm: "Confirmar gasto",
+        confirming: "Confirmando…",
+        done: "Gasto confirmado — as faíscas saíram da sua carteira.",
+        error: "Não foi possível confirmar o gasto agora.",
+      },
+      achievement: {
+        title: "Compartilhar conquista",
+        notice: (title: string) =>
+          `Publica no seu feed com a tag do jogo ${title}. A imagem e o texto vêm do jogo — confira antes de publicar.`,
+        imageAlt: "Imagem enviada pelo jogo",
+        cancel: "Cancelar",
+        publish: "Publicar no feed",
+        publishing: "Publicando…",
+        done: "Conquista publicada no seu feed!",
+        error: "Não foi possível publicar a conquista agora.",
+        uploadsDisabled:
+          "O envio de mídia está temporariamente desativado enquanto o armazenamento é migrado.",
+      },
       about: "Sobre o jogo",
       details: "Ficha",
       genres: "Gêneros",
@@ -1499,6 +1859,30 @@ export const texts = {
       suspended: "Este jogo está fora do ar por decisão da moderação.",
       notPublished: "Este jogo ainda não está publicado — só você vê esta página.",
       external: "Jogo externo",
+      reviewsTitle: "Avaliações",
+      reviewsEmpty: "Ainda não há avaliações. Seja a primeira pessoa a avaliar.",
+      reviewsAverage: (average: number, count: number) =>
+        `${average.toFixed(1)} de 5 · ${count} avaliação${count === 1 ? "" : "ões"}`,
+      reviewYour: "Sua avaliação",
+      reviewRating: "Sua nota",
+      reviewBody: "Conte o que achou do jogo (opcional)",
+      reviewSubmit: "Publicar avaliação",
+      reviewUpdate: "Atualizar avaliação",
+      reviewRemove: "Remover minha avaliação",
+      reviewSaved: "Avaliação salva.",
+      reviewRemoved: "Avaliação removida.",
+      reviewError: "Não foi possível salvar a avaliação.",
+      reviewOwner: "Você não pode avaliar o próprio jogo.",
+      reviewLogin: "Entre para avaliar este jogo.",
+      commentsTitle: "Comentários",
+      commentsEmpty: "Nenhum comentário ainda. Comece a conversa.",
+      commentPlaceholder: "O que você quer dizer sobre o jogo?",
+      commentSubmit: "Comentar",
+      commentSaved: "Comentário publicado.",
+      commentRemoved: "Comentário removido.",
+      commentError: "Não foi possível publicar o comentário.",
+      commentLogin: "Entre para comentar.",
+      commentDelete: "Apagar",
     },
   },
 
@@ -1506,6 +1890,7 @@ export const texts = {
     seoTitle: "Comunidades · Énóis",
     title: "Comunidades",
     description: "Encontre grupos profissionais, fóruns temáticos e círculos de mentoria.",
+    searchPlaceholder: "Pesquisar comunidades",
     createCommunity: "Criar comunidade",
     myTitle: "Suas comunidades",
     created: "Comunidade criada.",
@@ -1514,6 +1899,7 @@ export const texts = {
     actionError: "Não foi possível concluir. Tente novamente.",
     favorite: "Favoritar",
     unfavorite: "Remover dos favoritos",
+    mineTitle: "Minhas comunidades",
     favoritesTitle: "Favoritas",
     topics: {
       all: "Todas",
@@ -1525,6 +1911,16 @@ export const texts = {
       CARREIRA: "Carreira",
       FREELANCE: "Freelance",
       OUTROS: "Outros",
+      GAMES: "Jogos",
+      ART: "Arte",
+      MUSIC: "Música",
+      EDUCACAO: "Educação",
+      CIENCIA: "Ciência",
+      EMPREENDER: "Empreendedorismo",
+      FINANCAS: "Finanças",
+      MARKETING: "Marketing",
+      RH: "Recursos humanos",
+      DADOS: "Dados e IA",
     },
     members: (count: number) =>
       `${count.toLocaleString("pt-BR")} ${count === 1 ? "membro" : "membros"}`,
@@ -1663,6 +2059,31 @@ export const texts = {
     externalBadge: (platform: string) => `Vaga externa · ${platform}`,
     externalNotice: (platform: string) =>
       `Esta oportunidade foi publicada originalmente no ${platform}. A candidatura é feita na plataforma de origem.`,
+    /** Cadastro manual de vaga externa (achada em outro site) por quem está na comunidade. */
+    external: {
+      registerButton: "Cadastrar vaga externa",
+      registerTitle: "Cadastrar vaga externa",
+      registerDescription:
+        "Achou a vaga em outro site? Cadastre aqui: o Énóis lista e o botão leva direto para o link de origem.",
+      registerAction: "Cadastrar vaga",
+      registerError: "Não foi possível cadastrar a vaga externa.",
+      url: "Link da vaga",
+      urlHint: "A candidatura acontece na plataforma de origem, direto neste link.",
+      locationPlaceholder: "Remoto ou cidade",
+      myTitle: "Minhas vagas externas",
+      myEmpty: "Você ainda não cadastrou vagas externas.",
+      delete: "Excluir",
+      deleteConfirm:
+        "Excluir esta vaga externa? Ela deixa de aparecer para todo mundo — a vaga original continua no site de origem.",
+      activities: "Descrição das atividades (opcional)",
+      activitiesPlaceholder: "O que a pessoa vai fazer, requisitos e diferenciais...",
+      salaryRange: "Faixa salarial (opcional)",
+      applyEmail: "E-mail para candidatura (opcional)",
+      applyEmailHint: 'Se informado, o botão do card vira "Enviar candidatura" para este e-mail.',
+      communityFilter: "Criadas no Énóis",
+      communityFilterHint: "Vagas externas cadastradas pela comunidade, separadas dos agregadores.",
+      applyByEmail: "Enviar candidatura",
+    },
     seoTitle: "Vagas · Énóis",
     title: "Oportunidades",
     description: "Vagas filtradas por nível, localização, tipo e habilidades.",
@@ -1728,7 +2149,18 @@ export const texts = {
       location: "Local",
       type: "Tipo",
       level: "Nível",
-      salary: "Faixa salarial (opcional)",
+      salaryMin: "Valor (obrigatório)",
+      salaryMinPlaceholder: "Ex.: 1500 ou 8.000",
+      salaryMinHint: (symbol: string) =>
+        `O menor valor que a vaga paga. Ela aparece como "${symbol} 8.000 / mês".`,
+      salaryMax: "Até (opcional)",
+      salaryMaxPlaceholder: "Ex.: 12.000",
+      salaryPeriod: "Período",
+      salaryPeriodHour: "por hora",
+      salaryPeriodDay: "por dia",
+      salaryPeriodMonth: "por mês",
+      salaryPeriodYear: "por ano",
+      salary: "Faixa salarial",
       salaryPlaceholder: "Ex.: 8.000 – 12.000",
       currency: "Moeda",
       salaryHint: (symbol: string) =>
@@ -1736,7 +2168,7 @@ export const texts = {
       currencyRequired: "Escolha a moeda da faixa salarial.",
       skills: "Habilidades (separadas por vírgula)",
       skillsPlaceholder: "Java, Spring, AWS",
-      description: "Descrição (opcional)",
+      description: "Descrição (obrigatória)",
       descriptionPlaceholder: "Responsabilidades, requisitos e diferenciais...",
     },
     /** Formulário de candidatura montado por quem publica a vaga. */
@@ -1894,6 +2326,17 @@ export const texts = {
     slotSuccess: "Horário publicado. Quem quiser agendar já consegue escolher.",
     slotNew: "Publicar outro",
     slotError: "Não foi possível publicar o horário. Confira a data e tente de novo.",
+    slotListTitle: "Horários publicados",
+    slotEmpty: "Nenhum horário publicado ainda. Publique o primeiro abaixo.",
+    slotDelete: "Remover",
+    slotBooked: "reservado",
+    slotDeleted: "Horário removido da agenda.",
+    slotDeleteError: "Não foi possível remover este horário.",
+    bannerLabel: "Banner do perfil (opcional)",
+    bannerHint: "Imagem de capa exibida no seu card de mentor.",
+    bannerUpload: "Enviar banner",
+    bannerRemove: "Remover banner",
+    bannerError: "Não foi possível enviar o banner.",
     badge: "Mentoria nativa",
     title: "Aprenda com quem já passou por onde você quer chegar.",
     description:
@@ -1901,6 +2344,10 @@ export const texts = {
     findMentor: "Encontrar mentor",
     becomeMentor: "Tornar-me mentor",
     becomeMentorTitle: "Tornar-se mentor",
+    editMentor: "Editar perfil de mentor",
+    editMentorTitle: "Editar perfil de mentor",
+    updateSuccess: "Perfil de mentor atualizado.",
+    alreadyMentor: 'Você já tem um perfil de mentor. Use "Editar perfil de mentor".',
     featured: "Mentores em destaque",
     featuredDescription: "Avaliados pela comunidade nas últimas 8 semanas.",
     expertise: "Especialidades (separadas por vírgula)",
@@ -1974,6 +2421,10 @@ export const texts = {
     selectConversation: "Selecione uma conversa ou comece uma nova para exibir as mensagens",
     noMessages: "Nenhuma mensagem ainda",
     inputPlaceholder: "Escreva uma mensagem...",
+    attachMedia: "Anexar imagem",
+    removeMedia: "Remover mídia",
+    mediaLimit: "Anexe no máximo 4 imagens por mensagem.",
+    mediaError: "Não foi possível enviar a imagem.",
     conversationFallback: "Conversa",
     loadMoreConversations: "Carregar conversas antigas",
     tabs: { all: "Todas", jobs: "Vagas", people: "Pessoas", archived: "Arquivadas" },
@@ -2098,6 +2549,15 @@ export const texts = {
     subtitle: "Conte o que aconteceu e uma pessoa do nosso time responde por e-mail.",
     subject: "Assunto",
     subjectPlaceholder: "Ex.: não consigo entrar na minha conta",
+    category: "Categoria",
+    categoryHint: "Ajuda o time a priorizar e encaminhar o pedido.",
+    categories: {
+      BUG: "Problema (bug)",
+      ACCOUNT: "Conta e acesso",
+      CONTENT: "Conteúdo e denúncia",
+      IDEA: "Ideia ou sugestão",
+      OTHER: "Outro",
+    } as Record<string, string>,
     message: "Descreva o problema",
     messagePlaceholder: "Quanto mais detalhes, melhor conseguimos ajudar.",
     contactEmail: "E-mail para contato",
@@ -2201,6 +2661,216 @@ export const texts = {
     moderationError: "Não foi possível registrar a decisão.",
   },
 
+  /**
+   * Painel de moderador: candidatura (credibilidade >= 200 + aprovação) e votação das denúncias.
+   * Admins (allowlist de username no backend) decidem candidaturas e podem punir qualquer usuário.
+   */
+  moderator: {
+    seoTitle: "Painel de moderador · Énóis",
+    back: "Voltar",
+    title: "Painel de moderador",
+    description:
+      "Analise as denúncias e vote: punir remove o conteúdo e restringe o autor; descartar arquiva a denúncia. A votação fecha quando um lado atinge o quórum.",
+    adminBadge: "Admin",
+    moderatorBadge: "Moderador",
+    loading: "Carregando painel...",
+    error: "Não foi possível carregar o painel.",
+    eligibility: {
+      title: "Seja moderador",
+      description: (min: number) =>
+        `Quem tem pelo menos ${min} de credibilidade pode se candidatar. A candidatura é analisada por um administrador; aprovada, libera este painel.`,
+      reputation: (value: number, min: number) =>
+        `Sua credibilidade: ${value}. Para se candidatar é preciso pelo menos ${min}.`,
+      low: (min: number) =>
+        `Ainda não chegou lá. Participe das comunidades, receba recomendações e mantenha o perfil atualizado para ganhar credibilidade. O mínimo é ${min}.`,
+      motivation: "Por que você quer moderar?",
+      motivationPlaceholder:
+        "Conte o que você faz na comunidade e como pretende analisar denúncias com justiça.",
+      experience: "Experiência com moderação (opcional)",
+      experiencePlaceholder: "Comunidades, projetos ou situações que já moderou...",
+      availability: "Disponibilidade (opcional)",
+      availabilityPlaceholder: "Ex.: algumas horas por semana, horários...",
+      apply: "Enviar candidatura",
+      sent: "Candidatura enviada. Você será avisado da decisão.",
+      error: "Não foi possível enviar a candidatura.",
+      pendingTitle: "Candidatura em análise",
+      pendingBody:
+        "Um administrador vai revisar sua candidatura. Você recebe uma notificação quando houver decisão.",
+      rejectedTitle: "Candidatura recusada",
+      revokedTitle: "Acesso de moderador revogado",
+      retry: "Enviar nova candidatura",
+    },
+    reports: {
+      title: "Denúncias aguardando revisão",
+      empty: "Nenhuma denúncia aguardando revisão.",
+      reason: "Motivo",
+      target: "Alvo",
+      reporter: "Denunciante",
+      author: "Autor",
+      noAuthor: "Autor não identificado",
+      noContent: "Conteúdo indisponível (pode ter sido removido).",
+      votes: (punish: number, dismiss: number, quorum: number) =>
+        `Punir: ${punish} · Descartar: ${dismiss} · Quórum: ${quorum}`,
+      myVote: (vote: "PUNISH" | "DISMISS") =>
+        vote === "PUNISH" ? "Seu voto: punir" : "Seu voto: descartar",
+      punish: "Votar para punir",
+      dismiss: "Votar para descartar",
+      voted: "Voto registrado.",
+      voteError: "Não foi possível registrar o voto.",
+      openReview: "Revisão completa (admin)",
+      adminActions: "Ações de admin",
+      removePost: "Remover postagem",
+      warn: "Dar aviso",
+      removeTitle: "Remover a postagem denunciada",
+      removeBody:
+        "A postagem sai do ar e a denúncia é marcada como resolvida. O autor não é banido por esta ação.",
+      removeDone: "Postagem removida; denúncia resolvida.",
+      warnDone: "Aviso enviado ao autor; a postagem foi mantida.",
+      actionError: "Não foi possível concluir a ação.",
+    },
+    tabs: {
+      reports: "Denúncias",
+      games: "Jogos",
+      support: "Suporte",
+      issues: "Issues",
+      appeals: "Recursos",
+      disputes: "Contestações",
+      applications: "Candidaturas",
+      users: "Usuários",
+      emails: "E-mails",
+    },
+    games: {
+      title: "Jogos esperando revisão",
+      empty: "Nenhum jogo na fila de revisão.",
+      notePlaceholder: "Motivo da decisão (obrigatório ao recusar)",
+      approve: "Aprovar",
+      reject: "Recusar",
+      approved: "Jogo aprovado: já está no catálogo.",
+      rejected: "Jogo recusado: o motivo vai para o painel do criador.",
+      error: "Não foi possível decidir sobre o jogo.",
+      play: "Testar no quadro",
+    },
+    support: {
+      title: "Tickets de suporte",
+      issuesTitle: "Issues da comunidade",
+      description:
+        "Pedidos abertos pelo app, separados por categoria. Mover para em andamento ou resolver registra a triagem.",
+      empty: "Nenhum ticket nesta categoria.",
+      all: "Todas",
+      statusAll: "Todos",
+      statusOpen: "Abertos",
+      statusInProgress: "Em andamento",
+      statusClosed: "Resolvidos",
+      start: "Em andamento",
+      resolve: "Concluir",
+      reopen: "Reabrir",
+      moved: "Ticket atualizado.",
+      error: "Não foi possível atualizar o ticket.",
+      replyTitle: "Responder ao solicitante",
+      replyPlaceholder: "Escreva a resposta que será enviada por e-mail...",
+      replyAction: "Responder",
+      replySent: "Resposta enviada ao solicitante.",
+      replyError: "Não foi possível enviar a resposta.",
+      adminReplyLabel: "Resposta do suporte",
+      from: "De",
+      image: "Abrir print anexado",
+      noMessage: "Sem mensagem.",
+    },
+    emails: {
+      title: "E-mails enviados",
+      description:
+        "Metadados dos envios feitos pela plataforma a partir de agora. O corpo da mensagem não é armazenado; e-mails de 2FA não são listados.",
+      empty: "Nenhum e-mail registrado ainda.",
+      all: "Todos",
+      sent: "Enviados",
+      failed: "Falhas",
+      to: "Para",
+      error: "Erro",
+      redacted: "Conteúdo sensível (redigido)",
+      status: { SENT: "Enviado", FAILED: "Falhou" } as Record<string, string>,
+    },
+    sanction: {
+      title: "Punição por votação",
+      description:
+        "Moderadores propõem e votam. A punição só é aplicada quando mais da metade dos moderadores ativos concorda.",
+      lockedTitle: "Votação ainda não disponível",
+      locked: (count: number, min: number) =>
+        `Hoje são ${count} moderador(es); a votação de punição abre a partir de ${min}. Antes disso, somente administradores podem punir.`,
+      target: "Username do usuário",
+      targetPlaceholder: "ex.: aminadojava",
+      type: "Tipo de punição",
+      reason: "Motivo",
+      reasonPlaceholder: "Descreva o que aconteceu e por que a punição é necessária.",
+      propose: "Abrir votação",
+      proposed: "Votação aberta. Os moderadores podem votar no painel.",
+      proposeError: "Não foi possível abrir a votação.",
+      queueTitle: "Votações abertas",
+      empty: "Nenhuma votação de punição aberta.",
+      progress: (approve: number, reject: number, required: number) =>
+        `Concordam: ${approve} · Rejeitam: ${reject} · Necessário: ${required}`,
+      approve: "Concordar",
+      reject: "Rejeitar",
+      notePlaceholder: "Justificativa do seu voto (opcional)",
+      voted: "Voto registrado.",
+      voteError: "Não foi possível registrar o voto.",
+      myVoteApprove: "Seu voto: concordar",
+      myVoteReject: "Seu voto: rejeitar",
+      cancel: "Encerrar votação",
+      cancelTitle: "Encerrar a votação",
+      cancelBody: (username: string) =>
+        `Encerrar a votação de punição contra @${username}? Ninguém será punido por esta proposta.`,
+      cancelled: "Votação encerrada.",
+      cancelError: "Não foi possível encerrar a votação.",
+      proposedBy: (username: string) => `Proposta de @${username}`,
+    },
+    admin: {
+      applicationsTitle: "Candidaturas a moderador",
+      applicationsEmpty: "Nenhuma candidatura pendente.",
+      applicant: "Candidato",
+      motivation: "Motivação",
+      experience: "Experiência",
+      availability: "Disponibilidade",
+      note: "Observação para o candidato (obrigatória ao recusar)",
+      notePlaceholder: "Explique a decisão...",
+      approve: "Aprovar",
+      reject: "Recusar",
+      approved: "Candidatura aprovada.",
+      rejected: "Candidatura recusada.",
+      decisionError: "Não foi possível registrar a decisão.",
+      addModeratorTitle: "Adicionar moderador",
+      addModeratorDescription:
+        "Busque pelo nome ou @username: a pessoa entra direto como moderador, sem candidatura.",
+      addModerator: "Adicionar",
+      addModeratorError: "Não foi possível adicionar o moderador.",
+      moderatorAdded: (username: string) => `@${username} agora é moderador.`,
+      moderatorsTitle: "Moderadores ativos",
+      moderatorsEmpty: "Nenhum moderador ativo.",
+      revoke: "Remover",
+      revokeTitle: "Remover moderador",
+      revokeBody: (username: string) =>
+        `Remover @${username} do time de moderação? A pessoa perde o acesso ao painel.`,
+      revoked: "Moderador removido.",
+      revokeError: "Não foi possível remover o moderador.",
+      sanctionTitle: "Punir um usuário",
+      sanctionDescription:
+        "Restrição tira o direito de publicar e comentar; banimento derruba as sessões e impede um novo login. A punição fica registrada e o usuário pode recorrer.",
+      username: "Nome ou @username",
+      usernamePlaceholder: "Busque pelo nome ou @username",
+      type: "Tipo de punição",
+      restriction: "Restrição (não publica nem comenta)",
+      ban: "Banimento (derruba a sessão)",
+      reason: "Motivo",
+      reasonPlaceholder: "Descreva o que aconteceu e por que a punição é necessária.",
+      apply: "Aplicar punição",
+      confirmTitle: "Confirmar punição",
+      confirmBody: (username: string, type: "RESTRICTION" | "BAN") =>
+        `Aplicar ${type === "BAN" ? "banimento" : "restrição"} em @${username}? A ação fica registrada.`,
+      done: (username: string, type: "RESTRICTION" | "BAN") =>
+        `@${username} punido com ${type === "BAN" ? "banimento" : "restrição"}.`,
+      error: "Não foi possível aplicar a punição.",
+    },
+  },
+
   empresas: {
     seoTitle: "Empresas · Énóis",
     title: "Empresas",
@@ -2236,6 +2906,9 @@ export const texts = {
     confirm: "Confirmar transferência",
     sent: "Faíscas enviadas!",
     transferError: "Não foi possível transferir. Confira a chave e o saldo.",
+    insufficientSparks: "Você não tem faíscas suficientes para esse valor.",
+    recipientNotFound: "Não encontramos esse username. Confira a chave de destino.",
+    selfTransfer: "Você não pode transferir faíscas para você mesmo.",
     history: "Extrato",
     notice:
       "A faísca existe só dentro do Énóis: circula entre pessoas e vale nos marketplaces da plataforma. Transferências são instantâneas e sem reversão.",
@@ -2419,6 +3092,7 @@ export const texts = {
       terms: "Termos de Uso",
       privacy: "Política de Privacidade",
       guidelines: "Diretrizes da Comunidade",
+      about: "Sobre o énóis",
       lastUpdated: "Última atualização: ",
       backPrefix: "Voltar para a ",
       home: "página inicial",
@@ -2589,7 +3263,7 @@ export const texts = {
   },
 
   pwa: {
-    themeColor: "#7c38ee",
+    themeColor: "#6746f5",
     offlineTitle: "Você está offline",
     offlineDescription:
       "Não conseguimos falar com o servidor. Verifique sua conexão e tente de novo.",

@@ -3,7 +3,7 @@ import { type FormEvent, useState } from "react";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { ArrowRight, CheckCircle2, Eye, EyeOff, Loader2, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, Eye, EyeOff, Loader2 } from "lucide-react";
 import { z } from "zod";
 
 import { ApiError, authApi } from "@/lib/api";
@@ -87,9 +87,7 @@ function ResetPassword() {
         />
 
         <Link to="/" className="relative flex items-center gap-2">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary-foreground/20 backdrop-blur">
-            <Sparkles className="h-4 w-4" />
-          </div>
+          <img src="/brand/mark-primary.svg" alt="" className="h-9 w-9 shrink-0" />
 
           <span className="text-lg font-semibold tracking-tight">
             <>{texts.brand.prefix}</>
@@ -133,12 +131,7 @@ function ResetPassword() {
       <section className="flex flex-col px-6 py-10 sm:px-12">
         <div className="flex items-center justify-between lg:hidden">
           <Link to="/" className="flex items-center gap-2">
-            <div
-              className="grid h-9 w-9 place-items-center rounded-xl text-primary-foreground"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              <Sparkles className="h-4 w-4" />
-            </div>
+            <img src="/brand/mark-primary.svg" alt="" className="h-9 w-9 shrink-0" />
 
             <span className="font-semibold tracking-tight">
               <>{texts.brand.prefix}</>

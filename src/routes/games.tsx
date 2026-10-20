@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
 
 import { GAME_GENRES, GAME_STAGES } from "@/constants/game-options";
 import { texts } from "@/texts";
 import type { GameView } from "@/types/application/games/game-view";
-import { ExternalLink, Gamepad2, Send , Rocket } from "lucide-react";
+import { ExternalLink, Gamepad2, Pencil, Rocket, Send, Star } from "lucide-react";
 
 import { gamesApi } from "@/lib/api";
 import { formatFaisca } from "@/lib/faisca";
@@ -18,6 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
+import { GameIcon } from "@/components/game-icon";
+import { GameEditorDialog } from "@/components/games/game-editor-dialog";
 
 export const Route = createFileRoute("/games")({
   head: () => ({ meta: [{ title: "Jogos · Énóis" }] }),
@@ -25,12 +27,22 @@ export const Route = createFileRoute("/games")({
 });
 
 /**
+ * /games é a rota-MÃE de /games/$username e /games/$username/$gameSlug. Sem devolver o
+ * <Outlet/>, o hub engolia as filhas: clicar num jogo trocava a URL e continuava mostrando a
+ * lista — o "não abre o player" relatado. O hub em si mora no GamesHub.
+ */
+function Games() {
+  const matchRoute = useMatchRoute();
+  return matchRoute({ to: "/games", fuzzy: false }) ? <GamesHub /> : <Outlet />;
+}
+
+/**
  * Agregador de jogos (Parte E do plano): o Énóis NÃO hospeda jogo nenhum — o criador
  * envia o LINK de onde o jogo já está publicado (itch.io, site próprio), a moderação
  * revisa e o jogo roda EMBUTIDO no Énóis, num quadro isolado, com a página do criador
  * em /games/{username}.
  */
-function Games() {
+function GamesHub() {
   const authenticated = isAuthenticated();
   const [query, setQuery] = useState("");
   const [genre, setGenre] = useState("");
@@ -70,11 +82,23 @@ function Games() {
     );
   }, [catalog.data, cursor]);
 
+  const ratingIds = pages.map((game) => game.id);
+  const ratings = useQuery({
+    queryKey: ["games", "ratings", ratingIds.join(",")],
+    queryFn: () => gamesApi.ratings(ratingIds),
+    enabled: ratingIds.length > 0,
+    staleTime: 60_000,
+  });
+
   const mine = useQuery({
     queryKey: ["games", "mine"],
     queryFn: () => gamesApi.mine(),
     enabled: authenticated,
   });
+
+  // O jogo que está sendo editado na própria loja: quem publicou tem que poder editar daqui,
+  // sem caçar o endereço do painel.
+  const [editing, setEditing] = useState<GameView | null>(null);
 
   return (
     <AppContainer>
@@ -91,10 +115,24 @@ function Games() {
               publicou — aqui só o convite.
             </p>
           </div>
-          {authenticated && <SubmitButton />}
+
+          {authenticated && (
+            <div className="flex flex-wrap items-center justify-end gap-2">
+              <Link
+                to="/games/painel"
+                className="inline-flex h-9 items-center rounded-full border border-border-soft px-3 text-sm font-medium transition hover:bg-muted"
+              >
+                {texts.games.panel.title}
+              </Link>
+
+              <SubmitButton />
+            </div>
+          )}
         </header>
 
-        {mine.data && mine.data.length > 0 && <MyGames games={mine.data} />}
+        {mine.data && mine.data.length > 0 && (
+          <MyGames games={mine.data} onEdit={(game) => setEditing(game)} />
+        )}
 
         <ColecoesSection />
 
@@ -191,15 +229,15 @@ function Games() {
             </p>
           </div>
         ) : (
-          <ul className="grid gap-3 sm:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {pages.map((g) => (
-              <li key={g.id}>
+              <li key={g.id} className="surface-card flex min-w-0 items-center gap-2 p-2">
                 <Link
                   to="/games/$username/$gameSlug"
                   params={{ username: g.username ?? "", gameSlug: g.slug }}
-                  className="surface-card flex items-center gap-3 p-4 transition hover:border-primary"
+                  className="flex min-w-0 flex-1 items-center gap-3 rounded-xl p-2 transition hover:bg-muted/50"
                 >
-                  <GameCover cover={g.cover} />
+                  <GameCover cover={g.cover} icon={g.icon} url={g.url} />
 
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold">{g.title}</span>
@@ -207,10 +245,33 @@ function Games() {
                     <span className="block truncate text-sm text-text-subtle">
                       {g.description || " "}
                     </span>
+
+                    {ratings.data?.[g.id] && ratings.data[g.id].reviews > 0 && (
+                      <span className="mt-0.5 inline-flex items-center gap-1 text-xs text-text-subtle">
+                        <Star className="h-3 w-3 fill-opportunity text-opportunity" />
+
+                        <>{ratings.data[g.id].average.toFixed(1)}</>
+                        <span>({ratings.data[g.id].reviews})</span>
+                      </span>
+                    )}
                   </span>
 
                   <ExternalLink className="h-4 w-4 shrink-0 text-text-subtle" />
                 </Link>
+
+                {/* Meu jogo na loja: editar aqui mesmo (o backend marca `owned` no catálogo). */}
+                {g.owned && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="shrink-0 rounded-full gap-1.5"
+                    onClick={() => setEditing(g)}
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+
+                    <>{texts.games.panel.edit}</>
+                  </Button>
+                )}
               </li>
             ))}
           </ul>
@@ -229,23 +290,38 @@ function Games() {
           </div>
         )}
       </div>
+
+      {editing && (
+        <GameEditorDialog
+          game={editing}
+          open={editing !== null}
+          onOpenChange={(open) => !open && setEditing(null)}
+        />
+      )}
     </AppContainer>
   );
 }
 
-function GameCover({ cover }: { cover?: string | null }) {
-  if (cover) {
-    return <img src={cover} alt="" className="h-12 w-12 shrink-0 rounded-xl object-cover" />;
-  }
-  return (
-    <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary-soft">
-      <Gamepad2 className="h-5 w-5 text-primary-text" />
-    </span>
-  );
+function GameCover({
+  cover,
+  icon,
+  url,
+}: {
+  cover?: string | null;
+  icon?: string | null;
+  url?: string | null;
+}) {
+  return <GameIcon cover={cover} icon={icon} url={url} />;
 }
 
-/** Os jogos de quem está logado, com o status da moderação, o reenvio e o impulso. */
-function MyGames({ games }: { games: Awaited<ReturnType<typeof gamesApi.mine>> }) {
+/** Os jogos de quem está logado, com o status da moderação, o Editar, o reenvio e o impulso. */
+function MyGames({
+  games,
+  onEdit,
+}: {
+  games: Awaited<ReturnType<typeof gamesApi.mine>>;
+  onEdit: (game: GameView) => void;
+}) {
   const queryClient = useQueryClient();
   const resubmit = useMutation({
     mutationFn: (gameId: string) => gamesApi.resubmit(gameId),
@@ -262,7 +338,7 @@ function MyGames({ games }: { games: Awaited<ReturnType<typeof gamesApi.mine>> }
 
       <ul className="space-y-2">
         {games.map((g) => (
-          <li key={g.id} className="surface-card flex items-center gap-3 p-3">
+          <li key={g.id} className="surface-card flex flex-wrap items-center gap-2 p-3">
             <span className="min-w-0 flex-1">
               <span className="block truncate text-sm font-medium">{g.title}</span>
               {g.status === "REJECTED" && g.reviewNote && (
@@ -278,6 +354,19 @@ function MyGames({ games }: { games: Awaited<ReturnType<typeof gamesApi.mine>> }
               </span>
             )}
             <StatusBadge status={g.status} />
+
+            {/* Quem publicou edita: ficha, endereço, ícone/banner e o próprio excluir. */}
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-full gap-1.5"
+              onClick={() => onEdit(g)}
+            >
+              <Pencil className="h-3.5 w-3.5" />
+
+              <>{texts.games.panel.edit}</>
+            </Button>
+
             {g.status === "REJECTED" && (
               <Button
                 size="sm"
@@ -336,7 +425,7 @@ function SubmitButton() {
   const submit = useMutation({
     mutationFn: () =>
       gamesApi.submit({
-        slug: form.slug.trim().toLowerCase(),
+        slug: form.slug.trim().toLowerCase() || undefined,
         title: form.title.trim(),
         url: form.url.trim(),
         description: form.description.trim() || undefined,
@@ -388,7 +477,14 @@ function SubmitButton() {
                   placeholder="kawaiigame"
                   value={form.slug}
                   onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                  maxLength={60}
+                  pattern="[a-zA-Z0-9-]*"
+                  title="Só letras, números e hífen. Pode deixar vazio."
                 />
+
+                <span className="mt-1 block text-xs text-text-subtle">
+                  Só letras, números e hífen. Deixe vazio para gerar do título.
+                </span>
               </label>
 
               <label className="block text-sm">
@@ -423,7 +519,9 @@ function SubmitButton() {
 
             {submit.isError && (
               <p className="mt-3 text-sm text-red-500">
-                Não foi possível enviar — confere o link (precisa ser https) e o slug.
+                {submit.error instanceof Error
+                  ? submit.error.message
+                  : "Não foi possível enviar o jogo. Tente novamente."}
               </p>
             )}
 
@@ -433,9 +531,7 @@ function SubmitButton() {
               </Button>
 
               <Button
-                disabled={
-                  submit.isPending || !form.title.trim() || !form.slug.trim() || !form.url.trim()
-                }
+                disabled={submit.isPending || !form.title.trim() || !form.url.trim()}
                 onClick={() => submit.mutate()}
               >
                 Enviar para moderação
@@ -453,7 +549,10 @@ function SubmitButton() {
  * curadoria, com os jogos resolvidos dentro.
  */
 function ColecoesSection() {
-  const colecoes = useQuery({ queryKey: ["games", "colecoes"], queryFn: () => gamesApi.colecoes(20) });
+  const colecoes = useQuery({
+    queryKey: ["games", "colecoes"],
+    queryFn: () => gamesApi.colecoes(20),
+  });
   const itens = colecoes.data ?? [];
   if (colecoes.isLoading || itens.length === 0) return null;
 

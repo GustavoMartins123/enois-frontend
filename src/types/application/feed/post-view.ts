@@ -10,6 +10,12 @@ export type PostView = {
   /** Todos os emblemas (até 5), na ordem escolhida: acompanham o nome em todo lugar. */
   authorBadges?: string[] | null;
   authorAvatar: string | null;
+  authorAvatarFrame?: string | null;
+  /**
+   * Identidade que assinou: a apresentação (nome/@/avatar) vem dela. Post CORPORATE leva ao
+   * perfil profissional; SOCIAL leva ao perfil social.
+   */
+  authorIdentity?: "SOCIAL" | "CORPORATE";
   type:
     | "INSIGHT"
     | "ARTICLE"
@@ -20,6 +26,7 @@ export type PostView = {
     | "NEWS"
     | "TUTORIAL"
     | "REVIEW"
+    | "BUSINESS"
     | "DIVERTIDO"
     | "MOMENT"
     /** Ponteiro de um post de blog: o conteúdo mora em /blog/{username}. */

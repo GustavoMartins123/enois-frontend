@@ -13,6 +13,7 @@ import {
   Camera,
   Clock,
   Flag,
+  Gamepad2,
   Image as ImageIcon,
   Link as LinkIcon,
   MapPin,
@@ -30,6 +31,7 @@ import {
 import {
   ApiError,
   feedApi,
+  gamesApi,
   messagesApi,
   networkApi,
   profileApi,
@@ -120,6 +122,15 @@ export const Route = createFileRoute("/perfil/$username")({
   component: Profile,
 });
 
+/** "chegou hoje" / "há 3 dias" a partir da data de entrada (nulo quando não há data). */
+function joinedLabel(joinedAt: string | null): string | null {
+  if (!joinedAt) return null;
+  const ms = Date.parse(joinedAt);
+  if (Number.isNaN(ms)) return null;
+  const days = Math.max(0, Math.floor((Date.now() - ms) / 86_400_000));
+  return days === 0 ? texts.profile.joinedToday : texts.profile.joinedDaysAgo(days);
+}
+
 function Profile() {
   const { user: loaderUser } = Route.useLoaderData();
   const { user: me, requireAuth } = useAuth();
@@ -148,6 +159,25 @@ function Profile() {
 
   const user = liveProfile ?? loaderUser;
   const isOwnProfile = me?.id === user.id;
+
+  // Selo "Dev de jogos" (G2 do plano dos games): só aparece quando a pessoa TEM presença de dev
+  // de verdade — jogo publicado ou página de criador preenchida. O DONO da conta recebe 200 do
+  // backend mesmo sem nada (é a mesma rota que alimenta o painel para montar a página), então a
+  // resposta sozinha não basta: sem conteúdo, o chip não existe nem no próprio perfil.
+  const { data: gamesDev } = useQuery({
+    queryKey: ["games", "developer", user.username],
+    queryFn: () => gamesApi.developer(user.username),
+    retry: false,
+    staleTime: 300_000,
+  });
+  const temPaginaDeDev = Boolean(
+    gamesDev &&
+    (gamesDev.games.length > 0 ||
+      gamesDev.displayName ||
+      gamesDev.headline ||
+      gamesDev.bio ||
+      gamesDev.links.length > 0),
+  );
 
   // O currículo só existe na projeção do DONO (/me): o perfil público não traz, de propósito.
   const { data: myProfile } = useQuery({
@@ -307,7 +337,9 @@ function Profile() {
                 html={user.bannerHtml}
                 title={texts.profile.bannerHtml.frameTitle}
                 className="h-40 w-full rounded-none border-0 shadow-none sm:h-52"
-                clip
+                // Faixa fixa com ROLAGEM interna (pedido da comunidade): o HTML do autor não é
+                // mais cortado — se passar da altura, rola dentro da capa.
+                autoHeight={false}
               />
             ) : user.banner ? (
               <img
@@ -334,6 +366,7 @@ function Profile() {
             <div className="-mt-12 flex flex-wrap items-end justify-between gap-3 sm:-mt-14 sm:gap-4">
               <div className="group relative">
                 <UserAvatar
+                  frame={user.avatarFrame}
                   src={resolveCdnUrl(user.avatar)}
                   alt={user.name}
                   className={`h-24 w-24 ring-4 sm:h-28 sm:w-28 ${FRAME_RING[user.avatarFrame ?? ""] ?? "ring-surface-card"}`}
@@ -508,7 +541,7 @@ function Profile() {
 
             <div className="mt-4">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="break-words text-xl font-normal tracking-tight text-text-strong">
+                <h1 className="min-w-0 break-words text-xl font-normal tracking-tight text-text-strong">
                   {user.name}
                 </h1>
 
@@ -541,6 +574,17 @@ function Profile() {
                   <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-normal text-primary">
                     {texts.profile.mentorAvailable}
                   </span>
+                )}
+                {temPaginaDeDev && (
+                  <Link
+                    to="/games/$username"
+                    params={{ username: user.username }}
+                    className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-normal text-primary hover:underline"
+                  >
+                    <Gamepad2 className="h-3 w-3" />
+
+                    <>{texts.games.developer.devChip}</>
+                  </Link>
                 )}
               </div>
 
@@ -718,17 +762,18 @@ function Profile() {
               </Section>
             )}
 
-            {rankingData && rankingData.length > 0 && (
+            {/* A seção é OPCIONAL (pedido via suporte): quem desligou nas configurações não vê —
+                a preferência é de quem LÊ, não do perfil visitado. Desde 2026-10-20 a lista é de
+                CHEGADA (mais recentes primeiro), e o texto acima da lista diz isso. */}
+            {me?.showRanking !== false && rankingData && rankingData.length > 0 && (
               <Section title={texts.profile.sections.ranking} icon={Trophy}>
-                <div className="space-y-2">
-                  {rankingData.slice(0, 5).map((u, i) => (
-                    <div key={u.id} className="flex items-center gap-3">
-                      <span
-                        className={`w-5 text-center text-sm font-normal ${i < 3 ? "text-opportunity" : "text-text-subtle"}`}
-                      >
-                        {texts.profile.rankingPosition(i + 1)}
-                      </span>
+                <p className="-mt-1 mb-2 text-xs font-normal text-text-subtle">
+                  {texts.profile.newMembersHint}
+                </p>
 
+                <div className="space-y-2">
+                  {rankingData.slice(0, 5).map((u) => (
+                    <div key={u.id} className="flex items-center gap-3">
                       <Link to="/perfil/$username" params={{ username: u.username }}>
                         <UserAvatar src={u.avatar} alt={u.name} className="h-8 w-8 shrink-0" />
                       </Link>
@@ -743,9 +788,13 @@ function Profile() {
                         </Link>
                       </div>
 
-                      <span className="text-xs font-normal text-opportunity-foreground">
-                        {u.reputation}
-                      </span>
+                      {/* A coluna da direita é QUANDO chegou (o número de reputação não descreve
+                          mais esta lista). */}
+                      {joinedLabel(u.joinedAt) && (
+                        <span className="shrink-0 text-xs font-normal text-text-subtle">
+                          {joinedLabel(u.joinedAt)}
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -827,7 +876,12 @@ function RecommendationItem({ recommendation }: RecommendationItemProps) {
   return (
     <div className="rounded-xl bg-surface-1 p-3">
       <div className="flex items-center gap-2 mb-2">
-        <UserAvatar src={recommender?.avatar} alt={recommender?.name} className="h-6 w-6" />
+        <UserAvatar
+          frame={recommender?.avatarFrame}
+          src={recommender?.avatar}
+          alt={recommender?.name}
+          className="h-6 w-6"
+        />
 
         <span className="text-xs font-medium text-text-strong">
           {recommender?.name ?? texts.profile.userFallback}

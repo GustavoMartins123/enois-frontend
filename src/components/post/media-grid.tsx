@@ -1,12 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
 import { useQueries } from "@tanstack/react-query";
 
 import type { PostView } from "@/types/application/feed/post-view";
 
 import { mediaApi } from "@/lib/api";
-import { resolveCdnUrl } from "@/lib/api/media";
-import { useInView } from "@/lib/feed/use-in-view";
+import { resolveCdnUrl, withImageKitOriginal } from "@/lib/api/media";
+import { autoplayVideoRef } from "@/lib/feed/video-autoplay";
 
 /** Grade de mídias do post (vídeo único ou imagens) com visualização em tela cheia.
  *
@@ -28,24 +28,6 @@ export function MediaGrid({
   const items = queryResults.filter((q) => q.data?.cdnUrl).map((q) => q.data!);
   const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
 
-  // Vídeo enviado no post: toca sozinho quando a publicação está à vista e pausa quando sai —
-  // "play automático" sem deixar vários vídeos rodando ao mesmo tempo pelo feed.
-  const { ref: videoRef, inView } = useInView<HTMLDivElement>(0.6);
-  const videoElement = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const element = videoElement.current;
-    if (!element) return;
-    if (inView) {
-      void element.play().catch(() => {
-        // Autoplay bloqueado (aba em segundo plano, economia de energia, política do navegador):
-        // o vídeo fica parado com os controles à vista, que é o comportamento seguro.
-      });
-    } else {
-      element.pause();
-    }
-  }, [inView]);
-
   if (items.length === 0) return null;
 
   const isVideo = items.some((m) => m.mimeType.startsWith("video/"));
@@ -56,7 +38,7 @@ export function MediaGrid({
     return (
       <div className="rounded-xl border border-border-soft bg-surface-1 p-2">
         <audio
-          src={resolveCdnUrl(items[0].cdnUrl)}
+          src={withImageKitOriginal(items[0].cdnUrl)}
           controls
           preload="metadata"
           className="w-full"
@@ -67,10 +49,11 @@ export function MediaGrid({
 
   if (isVideo) {
     return (
-      <div ref={videoRef} className="overflow-hidden rounded-xl border border-border-soft">
+      <div className="overflow-hidden rounded-xl border border-border-soft">
         <video
-          ref={videoElement}
-          src={resolveCdnUrl(items[0].cdnUrl)}
+          ref={autoplayVideoRef}
+          src={withImageKitOriginal(items[0].cdnUrl)}
+          // O play/pause automático (um vídeo por vez, sempre mudo) é feito por `autoplayVideoRef`.
           // `muted` + `playsInline` são o que fazem o play automático ser aceito no navegador (e no
           // iOS, sem virar tela cheia): o som vem quando a pessoa quiser, pelo controle do vídeo.
           muted
@@ -85,7 +68,13 @@ export function MediaGrid({
 
   return (
     <>
-      <div className={`grid gap-2 ${items.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
+      {/* 1:1 (pedido da comunidade): a imagem ocupa um quadrado e o recorte é sempre o mesmo,
+          em vez da faixa de altura fixa que cortava fotos altas ou largas. */}
+      <div
+        className={`grid gap-2 ${items.length === 1 ? "grid-cols-1" : "grid-cols-2"} ${
+          compact ? "max-w-[280px]" : ""
+        }`}
+      >
         {items.map((m) => (
           <button
             key={m.id}
@@ -97,9 +86,7 @@ export function MediaGrid({
               src={resolveCdnUrl(m.cdnUrl)}
               alt=""
               loading="lazy"
-              className={`w-full object-cover bg-surface-1 transition hover:scale-105 ${
-                compact ? "h-28 sm:h-36" : "h-48"
-              }`}
+              className="aspect-square w-full bg-surface-1 object-cover transition hover:scale-105"
             />
           </button>
         ))}

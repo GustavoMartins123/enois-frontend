@@ -1,4 +1,5 @@
-import { type FormEvent, type ReactNode, useState } from "react";
+import { type FormEvent, type ReactNode, useRef, useState } from "react";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
@@ -11,7 +12,7 @@ import type { ForgotPasswordDialogProps } from "@/types/routes/auth/forgot-passw
 import type { LoginFormProps } from "@/types/routes/auth/login-form-props";
 import type { SocialButtonsProps } from "@/types/routes/auth/social-buttons-props";
 import type { TabBtnProps } from "@/types/routes/auth/tab-btn-props";
-import { ArrowRight, Eye, EyeOff, Loader2, MailCheck, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, Loader2, MailCheck, ShieldCheck } from "lucide-react";
 import { z } from "zod";
 
 import { ApiError, authApi } from "@/lib/api";
@@ -82,9 +83,7 @@ function Auth() {
         />
 
         <Link to="/" className="relative flex items-center gap-2">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary-foreground/20 backdrop-blur">
-            <Sparkles className="h-4 w-4" />
-          </div>
+          <img src="/brand/mark-primary.svg" alt="" className="h-9 w-9 shrink-0" />
 
           <span className="text-lg font-semibold tracking-tight">
             <>{texts.brand.prefix}</>
@@ -128,12 +127,7 @@ function Auth() {
       <section className="flex flex-col px-6 py-10 sm:px-12">
         <div className="flex items-center justify-between lg:hidden">
           <Link to="/" className="flex items-center gap-2">
-            <div
-              className="grid h-9 w-9 place-items-center rounded-xl text-primary-foreground"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              <Sparkles className="h-4 w-4" />
-            </div>
+            <img src="/brand/mark-primary.svg" alt="" className="h-9 w-9 shrink-0" />
 
             <span className="font-semibold tracking-tight">
               <>{texts.brand.prefix}</>
@@ -277,11 +271,14 @@ function Divider() {
   );
 }
 
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
+
 function SignupForm(_props: AuthFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
+  const turnstileRef = useRef<TurnstileInstance>(null);
   /** Conta criada e pendente de confirmação: o formulário dá lugar à tela "confirme seu e-mail". */
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
@@ -422,6 +419,9 @@ function SignupForm(_props: AuthFormProps) {
         </div>
 
         {formError && <ErrorBanner error={formError} />}
+        {TURNSTILE_SITE_KEY && (
+          <Turnstile ref={turnstileRef} siteKey={TURNSTILE_SITE_KEY} options={{ size: "flexible", theme: "dark" }} />
+        )}
         <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -515,6 +515,7 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
   const [formError, setFormError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
+  const loginTurnstileRef = useRef<TurnstileInstance>(null);
   /** Conta pendente de confirmação: em vez de "erro", a tela explica e oferece reenviar. */
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   /** Segundo fator pedido pelo backend depois da senha correta. */
@@ -540,6 +541,7 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
       const result = await authApi.login({
         email: parsed.data.email,
         password: parsed.data.password,
+        turnstileToken: loginTurnstileRef.current?.getResponse() ?? undefined,
       });
 
       // Conta com segundo fator: a senha levou ao desafio, não à sessão.
@@ -627,6 +629,9 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
         </Field>
 
         {formError && <ErrorBanner error={formError} />}
+        {TURNSTILE_SITE_KEY && (
+          <Turnstile ref={loginTurnstileRef} siteKey={TURNSTILE_SITE_KEY} options={{ size: "flexible", theme: "dark" }} />
+        )}
         <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />

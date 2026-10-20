@@ -1,3 +1,4 @@
+import type { Personalization } from "@/types/application/preferences/personalization";
 import type { LinkedinImportPreview } from "@/types/application/profile/linkedin-import-preview";
 import type { Profile } from "@/types/application/profile/profile";
 
@@ -11,6 +12,12 @@ import { api } from "../api-client";
  * preferência é só local, e estes endpoints nunca são chamados.
  */
 export const preferencesApi = {
+  /** Personalização da experiência (assuntos preferidos/bloqueados e módulos desativados). */
+  getPersonalization: () => api.get<Personalization>("/me/preferences"),
+
+  setPersonalization: (data: Partial<Personalization>) =>
+    api.put<Personalization>("/me/preferences", data),
+
   /** Coleção temática ativa na conta; `null` é o padrão da marca. */
   getTheme: () => api.get<{ theme: string | null; updatedAt: string | null }>("/me/theme"),
 
@@ -45,4 +52,11 @@ export const preferencesApi = {
     }
     return (await response.json()) as LinkedinImportPreview;
   },
+
+  /**
+   * Sincronização SEM ARQUIVO: a pessoa cola o texto do próprio perfil do LinkedIn (o que o
+   * navegador copia) e o backend devolve o mesmo retrato para revisão.
+   */
+  importLinkedinText: (texto: string) =>
+    api.post<LinkedinImportPreview>("/me/import/linkedin/texto", { texto }),
 };

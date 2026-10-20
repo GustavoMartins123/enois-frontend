@@ -6,6 +6,7 @@ import type { CollectionOverrides } from "@/types/preferences/theme-collection-o
 import { PAGE_PAINT_TARGETS, paintGradientCss } from "./build-background-style";
 import { withAlpha } from "./build-background-style";
 import { buildAccentTokens } from "./build-theme-tokens";
+import { resolveGalleryCollection } from "./gallery-collections";
 
 /**
  * Chaves do destaque que a cor livre sobrescreve num tema. Superfícies, bordas,
@@ -38,7 +39,10 @@ const ACCENT_OVERRIDE_KEYS = [
  */
 export function resolveThemeCollection(id: string | null | undefined): ThemeCollection | null {
   if (!id) return null;
-  return THEME_COLLECTIONS.find((collection) => collection.id === id) ?? null;
+  const daCasa = THEME_COLLECTIONS.find((collection) => collection.id === id);
+  // Temas da COMUNIDADE (publicados na galeria) são coleções registradas no navegador —
+  // sem esta busca, aplicar um deles e recarregar a página perdia o tema (o id não resolvia).
+  return daCasa ?? resolveGalleryCollection(id);
 }
 
 /**

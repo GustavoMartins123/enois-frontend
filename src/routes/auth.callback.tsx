@@ -117,11 +117,21 @@ function errorMessage(code: string): string {
   if (normalized.includes("ACCESS_DENIED") || normalized.includes("USER_CANCELLED")) {
     return texts.auth.social.cancelled;
   }
+  // State vencido/consumido (passou dos 15 min no LinkedIn, voltar no navegador ou tentar de
+  // novo): a saida e repetir o clique — sempre funciona na primeira.
+  if (normalized.includes("INVALID_OAUTH_STATE") || normalized.includes("OAUTH_STATE_EXPIRED")) {
+    return texts.auth.social.stateExpired;
+  }
   if (normalized.includes("ACCOUNT_EXISTS_LINK_REQUIRED")) {
     return texts.auth.social.accountExists;
   }
   if (normalized.includes("EMAIL_REQUIRED")) {
     return texts.auth.social.emailRequired;
+  }
+  // LinkedIn recusou a permissao de publicacao (produto "Share on LinkedIn" ainda nao habilitado
+  // no aplicativo): o provedor devolve unauthorized_scope_error ANTES do login.
+  if (normalized.includes("SCOPE")) {
+    return texts.auth.social.linkedinScope;
   }
   return texts.auth.social.callbackError;
 }

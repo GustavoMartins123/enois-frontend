@@ -7,6 +7,7 @@ export type GroupPost = {
   authorName: string | null;
   authorUsername: string | null;
   authorAvatar: string | null;
+  authorAvatarFrame?: string | null;
   authorBadges: string[];
   content: string;
   mediaIds: string[];

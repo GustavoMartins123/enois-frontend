@@ -3,17 +3,30 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
+import { postContentLimit } from "@/constants/post-content-limits";
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { POST_SEALS, postSeal } from "@/constants/post-seals";
+import { ARTICLE_BODY_MAX_LENGTH, POST_TYPES } from "@/constants/post-types";
 import { usePostCardStore } from "@/stores/post-card.store";
-import { postContentLimit } from "@/constants/post-content-limits";
-import { hideExternalPageUrls } from "@/lib/shared-links";
 import { texts } from "@/texts";
+import type { PostView } from "@/types/application/feed/post-view";
 import type { PostCardProps } from "@/types/components/post/post-card-props";
-import { BookOpen, FileText, MoreHorizontal, Pencil, Tag, Trash2 , Clock } from "lucide-react";
+import {
+  BookOpen,
+  Clock,
+  FileText,
+  MoreHorizontal,
+  Pencil,
+  Pin,
+  PinOff,
+  Tag,
+  Trash2,
+} from "lucide-react";
 
 import { communitiesApi, feedApi } from "@/lib/api";
 import { sealsApi } from "@/lib/api/seals";
+import { saveFeedScroll } from "@/lib/feed-scroll-restoration";
+import { hideExternalPageUrls } from "@/lib/shared-links";
 import { useAuth } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
 
@@ -45,7 +58,14 @@ import { typeMeta } from "./post/type-meta";
  */
 const POST_COMPACT_THRESHOLD = 400;
 
-export function PostCard({ post, fullPost = false }: PostCardProps) {
+export function PostCard({
+  post,
+  feedTab,
+  fullPost = false,
+  pinned = false,
+  onTogglePin,
+  pinPending = false,
+}: PostCardProps) {
   const { requireAuth, user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -53,7 +73,7 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
   // Só corta em lista: na página do post o texto inteiro é o conteúdo da página.
   const isCompact = !fullPost && post.content.length > POST_COMPACT_THRESHOLD;
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(fullPost);
   // Selos do post: vem em lote do backend (aqui e um post so; a listagem pode pedir varios de uma vez).
   const { data: seals } = useQuery({
     queryKey: ["seals", post.id],
@@ -74,19 +94,27 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
   });
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  // A CATEGORIA tambem e editavel (pedido via suporte): o dialogo troca o tipo e as regras de
+  // conteudo o acompanham (PAGE pede HTML, ARTICLE pede o corpo).
+  const [editType, setEditType] = useState<PostView["type"]>(post.type);
   const [draft, setDraft] = useState(post.content);
   const [pageDraft, setPageDraft] = useState(post.pageHtml ?? "");
+  const [bodyDraft, setBodyDraft] = useState(post.articleBody ?? "");
 
   // A listagem (e a resposta da publicação) não carrega o corpo da página: ele pode ter dezenas de
   // milhares de caracteres e não teria por que viajar no feed inteiro. Quem tem uma página pede o
   // post único — a mesma chave de cache da página do post, então lá já vem pronto.
   const needsPage = post.type === "PAGE" && !post.pageHtml;
+  // O corpo do artigo tem o mesmo problema: só a leitura do post único o traz, e a edição precisa
+  // dele (o backend exige o corpo em ARTICLE) — na lista ele não viaja.
+  const needsArticleBody = post.type === "ARTICLE" && !post.articleBody;
   const { data: pagePost, isLoading: pageLoading } = useQuery({
     queryKey: ["post", post.id],
     queryFn: () => feedApi.get(post.id),
-    enabled: needsPage,
+    enabled: needsPage || needsArticleBody,
   });
   const pageHtml = post.pageHtml ?? pagePost?.pageHtml ?? "";
+  const articleBody = post.articleBody ?? pagePost?.articleBody ?? "";
   // As ações do post (reagir, comentar, compartilhar, salvar, denunciar) moram no `PostActions` —
   // a mesma peça que o post do blog usa. Aqui fica só o card, que é quem inicializa o estado dele.
   const initializePostCard = usePostCardStore((state) => state.initializePostCard);
@@ -104,18 +132,30 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
   // A página chega depois do card (requisição própria): preenche o rascunho da edição quando ela
   // aparece, sem atropelar o que o autor já está digitando no diálogo aberto.
   useEffect(() => {
-    if (!editOpen) setPageDraft(pageHtml);
-  }, [editOpen, pageHtml]);
+    if (!editOpen) {
+      setPageDraft(pageHtml);
+      setBodyDraft(articleBody);
+    }
+  }, [editOpen, pageHtml, articleBody]);
+
+  // O corpo do artigo pode chegar depois de o diálogo abrir: preenche só o campo ainda vazio,
+  // para não atropelar quem já começou a editar.
+  useEffect(() => {
+    if (editOpen && !bodyDraft && articleBody) setBodyDraft(articleBody);
+  }, [editOpen, articleBody, bodyDraft]);
 
   // Post proprio: editar o texto e excluir. O backend confere o dono; a UI so evita mostrar para os outros.
   const editPost = useMutation({
     mutationFn: () =>
       feedApi.update(post.id, {
-        content: draft.trim(),
+        content: editType === "PAGE" ? draft.trim() : draft.trim(),
         tags: post.tags,
-        // Numa pagina o HTML vai junto (o backend recusa edicao de PAGE sem ele); nos outros
-        // tipos o campo nem e enviado.
-        ...(post.type === "PAGE" ? { pageHtml: pageDraft } : {}),
+        // O tipo vai sempre; nulo manteria, mas quem manda e o seletor do dialogo.
+        type: editType,
+        // Numa pagina o HTML vai junto (o backend recusa PAGE sem ele); num artigo acontece o
+        // mesmo com o corpo. Nos outros tipos os campos nem sao enviados.
+        ...(editType === "PAGE" ? { pageHtml: pageDraft } : {}),
+        ...(editType === "ARTICLE" ? { articleBody: bodyDraft } : {}),
       }),
     onSuccess: () => {
       setEditOpen(false);
@@ -158,10 +198,13 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
   });
 
   const handleSaveEdit = () => {
+    const tipoMudou = editType !== post.type;
     const contentUnchanged = draft.trim() === post.content;
-    const pageUnchanged = post.type !== "PAGE" || pageDraft === (post.pageHtml ?? "");
+    const pageUnchanged = editType !== "PAGE" || pageDraft === (post.pageHtml ?? "");
+    const bodyUnchanged = editType !== "ARTICLE" || bodyDraft.trim() === articleBody.trim();
 
-    if (!draft.trim() || (contentUnchanged && pageUnchanged)) {
+    // Nada mudou (nem a categoria): fecha sem chamar a API.
+    if ((editType !== "PAGE" && !draft.trim()) || (!tipoMudou && contentUnchanged && pageUnchanged && bodyUnchanged)) {
       setEditOpen(false);
       return;
     }
@@ -190,6 +233,8 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
 
   return (
     <article
+      id={feedTab ? `feed-post-${post.id}` : undefined}
+      tabIndex={feedTab ? -1 : undefined}
       className={`min-w-0 border border-border-soft bg-surface-card p-4 transition sm:p-5 ${
         // Post de página: sem canto no card, porque o conteúdo tem de alcançar as bordas — o
         // arredondamento do card recortava os cantos da página e era o que sobrava de "rounding".
@@ -202,7 +247,9 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
           authorName={post.authorName}
           authorBadge={post.authorBadge}
           authorBadges={post.authorBadges}
+          authorIdentity={post.authorIdentity}
           authorAvatar={post.authorAvatar}
+          authorAvatarFrame={post.authorAvatarFrame}
           createdAt={post.createdAt}
           community={post.community}
           fallbackClassName={meta.classAvatar}
@@ -211,6 +258,27 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
         />
 
         <div className="flex items-center gap-1.5">
+          {pinned && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-medium text-primary">
+              <Pin className="h-3 w-3" aria-hidden />
+
+              <>{texts.posts.pin.pinned}</>
+            </span>
+          )}
+
+          {onTogglePin && (
+            <button
+              type="button"
+              onClick={onTogglePin}
+              disabled={pinPending}
+              title={pinned ? texts.posts.pin.unpin : texts.posts.pin.pin}
+              aria-label={pinned ? texts.posts.pin.unpin : texts.posts.pin.pin}
+              className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-muted hover:text-primary disabled:opacity-50"
+            >
+              {pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+            </button>
+          )}
+
           <span
             className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${meta.className}`}
           >
@@ -244,6 +312,7 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
                   onClick={() => {
                     setDraft(post.content);
                     setPageDraft(pageHtml);
+                    setEditType(post.type);
                     setEditOpen(true);
                   }}
                   className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition hover:bg-muted"
@@ -315,6 +384,12 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
             <Link
               to="/post/$postId"
               params={{ postId: post.id }}
+              search={feedTab ? { feedTab } : undefined}
+              onClick={() => {
+                if (feedTab) {
+                  saveFeedScroll({ tab: feedTab, postId: post.id, scrollY: window.scrollY });
+                }
+              }}
               className="mt-1 inline-flex text-sm font-normal text-primary hover:underline"
             >
               <>{texts.common.readMore}</>
@@ -341,6 +416,12 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
         <Link
           to="/post/$postId"
           params={{ postId: post.id }}
+          search={feedTab ? { feedTab } : undefined}
+          onClick={() => {
+            if (feedTab) {
+              saveFeedScroll({ tab: feedTab, postId: post.id, scrollY: window.scrollY });
+            }
+          }}
           className="mt-3 inline-flex items-center gap-1.5 text-sm font-normal text-primary hover:underline"
         >
           <FileText className="h-3.5 w-3.5" />
@@ -461,16 +542,39 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
                 <DialogTitle>{texts.posts.owner.editTitle}</DialogTitle>
               </DialogHeader>
 
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-xs font-normal text-text-subtle">
+                  {texts.feed.composer.typePicker.label}:
+                </span>
+
+                {POST_TYPES.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setEditType(option.id as PostView["type"])}
+                    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-normal transition ${
+                      editType === option.id
+                        ? "bg-primary text-primary-foreground"
+                        : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
+                    }`}
+                  >
+                    <option.icon className="h-3 w-3" />
+
+                    <>{option.label}</>
+                  </button>
+                ))}
+              </div>
+
               <MentionTextarea
                 value={draft}
-                maxLength={postContentLimit(post.type)}
+                maxLength={postContentLimit(editType)}
                 toolbar
                 onChange={(value) => setDraft(value)}
                 placeholder={texts.posts.owner.editDescription}
                 className="rounded-md border border-input bg-transparent px-3 py-2 text-sm"
               />
 
-              {post.type === "PAGE" && (
+              {editType === "PAGE" && (
                 <div>
                   <label
                     htmlFor={`page-html-${post.id}`}
@@ -492,6 +596,28 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
                 </div>
               )}
 
+              {editType === "ARTICLE" && (
+                <div>
+                  <span className="mb-1 block text-xs font-normal text-text-subtle">
+                    {texts.feed.composer.article.bodyLabel}
+                  </span>
+
+                  <MentionTextarea
+                    value={bodyDraft}
+                    maxLength={ARTICLE_BODY_MAX_LENGTH}
+                    onChange={(value) => setBodyDraft(value)}
+                    placeholder={
+                      pageLoading
+                        ? texts.posts.page.loading
+                        : texts.feed.composer.article.bodyPlaceholder
+                    }
+                    className="min-h-[160px] rounded-lg border border-border-soft bg-transparent px-3 py-2 text-sm text-text-strong"
+                    rows={6}
+                    toolbar
+                  />
+                </div>
+              )}
+
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -505,8 +631,9 @@ export function PostCard({ post, fullPost = false }: PostCardProps) {
                   className="rounded-full"
                   disabled={
                     editPost.isPending ||
-                    !draft.trim() ||
-                    (post.type === "PAGE" && !pageDraft.trim())
+                    (editType !== "PAGE" && !draft.trim()) ||
+                    (editType === "PAGE" && !pageDraft.trim()) ||
+                    (editType === "ARTICLE" && !bodyDraft.trim())
                   }
                   onClick={handleSaveEdit}
                 >

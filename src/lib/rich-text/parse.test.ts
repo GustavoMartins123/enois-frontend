@@ -82,6 +82,15 @@ describe("parseRichText — o que já existia continua igual", () => {
     });
   });
 
+  it("menção aceita hífen no username, mas não hífen solto", () => {
+    expect(parseInline("@wesley-rodrigues")[0]).toMatchObject({
+      kind: "mention",
+      text: "@wesley-rodrigues",
+    });
+    expect(parseInline("@wesley- ")[0]).toMatchObject({ kind: "mention", text: "@wesley" });
+    expect(parseInline("@wesley-.")[0]).toMatchObject({ kind: "mention", text: "@wesley" });
+  });
+
   it("e-mail não vira menção", () => {
     const nodes = parseInline("escreve para mel@exemplo.com");
     expect(nodesOfKind(nodes, "mention")).toHaveLength(0);

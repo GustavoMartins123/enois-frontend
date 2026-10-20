@@ -64,6 +64,8 @@ export function EditProfileDialog({ profile, children }: Props) {
   const [goalsText, setGoalsText] = useState((profile.goals ?? []).join(", "));
   const [openToWork, setOpenToWork] = useState(profile.openToWork);
   const [isMentor, setIsMentor] = useState(profile.isMentor);
+  // Ranking opcional (pedido via suporte): preferencia da CONTA, salva junto com o perfil.
+  const [showRanking, setShowRanking] = useState(profile.showRanking !== false);
   const [aka, setAka] = useState(profile.aka ?? "");
   const [badges, setBadges] = useState<string[]>(badgesOf(profile));
   const [usernameError, setUsernameError] = useState("");
@@ -146,6 +148,14 @@ export function EditProfileDialog({ profile, children }: Props) {
         await preferencesApi.setBadges(badges);
       } catch (err) {
         setGeneralError(err instanceof ApiError ? err.message : texts.profile.imageUploadError);
+        return;
+      }
+    }
+    if (showRanking !== (profile.showRanking !== false)) {
+      try {
+        await profileApi.setRanking(showRanking);
+      } catch (err) {
+        setGeneralError(err instanceof ApiError ? err.message : texts.errors.unexpected);
         return;
       }
     }
@@ -436,6 +446,17 @@ export function EditProfileDialog({ profile, children }: Props) {
                   <>{texts.profile.edit.mentorAvailable}</>
                 </label>
               </div>
+
+              <label className="flex items-start gap-3 text-sm font-normal text-text-strong">
+                <Switch checked={showRanking} onCheckedChange={setShowRanking} />
+
+                <span>
+                  <span className="block">{texts.profile.edit.showRanking}</span>
+                  <span className="block text-xs font-normal text-text-subtle">
+                    {texts.profile.edit.showRankingHint}
+                  </span>
+                </span>
+              </label>
             </div>
           )}
 

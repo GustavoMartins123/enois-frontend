@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 
 import { texts } from "@/texts";
+import type { SupportCategory } from "@/types/application/support/support-category";
 import { CheckCircle2, Loader2, Paperclip, X } from "lucide-react";
 
 import { ApiError, supportApi } from "@/lib/api";
@@ -24,6 +25,7 @@ export function SupportForm() {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [contactEmail, setContactEmail] = useState(currentUser?.email ?? "");
+  const [category, setCategory] = useState<SupportCategory>("OTHER");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
@@ -65,6 +67,7 @@ export function SupportForm() {
         subject: subject.trim(),
         message: message.trim(),
         contactEmail: contactEmail.trim(),
+        category,
         imageUrl,
       });
       setSent(true);
@@ -106,6 +109,25 @@ export function SupportForm() {
           maxLength={160}
         />
         {errors.subject && <p className="text-xs text-destructive">{errors.subject}</p>}
+      </div>
+
+      <div className="space-y-1.5">
+        <Label htmlFor="support-category">{texts.support.category}</Label>
+
+        <select
+          id="support-category"
+          value={category}
+          onChange={(event) => setCategory(event.target.value as SupportCategory)}
+          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:text-sm"
+        >
+          {(["BUG", "ACCOUNT", "CONTENT", "IDEA", "OTHER"] as SupportCategory[]).map((value) => (
+            <option key={value} value={value}>
+              {texts.support.categories[value]}
+            </option>
+          ))}
+        </select>
+
+        <p className="text-xs text-muted-foreground">{texts.support.categoryHint}</p>
       </div>
 
       <div className="space-y-1.5">

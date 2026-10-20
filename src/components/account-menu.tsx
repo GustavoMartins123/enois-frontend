@@ -1,11 +1,36 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { AccountMenuProps } from "@/types/components/account/account-menu-props";
-import { Flag, KeyRound, Store, Zap, LifeBuoy, Link2, LogOut, Mail, ShieldAlert, ShieldCheck, ShieldOff, Trash2, User } from "lucide-react";
+import type { ActiveIdentity } from "@/types/lib/active-identity";
+import {
+  Flag,
+  Gavel,
+  HeartPulse,
+  KeyRound,
+  LifeBuoy,
+  Link2,
+  LogOut,
+  Mail,
+  ShieldAlert,
+  ShieldCheck,
+  ShieldOff,
+  Store,
+  Trash2,
+  User,
+  Zap,
+} from "lucide-react";
 
+import {
+  effectiveIdentity,
+  readActiveIdentity,
+  subscribeActiveIdentity,
+  writeActiveIdentity,
+} from "@/lib/active-identity";
+import { corporateApi } from "@/lib/api";
 import { logout } from "@/lib/logout";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +39,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ChangeEmailDialog } from "./change-email-dialog";
 import { ChangePasswordDialog } from "./change-password-dialog";
 import { DeleteAccountDialog } from "./delete-account-dialog";
+import { HealthyUsageDialog } from "./healthy-usage/healthy-usage-dialog";
 import { LinkedAccountsDialog } from "./linked-accounts-dialog";
 import { PushToggle } from "./push-toggle";
 import { UserAvatar } from "./user-avatar";
@@ -27,7 +53,23 @@ export function AccountMenu({ profile }: AccountMenuProps) {
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   const [showLinkedAccounts, setShowLinkedAccounts] = useState(false);
+  const [showHealthyUsage, setShowHealthyUsage] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [chosenIdentity, setChosenIdentity] = useState<ActiveIdentity>(() => readActiveIdentity());
+
+  useEffect(() => subscribeActiveIdentity(() => setChosenIdentity(readActiveIdentity())), []);
+
+  // O perfil profissional define se a troca de identidade existe e vale.
+  const { data: corporate } = useQuery({
+    queryKey: ["business-profile"],
+    queryFn: () => corporateApi.me(),
+    enabled: menuOpen,
+  });
+  const identity = effectiveIdentity(chosenIdentity, corporate);
+  const chooseIdentity = (next: ActiveIdentity) => {
+    writeActiveIdentity(next);
+    setChosenIdentity(next);
+  };
 
   const openChangeEmail = () => {
     setMenuOpen(false);
@@ -42,6 +84,11 @@ export function AccountMenu({ profile }: AccountMenuProps) {
   const openLinkedAccounts = () => {
     setMenuOpen(false);
     setShowLinkedAccounts(true);
+  };
+
+  const openHealthyUsage = () => {
+    setMenuOpen(false);
+    setShowHealthyUsage(true);
   };
 
   const openDeleteAccount = () => {
@@ -62,7 +109,12 @@ export function AccountMenu({ profile }: AccountMenuProps) {
             className="flex items-center gap-2 rounded-full p-1 pr-3 transition hover:bg-surface-2"
             aria-label={texts.account.menu.trigger}
           >
-            <UserAvatar src={profile.avatar} alt={profile.name} className="h-8 w-8" />
+            <UserAvatar
+              frame={profile.avatarFrame}
+              src={profile.avatar}
+              alt={profile.name}
+              className="h-8 w-8"
+            />
 
             <span className="hidden text-sm font-normal text-text-strong sm:inline">
               {texts.common.profile}
@@ -75,7 +127,12 @@ export function AccountMenu({ profile }: AccountMenuProps) {
           className="w-[min(calc(100vw-2rem),17rem)] overflow-hidden rounded-2xl border-border-soft bg-surface-card p-0 shadow-card"
         >
           <div className="flex items-center gap-3 border-b border-border-soft px-4 py-3">
-            <UserAvatar src={profile.avatar} alt={profile.name} className="h-9 w-9" />
+            <UserAvatar
+              frame={profile.avatarFrame}
+              src={profile.avatar}
+              alt={profile.name}
+              className="h-9 w-9"
+            />
 
             <div className="min-w-0">
               <p className="truncate text-sm font-medium text-text-strong">{profile.name}</p>
@@ -83,6 +140,37 @@ export function AccountMenu({ profile }: AccountMenuProps) {
               <p className="truncate text-xs text-text-subtle">{profile.email}</p>
             </div>
           </div>
+
+          {/* Identidade ativa: só aparece quando há perfil profissional (a escolha é de
+              interface; o backend decide a autoria de cada publicação). */}
+          {corporate?.exists && (
+            <div className="border-b border-border-soft px-4 py-2">
+              <p className="mb-1 text-[11px] font-medium uppercase tracking-wide text-text-subtle">
+                {texts.account.menu.identity}
+              </p>
+
+              <div className="flex rounded-full border border-border-soft p-0.5">
+                {(["SOCIAL", "CORPORATE"] as const).map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    disabled={option === "CORPORATE" && corporate.status !== "ACTIVE"}
+                    onClick={() => chooseIdentity(option)}
+                    className={cn(
+                      "flex-1 rounded-full px-2 py-1 text-xs font-medium transition disabled:opacity-40",
+                      identity === option
+                        ? "bg-primary text-primary-foreground"
+                        : "text-text-subtle hover:text-text-strong",
+                    )}
+                  >
+                    {option === "SOCIAL"
+                      ? texts.account.menu.socialIdentity
+                      : texts.account.menu.corporateIdentity}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="py-1">
             <Link
@@ -94,6 +182,12 @@ export function AccountMenu({ profile }: AccountMenuProps) {
               <User className="h-4 w-4" />
 
               <>{texts.account.menu.profile}</>
+            </Link>
+
+            <Link to="/profissional" onClick={() => setMenuOpen(false)} className={ITEM_CLASS}>
+              <User className="h-4 w-4" />
+
+              <>{texts.account.menu.corporateProfile}</>
             </Link>
 
             <Link to="/carteira" onClick={() => setMenuOpen(false)} className={ITEM_CLASS}>
@@ -156,6 +250,18 @@ export function AccountMenu({ profile }: AccountMenuProps) {
               <>{texts.account.menu.linkedAccounts}</>
             </button>
 
+            <button type="button" onClick={openHealthyUsage} className={ITEM_CLASS}>
+              <HeartPulse className="h-4 w-4" />
+
+              <>{texts.account.menu.healthyUsage}</>
+            </button>
+
+            <Link to="/moderador" onClick={() => setMenuOpen(false)} className={ITEM_CLASS}>
+              <Gavel className="h-4 w-4" />
+
+              <>{texts.account.menu.moderator}</>
+            </Link>
+
             <PushToggle onClose={() => setMenuOpen(false)} />
           </div>
 
@@ -193,8 +299,8 @@ export function AccountMenu({ profile }: AccountMenuProps) {
       />
       <ChangePasswordDialog open={showChangePassword} onOpenChange={setShowChangePassword} />
       <DeleteAccountDialog open={showDeleteAccount} onOpenChange={setShowDeleteAccount} />
-
       <LinkedAccountsDialog open={showLinkedAccounts} onOpenChange={setShowLinkedAccounts} />
+      <HealthyUsageDialog open={showHealthyUsage} onOpenChange={setShowHealthyUsage} />
     </>
   );
 }

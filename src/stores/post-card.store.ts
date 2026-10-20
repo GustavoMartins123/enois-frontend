@@ -44,6 +44,7 @@ export const usePostCardStore = create<PostCardStore>()((set) => ({
             localComments: [],
             postCounters: post.counters,
             reactionStatus: post.currentUserReaction ?? null,
+            reactionPending: false,
             showReactions: false,
             showSeals: false,
             showReport: false,
@@ -113,6 +114,10 @@ export const usePostCardStore = create<PostCardStore>()((set) => ({
   setReactionStatus: (postId: string, reactionStatus: ReactionType | null) =>
     set((state) => ({
       cards: updateCard(state.cards, postId, (card) => ({ ...card, reactionStatus })),
+    })),
+  setReactionPending: (postId: string, reactionPending: boolean) =>
+    set((state) => ({
+      cards: updateCard(state.cards, postId, (card) => ({ ...card, reactionPending })),
     })),
   setShowReactions: (postId: string, showReactions: boolean) =>
     set((state) => ({

@@ -1,22 +1,28 @@
-import { type ChangeEvent, type FormEvent, useCallback, useRef, useState } from "react";
+import { type ChangeEvent, type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import { postContentLimit } from "@/constants/post-content-limits";
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { ARTICLE_BODY_MAX_LENGTH, POST_TYPES } from "@/constants/post-types";
-import { postContentLimit } from "@/constants/post-content-limits";
 import { texts } from "@/texts";
 import type { CreatePostInput } from "@/types/application/feed/create-post-input";
 import type { FeedTab } from "@/types/application/feed/feed-tab";
 import type { PostView } from "@/types/application/feed/post-view";
+import type { ActiveIdentity } from "@/types/lib/active-identity";
 import type { ComposerActionProps } from "@/types/routes/feed/composer-action-props";
+import type { HomeTab } from "@/types/routes/feed/home-tab";
 import type { MediaItem } from "@/types/routes/feed/media-item";
 import {
+  ArrowUp,
   BarChart3,
+  Briefcase,
   Calendar,
+  CalendarClock,
   ChevronDown,
   ChevronRight,
+  Clock,
   Code2,
   FileText,
   Film,
@@ -25,28 +31,49 @@ import {
   TrendingUp,
   UserPlus,
   X,
-  Clock,
 } from "lucide-react";
 
-import { authApi, eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
+import {
+  effectiveIdentity,
+  readActiveIdentity,
+  subscribeActiveIdentity,
+} from "@/lib/active-identity";
+import { authApi, corporateApi, eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
+import { clearFeedScroll, readFeedScroll } from "@/lib/feed-scroll-restoration";
 import { requireAuth } from "@/lib/require-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Pill } from "@/components/ui/pill";
-import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { HtmlEditor } from "@/components/html-editor";
 import { InfiniteScroll } from "@/components/infinite-scroll";
+import { LinkedInSyncPrompt } from "@/components/linkedin-sync-prompt";
 import { MentionTextarea } from "@/components/mention-textarea";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
 
+/** Abas válidas da tela inicial (a URL carrega a escolhida). */
+const HOME_TABS: HomeTab[] = ["FOR_YOU", "ALL", "FOLLOWING", "RECENT", "PROJECTS", "CORPORATE"];
+
 export const Route = createFileRoute("/feed")({
   beforeLoad: requireAuth,
+  /**
+   * A aba vive na URL (`/feed?aba=ALL`): abrir uma publicação e voltar restaura a MESMA aba em que
+   * a pessoa estava — antes o retorno caía sempre em "Para você".
+   */
+  validateSearch: (search: Record<string, unknown>) => {
+    const aba =
+      typeof search.aba === "string" && HOME_TABS.includes(search.aba as HomeTab)
+        ? (search.aba as HomeTab)
+        : "FOR_YOU";
+    return { aba };
+  },
   head: () => ({
     meta: [
       { title: texts.feed.seo.title },
@@ -61,11 +88,14 @@ export const Route = createFileRoute("/feed")({
 
 const FEED_PAGE_SIZE = 20;
 
-function useFeed(tab: FeedTab) {
+function useFeed(tab: HomeTab) {
   // Pagina por cursor: o backend devolve nextCursor e o scroll infinito busca a proxima pagina.
   return useInfiniteQuery({
     queryKey: ["feed", tab],
-    queryFn: ({ pageParam }) => feedApi.list(pageParam ?? null, FEED_PAGE_SIZE, tab),
+    queryFn: ({ pageParam }) =>
+      tab === "CORPORATE"
+        ? feedApi.corporate(pageParam ?? null, FEED_PAGE_SIZE)
+        : feedApi.list(pageParam ?? null, FEED_PAGE_SIZE, tab),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
@@ -94,7 +124,16 @@ function useEvents() {
 
 function Home() {
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<FeedTab>("FOR_YOU");
+  const { toast } = useToast();
+  // A aba vem da URL; trocar de aba REPLACES o histórico (o "voltar" continua voltando para a
+  // página anterior, e não passeando pelas abas).
+  const { aba } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const tab: HomeTab = aba;
+  const setTab = (next: HomeTab) => {
+    if (next === tab) return;
+    void navigate({ search: { aba: next }, replace: true });
+  };
   const {
     data: feedData,
     // Somente a PRIMEIRA carga mostra o esqueleto. `isFetching` tambem fica true ao paginar, e
@@ -107,6 +146,13 @@ function Home() {
   const { data: profile } = useProfile();
   const { data: suggestions } = useSuggestions();
   const { data: eventsData } = useEvents();
+  const [chosenIdentity, setChosenIdentity] = useState<ActiveIdentity>(() => readActiveIdentity());
+  useEffect(() => subscribeActiveIdentity(() => setChosenIdentity(readActiveIdentity())), []);
+  const { data: corporate } = useQuery({
+    queryKey: ["business-profile"],
+    queryFn: () => corporateApi.me(),
+  });
+  const identity = effectiveIdentity(chosenIdentity, corporate);
 
   const [draft, setDraft] = useState("");
   const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([]);
@@ -120,9 +166,27 @@ function Home() {
   const [typePickerOpen, setTypePickerOpen] = useState(false);
   const [pageHtml, setPageHtml] = useState("");
   const [articleBody, setArticleBody] = useState("");
+  // Agendamento: o post fica na fila do backend e só entra no feed na hora marcada.
+  const [schedulingOpen, setSchedulingOpen] = useState(false);
+  const [scheduleAt, setScheduleAt] = useState("");
+  const [showScrollTop, setShowScrollTop] = useState(false);
+  // A identidade ativa manda no tipo: profissional publica BUSINESS (destino: feed
+  // corporativo); voltar para social tira o BUSINESS da seleção.
+  useEffect(() => {
+    if (identity === "CORPORATE") {
+      setPostType("BUSINESS");
+    } else {
+      setPostType((current) => (current === "BUSINESS" ? "INSIGHT" : current));
+    }
+  }, [identity]);
+
   const pageMode = postType === "PAGE";
   const articleMode = postType === "ARTICLE";
-  const currentType = POST_TYPES.find((option) => option.id === postType) ?? POST_TYPES[0];
+  const availableTypes =
+    identity === "CORPORATE"
+      ? POST_TYPES.filter((option) => option.id === "BUSINESS")
+      : POST_TYPES.filter((option) => option.id !== "BUSINESS");
+  const currentType = availableTypes.find((option) => option.id === postType) ?? availableTypes[0];
   const fileRef = useRef<HTMLInputElement>(null);
   const upload = useMediaUpload();
 
@@ -132,6 +196,76 @@ function Home() {
       queryClient.invalidateQueries({ queryKey: ["feed"] });
     },
   });
+
+  const scheduledQuery = useQuery({
+    queryKey: ["feed", "scheduled"],
+    queryFn: () => feedApi.scheduled(),
+  });
+  const scheduledList = scheduledQuery.data ?? [];
+
+  const schedulePost = useMutation({
+    mutationFn: (data: Parameters<typeof feedApi.schedule>[0]) => feedApi.schedule(data),
+    onSuccess: (agendado) => {
+      toast(
+        texts.feed.composer.scheduleDone(new Date(agendado.scheduledAt).toLocaleString("pt-BR")),
+        "success",
+      );
+      void queryClient.invalidateQueries({ queryKey: ["feed", "scheduled"] });
+    },
+    onError: (error) => setPublishError(error.message),
+  });
+
+  const cancelScheduled = useMutation({
+    mutationFn: (id: string) => feedApi.cancelScheduled(id),
+    onSuccess: () => {
+      toast(texts.feed.composer.scheduleCancelled, "success");
+      void queryClient.invalidateQueries({ queryKey: ["feed", "scheduled"] });
+    },
+    onError: (error) => toast(error.message, "error"),
+  });
+
+  const schedulePublish = async () => {
+    const content = draft.trim();
+    if (pageMode ? !pageHtml.trim() : !content) return;
+    if (articleMode && !articleBody.trim()) return;
+    if (!scheduleAt) return;
+
+    setPublishError(null);
+    try {
+      let mediaIds: string[] = [];
+      if (!pageMode && media.length > 0) {
+        const results = await upload.uploadAll(media.map((m) => ({ file: m.file })));
+        mediaIds = results.map((r) => r.mediaId);
+      }
+      await schedulePost.mutateAsync({
+        type: postType,
+        content: pageMode ? "" : content,
+        mediaIds,
+        // As menções viajam com o agendado e valem na PUBLICAÇÃO (quem foi marcado é avisado
+        // quando o post entra no ar, não quando foi agendado).
+        mentionedUserIds: pageMode ? [] : mentionedUserIds,
+        ...(pageMode ? { pageHtml } : {}),
+        ...(articleMode ? { articleBody } : {}),
+        scheduledAt: new Date(scheduleAt).toISOString(),
+      });
+      setDraft("");
+      setMentionedUserIds([]);
+      setPostType("INSIGHT");
+      setMedia([]);
+      setPageHtml("");
+      setArticleBody("");
+      setTypePickerOpen(false);
+      setScheduleAt("");
+      setSchedulingOpen(false);
+    } catch {
+      // o motivo já foi para o publishError pelo onError da mutation
+    }
+  };
+
+  // O mínimo do input datetime-local é AGORA+1min (o backend recusa mais perto que isso).
+  const minScheduleAt = new Date(Date.now() + 60_000 - new Date().getTimezoneOffset() * 60_000)
+    .toISOString()
+    .slice(0, 16);
 
   const publishPost = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -185,11 +319,10 @@ function Home() {
     }
   };
 
-  const handleMediaSelect = (e: ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+  const addMediaFiles = (files: File[]) => {
+    if (files.length === 0) return;
 
-    for (const file of Array.from(files)) {
+    for (const file of files) {
       const isVideo = file.type.startsWith("video/");
       const isImage = file.type.startsWith("image/");
       if (!isVideo && !isImage) continue;
@@ -204,6 +337,10 @@ function Home() {
       const preview = URL.createObjectURL(file);
       setMedia((prev) => [...prev, { type: isVideo ? "video" : "image", file, preview }]);
     }
+  };
+
+  const handleMediaSelect = (e: ChangeEvent<HTMLInputElement>) => {
+    addMediaFiles(Array.from(e.target.files ?? []));
     e.target.value = "";
   };
 
@@ -218,6 +355,42 @@ function Home() {
 
   const feedPosts = feedData?.pages.flatMap((page) => page.items) ?? [];
 
+  useEffect(() => {
+    const updateScrollTopVisibility = () => setShowScrollTop(window.scrollY > 400);
+
+    updateScrollTopVisibility();
+    window.addEventListener("scroll", updateScrollTopVisibility, { passive: true });
+    return () => window.removeEventListener("scroll", updateScrollTopVisibility);
+  }, []);
+
+  useEffect(() => {
+    if (feedLoading || feedPosts.length === 0 || typeof window === "undefined") return;
+
+    const savedScroll = readFeedScroll(tab);
+    if (!savedScroll) return;
+
+    const postElement = document.getElementById(`feed-post-${savedScroll.postId}`);
+    if (!postElement && hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
+      return;
+    }
+
+    clearFeedScroll();
+    const restore = () => {
+      window.scrollTo({ top: savedScroll.scrollY, behavior: "auto" });
+      postElement?.focus({ preventScroll: true });
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(restore));
+  }, [
+    feedLoading,
+    feedPosts.length,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    tab,
+  ]);
+
   const loadNextPage = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
       void fetchNextPage();
@@ -229,6 +402,9 @@ function Home() {
 
   return (
     <AppContainer>
+      {/* Pergunta única ao voltar do vínculo com o LinkedIn (flag gravada pelo diálogo de contas). */}
+      <LinkedInSyncPrompt />
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div className="min-w-0 space-y-4">
           {/* Composer */}
@@ -238,6 +414,7 @@ function Home() {
           >
             <div className="flex items-start gap-3">
               <UserAvatar
+                frame={profileUser?.avatarFrame}
                 src={profileUser?.avatar}
                 alt={profileUser?.name ?? texts.feed.you}
                 className="h-11 w-11"
@@ -246,6 +423,14 @@ function Home() {
               {/* No modo pagina o campo de texto sai de cena: a pagina e o conteudo, e pedir um
                   texto "de post" junto faria a publicacao ser as duas coisas ao mesmo tempo. Quem
                   quiser uma legenda escreve dentro do proprio HTML. */}
+              {identity === "CORPORATE" && (
+                <div className="mb-2 flex w-full items-center gap-2 rounded-xl bg-primary/10 px-3 py-2 text-xs text-text-strong">
+                  <Briefcase className="h-3.5 w-3.5" />
+
+                  <span>{texts.feed.composer.corporateDestination(corporate?.name ?? "")}</span>
+                </div>
+              )}
+
               {!pageMode && (
                 <MentionTextarea
                   value={draft}
@@ -257,6 +442,7 @@ function Home() {
                   className="flex-1 resize-none rounded-2xl border-border-soft bg-surface-1 px-3 py-2 text-sm font-normal"
                   maxLength={postContentLimit(postType)}
                   toolbar
+                  onPasteImages={addMediaFiles}
                 />
               )}
             </div>
@@ -283,24 +469,22 @@ function Home() {
 
             {articleMode && (
               <div className="mt-3 rounded-2xl border border-border-soft bg-surface-1 p-3">
-                <label
-                  htmlFor="composer-article-body"
-                  className="mb-1 block text-sm font-normal text-text-subtle"
-                >
+                <span className="mb-1 block text-sm font-normal text-text-subtle">
                   {texts.feed.composer.article.bodyLabel}
-                </label>
+                </span>
 
                 <p className="mb-2 text-sm font-normal text-text-subtle">
                   {texts.feed.composer.article.bodyHint}
                 </p>
 
-                <Textarea
-                  id="composer-article-body"
+                <MentionTextarea
                   value={articleBody}
                   maxLength={ARTICLE_BODY_MAX_LENGTH}
-                  onChange={(event) => setArticleBody(event.target.value)}
+                  onChange={(value) => setArticleBody(value)}
                   placeholder={texts.feed.composer.article.bodyPlaceholder}
-                  className="min-h-[220px]"
+                  className="min-h-[220px] rounded-lg border border-border-soft bg-transparent px-3 py-2 text-sm text-text-strong"
+                  rows={8}
+                  toolbar
                 />
               </div>
             )}
@@ -397,7 +581,7 @@ function Home() {
                   {typePickerOpen && (
                     <div className="absolute bottom-full left-0 z-40 mb-1 w-[min(22rem,80vw)] rounded-2xl border border-border-soft bg-popover p-2 shadow-lg">
                       <div className="flex flex-wrap gap-1.5">
-                        {POST_TYPES.map((option) => (
+                        {availableTypes.map((option) => (
                           <ComposerAction
                             key={option.id}
                             icon={option.icon}
@@ -463,6 +647,25 @@ function Home() {
                   </span>
                 )}
                 <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="rounded-full gap-1.5"
+                  disabled={
+                    (pageMode ? !pageHtml.trim() : !draft.trim()) ||
+                    (articleMode && !articleBody.trim()) ||
+                    createPost.isPending ||
+                    upload.status === "uploading"
+                  }
+                  onClick={() => setSchedulingOpen((open) => !open)}
+                  title={texts.feed.composer.scheduleHint}
+                >
+                  <CalendarClock className="h-3.5 w-3.5" />
+
+                  <>{texts.feed.composer.schedule}</>
+                </Button>
+
+                <Button
                   size="sm"
                   className="rounded-full"
                   disabled={
@@ -489,12 +692,90 @@ function Home() {
               </div>
             </div>
 
+            {schedulingOpen && (
+              <div className="mt-3 flex flex-wrap items-end gap-2 rounded-xl border border-border-soft bg-surface-1 p-3">
+                <label className="text-xs font-normal text-text-subtle">
+                  {texts.feed.composer.scheduleDate}
+                  <Input
+                    type="datetime-local"
+                    value={scheduleAt}
+                    min={minScheduleAt}
+                    onChange={(event) => setScheduleAt(event.target.value)}
+                    className="mt-1"
+                  />
+                </label>
+
+                <Button
+                  type="button"
+                  size="sm"
+                  className="rounded-full"
+                  disabled={!scheduleAt || schedulePost.isPending || upload.status === "uploading"}
+                  onClick={schedulePublish}
+                >
+                  {schedulePost.isPending ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    texts.feed.composer.scheduleConfirm
+                  )}
+                </Button>
+
+                <p className="text-[11px] font-normal text-text-subtle">
+                  {texts.feed.composer.scheduleHint}
+                </p>
+              </div>
+            )}
+
             {publishError && (
               <p className="mt-2 rounded-xl border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs font-normal text-destructive">
                 {publishError}
               </p>
             )}
           </form>
+
+          {scheduledList.length > 0 && (
+            <section className="rounded-2xl border border-border-soft bg-surface-card p-4">
+              <h2 className="flex items-center gap-2 text-sm font-semibold text-text-strong">
+                <CalendarClock className="h-4 w-4 text-primary" />
+
+                <>{texts.feed.composer.scheduledTitle(scheduledList.length)}</>
+              </h2>
+
+              <ul className="mt-2 space-y-2">
+                {scheduledList.map((agendado) => (
+                  <li
+                    key={agendado.id}
+                    className="flex items-start justify-between gap-2 rounded-xl bg-surface-1 px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm text-text-strong">
+                        {agendado.content ||
+                          (agendado.pageHtml ? texts.feed.composer.scheduledPage : agendado.type)}
+                      </p>
+
+                      <p className="text-xs text-text-subtle">
+                        {texts.feed.composer.scheduledFor(
+                          new Date(agendado.scheduledAt).toLocaleString("pt-BR"),
+                        )}
+                        {agendado.lastError ? ` · ${agendado.lastError}` : ""}
+                      </p>
+                    </div>
+
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="rounded-full"
+                      title={texts.feed.composer.scheduleCancel}
+                      disabled={cancelScheduled.isPending}
+                      onClick={() => cancelScheduled.mutate(agendado.id)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           {/* Tabs */}
           <div className="flex flex-wrap items-center gap-1.5">
@@ -517,11 +798,17 @@ function Home() {
             <Pill active={tab === "PROJECTS"} onClick={() => setTab("PROJECTS")}>
               {texts.feed.tabs.projects}
             </Pill>
+
+            {corporate?.exists && corporate.status === "ACTIVE" && (
+              <Pill active={tab === "CORPORATE"} onClick={() => setTab("CORPORATE")}>
+                {texts.feed.tabs.corporate}
+              </Pill>
+            )}
           </div>
 
           <div className="space-y-4">
             {feedLoading && <LoadingState />}
-            {!feedLoading && feedPosts.map((p) => <PostCard key={p.id} post={p} />)}
+            {!feedLoading && feedPosts.map((p) => <PostCard key={p.id} post={p} feedTab={tab} />)}
 
             {!feedLoading && feedPosts.length === 0 && <EmptyState title={texts.feed.empty} />}
 
@@ -543,6 +830,7 @@ function Home() {
 
               <div className="-mt-7 px-4 pb-4 text-center">
                 <UserAvatar
+                  frame={profileUser.avatarFrame}
                   src={profileUser.avatar}
                   alt={profileUser.name}
                   className="mx-auto h-16 w-16 ring-4 ring-surface-card"
@@ -594,7 +882,12 @@ function Home() {
               <ul className="mt-4 space-y-3">
                 {suggestionList.map((u) => (
                   <li key={u.id} className="flex items-center gap-3">
-                    <UserAvatar src={u.avatar} alt={u.name} className="h-10 w-10" />
+                    <UserAvatar
+                      src={u.avatar}
+                      frame={u.avatarFrame}
+                      alt={u.name}
+                      className="h-10 w-10"
+                    />
 
                     <div className="min-w-0 flex-1">
                       <Link
@@ -677,6 +970,20 @@ function Home() {
           )}
         </aside>
       </div>
+
+      {showScrollTop && (
+        <Button
+          type="button"
+          size="icon"
+          variant="outline"
+          aria-label={texts.feed.scrollToTop}
+          title={texts.feed.scrollToTop}
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-6 right-4 z-40 rounded-full border-border-soft bg-surface-card/95 shadow-lg backdrop-blur-sm lg:right-[calc((100vw-min(100vw-3rem,80rem))/2+344px)]"
+        >
+          <ArrowUp className="h-4 w-4" aria-hidden />
+        </Button>
+      )}
     </AppContainer>
   );
 }

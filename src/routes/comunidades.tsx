@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
 
 import { TOPICS, TOPIC_LABELS } from "@/constants/community-topics";
@@ -8,11 +8,11 @@ import { texts } from "@/texts";
 import type { Community } from "@/types/application/community/community";
 import type { CommunityTopic } from "@/types/application/community/community-topic";
 import type { CreateCommunityDialogProps } from "@/types/routes/communities/create-community-dialog-props";
-import { Loader2, Plus, Star, Users } from "lucide-react";
+import { Loader2, Plus, Search, Star, Users } from "lucide-react";
 
 import { communitiesApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
-import { requireAuth } from "@/lib/require-auth";
+import { useAuth, useIsAuthenticated } from "@/lib/use-auth";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -34,7 +34,6 @@ import { CommunityCard } from "@/components/community-card";
 import { COMMUNITY_FAVORITES_KEY } from "@/components/community-favorite-button";
 
 export const Route = createFileRoute("/comunidades")({
-  beforeLoad: requireAuth,
   head: () => ({ meta: [{ title: texts.communities.seoTitle }] }),
   component: Comunidades,
 });
@@ -43,62 +42,89 @@ function Comunidades() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const matchRoute = useMatchRoute();
+  const isAuthenticated = useIsAuthenticated();
+  const { requireAuth: needsLogin } = useAuth();
   const [topic, setTopic] = useState<CommunityTopic | undefined>(undefined);
+  const [search, setSearch] = useState("");
+  const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-  const [cursor, setCursor] = useState<string | undefined>(undefined);
-  const [allItems, setAllItems] = useState<Community[]>([]);
   const [leaveTarget, setLeaveTarget] = useState<Community | null>(null);
   const [ownerBlockedId, setOwnerBlockedId] = useState<string | null>(null);
-  const cursorRef = useRef(cursor);
-  cursorRef.current = cursor;
   const isDetail = matchRoute({ to: "/comunidades/$communityId" });
 
-  const { data: communitiesData, isFetching } = useQuery({
-    queryKey: ["communities", topic, cursor],
-    queryFn: () => communitiesApi.list(topic, cursor),
+  // A busca é do servidor (nome/descrição em todas as páginas), com 300 ms de debounce para
+  // não disparar uma requisição por tecla.
+  useEffect(() => {
+    const timer = setTimeout(() => setQuery(search.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  // Pagina por cursor com `useInfiniteQuery`: todas as páginas carregadas ficam sob a mesma
+  // chave, então invalidar ["communities"] (entrar/sair) rebusca todas elas, não só a última.
+  const {
+    data: communitiesData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ["communities", topic, query],
+    queryFn: ({ pageParam }) => communitiesApi.list(topic, pageParam, 20, query || undefined),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     enabled: !isDetail,
   });
 
-  const nextCursor = communitiesData?.nextCursor ?? null;
-
   // Favoritas têm seção própria no início da página; a lista principal não repete
-  // nenhuma delas (remover o favorito devolve o card para o fluxo comum).
+  // nenhuma delas (remover o favorito devolve o card para o fluxo comum). Só pedem sessão:
+  // visitante vê a lista pública sem 401 no console.
   const { data: favoritesData } = useQuery({
     queryKey: COMMUNITY_FAVORITES_KEY,
     queryFn: () => communitiesApi.favorites(),
-    enabled: !isDetail,
+    enabled: !isDetail && isAuthenticated,
   });
 
-  useEffect(() => {
-    if (!communitiesData?.items) return;
-    setAllItems((prev) => {
-      if (cursorRef.current) {
-        const existing = new Set(prev.map((c) => c.id));
-        const newItems = communitiesData.items.filter((c) => !existing.has(c.id));
-        return newItems.length > 0 ? [...prev, ...newItems] : prev;
-      }
-      return communitiesData.items;
-    });
-  }, [communitiesData]);
+  // As comunidades em que a pessoa já está vêm ANTES de tudo (pedido de quem usa: as primeiras
+  // exibidas são as nossas). Mesmo padrão das favoritas: seção fixa e fora do fluxo comum.
+  const { data: mineData } = useQuery({
+    queryKey: ["my-communities"],
+    queryFn: () => communitiesApi.mine(50),
+    enabled: !isDetail && isAuthenticated,
+  });
 
-  const byId = new Map(allItems.map((c) => [c.id, c]));
-  // Com um tópico ativo, a seção mostra só as favoritas daquele tópico.
+  // Um item pode reaparecer na página seguinte se a lista mudar entre as buscas; fica o primeiro.
+  const byId = new Map<string, Community>();
+  for (const page of communitiesData?.pages ?? []) {
+    for (const c of page.items) if (!byId.has(c.id)) byId.set(c.id, c);
+  }
+  const allItems = [...byId.values()];
+  const matchesSearch = (community: Community) => {
+    if (!query) return true;
+    const needle = query.toLocaleLowerCase("pt-BR");
+    return (
+      community.name.toLocaleLowerCase("pt-BR").includes(needle) ||
+      (community.description ?? "").toLocaleLowerCase("pt-BR").includes(needle)
+    );
+  };
+  // Com um tópico ativo, as seções fixas mostram só o daquele tópico.
   const pinnedFavorites = (favoritesData?.items ?? [])
-    .filter((c) => !topic || c.topic === topic)
+    .filter((c) => (!topic || c.topic === topic) && matchesSearch(c))
     .map((c) => byId.get(c.id) ?? c);
-  const favoriteIds = new Set(pinnedFavorites.map((c) => c.id));
-  const gridItems = allItems.filter((c) => !favoriteIds.has(c.id));
+  // Aqui vale o item de /mine: ele é a fonte da participação e não depende da lista paginada
+  // já ter sido rebuscada depois de entrar/sair.
+  const mineItems = (mineData?.items ?? []).filter(
+    (c) => (!topic || c.topic === topic) && matchesSearch(c),
+  );
+  const pinnedIds = new Set([...mineItems, ...pinnedFavorites].map((c) => c.id));
+  const gridItems = allItems.filter((c) => !pinnedIds.has(c.id));
 
   const loadMore = () => {
-    if (nextCursor && !isFetching) {
-      setCursor(nextCursor);
+    if (hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
     }
   };
 
   const handleTopicChange = (t: (typeof TOPICS)[number]) => {
     setTopic(t === "Todas" ? undefined : t);
-    setCursor(undefined);
-    setAllItems([]);
   };
 
   const join = useMutation({
@@ -141,13 +167,33 @@ function Comunidades() {
             <p className="mt-1 text-sm text-muted-foreground">{texts.communities.description}</p>
           </div>
 
-          <CreateCommunityDialog open={open} onOpenChange={setOpen}>
+          <CreateCommunityDialog
+            open={open}
+            onOpenChange={(o) => {
+              // Visitante nao abre o formulario: manda para o login.
+              if (o && !needsLogin()) return;
+              setOpen(o);
+            }}
+          >
             <Button className="rounded-full gap-1.5">
               <Plus className="h-4 w-4" />
 
               <>{texts.communities.createCommunity}</>
             </Button>
           </CreateCommunityDialog>
+        </div>
+
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          {/* Sem `maxLength`: o contador que ele acende abaixo do campo cresce este container e
+              desloca a lupa (`top-1/2` passa a centrar no conjunto, não no input). */}
+          <Input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder={texts.communities.searchPlaceholder}
+            className="pl-9"
+            aria-label={texts.communities.searchPlaceholder}
+          />
         </div>
 
         <div className="flex flex-wrap gap-2">
@@ -161,6 +207,32 @@ function Comunidades() {
             </Pill>
           ))}
         </div>
+
+        {mineItems.length > 0 && (
+          <section className="space-y-3">
+            <h2 className="flex items-center gap-1.5 text-sm font-medium text-text-strong">
+              <Users className="h-4 w-4 text-primary" />
+
+              <>{texts.communities.mineTitle}</>
+            </h2>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {mineItems.map((c) => (
+                <CommunityCard
+                  key={c.id}
+                  community={c}
+                  joinPending={join.isPending}
+                  leavePending={leave.isPending}
+                  ownerBlocked={ownerBlockedId === c.id}
+                  onJoin={(id) => {
+                    if (needsLogin()) join.mutate(id);
+                  }}
+                  onLeave={setLeaveTarget}
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
         {pinnedFavorites.length > 0 && (
           <section className="space-y-3">
@@ -178,7 +250,9 @@ function Comunidades() {
                   joinPending={join.isPending}
                   leavePending={leave.isPending}
                   ownerBlocked={ownerBlockedId === c.id}
-                  onJoin={join.mutate}
+                  onJoin={(id) => {
+                    if (needsLogin()) join.mutate(id);
+                  }}
                   onLeave={setLeaveTarget}
                 />
               ))}
@@ -194,21 +268,23 @@ function Comunidades() {
               joinPending={join.isPending}
               leavePending={leave.isPending}
               ownerBlocked={ownerBlockedId === c.id}
-              onJoin={join.mutate}
+              onJoin={(id) => {
+                if (needsLogin()) join.mutate(id);
+              }}
               onLeave={setLeaveTarget}
             />
           ))}
         </div>
 
-        {nextCursor && (
+        {hasNextPage && (
           <div className="flex justify-center pb-8">
             <Button
               variant="outline"
               className="rounded-full"
               onClick={loadMore}
-              disabled={isFetching}
+              disabled={isFetchingNextPage}
             >
-              {isFetching ? (
+              {isFetchingNextPage ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 texts.communities.loadMore

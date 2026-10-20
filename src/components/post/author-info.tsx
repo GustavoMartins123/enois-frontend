@@ -13,34 +13,62 @@ export function AuthorInfo({
   authorUsername,
   authorName,
   authorAvatar,
+  authorAvatarFrame,
   authorBadge,
   authorBadges,
+  authorIdentity,
   createdAt,
   community,
   fallbackClassName,
   onFollowCommunity,
   followPending,
 }: AuthorInfoProps) {
+  // O nome leva para a identidade que ASSINOU: post profissional abre o perfil profissional
+  // (o @ é de outro namespace e não existe em /perfil).
+  const corporate = authorIdentity === "CORPORATE";
   return (
     <div className="flex items-start gap-3">
-      <Link to="/perfil/$username" params={{ username: authorUsername }}>
-        <UserAvatar
-          src={authorAvatar}
-          alt={authorName}
-          fallbackClassName={fallbackClassName}
-          className="h-11 w-11"
-        />
-      </Link>
+      {corporate ? (
+        <Link to="/profissional/$username" params={{ username: authorUsername }}>
+          <UserAvatar
+            frame={authorAvatarFrame}
+            src={authorAvatar}
+            alt={authorName}
+            fallbackClassName={fallbackClassName}
+            className="h-11 w-11"
+          />
+        </Link>
+      ) : (
+        <Link to="/perfil/$username" params={{ username: authorUsername }}>
+          <UserAvatar
+            frame={authorAvatarFrame}
+            src={authorAvatar}
+            alt={authorName}
+            fallbackClassName={fallbackClassName}
+            className="h-11 w-11"
+          />
+        </Link>
+      )}
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-          <Link
-            to="/perfil/$username"
-            params={{ username: authorUsername }}
-            className="font-bold hover:underline text-sm"
-          >
-            {authorName}
-          </Link>
+          {corporate ? (
+            <Link
+              to="/profissional/$username"
+              params={{ username: authorUsername }}
+              className="font-bold hover:underline text-sm"
+            >
+              {authorName}
+            </Link>
+          ) : (
+            <Link
+              to="/perfil/$username"
+              params={{ username: authorUsername }}
+              className="font-bold hover:underline text-sm"
+            >
+              {authorName}
+            </Link>
+          )}
 
           <UserBadges badges={authorBadges} badge={authorBadge} />
 
