@@ -908,8 +908,23 @@ export const texts = {
     reactions: {
       title: "Reações",
       empty: "Nenhuma reação ainda",
+      /** Estado vazio de uma aba por tipo (o tipo existe no resumo, mas ninguém está nele). */
+      emptyType: "Ninguém reagiu com isso ainda",
+      /** Aba geral do diálogo. */
+      all: "Todas",
+      /** Marca a própria linha na lista de quem reagiu. */
+      you: "(você)",
       react: "Reagir",
+      reactWith: (emoji: string) => `Reagir com ${emoji}`,
+      removeWith: (emoji: string) => `Remover reação ${emoji}`,
       reactedWith: (emoji: string) => `Reagiu com ${emoji}`,
+      /** Palavra do contador (sem número): o número é renderizado à parte. */
+      noun: (count: number) => (count === 1 ? "reação" : "reações"),
+      /** Rótulo acessível do contador "ver quem reagiu". */
+      seeWho: (count: number) => `Ver quem reagiu (${count} ${count === 1 ? "reação" : "reações"})`,
+      error: "Não foi possível reagir. Tente novamente.",
+      permissionError: "Você não tem permissão para reagir neste post.",
+      loadError: "Não foi possível carregar as reações.",
       emojis: {
         LIKE: "👍",
         LOVE: "❤️",

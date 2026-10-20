@@ -222,6 +222,17 @@
   color: transparent;
 }
 
+/* Esconde a barra de rolagem sem desligar o scroll: em faixas de abas/carrosséis o
+   trilho nativo corta o conteúdo e destoa do resto da UI. O scroll por toque, wheel
+   e teclado continua funcionando normalmente. */
+@utility scrollbar-hide {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* Resets de elementos em @layer base: UNLAYERED eles vencem as utilities do
    Tailwind (ordem de camada fala mais alto que especificidade) e um
    `a { color: inherit }` solto MATAVA toda utility de cor de texto em link —
