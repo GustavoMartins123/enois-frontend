@@ -594,3 +594,14 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Nenhuma correção de app.**
 - **Próximo lote:** `/mentoria`, `/rede` e `/jogos-diarios` a 390px; depois as rotas de jogos,
   denúncias administrativas e as páginas-chave protegidas a 1280.
+
+## Rodada 38 — 2026-10-19 21:0x
+
+- **Sessão protegida expirada** (cópia de 19:55, 401). Lote público.
+- **Lote C público:** `/grupos/oracle-apex` em **1280×800**, 60 temas × claro/escuro =
+  **120 combinações**. **118 limpas**; as 2 acusações (`twomoons` claro e `silver-jonny` escuro)
+  foram **corrida de renderização** (“execution context destroyed”), reexecutadas com espera maior:
+  vars aplicadas e **`sw=cw=1280`**, zero overflow. Nenhum bug real.
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/mentoria`, `/rede` e `/jogos-diarios` a 390px quando houver sessão; no
+  público, `/blogs` e `/eventos` a 1280 com os 60 temas.
