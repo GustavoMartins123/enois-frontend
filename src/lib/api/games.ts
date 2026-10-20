@@ -1,14 +1,12 @@
+import type { ColecaoView } from "@/types/application/games/colecao-view";
 import type { DeveloperPage } from "@/types/application/games/developer-page";
+import type { GameAnalytics } from "@/types/application/games/game-analytics";
 import type { GameCatalogQuery } from "@/types/application/games/game-catalog-query";
+import type { GameComment } from "@/types/application/games/game-comment";
+import type { GameComments } from "@/types/application/games/game-comments";
 import type { GamePage } from "@/types/application/games/game-page";
-
-export type ColecaoView = {
-  id: string;
-  title: string;
-  description?: string | null;
-  jogos: GameView[];
-  createdAt: string;
-};
+import type { GameReview } from "@/types/application/games/game-review";
+import type { GameReviews } from "@/types/application/games/game-reviews";
 import type { GameStats } from "@/types/application/games/game-stats";
 import type { GameUpdateView } from "@/types/application/games/game-update-view";
 import type { GameView } from "@/types/application/games/game-view";
@@ -41,6 +39,9 @@ export const gamesApi = {
   developer: (username: string) =>
     api.get<DeveloperPage>(`/games/${encodeURIComponent(username)}/profile`),
 
+  /** A PRÓPRIA página de criador (o painel preenche o formulário sem saber o @). */
+  myDeveloperPage: () => api.get<DeveloperPage>("/games/profile/mine"),
+
   /** O dono edita a própria página de criador. */
   saveDeveloper: (data: {
     displayName?: string | null;
@@ -61,6 +62,25 @@ export const gamesApi = {
   /** Um jogo específico (o dono vê o dele em qualquer estado). */
   bySlug: (username: string, gameSlug: string) =>
     api.get<GameView>(`/games/${encodeURIComponent(username)}/${encodeURIComponent(gameSlug)}`),
+
+  /** Avaliações do jogo (nota 1-5 + texto) e o resumo da nota. */
+  reviews: (gameId: string, limit = 30) =>
+    api.get<GameReviews>(`/games/${gameId}/reviews?limit=${limit}`),
+
+  submitReview: (gameId: string, rating: number, body?: string) =>
+    api.post<GameReview>(`/games/${gameId}/reviews`, { rating, body }),
+
+  deleteReview: (gameId: string) => api.delete<void>(`/games/${gameId}/reviews/mine`),
+
+  /** Comentários da página do jogo. */
+  comments: (gameId: string, limit = 50) =>
+    api.get<GameComments>(`/games/${gameId}/comments?limit=${limit}`),
+
+  addComment: (gameId: string, body: string) =>
+    api.post<GameComment>(`/games/${gameId}/comments`, { body }),
+
+  deleteComment: (gameId: string, commentId: string) =>
+    api.delete<void>(`/games/${gameId}/comments/${commentId}`),
 
   /** Jogos de quem está logado (todos os status, para acompanhar a moderação). */
   mine: () => api.get<GameView[]>("/me/games"),
@@ -88,6 +108,17 @@ export const gamesApi = {
     api.post<{ plays: number }>(`/games/${encodeURIComponent(gameId)}/play`, {}),
 
   stats: (gameId: string) => api.get<GameStats>(`/games/${encodeURIComponent(gameId)}/stats`),
+
+  /**
+   * Números de uso do jogo (só o criador): totais + série diária de visualizações, partidas,
+   * jogadores distintos e compartilhamentos. `days` é a janela (1 a 90).
+   */
+  analytics: (gameId: string, days = 30) =>
+    api.get<GameAnalytics>(`/games/${encodeURIComponent(gameId)}/analytics?days=${days}`),
+
+  /** Tira o jogo da loja (só o dono): novidades, favoritos e histórico vão junto. */
+  remove: (gameId: string) =>
+    api.delete<{ id: string; status: string }>(`/games/${encodeURIComponent(gameId)}`),
 
   updates: (gameId: string) =>
     api.get<GameUpdateView[]>(`/games/${encodeURIComponent(gameId)}/updates`),
@@ -121,20 +152,29 @@ export const gamesApi = {
     api.post<{ id: string; boosted: boolean }>(`/games/${encodeURIComponent(gameId)}/boost`, {}),
   /** Identidade DO JOGO: token opaco (15 min, uso único) + pseudônimo — nunca a sessão. */
   identity: (gameId: string) =>
-    api.post<{ token: string; expiresAt: string; playerRef: string }>(`/games/${encodeURIComponent(gameId)}/identity`, {}),
+    api.post<{ token: string; expiresAt: string; playerRef: string }>(
+      `/games/${encodeURIComponent(gameId)}/identity`,
+      {},
+    ),
   /** Gasto de faísca confirmado do nosso lado (idempotente pelo requestId do jogo). */
   spend: (gameId: string, amount: number, motivo: string, requestId: string) =>
-    api.post<{ status: string; requestId?: string }>(`/games/${encodeURIComponent(gameId)}/despesas`, {
-      amount,
-      motivo,
-      requestId,
-    }),
+    api.post<{ status: string; requestId?: string }>(
+      `/games/${encodeURIComponent(gameId)}/despesas`,
+      {
+        amount,
+        motivo,
+        requestId,
+      },
+    ),
   /** G-share: publica a conquista no feed com a tag do jogo (o texto vem do jogo, o clique é humano). */
   compartilhar: (gameId: string, texto: string, mediaIds?: string[]) =>
-    api.post<{ postId: string; status: string }>(`/games/${encodeURIComponent(gameId)}/compartilhar`, {
-      texto,
-      mediaIds: mediaIds ?? [],
-    }),
+    api.post<{ postId: string; status: string }>(
+      `/games/${encodeURIComponent(gameId)}/compartilhar`,
+      {
+        texto,
+        mediaIds: mediaIds ?? [],
+      },
+    ),
   /** Coleções temáticas curadas (G3) com os jogos resolvidos. */
   colecoes: (limit = 20) => api.get<ColecaoView[]>(`/games/colecoes?limit=${limit}`),
 
@@ -144,14 +184,12 @@ export const gamesApi = {
   pendentes: (limit = 30) => api.get<GameView[]>(`/admin/games?limit=${limit}`),
 
   aprovar: (gameId: string, note?: string) =>
-    api.post<{ id: string; status: string }>(
-      `/admin/games/${encodeURIComponent(gameId)}/approve`,
-      { note: note?.trim() || undefined },
-    ),
+    api.post<{ id: string; status: string }>(`/admin/games/${encodeURIComponent(gameId)}/approve`, {
+      note: note?.trim() || undefined,
+    }),
 
   rejeitar: (gameId: string, note?: string) =>
-    api.post<{ id: string; status: string }>(
-      `/admin/games/${encodeURIComponent(gameId)}/reject`,
-      { note: note?.trim() || undefined },
-    ),
+    api.post<{ id: string; status: string }>(`/admin/games/${encodeURIComponent(gameId)}/reject`, {
+      note: note?.trim() || undefined,
+    }),
 };
