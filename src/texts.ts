@@ -720,6 +720,11 @@ export const texts = {
       found: (count: number) => `${count} itens encontrados — marque o que quer importar:`,
       save: "Importar selecionados",
       done: (count: number) => `${count} itens importados do LinkedIn.`,
+      /** Reimportar não duplica: o que já estava no perfil é ignorado. */
+      nothingNew: "Nada novo: o que você marcou já está no seu perfil.",
+      /** O perfil tem teto por seção; o que não coube fica claro em vez de falhar pela metade. */
+      capReached:
+        "Alguns itens não couberam: o perfil aceita até 10 experiências, 10 formações e 10 certificações.",
     },
     menu: {
       trigger: "Menu da conta",
@@ -1801,6 +1806,30 @@ export const texts = {
       suspended: "Este jogo está fora do ar por decisão da moderação.",
       notPublished: "Este jogo ainda não está publicado — só você vê esta página.",
       external: "Jogo externo",
+      reviewsTitle: "Avaliações",
+      reviewsEmpty: "Ainda não há avaliações. Seja a primeira pessoa a avaliar.",
+      reviewsAverage: (average: number, count: number) =>
+        `${average.toFixed(1)} de 5 · ${count} avaliação${count === 1 ? "" : "ões"}`,
+      reviewYour: "Sua avaliação",
+      reviewRating: "Sua nota",
+      reviewBody: "Conte o que achou do jogo (opcional)",
+      reviewSubmit: "Publicar avaliação",
+      reviewUpdate: "Atualizar avaliação",
+      reviewRemove: "Remover minha avaliação",
+      reviewSaved: "Avaliação salva.",
+      reviewRemoved: "Avaliação removida.",
+      reviewError: "Não foi possível salvar a avaliação.",
+      reviewOwner: "Você não pode avaliar o próprio jogo.",
+      reviewLogin: "Entre para avaliar este jogo.",
+      commentsTitle: "Comentários",
+      commentsEmpty: "Nenhum comentário ainda. Comece a conversa.",
+      commentPlaceholder: "O que você quer dizer sobre o jogo?",
+      commentSubmit: "Comentar",
+      commentSaved: "Comentário publicado.",
+      commentRemoved: "Comentário removido.",
+      commentError: "Não foi possível publicar o comentário.",
+      commentLogin: "Entre para comentar.",
+      commentDelete: "Apagar",
     },
   },
 

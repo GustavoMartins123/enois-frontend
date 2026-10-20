@@ -58,19 +58,22 @@ import { MentionTextarea } from "@/components/mention-textarea";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
 
+/** Abas válidas da tela inicial (a URL carrega a escolhida). */
+const HOME_TABS: HomeTab[] = ["FOR_YOU", "ALL", "FOLLOWING", "RECENT", "PROJECTS", "CORPORATE"];
+
 export const Route = createFileRoute("/feed")({
-  validateSearch: (search: Record<string, unknown>): { tab?: HomeTab } => ({
-    tab:
-      search.tab === "FOR_YOU" ||
-      search.tab === "ALL" ||
-      search.tab === "FOLLOWING" ||
-      search.tab === "RECENT" ||
-      search.tab === "PROJECTS" ||
-      search.tab === "CORPORATE"
-        ? search.tab
-        : undefined,
-  }),
   beforeLoad: requireAuth,
+  /**
+   * A aba vive na URL (`/feed?aba=ALL`): abrir uma publicação e voltar restaura a MESMA aba em que
+   * a pessoa estava — antes o retorno caía sempre em "Para você".
+   */
+  validateSearch: (search: Record<string, unknown>) => {
+    const aba =
+      typeof search.aba === "string" && HOME_TABS.includes(search.aba as HomeTab)
+        ? (search.aba as HomeTab)
+        : "FOR_YOU";
+    return { aba };
+  },
   head: () => ({
     meta: [
       { title: texts.feed.seo.title },
@@ -120,11 +123,17 @@ function useEvents() {
 }
 
 function Home() {
-  const { tab: searchTab } = Route.useSearch();
-  const navigate = Route.useNavigate();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const [tab, setTab] = useState<HomeTab>(searchTab ?? "FOR_YOU");
+  // A aba vem da URL; trocar de aba REPLACES o histórico (o "voltar" continua voltando para a
+  // página anterior, e não passeando pelas abas).
+  const { aba } = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const tab: HomeTab = aba;
+  const setTab = (next: HomeTab) => {
+    if (next === tab) return;
+    void navigate({ search: { aba: next }, replace: true });
+  };
   const {
     data: feedData,
     // Somente a PRIMEIRA carga mostra o esqueleto. `isFetching` tambem fica true ao paginar, e
@@ -170,23 +179,6 @@ function Home() {
       setPostType((current) => (current === "BUSINESS" ? "INSIGHT" : current));
     }
   }, [identity]);
-
-  useEffect(() => {
-    if (searchTab && searchTab !== tab) setTab(searchTab);
-  }, [searchTab, tab]);
-
-  useEffect(() => {
-    const updateScrollTopVisibility = () => setShowScrollTop(window.scrollY > 400);
-
-    updateScrollTopVisibility();
-    window.addEventListener("scroll", updateScrollTopVisibility, { passive: true });
-    return () => window.removeEventListener("scroll", updateScrollTopVisibility);
-  }, []);
-
-  const selectTab = (nextTab: HomeTab) => {
-    setTab(nextTab);
-    void navigate({ search: { tab: nextTab } });
-  };
 
   const pageMode = postType === "PAGE";
   const articleMode = postType === "ARTICLE";
@@ -271,9 +263,7 @@ function Home() {
   };
 
   // O mínimo do input datetime-local é AGORA+1min (o backend recusa mais perto que isso).
-  const minScheduleAt = new Date(
-    Date.now() + 60_000 - new Date().getTimezoneOffset() * 60_000,
-  )
+  const minScheduleAt = new Date(Date.now() + 60_000 - new Date().getTimezoneOffset() * 60_000)
     .toISOString()
     .slice(0, 16);
 
@@ -364,6 +354,14 @@ function Home() {
   const mediaType = media.length > 0 ? (media[0].type === "image" ? "image" : "video") : null;
 
   const feedPosts = feedData?.pages.flatMap((page) => page.items) ?? [];
+
+  useEffect(() => {
+    const updateScrollTopVisibility = () => setShowScrollTop(window.scrollY > 400);
+
+    updateScrollTopVisibility();
+    window.addEventListener("scroll", updateScrollTopVisibility, { passive: true });
+    return () => window.removeEventListener("scroll", updateScrollTopVisibility);
+  }, []);
 
   useEffect(() => {
     if (feedLoading || feedPosts.length === 0 || typeof window === "undefined") return;
@@ -751,9 +749,7 @@ function Home() {
                     <div className="min-w-0">
                       <p className="truncate text-sm text-text-strong">
                         {agendado.content ||
-                          (agendado.pageHtml
-                            ? texts.feed.composer.scheduledPage
-                            : agendado.type)}
+                          (agendado.pageHtml ? texts.feed.composer.scheduledPage : agendado.type)}
                       </p>
 
                       <p className="text-xs text-text-subtle">
@@ -783,28 +779,28 @@ function Home() {
 
           {/* Tabs */}
           <div className="flex flex-wrap items-center gap-1.5">
-            <Pill active={tab === "FOR_YOU"} onClick={() => selectTab("FOR_YOU")}>
+            <Pill active={tab === "FOR_YOU"} onClick={() => setTab("FOR_YOU")}>
               {texts.feed.tabs.forYou}
             </Pill>
 
-            <Pill active={tab === "ALL"} onClick={() => selectTab("ALL")}>
+            <Pill active={tab === "ALL"} onClick={() => setTab("ALL")}>
               {texts.feed.tabs.all}
             </Pill>
 
-            <Pill active={tab === "FOLLOWING"} onClick={() => selectTab("FOLLOWING")}>
+            <Pill active={tab === "FOLLOWING"} onClick={() => setTab("FOLLOWING")}>
               {texts.feed.tabs.following}
             </Pill>
 
-            <Pill active={tab === "RECENT"} onClick={() => selectTab("RECENT")}>
+            <Pill active={tab === "RECENT"} onClick={() => setTab("RECENT")}>
               {texts.feed.tabs.discussions}
             </Pill>
 
-            <Pill active={tab === "PROJECTS"} onClick={() => selectTab("PROJECTS")}>
+            <Pill active={tab === "PROJECTS"} onClick={() => setTab("PROJECTS")}>
               {texts.feed.tabs.projects}
             </Pill>
 
             {corporate?.exists && corporate.status === "ACTIVE" && (
-              <Pill active={tab === "CORPORATE"} onClick={() => selectTab("CORPORATE")}>
+              <Pill active={tab === "CORPORATE"} onClick={() => setTab("CORPORATE")}>
                 {texts.feed.tabs.corporate}
               </Pill>
             )}
@@ -812,8 +808,7 @@ function Home() {
 
           <div className="space-y-4">
             {feedLoading && <LoadingState />}
-            {!feedLoading &&
-              feedPosts.map((p) => <PostCard key={p.id} post={p} feedTab={tab} />)}
+            {!feedLoading && feedPosts.map((p) => <PostCard key={p.id} post={p} feedTab={tab} />)}
 
             {!feedLoading && feedPosts.length === 0 && <EmptyState title={texts.feed.empty} />}
 
@@ -887,7 +882,12 @@ function Home() {
               <ul className="mt-4 space-y-3">
                 {suggestionList.map((u) => (
                   <li key={u.id} className="flex items-center gap-3">
-                    <UserAvatar src={u.avatar} frame={u.avatarFrame} alt={u.name} className="h-10 w-10" />
+                    <UserAvatar
+                      src={u.avatar}
+                      frame={u.avatarFrame}
+                      alt={u.name}
+                      className="h-10 w-10"
+                    />
 
                     <div className="min-w-0 flex-1">
                       <Link

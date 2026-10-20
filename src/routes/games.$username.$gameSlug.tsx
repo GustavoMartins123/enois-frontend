@@ -27,7 +27,9 @@ import { useToast } from "@/components/ui/toast";
 import { AppContainer } from "@/components/app-container";
 import { GameIcon } from "@/components/game-icon";
 import { GameBanner } from "@/components/games/game-banner";
+import { GameCommentsSection } from "@/components/games/game-comments-section";
 import { GameEditorDialog } from "@/components/games/game-editor-dialog";
+import { GameReviewsSection } from "@/components/games/game-reviews-section";
 import { GameUpdateDialog } from "@/components/games/game-update-dialog";
 
 /** A proporção do quadro, escolhida pelo criador (o jogo decide como quer aparecer). */
@@ -69,6 +71,8 @@ function GamePage() {
   const [failed, setFailed] = useState(false);
   const [editing, setEditing] = useState(false);
   const [newUpdate, setNewUpdate] = useState(false);
+  // A dica de tela cheia no celular é um aviso, não conteúdo: some sozinha depois de 3s.
+  const [showMobileHint, setShowMobileHint] = useState(true);
   const frame = useRef<HTMLIFrameElement>(null);
   const navigate = useNavigate();
 
@@ -176,6 +180,15 @@ function GamePage() {
   const [gasto, setGasto] = useState<{ amount: number; motivo: string; requestId: string } | null>(
     null,
   );
+
+  // O contador começa quando o JOGO carrega (a dica só existe dentro do card). Se começasse no
+  // mount, o fetch podia demorar mais que 3s e a pessoa nunca via o aviso.
+  useEffect(() => {
+    if (!game.data) return;
+    setShowMobileHint(true);
+    const timer = window.setTimeout(() => setShowMobileHint(false), 3000);
+    return () => window.clearTimeout(timer);
+  }, [game.data]);
 
   // G-share: o jogo (iframe de OUTRA origem, sem sessão nenhuma) pede o compartilhamento por
   // postMessage; a página valida a origem contra o endereço registrado do jogo, mostra a PRÉVIA
@@ -449,9 +462,11 @@ function GamePage() {
             )}
           </div>
 
-          <p className="border-t border-border-soft px-3 py-2 text-xs text-text-subtle sm:hidden">
-            {texts.games.game.mobileHint}
-          </p>
+          {showMobileHint && (
+            <p className="border-t border-border-soft px-3 py-2 text-xs text-text-subtle sm:hidden">
+              {texts.games.game.mobileHint}
+            </p>
+          )}
 
           <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border-soft px-3 py-2">
             <p className="text-xs text-text-subtle">
@@ -654,6 +669,9 @@ function GamePage() {
             )}
           </dl>
         </section>
+
+        <GameReviewsSection gameId={g.id} ownerId={g.userId} />
+        <GameCommentsSection gameId={g.id} ownerId={g.userId} />
 
         <section className="surface-card space-y-3 p-4 sm:p-5">
           <h2 className="text-base font-medium">{texts.games.game.updates}</h2>
