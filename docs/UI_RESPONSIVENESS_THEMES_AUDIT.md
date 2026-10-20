@@ -710,3 +710,18 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Nenhuma correção de app.**
 - **Próximo lote:** `/servicos` e `/diretrizes` a 390; depois `/developers` e páginas-chave
   protegidas a 1280.
+
+## Rodada 47 — 2026-10-20 00:4x
+
+- **Sessão protegida ausente.** Lote público.
+- **`/servicos` e `/diretrizes` a 390×844**, 60 temas × claro/escuro = **240 verificações**.
+- **Achado real (55 ocorrências, mesma causa):** a aba ativa (“Ofertas”) usava
+  `bg-primary text-primary-text`. O `primary-text` é calculado contra o FUNDO da página/soft, não
+  contra o preenchimento primário; em temas escuros dava **1,0–2,5:1** (terminal 1,2; contraste-puro
+  1,0). Trocado para **`text-primary-foreground`**, que é o token do texto sobre o primário.
+  Commit `f800a80` (push `1bf41ed`).
+- **Verificação em produção:** classe nova presente; contraste medido no DOM real:
+  terminal escuro **7,15:1**, win2000 escuro **5,39:1**. A única acusação fora dessa causa
+  (`oliva` claro, vars vazias) foi corrida de renderização — reexecutada com `--background #f8f7f2`,
+  `--primary #657337`, `sw=cw=390`.
+- **Próximo lote:** `/developers` a 1280 com os 60 temas; depois as páginas-chave protegidas.
