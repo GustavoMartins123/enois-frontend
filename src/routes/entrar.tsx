@@ -305,7 +305,7 @@ function SignupForm(_props: AuthFormProps) {
         email: parsed.data.email,
         password: parsed.data.password,
         acceptedTerms: parsed.data.acceptedTerms === "on",
-        turnstileToken: turnstileRef.current?.getResponse() ?? undefined,
+        website: fd.get("website") as string | undefined,
       });
       setPendingEmail(result.email);
     } catch (err) {
@@ -331,6 +331,15 @@ function SignupForm(_props: AuthFormProps) {
       </div>
 
       <form onSubmit={submit} className="space-y-4" noValidate>
+        {/* Honeypot: campo invisível que bots preenchem e humanos não veem */}
+        <input
+          name="website"
+          type="text"
+          autoComplete="off"
+          tabIndex={-1}
+          aria-hidden="true"
+          className="absolute -left-[9999px] h-0 w-0 overflow-hidden opacity-0"
+        />
         <Field label={texts.auth.fields.fullName} error={errors.name}>
           <Input
             name="name"

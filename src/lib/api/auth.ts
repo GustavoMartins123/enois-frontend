@@ -21,7 +21,7 @@ import { api } from "../api-client";
 
 export const authApi = {
   /** Cria a conta pendente de confirmação e envia o link para o e-mail. */
-  signup: (data: SignupInput) => api.post<SignupResult>("/auth/signup", data),
+  signup: (data: SignupInput) => api.post<SignupResult>("/auth/signup", data, { fingerprint: true }),
 
   /** Confirma o e-mail pelo token do link e já devolve a sessão. */
   verifyEmail: (token: string) => api.post<AuthResponse>("/auth/email/verify", { token }),
