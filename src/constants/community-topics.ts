@@ -1,11 +1,12 @@
 import { texts } from "@/texts";
 
 /**
- * Os assuntos de comunidade, num lugar só.
+ * Os assuntos da plataforma, num lugar só — comunidades, compositor e personalização leem daqui.
  *
- * Viviam dentro da tela da vitrine, e o formulário de edição não os alcançava — foi assim que o
- * tópico ficou congelado no que foi escolhido na criação. Com a lista aqui, o filtro e o seletor
- * mostram exatamente os mesmos assuntos (inclusive "Outros").
+ * Começaram como os tópicos de comunidade e foram refinados (pedido da dona, 2026-10-20: "cria
+ * mais assuntos... a categorização tá errada"). Os oito originais continuam primeiro e válidos —
+ * comunidades antigas não mudam de mão; os novos cobrem o que a plataforma realmente abriga
+ * (tem área de jogos, tem ciência, tem quem empreende). "Todas" é filtro de vitrine, não assunto.
  */
 export const TOPICS = [
   "Todas",
@@ -17,6 +18,16 @@ export const TOPICS = [
   "CARREIRA",
   "FREELANCE",
   "OUTROS",
+  "GAMES",
+  "ART",
+  "MUSIC",
+  "EDUCACAO",
+  "CIENCIA",
+  "EMPREENDER",
+  "FINANCAS",
+  "MARKETING",
+  "RH",
+  "DADOS",
 ] as const;
 
 export const TOPIC_LABELS: Record<(typeof TOPICS)[number], string> = {
@@ -29,4 +40,14 @@ export const TOPIC_LABELS: Record<(typeof TOPICS)[number], string> = {
   CARREIRA: texts.communities.topics.CARREIRA,
   FREELANCE: texts.communities.topics.FREELANCE,
   OUTROS: texts.communities.topics.OUTROS,
+  GAMES: texts.communities.topics.GAMES,
+  ART: texts.communities.topics.ART,
+  MUSIC: texts.communities.topics.MUSIC,
+  EDUCACAO: texts.communities.topics.EDUCACAO,
+  CIENCIA: texts.communities.topics.CIENCIA,
+  EMPREENDER: texts.communities.topics.EMPREENDER,
+  FINANCAS: texts.communities.topics.FINANCAS,
+  MARKETING: texts.communities.topics.MARKETING,
+  RH: texts.communities.topics.RH,
+  DADOS: texts.communities.topics.DADOS,
 };

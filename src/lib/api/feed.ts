@@ -66,6 +66,8 @@ export const feedApi = {
     mediaIds?: string[];
     mentionedUserIds?: string[];
     communityId?: string;
+    /** Assunto do post avulso (viaja com o agendado; em comunidade o post herda o dela). */
+    topic?: string;
     scheduledAt: string;
   }) => api.post<ScheduledPostView>("/feed/scheduled", data),
 

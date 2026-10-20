@@ -3,6 +3,7 @@ import { type ChangeEvent, type FormEvent, useCallback, useEffect, useRef, useSt
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import { TOPICS, TOPIC_LABELS } from "@/constants/community-topics";
 import { postContentLimit } from "@/constants/post-content-limits";
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { ARTICLE_BODY_MAX_LENGTH, POST_TYPES } from "@/constants/post-types";
@@ -133,6 +134,9 @@ function Home() {
   const [draft, setDraft] = useState("");
   const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([]);
   const [postType, setPostType] = useState<PostView["type"]>("INSIGHT");
+  // Assunto do post avulso (opcional): é o que liga o post a "O que quero ver"/"não gosto".
+  // Em comunidade o post herda o assunto DELA — o seletor nem aparece lá.
+  const [topic, setTopic] = useState("");
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [linkedinUrl, setLinkedinUrl] = useState<string | null>(null);
@@ -217,10 +221,12 @@ function Home() {
         content: pageMode ? "" : content,
         mediaIds,
         // As menções viajam com o agendado e valem na PUBLICAÇÃO (quem foi marcado é avisado
-        // quando o post entra no ar, não quando foi agendado).
+        // quando o post entra no ar, não quando foi agendado). O assunto também: foi declarado
+        // no agendamento, é o que entra no ar.
         mentionedUserIds: pageMode ? [] : mentionedUserIds,
         ...(pageMode ? { pageHtml } : {}),
         ...(articleMode ? { articleBody } : {}),
+        ...(topic ? { topic } : {}),
         scheduledAt: new Date(scheduleAt).toISOString(),
       });
       setDraft("");
@@ -229,6 +235,7 @@ function Home() {
       setMedia([]);
       setPageHtml("");
       setArticleBody("");
+      setTopic("");
       setTypePickerOpen(false);
       setScheduleAt("");
       setSchedulingOpen(false);
@@ -266,6 +273,9 @@ function Home() {
         ...(pageMode ? { pageHtml } : {}),
         ...(articleMode ? { articleBody } : {}),
         mentionedUserIds: pageMode ? [] : mentionedUserIds,
+        // Em comunidade o post herda o assunto DELA — aqui o feed é do autor, então o assunto
+        // escolhido (quando houver) é o que classifica a publicação.
+        ...(topic ? { topic } : {}),
       });
       // "Também no LinkedIn": com o LinkedIn vinculado, oferece o compartilhamento pelo
       // diálogo oficial do LinkedIn com o link público do post (o OG preview completa o resto).
@@ -287,9 +297,9 @@ function Home() {
       setLinkedinUrl(null);
       setPostType("INSIGHT");
       setMedia([]);
-      setPostType("INSIGHT");
       setPageHtml("");
       setArticleBody("");
+      setTopic("");
       setTypePickerOpen(false);
     } catch (err) {
       setPublishError(err instanceof Error ? err.message : texts.feed.composer.publishError);
@@ -488,6 +498,25 @@ function Home() {
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border-soft pt-3 text-sm font-normal text-text-subtle">
               <div className="flex flex-wrap items-center gap-1.5">
+                {/* Seletor de tipo recolhido: mostra o tipo atual e abre a lista completa. */}
+                <select
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  aria-label={texts.feed.composer.topic}
+                  className={`rounded-full px-3 py-1.5 text-sm font-normal outline-none transition ${
+                    topic
+                      ? "border border-primary/40 bg-primary/10 text-primary"
+                      : "border border-border-soft text-text-subtle hover:border-primary"
+                  }`}
+                >
+                  <option value="">{texts.feed.composer.topicNone}</option>
+                  {TOPICS.filter((option) => option !== "Todas").map((option) => (
+                    <option key={option} value={option}>
+                      {TOPIC_LABELS[option]}
+                    </option>
+                  ))}
+                </select>
+
                 {/* Seletor de tipo recolhido: mostra o tipo atual e abre a lista completa. */}
                 <div className="relative">
                   <button
@@ -740,6 +769,26 @@ function Home() {
 
             <Pill active={tab === "PROJECTS"} onClick={() => setTab("PROJECTS")}>
               {texts.feed.tabs.projects}
+            </Pill>
+
+            <Pill active={tab === "NEWS"} onClick={() => setTab("NEWS")}>
+              {texts.feed.tabs.news}
+            </Pill>
+
+            <Pill active={tab === "TUTORIALS"} onClick={() => setTab("TUTORIALS")}>
+              {texts.feed.tabs.tutorials}
+            </Pill>
+
+            <Pill active={tab === "OPPORTUNITIES"} onClick={() => setTab("OPPORTUNITIES")}>
+              {texts.feed.tabs.opportunities}
+            </Pill>
+
+            <Pill active={tab === "REVIEWS"} onClick={() => setTab("REVIEWS")}>
+              {texts.feed.tabs.reviews}
+            </Pill>
+
+            <Pill active={tab === "FUN"} onClick={() => setTab("FUN")}>
+              {texts.feed.tabs.fun}
             </Pill>
 
             {corporate?.exists && corporate.status === "ACTIVE" && (
