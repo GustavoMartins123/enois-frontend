@@ -11,8 +11,8 @@ import { useToast } from "./ui/toast";
  * O convite de doação no menu direito do feed (versão compacta do banner da home).
  *
  * O Énóis é gratuito e livre; quem quiser ajuda a manter assim com Pix. A chave é o CNPJ da
- * The Kof Foundation (a mesma empresa) — o payload é o mesmo BR Code da página de apoiar
- * (kof-foundation.github.io/apoiar) e do banner da home, gerado pelo mesmo algoritmo.
+ * Apoie o Énóis — o payload é o mesmo BR Code do banner da home, gerado pelo mesmo algoritmo
+ * (estático, sem vencimento).
  * Aparece para todo mundo, logado ou não: apoiar não exige conta.
  */
 export function ApoieCard() {
@@ -70,7 +70,7 @@ export function ApoieCard() {
           <div className="space-y-2 pt-1">
             <div className="mx-auto w-fit rounded-lg bg-white p-1.5">
               {qr ? (
-                <img src={qr} alt="QR Code Pix da The Kof Foundation" className="h-40 w-40" />
+                <img src={qr} alt="QR Code Pix do Apoie o Énóis" className="h-40 w-40" />
               ) : (
                 <div className="h-40 w-40 animate-pulse rounded bg-muted" />
               )}
@@ -86,7 +86,7 @@ export function ApoieCard() {
             </button>
 
             <p className="text-[11px] text-text-subtle">
-              Chave (CNPJ): <span className="font-mono">{PIX_KEY}</span> · The Kof Foundation
+              Chave (CNPJ): <span className="font-mono">{PIX_KEY}</span> · Apoie o Énóis
             </p>
           </div>
         )}
