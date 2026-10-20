@@ -725,3 +725,14 @@ em denúncia). Admin/moderação: somente leitura visual.
   (`oliva` claro, vars vazias) foi corrida de renderização — reexecutada com `--background #f8f7f2`,
   `--primary #657337`, `sw=cw=390`.
 - **Próximo lote:** `/developers` a 1280 com os 60 temas; depois as páginas-chave protegidas.
+
+## Rodada 48 — 2026-10-20 00:5x
+
+- **Sessão protegida ausente.** Lote público.
+- **`/developers` a 1280×800**, 60 temas × claro/escuro = **120 verificações, ZERO problemas**.
+- Com isso, os pontos **públicos** do Lote C a 1280 estão fechados: home, `/empresas`,
+  `/empresa/{slug}`, `/games/{user}/{slug}`, `/marketplace`, `/developers` e `/grupos/{slug}`.
+  O que falta no Lote C são as páginas logadas (`/feed`, `/perfil`, `/post`, `/carteira`, `/vagas`).
+- **Nenhuma correção de app.**
+- **Próximo lote:** quando houver sessão, `/moderacao` e `/penalidades` a 390px e as páginas-chave
+  protegidas a 1280; no público, `/auth/*` (login/cadastro) a 390 com os 60 temas.
