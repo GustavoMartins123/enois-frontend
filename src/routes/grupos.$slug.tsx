@@ -360,7 +360,16 @@ function GroupFeed({ group }: { group: GroupView }) {
                 toolbar
               />
 
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  className="w-auto rounded-full"
+                  disabled={!content.trim() || publish.isPending}
+                  onClick={() => setContent("")}
+                >
+                  {texts.common.cancel}
+                </Button>
+
                 <Button
                   className="w-auto rounded-full"
                   disabled={!content.trim() || publish.isPending}
