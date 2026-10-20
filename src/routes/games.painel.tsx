@@ -123,8 +123,9 @@ function StudioPanel() {
                   className="h-14 w-14 rounded-full object-cover"
                 />
               ) : (
-                <span className="grid h-14 w-14 place-items-center rounded-full bg-primary-soft text-xs text-primary-text">
-                  {texts.games.panel.displayName}
+                // Sem foto própria, a página cai na do perfil: a inicial é só o marcador daqui.
+                <span className="grid h-14 w-14 place-items-center rounded-full bg-primary-soft text-lg font-medium text-primary-text">
+                  {(displayName.trim() || developer.data?.name || "?").slice(0, 1).toUpperCase()}
                 </span>
               )}
 
