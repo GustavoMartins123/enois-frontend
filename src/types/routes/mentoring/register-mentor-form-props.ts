@@ -3,4 +3,6 @@ import type { CreateMentorInput } from "@/types/application/mentor/create-mentor
 export type RegisterMentorFormProps = {
   onSave: (data: CreateMentorInput) => void;
   isPending: boolean;
+  initialExpertise?: string;
+  initialPrice?: string;
 };

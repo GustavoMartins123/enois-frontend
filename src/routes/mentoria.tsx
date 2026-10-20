@@ -9,7 +9,7 @@ import type { MentorCardProps } from "@/types/routes/mentoring/mentor-card-props
 import type { RegisterMentorFormProps } from "@/types/routes/mentoring/register-mentor-form-props";
 import { Calendar, CheckCircle2, Loader2, Sparkles, Star } from "lucide-react";
 
-import { mentorsApi, profileApi } from "@/lib/api";
+import { ApiError, mentorsApi, profileApi } from "@/lib/api";
 import { getCurrentUserId, useCurrentUser } from "@/lib/current-user";
 import { requireAuth } from "@/lib/require-auth";
 
@@ -49,23 +49,39 @@ function Mentoria() {
     refetch,
   } = useQuery({
     queryKey: ["mentors"],
-    queryFn: () => mentorsApi.list(),
+    // 200: a lista já era renderizada inteira; e precisamos achar o perfil do próprio usuário
+    // mesmo quando ele não está nas primeiras 20 posições.
+    queryFn: () => mentorsApi.list(undefined, null, 200),
   });
 
   const mentors = mentorsData?.items ?? [];
 
-  const createMentor = useMutation({
-    mutationFn: (data: CreateMentorInput) => mentorsApi.create(data),
-    onSuccess: (mentor) => {
+  const currentUserId = getCurrentUserId();
+  // Quem já tem perfil de mentor edita o existente; "criar" de novo batia em 409 e a tela
+  // escondia o motivo atrás de um erro genérico.
+  const myMentor = mentors.find((m) => m.userId === currentUserId);
+
+  const saveMentor = useMutation({
+    mutationFn: (data: CreateMentorInput) =>
+      myMentor ? mentorsApi.update(myMentor.id, data) : mentorsApi.create(data),
+    onSuccess: (mentor, data) => {
       queryClient.invalidateQueries({ queryKey: ["mentors"] });
       setOpen(false);
       setCreateError(null);
-      // Sem slots ninguem consegue pedir mentoria: abre o dialog de horarios no card do mentor
-      // recem-criado (o formulario "Tornar-me mentor" nao tinha essa etapa).
-      setSlotsForMentorId(mentor.id);
+      if (!myMentor) {
+        // Sem slots ninguem consegue pedir mentoria: abre o dialog de horarios no card do mentor
+        // recem-criado (o formulario "Tornar-me mentor" nao tinha essa etapa).
+        setSlotsForMentorId(mentor.id);
+      }
     },
-    // Antes a falha era silenciosa: o dialogo fechava sem publicar e nada explicava o motivo.
-    onError: () => setCreateError(texts.mentoring.createError),
+    onError: (error) =>
+      setCreateError(
+        error instanceof ApiError && error.code === "ALREADY_MENTOR"
+          ? texts.mentoring.alreadyMentor
+          : error instanceof Error
+            ? error.message
+            : texts.mentoring.createError,
+      ),
   });
 
   return (
@@ -100,18 +116,25 @@ function Mentoria() {
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                   <Button variant="outline" className="rounded-full">
-                    {texts.mentoring.becomeMentor}
+                    {myMentor ? texts.mentoring.editMentor : texts.mentoring.becomeMentor}
                   </Button>
                 </DialogTrigger>
 
                 <DialogContent>
                   <DialogHeader>
-                    <DialogTitle>{texts.mentoring.becomeMentorTitle}</DialogTitle>
+                    <DialogTitle>
+                      {myMentor
+                        ? texts.mentoring.editMentorTitle
+                        : texts.mentoring.becomeMentorTitle}
+                    </DialogTitle>
                   </DialogHeader>
 
                   <RegisterMentorForm
-                    onSave={(data) => createMentor.mutate(data)}
-                    isPending={createMentor.isPending}
+                    key={myMentor?.id ?? "new"}
+                    onSave={(data) => saveMentor.mutate(data)}
+                    isPending={saveMentor.isPending}
+                    initialExpertise={myMentor?.expertise.join(", ")}
+                    initialPrice={myMentor?.price}
                   />
 
                   {createError && (
@@ -170,9 +193,14 @@ function Mentoria() {
   );
 }
 
-function RegisterMentorForm({ onSave, isPending }: RegisterMentorFormProps) {
-  const [skillsText, setSkillsText] = useState("");
-  const [price, setPrice] = useState(texts.mentoring.free);
+function RegisterMentorForm({
+  onSave,
+  isPending,
+  initialExpertise,
+  initialPrice,
+}: RegisterMentorFormProps) {
+  const [skillsText, setSkillsText] = useState(initialExpertise ?? "");
+  const [price, setPrice] = useState(initialPrice ?? texts.mentoring.free);
 
   return (
     <div className="space-y-4 pt-2">
@@ -482,7 +510,13 @@ function BookSessionDialog({ mentorId, mentorName }: { mentorId: string; mentorN
  * Agenda do mentor: publica um horario (dia/hora de inicio + duracao). Sem isso o agendamento nunca
  * teria o que oferecer.
  */
-function AddSlotDialog({ mentorId, defaultOpen = false }: { mentorId: string; defaultOpen?: boolean }) {
+function AddSlotDialog({
+  mentorId,
+  defaultOpen = false,
+}: {
+  mentorId: string;
+  defaultOpen?: boolean;
+}) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(defaultOpen);
   const [date, setDate] = useState("");
