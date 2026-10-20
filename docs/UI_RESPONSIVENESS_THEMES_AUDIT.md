@@ -605,3 +605,12 @@ em denúncia). Admin/moderação: somente leitura visual.
 - **Nenhuma correção de app.**
 - **Próximo lote:** `/mentoria`, `/rede` e `/jogos-diarios` a 390px quando houver sessão; no
   público, `/blogs` e `/eventos` a 1280 com os 60 temas.
+
+## Rodada 39 — 2026-10-19 21:2x
+
+- **Sessão protegida expirada.** Lote público.
+- **Páginas estáticas a 390×844:** `/sobre` e `/contato` nos 60 temas × claro/escuro =
+  **240 verificações, ZERO problemas** (overflow, contraste, variáveis, console e HTTP).
+- **Nenhuma correção de app.**
+- **Próximo lote:** `/servicos`, `/privacidade`, `/termos` e `/diretrizes` no mesmo formato;
+  quando houver sessão, `/mentoria`, `/rede` e `/jogos-diarios`.
