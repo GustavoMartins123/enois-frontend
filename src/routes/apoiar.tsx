@@ -183,6 +183,64 @@ function Apoiar() {
           </div>
         </section>
 
+        {/* Pix */}
+        <section id="pix" className="surface-card p-5 sm:p-6">
+          <h2 className="text-base font-medium text-text-strong">{textsApoie.pixTitulo}</h2>
+
+          <p className="mt-1 text-sm text-text-subtle">{textsApoie.pixDescricao}</p>
+
+          <div className="mt-4 flex flex-col items-center gap-4 sm:flex-row sm:items-start">
+            <div className="rounded-xl bg-white p-2 shadow-soft">
+              {qr ? (
+                <img
+                  src={qr}
+                  alt="QR Code Pix do Apoie o Énóis"
+                  className="h-40 w-40 sm:h-44 sm:w-44"
+                />
+              ) : (
+                <div className="h-40 w-40 animate-pulse rounded bg-muted sm:h-44 sm:w-44" />
+              )}
+            </div>
+
+            <div className="w-full min-w-0 space-y-3 sm:flex-1">
+              <div className="rounded-lg bg-muted px-3 py-2">
+                <p className="text-[11px] font-medium uppercase tracking-wide text-text-subtle">
+                  {textsApoie.chaveRotulo}
+                </p>
+
+                <p className="break-all font-mono text-sm text-text-strong">{PIX_KEY}</p>
+              </div>
+
+              <Button className="w-full gap-2 rounded-full sm:w-auto" onClick={copiar}>
+                {copiado ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+
+                <>{copiado ? textsApoie.copiado : textsApoie.copiar}</>
+              </Button>
+
+              <p className="text-xs text-text-subtle">{textsApoie.pixAviso}</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Por que apoiar */}
+        <section className="space-y-3">
+          <h2 className="text-base font-medium text-text-strong">{textsApoie.porQue}</h2>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            {MOTIVOS.map((motivo) => (
+              <article key={motivo.titulo} className="surface-card p-4">
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-primary-soft text-primary">
+                  <motivo.icon className="h-4 w-4" />
+                </span>
+
+                <h3 className="mt-2 text-sm font-medium text-text-strong">{motivo.titulo}</h3>
+
+                <p className="mt-1 text-xs leading-relaxed text-text-subtle">{motivo.texto}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
         {/* Carta para a comunidade — conteúdo do post /post/post_3d0d9619913f42cbb5b8c0030ccd8805 */}
         <section className="surface-card space-y-4 p-5 sm:p-6">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
@@ -225,64 +283,6 @@ function Apoiar() {
               ↗
             </span>
           </a>
-        </section>
-
-        {/* Por que apoiar */}
-        <section className="space-y-3">
-          <h2 className="text-base font-medium text-text-strong">{textsApoie.porQue}</h2>
-
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {MOTIVOS.map((motivo) => (
-              <article key={motivo.titulo} className="surface-card p-4">
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-primary-soft text-primary">
-                  <motivo.icon className="h-4 w-4" />
-                </span>
-
-                <h3 className="mt-2 text-sm font-medium text-text-strong">{motivo.titulo}</h3>
-
-                <p className="mt-1 text-xs leading-relaxed text-text-subtle">{motivo.texto}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        {/* Pix */}
-        <section id="pix" className="surface-card p-5 sm:p-6">
-          <h2 className="text-base font-medium text-text-strong">{textsApoie.pixTitulo}</h2>
-
-          <p className="mt-1 text-sm text-text-subtle">{textsApoie.pixDescricao}</p>
-
-          <div className="mt-4 flex flex-col items-center gap-4 sm:flex-row sm:items-start">
-            <div className="rounded-xl bg-white p-2 shadow-soft">
-              {qr ? (
-                <img
-                  src={qr}
-                  alt="QR Code Pix do Apoie o Énóis"
-                  className="h-40 w-40 sm:h-44 sm:w-44"
-                />
-              ) : (
-                <div className="h-40 w-40 animate-pulse rounded bg-muted sm:h-44 sm:w-44" />
-              )}
-            </div>
-
-            <div className="w-full min-w-0 space-y-3 sm:flex-1">
-              <div className="rounded-lg bg-muted px-3 py-2">
-                <p className="text-[11px] font-medium uppercase tracking-wide text-text-subtle">
-                  {textsApoie.chaveRotulo}
-                </p>
-
-                <p className="break-all font-mono text-sm text-text-strong">{PIX_KEY}</p>
-              </div>
-
-              <Button className="w-full gap-2 rounded-full sm:w-auto" onClick={copiar}>
-                {copiado ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-
-                <>{copiado ? textsApoie.copiado : textsApoie.copiar}</>
-              </Button>
-
-              <p className="text-xs text-text-subtle">{textsApoie.pixAviso}</p>
-            </div>
-          </div>
         </section>
 
         {/* Além do dinheiro */}
