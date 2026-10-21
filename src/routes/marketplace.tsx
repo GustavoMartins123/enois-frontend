@@ -259,7 +259,7 @@ function ListingCard({ listing }: { listing: MarketplaceListingView }) {
         disabled={buy.isPending}
         onClick={() => buy.mutate()}
       >
-        {buy.isPending ? "Retendo faíscas…" : "Comprar (escrow)"}
+        {buy.isPending ? "Retendo faíscas…" : "Comprar"}
       </Button>
     </li>
   );

@@ -162,7 +162,7 @@ function OfferCard({ listing }: { listing: ServiceListing }) {
         disabled={buy.isPending}
         onClick={() => buy.mutate()}
       >
-        {buy.isPending ? "Retendo faíscas…" : "Contratar (escrow)"}
+        {buy.isPending ? "Retendo faíscas…" : "Contratar"}
       </Button>
     </li>
   );
