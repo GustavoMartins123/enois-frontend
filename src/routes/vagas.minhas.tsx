@@ -82,14 +82,6 @@ function MyJobs() {
     },
   });
 
-  const removeExternal = useMutation({
-    mutationFn: (id: string) => jobsApi.removeExternal(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["jobs"] });
-      setDeletingExternal(null);
-    },
-  });
-
   const loading = mine.isLoading || applications.isLoading;
   // Sem isso, uma requisição que falha caía no ramo de lista vazia e a tela afirmava
   // "você ainda não publicou vagas" para quem tem vagas — parecia que a página quebrou.
