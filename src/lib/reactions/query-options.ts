@@ -9,10 +9,13 @@ import { reactionsApi } from "@/lib/api";
  * `["reactions", postId]` no diálogo. Remover uma reação atualizava uma e deixava a outra velha.
  * Com uma chave só, as duas telas enxergam a mesma verdade.
  */
+const REACTIONS_STALE_MS = 30_000;
+
 export function reactionsQueryOptions(postId: string) {
   return queryOptions({
     queryKey: ["reactions", postId] as const,
     queryFn: () => reactionsApi.listReactions(postId),
-    staleTime: 30_000,
+    // Cache parcial (resumo do feed / otimismo, sem a lista) conta como velho: abrir o diálogo busca.
+    staleTime: (query) => (query.state.data?.partial ? 0 : REACTIONS_STALE_MS),
   });
 }

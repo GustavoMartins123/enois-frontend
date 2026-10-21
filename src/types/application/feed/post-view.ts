@@ -1,4 +1,5 @@
 import type { PostCommunity } from "@/types/application/community/post-community";
+import type { ReactionSummary } from "@/types/application/reaction/reaction-summary";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
 
 export type PostView = {
@@ -53,6 +54,11 @@ export type PostView = {
   };
   status: "ACTIVE" | "DELETED";
   currentUserReaction?: ReactionType | null;
+  /**
+   * Contagem por tipo de reação, calculada pelo backend em lote para a página inteira. Ausente
+   * nas respostas que não calculam (publicar/editar, versões antigas): aí o card busca sozinho.
+   */
+  reactionSummary?: ReactionSummary | null;
   /** Comunidade do post, quando publicado numa comunidade. */
   communityId?: string | null;
   community?: PostCommunity | null;
