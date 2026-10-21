@@ -24,6 +24,7 @@ export { companiesApi } from "./companies";
 export { gamesApi } from "./games";
 export { projectsApi } from "./projects";
 export { communityProjectsApi } from "./community-projects";
+export { freelancesApi } from "./freelances";
 export { servicesApi } from "./services";
 export { marketplaceApi } from "./marketplace";
 export { themesApi } from "./themes";
