@@ -51,6 +51,7 @@ import { LoadingState } from "@/components/ui/loading-state";
 import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
 
+import { ApoieCard } from "@/components/apoie-card";
 import { AppContainer } from "@/components/app-container";
 import { HtmlEditor } from "@/components/html-editor";
 import { InfiniteScroll } from "@/components/infinite-scroll";
@@ -60,7 +61,19 @@ import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
 
 /** Abas válidas da tela inicial (a URL carrega a escolhida). */
-const HOME_TABS: HomeTab[] = ["FOR_YOU", "ALL", "FOLLOWING", "RECENT", "PROJECTS", "CORPORATE"];
+const HOME_TABS: HomeTab[] = [
+  "FOR_YOU",
+  "ALL",
+  "FOLLOWING",
+  "RECENT",
+  "PROJECTS",
+  "NEWS",
+  "TUTORIALS",
+  "OPPORTUNITIES",
+  "REVIEWS",
+  "FUN",
+  "CORPORATE",
+];
 
 export const Route = createFileRoute("/feed")({
   beforeLoad: requireAuth,
@@ -262,13 +275,19 @@ function Home() {
     setPublishError(null);
     try {
       let mediaIds: string[] = [];
+      let finalContent = content;
       if (!pageMode && media.length > 0) {
         const results = await upload.uploadAll(media.map((m) => ({ file: m.file })));
         mediaIds = results.map((r) => r.mediaId);
+        // Mídia NO MEIO do texto (item 9): pendentes viram ids reais no upload.
+        finalContent = finalContent.replace(/\{\{media:pendente-(\d+)\}\}/g, (_mk, index) => {
+          const uploaded = mediaIds[Number(index)];
+          return uploaded ? `{{media:${uploaded}}}` : "";
+        });
       }
       await schedulePost.mutateAsync({
         type: postType,
-        content: pageMode ? "" : content,
+        content: pageMode ? "" : finalContent,
         mediaIds,
         // As menções viajam com o agendado e valem na PUBLICAÇÃO (quem foi marcado é avisado
         // quando o post entra no ar, não quando foi agendado).
@@ -847,6 +866,26 @@ function Home() {
               {texts.feed.tabs.projects}
             </Pill>
 
+            <Pill active={tab === "NEWS"} onClick={() => setTab("NEWS")}>
+              {texts.feed.tabs.news}
+            </Pill>
+
+            <Pill active={tab === "TUTORIALS"} onClick={() => setTab("TUTORIALS")}>
+              {texts.feed.tabs.tutorials}
+            </Pill>
+
+            <Pill active={tab === "OPPORTUNITIES"} onClick={() => setTab("OPPORTUNITIES")}>
+              {texts.feed.tabs.opportunities}
+            </Pill>
+
+            <Pill active={tab === "REVIEWS"} onClick={() => setTab("REVIEWS")}>
+              {texts.feed.tabs.reviews}
+            </Pill>
+
+            <Pill active={tab === "FUN"} onClick={() => setTab("FUN")}>
+              {texts.feed.tabs.fun}
+            </Pill>
+
             {corporate?.exists && corporate.status === "ACTIVE" && (
               <Pill active={tab === "CORPORATE"} onClick={() => setTab("CORPORATE")}>
                 {texts.feed.tabs.corporate}
@@ -871,6 +910,9 @@ function Home() {
         </div>
 
         {/* Right rail */}
+        {/* O convite de doação fica no menu direito. */}
+        <ApoieCard />
+
         <aside className="sticky top-20 hidden max-h-[calc(100vh-6rem)] space-y-4 overflow-y-auto lg:block">
           {profileUser && (
             <div className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
