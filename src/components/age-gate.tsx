@@ -10,6 +10,7 @@ import { parentalApi, profileApi } from "@/lib/api";
 import { hasSession } from "@/lib/require-auth";
 
 import { Button } from "@/components/ui/button";
+import { DateTextInput } from "@/components/ui/date-text-input";
 import {
   Dialog,
   DialogContent,
@@ -110,7 +111,9 @@ export function AgeGate() {
   const submitDate = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
-    if (!birthDate) {
+    // O campo entrega ISO quando a data esta completa; no meio da digitacao vem o texto parcial,
+    // entao a data pela metade e barrada por esta regex (e nao tratada como "vazia").
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
       setError(texts.ageGate.invalid);
       return;
     }
@@ -211,14 +214,14 @@ export function AgeGate() {
             <div className="space-y-2">
               <Label htmlFor="birth-date-gate-input">{texts.ageGate.label}</Label>
 
-              <Input
+              <DateTextInput
                 id="birth-date-gate-input"
-                type="date"
                 required
+                autoComplete="bday"
                 min={oldest}
                 max={today}
                 value={birthDate}
-                onChange={(event) => setBirthDate(event.target.value)}
+                onValueChange={setBirthDate}
               />
             </div>
 
