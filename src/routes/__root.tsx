@@ -23,7 +23,7 @@ import { useThemeSync } from "@/lib/theme/use-theme-sync";
 
 import { ToastProvider } from "@/components/ui/toast";
 
-import { BirthDateGate } from "@/components/birth-date-gate";
+import { AgeGate } from "@/components/age-gate";
 import { HealthyUsageGuard } from "@/components/healthy-usage/healthy-usage-guard";
 import { InstallPwaBanner } from "@/components/install-pwa-banner";
 import { ModuleDisabledGate } from "@/components/module-disabled-gate";
@@ -212,7 +212,7 @@ function RootInsideProvider() {
 
       <InstallPwaBanner />
       <HealthyUsageGuard />
-      <BirthDateGate />
+      <AgeGate />
     </ToastProvider>
   );
 }

@@ -259,6 +259,12 @@ export function AccountMenu({ profile }: AccountMenuProps) {
               <>{texts.account.menu.healthyUsage}</>
             </button>
 
+            <Link to="/responsavel" onClick={() => setMenuOpen(false)} className={ITEM_CLASS}>
+              <ShieldCheck className="h-4 w-4" />
+
+              <>{texts.account.menu.guardian}</>
+            </Link>
+
             <Link to="/moderador" onClick={() => setMenuOpen(false)} className={ITEM_CLASS}>
               <Gavel className="h-4 w-4" />
 

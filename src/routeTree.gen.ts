@@ -19,6 +19,7 @@ import { Route as ServicosRouteImport } from './routes/servicos'
 import { Route as SegurancaRouteImport } from './routes/seguranca'
 import { Route as SalvosRouteImport } from './routes/salvos'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as ResponsavelRouteImport } from './routes/responsavel'
 import { Route as RedeRouteImport } from './routes/rede'
 import { Route as ProfissionalRouteImport } from './routes/profissional'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
@@ -116,6 +117,11 @@ const SalvosRoute = SalvosRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResponsavelRoute = ResponsavelRouteImport.update({
+  id: '/responsavel',
+  path: '/responsavel',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RedeRoute = RedeRouteImport.update({
@@ -388,6 +394,7 @@ export interface FileRoutesByFullPath {
   '/privacidade': typeof PrivacidadeRoute
   '/profissional': typeof ProfissionalRoute
   '/rede': typeof RedeRoute
+  '/responsavel': typeof ResponsavelRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
@@ -448,6 +455,7 @@ export interface FileRoutesByTo {
   '/privacidade': typeof PrivacidadeRoute
   '/profissional': typeof ProfissionalRoute
   '/rede': typeof RedeRoute
+  '/responsavel': typeof ResponsavelRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
@@ -509,6 +517,7 @@ export interface FileRoutesById {
   '/privacidade': typeof PrivacidadeRoute
   '/profissional': typeof ProfissionalRoute
   '/rede': typeof RedeRoute
+  '/responsavel': typeof ResponsavelRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
@@ -571,6 +580,7 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/profissional'
     | '/rede'
+    | '/responsavel'
     | '/robots.txt'
     | '/salvos'
     | '/seguranca'
@@ -631,6 +641,7 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/profissional'
     | '/rede'
+    | '/responsavel'
     | '/robots.txt'
     | '/salvos'
     | '/seguranca'
@@ -691,6 +702,7 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/profissional'
     | '/rede'
+    | '/responsavel'
     | '/robots.txt'
     | '/salvos'
     | '/seguranca'
@@ -752,6 +764,7 @@ export interface RootRouteChildren {
   PrivacidadeRoute: typeof PrivacidadeRoute
   ProfissionalRoute: typeof ProfissionalRoute
   RedeRoute: typeof RedeRoute
+  ResponsavelRoute: typeof ResponsavelRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SalvosRoute: typeof SalvosRoute
   SegurancaRoute: typeof SegurancaRoute
@@ -845,6 +858,13 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/responsavel': {
+      id: '/responsavel'
+      path: '/responsavel'
+      fullPath: '/responsavel'
+      preLoaderRoute: typeof ResponsavelRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/rede': {
@@ -1298,6 +1318,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacidadeRoute: PrivacidadeRoute,
   ProfissionalRoute: ProfissionalRoute,
   RedeRoute: RedeRoute,
+  ResponsavelRoute: ResponsavelRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SalvosRoute: SalvosRoute,
   SegurancaRoute: SegurancaRoute,
