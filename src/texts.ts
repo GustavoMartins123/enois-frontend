@@ -344,8 +344,14 @@ export const texts = {
         { value: "640", label: "Comunidades" },
       ],
     },
+    signupClosed: {
+      title: "Cadastros fechados no momento",
+      description:
+        "A criação de contas está pausada. Quem já tem conta entra normalmente; se você ainda não participa, acompanhe as novidades por aqui.",
+    },
     fields: {
       fullName: "Nome completo",
+      birthDate: "Data de nascimento",
       email: "E-mail",
       password: "Senha",
       newPassword: "Nova senha",
@@ -361,6 +367,8 @@ export const texts = {
       loginPasswordMin: "A senha precisa ter ao menos 6 caracteres",
       signupNameMin: "Como podemos te chamar?",
       passwordMin: "Use ao menos 8 caracteres",
+      birthDateRequired: "Informe a data de nascimento.",
+      birthDateFuture: "A data de nascimento não pode estar no futuro.",
       termsRequired: "É preciso confirmar que você tem 18 anos ou mais e aceitar os termos.",
     },
     password: {
@@ -373,6 +381,13 @@ export const texts = {
       authDescription: "Acesse sua conta ou comece sua jornada profissional na Énóis.",
       resetTitle: "Redefinir senha · Énóis",
       resetDescription: "Defina uma nova senha para sua conta na Énóis.",
+    },
+    captcha: {
+      label: "Verificação de segurança",
+      loading: "Carregando a pergunta...",
+      placeholder: "Resposta",
+      refresh: "Trocar pergunta",
+      required: "Resolva a verificação de segurança para criar a conta.",
     },
     signup: {
       title: "Vamos começar.",
@@ -749,6 +764,7 @@ export const texts = {
       healthyUsage: "Uso saudável",
       apoie: "Apoie o Énóis",
       security: "Segurança e verificação",
+      apoie: "Apoie o Énóis",
       deleteAccount: "Excluir conta",
       logout: "Sair",
       loggingOut: "Saindo...",
@@ -1000,7 +1016,7 @@ export const texts = {
       eyebrow: "Chega junto",
       title: "A internet também é feita das escolhas da gente.",
       description:
-        "O énóis ainda está evoluindo, e é agora que dá para ajudar a definir o que ele vai ser. Criar conta é gratuito, leva um minuto e não pede cartão.",
+        "O énóis ainda está evoluindo, e é agora que dá para acompanhar o que ele vai ser. Quem já tem conta entra normalmente.",
       free: "Acesso gratuito é princípio, não promoção: sem anúncio, sem plano pago e sem versão premium pela metade.",
       createAccount: "Fazer parte do énóis",
       existingAccount: "Já tenho conta",
@@ -1471,7 +1487,7 @@ export const texts = {
       saved: "Bio atualizada.",
       error: "Não foi possível salvar a bio. Tente novamente.",
       save: "Salvar bio",
-      preview: "Pré visualização"
+      preview: "Pré visualização",
     },
     projects: {
       title: "Projetos",
@@ -1930,6 +1946,22 @@ export const texts = {
       MARKETING: "Marketing",
       RH: "Recursos humanos",
       DADOS: "Dados e IA",
+      FUN: "Engraçado",
+      QUALIDADE_VIDA: "Qualidade de vida",
+      SAUDE: "Saúde",
+      VIAGEM: "Viagem",
+      COMIDA: "Comida e bebida",
+      ESPORTES: "Esportes",
+      CINEMA: "Cinema e séries",
+      LIVROS: "Livros",
+      FOTOGRAFIA: "Fotografia",
+      CASA: "Casa e decoração",
+      PETS: "Pets",
+      PARENTALIDADE: "Parentalidade",
+      RELACIONAMENTOS: "Relacionamentos",
+      MODA: "Moda e estilo",
+      POLITICA: "Política",
+      RELIGIAO: "Religião",
     },
     members: (count: number) =>
       `${count.toLocaleString("pt-BR")} ${count === 1 ? "membro" : "membros"}`,
@@ -2750,6 +2782,42 @@ export const texts = {
       applications: "Candidaturas",
       users: "Usuários",
       emails: "E-mails",
+      suspicious: "Suspeitos",
+    },
+    suspicious: {
+      title: "Contas suspeitas",
+      description:
+        "Contas recentes com sinais de cadastro em série: nome repetido ou de teste, e-mail não confirmado, perfil vazio e denúncias contra. Revise e selecione o que banir — o lote não apaga conteúdo, só aplica o banimento pelo fluxo normal.",
+      empty: "Nenhuma conta suspeita no período.",
+      emptyHint:
+        "Os sinais avaliados são nome em série, e-mail não confirmado, perfil vazio e denúncias.",
+      selectAll: "Selecionar todas",
+      clear: "Limpar seleção",
+      selected: (count: number) => `${count} selecionada(s)`,
+      reasonPlaceholder: "Motivo do banimento (mínimo de 10 caracteres)",
+      typeBan: "Banir",
+      typePermanent: "Banir permanentemente",
+      ban: (count: number) => (count === 0 ? "Banir selecionadas" : `Banir ${count} conta(s)`),
+      confirmTitle: "Banir em lote",
+      confirmBody: (count: number, type: "BAN" | "PERMABAN") =>
+        `Aplicar ${type === "PERMABAN" ? "banimento permanente" : "banimento"} em ${count} conta(s)? As sessões serão revogadas e o login bloqueado.`,
+      confirm: "Banir agora",
+      result: (banned: number, already: number, failed: number) =>
+        `${banned} banida(s), ${already} já estavam banidas, ${failed} falha(s).`,
+      error: "Não foi possível banir as contas selecionadas.",
+      risk: (score: number) => `risco ${score}`,
+      createdAt: (date: string) => `criada em ${date}`,
+      counts: (posts: number, comments: number, reports: number) =>
+        `${posts} post(s) · ${comments} comentário(s) · ${reports} denúncia(s) contra`,
+      signals: {
+        NOME_SUSPEITO: "Nome em série",
+        NOME_REPETIDO: "Nome repetido",
+        EMAIL_NAO_VERIFICADO: "E-mail não confirmado",
+        SEM_CONTEUDO: "Sem conteúdo",
+        PERFIL_VAZIO: "Perfil vazio",
+        CONTA_NOVA: "Conta nova",
+        DENUNCIAS_CONTRA: "Denúncias contra",
+      } as Record<string, string>,
     },
     games: {
       title: "Jogos esperando revisão",
@@ -2891,6 +2959,19 @@ export const texts = {
     jobsCount: (n: number) => (n === 1 ? "1 vaga aberta" : `${n} vagas abertas`),
     viewJobs: "Ver vagas",
     empty: "Nenhuma empresa encontrada.",
+  },
+  /** Diálogo global de regularização da data de nascimento (ECA Digital). */
+  birthDateGate: {
+    title: "Confirme sua data de nascimento",
+    description:
+      "A plataforma exige a data de nascimento para publicar, comentar e enviar mensagens. Ela fica guardada com a sua conta e não aparece para outras pessoas.",
+    label: "Data de nascimento",
+    confirm: "Confirmar e continuar",
+    later: "Agora não",
+    saved: "Data de nascimento registrada. Você já pode publicar.",
+    savedMinor: "Data registrada. A conta segue com as regras para menores de 18 anos.",
+    invalid: "Confira a data: ela não pode estar no futuro.",
+    error: "Não foi possível salvar a data. Tente de novo.",
   },
   exportTheme: "Exportar tema",
   importTheme: "Importar tema",

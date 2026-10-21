@@ -1,3 +1,8 @@
+/**
+ * Os assuntos válidos de uma comunidade — espelho de `TOPICS` (menos o filtro "Todas") e de
+ * `ContentTaxonomy.TOPICS` no backend. A rede não é só de tecnologia: humor, saúde, casa, pets e
+ * fé também têm lugar.
+ */
 export type CommunityTopic =
   | "TECNOLOGIA"
   | "ENGENHARIA"
@@ -8,7 +13,6 @@ export type CommunityTopic =
   | "FREELANCE"
   /** Tudo o que não cabe nos outros — melhor que forçar a comunidade num assunto que não é o dela. */
   | "OUTROS"
-  /** Refinamento de 2026-10-20: o que a plataforma realmente abriga. */
   | "GAMES"
   | "ART"
   | "MUSIC"
@@ -18,4 +22,20 @@ export type CommunityTopic =
   | "FINANCAS"
   | "MARKETING"
   | "RH"
-  | "DADOS";
+  | "DADOS"
+  | "FUN"
+  | "QUALIDADE_VIDA"
+  | "SAUDE"
+  | "VIAGEM"
+  | "COMIDA"
+  | "ESPORTES"
+  | "CINEMA"
+  | "LIVROS"
+  | "FOTOGRAFIA"
+  | "CASA"
+  | "PETS"
+  | "PARENTALIDADE"
+  | "RELACIONAMENTOS"
+  | "MODA"
+  | "POLITICA"
+  | "RELIGIAO";

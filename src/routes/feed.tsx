@@ -51,7 +51,6 @@ import { LoadingState } from "@/components/ui/loading-state";
 import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
 
-import { ApoieCard } from "@/components/apoie-card";
 import { AppContainer } from "@/components/app-container";
 import { HtmlEditor } from "@/components/html-editor";
 import { InfiniteScroll } from "@/components/infinite-scroll";
@@ -60,20 +59,8 @@ import { MentionTextarea } from "@/components/mention-textarea";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
 
-/** Todas as abas válidas da tela inicial (a URL carrega a escolhida). */
-const HOME_TABS: HomeTab[] = [
-  "FOR_YOU",
-  "ALL",
-  "FOLLOWING",
-  "RECENT",
-  "PROJECTS",
-  "NEWS",
-  "TUTORIALS",
-  "OPPORTUNITIES",
-  "REVIEWS",
-  "FUN",
-  "CORPORATE",
-];
+/** Abas válidas da tela inicial (a URL carrega a escolhida). */
+const HOME_TABS: HomeTab[] = ["FOR_YOU", "ALL", "FOLLOWING", "RECENT", "PROJECTS", "CORPORATE"];
 
 export const Route = createFileRoute("/feed")({
   beforeLoad: requireAuth,
@@ -101,6 +88,31 @@ export const Route = createFileRoute("/feed")({
 });
 
 const FEED_PAGE_SIZE = 20;
+
+/**
+ * A última categoria usada fica guardada: quem publica sempre no mesmo assunto não precisa
+ * reescolher a cada post. Fica no navegador (como o rascunho) e some com o histórico limpo.
+ */
+const LAST_TOPIC_KEY = "connect-grow-last-topic";
+
+function readLastTopic(): string {
+  if (typeof localStorage === "undefined") return "";
+  try {
+    const saved = localStorage.getItem(LAST_TOPIC_KEY);
+    return saved && (TOPICS as readonly string[]).includes(saved) ? saved : "";
+  } catch {
+    return "";
+  }
+}
+
+function rememberTopic(value: string): void {
+  try {
+    if (value) localStorage.setItem(LAST_TOPIC_KEY, value);
+    else localStorage.removeItem(LAST_TOPIC_KEY);
+  } catch {
+    // modo privado/cota: a escolha vale só para esta sessão.
+  }
+}
 
 function useFeed(tab: HomeTab) {
   // Pagina por cursor: o backend devolve nextCursor e o scroll infinito busca a proxima pagina.
@@ -172,8 +184,8 @@ function Home() {
   const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([]);
   const [postType, setPostType] = useState<PostView["type"]>("INSIGHT");
   // Assunto do post avulso (opcional): é o que liga o post a "O que quero ver"/"não gosto".
-  // Em comunidade o post herda o assunto DELA — o seletor nem aparece lá.
-  const [topic, setTopic] = useState("");
+  // Em comunidade o post herda o assunto DELA — lá o compositor é outro.
+  const [topic, setTopic] = useState<string>(() => readLastTopic());
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [linkedinUrl, setLinkedinUrl] = useState<string | null>(null);
@@ -259,11 +271,11 @@ function Home() {
         content: pageMode ? "" : content,
         mediaIds,
         // As menções viajam com o agendado e valem na PUBLICAÇÃO (quem foi marcado é avisado
-        // quando o post entra no ar, não quando foi agendado). O assunto também: foi declarado
-        // no agendamento, é o que entra no ar.
+        // quando o post entra no ar, não quando foi agendado).
         mentionedUserIds: pageMode ? [] : mentionedUserIds,
         ...(pageMode ? { pageHtml } : {}),
         ...(articleMode ? { articleBody } : {}),
+        // O assunto viaja com o agendado e vale quando ele entra no ar.
         ...(topic ? { topic } : {}),
         scheduledAt: new Date(scheduleAt).toISOString(),
       });
@@ -273,7 +285,6 @@ function Home() {
       setMedia([]);
       setPageHtml("");
       setArticleBody("");
-      setTopic("");
       setTypePickerOpen(false);
       setScheduleAt("");
       setSchedulingOpen(false);
@@ -298,27 +309,17 @@ function Home() {
     setPublishError(null);
     try {
       let mediaIds: string[] = [];
-      let finalContent = content;
       if (!pageMode && media.length > 0) {
         const results = await upload.uploadAll(media.map((m) => ({ file: m.file })));
         mediaIds = results.map((r) => r.mediaId);
-        // Mídia NO MEIO do texto (item 9): o composer insere `{{media:pendente-N}}` enquanto a
-        // mídia ainda não subiu; aqui cada pendente vira o id real da mídia que ele representa.
-        // Pendente sem anexo (o usuário removeu o arquivo) some do texto — não há o que renderizar.
-        finalContent = finalContent.replace(/\{\{media:pendente-(\d+)\}\}/g, (marker, index) => {
-          const uploaded = mediaIds[Number(index)];
-          return uploaded ? `{{media:${uploaded}}}` : "";
-        });
       }
       const created = await createPost.mutateAsync({
-        content: pageMode ? "" : finalContent,
+        content: pageMode ? "" : content,
         type: postType,
         mediaIds,
         ...(pageMode ? { pageHtml } : {}),
         ...(articleMode ? { articleBody } : {}),
         mentionedUserIds: pageMode ? [] : mentionedUserIds,
-        // Em comunidade o post herda o assunto DELA — aqui o feed é do autor, então o assunto
-        // escolhido (quando houver) é o que classifica a publicação.
         ...(topic ? { topic } : {}),
       });
       // "Também no LinkedIn": com o LinkedIn vinculado, oferece o compartilhamento pelo
@@ -341,9 +342,9 @@ function Home() {
       setLinkedinUrl(null);
       setPostType("INSIGHT");
       setMedia([]);
+      setPostType("INSIGHT");
       setPageHtml("");
       setArticleBody("");
-      setTopic("");
       setTypePickerOpen(false);
     } catch (err) {
       setPublishError(err instanceof Error ? err.message : texts.feed.composer.publishError);
@@ -413,14 +414,7 @@ function Home() {
     };
 
     requestAnimationFrame(() => requestAnimationFrame(restore));
-  }, [
-    feedLoading,
-    feedPosts.length,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    tab,
-  ]);
+  }, [feedLoading, feedPosts.length, fetchNextPage, hasNextPage, isFetchingNextPage, tab]);
 
   const loadNextPage = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -578,12 +572,16 @@ function Home() {
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border-soft pt-3 text-sm font-normal text-text-subtle">
               <div className="flex flex-wrap items-center gap-1.5">
-                {/* Seletor de tipo recolhido: mostra o tipo atual e abre a lista completa. */}
+                {/* Categoria do post: guarda a última escolha para o próximo post já nascer nela. */}
                 <select
                   value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
+                  onChange={(event) => {
+                    setTopic(event.target.value);
+                    rememberTopic(event.target.value);
+                  }}
                   aria-label={texts.feed.composer.topic}
-                  className={`rounded-full px-3 py-1.5 text-sm font-normal outline-none transition ${
+                  title={texts.feed.composer.topicHint}
+                  className={`max-w-[11rem] rounded-full px-3 py-1.5 text-sm font-normal outline-none transition ${
                     topic
                       ? "border border-primary/40 bg-primary/10 text-primary"
                       : "border border-border-soft text-text-subtle hover:border-primary"
@@ -663,22 +661,6 @@ function Home() {
                     onClick={() => fileRef.current?.click()}
                   />
                 )}
-
-                {/* Item 9: cada anexo ganha "inserir no texto" — o marcador pendente vira a
-                    mídia real no momento do upload, e ela aparece exatamente onde o autor quis. */}
-                {!pageMode &&
-                  media.map((item, index) => (
-                    <button
-                      key={`${item.preview}-${index}`}
-                      type="button"
-                      title={texts.feed.composer.insertInText}
-                      className="inline-flex items-center gap-1 rounded-full border border-dashed border-primary/40 px-2.5 py-1 text-xs font-normal text-primary transition hover:bg-primary/10"
-                      onClick={() => setDraft((current) => `${current}{{media:pendente-${index}}}`)}
-                    >
-                      <Image className="h-3.5 w-3.5" />
-                      {texts.feed.composer.insertMedia(index + 1)}
-                    </button>
-                  ))}
               </div>
 
               {linkedinUrl && (
@@ -865,26 +847,6 @@ function Home() {
               {texts.feed.tabs.projects}
             </Pill>
 
-            <Pill active={tab === "NEWS"} onClick={() => setTab("NEWS")}>
-              {texts.feed.tabs.news}
-            </Pill>
-
-            <Pill active={tab === "TUTORIALS"} onClick={() => setTab("TUTORIALS")}>
-              {texts.feed.tabs.tutorials}
-            </Pill>
-
-            <Pill active={tab === "OPPORTUNITIES"} onClick={() => setTab("OPPORTUNITIES")}>
-              {texts.feed.tabs.opportunities}
-            </Pill>
-
-            <Pill active={tab === "REVIEWS"} onClick={() => setTab("REVIEWS")}>
-              {texts.feed.tabs.reviews}
-            </Pill>
-
-            <Pill active={tab === "FUN"} onClick={() => setTab("FUN")}>
-              {texts.feed.tabs.fun}
-            </Pill>
-
             {corporate?.exists && corporate.status === "ACTIVE" && (
               <Pill active={tab === "CORPORATE"} onClick={() => setTab("CORPORATE")}>
                 {texts.feed.tabs.corporate}
@@ -910,9 +872,6 @@ function Home() {
 
         {/* Right rail */}
         <aside className="sticky top-20 hidden max-h-[calc(100vh-6rem)] space-y-4 overflow-y-auto lg:block">
-          {/* O convite de doação fica no menu direito: é o que mantém o Énóis gratuito. */}
-          <ApoieCard />
-
           {profileUser && (
             <div className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
               <div className="h-14" style={{ background: "var(--gradient-primary)" }} />

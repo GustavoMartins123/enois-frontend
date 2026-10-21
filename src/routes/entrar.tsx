@@ -1,8 +1,9 @@
 import { type FormEvent, type ReactNode, useRef, useState } from "react";
-import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
+import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
+import { SIGNUP_OPEN } from "@/constants/account";
 import { texts } from "@/texts";
 import type { OAuthProvider } from "@/types/application/auth/oauth-provider";
 import type { TwoFactorChallenge } from "@/types/application/auth/two-factor";
@@ -12,11 +13,13 @@ import type { ForgotPasswordDialogProps } from "@/types/routes/auth/forgot-passw
 import type { LoginFormProps } from "@/types/routes/auth/login-form-props";
 import type { SocialButtonsProps } from "@/types/routes/auth/social-buttons-props";
 import type { TabBtnProps } from "@/types/routes/auth/tab-btn-props";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { ArrowRight, Eye, EyeOff, Loader2, MailCheck, ShieldCheck } from "lucide-react";
 import { z } from "zod";
 
 import { ApiError, authApi } from "@/lib/api";
 import { storeSession } from "@/lib/session";
+import { useCaptchaConfig } from "@/lib/use-captcha-config";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -53,6 +56,13 @@ const signupSchema = z.object({
   name: z.string().trim().min(2, texts.auth.validation.signupNameMin).max(80),
   email: z.string().trim().email(texts.auth.validation.invalidEmail).max(255),
   password: z.string().min(8, texts.auth.validation.passwordMin).max(128),
+  // ECA Digital: a data de nascimento e obrigatoria no cadastro (o backend recalcula a idade).
+  birthDate: z
+    .string()
+    .min(1, texts.auth.validation.birthDateRequired)
+    .refine((value) => value <= new Date().toISOString().slice(0, 10), {
+      message: texts.auth.validation.birthDateFuture,
+    }),
   // Checkbox marcado chega como "on"; ausente significa nao aceito.
   acceptedTerms: z
     .string()
@@ -65,6 +75,8 @@ function Auth() {
   const navigate = useNavigate();
   const [tab, setTab] = useState(initial);
   const [forgotOpen, setForgotOpen] = useState(false);
+  // Cadastros fechados: `/entrar?tab=signup` cai no login e o aviso explica o motivo.
+  const activeTab = SIGNUP_OPEN ? tab : "login";
 
   return (
     <div className="grid grid-cols-1 min-h-screen lg:grid-cols-2">
@@ -140,18 +152,28 @@ function Auth() {
         </div>
 
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
-          <div className="flex items-center gap-1 rounded-full border border-border bg-card p-1">
-            <TabBtn active={tab === "signup"} onClick={() => setTab("signup")}>
-              {texts.common.createAccount}
-            </TabBtn>
+          {SIGNUP_OPEN ? (
+            <div className="flex items-center gap-1 rounded-full border border-border bg-card p-1">
+              <TabBtn active={tab === "signup"} onClick={() => setTab("signup")}>
+                {texts.common.createAccount}
+              </TabBtn>
 
-            <TabBtn active={tab === "login"} onClick={() => setTab("login")}>
-              {texts.common.enter}
-            </TabBtn>
-          </div>
+              <TabBtn active={tab === "login"} onClick={() => setTab("login")}>
+                {texts.common.enter}
+              </TabBtn>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-border bg-card px-4 py-3">
+              <p className="text-sm font-medium text-foreground">{texts.auth.signupClosed.title}</p>
+
+              <p className="mt-1 text-sm text-muted-foreground">
+                {texts.auth.signupClosed.description}
+              </p>
+            </div>
+          )}
 
           <div className="mt-8">
-            {tab === "signup" ? (
+            {activeTab === "signup" ? (
               <SignupForm onDone={() => navigate({ to: "/feed" })} />
             ) : (
               <LoginForm
@@ -281,6 +303,17 @@ function SignupForm(_props: AuthFormProps) {
   const turnstileRef = useRef<TurnstileInstance>(null);
   /** Conta criada e pendente de confirmação: o formulário dá lugar à tela "confirme seu e-mail". */
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const captcha = useCaptchaConfig();
+  const captchaMode = captcha.data?.captchaMode;
+  const turnstileSiteKey = captcha.data?.turnstileSiteKey ?? TURNSTILE_SITE_KEY;
+  const challenge = useQuery({
+    queryKey: ["auth", "signup-challenge"],
+    queryFn: () => authApi.signupChallenge(),
+    enabled: captchaMode === "CHALLENGE",
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+  });
+  const [challengeAnswer, setChallengeAnswer] = useState("");
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -294,6 +327,10 @@ function SignupForm(_props: AuthFormProps) {
     }
     setErrors({});
     setFormError(null);
+    if (captchaMode === "CHALLENGE" && (!challenge.data || !challengeAnswer.trim())) {
+      setFormError(new Error(texts.auth.captcha.required));
+      return;
+    }
     setLoading(true);
     localStorage.removeItem("session_token");
     localStorage.removeItem("refresh_token");
@@ -305,11 +342,24 @@ function SignupForm(_props: AuthFormProps) {
         email: parsed.data.email,
         password: parsed.data.password,
         acceptedTerms: parsed.data.acceptedTerms === "on",
+        birthDate: parsed.data.birthDate,
         website: fd.get("website") as string | undefined,
+        turnstileToken:
+          captchaMode === "TURNSTILE"
+            ? (turnstileRef.current?.getResponse() ?? undefined)
+            : undefined,
+        challengeId: captchaMode === "CHALLENGE" ? challenge.data?.challengeId : undefined,
+        challengeAnswer: captchaMode === "CHALLENGE" ? Number(challengeAnswer.trim()) : undefined,
       });
       setPendingEmail(result.email);
     } catch (err) {
       setFormError(err);
+      // O captcha é de uso único: depois de uma falha, pede um novo (e limpa a resposta).
+      turnstileRef.current?.reset();
+      if (captchaMode === "CHALLENGE") {
+        setChallengeAnswer("");
+        void challenge.refetch();
+      }
     } finally {
       setLoading(false);
     }
@@ -340,6 +390,7 @@ function SignupForm(_props: AuthFormProps) {
           aria-hidden="true"
           className="absolute -left-[9999px] h-0 w-0 overflow-hidden opacity-0"
         />
+
         <Field label={texts.auth.fields.fullName} error={errors.name}>
           <Input
             name="name"
@@ -347,6 +398,16 @@ function SignupForm(_props: AuthFormProps) {
             autoComplete="name"
             required
             maxLength={80}
+          />
+        </Field>
+
+        <Field label={texts.auth.fields.birthDate} error={errors.birthDate}>
+          <Input
+            name="birthDate"
+            type="date"
+            required
+            min={`${new Date().getFullYear() - 120}-01-01`}
+            max={new Date().toISOString().slice(0, 10)}
           />
         </Field>
 
@@ -419,10 +480,52 @@ function SignupForm(_props: AuthFormProps) {
         </div>
 
         {formError && <ErrorBanner error={formError} />}
-        {TURNSTILE_SITE_KEY && (
-          <Turnstile ref={turnstileRef} siteKey={TURNSTILE_SITE_KEY} options={{ size: "flexible", theme: "dark" }} />
+        {captchaMode === "TURNSTILE" && turnstileSiteKey && (
+          <Turnstile
+            ref={turnstileRef}
+            siteKey={turnstileSiteKey}
+            options={{ size: "flexible", theme: "dark" }}
+          />
         )}
-        <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
+        {captchaMode === "CHALLENGE" && (
+          <div className="space-y-1.5 rounded-xl border border-border-soft bg-surface-1 p-3">
+            <Label htmlFor="challengeAnswer">{texts.auth.captcha.label}</Label>
+
+            <p className="text-sm font-medium text-text-strong">
+              {challenge.isLoading ? texts.auth.captcha.loading : challenge.data?.question}
+            </p>
+
+            <div className="flex items-center gap-2">
+              <Input
+                id="challengeAnswer"
+                inputMode="numeric"
+                autoComplete="off"
+                maxLength={3}
+                value={challengeAnswer}
+                onChange={(event) => setChallengeAnswer(event.target.value.replace(/\D/g, ""))}
+                placeholder={texts.auth.captcha.placeholder}
+                className="w-24"
+              />
+
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-auto rounded-full text-xs"
+                onClick={() => {
+                  setChallengeAnswer("");
+                  void challenge.refetch();
+                }}
+              >
+                {texts.auth.captcha.refresh}
+              </Button>
+            </div>
+          </div>
+        )}
+        <Button
+          type="submit"
+          className="w-full rounded-full gap-2"
+          disabled={loading || (captchaMode === "CHALLENGE" && !challenge.data)}
+        >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
@@ -516,6 +619,8 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
   const loginTurnstileRef = useRef<TurnstileInstance>(null);
+  const captcha = useCaptchaConfig();
+  const turnstileSiteKey = captcha.data?.turnstileSiteKey ?? TURNSTILE_SITE_KEY;
   /** Conta pendente de confirmação: em vez de "erro", a tela explica e oferece reenviar. */
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   /** Segundo fator pedido pelo backend depois da senha correta. */
@@ -629,8 +734,12 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
         </Field>
 
         {formError && <ErrorBanner error={formError} />}
-        {TURNSTILE_SITE_KEY && (
-          <Turnstile ref={loginTurnstileRef} siteKey={TURNSTILE_SITE_KEY} options={{ size: "flexible", theme: "dark" }} />
+        {captcha.data?.captchaMode === "TURNSTILE" && turnstileSiteKey && (
+          <Turnstile
+            ref={loginTurnstileRef}
+            siteKey={turnstileSiteKey}
+            options={{ size: "flexible", theme: "dark" }}
+          />
         )}
         <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
           {loading ? (

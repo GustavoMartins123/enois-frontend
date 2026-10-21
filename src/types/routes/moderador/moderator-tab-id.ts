@@ -7,4 +7,5 @@ export type ModeratorTabId =
   | "disputes"
   | "applications"
   | "users"
+  | "suspicious"
   | "emails";

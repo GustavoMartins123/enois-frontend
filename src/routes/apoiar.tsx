@@ -2,9 +2,12 @@ import { useEffect, useState } from "react";
 
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import { texts } from "@/texts";
 import {
   Check,
   Copy,
+  ExternalLink,
+  Github,
   Heart,
   MessageSquare,
   Server,
@@ -30,6 +33,14 @@ export const Route = createFileRoute("/apoiar")({
         content:
           "O Énóis é gratuito e livre. Quem puder, ajuda a manter a rede de pé com uma doação via Pix — qualquer valor, sem assinatura e sem contrapartida.",
       },
+      { property: "og:title", content: "Apoie o Énóis" },
+      {
+        property: "og:description",
+        content:
+          "Uma internet mais humana não se constrói sozinha. Conheça o projeto e, se puder, ajude a manter o Énóis de pé.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: `${texts.siteUrl}/apoiar` },
     ],
   }),
   component: Apoiar,
@@ -38,98 +49,149 @@ export const Route = createFileRoute("/apoiar")({
 const MOTIVOS = [
   {
     icon: ShieldCheck,
-    titulo: "Sem anúncios e sem vender dados",
+    titulo: "Não queremos transformar você em produto",
     texto:
-      "O Énóis não tem patrocinador mandando no feed, não vende o seu perfil e não enche a tela de propaganda. A receita que sustenta a rede é a boa e velha comunidade.",
+      "Sem anúncios disputando sua atenção, sem patrocinador comprando espaço no feed e sem vender seus dados para fazer dinheiro. A ideia é que a rede seja sustentada pelas pessoas que acreditam nela, não pela exploração da atenção de quem a utiliza.",
   },
   {
     icon: Server,
-    titulo: "Tem conta para pagar todo mês",
+    titulo: "A infraestrutura não funciona de graça",
     texto:
-      "Servidores, banco de dados, armazenamento das fotos e envio de e-mail custam dinheiro todo mês — mesmo nos dias em que ninguém publica nada.",
+      "Nosso servidor foi uma doação que recebemos, e somos muito gratos por isso. Mas servidores, banco de dados, armazenamento de fotos, envio de e-mails e outros serviços geram custos recorrentes. Mesmo quando ninguém publica nada, as contas continuam chegando.",
   },
   {
     icon: Users,
-    titulo: "Quem manda é quem está aqui",
+    titulo: "Seu dinheiro não compra poder",
     texto:
-      "As regras, os temas e o roadmap são discutidos em público. Apoiar financeiramente não compra poder na rede: compra tempo para a rede continuar existindo.",
+      "O Énóis é um projeto comunitário. Apoiar financeiramente não dá poder sobre a moderação, não compra influência nas decisões e não garante privilégios na plataforma. Queremos discutir regras, funcionalidades e o futuro do projeto com a comunidade, de forma transparente. A contribuição ajuda a financiar esse trabalho, não a comprar o controle dele.",
   },
   {
     icon: Heart,
-    titulo: "Qualquer valor ajuda de verdade",
+    titulo: "Qualquer valor ajuda. E não poder doar também não é problema.",
     texto:
-      "Não é assinatura, não é mensalidade e não tem contrapartida obrigatória. Doou uma vez, doou — e o Énóis continua gratuito para todo mundo.",
+      "Não existe valor mínimo, mensalidade ou obrigação de contribuir novamente. Se você doar uma vez, ótimo. Se puder doar outras vezes, ótimo também. E se sua contribuição for participar, compartilhar conhecimento, relatar um problema ou simplesmente estar aqui, isso também tem valor.",
   },
 ] as const;
 
 const CARTA = [
   {
-    titulo: "Um papo reto com a comunidade",
-    paragrafos: [
-      "Cara, vamo lá. Precisamos conversar. Sobre o Énóis, sobre o que estamos construindo e sobre o tipo de internet que a gente quer ter de volta.",
-    ],
-  },
-  {
     titulo: "Vamos falar da realidade",
     paragrafos: [
       "O Énóis é um projeto comunitário. Nosso servidor foi uma doação que recebemos, e sou muito grata por isso. Somos meia dúzia de pessoas tentando construir alguma coisa sem objetivo de lucro, trabalhando de graça e colocando dinheiro do próprio bolso quando dá.",
       "Não tem uma empresa bilionária bancando a operação. Não tem uma sala cheia de executivos decidindo como extrair mais alguns centavos de cada usuário. Tem gente trabalhando porque acredita que a internet pode ser diferente.",
-      "E sim, nosso orçamento é o de uma coxinha. Às vezes nem sei se com refrigerante. Mas a gente está aqui. Fazendo o que consegue, melhorando o que dá e tentando construir algo que tenha um propósito além de gerar dinheiro.",
+      "E sim, nosso orçamento é o de uma coxinha. Às vezes nem sei se com refrigerante. Kkkkk.",
+      "Mas a gente está aqui. Fazendo o que consegue, melhorando o que dá e tentando construir algo que tenha um propósito além de gerar dinheiro.",
+      "É por isso que resolvi abrir essa conversa sobre apoio financeiro. Não para cobrar de ninguém, mas porque manter um projeto no ar exige recursos, e fingir que os custos não existem não vai pagar servidor.",
     ],
   },
   {
     titulo: "A internet que prometeram pra gente",
     paragrafos: [
-      "Vocês já perceberam quantos temas gráficos do Énóis remetem aos sistemas antigos? Aquela estética não está ali só porque a gente gosta de computador velho. Embora eu goste mesmo. É saudade de uma internet que parecia nossa: em que as pessoas criavam sites, montavam comunidades, compartilhavam conhecimento e faziam coisas simplesmente porque tinham vontade. Sem precisar transformar tudo em marca pessoal, funil de vendas ou oportunidade de engajamento.",
-      "A gente cresceu ouvindo que o futuro seria incrível, que a tecnologia aproximaria as pessoas e que a internet daria espaço pra todo mundo. Olha só onde fomos parar: algoritmos disputando nossa atenção, plataformas tratando usuários como números e pessoas precisando performar uma versão profissional de si mesmas até pra falar que o café esfriou.",
-      "Eu não quero passar o resto da vida reclamando da internet que perdemos. Quero ajudar a construir a internet que gostaria de ter. Foi por isso que decidimos colocar a mão na massa. Não porque achamos que somos melhores que todo mundo, nem porque temos a fórmula mágica pra resolver os problemas da internet. Mas porque alguém precisa tentar.",
+      "Vocês já perceberam quantos temas gráficos do Énóis remetem aos sistemas antigos?",
+      "Aquilo não está ali só porque a gente gosta de computador velho. Embora eu goste mesmo. Tem um pouco de saudade de uma internet que parecia nossa: as pessoas criavam sites, montavam comunidades, compartilhavam conhecimento e faziam coisas simplesmente porque tinham vontade.",
+      "Ninguém precisava transformar cada opinião em marca pessoal, cada conversa em funil de vendas ou cada hobby em uma oportunidade de engajamento.",
+      "A gente cresceu ouvindo que o futuro seria incrível, que a tecnologia aproximaria as pessoas e que a internet daria espaço para todo mundo. Olha só onde fomos parar: algoritmos disputando nossa atenção, plataformas tratando usuários como números e pessoas precisando performar uma versão profissional de si mesmas até para falar que o café esfriou.",
+      "Eu não quero passar o resto da vida reclamando da internet que perdemos. Quero ajudar a construir a internet que gostaria de ter.",
+      "Foi por isso que decidimos colocar a mão na massa. Não porque achamos que somos melhores que todo mundo, nem porque temos a fórmula mágica para resolver os problemas da internet. Mas porque alguém precisa tentar.",
     ],
   },
   {
     titulo: "Sem vocês, isso aqui é só um site caro",
     paragrafos: [
-      "Pode ter código bom, interface bonita, infraestrutura funcionando e um monte de funcionalidade. Sem pessoas, não existe comunidade. Existe só um site rodando num servidor consumindo dinheiro.",
-      "Por isso, peço um pouco de compreensão. Estamos fazendo isso com os recursos que temos. Vai ter coisa que quebra, funcionalidade que demora e decisão que a gente vai precisar rever. Não vou fingir que está tudo perfeito. O que posso prometer é que estamos trabalhando pra melhorar e que queremos ouvir quem está aqui. A gente não precisa concordar em tudo, mas precisa conseguir conversar.",
+      "Pode ter código bom, interface bonita, infraestrutura funcionando e um monte de funcionalidades. Sem pessoas, não existe comunidade. Existe só um site rodando num servidor e consumindo dinheiro.",
+      "Por isso, peço um pouco de compreensão. Estamos fazendo isso com os recursos que temos. Vai ter coisa que quebra, funcionalidade que demora e decisão que a gente vai precisar rever.",
+      "Não vou fingir que está tudo perfeito. O que posso prometer é que estamos trabalhando para melhorar e que queremos ouvir quem está aqui.",
+      "A gente não precisa concordar em tudo, mas precisa conseguir conversar.",
+      "Se algo não funciona, fale. Se uma decisão não faz sentido, questione. Se tiver uma ideia melhor, compartilhe. Não precisamos fingir que acertamos sempre para continuar construindo algo bom.",
     ],
   },
   {
-    titulo: "Liberdade não é licença pra estragar o espaço dos outros",
+    titulo: "Liberdade não é licença para estragar o espaço dos outros",
     paragrafos: [
-      "Quero uma rede livre. Não quero um ambiente engessado, onde qualquer opinião diferente vira motivo pra punição. Crítica faz parte. Discordar faz parte. Apontar nossos erros faz parte, e eu espero que vocês façam isso.",
-      "Mas liberdade não é passe livre pra assediar pessoas, fazer spam, tentar derrubar a plataforma ou prejudicar a experiência de quem está aqui. Se vocês virem algo assim, denunciem. Nossa moderação leva essas situações a sério e precisa da ajuda de vocês pra identificar o que acontece na comunidade.",
-      "Isso não significa que a responsabilidade da equipe seja de vocês. Significa que a comunidade pode ajudar a impedir que meia dúzia de pessoas estrague algo que centenas estão tentando construir. Não vamos tratar abuso como se fosse apenas mais uma opinião. E não vamos tratar toda discordância como abuso também. Existe uma diferença enorme entre as duas coisas.",
+      "Quero uma rede livre. Não quero um ambiente engessado, onde qualquer opinião diferente vira motivo para punição.",
+      "Crítica faz parte. Discordar faz parte. Apontar nossos erros faz parte, e espero que vocês façam isso.",
+      "Mas liberdade não é passe livre para assediar pessoas, fazer spam, tentar derrubar a plataforma ou prejudicar a experiência de quem está aqui.",
+      "Se vocês virem algo assim, denunciem. Nossa moderação leva essas situações a sério e precisa da ajuda de vocês para identificar o que acontece na comunidade.",
+      "Isso não significa que a responsabilidade da equipe seja de vocês. Significa que a comunidade pode ajudar a impedir que meia dúzia de pessoas estrague algo que centenas estão tentando construir.",
+      "Não vamos tratar abuso como se fosse apenas mais uma opinião. E também não vamos tratar toda discordância como abuso. Existe uma diferença enorme entre as duas coisas.",
     ],
   },
   {
     titulo: "Eu não quero que ninguém aqui seja descartável",
     paragrafos: [
-      "Quando minha conta do LinkedIn foi hackeada, o sujeito mudou a identidade do perfil pra identidade dele. E a resposta que recebi do suporte foi basicamente: “Que pena, crie outra conta”.",
-      "Pensa nisso por um instante. Uma conta pode carregar anos de trabalho, contatos, conversas, oportunidades e uma parte enorme da história profissional de alguém. E a solução oferecida foi começar tudo de novo.",
-      "É exatamente esse tipo de coisa que eu não quero reproduzir aqui. Não quero que alguém relate um problema e sinta que está falando com uma parede. Não quero que uma pessoa seja reduzida a um número de protocolo porque não vale o custo de atendimento de uma plataforma gigante.",
-      "Talvez a gente não consiga resolver todos os problemas. Temos limitações reais. Mas podemos ouvir, investigar, dar retorno e tratar as pessoas com respeito. Cada usuário merece atenção. Cada desenvolvedor que compartilha seu trabalho merece reconhecimento. Cada pessoa merece ter espaço pra se expressar sem ser tratada como descartável.",
+      "Quando minha conta do LinkedIn foi hackeada, o sujeito mudou a identidade do perfil para a identidade dele. E a resposta que recebi do suporte foi basicamente: “Que pena, crie outra conta”.",
+      "Pensa nisso por um instante.",
+      "Uma conta pode carregar anos de trabalho, contatos, conversas, oportunidades e uma parte enorme da história profissional de alguém. E a solução oferecida foi começar tudo de novo.",
+      "É exatamente esse tipo de coisa que não quero reproduzir aqui.",
+      "Não quero que alguém relate um problema e sinta que está falando com uma parede. Não quero que uma pessoa seja reduzida a um número de protocolo porque não vale o custo de atendimento de uma plataforma gigante.",
+      "Talvez a gente não consiga resolver todos os problemas. Temos limitações reais. Mas podemos ouvir, investigar, dar retorno e tratar as pessoas com respeito.",
+      "Cada usuário merece atenção. Cada desenvolvedor que compartilha seu trabalho merece reconhecimento. Cada pessoa merece ter espaço para se expressar sem ser tratada como descartável.",
+      "Não quero prometer uma estrutura que ainda não temos. Quero construir uma que, mesmo pequena, não perca a humanidade.",
     ],
   },
   {
     titulo: "E ainda tem muita coisa vindo por aí",
     paragrafos: [
-      "Estamos trabalhando em mais opções de personalização, inclusive na aba de Uso saudável. A ideia é permitir que vocês tenham mais controle sobre o que aparece na própria experiência. Quer escolher os assuntos que quer ver? Beleza. Quer evitar determinados conteúdos? Também. Quer desativar recursos que não fazem sentido pra você? É esse tipo de controle que queremos oferecer.",
-      "Não acho que todo mundo precise usar a rede do mesmo jeito. Uma pessoa pode amar comunidades enquanto outra só quer conversar com os amigos. Alguém pode querer acompanhar vagas e eventos, enquanto outra pessoa quer publicar textos e trocar ideia sobre tecnologia. A plataforma deve dar espaço pra essas diferenças, não obrigar todo mundo a consumir a mesma coisa.",
+      "Estamos trabalhando em mais opções de personalização, inclusive na área de Uso saudável.",
+      "A ideia é dar mais controle sobre a própria experiência. Quer escolher os assuntos que quer ver? Beleza. Quer evitar determinados conteúdos? Também. Quer desativar recursos que não fazem sentido para você? É esse tipo de controle que queremos oferecer.",
+      "Não acho que todo mundo precise usar a rede do mesmo jeito.",
+      "Uma pessoa pode amar comunidades enquanto outra só quer conversar com os amigos. Alguém pode querer acompanhar vagas e eventos, enquanto outra pessoa quer publicar textos e trocar ideia sobre tecnologia.",
+      "A plataforma deve dar espaço para essas diferenças, não obrigar todo mundo a consumir a mesma coisa.",
+      "Não quero decidir por você o que deve aparecer na sua tela. Quero que você tenha ferramentas para decidir isso por conta própria.",
     ],
   },
   {
     titulo: "Então, o que eu peço a vocês?",
     paragrafos: [
-      "Participem. Falem o que está ruim. Sugiram melhorias. Denunciem problemas. Compartilhem o projeto. Se souberem programar, contribuam com o código. Se não souberem, participem mesmo assim.",
-      "Não quero que vocês estejam aqui só pra consumir o que meia dúzia de pessoas publica. Quero que sintam que também podem ajudar a decidir os rumos desse espaço.",
-      "Não temos o dinheiro das big techs, nem a estrutura delas. Temos um orçamento de coxinha e uma quantidade limitada de horas no dia. Mas temos a oportunidade de construir algo sem precisar colocar o lucro acima das pessoas. E, sinceramente, acho que vale a pena tentar.",
+      "Participem. Falem o que está ruim. Sugiram melhorias. Denunciem problemas. Compartilhem o projeto.",
+      "Se souberem programar, contribuam com o código. Se não souberem, participem mesmo assim. Uma comunidade não é feita só de quem programa, administra servidores ou desenha interfaces.",
+      "Ela também é feita de quem publica uma ideia, responde alguém que acabou de chegar, escreve um artigo, organiza uma comunidade, encontra um erro ou simplesmente faz outra pessoa se sentir bem-vinda.",
+      "Não quero que vocês estejam aqui só para consumir o que meia dúzia de pessoas publica. Quero que sintam que também podem ajudar a decidir os rumos desse espaço.",
     ],
   },
   {
-    titulo: "Vamo nessa",
+    titulo: "Não temos dinheiro de big tech. Temos vontade de fazer diferente.",
     paragrafos: [
-      "Não queremos mais uma big tech. Queremos humanidade. A internet não precisa ser só aquilo que fizeram dela. Ainda dá pra criar, colaborar, conversar e construir alguma coisa que seja nossa.",
-      "A gente começou o trabalho. Agora, quero ver o que conseguimos fazer juntos. Vamo nessa. Énóis.",
+      "Temos um orçamento de coxinha e uma quantidade limitada de horas no dia. Temos contas para pagar, problemas para resolver e muita coisa que ainda precisa melhorar.",
+      "Mas temos a oportunidade de construir algo sem precisar colocar o lucro acima das pessoas.",
+      "E, sinceramente, acho que vale a pena tentar.",
+      "Não quero que o Énóis dependa da boa vontade de uma única pessoa para sempre. Quero que ele tenha uma comunidade capaz de participar, colaborar e, para quem puder, ajudar a sustentar a infraestrutura.",
+      "O apoio financeiro é uma parte disso. Não é a única, nem torna ninguém mais importante do que os outros.",
+      "Se puder contribuir, agradeço de verdade. Se não puder, fique à vontade para continuar usando, participando e ajudando de outras formas.",
+      "Você não precisa pagar para pertencer.",
     ],
+  },
+  {
+    titulo: "Vamo nessa?",
+    paragrafos: [
+      "Não queremos mais uma big tech. Queremos humanidade.",
+      "A internet não precisa ser só aquilo que fizeram dela. Ainda dá para criar, colaborar, conversar e construir alguma coisa que seja nossa.",
+      "A gente começou o trabalho. Agora, quero ver o que conseguimos fazer juntos.",
+      "Vamo nessa. Énóis. ❤️",
+    ],
+  },
+] as const;
+
+const OUTRAS_FORMAS = [
+  {
+    titulo: "Traga gente boa",
+    texto: "Compartilhe o Énóis com quem também gostaria de fazer parte disso.",
+  },
+  {
+    titulo: "Publique o que você sabe",
+    texto: "Conhecimento guardado não constrói comunidade.",
+  },
+  {
+    titulo: "Dê feedback",
+    texto: "Encontrou um problema ou teve uma ideia? Conta pra gente.",
+  },
+  {
+    titulo: "Ajude quem está chegando",
+    texto: "Às vezes, uma resposta simpática vale mais do que uma funcionalidade nova.",
+  },
+  {
+    titulo: "Contribua com o código",
+    texto: "O projeto está aberto para quem quiser colaborar.",
   },
 ] as const;
 
@@ -150,12 +212,31 @@ function Apoiar() {
 
   const copiar = async () => {
     try {
-      await navigator.clipboard.writeText(pixCopiaECola());
+      await navigator.clipboard.writeText(PIX_KEY);
       setCopiado(true);
-      toast("Código Pix copiado — cola no app do banco!", "success");
+      toast(textsApoie.copiadoAviso, "success");
       setTimeout(() => setCopiado(false), 4000);
     } catch {
-      toast("Não deu para copiar — toque e segure no código para copiar à mão.", "error");
+      toast(textsApoie.copiarErro, "error");
+    }
+  };
+
+  const compartilhar = async () => {
+    const url = `${texts.siteUrl}/apoiar`;
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({ title: textsApoie.titulo, url });
+        return;
+      } catch (error) {
+        // Cancelar a folha de compartilhamento não é erro.
+        if (error instanceof DOMException && error.name === "AbortError") return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      toast(textsApoie.compartilharCopiado, "success");
+    } catch {
+      toast(textsApoie.compartilharErro, "error");
     }
   };
 
@@ -176,6 +257,8 @@ function Apoiar() {
             <h1 className="mt-3 text-2xl font-semibold tracking-tight text-text-strong sm:text-3xl">
               {textsApoie.titulo}
             </h1>
+
+            <p className="mt-2 text-base font-medium text-text-strong">{textsApoie.chamada}</p>
 
             <p className="mt-2 max-w-xl text-sm leading-relaxed text-text-subtle">
               {textsApoie.subtitulo}
@@ -220,6 +303,10 @@ function Apoiar() {
               <p className="text-xs text-text-subtle">{textsApoie.pixAviso}</p>
             </div>
           </div>
+
+          <p className="mt-4 border-t border-border-soft pt-3 text-xs text-text-subtle">
+            {textsApoie.pixSemObrigacao}
+          </p>
         </section>
 
         {/* Por que apoiar */}
@@ -241,7 +328,7 @@ function Apoiar() {
           </div>
         </section>
 
-        {/* Carta para a comunidade — conteúdo do post /post/post_3d0d9619913f42cbb5b8c0030ccd8805 */}
+        {/* Carta aberta à comunidade */}
         <section className="surface-card space-y-4 p-5 sm:p-6">
           <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary">
             {textsApoie.cartaEyebrow}
@@ -250,6 +337,8 @@ function Apoiar() {
           <h2 className="text-xl font-semibold tracking-tight text-text-strong">
             {textsApoie.cartaTitulo}
           </h2>
+
+          <p className="text-sm leading-relaxed text-text-subtle">{textsApoie.cartaIntro}</p>
 
           {CARTA.map((bloco) => (
             <div
@@ -266,32 +355,53 @@ function Apoiar() {
             </div>
           ))}
 
-          <a
-            href="https://github.com/Rede-ENois"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-between gap-3 rounded-xl border border-border-soft bg-surface-1 px-4 py-3 text-sm font-medium text-text-strong transition hover:border-primary hover:text-primary"
-          >
-            <span>
-              <span className="block text-xs font-normal text-text-subtle">
-                O código é de todo mundo
-              </span>
-              github.com/Rede-ENois
-            </span>
+          <div className="space-y-2 border-t border-border-soft pt-4">
+            <h3 className="text-sm font-semibold text-text-strong">{textsApoie.codigoTitulo}</h3>
 
-            <span aria-hidden className="text-lg text-primary">
-              ↗
-            </span>
-          </a>
+            <p className="text-sm leading-relaxed text-text-subtle">{textsApoie.codigoTexto}</p>
+
+            <a
+              href="https://github.com/Rede-ENois"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between gap-3 rounded-xl border border-border-soft bg-surface-1 px-4 py-3 text-sm font-medium text-text-strong transition hover:border-primary hover:text-primary"
+            >
+              <span className="inline-flex min-w-0 items-center gap-2">
+                <Github className="h-4 w-4 shrink-0 text-primary" />
+
+                <span className="truncate">github.com/Rede-ENois</span>
+              </span>
+
+              <span className="inline-flex shrink-0 items-center gap-1 text-xs font-normal text-text-subtle">
+                {textsApoie.abreNovaAba}
+
+                <ExternalLink className="h-3.5 w-3.5" aria-hidden />
+              </span>
+            </a>
+          </div>
         </section>
 
         {/* Além do dinheiro */}
         <section className="surface-card p-5 sm:p-6">
           <h2 className="text-base font-medium text-text-strong">{textsApoie.alemTitulo}</h2>
 
-          <p className="mt-1 text-sm text-text-subtle">{textsApoie.alemDescricao}</p>
+          <ul className="mt-3 space-y-3">
+            {OUTRAS_FORMAS.map((forma) => (
+              <li key={forma.titulo} className="flex gap-2">
+                <span aria-hidden className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
 
-          <div className="mt-3 flex flex-wrap gap-2">
+                <p className="text-sm leading-relaxed text-text-subtle">
+                  <span className="font-medium text-text-strong">{forma.titulo}.</span>{" "}
+                  {forma.texto}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* Ações finais */}
+        <section className="surface-card p-5 sm:p-6">
+          <div className="flex flex-wrap gap-2">
             <Link
               to="/suporte"
               className="inline-flex items-center gap-2 rounded-full border border-border-soft px-3 py-2 text-sm font-medium transition hover:border-primary hover:text-primary"
@@ -304,49 +414,55 @@ function Apoiar() {
             <button
               type="button"
               className="inline-flex items-center gap-2 rounded-full border border-border-soft px-3 py-2 text-sm font-medium transition hover:border-primary hover:text-primary"
-              onClick={async () => {
-                try {
-                  await navigator.clipboard.writeText(`${window.location.origin}/apoiar`);
-                  toast(textsApoie.compartilharCopiado, "success");
-                } catch {
-                  toast(textsApoie.compartilharErro, "error");
-                }
-              }}
+              onClick={compartilhar}
             >
               <Share2 className="h-4 w-4" />
 
               <>{textsApoie.compartilhar}</>
             </button>
           </div>
-        </section>
 
-        <p className="pb-2 text-center text-xs text-text-subtle">{textsApoie.rodape}</p>
+          <p className="mt-4 text-sm font-medium text-text-strong">{textsApoie.encerramento}</p>
+
+          <p className="mt-1 text-xs text-text-subtle">{textsApoie.rodape}</p>
+        </section>
       </div>
     </AppContainer>
   );
 }
 
 const textsApoie = {
-  badge: "Apoie o Énóis",
-  titulo: "O Énóis é gratuito e livre. Quem puder, ajuda a manter assim.",
+  badge: "Projeto comunitário",
+  titulo: "Apoie o Énóis",
+  chamada: "Uma internet mais humana não se constrói sozinha.",
   subtitulo:
-    "Sem anúncio, sem venda de dados e sem cobrança para usar. A rede é sustentada por quem acha que ela vale a pena — inclusive por quem só quer que ela continue existindo.",
-  cartaEyebrow: "Carta para a comunidade",
-  cartaTitulo: "Um papo reto sobre o Énóis",
+    "O Énóis é gratuito e livre. Não tem anúncios, não vende dados e não cobra para você participar. A gente quer continuar assim — e, se você acredita que esse espaço vale a pena, pode ajudar a mantê-lo de pé. Qualquer valor ajuda. E, se não puder contribuir financeiramente, tudo bem: você continua sendo parte disso.",
   porQue: "Por que apoiar?",
-  pixTitulo: "Doar com Pix",
-  pixDescricao: "Escaneie o QR ou copie o código e cole no app do seu banco. Qualquer valor.",
+  pixTitulo: "Ajude a manter o Énóis de pé",
+  pixDescricao:
+    "Escaneie o QR Code ou copie a chave e cole no aplicativo do seu banco. Você escolhe o valor.",
   chaveRotulo: "Chave Pix (CNPJ)",
-  copiar: "Copiar código Pix",
+  copiar: "Copiar chave Pix",
   copiado: "Copiado!",
+  copiadoAviso: "Chave Pix copiada — cola no app do banco!",
+  copiarErro: "Não deu para copiar — toque e segure na chave para copiar à mão.",
   pixAviso:
-    "Código estático, sem vencimento e sem valor fixo: você escolhe quanto doar na hora. Não é assinatura e não há contrapartida.",
+    "Essa é uma chave Pix estática, sem vencimento e sem valor fixo. Não é assinatura, não é mensalidade e não existe nenhuma contrapartida obrigatória.",
+  pixSemObrigacao:
+    "Você não precisa pagar para participar do Énóis. A contribuição é voluntária e ajuda a manter a rede funcionando para todo mundo.",
+  cartaEyebrow: "Carta aberta à comunidade",
+  cartaTitulo: "Um papo reto com a comunidade",
+  cartaIntro:
+    "Cara, vamo lá. Precisamos conversar sobre o Énóis, sobre o que estamos construindo e sobre o tipo de internet que a gente quer ter de volta. Não quero fazer um discurso bonito para pedir dinheiro. Quero explicar o que estamos tentando construir, quais são as nossas limitações e por que acredito que vale a pena continuar.",
+  codigoTitulo: "O código é de todo mundo",
+  codigoTexto:
+    "O repositório do Énóis é aberto. Você pode conhecer o projeto, acompanhar o desenvolvimento, apontar problemas e contribuir com o código. A gente não quer construir uma caixa-preta e pedir que todo mundo confie cegamente. Queremos que as pessoas possam olhar, questionar, colaborar e entender o que estão ajudando a manter.",
+  abreNovaAba: "abre em nova aba",
   alemTitulo: "Além do dinheiro, tem outras formas de ajudar",
-  alemDescricao:
-    "Traga gente boa, publique o que você sabe, abra um feedback ou responda quem está chegando. A rede fica melhor com você dentro dela.",
   suporte: "Deixar um feedback",
   compartilhar: "Compartilhar esta página",
   compartilharCopiado: "Link copiado — manda para quem curte a ideia.",
   compartilharErro: "Não deu para copiar o link agora.",
-  rodape: "Feito por pessoas, para pessoas. Obrigado por manter o Énóis de pé. ❤",
+  encerramento: "Feito por pessoas, para pessoas. Obrigado por manter o Énóis de pé. ❤️",
+  rodape: "O Énóis não precisa de você pagando para pertencer. Precisa de você por aqui.",
 };

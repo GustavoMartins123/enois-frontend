@@ -7,6 +7,7 @@ import { texts } from "@/texts";
 import { ArrowLeft, Camera, Image as ImageIcon } from "lucide-react";
 
 import { corporateApi } from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
 import { requireAuth } from "@/lib/require-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
@@ -286,7 +287,11 @@ function Profissional() {
                 />
               ) : form.banner ? (
                 <div className="h-28 w-full overflow-hidden rounded-xl bg-surface-2">
-                  <img src={form.banner} alt="" className="h-full w-full object-cover" />
+                  <img
+                    src={resolveCdnUrl(form.banner)}
+                    alt=""
+                    className="h-full w-full object-cover"
+                  />
                 </div>
               ) : null}
 

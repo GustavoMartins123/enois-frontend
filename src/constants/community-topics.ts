@@ -3,10 +3,13 @@ import { texts } from "@/texts";
 /**
  * Os assuntos da plataforma, num lugar só — comunidades, compositor e personalização leem daqui.
  *
- * Começaram como os tópicos de comunidade e foram refinados (pedido da dona, 2026-10-20: "cria
- * mais assuntos... a categorização tá errada"). Os oito originais continuam primeiro e válidos —
- * comunidades antigas não mudam de mão; os novos cobrem o que a plataforma realmente abriga
- * (tem área de jogos, tem ciência, tem quem empreende). "Todas" é filtro de vitrine, não assunto.
+ * Começaram como os tópicos de comunidade e foram ampliados conforme a rede deixou de ser só de
+ * tecnologia: humor, saúde, casa, pets, família, política, fé, moda. Os oito originais continuam
+ * primeiro e válidos — comunidades e posts antigos não mudam de mão. "Todas" é filtro de vitrine,
+ * não assunto.
+ *
+ * A lista espelha ContentTaxonomy.TOPICS no backend; um assunto só vale se os dois lados o
+ * conhecem.
  */
 export const TOPICS = [
   "Todas",
@@ -18,6 +21,7 @@ export const TOPICS = [
   "CARREIRA",
   "FREELANCE",
   "OUTROS",
+  // O que a plataforma realmente abriga.
   "GAMES",
   "ART",
   "MUSIC",
@@ -28,6 +32,23 @@ export const TOPICS = [
   "MARKETING",
   "RH",
   "DADOS",
+  // A rede é para todos os nichos, não só tech.
+  "FUN",
+  "QUALIDADE_VIDA",
+  "SAUDE",
+  "VIAGEM",
+  "COMIDA",
+  "ESPORTES",
+  "CINEMA",
+  "LIVROS",
+  "FOTOGRAFIA",
+  "CASA",
+  "PETS",
+  "PARENTALIDADE",
+  "RELACIONAMENTOS",
+  "MODA",
+  "POLITICA",
+  "RELIGIAO",
 ] as const;
 
 export const TOPIC_LABELS: Record<(typeof TOPICS)[number], string> = {
@@ -50,4 +71,20 @@ export const TOPIC_LABELS: Record<(typeof TOPICS)[number], string> = {
   MARKETING: texts.communities.topics.MARKETING,
   RH: texts.communities.topics.RH,
   DADOS: texts.communities.topics.DADOS,
+  FUN: texts.communities.topics.FUN,
+  QUALIDADE_VIDA: texts.communities.topics.QUALIDADE_VIDA,
+  SAUDE: texts.communities.topics.SAUDE,
+  VIAGEM: texts.communities.topics.VIAGEM,
+  COMIDA: texts.communities.topics.COMIDA,
+  ESPORTES: texts.communities.topics.ESPORTES,
+  CINEMA: texts.communities.topics.CINEMA,
+  LIVROS: texts.communities.topics.LIVROS,
+  FOTOGRAFIA: texts.communities.topics.FOTOGRAFIA,
+  CASA: texts.communities.topics.CASA,
+  PETS: texts.communities.topics.PETS,
+  PARENTALIDADE: texts.communities.topics.PARENTALIDADE,
+  RELACIONAMENTOS: texts.communities.topics.RELACIONAMENTOS,
+  MODA: texts.communities.topics.MODA,
+  POLITICA: texts.communities.topics.POLITICA,
+  RELIGIAO: texts.communities.topics.RELIGIAO,
 };
