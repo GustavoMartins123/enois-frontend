@@ -16,6 +16,7 @@ import {
   Flag,
   Gamepad2,
   Gavel,
+  History,
   LifeBuoy,
   Mail,
   Scale,
@@ -60,6 +61,7 @@ const ALL_TABS: { id: ModeratorTabId; label: string; icon: typeof Flag; adminOnl
   { id: "games", label: texts.moderator.tabs.games, icon: Gamepad2, adminOnly: false },
   { id: "support", label: texts.moderator.tabs.support, icon: LifeBuoy, adminOnly: true },
   { id: "issues", label: texts.moderator.tabs.issues, icon: Bug, adminOnly: true },
+  { id: "history", label: texts.moderator.tabs.history, icon: History, adminOnly: true },
   { id: "appeals", label: texts.moderator.tabs.appeals, icon: ShieldAlert, adminOnly: true },
   { id: "disputes", label: texts.moderator.tabs.disputes, icon: Scale, adminOnly: true },
   {
@@ -186,8 +188,11 @@ function Moderador() {
 
             {activeTab === "reports" && <ReportsSection admin={me.admin} />}
             {activeTab === "games" && <GamesReviewSection />}
-            {me.admin && activeTab === "support" && <SupportTicketsSection />}
-            {me.admin && activeTab === "issues" && <SupportTicketsSection lockedCategory="BUG" />}
+            {me.admin && activeTab === "support" && <SupportTicketsSection mode="active" />}
+            {me.admin && activeTab === "issues" && (
+              <SupportTicketsSection lockedCategory="BUG" mode="active" />
+            )}
+            {me.admin && activeTab === "history" && <SupportTicketsSection mode="history" />}
             {me.admin && activeTab === "appeals" && <AppealsSection />}
             {me.admin && activeTab === "disputes" && <DisputesSection />}
             {me.admin && activeTab === "applications" && <ApplicationsSection />}

@@ -17,29 +17,36 @@ import { useToast } from "@/components/ui/toast";
 
 const CATEGORIES: SupportCategory[] = ["BUG", "ACCOUNT", "CONTENT", "IDEA", "OTHER"];
 
-const STATUS_FILTERS: { id: SupportStatus | "ALL"; label: string }[] = [
+/** Filtros da fila ATIVA: o que está resolvido foi para a aba Histórico. */
+const ACTIVE_STATUS_FILTERS: { id: SupportStatus | "ALL"; label: string }[] = [
   { id: "ALL", label: texts.moderator.support.statusAll },
   { id: "OPEN", label: texts.moderator.support.statusOpen },
   { id: "IN_PROGRESS", label: texts.moderator.support.statusInProgress },
-  { id: "CLOSED", label: texts.moderator.support.statusClosed },
 ];
 
 /**
  * Tickets de suporte do painel central. A aba "Issues" usa o mesmo componente com `lockedCategory`
  * em BUG: é a mesma fila, só enxergada pela categoria de problema.
  */
-export function SupportTicketsSection({ lockedCategory }: { lockedCategory?: SupportCategory }) {
+export function SupportTicketsSection({
+  lockedCategory,
+  mode = "active",
+}: {
+  lockedCategory?: SupportCategory;
+  mode?: "active" | "history";
+}) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [category, setCategory] = useState<SupportCategory | undefined>(lockedCategory);
   const [status, setStatus] = useState<SupportStatus | "ALL">("ALL");
+  const history = mode === "history";
 
   const { data, isLoading } = useQuery({
-    queryKey: ["moderator", "support", category ?? "all", status],
+    queryKey: ["moderator", "support", category ?? "all", history ? "CLOSED" : status],
     queryFn: () =>
       supportApi.adminList({
         category,
-        status: status === "ALL" ? undefined : status,
+        status: history ? "CLOSED" : status === "ALL" ? undefined : status,
         limit: 100,
       }),
     retry: false,
@@ -55,14 +62,27 @@ export function SupportTicketsSection({ lockedCategory }: { lockedCategory?: Sup
     onError: () => toast(texts.moderator.support.error, "error"),
   });
 
+  // A fila ativa não mostra o que já foi concluído; o histórico é a única porta para CLOSED.
+  const visible = history
+    ? (data ?? [])
+    : (data ?? []).filter((ticket) => ticket.status !== "CLOSED");
+
   return (
     <section className="space-y-3">
       <div className="space-y-1">
         <h2 className="text-sm font-semibold uppercase tracking-widest text-text-subtle">
-          {lockedCategory ? texts.moderator.support.issuesTitle : texts.moderator.support.title}
+          {history
+            ? texts.moderator.tabs.history
+            : lockedCategory
+              ? texts.moderator.support.issuesTitle
+              : texts.moderator.support.title}
         </h2>
 
-        <p className="text-sm text-muted-foreground">{texts.moderator.support.description}</p>
+        <p className="text-sm text-muted-foreground">
+          {history
+            ? texts.moderator.support.historyDescription
+            : texts.moderator.support.description}
+        </p>
       </div>
 
       <div className="space-y-2">
@@ -85,29 +105,31 @@ export function SupportTicketsSection({ lockedCategory }: { lockedCategory?: Sup
           </div>
         )}
 
-        <div className="flex flex-wrap gap-1.5">
-          {STATUS_FILTERS.map((item) => (
-            <FilterChip
-              key={item.id}
-              active={status === item.id}
-              onClick={() => setStatus(item.id)}
-              label={item.label}
-            />
-          ))}
-        </div>
+        {!history && (
+          <div className="flex flex-wrap gap-1.5">
+            {ACTIVE_STATUS_FILTERS.map((item) => (
+              <FilterChip
+                key={item.id}
+                active={status === item.id}
+                onClick={() => setStatus(item.id)}
+                label={item.label}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {isLoading ? (
         <LoadingState />
-      ) : (data?.length ?? 0) === 0 ? (
+      ) : visible.length === 0 ? (
         <div className="rounded-2xl border border-border-soft bg-surface-card p-6 text-center text-sm text-text-subtle">
           <LifeBuoy className="mx-auto mb-2 h-6 w-6 text-primary" />
 
-          <>{texts.moderator.support.empty}</>
+          <>{history ? texts.moderator.support.historyEmpty : texts.moderator.support.empty}</>
         </div>
       ) : (
         <ul className="space-y-3">
-          {data!.map((ticket) => (
+          {visible.map((ticket) => (
             <li
               key={ticket.id}
               className="space-y-3 rounded-2xl border border-border-soft bg-surface-card p-4"
