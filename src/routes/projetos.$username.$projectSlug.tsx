@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { ArrowLeft, Github, Globe } from "lucide-react";
+import { ArrowLeft, Code2, Globe } from "lucide-react";
 
 import { communityProjectsApi } from "@/lib/api";
 
@@ -120,7 +120,7 @@ function ProjectDetail() {
               {data.repoUrl && (
                 <a href={data.repoUrl} target="_blank" rel="noopener noreferrer">
                   <span className="inline-flex items-center gap-2 rounded-full border border-border-soft px-4 py-2 text-sm font-medium text-text-strong">
-                    <Github className="h-4 w-4" />
+                    <Code2 className="h-4 w-4" />
 
                     <>{texts.projects.openRepo}</>
                   </span>
