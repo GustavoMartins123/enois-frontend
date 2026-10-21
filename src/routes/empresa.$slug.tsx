@@ -552,6 +552,15 @@ function Empresa() {
           </div>
         </div>
       )}
+
+      {/* O dialogo de edicao estava importado mas NUNCA montado: o botao "Editar" mudava o
+          estado e nada acontecia (em qualquer navegador). */}
+      <CompanyEditDialog
+        company={company}
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        canManageTeam={canManageTeam}
+      />
     </AppContainer>
   );
 }

@@ -67,9 +67,9 @@ function Marketplace() {
 
   return (
     <AppContainer>
-      <div className="mx-auto w-full max-w-4xl">
-        <header className="mb-6 flex items-start justify-between gap-3">
-          <div>
+      <div className="mx-auto w-full min-w-0 max-w-4xl">
+        <header className="mb-6 flex flex-wrap items-start justify-between gap-3">
+          <div className="min-w-0">
             <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
               <Store className="h-6 w-6 text-primary" />
               Marketplace
@@ -230,7 +230,7 @@ function ListingCard({ listing }: { listing: MarketplaceListingView }) {
   });
 
   return (
-    <li className="surface-card p-4">
+    <li className="surface-card min-w-0 overflow-hidden p-4">
       {theme.data ? <Miniatura packageJson={theme.data.packageJson} /> : null}
       <div className="mt-2 flex items-center justify-between gap-2">
         <span className="min-w-0">
