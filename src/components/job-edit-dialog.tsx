@@ -4,12 +4,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { JOB_LEVELS, JOB_LOCATIONS, JOB_TYPES, SALARY_PERIODS } from "@/constants/job-options";
 import { texts } from "@/texts";
+import type { CurrencyCode } from "@/types/application/currency/currency-code";
 import type { CreateJobInput } from "@/types/application/job/create-job-input";
 import type { Job } from "@/types/application/job/job";
 import type { JobEditDialogProps } from "@/types/components/job/job-edit-dialog-props";
 
 import { jobsApi } from "@/lib/api";
-import { CURRENCIES, type CurrencyCode, currencySymbol } from "@/lib/currency";
+import { CURRENCIES, currencySymbol } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";

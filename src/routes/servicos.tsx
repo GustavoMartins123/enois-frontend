@@ -3,11 +3,9 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
-import type {
-  ServiceContract,
-  ServiceListing,
-  ServiceRequest,
-} from "@/types/application/services/service-types";
+import type { ServiceContract } from "@/types/application/services/service-contract";
+import type { ServiceListing } from "@/types/application/services/service-listing";
+import type { ServiceRequest } from "@/types/application/services/service-request";
 import { Briefcase, Handshake, Send, Sparkles } from "lucide-react";
 
 import { servicesApi } from "@/lib/api";

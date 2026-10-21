@@ -1,7 +1,5 @@
-import type {
-  MarketplaceListing,
-  MarketplacePurchase,
-} from "@/types/application/marketplace/marketplace-types";
+import type { MarketplaceListing } from "@/types/application/marketplace/marketplace-listing";
+import type { MarketplacePurchase } from "@/types/application/marketplace/marketplace-purchase";
 
 import { api } from "../api-client";
 

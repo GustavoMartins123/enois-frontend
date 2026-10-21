@@ -10,9 +10,10 @@ import {
   MIN_REPUTATION_TO_CREATE_JOB,
 } from "@/constants/job-rules";
 import { texts } from "@/texts";
+import type { CurrencyCode } from "@/types/application/currency/currency-code";
 import type { CreateJobInput } from "@/types/application/job/create-job-input";
 import type { Job } from "@/types/application/job/job";
-import type { JobApplicationFieldInput } from "@/types/application/job/job-application";
+import type { JobApplicationFieldInput } from "@/types/application/job/job-application-field-input";
 import type { JobReportReason } from "@/types/application/job/job-report-reason";
 import type { CreateJobDialogProps } from "@/types/routes/jobs/create-job-dialog-props";
 import type { ReportJobDialogProps } from "@/types/routes/jobs/report-job-dialog-props";
@@ -33,7 +34,6 @@ import {
 
 import { jobsApi, reportsApi } from "@/lib/api";
 import { CURRENCIES, currencySymbol, formatSalary } from "@/lib/currency";
-import type { CurrencyCode } from "@/lib/currency";
 import { useCurrentUser } from "@/lib/current-user";
 import { canCreateJob, missingReputationToCreateJob } from "@/lib/job-permissions";
 import { requireAuth } from "@/lib/require-auth";

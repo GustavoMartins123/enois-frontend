@@ -3,10 +3,11 @@ import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
+import type { MazeDirection } from "@/types/application/daily-games/maze-direction";
 import { Clock, Flag, Map, Trophy } from "lucide-react";
 
 import { randomUUID } from "@/lib/api-client";
-import { type MazeDirection, dailyMazeApi, previousChallengeDate } from "@/lib/api/daily-games";
+import { dailyMazeApi, previousChallengeDate } from "@/lib/api/daily-games";
 
 import { Button } from "@/components/ui/button";
 

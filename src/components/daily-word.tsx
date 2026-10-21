@@ -3,15 +3,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
+import type { WordMark } from "@/types/application/daily-games/word-mark";
+import type { WordState } from "@/types/application/daily-games/word-state";
 import { BarChart2, HelpCircle, Share2, Sparkles, Type } from "lucide-react";
 
 import { randomUUID } from "@/lib/api-client";
-import {
-  type WordMark,
-  type WordState,
-  dailyWordsApi,
-  previousChallengeDate,
-} from "@/lib/api/daily-games";
+import { dailyWordsApi, previousChallengeDate } from "@/lib/api/daily-games";
 
 import { Button } from "@/components/ui/button";
 import {
