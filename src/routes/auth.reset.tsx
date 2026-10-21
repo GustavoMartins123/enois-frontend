@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
 
+import { AuthHero } from "@/components/auth-hero";
+
 const searchSchema = z.object({
   token: z.string().optional(),
 });
@@ -96,35 +98,7 @@ function ResetPassword() {
           </span>
         </Link>
 
-        <div className="relative max-w-md">
-          <p className="text-sm font-medium uppercase tracking-wider text-primary-foreground/80">
-            {texts.auth.hero.eyebrow}
-          </p>
-
-          <h2 className="mt-3 text-4xl font-semibold leading-tight tracking-tight">
-            {texts.auth.hero.quote}
-          </h2>
-
-          <div className="mt-6 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-primary-foreground/25" />
-
-            <div>
-              <p className="font-medium">{texts.auth.hero.person}</p>
-
-              <p className="text-sm text-primary-foreground/75">{texts.auth.hero.role}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative grid grid-cols-3 gap-4 text-sm">
-          {texts.auth.hero.stats.map((stat) => (
-            <div key={stat.label}>
-              <p className="text-2xl font-semibold">{stat.value}</p>
-
-              <p className="text-primary-foreground/75">{stat.label}</p>
-            </div>
-          ))}
-        </div>
+        <AuthHero />
       </aside>
 
       {/* Form side */}
