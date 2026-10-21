@@ -8,4 +8,6 @@ export type CreatePostInput = Pick<PostView, "type" | "content"> &
     topic?: string;
     /** Canal privado da comunidade (o tema vem do canal; o post não entra em feed). */
     channelId?: string;
+    /** Honeypot — humano nunca vê nem preenche; bot que preenche é banido no backend. */
+    website?: string;
   };

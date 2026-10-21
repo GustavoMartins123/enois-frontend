@@ -327,6 +327,7 @@ function Home() {
     if (pageMode ? !pageHtml.trim() : !content) return;
     if (articleMode && !articleBody.trim()) return;
 
+    const formData = new FormData(event.currentTarget);
     setPublishError(null);
     try {
       let mediaIds: string[] = [];
@@ -342,6 +343,7 @@ function Home() {
         ...(articleMode ? { articleBody } : {}),
         mentionedUserIds: pageMode ? [] : mentionedUserIds,
         ...(topic ? { topic } : {}),
+        website: String(formData.get("website") ?? ""),
       });
       // "Também no LinkedIn": com o LinkedIn vinculado, oferece o compartilhamento pelo
       // diálogo oficial do LinkedIn com o link público do post (o OG preview completa o resto).
@@ -460,6 +462,15 @@ function Home() {
             onSubmit={publishPost}
             className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-5"
           >
+            <input
+              type="text"
+              name="website"
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              className="hidden"
+            />
+
             <div className="flex items-start gap-3">
               <UserAvatar
                 frame={profileUser?.avatarFrame}

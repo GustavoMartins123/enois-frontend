@@ -12,12 +12,14 @@ export const commentsApi = {
     parentCommentId?: string | null,
     mentionedUserIds?: string[],
     mediaIds?: string[],
+    website?: string,
   ) =>
     api.post<CommentView>(`/feed/posts/${postId}/comments`, {
       content,
       parentCommentId: parentCommentId ?? null,
       mediaIds: mediaIds ?? [],
       mentionedUserIds: mentionedUserIds ?? [],
+      website: website ?? "",
     }),
 
   list: (postId: string, cursor?: string | null, limit = 20) =>

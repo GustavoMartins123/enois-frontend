@@ -2810,6 +2810,40 @@ export const texts = {
       emails: "E-mails",
       suspicious: "Suspeitos",
     },
+    suspiciousPosts: {
+      title: "Posts suspeitos",
+      description:
+        "Posts denunciados que passaram no score da pré-triagem. O conteúdo não foi julgado pela IA ainda; selecione o que deve sair do ar. A exclusão é auditada e reversível pelo painel.",
+      empty: "Nenhum post suspeito na fila.",
+      emptyHint: "Posts com score alto de pré-triagem aparecem aqui para revisão.",
+      score: (value: number) => `score ${value}`,
+      reason: (value: string) => `motivo: ${value}`,
+      openPost: "Abrir post",
+      selectAll: "Selecionar todos",
+      clear: "Limpar seleção",
+      selected: (count: number) => `${count} selecionado(s)`,
+      reasonPlaceholder: "Motivo da exclusão (mínimo de 10 caracteres)",
+      delete: (count: number) =>
+        count === 0 ? "Excluir selecionados" : `Excluir ${count} post(s)`,
+      confirmTitle: "Excluir posts suspeitos",
+      confirmBody: (count: number) =>
+        `Remover ${count} post(s) do feed? A ação fica registrada na auditoria.`,
+      confirm: "Excluir agora",
+      result: (deleted: number, failed: number) =>
+        `${deleted} post(s) removido(s), ${failed} falha(s).`,
+      error: "Não foi possível excluir os posts selecionados.",
+      signals: {
+        REASON_VIOLENCE: "Motivo grave",
+        REASON_SPAM: "Spam/fraude",
+        REASON_OTHER: "Outro motivo",
+        REPEATED_TARGET: "Denúncias repetidas",
+        NEW_ACCOUNT: "Conta nova",
+        DETAILED_REPORT: "Relato detalhado",
+        CONTENT_LINK: "Link no conteúdo",
+        SHORT_CONTENT: "Conteúdo curto",
+        SYSTEM_REPORT: "Sinal automático",
+      } as Record<string, string>,
+    },
     suspicious: {
       title: "Contas suspeitas",
       description:

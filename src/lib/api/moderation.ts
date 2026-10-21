@@ -8,6 +8,10 @@ import type { ModeratorSanctionResult } from "@/types/application/moderation/mod
 import type { ModeratorVoteResult } from "@/types/application/moderation/moderator-vote-result";
 import type { SanctionProposalDecision } from "@/types/application/moderation/sanction-proposal-decision";
 import type { SanctionProposalView } from "@/types/application/moderation/sanction-proposal-view";
+import type {
+  BulkDeletePostsResult,
+  SuspiciousPostView,
+} from "@/types/application/moderation/suspicious-post-view";
 import type { SuspiciousUsersView } from "@/types/application/moderation/suspicious-user-view";
 
 import { api } from "../api-client";
@@ -80,6 +84,14 @@ export const moderationApi = {
       type,
       reason,
     }),
+
+  /** Posts denunciados com score alto na pré-triagem (admin). */
+  suspiciousPosts: (minScore = 30, limit = 50) =>
+    api.get<SuspiciousPostView[]>(`/admin/posts/suspicious?minScore=${minScore}&limit=${limit}`),
+
+  /** Exclusão em lote (soft delete auditado) dos posts selecionados. */
+  bulkDeleteSuspiciousPosts: (postIds: string[], reason: string) =>
+    api.post<BulkDeletePostsResult>("/admin/posts/bulk-delete", { postIds, reason }),
 
   /** Contas recentes com sinais de abuso, para validação humana (admin). */
   suspiciousUsers: (limit = 100, days = 30) =>

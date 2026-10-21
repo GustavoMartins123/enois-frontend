@@ -193,6 +193,7 @@ export function PostComments({ postId }: PostIdProps) {
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const formData = new FormData(event.currentTarget);
     const content = draft.trim();
     if (!content || sending) return;
     // Comentar e uma acao: sem sessao (link compartilhado aberto por outra pessoa) vai para o login.
@@ -214,7 +215,14 @@ export function PostComments({ postId }: PostIdProps) {
           return uploaded ? `{{media:${uploaded}}}` : "";
         });
       }
-      const created = await commentsApi.create(postId, finalContent, replyToId, mentions, mediaIds);
+      const created = await commentsApi.create(
+        postId,
+        finalContent,
+        replyToId,
+        mentions,
+        mediaIds,
+        String(formData.get("website") ?? ""),
+      );
       addComment(postId, created);
       updateCommentCount(postId, 1);
       setDraft(postId, "");
@@ -330,6 +338,14 @@ export function PostComments({ postId }: PostIdProps) {
       </div>
 
       <form onSubmit={submit} className="mt-4 flex items-start gap-2 sm:gap-2.5">
+        <input
+          type="text"
+          name="website"
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          className="hidden"
+        />
         <UserAvatar
           frame={currentUser?.avatarFrame}
           src={currentUser?.avatar}
