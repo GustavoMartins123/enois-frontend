@@ -9,7 +9,7 @@ import type { StatProps } from "@/types/routes/network/stat-props";
 import { Check, Send, UserMinus, UserPlus, X } from "lucide-react";
 
 import { networkApi, profileApi } from "@/lib/api";
-import { getCurrentUserId } from "@/lib/current-user";
+import { useCurrentUser } from "@/lib/current-user";
 import { requireAuth } from "@/lib/require-auth";
 
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,10 @@ export const Route = createFileRoute("/rede")({
 
 function Rede() {
   const queryClient = useQueryClient();
-  const currentUserId = getCurrentUserId();
+  // Inscrito na query do /me: sem isso, o pedido que a pessoa ENVIOU aparecia como recebido
+  // (com o botao errado) ate alguma outra consulta redesenhar a tela.
+  const { data: currentUser } = useCurrentUser();
+  const currentUserId = currentUser?.id ?? null;
   const [localStatus, setLocalStatus] = useState<Record<string, string>>({});
 
   const { data: usersData } = useQuery({
@@ -217,7 +220,8 @@ function Rede() {
 }
 
 function RequestCard({ request, onAccept, onCancel }: RequestCardProps) {
-  const currentUserId = getCurrentUserId();
+  const { data: currentUser } = useCurrentUser();
+  const currentUserId = currentUser?.id ?? null;
   const isOutgoing = request.fromUserId === currentUserId;
   const targetUserId = isOutgoing ? request.toUserId : request.fromUserId;
 

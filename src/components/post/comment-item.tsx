@@ -8,7 +8,7 @@ import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { CommentItemProps } from "@/types/components/post/comment-item-props";
 
 import { REACTION_EMOJIS, commentsApi, profileApi, reactionsApi } from "@/lib/api";
-import { getCurrentUserId } from "@/lib/current-user";
+import { useCurrentUser } from "@/lib/current-user";
 import { hideExternalPageUrls } from "@/lib/shared-links";
 
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,10 @@ import { RichText } from "./rich-text";
 
 /** Um comentário (com responder, reagir e excluir). */
 export function CommentItem({ comment, replyingTo }: CommentItemProps) {
-  const currentUserId = getCurrentUserId();
+  // Inscrito na query do /me: sem isso, o comentario da propria pessoa so aparecia como tal
+  // depois que alguma outra consulta redesenhava a tela (o cache do /me chega em outra hora).
+  const { data: currentUser } = useCurrentUser();
+  const currentUserId = currentUser?.id ?? null;
   const postId = comment.postId;
   const setDraft = usePostCardStore((state) => state.setDraft);
   const setCommentMentions = usePostCardStore((state) => state.setCommentMentions);

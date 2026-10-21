@@ -28,7 +28,7 @@ import {
 import { groupsApi } from "@/lib/api";
 import { getSessionToken } from "@/lib/api-client";
 import { resolveCdnUrl } from "@/lib/api/media";
-import { getCurrentUserId } from "@/lib/current-user";
+import { useCurrentUser } from "@/lib/current-user";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
@@ -453,7 +453,10 @@ function GroupPostItem({
   const [showComments, setShowComments] = useState(false);
   const [removeOpen, setRemoveOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
-  const currentUserId = getCurrentUserId();
+  // Inscrito na query do /me: o proprio post do grupo so mostrava "excluir" depois que outra
+  // consulta redesenhava a tela.
+  const { data: currentUser } = useCurrentUser();
+  const currentUserId = currentUser?.id ?? null;
 
   const remove = useMutation({
     mutationFn: () => groupsApi.removePost(groupId, post.id),
