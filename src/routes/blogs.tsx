@@ -13,6 +13,7 @@ import { useIsAuthenticated } from "@/lib/use-auth";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/loading-state";
+import { PageHeader } from "@/components/ui/page-header";
 
 import { AppContainer } from "@/components/app-container";
 import { BlogEditorDialog } from "@/components/blog/blog-editor-dialog";
@@ -50,45 +51,39 @@ function Blogs() {
   return (
     <AppContainer>
       <div className="space-y-6">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight text-text-strong">
-              {texts.blog.title}
-            </h1>
+        <PageHeader
+          title={texts.blog.title}
+          description={texts.blog.description}
+          actions={
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-full gap-1.5"
+                onClick={() => {
+                  requireAuth();
+                  setEditorOpen(true);
+                }}
+              >
+                <PenLine className="h-4 w-4" aria-hidden />
 
-            <p className="mt-1 max-w-2xl text-sm font-normal text-muted-foreground">
-              {texts.blog.description}
-            </p>
-          </div>
+                <>{mine ? texts.blog.edit : texts.blog.create}</>
+              </Button>
 
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full gap-1.5"
-              onClick={() => {
-                requireAuth();
-                setEditorOpen(true);
-              }}
-            >
-              <PenLine className="h-4 w-4" aria-hidden />
-
-              <>{mine ? texts.blog.edit : texts.blog.create}</>
-            </Button>
-
-            {/* Post mora DENTRO de um blog: sem blog, o caminho é criar o blog primeiro (o botão
+              {/* Post mora DENTRO de um blog: sem blog, o caminho é criar o blog primeiro (o botão
                 ao lado) — não publicar num cantinho que ainda não existe. */}
-            {mine && (
-              <Link to="/blog/post/new">
-                <Button size="sm" className="rounded-full gap-1.5">
-                  <Plus className="h-4 w-4" aria-hidden />
+              {mine && (
+                <Link to="/blog/post/new">
+                  <Button size="sm" className="rounded-full gap-1.5">
+                    <Plus className="h-4 w-4" aria-hidden />
 
-                  <>{texts.blog.newPost}</>
-                </Button>
-              </Link>
-            )}
-          </div>
-        </div>
+                    <>{texts.blog.newPost}</>
+                  </Button>
+                </Link>
+              )}
+            </>
+          }
+        />
 
         {mine && (
           <Link

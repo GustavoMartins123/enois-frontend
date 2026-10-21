@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
@@ -103,32 +104,27 @@ function GamesHub() {
   return (
     <AppContainer>
       <div className="mx-auto w-full max-w-4xl">
-        <header className="mb-6 flex items-start justify-between gap-3">
-          <div>
-            <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
-              <Gamepad2 className="h-6 w-6 text-primary" />
-              Jogos
-            </h1>
+        <div className="mb-6">
+          <PageHeader
+            icon={Gamepad2}
+            title="Jogos"
+            description="Feitos pela comunidade. O Énóis não hospeda: cada jogo roda no lugar onde o criador o publicou — aqui só o convite."
+            actions={
+              authenticated && (
+                <>
+                  <Link
+                    to="/games/painel"
+                    className="inline-flex h-9 items-center rounded-full border border-border-soft px-3 text-sm font-medium transition hover:bg-muted"
+                  >
+                    {texts.games.panel.title}
+                  </Link>
 
-            <p className="mt-1 text-sm text-text-subtle">
-              Feitos pela comunidade. O Énóis não hospeda: cada jogo roda no lugar onde o criador o
-              publicou — aqui só o convite.
-            </p>
-          </div>
-
-          {authenticated && (
-            <div className="flex flex-wrap items-center justify-end gap-2">
-              <Link
-                to="/games/painel"
-                className="inline-flex h-9 items-center rounded-full border border-border-soft px-3 text-sm font-medium transition hover:bg-muted"
-              >
-                {texts.games.panel.title}
-              </Link>
-
-              <SubmitButton />
-            </div>
-          )}
-        </header>
+                  <SubmitButton />
+                </>
+              )
+            }
+          />
+        </div>
 
         {mine.data && mine.data.length > 0 && (
           <MyGames games={mine.data} onEdit={(game) => setEditing(game)} />

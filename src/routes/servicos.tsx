@@ -14,6 +14,7 @@ import { isAuthenticated } from "@/lib/use-auth";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
@@ -44,25 +45,21 @@ function Servicos() {
   return (
     <AppContainer>
       <div className="mx-auto w-full max-w-4xl">
-        <header className="mb-4 flex items-start justify-between gap-3">
-          <div>
-            <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
-              <Briefcase className="h-6 w-6 text-primary" />
-              Serviços
-            </h1>
-
-            <p className="mt-1 text-sm text-text-subtle">
-              Trabalho entre pessoas, pago em faíscas. Toda contratação retém as faíscas até você
-              aceitar a entrega — recusa devolve tudo.
-            </p>
-          </div>
-          {authenticated && (
-            <div className="flex shrink-0 gap-2">
-              <NewOfferButton />
-              <NewRequestButton />
-            </div>
-          )}
-        </header>
+        <div className="mb-4">
+          <PageHeader
+            icon={Briefcase}
+            title="Serviços"
+            description="Trabalho entre pessoas, pago em faíscas. Toda contratação retém as faíscas até você aceitar a entrega — recusa devolve tudo."
+            actions={
+              authenticated && (
+                <>
+                  <NewOfferButton />
+                  <NewRequestButton />
+                </>
+              )
+            }
+          />
+        </div>
 
         <div className="mb-4 flex gap-2">
           <button

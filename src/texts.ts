@@ -1,3 +1,22 @@
+/**
+ * Data do evento ("2026-10-23") em português curto. Lida em UTC de propósito: a data vem sem fuso
+ * e, lida no fuso local, "2026-10-23" virava 22 de outubro para quem está a oeste de Greenwich.
+ */
+function formatEventDate(date: string): string {
+  const parsed = new Date(`${date}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime())) return date;
+  const sameYear = parsed.getUTCFullYear() === new Date().getFullYear();
+  return parsed
+    .toLocaleDateString("pt-BR", {
+      day: "numeric",
+      month: "short",
+      year: sameYear ? undefined : "numeric",
+      timeZone: "UTC",
+    })
+    .replace(/\./g, "")
+    .replace(/ de /g, " ");
+}
+
 const common = {
   enter: "Entrar",
   createAccount: "Criar conta",
@@ -2168,7 +2187,8 @@ export const texts = {
     ],
     hostedBy: (host: string) => `por ${host}`,
     watchLive: "Assistir ao vivo",
-    dateTime: (date: string, time: string) => `${date} · ${time}`,
+    /** "23 out · 08:00"; o ano só aparece quando não é o atual ("31 dez 2029 · 23:59"). */
+    dateTime: (date: string, time: string) => `${formatEventDate(date)} · ${time}`,
     attend: "Confirmar presença",
     finished: "Encerrado",
     finishedHint:

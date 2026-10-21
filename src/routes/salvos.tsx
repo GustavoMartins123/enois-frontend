@@ -8,6 +8,7 @@ import { feedApi } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
 
 import { EmptyState } from "@/components/ui/empty-state";
+import { PageHeader } from "@/components/ui/page-header";
 
 import { AppContainer } from "@/components/app-container";
 import { PostCard } from "@/components/post-card";
@@ -29,28 +30,20 @@ function SavedPosts() {
   return (
     <AppContainer>
       <div className="space-y-6">
-        <div className="surface-card p-4 sm:p-6">
-          <div className="flex items-center gap-3">
-            <Link
-              to="/feed"
-              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft className="h-4 w-4" />
+        <Link
+          to="/feed"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
 
-              <>{texts.saved.back}</>
-            </Link>
-          </div>
+          <>{texts.saved.back}</>
+        </Link>
 
-          <div className="mt-4 flex items-center gap-2">
-            <Bookmark className="h-5 w-5 text-primary" />
-
-            <h1 className="text-2xl font-semibold tracking-tight">{texts.saved.title}</h1>
-          </div>
-
-          <p className="mt-1 text-sm text-muted-foreground">
-            {texts.saved.count(savedPosts.length)}
-          </p>
-        </div>
+        <PageHeader
+          icon={Bookmark}
+          title={texts.saved.title}
+          description={texts.saved.count(savedPosts.length)}
+        />
 
         {savedPosts.length === 0 ? (
           <div className="surface-card">
