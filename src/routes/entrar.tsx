@@ -22,6 +22,7 @@ import { storeSession } from "@/lib/session";
 import { useCaptchaConfig } from "@/lib/use-captcha-config";
 
 import { Button } from "@/components/ui/button";
+import { DateTextInput } from "@/components/ui/date-text-input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -403,10 +404,10 @@ function SignupForm(_props: AuthFormProps) {
         </Field>
 
         <Field label={texts.auth.fields.birthDate} error={errors.birthDate}>
-          <Input
+          <DateTextInput
             name="birthDate"
-            type="date"
             required
+            autoComplete="bday"
             min={`${new Date().getFullYear() - 120}-01-01`}
             max={new Date().toISOString().slice(0, 10)}
           />

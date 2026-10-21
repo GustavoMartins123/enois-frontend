@@ -9,6 +9,7 @@ import { BIRTH_DATE_REQUIRED_EVENT } from "@/lib/birth-date-required";
 import { hasSession } from "@/lib/require-auth";
 
 import { Button } from "@/components/ui/button";
+import { DateTextInput } from "@/components/ui/date-text-input";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +17,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/toast";
 
@@ -74,7 +74,7 @@ export function BirthDateGate() {
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
-    if (!birthDate) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(birthDate)) {
       setError(texts.birthDateGate.invalid);
       return;
     }
@@ -102,14 +102,14 @@ export function BirthDateGate() {
           <div className="space-y-2">
             <Label htmlFor="birth-date-gate-input">{texts.birthDateGate.label}</Label>
 
-            <Input
+            <DateTextInput
               id="birth-date-gate-input"
-              type="date"
               required
+              autoComplete="bday"
               min={oldest}
               max={today}
               value={birthDate}
-              onChange={(event) => setBirthDate(event.target.value)}
+              onValueChange={setBirthDate}
             />
           </div>
 

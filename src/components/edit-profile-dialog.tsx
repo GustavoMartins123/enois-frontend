@@ -24,6 +24,7 @@ import { ISO_DATE, hasMinAge } from "@/lib/min-age";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
+import { DateTextInput } from "@/components/ui/date-text-input";
 import {
   Dialog,
   DialogContent,
@@ -396,10 +397,10 @@ export function EditProfileDialog({ profile, children }: Props) {
                 </Field>
 
                 <Field label={texts.profile.edit.fields.birthDate}>
-                  <Input
-                    type="date"
+                  <DateTextInput
+                    autoComplete="bday"
                     value={birthDate}
-                    onChange={(e) => setBirthDate(e.target.value)}
+                    onValueChange={setBirthDate}
                     max={new Date().toISOString().slice(0, 10)}
                     className="h-10 border-border-soft bg-surface-1"
                   />

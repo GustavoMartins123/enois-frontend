@@ -2968,6 +2968,12 @@ export const texts = {
     viewJobs: "Ver vagas",
     empty: "Nenhuma empresa encontrada.",
   },
+  /** Campo de data digitável (dd/mm/aaaa). */
+  dateInput: {
+    placeholder: "dd/mm/aaaa",
+    invalid: "Digite uma data válida no formato dd/mm/aaaa.",
+    outOfRange: "Confira a data: ela está fora do intervalo permitido.",
+  },
   /** Diálogo global de regularização da data de nascimento (ECA Digital). */
   birthDateGate: {
     title: "Confirme sua data de nascimento",
