@@ -6,4 +6,9 @@ export type SignupInput = LoginInput & {
   acceptedTerms: boolean;
   /** Honeypot — nunca preenchido por humanos. */
   website?: string;
+  /** Turnstile/Cloudflare (quando configurado no backend). */
+  turnstileToken?: string;
+  /** Desafio próprio do backend (fallback sem Turnstile). */
+  challengeId?: string;
+  challengeAnswer?: number;
 };

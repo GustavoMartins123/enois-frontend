@@ -379,6 +379,13 @@ export const texts = {
       resetTitle: "Redefinir senha · Énóis",
       resetDescription: "Defina uma nova senha para sua conta na Énóis.",
     },
+    captcha: {
+      label: "Verificação de segurança",
+      loading: "Carregando a pergunta...",
+      placeholder: "Resposta",
+      refresh: "Trocar pergunta",
+      required: "Resolva a verificação de segurança para criar a conta.",
+    },
     signup: {
       title: "Vamos começar.",
       subtitle: "Crie sua conta em menos de um minuto.",
@@ -2765,6 +2772,42 @@ export const texts = {
       applications: "Candidaturas",
       users: "Usuários",
       emails: "E-mails",
+      suspicious: "Suspeitos",
+    },
+    suspicious: {
+      title: "Contas suspeitas",
+      description:
+        "Contas recentes com sinais de cadastro em série: nome repetido ou de teste, e-mail não confirmado, perfil vazio e denúncias contra. Revise e selecione o que banir — o lote não apaga conteúdo, só aplica o banimento pelo fluxo normal.",
+      empty: "Nenhuma conta suspeita no período.",
+      emptyHint:
+        "Os sinais avaliados são nome em série, e-mail não confirmado, perfil vazio e denúncias.",
+      selectAll: "Selecionar todas",
+      clear: "Limpar seleção",
+      selected: (count: number) => `${count} selecionada(s)`,
+      reasonPlaceholder: "Motivo do banimento (mínimo de 10 caracteres)",
+      typeBan: "Banir",
+      typePermanent: "Banir permanentemente",
+      ban: (count: number) => (count === 0 ? "Banir selecionadas" : `Banir ${count} conta(s)`),
+      confirmTitle: "Banir em lote",
+      confirmBody: (count: number, type: "BAN" | "PERMABAN") =>
+        `Aplicar ${type === "PERMABAN" ? "banimento permanente" : "banimento"} em ${count} conta(s)? As sessões serão revogadas e o login bloqueado.`,
+      confirm: "Banir agora",
+      result: (banned: number, already: number, failed: number) =>
+        `${banned} banida(s), ${already} já estavam banidas, ${failed} falha(s).`,
+      error: "Não foi possível banir as contas selecionadas.",
+      risk: (score: number) => `risco ${score}`,
+      createdAt: (date: string) => `criada em ${date}`,
+      counts: (posts: number, comments: number, reports: number) =>
+        `${posts} post(s) · ${comments} comentário(s) · ${reports} denúncia(s) contra`,
+      signals: {
+        NOME_SUSPEITO: "Nome em série",
+        NOME_REPETIDO: "Nome repetido",
+        EMAIL_NAO_VERIFICADO: "E-mail não confirmado",
+        SEM_CONTEUDO: "Sem conteúdo",
+        PERFIL_VAZIO: "Perfil vazio",
+        CONTA_NOVA: "Conta nova",
+        DENUNCIAS_CONTRA: "Denúncias contra",
+      } as Record<string, string>,
     },
     games: {
       title: "Jogos esperando revisão",
