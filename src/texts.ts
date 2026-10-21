@@ -515,6 +515,10 @@ export const texts = {
     },
     verify: {
       title: "Confirmando e-mail · Énóis",
+      confirmTitle: "Confirme seu e-mail",
+      confirmDescription:
+        "Clique no botão para ativar sua conta. O link vale por 24 horas e só funciona uma vez.",
+      confirmButton: "Confirmar meu e-mail",
       verifying: "Confirmando seu e-mail...",
       doneTitle: "E-mail confirmado!",
       doneDescription: "Sua conta está ativa. Vamos te levar para o app.",

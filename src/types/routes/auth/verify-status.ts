@@ -1,1 +1,1 @@
-export type VerifyStatus = "verifying" | "done" | "invalid" | "used" | "expired";
+export type VerifyStatus = "confirm" | "verifying" | "done" | "invalid" | "used" | "expired";
