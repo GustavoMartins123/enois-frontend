@@ -11,7 +11,7 @@ import type { SendMessageInput } from "@/types/routes/messages/send-message-inpu
 import { ArrowLeft, Image as ImageIcon, Search, Send, X } from "lucide-react";
 
 import { messagesApi, networkApi, profileApi } from "@/lib/api";
-import { getCurrentUserId } from "@/lib/current-user";
+import { useCurrentUser } from "@/lib/current-user";
 import { requireAuth } from "@/lib/require-auth";
 import { insertSnippet } from "@/lib/rich-text/insert-snippet";
 import { useMediaUpload } from "@/lib/use-media-upload";
@@ -40,7 +40,10 @@ export const Route = createFileRoute("/mensagens")({
 
 function Mensagens() {
   const { conversation } = Route.useSearch();
-  const currentUserId = getCurrentUserId();
+  // Inscrito na query do /me: quando a resposta chega, a tela redesenha com o id certo (sem
+  // isso, a busca de "outro participante" ficava com o id de quem esta olhando).
+  const { data: currentUser } = useCurrentUser();
+  const currentUserId = currentUser?.id ?? null;
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const upload = useMediaUpload();
@@ -764,7 +767,8 @@ function ConversationItem({
   selected,
   onToggle,
 }: ConversationItemProps) {
-  const currentUserId = getCurrentUserId();
+  const { data: currentUser } = useCurrentUser();
+  const currentUserId = currentUser?.id ?? null;
   const otherId = conversation.participantIds.find((id) => id !== currentUserId);
   const { data: otherUser } = useQuery({
     queryKey: ["profile", "by-id", otherId],
@@ -826,7 +830,8 @@ function ConversationItem({
 }
 
 function ConversationHeader({ conversation, onBack, action }: ConversationHeaderProps) {
-  const currentUserId = getCurrentUserId();
+  const { data: currentUser } = useCurrentUser();
+  const currentUserId = currentUser?.id ?? null;
   const otherId = conversation.participantIds.find((id) => id !== currentUserId);
   const { data: otherUser } = useQuery({
     queryKey: ["profile", "by-id", otherId],
