@@ -59,7 +59,12 @@ export function usePostReaction(postId: string): UsePostReactionResult {
 
       // A lista do diálogo recebe a minha entrada na hora; o refetch do fim troca pela do servidor.
       queryClient.setQueryData<ReactionsListResponse>(queryKey, (current) => {
-        const base = current ?? { summary: {}, reactions: [] };
+        // Sem cache (o card leu o resumo do próprio post), parte das contagens do feed, não de zero.
+        const base = current ?? {
+          summary: card?.reactionSummary ?? {},
+          reactions: [],
+          partial: true,
+        };
         const myId = user?.id;
         const others = myId ? base.reactions.filter((r) => r.userId !== myId) : base.reactions;
         const withoutMine =
