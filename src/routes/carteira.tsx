@@ -426,14 +426,14 @@ function LojaSection() {
             {itens
               .filter((item) => ANIMATED_FRAMES.includes(item.id) === category.animated)
               .map((item) => (
-                <li key={item.id} className="rounded-xl border border-border-soft p-3">
+                <li key={item.id} className="min-w-0 rounded-xl border border-border-soft p-3">
                   <div className="flex items-center gap-3">
                     <UserAvatar
                       frame={item.id}
                       alt={item.name}
                       fallback="✦"
                       // As com efeito vazam do círculo: um pouco maiores e com folga para o desenho caber.
-                      className={isFxFrame(item.id) ? "mx-1.5 h-12 w-12" : "h-10 w-10"}
+                      className={isFxFrame(item.id) ? "mx-2.5 h-12 w-12" : "h-10 w-10"}
                     />
 
                     <span className="min-w-0 flex-1">

@@ -18,7 +18,7 @@ function tracejado() {
 
 /** O disco de acreção quase de lado: elipses achatadas, o de dentro gira mais rápido. */
 const DISCO = Array.from({ length: 12 }, (_, i) => {
-  const rx = 55 + i * 3;
+  const rx = 55 + i * 2.3;
   return {
     rx,
     ry: round(rx * 0.13),
@@ -51,7 +51,7 @@ const VOLTA_DO_BRILHO = 2.4;
 
 /** As faixas de corpo (preenchidas) por baixo das estrias. */
 const CORPO_DO_DISCO =
-  "M-90 0 A90 12 0 1 0 90 0 A90 12 0 1 0 -90 0 Z M-54 0 A54 6 0 1 0 54 0 A54 6 0 1 0 -54 0 Z";
+  "M-82 0 A82 11 0 1 0 82 0 A82 11 0 1 0 -82 0 Z M-54 0 A54 6 0 1 0 54 0 A54 6 0 1 0 -54 0 Z";
 const CORPO_DE_CIMA = "M-51.5 0 A51.5 51.5 0 0 1 51.5 0 L62 0 A62 68 0 0 0 -62 0 Z";
 const CORPO_DE_BAIXO = "M-51.5 0 A51.5 51.5 0 0 0 51.5 0 L55 0 A55 54 0 0 1 -55 0 Z";
 
