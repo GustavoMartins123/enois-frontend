@@ -263,6 +263,11 @@ function ConnectionRequestItem({
   const avatar = profile?.avatar;
   const headline = profile?.headline;
 
+  // Usuario banido/removido: o perfil ainda existe mas o username vira "removed-...".
+  // Mostrar a solicitacao nao faz sentido — aceitar nao teria efeito.
+  const isRemoved = username?.startsWith("removed-") || name === "Usuario removido";
+  if (isRemoved) return null;
+
   return (
     <div className="flex items-start gap-3 border-b border-border-soft px-4 py-3 last:border-b-0">
       <button
