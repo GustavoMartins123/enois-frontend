@@ -1,5 +1,6 @@
 import type { RequestOptions } from "@/types/application/api/request-options";
 
+import { notifyBirthDateRequired } from "./birth-date-required";
 import { resetSessionScopedData } from "./query-client";
 import { dropSessionKey } from "./session-key";
 
@@ -293,6 +294,11 @@ async function request<T>(
         "É necessário entrar para ver isso.",
         path,
       );
+    }
+    // Escrever (postar, comentar, mensagem) exige a data de nascimento declarada: em vez de só
+    // mostrar o erro, o app abre o diálogo de regularização em qualquer tela.
+    if (errorBody?.code === "BIRTH_DATE_REQUIRED") {
+      notifyBirthDateRequired();
     }
     throw new ApiError(
       response.status,

@@ -213,6 +213,7 @@ function RootInsideProvider() {
       <BirthDateDialog />
       <InstallPwaBanner />
       <HealthyUsageGuard />
+      <BirthDateGate />
     </ToastProvider>
   );
 }
