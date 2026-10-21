@@ -10,7 +10,18 @@ import type { UpdateProfileRequest } from "@/types/application/profile/update-pr
 
 import { api } from "../api-client";
 
+export interface AgeState {
+  state: "BIRTH_DATE_REQUIRED" | "ADULT_DECLARED" | "MINOR_DECLARED";
+  minor: boolean;
+  declared: boolean;
+}
+
 export const profileApi = {
+  ageState: () => api.get<AgeState>("/me/age-state"),
+
+  declareBirthDate: (birthDate: string) =>
+    api.post<AgeState>("/me/birth-date", { birthDate }),
+
   /** Liga/desliga a secao de ranking no perfil (preferencia da conta; padrao: mostrar). */
   setRanking: (show: boolean) => api.put<{ id: string; status: string }>("/me/ranking", { show }),
 

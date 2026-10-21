@@ -273,6 +273,15 @@ async function request<T>(
   // "É necessário entrar para ver isso" — a resposta de 401 ja dizia "Email ou senha invalidos".
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
+
+    // ECA Digital: data de nascimento obrigatoria. Abre o dialog de regularizacao em vez de
+    // propagar um erro que o usuario nao saberia resolver.
+    if (response.status === 403 && errorBody?.code === "BIRTH_DATE_REQUIRED") {
+      const { useBirthDateGateStore } = await import("@/stores/birth-date-gate.store");
+      useBirthDateGateStore.getState().show();
+      throw new ApiError(response.status, errorBody.code, errorBody.message, path);
+    }
+
     if (
       !errorBody?.code &&
       !errorBody?.message &&
