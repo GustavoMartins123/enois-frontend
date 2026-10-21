@@ -73,8 +73,12 @@ export function NotificationsPopover() {
 
   // Módulo desativado não volta pela porta do sino: a notificação dele fica fora da lista
   // (mesma fonte de verdade do menu — /me/preferences).
+  // Convites de conexao agora vivem na tab Solicitacoes — tirar das notificacoes normais
+  // evita duplicidade (a mesma pessoa aparecia em Novas e em Solicitacoes ao mesmo tempo).
   const notificationList = (notificationsData?.items ?? []).filter(
-    (notification) => !isNotificationHidden(notification.kind, disabledModules),
+    (notification) =>
+      !isNotificationHidden(notification.kind, disabledModules) &&
+      notification.kind !== "connection_request",
   );
   const unreadCount = notificationList.filter((notification) => !notification.read).length;
   const displayedNotifications = notificationList.filter((notification) =>
