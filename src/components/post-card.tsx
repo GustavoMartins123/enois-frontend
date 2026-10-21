@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
+import { TOPIC_LABELS } from "@/constants/community-topics";
 import { postContentLimit } from "@/constants/post-content-limits";
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { POST_SEALS, postSeal } from "@/constants/post-seals";
@@ -287,6 +288,16 @@ export function PostCard({
           >
             {meta.label}
           </span>
+
+          {/* O assunto (categoria) do post fica ao lado do tipo, quando o autor classificou. */}
+          {post.topic && (
+            <span
+              className="inline-flex items-center rounded-full border border-border-soft px-2.5 py-1 text-xs font-medium text-text-subtle"
+              title={texts.feed.composer.topic}
+            >
+              {TOPIC_LABELS[post.topic as keyof typeof TOPIC_LABELS] ?? post.topic}
+            </span>
+          )}
 
           {post.type === "MOMENT" && post.expiresAt && (
             <span
