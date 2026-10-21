@@ -388,7 +388,8 @@ function LojaSection() {
       void queryClient.invalidateQueries({ queryKey: ["carteira"] });
       toast("Moldura comprada. Agora você pode equipá-la.", "success");
     },
-    onError: () => toast("Não foi possível comprar a moldura. Confira seu saldo e tente novamente.", "error"),
+    onError: () =>
+      toast("Não foi possível comprar a moldura. Confira seu saldo e tente novamente.", "error"),
   });
   const equip = useMutation({
     mutationFn: (id: string) => lojaApi.equip(id),
@@ -408,64 +409,82 @@ function LojaSection() {
     <section className="surface-card space-y-3 p-6" aria-label="Loja de molduras">
       <div className="flex items-center gap-2 text-text-subtle">
         <ShoppingBag className="h-4 w-4 text-primary" />
-        <span className="text-xs font-medium uppercase tracking-widest">Loja · molduras de avatar</span>
+
+        <span className="text-xs font-medium uppercase tracking-widest">
+          Loja · molduras de avatar
+        </span>
       </div>
 
       {[
         { label: "Simples", animated: false },
         { label: "Animadas", animated: true },
       ].map((category) => (
-      <div key={category.label} className="space-y-2">
-        <h3 className="text-sm font-semibold text-text-strong">{category.label}</h3>
-        <ul className="grid gap-2 sm:grid-cols-2">
-        {itens.filter((item) => ANIMATED_FRAMES.includes(item.id) === category.animated).map((item) => (
-          <li key={item.id} className="rounded-xl border border-border-soft p-3">
-            <div className="flex items-center gap-3">
-              <UserAvatar
-                frame={item.id}
-                alt={item.name}
-                fallback="✦"
-                // As com efeito vazam do círculo: um pouco maiores e com folga para o desenho caber.
-                className={isFxFrame(item.id) ? "mx-1.5 h-12 w-12" : "h-10 w-10"}
-              />
-              <span className="min-w-0 flex-1">
-                <span className="block truncate text-sm font-semibold">{item.name}</span>
-                <span className="block truncate text-xs text-text-subtle">{item.description}</span>
-              </span>
-              <span className="shrink-0 text-sm font-semibold text-primary-text">
-                {formatFaisca(item.priceMf)}
-              </span>
-            </div>
-            <div className="mt-2 flex justify-end gap-2">
-              {item.equipped ? (
-                <Button size="sm" variant="outline" className="rounded-full" disabled={equip.isPending} onClick={() => equip.mutate("none")}>
-                  Desequipar
-                </Button>
-              ) : item.owned ? (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="rounded-full"
-                  disabled={equip.isPending}
-                  onClick={() => equip.mutate(item.id)}
-                >
-                  Equipar
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  className="rounded-full"
-                  disabled={buy.isPending}
-                  onClick={() => buy.mutate(item.id)}
-                >
-                  Comprar
-                </Button>
-              )}
-            </div>
-          </li>
-        ))}
-        </ul>
-      </div>
+        <div key={category.label} className="space-y-2">
+          <h3 className="text-sm font-semibold text-text-strong">{category.label}</h3>
+
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {itens
+              .filter((item) => ANIMATED_FRAMES.includes(item.id) === category.animated)
+              .map((item) => (
+                <li key={item.id} className="rounded-xl border border-border-soft p-3">
+                  <div className="flex items-center gap-3">
+                    <UserAvatar
+                      frame={item.id}
+                      alt={item.name}
+                      fallback="✦"
+                      // As com efeito vazam do círculo: um pouco maiores e com folga para o desenho caber.
+                      className={isFxFrame(item.id) ? "mx-1.5 h-12 w-12" : "h-10 w-10"}
+                    />
+
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold">{item.name}</span>
+
+                      <span className="block truncate text-xs text-text-subtle">
+                        {item.description}
+                      </span>
+                    </span>
+
+                    <span className="shrink-0 text-sm font-semibold text-primary-text">
+                      {formatFaisca(item.priceMf)}
+                    </span>
+                  </div>
+
+                  <div className="mt-2 flex justify-end gap-2">
+                    {item.equipped ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="rounded-full"
+                        disabled={equip.isPending}
+                        onClick={() => equip.mutate("none")}
+                      >
+                        Desequipar
+                      </Button>
+                    ) : item.owned ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="rounded-full"
+                        disabled={equip.isPending}
+                        onClick={() => equip.mutate(item.id)}
+                      >
+                        Equipar
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        className="rounded-full"
+                        disabled={buy.isPending}
+                        onClick={() => buy.mutate(item.id)}
+                      >
+                        Comprar
+                      </Button>
+                    )}
+                  </div>
+                </li>
+              ))}
+          </ul>
+        </div>
       ))}
 
       <p className="text-xs text-text-subtle">A moldura equipada acompanha seu avatar.</p>
