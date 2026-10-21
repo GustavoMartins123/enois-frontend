@@ -1,3 +1,4 @@
+import type { BulkBanResult } from "@/types/application/moderation/bulk-ban-result";
 import type { EmailLogView } from "@/types/application/moderation/email-log-view";
 import type { GameReviewView } from "@/types/application/moderation/game-review-view";
 import type { ModeratorApplicationView } from "@/types/application/moderation/moderator-application-view";
@@ -7,6 +8,7 @@ import type { ModeratorSanctionResult } from "@/types/application/moderation/mod
 import type { ModeratorVoteResult } from "@/types/application/moderation/moderator-vote-result";
 import type { SanctionProposalDecision } from "@/types/application/moderation/sanction-proposal-decision";
 import type { SanctionProposalView } from "@/types/application/moderation/sanction-proposal-view";
+import type { SuspiciousUsersView } from "@/types/application/moderation/suspicious-user-view";
 
 import { api } from "../api-client";
 
@@ -73,24 +75,32 @@ export const moderationApi = {
   cancelSanction: (proposalId: string) =>
     api.post<SanctionProposalView>(`/admin/sanction-proposals/${proposalId}/cancel`, {}),
 
-  sanctionUser: (
-    username: string,
-    type: "RESTRICTION" | "BAN" | "PERMABAN",
-    reason: string,
-  ) => api.post<ModeratorSanctionResult>(`/admin/users/${encodeURIComponent(username)}/sanction`, {
-    type,
-    reason,
-  }),
+  sanctionUser: (username: string, type: "RESTRICTION" | "BAN" | "PERMABAN", reason: string) =>
+    api.post<ModeratorSanctionResult>(`/admin/users/${encodeURIComponent(username)}/sanction`, {
+      type,
+      reason,
+    }),
+
+  /** Contas recentes com sinais de abuso, para validação humana (admin). */
+  suspiciousUsers: (limit = 100, days = 30) =>
+    api.get<SuspiciousUsersView>(`/admin/users/suspicious?limit=${limit}&days=${days}`),
+
+  /** Banimento em lote: cada item tem resultado próprio; uma conta inválida não cancela as outras. */
+  bulkBan: (usernames: string[], type: "BAN" | "PERMABAN", reason: string) =>
+    api.post<BulkBanResult>("/admin/users/bulk-ban", { usernames, type, reason }),
 
   /**
    * Sanitizar usuário: apaga do banco TODOS os posts e comentários dele (conta banida por spam).
    * Diferente da remoção por denúncia (soft delete): aqui a linha sai do banco de verdade.
    */
   sanitizeUser: (username: string, reason: string) =>
-    api.post<{ userId: string; username: string; posts: number; comments: number; otherRows: number }>(
-      `/admin/users/${encodeURIComponent(username)}/sanitize`,
-      { note: reason },
-    ),
+    api.post<{
+      userId: string;
+      username: string;
+      posts: number;
+      comments: number;
+      otherRows: number;
+    }>(`/admin/users/${encodeURIComponent(username)}/sanitize`, { note: reason }),
 
   /** IPs recentes de onde o usuário entrou — a fonte para escolher o que bloquear. */
   userIps: (username: string) =>

@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import { SIGNUP_OPEN } from "@/constants/account";
 import { texts } from "@/texts";
 import { ArrowRight, LifeBuoy, Mail } from "lucide-react";
 
@@ -74,13 +74,15 @@ function GuestContact() {
           <p className="text-sm text-muted-foreground">{texts.support.contactAccountDescription}</p>
 
           <div className="flex flex-wrap gap-3">
-            <Link to="/entrar" search={{ tab: "signup" }}>
-              <Button className="gap-2 rounded-full">
-                <>{texts.common.createAccount} </>
+            {SIGNUP_OPEN && (
+              <Link to="/entrar" search={{ tab: "signup" }}>
+                <Button className="gap-2 rounded-full">
+                  <>{texts.common.createAccount} </>
 
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </Link>
+            )}
 
             <Link to="/entrar" search={{ tab: "login" }}>
               <Button variant="outline" className="rounded-full">

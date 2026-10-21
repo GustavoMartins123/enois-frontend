@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import { SIGNUP_OPEN } from "@/constants/account";
 import { texts } from "@/texts";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 
@@ -10,9 +11,8 @@ import { statsApi } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
 
-import { ThemeToggle } from "@/components/theme-toggle";
-
 import { ApoieBanner } from "@/components/apoie-banner";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export const Route = createFileRoute("/")({
   head: () => {
@@ -102,11 +102,13 @@ function Landing() {
               </Link>
             </Button>
 
-            <Button asChild size="sm" className="rounded-full px-3 text-sm sm:px-4">
-              <Link to="/entrar" search={{ tab: "signup" }}>
-                {texts.common.createAccount}
-              </Link>
-            </Button>
+            {SIGNUP_OPEN && (
+              <Button asChild size="sm" className="rounded-full px-3 text-sm sm:px-4">
+                <Link to="/entrar" search={{ tab: "signup" }}>
+                  {texts.common.createAccount}
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -133,8 +135,8 @@ function Landing() {
 
             <div className="mt-9 flex flex-wrap items-center gap-3">
               <Button asChild size="lg" className="gap-2 rounded-full px-7">
-                <Link to="/entrar" search={{ tab: "signup" }}>
-                  {texts.landing.hero.join}
+                <Link to="/entrar" search={{ tab: SIGNUP_OPEN ? "signup" : "login" }}>
+                  {SIGNUP_OPEN ? texts.landing.hero.join : texts.common.enter}
 
                   <ArrowRight className="h-4 w-4" aria-hidden />
                 </Link>
@@ -494,13 +496,15 @@ function Landing() {
             </div>
 
             <div className="flex flex-col items-start gap-3">
-              <Button asChild size="lg" className="gap-2 rounded-full px-7">
-                <Link to="/entrar" search={{ tab: "signup" }}>
-                  {texts.landing.finalCta.createAccount}
+              {SIGNUP_OPEN && (
+                <Button asChild size="lg" className="gap-2 rounded-full px-7">
+                  <Link to="/entrar" search={{ tab: "signup" }}>
+                    {texts.landing.finalCta.createAccount}
 
-                  <ArrowRight className="h-4 w-4" aria-hidden />
-                </Link>
-              </Button>
+                    <ArrowRight className="h-4 w-4" aria-hidden />
+                  </Link>
+                </Button>
+              )}
 
               <Button asChild size="lg" variant="outline" className="rounded-full px-7">
                 <Link to="/entrar" search={{ tab: "login" }}>
