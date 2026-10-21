@@ -4,6 +4,8 @@ import type { SandboxedHtmlFrameProps } from "@/types/components/post/sandboxed-
 
 import { cn } from "@/lib/utils";
 
+import { useFrameTheme } from "./use-frame-theme";
+
 /**
  * Renderiza o HTML de uma pagina dentro de um iframe isolado.
  *
@@ -34,6 +36,7 @@ export function SandboxedHtmlFrame({
   clip = false,
 }: SandboxedHtmlFrameProps) {
   const frame = useRef<HTMLIFrameElement>(null);
+  const theme = useFrameTheme(frame);
   const [measured, setMeasured] = useState<number | null>(null);
   // Recorte nunca cresce: a altura vem da classe, e o HTML do autor se ajusta a ela ou é cortado.
   const grows = autoHeight && !clip;
@@ -118,7 +121,7 @@ export function SandboxedHtmlFrame({
       className={cn("w-full border-0 bg-transparent", className)}
       // A classe do chamador continua valendo como altura ate a medida chegar (o SSR nao mede):
       // o estilo em linha e que manda depois dela.
-      style={grows && measured ? { height: measured } : undefined}
+      style={{ colorScheme: theme, ...(grows && measured ? { height: measured } : {}) }}
     />
   );
 }
@@ -147,8 +150,8 @@ const FRAME_CSP = [
 
 /**
  * Aparencia base da pagina colada. Entra ANTES do `<style>` do autor, entao o CSS dele sobrescreve
- * o que quiser. Fundo claro de proposito: uma pagina colada assume papel branco, e o quadro
- * precisa ler como "site dentro do post", nao como parte do tema do app.
+ * o que quiser. Fundos e textos usam `light-dark()`: o pai grava `color-scheme` light ou dark no
+ * quadro, e a cor acompanha o tema do app em vez do sistema operacional.
  */
 function buildBaseCss(innerPadding: boolean, clip: boolean): string {
   const padding = innerPadding ? "14px 16px" : "0";
@@ -164,18 +167,18 @@ p{margin:.5em 0}
 img,video,svg,canvas{max-width:100%;height:auto}
 figure{margin:.8em 0}
 audio{width:100%}
-figcaption{font-size:12px;color:#666;margin-top:4px}
-a{color:#7c3aed}
+figcaption{font-size:12px;color:light-dark(#666,#b3b0c9);margin-top:4px}
+a{color:light-dark(#7c3aed,#c4b5fd)}
 ul,ol{padding-left:1.4em}
 table{border-collapse:collapse;max-width:100%;font-size:13px}
-th,td{border:1px solid #e3e3e3;padding:5px 8px;text-align:left}
-pre{overflow-x:auto;background:#f5f5f5;padding:10px;border-radius:8px}
+th,td{border:1px solid light-dark(#e3e3e3,#3f3d55);padding:5px 8px;text-align:left}
+pre{overflow-x:auto;background:light-dark(#f5f5f5,#221f33);color:light-dark(#1a1a1a,#e8e6ff);padding:10px;border-radius:8px}
 code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px}
-blockquote{margin:.6em 0;padding-left:12px;border-left:3px solid #ddd;color:#555}
+blockquote{margin:.6em 0;padding-left:12px;border-left:3px solid light-dark(#ddd,#4a4860);color:light-dark(#555,#c8c6dc)}
 /* Onde vai um player embutido: o quadro não roda script, então o vídeo/áudio aparece logo abaixo
    da página. Aqui fica a marca do lugar dele, para a página não perder a referência visual. */
-[data-enois-embed]{display:block;aspect-ratio:16/9;background:#f2f2f5;border-radius:10px;
-border:1px dashed #cfcfd6;margin:.8em 0}`;
+[data-enois-embed]{display:block;aspect-ratio:16/9;background:light-dark(#f2f2f5,#221f33);border-radius:10px;
+border:1px dashed light-dark(#cfcfd6,#4a4860);margin:.8em 0}`;
 }
 
 function buildDocument(html: string, innerPadding: boolean, clip: boolean): string {

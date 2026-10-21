@@ -1497,7 +1497,7 @@ export const texts = {
       title: "Bio em HTML/CSS",
       label: "HTML/CSS da bio",
       description:
-        "Escreva sua bio com HTML e CSS: imagens, vídeo e áudio por link https tocam dentro dela. Scripts, formulários e requisições externas não rodam, e nada aqui alcança a conta de quem visita.",
+        "Escreva sua bio com HTML e CSS: imagens, vídeo e áudio por link https tocam dentro dela. Scripts, formulários e requisições externas não rodam, e nada aqui alcança a conta de quem visita. Fundo e texto acompanham o tema do app com var(--background), var(--foreground), light-dark() ou prefers-color-scheme. Uma cor escrita na mão, como #0b0b12 ou #fff, fica como você pintou.",
       placeholder: "Cole ou escreva o HTML da sua bio...",
       empty: "Cole um HTML para ver a pré-visualização.",
       frameTitle: "Bio em HTML do perfil",
