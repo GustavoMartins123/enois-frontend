@@ -16,6 +16,7 @@ import {
   Flag,
   Gamepad2,
   Gavel,
+  History,
   LifeBuoy,
   Mail,
   Scale,
@@ -60,6 +61,7 @@ const ALL_TABS: { id: ModeratorTabId; label: string; icon: typeof Flag; adminOnl
   { id: "games", label: texts.moderator.tabs.games, icon: Gamepad2, adminOnly: false },
   { id: "support", label: texts.moderator.tabs.support, icon: LifeBuoy, adminOnly: true },
   { id: "issues", label: texts.moderator.tabs.issues, icon: Bug, adminOnly: true },
+  { id: "history", label: texts.moderator.tabs.history, icon: History, adminOnly: true },
   { id: "appeals", label: texts.moderator.tabs.appeals, icon: ShieldAlert, adminOnly: true },
   { id: "disputes", label: texts.moderator.tabs.disputes, icon: Scale, adminOnly: true },
   {
@@ -186,8 +188,11 @@ function Moderador() {
 
             {activeTab === "reports" && <ReportsSection admin={me.admin} />}
             {activeTab === "games" && <GamesReviewSection />}
-            {me.admin && activeTab === "support" && <SupportTicketsSection />}
-            {me.admin && activeTab === "issues" && <SupportTicketsSection lockedCategory="BUG" />}
+            {me.admin && activeTab === "support" && <SupportTicketsSection mode="active" />}
+            {me.admin && activeTab === "issues" && (
+              <SupportTicketsSection lockedCategory="BUG" mode="active" />
+            )}
+            {me.admin && activeTab === "history" && <SupportTicketsSection mode="history" />}
             {me.admin && activeTab === "appeals" && <AppealsSection />}
             {me.admin && activeTab === "disputes" && <DisputesSection />}
             {me.admin && activeTab === "applications" && <ApplicationsSection />}
@@ -426,7 +431,10 @@ function ReportsSection({ admin }: { admin: boolean }) {
           <div className="flex flex-wrap gap-1.5">
             <button
               type="button"
-              onClick={() => { setFilterReason(null); setFilterTarget(null); }}
+              onClick={() => {
+                setFilterReason(null);
+                setFilterTarget(null);
+              }}
               className={cn(
                 "rounded-full px-2.5 py-1 text-xs font-medium transition",
                 !filterReason && !filterTarget
@@ -441,7 +449,10 @@ function ReportsSection({ admin }: { admin: boolean }) {
               <button
                 key={reason}
                 type="button"
-                onClick={() => { setFilterReason(filterReason === reason ? null : reason); setFilterTarget(null); }}
+                onClick={() => {
+                  setFilterReason(filterReason === reason ? null : reason);
+                  setFilterTarget(null);
+                }}
                 className={cn(
                   "rounded-full px-2.5 py-1 text-xs font-medium transition",
                   filterReason === reason
@@ -453,21 +464,25 @@ function ReportsSection({ admin }: { admin: boolean }) {
               </button>
             ))}
 
-            {activeTargets.length > 1 && activeTargets.map((target) => (
-              <button
-                key={target}
-                type="button"
-                onClick={() => { setFilterTarget(filterTarget === target ? null : target); setFilterReason(null); }}
-                className={cn(
-                  "rounded-full px-2.5 py-1 text-xs font-medium transition",
-                  filterTarget === target
-                    ? "bg-primary text-primary-foreground"
-                    : "border border-border-soft text-text-subtle hover:border-primary/50",
-                )}
-              >
-                {texts.moderator.reports.targets[target] ?? target}
-              </button>
-            ))}
+            {activeTargets.length > 1 &&
+              activeTargets.map((target) => (
+                <button
+                  key={target}
+                  type="button"
+                  onClick={() => {
+                    setFilterTarget(filterTarget === target ? null : target);
+                    setFilterReason(null);
+                  }}
+                  className={cn(
+                    "rounded-full px-2.5 py-1 text-xs font-medium transition",
+                    filterTarget === target
+                      ? "bg-primary text-primary-foreground"
+                      : "border border-border-soft text-text-subtle hover:border-primary/50",
+                  )}
+                >
+                  {texts.moderator.reports.targets[target] ?? target}
+                </button>
+              ))}
           </div>
 
           <ul className="space-y-3">
@@ -482,7 +497,12 @@ function ReportsSection({ admin }: { admin: boolean }) {
                   )}
                 >
                   <div className="flex flex-wrap items-center gap-2 text-xs text-text-subtle">
-                    <span className={cn("rounded-full px-2.5 py-0.5 font-semibold", reasonStyle(report.reason))}>
+                    <span
+                      className={cn(
+                        "rounded-full px-2.5 py-0.5 font-semibold",
+                        reasonStyle(report.reason),
+                      )}
+                    >
                       {texts.moderator.reports.reasons[report.reason] ?? report.reason}
                     </span>
 
@@ -496,11 +516,13 @@ function ReportsSection({ admin }: { admin: boolean }) {
                   <div className="grid gap-1 text-sm sm:grid-cols-2">
                     <p>
                       <span className="text-text-subtle">{texts.moderator.reports.reporter}: </span>
+
                       <span className="font-medium text-text-strong">{report.reporter}</span>
                     </p>
 
                     <p>
                       <span className="text-text-subtle">{texts.moderator.reports.author}: </span>
+
                       <span className="font-medium text-text-strong">
                         {report.author || texts.moderator.reports.noAuthor}
                       </span>
@@ -525,23 +547,29 @@ function ReportsSection({ admin }: { admin: boolean }) {
 
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-3 text-xs font-medium">
-                      <span className={cn(
-                        "rounded-full px-2 py-0.5",
-                        report.punishVotes > 0 ? "bg-destructive/10 text-destructive" : "text-text-subtle",
-                      )}>
+                      <span
+                        className={cn(
+                          "rounded-full px-2 py-0.5",
+                          report.punishVotes > 0
+                            ? "bg-destructive/10 text-destructive"
+                            : "text-text-subtle",
+                        )}
+                      >
                         Punir: {report.punishVotes}
                       </span>
 
-                      <span className={cn(
-                        "rounded-full px-2 py-0.5",
-                        report.dismissVotes > 0 ? "bg-green-500/10 text-green-600 dark:text-green-400" : "text-text-subtle",
-                      )}>
+                      <span
+                        className={cn(
+                          "rounded-full px-2 py-0.5",
+                          report.dismissVotes > 0
+                            ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                            : "text-text-subtle",
+                        )}
+                      >
                         Descartar: {report.dismissVotes}
                       </span>
 
-                      <span className="text-text-subtle">
-                        Quórum: {report.quorum}
-                      </span>
+                      <span className="text-text-subtle">Quórum: {report.quorum}</span>
 
                       {report.myVote && (
                         <span className="rounded-full bg-primary/10 px-2 py-0.5 text-primary">
@@ -564,22 +592,32 @@ function ReportsSection({ admin }: { admin: boolean }) {
                   <div className="flex flex-wrap gap-2">
                     <Button
                       size="sm"
-                      className={cn("rounded-full gap-1.5", report.myVote === "PUNISH" && "ring-2 ring-primary ring-offset-2 ring-offset-surface-card")}
+                      className={cn(
+                        "rounded-full gap-1.5",
+                        report.myVote === "PUNISH" &&
+                          "ring-2 ring-primary ring-offset-2 ring-offset-surface-card",
+                      )}
                       disabled={vote.isPending}
                       onClick={() => vote.mutate({ reportId: report.reportId, vote: "PUNISH" })}
                     >
                       <Check className="h-3.5 w-3.5" />
+
                       <>{texts.moderator.reports.punish}</>
                     </Button>
 
                     <Button
                       size="sm"
                       variant="outline"
-                      className={cn("rounded-full gap-1.5", report.myVote === "DISMISS" && "ring-2 ring-primary ring-offset-2 ring-offset-surface-card")}
+                      className={cn(
+                        "rounded-full gap-1.5",
+                        report.myVote === "DISMISS" &&
+                          "ring-2 ring-primary ring-offset-2 ring-offset-surface-card",
+                      )}
                       disabled={vote.isPending}
                       onClick={() => vote.mutate({ reportId: report.reportId, vote: "DISMISS" })}
                     >
                       <X className="h-3.5 w-3.5" />
+
                       <>{texts.moderator.reports.dismiss}</>
                     </Button>
                   </div>

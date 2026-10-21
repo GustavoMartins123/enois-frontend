@@ -2825,6 +2825,7 @@ export const texts = {
       games: "Jogos",
       support: "Suporte",
       issues: "Issues",
+      history: "Histórico",
       appeals: "Recursos",
       disputes: "Contestações",
       applications: "Candidaturas",
@@ -2915,6 +2916,9 @@ export const texts = {
     support: {
       title: "Tickets de suporte",
       issuesTitle: "Issues da comunidade",
+      historyDescription:
+        "Issues e tickets já concluídos. A fila ativa mostra apenas o que ainda precisa de atenção.",
+      historyEmpty: "Nada no histórico ainda.",
       description:
         "Pedidos abertos pelo app, separados por categoria. Mover para em andamento ou resolver registra a triagem.",
       empty: "Nenhum ticket nesta categoria.",
