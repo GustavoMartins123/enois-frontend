@@ -26,9 +26,9 @@ import {
 } from "lucide-react";
 
 import { groupsApi } from "@/lib/api";
-import { getSessionToken } from "@/lib/api-client";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { useCurrentUser } from "@/lib/current-user";
+import { useIsAuthenticated } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
@@ -65,7 +65,7 @@ function GrupoPage() {
   const { slug } = Route.useParams();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const authenticated = Boolean(getSessionToken());
+  const authenticated = useIsAuthenticated();
   const [editOpen, setEditOpen] = useState(false);
 
   const {

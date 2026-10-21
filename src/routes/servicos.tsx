@@ -10,7 +10,7 @@ import { Briefcase, Handshake, Send, Sparkles } from "lucide-react";
 
 import { servicesApi } from "@/lib/api";
 import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
-import { isAuthenticated } from "@/lib/use-auth";
+import { useIsAuthenticated } from "@/lib/use-auth";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/servicos")({
  * de escopo (entregáveis) existe antes de qualquer faísca mover.
  */
 function Servicos() {
-  const authenticated = isAuthenticated();
+  const authenticated = useIsAuthenticated();
   const catalog = useQuery({
     queryKey: ["services", "catalog"],
     queryFn: () => servicesApi.catalog(),
@@ -166,7 +166,7 @@ function OfferCard({ listing }: { listing: ServiceListing }) {
 }
 
 function RequestCard({ request }: { request: ServiceRequest }) {
-  const authenticated = isAuthenticated();
+  const authenticated = useIsAuthenticated();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
