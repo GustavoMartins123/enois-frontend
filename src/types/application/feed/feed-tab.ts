@@ -9,4 +9,6 @@ export type FeedTab =
   | "TUTORIALS"
   | "OPPORTUNITIES"
   | "REVIEWS"
-  | "FUN";
+  | "FUN"
+  /** "Ainda nao vi": os posts em que a pessoa ainda nao reagiu nem comentou (2026-10-21). */
+  | "UNSEEN";

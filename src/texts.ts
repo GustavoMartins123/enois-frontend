@@ -1174,8 +1174,13 @@ export const texts = {
       all: "Tudo",
       following: "Seguindo",
       discussions: "Discussões",
+      /** O oposto de "Discussoes": aqui entram os posts em que a pessoa ainda nao reagiu nem comentou. */
+      unseen: "Ainda não vi",
       projects: "Projetos",
       corporate: "Corporativo",
+      /** Legenda do seletor de tipo de feed (as abas ficam recolhidas atrás do botao). */
+      type: "Tipo de feed",
+      openList: "Escolher o tipo de feed",
     },
     sidebar: {
       connections: "Conexões",
