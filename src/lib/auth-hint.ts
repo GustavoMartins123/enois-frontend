@@ -43,9 +43,17 @@ export function syncAuthHint(hasToken: boolean) {
 }
 
 /**
+ * O cookie como estava quando a página carregou — o mesmo valor que o servidor recebeu na
+ * requisição. Fica congelado de propósito: rotas carregadas sob demanda hidratam DEPOIS do
+ * primeiro efeito, e o `syncAuthHint` desse efeito pode já ter criado o cookie. Lido na hora, o
+ * componente atrasado via "logado" enquanto o HTML do servidor dizia "visitante".
+ */
+const hintAtPageLoad = typeof document !== "undefined" && hintInDocumentCookie();
+
+/**
  * O que a casca deve supor no primeiro paint. No servidor vem do cookie da requisição; no
- * cliente, do mesmo cookie — por isso servidor e hidratação concordam.
+ * cliente, do mesmo cookie congelado na carga — por isso servidor e hidratação concordam.
  */
 export const readAuthHint = createIsomorphicFn()
   .server(() => getCookie(AUTH_HINT_COOKIE) === "1")
-  .client(() => hintInDocumentCookie());
+  .client(() => hintAtPageLoad);
