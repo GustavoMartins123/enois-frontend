@@ -1,11 +1,9 @@
 /**
  * Cadastros abertos?
  *
- * A pedido da Mel (2026-10-20), a criação de contas foi fechada por tempo indeterminado: o
- * backend recusa `POST /auth/signup` (403 SIGNUP_DISABLED) e o login por provedor não cria conta
- * nova — só entra em conta existente. No front, os botões de "Criar conta" somem e `/entrar`
- * abre em modo login com o aviso de cadastros fechados.
- *
- * Para reabrir: `true` aqui e `rede.auth.signup-enabled=true` no backend (perfil qa/prd).
+ * Cadastros abertos (2026-10-21), com captcha e confirmação de e-mail ANTES de a conta existir:
+ * o backend guarda o cadastro em `pending_signups` e só cria a conta quando o link é usado.
+ * Fechar de novo: `false` aqui e `REDE_AUTH_SIGNUP_ENABLED=false` no backend — os CTAs somem e
+ * `/entrar` abre com o aviso de cadastros fechados.
  */
-export const SIGNUP_OPEN = false;
+export const SIGNUP_OPEN = true;

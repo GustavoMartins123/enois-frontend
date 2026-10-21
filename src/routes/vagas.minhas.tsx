@@ -22,6 +22,7 @@ import { requireAuth } from "@/lib/require-auth";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { JobEditDialog } from "@/components/job-edit-dialog";
@@ -43,6 +44,7 @@ function formatPostedAt(dateStr: string | null | undefined): string {
 
 function MyJobs() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [editing, setEditing] = useState<Job | null>(null);
   const [deleting, setDeleting] = useState<Job | null>(null);
   const [deletingExternal, setDeletingExternal] = useState<Job | null>(null);
@@ -61,9 +63,14 @@ function MyJobs() {
 
   const removeJob = useMutation({
     mutationFn: (jobId: string) => jobsApi.remove(jobId),
-    onSuccess: () => {
+    onSuccess: (result) => {
       queryClient.invalidateQueries({ queryKey: ["jobs"] });
       setDeleting(null);
+      // O backend registra a penalidade e o aviso volta na resposta (item 7 do backlog):
+      // quem exclui com candidatos sem resposta precisa saber na hora.
+      if (result?.penalized) {
+        toast(texts.jobs.abandonWarning(result.unanswered), "error");
+      }
     },
   });
 
@@ -74,6 +81,7 @@ function MyJobs() {
       setDeletingExternal(null);
     },
   });
+
 
   const loading = mine.isLoading || applications.isLoading;
   // Sem isso, uma requisição que falha caía no ramo de lista vazia e a tela afirmava

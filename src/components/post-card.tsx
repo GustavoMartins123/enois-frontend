@@ -26,6 +26,8 @@ import {
 import { communitiesApi, feedApi } from "@/lib/api";
 import { sealsApi } from "@/lib/api/seals";
 import { saveFeedScroll } from "@/lib/feed-scroll-restoration";
+
+import { inlineMediaIds } from "@/lib/rich-text/inline-media";
 import { hideExternalPageUrls } from "@/lib/shared-links";
 import { useAuth } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
@@ -204,7 +206,10 @@ export function PostCard({
     const bodyUnchanged = editType !== "ARTICLE" || bodyDraft.trim() === articleBody.trim();
 
     // Nada mudou (nem a categoria): fecha sem chamar a API.
-    if ((editType !== "PAGE" && !draft.trim()) || (!tipoMudou && contentUnchanged && pageUnchanged && bodyUnchanged)) {
+    if (
+      (editType !== "PAGE" && !draft.trim()) ||
+      (!tipoMudou && contentUnchanged && pageUnchanged && bodyUnchanged)
+    ) {
       setEditOpen(false);
       return;
     }
@@ -374,6 +379,7 @@ export function PostCard({
         <>
           <RichText
             content={hideExternalPageUrls(post.content)}
+            mediaIds={post.mediaIds}
             className={cn(
               "mt-4 whitespace-pre-line break-words text-base font-normal leading-relaxed text-text-strong",
               isCompact && "line-clamp-8",
@@ -438,7 +444,11 @@ export function PostCard({
 
       {post.mediaIds.length > 0 && (
         <div className="mt-4">
-          <MediaGrid mediaIds={post.mediaIds} />
+          {/* Mídia inserida no texto aparece NO TEXTO (item 9); a grade do fim é só o que
+              sobrou sem marcador — repetir a mesma mídia duas vezes seria estranho. */}
+          <MediaGrid
+            mediaIds={post.mediaIds.filter((id) => !inlineMediaIds(post.content).includes(id))}
+          />
         </div>
       )}
 

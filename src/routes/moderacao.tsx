@@ -223,12 +223,6 @@ function DisputasSection() {
   );
 }
 
-/**
- * Ações de administrador contra spam: sanitizar o usuário (apaga do banco todos os posts e
- * comentários dele), banir permanentemente (PERMABAN) e bloquear IPs — o painel lista de onde a
- * conta entrou (registrado no login) para escolher o que bloquear. Somente administradores:
- * para os demais a API devolve 403 e a seção nem aparece.
- */
 function AdminSection() {
   const queryClient = useQueryClient();
   const { toast } = useToast();

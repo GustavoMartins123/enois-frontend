@@ -11,6 +11,14 @@ export type Job = {
   salary: string | null;
   /** Moeda da faixa salarial: BRL, USD ou EUR. */
   currency: string | null;
+  /** Valor mínimo estruturado da vaga nova (texto já formatado pelo backend). */
+  salaryMin?: string | null;
+  /** Teto opcional da faixa (texto já formatado). */
+  salaryMax?: string | null;
+  /** Período do valor: HOUR, DAY, MONTH ou YEAR. */
+  salaryPeriod?: string | null;
+  /** Faixa pronta ("R$ 1.500 / mês"); vagas antigas têm só o texto livre em `salary`. */
+  salaryLabel?: string | null;
   skills: string[];
   postedAt: string;
   matchScore: number | null;

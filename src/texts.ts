@@ -430,10 +430,10 @@ export const texts = {
     pending: {
       title: "Confirme seu e-mail",
       description: (email: string) =>
-        `Enviamos um link de confirmação para ${email}. A conta é ativada quando você abrir o link.`,
+        `Enviamos um link de confirmação para ${email}. Sua conta só é criada depois que você abrir o link.`,
       step1: "O link vale por 24 horas e só pode ser usado uma vez.",
       step2: "Confira a caixa de spam se não encontrar em alguns minutos.",
-      step3: "O acesso às funcionalidades libera assim que o e-mail for confirmado.",
+      step3: "A conta nasce (e o acesso libera) assim que o e-mail for confirmado.",
       resend: "Reenviar o link",
       sending: "Enviando...",
       sent: "Link reenviado. Confira seu e-mail.",
@@ -762,6 +762,7 @@ export const texts = {
       sanctions: "Penalidades",
       linkedAccounts: "Contas vinculadas",
       healthyUsage: "Uso saudável",
+      apoie: "Apoie o Énóis",
       security: "Segurança e verificação",
       apoie: "Apoie o Énóis",
       deleteAccount: "Excluir conta",
@@ -1015,7 +1016,7 @@ export const texts = {
       eyebrow: "Chega junto",
       title: "A internet também é feita das escolhas da gente.",
       description:
-        "O énóis ainda está evoluindo, e é agora que dá para acompanhar o que ele vai ser. Quem já tem conta entra normalmente.",
+        "O énóis ainda está evoluindo, e é agora que dá para ajudar a definir o que ele vai ser. Criar conta é gratuito, leva um minuto e não pede cartão.",
       free: "Acesso gratuito é princípio, não promoção: sem anúncio, sem plano pago e sem versão premium pela metade.",
       createAccount: "Fazer parte do énóis",
       existingAccount: "Já tenho conta",
@@ -1072,6 +1073,8 @@ export const texts = {
     empty: "Nada por aqui ainda. Publicações da sua rede aparecem neste feed.",
     composer: {
       topic: "Assunto",
+      insertInText: "Inserir no texto",
+      insertMedia: (number: number) => `Inserir mídia ${number} no texto`,
       topicNone: "Sem assunto",
       topicHint: "Liga o post ao que a gente quer ver (ou não quer) na personalização.",
       schedule: "Agendar",
@@ -1341,6 +1344,7 @@ export const texts = {
       viewProfile: (name: string) => `Abrir o perfil de ${name}`,
       attachMedia: "Anexar imagem",
       removeMedia: "Remover mídia",
+      insertInText: "Inserir no texto",
       gif: "GIF",
       gifTitle: "Adicionar GIF",
       gifHint: "Cole o link do Giphy ou Tenor — ele aparece como GIF no comentário.",
@@ -2156,7 +2160,10 @@ export const texts = {
     applicationsCount: (count: number) =>
       `${count} candidatura${count === 1 ? "" : "s"} recebida${count === 1 ? "" : "s"}`,
     deleteJob: "Excluir vaga",
-    deleteConfirm: "Excluir esta vaga? As candidaturas recebidas também são removidas.",
+    abandonWarning: (count: number) =>
+      `Vaga excluída com ${count} candidato(s) sem resposta. Isso reduz a sua credibilidade.`,
+    deleteConfirm:
+      "Excluir esta vaga? As candidaturas recebidas também são removidas. Se houver candidatos sem resposta, excluir reduz a sua credibilidade.",
     myJobs: "Minhas vagas",
     myApplications: "Minhas candidaturas",
     myJobsEmpty: "Você ainda não publicou vagas.",

@@ -6,4 +6,10 @@ export type RichTextProps = {
    * bolha da mensagem, por exemplo, é colorida) — o padrão é o azul do app.
    */
   linkClassName?: string;
+  /**
+   * Mídias anexadas à publicação (item 9): quando o texto tem marcadores `{{media:<id>}}`, cada
+   * um cujo id está aqui vira a mídia no ponto exato do texto; anexo sem marcador segue como
+   * bloco no fim (quem decide a lista é quem chama, filtrando os que foram inseridos inline).
+   */
+  mediaIds?: string[] | null;
 };
