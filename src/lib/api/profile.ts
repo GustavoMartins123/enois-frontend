@@ -1,3 +1,4 @@
+import type { AgeState } from "@/types/application/profile/age-state";
 import type { Certification } from "@/types/application/profile/certification";
 import type { CertificationRequest } from "@/types/application/profile/certification-request";
 import type { Education } from "@/types/application/profile/education";
@@ -11,10 +12,15 @@ import { api } from "../api-client";
 
 export const profileApi = {
   /** Liga/desliga a secao de ranking no perfil (preferencia da conta; padrao: mostrar). */
-  setRanking: (show: boolean) =>
-    api.put<{ id: string; status: string }>("/me/ranking", { show }),
+  setRanking: (show: boolean) => api.put<{ id: string; status: string }>("/me/ranking", { show }),
 
   me: () => api.get<Profile>("/me"),
+
+  /** Estado de idade (ECA Digital): o que decide se o app pede a data de nascimento. */
+  ageState: () => api.get<AgeState>("/me/age-state"),
+
+  /** Declara (ou corrige) a data de nascimento. Formato ISO: aaaa-mm-dd. */
+  declareBirthDate: (birthDate: string) => api.post<AgeState>("/me/birth-date", { birthDate }),
 
   get: (username: string) => api.get<Profile>(`/users/${username}`),
 

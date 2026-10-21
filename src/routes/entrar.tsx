@@ -18,7 +18,6 @@ import { ArrowRight, Eye, EyeOff, Loader2, MailCheck, ShieldCheck } from "lucide
 import { z } from "zod";
 
 import { ApiError, authApi } from "@/lib/api";
-import { ISO_DATE, hasMinAge } from "@/lib/min-age";
 import { storeSession } from "@/lib/session";
 import { useCaptchaConfig } from "@/lib/use-captcha-config";
 
@@ -57,11 +56,13 @@ const signupSchema = z.object({
   name: z.string().trim().min(2, texts.auth.validation.signupNameMin).max(80),
   email: z.string().trim().email(texts.auth.validation.invalidEmail).max(255),
   password: z.string().min(8, texts.auth.validation.passwordMin).max(128),
+  // ECA Digital: a data de nascimento e obrigatoria no cadastro (o backend recalcula a idade).
   birthDate: z
     .string()
     .min(1, texts.auth.validation.birthDateRequired)
-    .regex(ISO_DATE, texts.auth.validation.birthDateInvalid)
-    .refine(hasMinAge, { message: texts.auth.validation.birthDateMinAge }),
+    .refine((value) => value <= new Date().toISOString().slice(0, 10), {
+      message: texts.auth.validation.birthDateFuture,
+    }),
   // Checkbox marcado chega como "on"; ausente significa nao aceito.
   acceptedTerms: z
     .string()
@@ -400,6 +401,16 @@ function SignupForm(_props: AuthFormProps) {
           />
         </Field>
 
+        <Field label={texts.auth.fields.birthDate} error={errors.birthDate}>
+          <Input
+            name="birthDate"
+            type="date"
+            required
+            min={`${new Date().getFullYear() - 120}-01-01`}
+            max={new Date().toISOString().slice(0, 10)}
+          />
+        </Field>
+
         <Field label={texts.auth.fields.email} error={errors.email}>
           <Input
             name="email"
@@ -431,16 +442,6 @@ function SignupForm(_props: AuthFormProps) {
               {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
-        </Field>
-
-        <Field label={texts.auth.fields.birthDate} error={errors.birthDate}>
-          <Input
-            name="birthDate"
-            type="date"
-            autoComplete="bday"
-            max={new Date().toISOString().slice(0, 10)}
-            required
-          />
         </Field>
 
         <div className="space-y-1.5">
