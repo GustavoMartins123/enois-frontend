@@ -62,14 +62,18 @@ function CopyableCode({ code }: { code: string }) {
 
   return (
     <div className="group relative mt-2 min-w-0">
-      <pre className="max-w-full overflow-x-auto rounded-xl border border-border-soft bg-surface-1 p-3 text-xs leading-relaxed">
-        <code>{code}</code>
+      {/* No celular a linha longa NAO pode sair da caixa: com o `overflow-x-auto` o comando
+          ficava cortado e o scroll lateral (sem nenhuma pista) era a unica saida. Quebrando a
+          linha, o exemplo inteiro cabe na tela. O `pr-11` abre espaco para o botao de copiar,
+          que no toque fica sempre visivel. */}
+      <pre className="max-w-full overflow-x-auto whitespace-pre-wrap rounded-xl border border-border-soft bg-surface-1 p-3 pr-11 text-xs leading-relaxed sm:pr-3">
+        <code className="break-words">{code}</code>
       </pre>
 
       <button
         type="button"
         onClick={() => void copy()}
-        className="absolute right-2 top-2 rounded-md border border-border-soft bg-surface-card p-1.5 text-text-subtle opacity-0 transition group-hover:opacity-100 focus-visible:opacity-100"
+        className="absolute right-2 top-2 rounded-md border border-border-soft bg-surface-card p-1.5 text-text-subtle opacity-100 transition sm:opacity-0 sm:group-hover:opacity-100 sm:focus-visible:opacity-100"
         aria-label={copied ? texts.developersChrome.copied : texts.developersChrome.copy}
       >
         {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
