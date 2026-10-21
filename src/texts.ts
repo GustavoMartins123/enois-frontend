@@ -2039,6 +2039,7 @@ export const texts = {
     description: "Encontre grupos profissionais, fóruns temáticos e círculos de mentoria.",
     topicsLabel: "Categorias",
     searchPlaceholder: "Pesquisar comunidades",
+    empty: "Nenhuma comunidade encontrada.",
     createCommunity: "Criar comunidade",
     myTitle: "Suas comunidades",
     created: "Comunidade criada.",

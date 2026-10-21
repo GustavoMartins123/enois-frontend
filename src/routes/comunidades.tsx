@@ -24,6 +24,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/ui/page-header";
@@ -34,6 +35,7 @@ import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { CommunityCard } from "@/components/community-card";
+import { CommunityCardSkeletons } from "@/components/skeletons/community-card-skeletons";
 
 export const Route = createFileRoute("/comunidades")({
   head: () => ({ meta: [{ title: texts.communities.seoTitle }] }),
@@ -68,6 +70,7 @@ function Comunidades() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isLoading: communitiesLoading,
   } = useInfiniteQuery({
     queryKey: ["communities", topic, query],
     queryFn: ({ pageParam }) => communitiesApi.list(topic, pageParam, 20, query || undefined),
@@ -258,6 +261,14 @@ function Comunidades() {
               ))}
             </div>
           </section>
+        )}
+
+        {/* Esqueleto na primeira carga: antes a área ficava em branco até a lista chegar, e parecia
+            que não existia comunidade nenhuma. */}
+        {communitiesLoading && <CommunityCardSkeletons />}
+
+        {!communitiesLoading && allItems.length === 0 && (
+          <EmptyState title={texts.communities.empty} />
         )}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
