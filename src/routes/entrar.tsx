@@ -56,6 +56,13 @@ const signupSchema = z.object({
   name: z.string().trim().min(2, texts.auth.validation.signupNameMin).max(80),
   email: z.string().trim().email(texts.auth.validation.invalidEmail).max(255),
   password: z.string().min(8, texts.auth.validation.passwordMin).max(128),
+  // ECA Digital: a data de nascimento e obrigatoria no cadastro (o backend recalcula a idade).
+  birthDate: z
+    .string()
+    .min(1, texts.auth.validation.birthDateRequired)
+    .refine((value) => value <= new Date().toISOString().slice(0, 10), {
+      message: texts.auth.validation.birthDateFuture,
+    }),
   // Checkbox marcado chega como "on"; ausente significa nao aceito.
   acceptedTerms: z
     .string()
@@ -335,6 +342,7 @@ function SignupForm(_props: AuthFormProps) {
         email: parsed.data.email,
         password: parsed.data.password,
         acceptedTerms: parsed.data.acceptedTerms === "on",
+        birthDate: parsed.data.birthDate,
         website: fd.get("website") as string | undefined,
         turnstileToken:
           captchaMode === "TURNSTILE"
@@ -390,6 +398,16 @@ function SignupForm(_props: AuthFormProps) {
             autoComplete="name"
             required
             maxLength={80}
+          />
+        </Field>
+
+        <Field label={texts.auth.fields.birthDate} error={errors.birthDate}>
+          <Input
+            name="birthDate"
+            type="date"
+            required
+            min={`${new Date().getFullYear() - 120}-01-01`}
+            max={new Date().toISOString().slice(0, 10)}
           />
         </Field>
 

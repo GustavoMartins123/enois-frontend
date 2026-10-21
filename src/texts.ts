@@ -351,6 +351,7 @@ export const texts = {
     },
     fields: {
       fullName: "Nome completo",
+      birthDate: "Data de nascimento",
       email: "E-mail",
       password: "Senha",
       newPassword: "Nova senha",
@@ -366,6 +367,8 @@ export const texts = {
       loginPasswordMin: "A senha precisa ter ao menos 6 caracteres",
       signupNameMin: "Como podemos te chamar?",
       passwordMin: "Use ao menos 8 caracteres",
+      birthDateRequired: "Informe a data de nascimento.",
+      birthDateFuture: "A data de nascimento não pode estar no futuro.",
       termsRequired: "É preciso confirmar que você tem 18 anos ou mais e aceitar os termos.",
     },
     password: {
@@ -2949,6 +2952,19 @@ export const texts = {
     jobsCount: (n: number) => (n === 1 ? "1 vaga aberta" : `${n} vagas abertas`),
     viewJobs: "Ver vagas",
     empty: "Nenhuma empresa encontrada.",
+  },
+  /** Diálogo global de regularização da data de nascimento (ECA Digital). */
+  birthDateGate: {
+    title: "Confirme sua data de nascimento",
+    description:
+      "A plataforma exige a data de nascimento para publicar, comentar e enviar mensagens. Ela fica guardada com a sua conta e não aparece para outras pessoas.",
+    label: "Data de nascimento",
+    confirm: "Confirmar e continuar",
+    later: "Agora não",
+    saved: "Data de nascimento registrada. Você já pode publicar.",
+    savedMinor: "Data registrada. A conta segue com as regras para menores de 18 anos.",
+    invalid: "Confira a data: ela não pode estar no futuro.",
+    error: "Não foi possível salvar a data. Tente de novo.",
   },
   exportTheme: "Exportar tema",
   importTheme: "Importar tema",
