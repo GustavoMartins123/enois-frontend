@@ -557,7 +557,7 @@ export const apiSections: ApiSection[] = [
         path: "/media/uploads",
         access: "auth",
         description:
-          "Passo 1. purpose: POST_IMAGE | POST_VIDEO | AVATAR | BANNER | COVER. Teto de 50MB por arquivo.",
+          "Passo 1. purpose: POST_IMAGE | POST_VIDEO | AVATAR | BANNER | COVER. Teto de 500MB por arquivo.",
         request: `curl -X POST ${P}/media/uploads \\
   -H "X-Session-Token: $TOKEN" -H "Idempotency-Key: up-1" \\
   -H "Content-Type: application/json" \\
@@ -1003,6 +1003,204 @@ export const apiSections: ApiSection[] = [
       },
     ],
   },
+  {
+    id: "blogs",
+    title: "Blogs",
+    description:
+      "Um blog por pessoa, em /blog/{username}. Os posts do blog ficam fora do feed principal; quem assina o blog recebe os posts novos por e-mail (se optou por isso).",
+    endpoints: [
+      {
+        method: "GET",
+        path: "/blogs/{slug}",
+        access: "public",
+        description: "Lê o blog e os posts publicados pelo slug do blog.",
+        request: `curl ${P}/blogs/ada`,
+        response: `200 OK
+{"slug":"ada","username":"ada","title":"Blog da Ada","posts":[…]}`,
+      },
+      {
+        method: "GET",
+        path: "/blogs/me",
+        access: "auth",
+        description: "O blog de quem está autenticado (cria um em branco se não existir).",
+      },
+      {
+        method: "PUT",
+        path: "/blogs/me",
+        access: "auth",
+        description: "Cria ou atualiza o próprio blog (título, descrição, tema).",
+      },
+      {
+        method: "POST",
+        path: "/blogs/me/posts",
+        access: "auth",
+        description: "Publica um post no próprio blog (markdown ou HTML sanitizado).",
+      },
+      {
+        method: "PATCH",
+        path: "/blogs/me/posts/{postId}",
+        access: "auth",
+        description: "Edita um post próprio do blog.",
+      },
+      {
+        method: "DELETE",
+        path: "/blogs/me/posts/{postId}",
+        access: "auth",
+        description: "Remove um post próprio do blog.",
+      },
+    ],
+  },
+  {
+    id: "groups",
+    title: "Grupos",
+    description:
+      "Espaços privados com feed, tópicos e moderação próprios, independentes das comunidades. Entrada aberta entra na hora; entrada por pedido gera um pendente que os administradores aprovam ou recusam.",
+    endpoints: [
+      {
+        method: "GET",
+        path: "/groups/{slug}",
+        access: "public",
+        description: "Página pública do grupo (quem não é membro vê o que o grupo expõe).",
+      },
+      {
+        method: "POST",
+        path: "/groups/{groupId}/join",
+        access: "auth",
+        description: "Entra no grupo ou envia pedido (quando a entrada é por aprovação).",
+      },
+      {
+        method: "GET",
+        path: "/groups/{groupId}/members",
+        access: "auth",
+        description: "Lista de membros do grupo.",
+      },
+      {
+        method: "POST",
+        path: "/groups/{groupId}/topics",
+        access: "auth",
+        description: "Cria um tópico dentro do grupo (os administradores do grupo fazem isso).",
+      },
+      {
+        method: "GET",
+        path: "/groups/{groupId}/posts",
+        access: "auth",
+        description: "Feed do grupo: só o conteúdo marcado com os tópicos dele.",
+      },
+      {
+        method: "POST",
+        path: "/groups/{groupId}/posts",
+        access: "auth",
+        description: "Publica no feed do grupo (membros).",
+      },
+      {
+        method: "POST",
+        path: "/groups/{groupId}/requests/{requestId}/approve",
+        access: "auth",
+        description: "Aprova um pedido de entrada (administradores). Reject faz o simétrico.",
+      },
+    ],
+  },
+  {
+    id: "services",
+    title: "Serviços",
+    description:
+      "Ofertas de serviço entre pessoas da rede, com orçamento, contrato e entrega. O fluxo vai de pedido aberto a proposta, escolha, entrega e aceite (ou reembolso integral).",
+    endpoints: [
+      {
+        method: "GET",
+        path: "/services/servicos",
+        access: "public",
+        description: "Catálogo de serviços publicados.",
+      },
+      {
+        method: "POST",
+        path: "/services/servicos/ofertas",
+        access: "auth",
+        description: "Publica uma oferta de serviço (sujeita à moderação).",
+      },
+      {
+        method: "POST",
+        path: "/services/servicos/pedidos",
+        access: "auth",
+        description: "Abre um pedido de serviço.",
+      },
+      {
+        method: "POST",
+        path: "/services/servicos/pedidos/{requestId}/propostas",
+        access: "auth",
+        description: "Envia uma proposta para um pedido aberto.",
+      },
+      {
+        method: "POST",
+        path: "/services/servicos/pedidos/{requestId}/escolher",
+        access: "auth",
+        description: "Escolhe a proposta e fecha o contrato (o valor fica em custódia).",
+      },
+      {
+        method: "POST",
+        path: "/services/contratos/{contractId}/entregar",
+        access: "auth",
+        description: "Entrega o trabalho realizado (o cliente tem X dias para responder).",
+      },
+      {
+        method: "POST",
+        path: "/services/contratos/{contractId}/aceitar",
+        access: "auth",
+        description: "Aceita a entrega e libera o pagamento ao prestador.",
+      },
+      {
+        method: "POST",
+        path: "/services/contratos/{contractId}/reembolso",
+        access: "auth",
+        description: "Reembolso integral: devolve 100% ao cliente.",
+      },
+    ],
+  },
+  {
+    id: "daily-games",
+    title: "Jogos diários",
+    description:
+      "Três jogos que trocam a todo dia (Blocos, Palavras e Labirinto), com ranking geral e prêmios em faíscas.",
+    endpoints: [
+      {
+        method: "GET",
+        path: "/daily-games/blocks/today",
+        access: "public",
+        description: "O estado do jogo de Blocos de hoje (com sessão, inclui o progresso do jogador).",
+      },
+      {
+        method: "POST",
+        path: "/daily-games/blocks/today/start",
+        access: "auth",
+        description: "Inicia a partida de hoje.",
+      },
+      {
+        method: "POST",
+        path: "/daily-games/blocks/today/actions",
+        access: "auth",
+        description: "Executa uma ação na partida em andamento.",
+      },
+      {
+        method: "GET",
+        path: "/daily-games/blocks/leaderboard",
+        access: "public",
+        description: "Ranking do dia (e histórico).",
+      },
+      {
+        method: "GET",
+        path: "/daily-games/words/today",
+        access: "public",
+        description: "Estado do jogo de Palavras de hoje.",
+      },
+      {
+        method: "GET",
+        path: "/daily-games/rewards/prizes",
+        access: "public",
+        description: "Faixas de prêmio em faíscas por desempenho.",
+      },
+    ],
+  },
+
 ];
 
 export const apiUseCases: ApiUseCase[] = [
