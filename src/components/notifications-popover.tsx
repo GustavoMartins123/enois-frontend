@@ -78,7 +78,7 @@ export function NotificationsPopover() {
   const notificationList = (notificationsData?.items ?? []).filter(
     (notification) =>
       !isNotificationHidden(notification.kind, disabledModules) &&
-      notification.kind !== "connection_request",
+      notification.kind.toLowerCase() !== "connection_request",
   );
   const unreadCount = notificationList.filter((notification) => !notification.read).length;
   const displayedNotifications = notificationList.filter((notification) =>
