@@ -19,6 +19,7 @@ import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { GamePlayer } from "@/components/games/game-player";
+import { SuspiciousPostsSection } from "@/components/moderation/suspicious-posts-section";
 
 /**
  * Fila de recursos das penalidades automaticas. Somente administradores (REDE_ADMIN_EMAILS)
@@ -81,6 +82,7 @@ function Moderacao() {
         </div>
 
         <DisputasSection />
+        <SuspiciousPostsSection />
         <JogosSection />
         <AdminSection />
 

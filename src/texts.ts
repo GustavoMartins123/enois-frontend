@@ -2807,6 +2807,28 @@ export const texts = {
       removeDone: "Postagem removida; denúncia resolvida.",
       warnDone: "Aviso enviado ao autor; a postagem foi mantida.",
       actionError: "Não foi possível concluir a ação.",
+      filterAll: "Todas",
+      reasons: {
+        AI_GENERATED: "IA gerada",
+        FAKE_CONTENT: "Conteúdo falso",
+        SCAM: "Golpe",
+        DISCRIMINATION: "Discriminação",
+        PREJUDICE: "Preconceito",
+        HARASSMENT: "Assédio",
+        SPAM: "Spam",
+        VIOLENCE: "Violência",
+        COPYRIGHT: "Direitos autorais",
+        OTHER: "Outro",
+      } as Record<string, string>,
+      targets: {
+        POST: "Publicação",
+        COMMENT: "Comentário",
+        USER: "Usuário",
+        JOB: "Vaga",
+        GAME: "Jogo",
+        GROUP_POST: "Post de grupo",
+        GROUP_COMMENT: "Comentário de grupo",
+      } as Record<string, string>,
     },
     tabs: {
       reports: "Denúncias",
@@ -2819,6 +2841,40 @@ export const texts = {
       users: "Usuários",
       emails: "E-mails",
       suspicious: "Suspeitos",
+    },
+    suspiciousPosts: {
+      title: "Posts suspeitos",
+      description:
+        "Posts denunciados que passaram no score da pré-triagem. O conteúdo não foi julgado pela IA ainda; selecione o que deve sair do ar. A exclusão é auditada e reversível pelo painel.",
+      empty: "Nenhum post suspeito na fila.",
+      emptyHint: "Posts com score alto de pré-triagem aparecem aqui para revisão.",
+      score: (value: number) => `score ${value}`,
+      reason: (value: string) => `motivo: ${value}`,
+      openPost: "Abrir post",
+      selectAll: "Selecionar todos",
+      clear: "Limpar seleção",
+      selected: (count: number) => `${count} selecionado(s)`,
+      reasonPlaceholder: "Motivo da exclusão (mínimo de 10 caracteres)",
+      delete: (count: number) =>
+        count === 0 ? "Excluir selecionados" : `Excluir ${count} post(s)`,
+      confirmTitle: "Excluir posts suspeitos",
+      confirmBody: (count: number) =>
+        `Remover ${count} post(s) do feed? A ação fica registrada na auditoria.`,
+      confirm: "Excluir agora",
+      result: (deleted: number, failed: number) =>
+        `${deleted} post(s) removido(s), ${failed} falha(s).`,
+      error: "Não foi possível excluir os posts selecionados.",
+      signals: {
+        REASON_VIOLENCE: "Motivo grave",
+        REASON_SPAM: "Spam/fraude",
+        REASON_OTHER: "Outro motivo",
+        REPEATED_TARGET: "Denúncias repetidas",
+        NEW_ACCOUNT: "Conta nova",
+        DETAILED_REPORT: "Relato detalhado",
+        CONTENT_LINK: "Link no conteúdo",
+        SHORT_CONTENT: "Conteúdo curto",
+        SYSTEM_REPORT: "Sinal automático",
+      } as Record<string, string>,
     },
     suspicious: {
       title: "Contas suspeitas",
@@ -3016,6 +3072,54 @@ export const texts = {
       "Data registrada. Agora falta a autorização de um responsável para liberar a conta.",
     invalid: "Confira a data: ela não pode estar no futuro.",
     error: "Não foi possível salvar a data. Tente de novo.",
+  },
+  /** Popup de desculpas pelos últimos dias + faíscas de presente. */
+  apology: {
+    title: "Estamos trabalhando para melhorar o Énóis! 💜",
+    body: "Pedimos desculpas pelos inconvenientes dos últimos dias. Estamos trabalhando ativamente para corrigir problemas, reforçar a segurança e tornar a plataforma cada vez melhor para todo mundo. Obrigada pela paciência e por fazer parte dessa comunidade. O Énóis é feito por pessoas, para pessoas, e seguimos construindo tudo isso com muito cuidado e transparência.",
+    bonus:
+      "Você recebeu 100 faíscas para usar como quiser na loja, no marketplace e nos espaços da comunidade.",
+    together: "Seguimos juntos. 💜",
+    close: "Vamos lá",
+  },
+  /** Card de espaços novos no painel lateral. */
+  platformSpaces: {
+    title: "Novidades para explorar",
+    subtitle: "Loja, marketplace, freelances e projetos da comunidade.",
+  },
+  /** Canais privados por tema dentro das comunidades. */
+  communityChannels: {
+    title: "Canais privados",
+    subtitle:
+      "Conversas por tema, só para quem participa da comunidade. Nada daqui aparece nos feeds.",
+    locked: "Os canais são privados: entre na comunidade para ver e participar.",
+    create: "Criar canal",
+    createTitle: "Novo canal",
+    name: "Nome do canal",
+    namePlaceholder: "Ex.: Bastidores, Dúvidas, Vagas",
+    topic: "Tema (opcional)",
+    topicNone: "Sem tema",
+    description: "Descrição (opcional)",
+    descriptionPlaceholder: "Para que serve este canal?",
+    cancel: "Cancelar",
+    confirm: "Criar",
+    creating: "Criando...",
+    created: "Canal criado.",
+    empty: "Nenhum canal ainda. Crie o primeiro.",
+    invalidName: "O nome precisa ter pelo menos 2 caracteres.",
+    error: "Não foi possível criar o canal. Tente de novo.",
+  },
+  /** Página de um canal privado. */
+  channelPage: {
+    back: "Voltar para a comunidade",
+    composerPlaceholder: "Escreva para este canal...",
+    publish: "Publicar no canal",
+    publishing: "Publicando...",
+    empty: "Nada por aqui ainda. Comece a conversa.",
+    private: "Este canal é privado: só membros da comunidade podem ler e publicar.",
+    notMember: "Entre na comunidade para acessar este canal.",
+    enter: "Entrar na comunidade",
+    error: "Não foi possível carregar o canal.",
   },
   /** Área do responsável legal (ECA Digital). */
   guardian: {

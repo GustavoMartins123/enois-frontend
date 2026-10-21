@@ -1,8 +1,10 @@
 import type { PageResponse } from "@/types/application/api/page-response";
 import type { StatusResponse } from "@/types/application/api/status-response";
 import type { Community } from "@/types/application/community/community";
+import type { CommunityChannel } from "@/types/application/community/community-channel";
 import type { CommunityMembersResponse } from "@/types/application/community/community-members-response";
 import type { CommunityTopic } from "@/types/application/community/community-topic";
+import type { CreateCommunityChannelInput } from "@/types/application/community/create-community-channel-input";
 import type { CreateCommunityInput } from "@/types/application/community/create-community-input";
 import type { PostView } from "@/types/application/feed/post-view";
 
@@ -25,6 +27,18 @@ export const communitiesApi = {
     api.post<PostView>(`/communities/${communityId}/pin`, { postId }),
 
   unpin: (communityId: string) => api.delete<StatusResponse>(`/communities/${communityId}/pin`),
+
+  /** Canais privados: a API responde 403 para quem não participa da comunidade. */
+  channels: (communityId: string) =>
+    api.get<CommunityChannel[]>(`/communities/${communityId}/channels`),
+
+  createChannel: (communityId: string, data: CreateCommunityChannelInput) =>
+    api.post<CommunityChannel>(`/communities/${communityId}/channels`, data),
+
+  channelPosts: (communityId: string, channelId: string, cursor?: string | null, limit = 20) =>
+    api.get<PageResponse<PostView>>(
+      `/communities/${communityId}/channels/${channelId}/posts${buildQuery({ cursor, limit })}`,
+    ),
 
   join: (communityId: string) => api.post<StatusResponse>(`/communities/${communityId}/members`),
 

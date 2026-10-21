@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VagasRouteImport } from './routes/vagas'
 import { Route as TermosRouteImport } from './routes/termos'
-import { Route as TemasRouteImport } from './routes/temas'
 import { Route as SuporteRouteImport } from './routes/suporte'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -68,6 +67,7 @@ import { Route as GamesUsernameGameSlugRouteImport } from './routes/games.$usern
 import { Route as BlogPostNewRouteImport } from './routes/blog.post.new'
 import { Route as BlogPostPostIdRouteImport } from './routes/blog.post.$postId'
 import { Route as BlogUsernamePostIdRouteImport } from './routes/blog.$username_.$postId'
+import { Route as ComunidadesCommunityIdCanaisChannelIdRouteImport } from './routes/comunidades.$communityId.canais.$channelId'
 
 const VagasRoute = VagasRouteImport.update({
   id: '/vagas',
@@ -77,11 +77,6 @@ const VagasRoute = VagasRouteImport.update({
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
   path: '/termos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TemasRoute = TemasRouteImport.update({
-  id: '/temas',
-  path: '/temas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SuporteRoute = SuporteRouteImport.update({
@@ -364,6 +359,12 @@ const BlogUsernamePostIdRoute = BlogUsernamePostIdRouteImport.update({
   path: '/blog/$username/$postId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ComunidadesCommunityIdCanaisChannelIdRoute =
+  ComunidadesCommunityIdCanaisChannelIdRouteImport.update({
+    id: '/canais/$channelId',
+    path: '/canais/$channelId',
+    getParentRoute: () => ComunidadesCommunityIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -402,14 +403,13 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/suporte': typeof SuporteRoute
-  '/temas': typeof TemasRoute
   '/termos': typeof TermosRoute
   '/vagas': typeof VagasRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset': typeof AuthResetRoute
   '/auth/verify': typeof AuthVerifyRoute
   '/blog/$username': typeof BlogUsernameRoute
-  '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
+  '/comunidades/$communityId': typeof ComunidadesCommunityIdRouteWithChildren
   '/empresa/$slug': typeof EmpresaSlugRoute
   '/games/$username': typeof GamesUsernameRouteWithChildren
   '/games/painel': typeof GamesPainelRoute
@@ -425,6 +425,7 @@ export interface FileRoutesByFullPath {
   '/blog/post/new': typeof BlogPostNewRoute
   '/games/$username/$gameSlug': typeof GamesUsernameGameSlugRoute
   '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
+  '/comunidades/$communityId/canais/$channelId': typeof ComunidadesCommunityIdCanaisChannelIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -463,14 +464,13 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/suporte': typeof SuporteRoute
-  '/temas': typeof TemasRoute
   '/termos': typeof TermosRoute
   '/vagas': typeof VagasRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset': typeof AuthResetRoute
   '/auth/verify': typeof AuthVerifyRoute
   '/blog/$username': typeof BlogUsernameRoute
-  '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
+  '/comunidades/$communityId': typeof ComunidadesCommunityIdRouteWithChildren
   '/empresa/$slug': typeof EmpresaSlugRoute
   '/games/$username': typeof GamesUsernameRouteWithChildren
   '/games/painel': typeof GamesPainelRoute
@@ -486,6 +486,7 @@ export interface FileRoutesByTo {
   '/blog/post/new': typeof BlogPostNewRoute
   '/games/$username/$gameSlug': typeof GamesUsernameGameSlugRoute
   '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
+  '/comunidades/$communityId/canais/$channelId': typeof ComunidadesCommunityIdCanaisChannelIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -525,14 +526,13 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/suporte': typeof SuporteRoute
-  '/temas': typeof TemasRoute
   '/termos': typeof TermosRoute
   '/vagas': typeof VagasRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
   '/auth/reset': typeof AuthResetRoute
   '/auth/verify': typeof AuthVerifyRoute
   '/blog/$username': typeof BlogUsernameRoute
-  '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
+  '/comunidades/$communityId': typeof ComunidadesCommunityIdRouteWithChildren
   '/empresa/$slug': typeof EmpresaSlugRoute
   '/games/$username': typeof GamesUsernameRouteWithChildren
   '/games/painel': typeof GamesPainelRoute
@@ -548,6 +548,7 @@ export interface FileRoutesById {
   '/blog/post/new': typeof BlogPostNewRoute
   '/games/$username/$gameSlug': typeof GamesUsernameGameSlugRoute
   '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
+  '/comunidades/$communityId/canais/$channelId': typeof ComunidadesCommunityIdCanaisChannelIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -588,7 +589,6 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sobre'
     | '/suporte'
-    | '/temas'
     | '/termos'
     | '/vagas'
     | '/auth/callback'
@@ -611,6 +611,7 @@ export interface FileRouteTypes {
     | '/blog/post/new'
     | '/games/$username/$gameSlug'
     | '/vagas/$jobId/candidaturas'
+    | '/comunidades/$communityId/canais/$channelId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -649,7 +650,6 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sobre'
     | '/suporte'
-    | '/temas'
     | '/termos'
     | '/vagas'
     | '/auth/callback'
@@ -672,6 +672,7 @@ export interface FileRouteTypes {
     | '/blog/post/new'
     | '/games/$username/$gameSlug'
     | '/vagas/$jobId/candidaturas'
+    | '/comunidades/$communityId/canais/$channelId'
   id:
     | '__root__'
     | '/'
@@ -710,7 +711,6 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sobre'
     | '/suporte'
-    | '/temas'
     | '/termos'
     | '/vagas'
     | '/auth/callback'
@@ -733,6 +733,7 @@ export interface FileRouteTypes {
     | '/blog/post/new'
     | '/games/$username/$gameSlug'
     | '/vagas/$jobId/candidaturas'
+    | '/comunidades/$communityId/canais/$channelId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -772,7 +773,6 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SobreRoute: typeof SobreRoute
   SuporteRoute: typeof SuporteRoute
-  TemasRoute: typeof TemasRoute
   TermosRoute: typeof TermosRoute
   VagasRoute: typeof VagasRouteWithChildren
   AuthCallbackRoute: typeof AuthCallbackRoute
@@ -802,13 +802,6 @@ declare module '@tanstack/react-router' {
       path: '/termos'
       fullPath: '/termos'
       preLoaderRoute: typeof TermosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/temas': {
-      id: '/temas'
-      path: '/temas'
-      fullPath: '/temas'
-      preLoaderRoute: typeof TemasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/suporte': {
@@ -1203,15 +1196,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogUsernamePostIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/comunidades/$communityId/canais/$channelId': {
+      id: '/comunidades/$communityId/canais/$channelId'
+      path: '/canais/$channelId'
+      fullPath: '/comunidades/$communityId/canais/$channelId'
+      preLoaderRoute: typeof ComunidadesCommunityIdCanaisChannelIdRouteImport
+      parentRoute: typeof ComunidadesCommunityIdRoute
+    }
   }
 }
 
+interface ComunidadesCommunityIdRouteChildren {
+  ComunidadesCommunityIdCanaisChannelIdRoute: typeof ComunidadesCommunityIdCanaisChannelIdRoute
+}
+
+const ComunidadesCommunityIdRouteChildren: ComunidadesCommunityIdRouteChildren =
+  {
+    ComunidadesCommunityIdCanaisChannelIdRoute:
+      ComunidadesCommunityIdCanaisChannelIdRoute,
+  }
+
+const ComunidadesCommunityIdRouteWithChildren =
+  ComunidadesCommunityIdRoute._addFileChildren(
+    ComunidadesCommunityIdRouteChildren,
+  )
+
 interface ComunidadesRouteChildren {
-  ComunidadesCommunityIdRoute: typeof ComunidadesCommunityIdRoute
+  ComunidadesCommunityIdRoute: typeof ComunidadesCommunityIdRouteWithChildren
 }
 
 const ComunidadesRouteChildren: ComunidadesRouteChildren = {
-  ComunidadesCommunityIdRoute: ComunidadesCommunityIdRoute,
+  ComunidadesCommunityIdRoute: ComunidadesCommunityIdRouteWithChildren,
 }
 
 const ComunidadesRouteWithChildren = ComunidadesRoute._addFileChildren(
@@ -1326,7 +1341,6 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SobreRoute: SobreRoute,
   SuporteRoute: SuporteRoute,
-  TemasRoute: TemasRoute,
   TermosRoute: TermosRoute,
   VagasRoute: VagasRouteWithChildren,
   AuthCallbackRoute: AuthCallbackRoute,

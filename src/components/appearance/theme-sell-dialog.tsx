@@ -95,7 +95,8 @@ export function ThemeSellDialog({
       ),
   });
 
-  const valid = name.trim().length >= 3 && parseFaiscaInput(price) !== null;
+  const faiscas = parseFaiscaInput(price) ?? 0;
+  const valid = name.trim().length >= 3 && faiscas >= 50_000;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -140,14 +141,14 @@ export function ThemeSellDialog({
 
             <Input
               type="number"
-              min={1}
+              min={50}
               value={price}
               onChange={(event) => setPrice(event.target.value)}
               className="bg-muted"
             />
 
             <p className="text-xs text-text-subtle">
-              Você recebe {formatFaisca(parseFaiscaInput(price) ?? 0)} faíscas (−10% da plataforma)
+              Mínimo de 50 faíscas. Você recebe {formatFaisca(faiscas)} faíscas (−10% da plataforma)
               depois que o comprador confirmar — ele tem 7 dias para confirmar ou pedir reembolso.
             </p>
           </div>

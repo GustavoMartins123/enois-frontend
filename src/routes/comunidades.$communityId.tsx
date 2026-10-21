@@ -51,6 +51,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
+import { CommunityChannels } from "@/components/communities/community-channels";
 import { CommunityFavoriteButton } from "@/components/community-favorite-button";
 import { HtmlEditor } from "@/components/html-editor";
 import { ImageCropDialog } from "@/components/image-crop-dialog";
@@ -498,6 +499,7 @@ function CommunityDetail() {
           pending={removeCommunity.isPending}
           onConfirm={() => removeCommunity.mutate()}
         />
+        <CommunityChannels communityId={community.id} joined={isMember} />
 
         {isMember && (
           <form onSubmit={publish} className="surface-card p-5">
