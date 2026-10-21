@@ -11,6 +11,7 @@ import {
   Home,
   Joystick,
   MessageCircle,
+  ShoppingBag,
   Users,
   UsersRound,
 } from "lucide-react";
@@ -54,5 +55,6 @@ export const navigationItems: {
   },
   { to: "/eventos", label: texts.navigation.items.events, icon: Calendar, module: "EVENTS" },
   { to: "/jogos-diarios", label: "Jogos diários", icon: Gamepad2, module: "DAILY_GAMES" },
-  { to: "/games", label: "Jogos da comunidade", icon: Joystick, module: "COMMUNITY_GAMES" },
+  { to: "/games", label: "Projetos da comunidade", icon: Joystick, module: "COMMUNITY_GAMES" },
+  { to: "/marketplace", label: "Marketplace", icon: ShoppingBag, module: null },
 ];

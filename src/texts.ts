@@ -798,8 +798,7 @@ export const texts = {
         "Receba uma mensagem de cuidado ao acessar o feed entre meia-noite e cinco da manhã.",
       nightRest: {
         title: "Tá com insônia?",
-        body:
-          "Tenta cuidar melhor de ti, ouvir um ruído branco e tentar dormir. É bom ter você aqui pra fazer companhia, mas é melhor ainda ter você saudável.",
+        body: "Tenta cuidar melhor de ti, ouvir um ruído branco e tentar dormir. É bom ter você aqui pra fazer companhia, mas é melhor ainda ter você saudável.",
         rest: "Vou tentar descansar",
         keep: "Continuar no Énóis",
       },
@@ -3001,6 +3000,20 @@ export const texts = {
       "Data registrada. Agora falta a autorização de um responsável para liberar a conta.",
     invalid: "Confira a data: ela não pode estar no futuro.",
     error: "Não foi possível salvar a data. Tente de novo.",
+  },
+  /** Popup de desculpas pelos últimos dias + faíscas de presente. */
+  apology: {
+    title: "Estamos trabalhando para melhorar o Énóis! 💜",
+    body: "Pedimos desculpas pelos inconvenientes dos últimos dias. Estamos trabalhando ativamente para corrigir problemas, reforçar a segurança e tornar a plataforma cada vez melhor para todo mundo. Obrigada pela paciência e por fazer parte dessa comunidade. O Énóis é feito por pessoas, para pessoas, e seguimos construindo tudo isso com muito cuidado e transparência.",
+    bonus:
+      "Você recebeu 100 faíscas para usar como quiser na loja, no marketplace e nos espaços da comunidade.",
+    together: "Seguimos juntos. 💜",
+    close: "Vamos lá",
+  },
+  /** Card de espaços novos no painel lateral. */
+  platformSpaces: {
+    title: "Novidades para explorar",
+    subtitle: "Loja, marketplace, freelances e projetos da comunidade.",
   },
   /** Canais privados por tema dentro das comunidades. */
   communityChannels: {
