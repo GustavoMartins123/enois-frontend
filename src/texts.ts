@@ -2821,6 +2821,16 @@ export const texts = {
     validationMessage: "Descreva o problema com pelo menos 10 caracteres.",
     validationEmail: "Informe um e-mail válido.",
     error: "Não foi possível enviar o pedido. Tente novamente em instantes.",
+    myRequestsTitle: "Meus pedidos",
+    myRequestsDescription:
+      "Acompanhe o que você abriu. Quando o time conclui, o pedido aparece como resolvido aqui.",
+    myRequestsEmpty: "Você ainda não abriu nenhum pedido.",
+    myRequestsLoading: "Carregando pedidos...",
+    status: {
+      OPEN: "Aberto",
+      IN_PROGRESS: "Em andamento",
+      CLOSED: "Resolvido",
+    } as Record<string, string>,
     contatoSeoTitle: "Contato · Énóis",
     contactTitle: "Fale com a gente",
     contactDescription:
@@ -3115,7 +3125,7 @@ export const texts = {
         "Issues e tickets já concluídos. A fila ativa mostra apenas o que ainda precisa de atenção.",
       historyEmpty: "Nada no histórico ainda.",
       description:
-        "Pedidos abertos pelo app, separados por categoria. Mover para em andamento ou resolver registra a triagem.",
+        "Pedidos abertos pelo app, separados por categoria. Cada pedido também vira uma issue no GitHub: concluir aqui fecha a issue e avisa quem abriu.",
       empty: "Nenhum ticket nesta categoria.",
       all: "Todas",
       statusAll: "Todos",
@@ -3136,6 +3146,7 @@ export const texts = {
       from: "De",
       image: "Abrir print anexado",
       noMessage: "Sem mensagem.",
+      githubIssue: "Issue no GitHub",
     },
     emails: {
       title: "E-mails enviados",

@@ -178,7 +178,9 @@ export function LinkedinImportSection({
               ? [
                   {
                     date: project.startDate ?? new Date().toISOString().slice(0, 10),
-                    text: project.description,
+                    // O diário aceita até 2.000 caracteres no backend; descrição maior é
+                    // cortada aqui para não derrubar a importação inteira.
+                    text: project.description.slice(0, 2_000),
                   },
                 ]
               : [],

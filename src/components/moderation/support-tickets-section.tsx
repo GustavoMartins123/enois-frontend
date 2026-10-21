@@ -148,6 +148,17 @@ export function SupportTicketsSection({
                 </span>
 
                 <span>{new Date(ticket.createdAt).toLocaleString("pt-BR")}</span>
+
+                {ticket.githubIssueNumber != null && (
+                  <a
+                    href={ticket.githubIssueUrl ?? "#"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-full border border-border-soft px-2 py-0.5 text-primary hover:underline"
+                  >
+                    {texts.moderator.support.githubIssue} #{ticket.githubIssueNumber}
+                  </a>
+                )}
               </div>
 
               <div className="min-w-0">
