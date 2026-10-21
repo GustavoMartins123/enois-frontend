@@ -900,9 +900,9 @@ export const texts = {
     seo: {
       title: "Énóis, uma rede social feita de gente, não de atenção",
       description:
-        "Rede social gratuita para profissionais e comunidades: sem anúncios, sem planos pagos e com um feed que termina quando o conteúdo acaba. Conversas, mentoria, eventos e vagas.",
+        "Rede social gratuita feita por gente: conversas, trabalho, brincadeira e vizinhança no mesmo lugar. Sem anúncios, sem planos pagos e com um feed que termina quando o conteúdo acaba.",
       ogDescription:
-        "Sem anúncio, sem paywall e sem esteira infinita. Uma rede social em construção com as pessoas, e aberta para quem quiser ajudar.",
+        "Sem anúncio, sem paywall e sem esteira infinita. Uma rede humana em construção com as pessoas, e aberta para quem quiser ajudar.",
       ogImageAlt: "Identidade visual do Énóis com seu símbolo e slogan.",
     },
     /**
@@ -927,7 +927,7 @@ export const texts = {
       badge: "A rede é nossa",
       title: "Uma rede social não precisa viver da sua atenção.",
       description:
-        "O énóis é uma rede para profissionais e comunidades, um lugar para conversar, aprender e construir junto. Sem anúncios, sem planos pagos e sem nada tentando prender você: quem decide quando a visita acaba é você.",
+        "O énóis é uma rede humana: um lugar para conversar, trabalhar, aprender, brincar e construir junto. Sem anúncios, sem planos pagos e sem nada tentando prender você: quem decide quando a visita acaba é você.",
       join: "Entrar no énóis",
       proposal: "Conhecer a proposta",
       facts: {
@@ -956,6 +956,7 @@ export const texts = {
         "O que existe é para todo mundo: sem plano pago esperando na esquina.",
         "O feed termina quando o conteúdo acaba, e diz isso na sua cara.",
         "Gente de verdade moderando, com regras escritas antes de qualquer punição.",
+        "A rede é humana antes de ser profissional: a foto do almoço e a vaga da empresa cabem no mesmo perfil.",
       ],
     },
     principles: {
@@ -1003,27 +1004,59 @@ export const texts = {
         {
           label: "Conversas",
           items: [
-            "Publicações em vários tipos, de pergunta rápida a artigo com até 4.000 caracteres",
-            "Páginas em HTML/CSS publicadas como post, com player embutido",
-            "Comentários com imagem e GIF, reações e edição",
-            "Comunidades com capa própria, feita de foto ou HTML/CSS",
+            "Publicações em vários tipos: pergunta, artigo, projeto, página, notícia, tutorial, oportunidade, avaliação e divertimento",
+            "Mais de trinta assuntos para marcar do que cada post é",
+            "Comentários com imagem, GIF e áudio, com reações, edição e respostas aninhadas",
+            "Menções, salvos e a opção de ver só o que você ainda não tocou",
+            "Páginas em HTML e CSS publicadas como post, com player de vídeo e áudio",
           ],
         },
         {
-          label: "Trabalho e aprendizado",
+          label: "Comunidades e grupos",
           items: [
-            "Vagas publicadas aqui e captadas de fontes públicas (Remotive, Jobicy, RemoteOK, Himalayas)",
+            "Comunidades com capa própria, feita de foto ou de HTML e CSS",
+            "Canais privados por assunto, fora de todos os feeds",
+            "Grupos com feed, tópicos e moderação em camadas",
+            "Post fixado, denúncia e regras públicas em toda parte",
+          ],
+        },
+        {
+          label: "Trabalho e estudo",
+          items: [
+            "Vagas publicadas aqui e vindas de fontes públicas (Remotive, Jobicy, RemoteOK, Himalayas)",
             "Candidatura com triagem de quem publicou a vaga",
+            "Empresas com perfil próprio e projetos de comunidade",
             "Mentoria com agenda de sessões",
             "Eventos online, presenciais ou híbridos, com confirmação",
+            "Currículo em PDF no perfil, que viaja com a candidatura",
           ],
         },
         {
-          label: "Sua conta",
+          label: "Brincadeira e criação",
           items: [
-            "Perfil e publicações com link público, abrem sem login",
-            "Busca por pessoas, comunidades, vagas, eventos e mentores",
-            "Salvos, bloqueios e denúncias que você acompanha",
+            "Jogos da comunidade, jogáveis no navegador, com avaliações e comentários",
+            "Três jogos por dia: Palavras, Labirinto e Blocos, com prêmio em faíscas",
+            "Loja de aparências, com molduras animadas de avatar",
+            "Marketplace de temas e conteúdos, com o autor no catálogo",
+            "Projetos de comunidade, com página própria e ciclo de revisão",
+          ],
+        },
+        {
+          label: "Gente e conta",
+          items: [
+            "Perfil e publicações com link público, que abrem sem login",
+            "Bio, capa e páginas em HTML e CSS escritos por você",
+            "Busca por pessoas, comunidades, vagas, eventos e jogos",
+            "Conexões, pedidos, salvos, bloqueios e denúncias que você acompanha",
+            "Mensagens diretas e de comunidade, com imagem, GIF e áudio",
+            "Notificações no app e no celular",
+          ],
+        },
+        {
+          label: "O dinheiro é interno",
+          items: [
+            "Faíscas: a moeda circula entre as pessoas, sem dinheiro real",
+            "Carteira com extrato, transferências instantâneas e resgate em bens",
           ],
         },
       ],
@@ -1069,7 +1102,7 @@ export const texts = {
     securityNote: {
       eyebrow: "Aviso a quem testa segurança",
       title: "Testem na sandbox, não contra a nossa API.",
-      body: "Pedimos, por favor, que os testes de segurança sejam realizados em ambiente de sandbox, e não contra a nossa API. Temos os repositórios abertos — tudo é 100% open source — e damos autorização apenas para testes realizados em ambiente simulado. Todo teste executado contra a nossa API será encarado como crime cibernético e denunciado como tal.",
+      body: "Pedimos, por favor, que os testes de segurança sejam realizados em ambiente de sandbox, e não contra a nossa API. Temos os repositórios abertos, tudo é 100% open source, e damos autorização apenas para testes realizados em ambiente simulado. Todo teste executado contra a nossa API será encarado como crime cibernético e denunciado como tal.",
       closing:
         "Somos uma rede social sem fins lucrativos que quer ser melhor junto da comunidade. Pedimos que não tentem destruir ideias livres e gratuitas que apenas querem trazer o bem.",
       repoLink: "Ver os repositórios abertos",
@@ -1078,7 +1111,7 @@ export const texts = {
       copyright: (year: number) =>
         `© ${year} Énóis · Uma rede feita com as pessoas, todos os dias.`,
       tagline:
-        "Uma rede social gratuita para profissionais e comunidades, sem anúncios, sem paywall, em construção com quem usa.",
+        "Uma rede social gratuita feita por gente, sem anúncios, sem paywall, em construção com quem usa.",
       sectionsLabel: "Nesta página",
       projectLabel: "O projeto",
       privacy: "Privacidade",
@@ -1103,7 +1136,7 @@ export const texts = {
       "O énóis é um projeto independente, comunitário e sem fins lucrativos. Leia o aviso de independência em relação a outras organizações e marcas de nome semelhante.",
     title: "Sobre o énóis",
     intro:
-      "Uma rede social gratuita para profissionais e comunidades, sem anúncios, sem paywall, em construção com quem usa.",
+      "Uma rede social gratuita feita por gente, sem anúncios, sem paywall, em construção com quem usa.",
     independenceTitle: "Projeto independente",
     disclaimer:
       "O énóis é um projeto independente, comunitário e sem fins lucrativos, desenvolvido com o objetivo de promover conexões e interações entre pessoas. Não possuímos vínculo, afiliação ou associação com outras organizações ou marcas de nome semelhante, salvo quando expressamente informado.",
@@ -2044,7 +2077,7 @@ export const texts = {
   communities: {
     seoTitle: "Comunidades · Énóis",
     title: "Comunidades",
-    description: "Encontre grupos profissionais, fóruns temáticos e círculos de mentoria.",
+    description: "Encontre comunidades de gente, fóruns temáticos e círculos de mentoria.",
     topicsLabel: "Categorias",
     searchPlaceholder: "Pesquisar comunidades",
     empty: "Nenhuma comunidade encontrada.",
@@ -3446,11 +3479,11 @@ export const texts = {
       "As regras do Énóis: o que é bem-vindo, o que não é tolerado, como funcionam as denúncias e as consequências.",
     title: "Diretrizes da comunidade",
     intro:
-      "O Énóis é uma rede profissional. O objetivo destas diretrizes é manter um ambiente onde profissionais constroem reputação de forma honesta e se tratam com respeito.",
+      "O Énóis é uma rede humana. O objetivo destas diretrizes é manter um ambiente onde as pessoas constroem reputação de forma honesta e se tratam com respeito.",
     welcomeTitle: "O que é bem-vindo",
     welcome: [
-      "Conteúdo profissional: experiências de carreira, oportunidades de trabalho, conhecimento técnico e apoio entre profissionais.",
-      "Opiniões e debate, inclusive críticas fortes, desde que sobre ideias, empresas e trabalho — não contra a pessoa.",
+      "Conteúdo de qualquer área: o que você sabe, o que procura e o que quer construir com gente que te entende.",
+      "Opiniões e debate, inclusive críticas fortes, desde que sobre ideias, empresas e trabalho, e não contra a pessoa.",
       "Publicação honesta sobre quem você é e o que faz.",
     ],
     zeroToleranceTitle: "Zero tolerância",
@@ -3557,7 +3590,7 @@ export const texts = {
         },
         {
           title: "9. Limitação de responsabilidade",
-          text: "Na máxima extensão permitida por lei, o Énóis não se responsabiliza por danos indiretos, incidentais ou consequenciais decorrentes do uso da plataforma, incluindo perda de dados, lucros ou oportunidades profissionais. A plataforma não garante resultados profissionais específicos, como contratações ou conexões.",
+          text: "Na máxima extensão permitida por lei, o Énóis não se responsabiliza por danos indiretos, incidentais ou consequenciais decorrentes do uso da plataforma, incluindo perda de dados, lucros ou oportunidades de trabalho. A plataforma não garante resultados profissionais específicos, como contratações ou conexões.",
         },
         {
           title: "10. Encerramento",
@@ -3675,10 +3708,10 @@ export const texts = {
       home: "Voltar para o início",
     },
     seo: {
-      title: "Énóis · Networking profissional humano",
+      title: "Énóis · Rede humana",
       description:
-        "Plataforma de networking profissional com foco em conexões genuínas, mentoria, comunidades e desenvolvimento de carreira.",
-      ogDescription: "Construa relacionamentos profissionais reais — não apenas conexões.",
+        "Rede social feita por gente, com conversas, trabalho, brincadeira e vizinhança no mesmo lugar. Sem anúncios, sem planos pagos e sem nada prendendo você.",
+      ogDescription: "Construa relações de verdade, não apenas conexões.",
     },
   },
 
