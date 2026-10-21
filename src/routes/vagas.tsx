@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
@@ -169,7 +169,9 @@ function Vagas() {
     enabled: !isChildRoute && aba === "externas",
   });
 
-  const jobs = aba === "externas" && plataforma ? (jobsData?.items ?? []) : (jobsData?.items ?? []);
+  // Memo: o `?? []` criava um array novo a cada render e o efeito de acumular a lista abaixo
+  // rodava em todo render. Os dois ramos do antigo ternário eram iguais.
+  const jobs = useMemo(() => jobsData?.items ?? [], [jobsData]);
   const nextCursor = jobsData?.nextCursor ?? null;
 
   // Reset list when filters change

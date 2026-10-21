@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useRouterState } from "@tanstack/react-router";
 
+import { COMMUNITY_FAVORITES_KEY } from "@/constants/community-favorites";
 import { texts } from "@/texts";
 import type { NavigationLinksProps } from "@/types/components/navigation/navigation-links-props";
 import { Star } from "lucide-react";
@@ -10,7 +11,6 @@ import { getSessionToken } from "@/lib/api-client";
 import { useDisabledModules } from "@/lib/use-personalization";
 import { cn } from "@/lib/utils";
 
-import { COMMUNITY_FAVORITES_KEY } from "./community-favorite-button";
 import { navigationItems } from "./navigation-items";
 
 export function NavigationLinks({

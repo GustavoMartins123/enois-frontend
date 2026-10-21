@@ -64,10 +64,13 @@ export function DailyMaze() {
     }
   }, [state?.status, state?.date]);
 
-  // Cronômetro ao vivo durante a partida
+  // Cronômetro ao vivo durante a partida. Depende só do status e do início, de propósito: o
+  // `state` inteiro muda a cada passo no labirinto e reiniciaria o intervalo a cada passo.
+  const status = state?.status;
+  const startedAt = state?.startedAt;
   useEffect(() => {
-    if (!state || state.status !== "IN_PROGRESS" || !state.startedAt) return;
-    const startMs = new Date(state.startedAt).getTime();
+    if (status !== "IN_PROGRESS" || !startedAt) return;
+    const startMs = new Date(startedAt).getTime();
     const updateTimer = () => {
       const now = Date.now();
       setElapsedSeconds(Math.max(0, Math.floor((now - startMs) / 1000)));
@@ -75,7 +78,7 @@ export function DailyMaze() {
     updateTimer();
     const interval = window.setInterval(updateTimer, 1000);
     return () => window.clearInterval(interval);
-  }, [state?.status, state?.startedAt]);
+  }, [status, startedAt]);
 
   function formatTime(totalSeconds: number) {
     const m = Math.floor(totalSeconds / 60);

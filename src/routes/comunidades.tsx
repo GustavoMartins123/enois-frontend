@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
 
+import { COMMUNITY_FAVORITES_KEY } from "@/constants/community-favorites";
 import { TOPICS, TOPIC_LABELS } from "@/constants/community-topics";
 import { texts } from "@/texts";
 import type { Community } from "@/types/application/community/community";
@@ -32,7 +33,6 @@ import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { CommunityCard } from "@/components/community-card";
-import { COMMUNITY_FAVORITES_KEY } from "@/components/community-favorite-button";
 
 export const Route = createFileRoute("/comunidades")({
   head: () => ({ meta: [{ title: texts.communities.seoTitle }] }),
