@@ -68,6 +68,7 @@ import { Route as GamesUsernameGameSlugRouteImport } from './routes/games.$usern
 import { Route as BlogPostNewRouteImport } from './routes/blog.post.new'
 import { Route as BlogPostPostIdRouteImport } from './routes/blog.post.$postId'
 import { Route as BlogUsernamePostIdRouteImport } from './routes/blog.$username_.$postId'
+import { Route as ComunidadesCommunityIdCanaisChannelIdRouteImport } from './routes/comunidades.$communityId.canais.$channelId'
 
 const VagasRoute = VagasRouteImport.update({
   id: '/vagas',
@@ -364,6 +365,12 @@ const BlogUsernamePostIdRoute = BlogUsernamePostIdRouteImport.update({
   path: '/blog/$username/$postId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ComunidadesCommunityIdCanaisChannelIdRoute =
+  ComunidadesCommunityIdCanaisChannelIdRouteImport.update({
+    id: '/canais/$channelId',
+    path: '/canais/$channelId',
+    getParentRoute: () => ComunidadesCommunityIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -409,7 +416,7 @@ export interface FileRoutesByFullPath {
   '/auth/reset': typeof AuthResetRoute
   '/auth/verify': typeof AuthVerifyRoute
   '/blog/$username': typeof BlogUsernameRoute
-  '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
+  '/comunidades/$communityId': typeof ComunidadesCommunityIdRouteWithChildren
   '/empresa/$slug': typeof EmpresaSlugRoute
   '/games/$username': typeof GamesUsernameRouteWithChildren
   '/games/painel': typeof GamesPainelRoute
@@ -425,6 +432,7 @@ export interface FileRoutesByFullPath {
   '/blog/post/new': typeof BlogPostNewRoute
   '/games/$username/$gameSlug': typeof GamesUsernameGameSlugRoute
   '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
+  '/comunidades/$communityId/canais/$channelId': typeof ComunidadesCommunityIdCanaisChannelIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -470,7 +478,7 @@ export interface FileRoutesByTo {
   '/auth/reset': typeof AuthResetRoute
   '/auth/verify': typeof AuthVerifyRoute
   '/blog/$username': typeof BlogUsernameRoute
-  '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
+  '/comunidades/$communityId': typeof ComunidadesCommunityIdRouteWithChildren
   '/empresa/$slug': typeof EmpresaSlugRoute
   '/games/$username': typeof GamesUsernameRouteWithChildren
   '/games/painel': typeof GamesPainelRoute
@@ -486,6 +494,7 @@ export interface FileRoutesByTo {
   '/blog/post/new': typeof BlogPostNewRoute
   '/games/$username/$gameSlug': typeof GamesUsernameGameSlugRoute
   '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
+  '/comunidades/$communityId/canais/$channelId': typeof ComunidadesCommunityIdCanaisChannelIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -532,7 +541,7 @@ export interface FileRoutesById {
   '/auth/reset': typeof AuthResetRoute
   '/auth/verify': typeof AuthVerifyRoute
   '/blog/$username': typeof BlogUsernameRoute
-  '/comunidades/$communityId': typeof ComunidadesCommunityIdRoute
+  '/comunidades/$communityId': typeof ComunidadesCommunityIdRouteWithChildren
   '/empresa/$slug': typeof EmpresaSlugRoute
   '/games/$username': typeof GamesUsernameRouteWithChildren
   '/games/painel': typeof GamesPainelRoute
@@ -548,6 +557,7 @@ export interface FileRoutesById {
   '/blog/post/new': typeof BlogPostNewRoute
   '/games/$username/$gameSlug': typeof GamesUsernameGameSlugRoute
   '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
+  '/comunidades/$communityId/canais/$channelId': typeof ComunidadesCommunityIdCanaisChannelIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -611,6 +621,7 @@ export interface FileRouteTypes {
     | '/blog/post/new'
     | '/games/$username/$gameSlug'
     | '/vagas/$jobId/candidaturas'
+    | '/comunidades/$communityId/canais/$channelId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -672,6 +683,7 @@ export interface FileRouteTypes {
     | '/blog/post/new'
     | '/games/$username/$gameSlug'
     | '/vagas/$jobId/candidaturas'
+    | '/comunidades/$communityId/canais/$channelId'
   id:
     | '__root__'
     | '/'
@@ -733,6 +745,7 @@ export interface FileRouteTypes {
     | '/blog/post/new'
     | '/games/$username/$gameSlug'
     | '/vagas/$jobId/candidaturas'
+    | '/comunidades/$communityId/canais/$channelId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1203,15 +1216,37 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BlogUsernamePostIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/comunidades/$communityId/canais/$channelId': {
+      id: '/comunidades/$communityId/canais/$channelId'
+      path: '/canais/$channelId'
+      fullPath: '/comunidades/$communityId/canais/$channelId'
+      preLoaderRoute: typeof ComunidadesCommunityIdCanaisChannelIdRouteImport
+      parentRoute: typeof ComunidadesCommunityIdRoute
+    }
   }
 }
 
+interface ComunidadesCommunityIdRouteChildren {
+  ComunidadesCommunityIdCanaisChannelIdRoute: typeof ComunidadesCommunityIdCanaisChannelIdRoute
+}
+
+const ComunidadesCommunityIdRouteChildren: ComunidadesCommunityIdRouteChildren =
+  {
+    ComunidadesCommunityIdCanaisChannelIdRoute:
+      ComunidadesCommunityIdCanaisChannelIdRoute,
+  }
+
+const ComunidadesCommunityIdRouteWithChildren =
+  ComunidadesCommunityIdRoute._addFileChildren(
+    ComunidadesCommunityIdRouteChildren,
+  )
+
 interface ComunidadesRouteChildren {
-  ComunidadesCommunityIdRoute: typeof ComunidadesCommunityIdRoute
+  ComunidadesCommunityIdRoute: typeof ComunidadesCommunityIdRouteWithChildren
 }
 
 const ComunidadesRouteChildren: ComunidadesRouteChildren = {
-  ComunidadesCommunityIdRoute: ComunidadesCommunityIdRoute,
+  ComunidadesCommunityIdRoute: ComunidadesCommunityIdRouteWithChildren,
 }
 
 const ComunidadesRouteWithChildren = ComunidadesRoute._addFileChildren(

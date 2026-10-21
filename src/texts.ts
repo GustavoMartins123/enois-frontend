@@ -3002,6 +3002,40 @@ export const texts = {
     invalid: "Confira a data: ela não pode estar no futuro.",
     error: "Não foi possível salvar a data. Tente de novo.",
   },
+  /** Canais privados por tema dentro das comunidades. */
+  communityChannels: {
+    title: "Canais privados",
+    subtitle:
+      "Conversas por tema, só para quem participa da comunidade. Nada daqui aparece nos feeds.",
+    locked: "Os canais são privados: entre na comunidade para ver e participar.",
+    create: "Criar canal",
+    createTitle: "Novo canal",
+    name: "Nome do canal",
+    namePlaceholder: "Ex.: Bastidores, Dúvidas, Vagas",
+    topic: "Tema (opcional)",
+    topicNone: "Sem tema",
+    description: "Descrição (opcional)",
+    descriptionPlaceholder: "Para que serve este canal?",
+    cancel: "Cancelar",
+    confirm: "Criar",
+    creating: "Criando...",
+    created: "Canal criado.",
+    empty: "Nenhum canal ainda. Crie o primeiro.",
+    invalidName: "O nome precisa ter pelo menos 2 caracteres.",
+    error: "Não foi possível criar o canal. Tente de novo.",
+  },
+  /** Página de um canal privado. */
+  channelPage: {
+    back: "Voltar para a comunidade",
+    composerPlaceholder: "Escreva para este canal...",
+    publish: "Publicar no canal",
+    publishing: "Publicando...",
+    empty: "Nada por aqui ainda. Comece a conversa.",
+    private: "Este canal é privado: só membros da comunidade podem ler e publicar.",
+    notMember: "Entre na comunidade para acessar este canal.",
+    enter: "Entrar na comunidade",
+    error: "Não foi possível carregar o canal.",
+  },
   /** Área do responsável legal (ECA Digital). */
   guardian: {
     title: "Supervisão parental",

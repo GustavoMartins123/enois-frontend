@@ -6,4 +6,6 @@ export type CreatePostInput = Pick<PostView, "type" | "content"> &
     communityId?: string;
     /** Assunto do post AVULSO (um da taxonomia). Em comunidade o post herda o dela — não mande. */
     topic?: string;
+    /** Canal privado da comunidade (o tema vem do canal; o post não entra em feed). */
+    channelId?: string;
   };
