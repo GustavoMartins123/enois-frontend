@@ -8,6 +8,7 @@ import { Bell, Check, CheckCheck, X } from "lucide-react";
 
 import { networkApi, notificationsApi, profileApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
+import { getCurrentUserId } from "@/lib/current-user";
 import { isNotificationHidden } from "@/lib/notification-module";
 import { useDisabledModules } from "@/lib/use-personalization";
 import { cn } from "@/lib/utils";
@@ -80,8 +81,9 @@ export function NotificationsPopover() {
     notificationTab === "novas" ? !notification.read : notification.read,
   );
 
+  const currentUserId = getCurrentUserId();
   const incomingRequests = (pendingRequests.data?.items ?? []).filter(
-    (r) => r.status === "PENDING" && pendingActorIds?.has(r.fromUserId),
+    (r) => r.status === "PENDING" && r.fromUserId !== currentUserId,
   );
   const requestCount = incomingRequests.length;
 
