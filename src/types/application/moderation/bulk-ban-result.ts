@@ -1,8 +1,4 @@
-export type BulkBanItemResult = {
-  username: string;
-  status: "BANNED" | "ALREADY_BANNED" | "FAILED";
-  message: string;
-};
+import type { BulkBanItemResult } from "./bulk-ban-item-result";
 
 export type BulkBanResult = {
   total: number;

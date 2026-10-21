@@ -1,15 +1,6 @@
-import { api } from "../api-client";
+import type { ThemeGalleryItem } from "@/types/application/themes/theme-gallery-item";
 
-/** Tema publicado na galeria da comunidade (pacote = JSON de tokens, sem CSS livre). */
-export type ThemeGalleryItem = {
-  id: string;
-  name: string;
-  description: string;
-  packageJson: string;
-  modeDefault: string;
-  installs: number;
-  createdAt: string;
-};
+import { api } from "../api-client";
 
 export const themesApi = {
   list: (limit = 60) =>

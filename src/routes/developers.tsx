@@ -2,14 +2,10 @@ import { type ComponentProps, useState } from "react";
 
 import { createFileRoute } from "@tanstack/react-router";
 
-import {
-  API_BASE_URL,
-  type ApiEndpoint,
-  type HttpMethod,
-  apiSections,
-  apiUseCases,
-} from "@/constants/developers-api";
+import { API_BASE_URL, apiSections, apiUseCases } from "@/constants/developers-api";
 import { texts } from "@/texts";
+import type { ApiEndpoint } from "@/types/application/developers/api-endpoint";
+import type { HttpMethod } from "@/types/application/developers/http-method";
 import { Check, Copy } from "lucide-react";
 
 import { AppContainer } from "@/components/app-container";

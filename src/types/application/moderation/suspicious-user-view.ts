@@ -9,10 +9,3 @@ export type SuspiciousUserView = {
   riskScore: number;
   signals: string[];
 };
-
-export type SuspiciousUsersView = {
-  items: SuspiciousUserView[];
-  total: number;
-  since: string;
-  days: number;
-};

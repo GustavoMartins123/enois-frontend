@@ -3,6 +3,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
+import type { RowProps } from "@/types/application/daily-games/row-props";
+import type { TileProps } from "@/types/application/daily-games/tile-props";
+import type { TileState } from "@/types/application/daily-games/tile-state";
+import type { UserWordStats } from "@/types/application/daily-games/user-word-stats";
 import type { WordMark } from "@/types/application/daily-games/word-mark";
 import type { WordState } from "@/types/application/daily-games/word-state";
 import { BarChart2, HelpCircle, Share2, Sparkles, Type } from "lucide-react";
@@ -21,22 +25,15 @@ import {
 
 // ─── Estatísticas e Persistência Local ─────────────────────────────────────────
 
-interface UserWordStats {
-  played: number;
-  won: number;
-  currentStreak: number;
-  maxStreak: number;
-  distribution: Record<number, number>;
-  lastRecordedDate?: string;
-}
-
 const STATS_STORAGE_KEY = "enois_wordle_stats_v1";
 
 function loadWordStats(): UserWordStats {
   try {
     const raw = localStorage.getItem(STATS_STORAGE_KEY);
     if (raw) return JSON.parse(raw);
-  } catch {}
+  } catch {
+    // localStorage indisponivel (modo privado): comeca do zero.
+  }
   return {
     played: 0,
     won: 0,
@@ -64,7 +61,9 @@ function recordWordGame(won: boolean, attempts: number, date: string): UserWordS
 
   try {
     localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(next));
-  } catch {}
+  } catch {
+    // localStorage indisponivel (modo privado): a estatistica fica so na memoria.
+  }
   return next;
 }
 
@@ -91,8 +90,6 @@ for (const row of KEYBOARD_ROWS) {
 }
 
 // ─── Helpers de cor ─────────────────────────────────────────────────────────────
-
-type TileState = WordMark | "empty" | "typing";
 
 /**
  * Tile responsiva: usa CSS custom property --tile-size calculada no wrapper da grade.
@@ -163,16 +160,6 @@ function buildKeyMap(guesses: WordState["guesses"]): Record<string, WordMark> {
 
 // ─── Sub-componente: célula da grade ──────────────────────────────────────────
 
-interface TileProps {
-  letter: string;
-  state: TileState;
-  revealed: boolean;
-  /** Índice da coluna (0-4) — controla o delay do flip. */
-  col: number;
-  /** Se true, anima o flip ao ser revelado. */
-  animate: boolean;
-}
-
 function Tile({ letter, state, revealed, col, animate }: TileProps) {
   const [flipped, setFlipped] = useState(false);
   const [displayState, setDisplayState] = useState<TileState>(revealed ? state : state);
@@ -207,14 +194,6 @@ function Tile({ letter, state, revealed, col, animate }: TileProps) {
 }
 
 // ─── Sub-componente: linha da grade ───────────────────────────────────────────
-
-interface RowProps {
-  letters: string[];
-  marks: WordMark[] | null; // null = linha ainda não confirmada
-  shake: boolean;
-  /** Se true, anima o flip ao ser revelado (só na linha recém confirmada). */
-  animateReveal: boolean;
-}
 
 function Row({ letters, marks, shake, animateReveal }: RowProps) {
   return (

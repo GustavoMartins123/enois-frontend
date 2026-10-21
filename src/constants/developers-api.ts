@@ -1,3 +1,7 @@
+import type { ApiEndpoint } from "@/types/application/developers/api-endpoint";
+import type { ApiSection } from "@/types/application/developers/api-section";
+import type { ApiUseCase } from "@/types/application/developers/api-use-case";
+
 /**
  * Catalogo da API publica do Énóis, usado pela pagina /developers.
  *
@@ -5,33 +9,6 @@
  * interface). Os exemplos de resposta sao REAIS, capturados da producao — nada ficticio.
  * Manter em sincronia com os controllers do backend: cada bloco novo de API entra aqui.
  */
-
-export type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-
-export type ApiEndpoint = {
-  method: HttpMethod;
-  path: string;
-  /** public = nao pede sessao; auth = sessao do Énóis; admin = sessao de administrador. */
-  access: "public" | "auth" | "admin";
-  description: string;
-  request?: string;
-  response?: string;
-};
-
-export type ApiSection = {
-  id: string;
-  title: string;
-  description: string;
-  endpoints: ApiEndpoint[];
-};
-
-export type ApiUseCase = {
-  id: string;
-  title: string;
-  description: string;
-  /** Passos em curl (ou nota curta) — a sequencia executa de ponta a ponta. */
-  steps: { note: string; code?: string }[];
-};
 
 const P = "https://enois.ia.br/api";
 
@@ -675,7 +652,7 @@ export const apiSections: ApiSection[] = [
         path: "/temas/galeria?limit=60",
         access: "public",
         description: "Lista os temas publicados (mais recentes primeiro).",
-        response: `[{"id":"tema_…","name":"Bruma Silenciosa","description":"…","packageJson":"{\"palette\":…}","modeDefault":"light","installs":12,"createdAt":"2026-10-17T18:20:11Z"}]`,
+        response: `[{"id":"tema_…","name":"Bruma Silenciosa","description":"…","packageJson":"{"palette":…}","modeDefault":"light","installs":12,"createdAt":"2026-10-17T18:20:11Z"}]`,
       },
       {
         method: "GET",
@@ -690,7 +667,7 @@ export const apiSections: ApiSection[] = [
         description:
           "Publica um tema (o gate de contraste recusa pacote ilegível com THEME_CONTRAST_LOW). Exige Idempotency-Key.",
         request: `{"name":"Meu Tema","description":"Cores da minha comunidade","modeDefault":"light",
- "packageJson":"{\"palette\":{\"background\":\"#f5e6c8\",…}}"}`,
+ "packageJson":"{"palette":{"background":"#f5e6c8",…}}"}`,
         response: `{"id":"tema_…","status":"PUBLISHED"}`,
       },
       {

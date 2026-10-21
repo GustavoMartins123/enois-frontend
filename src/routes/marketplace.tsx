@@ -4,10 +4,10 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import type { ThemeGalleryItem } from "@/types/application/themes/theme-gallery-item";
 import { BadgeCheck, RotateCcw, Sparkles, Store } from "lucide-react";
 
 import { marketplaceApi, themesApi } from "@/lib/api";
-import type { ThemeGalleryItem } from "@/lib/api/themes";
 import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { isAuthenticated } from "@/lib/use-auth";
 

@@ -1,15 +1,7 @@
-import type { AuthUser } from "@/types/application/auth/auth-user";
+import type { SessionPayload } from "@/types/application/auth/session-payload";
 
 import { resetSessionScopedData } from "./query-client";
 import { renewSessionKey } from "./session-key";
-
-type SessionPayload = {
-  token: string;
-  refreshToken?: string | null;
-  expiresAt?: string | null;
-  refreshExpiresAt?: string | null;
-  user?: AuthUser;
-};
 
 /**
  * Guarda a sessão no mesmo formato em todo lugar (login, cadastro confirmado e retorno do OAuth).

@@ -8,7 +8,7 @@ import type { ModeratorSanctionResult } from "@/types/application/moderation/mod
 import type { ModeratorVoteResult } from "@/types/application/moderation/moderator-vote-result";
 import type { SanctionProposalDecision } from "@/types/application/moderation/sanction-proposal-decision";
 import type { SanctionProposalView } from "@/types/application/moderation/sanction-proposal-view";
-import type { SuspiciousUsersView } from "@/types/application/moderation/suspicious-user-view";
+import type { SuspiciousUsersView } from "@/types/application/moderation/suspicious-users-view";
 
 import { api } from "../api-client";
 
