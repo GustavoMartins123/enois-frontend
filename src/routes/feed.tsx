@@ -471,6 +471,19 @@ function Home() {
               className="hidden"
             />
 
+            {/* O aviso da identidade profissional fica ACIMA da linha do avatar/campo: como item
+                de flex dentro dela, ele ocupava a largura toda, espremia o textarea e empurrava a
+                toolbar para a borda (o relato do perfil profissional "quebrado"). */}
+            {identity === "CORPORATE" && (
+              <div className="mb-2 flex items-center gap-2 rounded-xl bg-primary/10 px-3 py-2 text-xs text-text-strong">
+                <Briefcase className="h-3.5 w-3.5 shrink-0" />
+
+                <span className="min-w-0 break-words">
+                  {texts.feed.composer.corporateDestination(corporate?.name ?? "")}
+                </span>
+              </div>
+            )}
+
             <div className="flex items-start gap-3">
               <UserAvatar
                 frame={profileUser?.avatarFrame}
@@ -482,14 +495,6 @@ function Home() {
               {/* No modo pagina o campo de texto sai de cena: a pagina e o conteudo, e pedir um
                   texto "de post" junto faria a publicacao ser as duas coisas ao mesmo tempo. Quem
                   quiser uma legenda escreve dentro do proprio HTML. */}
-              {identity === "CORPORATE" && (
-                <div className="mb-2 flex w-full items-center gap-2 rounded-xl bg-primary/10 px-3 py-2 text-xs text-text-strong">
-                  <Briefcase className="h-3.5 w-3.5" />
-
-                  <span>{texts.feed.composer.corporateDestination(corporate?.name ?? "")}</span>
-                </div>
-              )}
-
               {!pageMode && (
                 <MentionTextarea
                   value={draft}
