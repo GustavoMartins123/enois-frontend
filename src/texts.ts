@@ -299,11 +299,14 @@ export const texts = {
     tabs: {
       new: "Novas",
       history: "Histórico",
+      requests: "Solicitações",
     },
     emptyNew: "Nenhuma notificação nova.",
     emptyHistory: "Nenhum histórico ainda.",
+    emptyRequests: "Nenhuma solicitação pendente.",
     markRead: "Lida",
     accept: "Aceitar",
+    reject: "Recusar",
     unreadLabel: (count: number) =>
       `${count} ${count === 1 ? "notificação não lida" : "notificações não lidas"}`,
     openActorProfile: (name: string) => `Abrir o perfil de ${name || "quem interagiu"}`,
@@ -1710,6 +1713,63 @@ export const texts = {
    * O texto diz o que é verdade: o Énóis NÃO hospeda o jogo — ele roda onde o criador publicou, e
    * aqui é o convite. Quando o site de origem proíbe quadro, a tela explica em vez de fingir falha.
    */
+  projects: {
+    seoTitle: "Projetos da comunidade · Énóis",
+    seoDescription:
+      "Projetos criados por quem está aqui: apps, sites, pesquisas, arte e experimentos.",
+    title: "Projetos da comunidade",
+    description:
+      "Espaço separado dos jogos para mostrar o que você construiu: link do projeto, repositório, categoria e tags. Envio passa pela moderação.",
+    searchPlaceholder: "Buscar projeto, criador ou tag",
+    orderRecent: "Recentes",
+    orderTitle: "A-Z",
+    submit: "Enviar projeto",
+    mine: "Meus projetos",
+    loadMore: "Carregar mais",
+    empty: "Nenhum projeto encontrado.",
+    emptyHint: "Você fez algo? Envie o link e ele aparece aqui depois da revisão.",
+    loading: "Carregando projetos…",
+    error: "Não foi possível carregar os projetos agora.",
+    openProject: "Abrir projeto",
+    openRepo: "Ver repositório",
+    visit: "Visitar",
+    notFound: "Projeto não encontrado.",
+    back: "Voltar",
+    submittedBy: (name: string) => `por ${name}`,
+    status: {
+      SUBMITTED: "Em revisão",
+      PUBLISHED: "Publicado",
+      REJECTED: "Recusado",
+      SUSPENDED: "Suspenso",
+    },
+    editor: {
+      createTitle: "Enviar projeto",
+      editTitle: "Editar projeto",
+      title: "Título do projeto",
+      shortDescription: "Resumo curto (aparece no card)",
+      description: "Descrição do projeto",
+      url: "Link do projeto (https://...)",
+      repoUrl: "Link do repositório (opcional)",
+      tags: "Tags separadas por vírgula",
+      category: "Categoria (ex.: WEB, DADOS, ARTE)",
+      cover: "URL da capa (opcional)",
+      slug: "Endereço na URL (opcional)",
+      save: "Salvar",
+      saving: "Salvando…",
+      cancel: "Cancelar",
+      sent: "Projeto enviado para revisão.",
+      updated: "Projeto atualizado.",
+      error: "Não foi possível salvar o projeto.",
+    },
+    panel: {
+      title: "Meus projetos",
+      description: "Envie, edite, reenvie recusados e apague seus projetos.",
+      resubmit: "Reenviar",
+      remove: "Excluir",
+      removed: "Projeto excluído.",
+      reviewNote: (note: string) => `Recusado: ${note}`,
+    },
+  },
   games: {
     title: "Jogos",
     description:
@@ -2833,6 +2893,7 @@ export const texts = {
     tabs: {
       reports: "Denúncias",
       games: "Jogos",
+      projects: "Projetos",
       support: "Suporte",
       issues: "Issues",
       history: "Histórico",
@@ -2911,6 +2972,21 @@ export const texts = {
         CONTA_NOVA: "Conta nova",
         DENUNCIAS_CONTRA: "Denúncias contra",
       } as Record<string, string>,
+    },
+    projects: {
+      title: "Projetos esperando revisão",
+      description:
+        "Projetos enviados pela comunidade. Aprovar publica em /projetos; recusar exige um motivo que o criador vai ler.",
+      empty: "Nenhum projeto na fila de revisão.",
+      noCategory: "sem categoria",
+      openProject: "Abrir projeto",
+      openRepo: "Repositório",
+      notePlaceholder: "Motivo (obrigatório para recusar)",
+      approve: "Aprovar",
+      reject: "Recusar",
+      approved: "Projeto aprovado: já está em /projetos.",
+      rejected: "Projeto recusado: o motivo vai para o painel do criador.",
+      error: "Não foi possível revisar o projeto.",
     },
     games: {
       title: "Jogos esperando revisão",

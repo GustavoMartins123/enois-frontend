@@ -8,6 +8,7 @@ import { BookOpen, PenLine, Plus } from "lucide-react";
 
 import { blogsApi } from "@/lib/api/blogs";
 import { requireAuth } from "@/lib/require-auth";
+import { useIsAuthenticated } from "@/lib/use-auth";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -19,7 +20,6 @@ import { RichText } from "@/components/post/rich-text";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/blogs")({
-  beforeLoad: requireAuth,
   head: () => ({
     meta: [{ title: texts.blog.title }, { name: "description", content: texts.blog.description }],
   }),
@@ -34,8 +34,13 @@ export const Route = createFileRoute("/blogs")({
  */
 function Blogs() {
   const [editorOpen, setEditorOpen] = useState(false);
+  const authenticated = useIsAuthenticated();
 
-  const { data: mine } = useQuery({ queryKey: ["blog", "me"], queryFn: () => blogsApi.mine() });
+  const { data: mine } = useQuery({
+    queryKey: ["blog", "me"],
+    queryFn: () => blogsApi.mine(),
+    enabled: authenticated,
+  });
 
   const { data: directory = [], isLoading } = useQuery({
     queryKey: ["blogs"],
@@ -61,7 +66,10 @@ function Blogs() {
               variant="outline"
               size="sm"
               className="rounded-full gap-1.5"
-              onClick={() => setEditorOpen(true)}
+              onClick={() => {
+                requireAuth();
+                setEditorOpen(true);
+              }}
             >
               <PenLine className="h-4 w-4" aria-hidden />
 

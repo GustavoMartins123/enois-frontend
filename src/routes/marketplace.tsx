@@ -1,21 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
+import { MARKETPLACE_KINDS, MARKETPLACE_KIND_LABELS } from "@/constants/marketplace-kinds";
+import { usePreferencesStore } from "@/stores/preferences.store";
 import { texts } from "@/texts";
-import type { ThemeGalleryItem } from "@/types/application/themes/theme-gallery-item";
-import { BadgeCheck, RotateCcw, Sparkles, Store } from "lucide-react";
+import type { MarketplaceListing as MarketplaceListingView } from "@/types/application/marketplace/marketplace-listing";
+import type { MarketplacePurchase } from "@/types/application/marketplace/marketplace-purchase";
+import { BadgeCheck, RotateCcw, Search, Sparkles, Store } from "lucide-react";
 
 import { marketplaceApi, themesApi } from "@/lib/api";
 import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
+import { registerGalleryCollection } from "@/lib/theme/gallery-collections";
 import { isAuthenticated } from "@/lib/use-auth";
+import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { ThemeSellDialog } from "@/components/appearance/theme-sell-dialog";
+import { MarketplaceContentDialog } from "@/components/marketplace/marketplace-content-dialog";
+import { MarketplaceSellDialog } from "@/components/marketplace/marketplace-sell-dialog";
 
 /** Piso de preço do marketplace: 50 faíscas (o backend também recusa abaixo disso). */
 const MIN_PRICE = parseFaiscaInput("50") ?? 50_000;
@@ -31,9 +39,20 @@ export const Route = createFileRoute("/marketplace")({
  */
 function Marketplace() {
   const authenticated = isAuthenticated();
+  const [q, setQ] = useState("");
+  const [search, setSearch] = useState("");
+  const [kind, setKind] = useState<string | null>(null);
+  const [sellContentOpen, setSellContentOpen] = useState(false);
+  const [contentPurchase, setContentPurchase] = useState<MarketplacePurchase | null>(null);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setSearch(q.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [q]);
+
   const catalog = useQuery({
-    queryKey: ["marketplace", "catalog"],
-    queryFn: () => marketplaceApi.catalog(60),
+    queryKey: ["marketplace", "catalog", search, kind],
+    queryFn: () => marketplaceApi.catalog(60, search || undefined, kind || undefined),
   });
   const purchases = useQuery({
     queryKey: ["marketplace", "purchases"],
@@ -61,10 +80,72 @@ function Marketplace() {
               recebe quando você confirma (ou em 7 dias) — e o reembolso devolve tudo.
             </p>
           </div>
-          {authenticated && <PublishButton />}
+          {authenticated && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="rounded-full gap-1.5"
+                onClick={() => setSellContentOpen(true)}
+              >
+                <Store className="h-4 w-4" />
+                Vender conteúdo
+              </Button>
+
+              <PublishButton />
+            </div>
+          )}
         </header>
 
-        {purchases.data && purchases.data.length > 0 && <MyPurchases purchases={purchases.data} />}
+        <div className="mb-4 space-y-2">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-subtle" />
+            <Input
+              value={q}
+              onChange={(event) => setQ(event.target.value)}
+              placeholder="Buscar no marketplace..."
+              className="pl-9"
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              type="button"
+              onClick={() => setKind(null)}
+              className={cn(
+                "rounded-full px-3 py-1 text-xs font-medium transition",
+                kind === null
+                  ? "bg-primary text-primary-foreground"
+                  : "border border-border-soft text-text-subtle hover:border-primary/50",
+              )}
+            >
+              Todas
+            </button>
+
+            {MARKETPLACE_KINDS.map((value) => (
+              <button
+                key={value}
+                type="button"
+                onClick={() => setKind(kind === value ? null : value)}
+                className={cn(
+                  "rounded-full px-3 py-1 text-xs font-medium transition",
+                  kind === value
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-border-soft text-text-subtle hover:border-primary/50",
+                )}
+              >
+                {MARKETPLACE_KIND_LABELS[value]}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {purchases.data && purchases.data.length > 0 && (
+          <MyPurchases
+            purchases={purchases.data}
+            onOpenContent={(purchase) => setContentPurchase(purchase)}
+          />
+        )}
         {sales.data && sales.data.length > 0 && <MySales sales={sales.data} />}
 
         {catalog.isLoading ? (
@@ -91,6 +172,15 @@ function Marketplace() {
             ))}
           </ul>
         )}
+        {contentPurchase && (
+          <MarketplaceContentDialog
+            purchaseId={contentPurchase.id}
+            title={contentPurchase.title}
+            onClose={() => setContentPurchase(null)}
+          />
+        )}
+
+        <MarketplaceSellDialog open={sellContentOpen} onOpenChange={setSellContentOpen} />
       </div>
     </AppContainer>
   );
@@ -128,18 +218,7 @@ function Miniatura({ packageJson }: { packageJson: string }) {
 }
 
 /** A listagem com o preview do tema (buscado da galeria). */
-function ListingCard({
-  listing,
-}: {
-  listing: {
-    id: string;
-    itemId: string;
-    title: string;
-    price: number;
-    sellerName?: string | null;
-    sellerUsername?: string | null;
-  };
-}) {
+function ListingCard({ listing }: { listing: MarketplaceListingView }) {
   const theme = useQuery({
     queryKey: ["themes", "item", listing.itemId],
     queryFn: () => themesApi.get(listing.itemId),
@@ -160,12 +239,12 @@ function ListingCard({
             <span className="block truncate text-xs text-text-subtle">{theme.data.name}</span>
           )}
 
-          {(listing.sellerName || listing.sellerUsername) && (
-            <span className="block truncate text-xs text-text-subtle">
-              por {listing.sellerName ?? "conta removida"}
-              {listing.sellerUsername ? ` · @${listing.sellerUsername}` : ""}
-            </span>
-          )}
+          <span className="block truncate text-xs text-text-subtle">
+            {MARKETPLACE_KIND_LABELS[listing.itemKind]}
+            {(listing.sellerName || listing.sellerUsername) && " · "}
+            {listing.sellerName ?? ""}
+            {listing.sellerUsername ? ` · @${listing.sellerUsername}` : ""}
+          </span>
         </span>
 
         <span className="flex shrink-0 items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-sm font-semibold text-primary-text">
@@ -189,10 +268,15 @@ function ListingCard({
 /** As compras do usuário, com a decisão do escrow. */
 function MyPurchases({
   purchases,
+  onOpenContent,
 }: {
-  purchases: Awaited<ReturnType<typeof marketplaceApi.purchases>>;
+  purchases: MarketplacePurchase[];
+  onOpenContent: (purchase: MarketplacePurchase) => void;
 }) {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const setThemeCollection = usePreferencesStore((state) => state.setThemeCollection);
+
   const confirm = useMutation({
     mutationFn: (id: string) => marketplaceApi.confirm(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["marketplace"] }),
@@ -201,51 +285,111 @@ function MyPurchases({
     mutationFn: (id: string) => marketplaceApi.refund(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["marketplace"] }),
   });
+  const applyTheme = useMutation({
+    mutationFn: (itemId: string) => themesApi.get(itemId),
+    onSuccess: (theme) => {
+      const collection = registerGalleryCollection({
+        id: theme.id,
+        name: theme.name,
+        description: "",
+        packageJson: theme.packageJson,
+        modeDefault: theme.modeDefault,
+      });
+      setThemeCollection(collection.id);
+      toast("Tema aplicado!", "success");
+    },
+    onError: () => toast("Não foi possível aplicar o tema agora.", "error"),
+  });
+
+  // Agrupado por categoria: "Temas", "Templates", "Banners"... — o comprador acha o que comprou.
+  const groups = new Map<string, MarketplacePurchase[]>();
+  for (const purchase of purchases) {
+    const key = purchase.itemKind ?? "THEME";
+    groups.set(key, [...(groups.get(key) ?? []), purchase]);
+  }
 
   return (
-    <section className="mb-6">
-      <h2 className="mb-2 text-sm font-semibold text-text-subtle">Minhas compras</h2>
+    <section className="mb-6 space-y-3">
+      <h2 className="text-sm font-semibold text-text-subtle">Minhas compras</h2>
 
-      <ul className="space-y-2">
-        {purchases.map((p) => (
-          <li key={p.id} className="surface-card flex flex-wrap items-center gap-2 p-3">
-            <span className="min-w-0 flex-1 text-sm">
-              Compra de {p.price} faíscas ·{" "}
-              {p.state === "HELD"
-                ? "retidas no escrow"
-                : p.state === "RELEASED"
-                  ? "concluída"
-                  : "reembolsada"}
-            </span>
+      {[...groups.entries()].map(([kind, list]) => (
+        <div key={kind} className="space-y-2">
+          <h3 className="text-xs font-medium uppercase tracking-wide text-text-subtle">
+            {MARKETPLACE_KIND_LABELS[kind as keyof typeof MARKETPLACE_KIND_LABELS] ?? kind}
+          </h3>
 
-            <StateChip state={p.state} />
-            {p.state === "HELD" && (
-              <>
-                <Button
-                  size="sm"
-                  className="rounded-full gap-1"
-                  disabled={confirm.isPending}
-                  onClick={() => confirm.mutate(p.id)}
-                >
-                  <BadgeCheck className="h-4 w-4" />
-                  Confirmar
-                </Button>
+          <ul className="space-y-2">
+            {list.map((p) => (
+              <li key={p.id} className="surface-card flex flex-wrap items-center gap-2 p-3">
+                <span className="min-w-0 flex-1 text-sm">
+                  <span className="block truncate font-medium text-text-strong">
+                    {p.title ?? "Compra no marketplace"}
+                  </span>
 
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="rounded-full gap-1"
-                  disabled={refund.isPending}
-                  onClick={() => refund.mutate(p.id)}
-                >
-                  <RotateCcw className="h-4 w-4" />
-                  Reembolso
-                </Button>
-              </>
-            )}
-          </li>
-        ))}
-      </ul>
+                  <span className="block text-xs text-text-subtle">
+                    {p.price} faíscas ·{" "}
+                    {p.state === "HELD"
+                      ? "retidas no escrow"
+                      : p.state === "RELEASED"
+                        ? "concluída"
+                        : "reembolsada"}
+                  </span>
+                </span>
+
+                <StateChip state={p.state} />
+
+                {p.state !== "REFUNDED" && p.itemKind === "THEME" && p.itemId && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-full"
+                    disabled={applyTheme.isPending}
+                    onClick={() => applyTheme.mutate(p.itemId!)}
+                  >
+                    Aplicar tema
+                  </Button>
+                )}
+
+                {p.state !== "REFUNDED" && p.itemKind && p.itemKind !== "THEME" && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-full"
+                    onClick={() => onOpenContent(p)}
+                  >
+                    Abrir conteúdo
+                  </Button>
+                )}
+
+                {p.state === "HELD" && (
+                  <>
+                    <Button
+                      size="sm"
+                      className="rounded-full gap-1"
+                      disabled={confirm.isPending}
+                      onClick={() => confirm.mutate(p.id)}
+                    >
+                      <BadgeCheck className="h-4 w-4" />
+                      Confirmar
+                    </Button>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="rounded-full gap-1"
+                      disabled={refund.isPending}
+                      onClick={() => refund.mutate(p.id)}
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                      Reembolso
+                    </Button>
+                  </>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ))}
     </section>
   );
 }

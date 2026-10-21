@@ -13,7 +13,6 @@ import { AppContainer } from "@/components/app-container";
 import { BlogPostEditor } from "@/components/blog/blog-post-editor";
 
 export const Route = createFileRoute("/blog/post/$postId")({
-  beforeLoad: requireAuth,
   head: () => ({ meta: [{ title: texts.blog.editor.editPost }] }),
   component: EditBlogPost,
 });

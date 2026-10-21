@@ -14,6 +14,7 @@ import {
   Bug,
   Check,
   Flag,
+  FolderKanban,
   Gamepad2,
   Gavel,
   History,
@@ -46,6 +47,7 @@ import { AppealsSection } from "@/components/moderation/appeals-section";
 import { DisputesSection } from "@/components/moderation/disputes-section";
 import { EmailLogSection } from "@/components/moderation/email-log-section";
 import { GamesReviewSection } from "@/components/moderation/games-review-section";
+import { ProjectsReviewSection } from "@/components/moderation/projects-review-section";
 import { SupportTicketsSection } from "@/components/moderation/support-tickets-section";
 import { SuspiciousUsersSection } from "@/components/moderation/suspicious-users-section";
 import { UserPicker } from "@/components/user-picker";
@@ -59,6 +61,7 @@ export const Route = createFileRoute("/moderador")({
 const ALL_TABS: { id: ModeratorTabId; label: string; icon: typeof Flag; adminOnly: boolean }[] = [
   { id: "reports", label: texts.moderator.tabs.reports, icon: Flag, adminOnly: false },
   { id: "games", label: texts.moderator.tabs.games, icon: Gamepad2, adminOnly: false },
+  { id: "projects", label: texts.moderator.tabs.projects, icon: FolderKanban, adminOnly: false },
   { id: "support", label: texts.moderator.tabs.support, icon: LifeBuoy, adminOnly: true },
   { id: "issues", label: texts.moderator.tabs.issues, icon: Bug, adminOnly: true },
   { id: "history", label: texts.moderator.tabs.history, icon: History, adminOnly: true },
@@ -188,6 +191,7 @@ function Moderador() {
 
             {activeTab === "reports" && <ReportsSection admin={me.admin} />}
             {activeTab === "games" && <GamesReviewSection />}
+            {activeTab === "projects" && <ProjectsReviewSection />}
             {me.admin && activeTab === "support" && <SupportTicketsSection mode="active" />}
             {me.admin && activeTab === "issues" && (
               <SupportTicketsSection lockedCategory="BUG" mode="active" />
