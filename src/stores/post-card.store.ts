@@ -44,6 +44,7 @@ export const usePostCardStore = create<PostCardStore>()((set) => ({
             localComments: [],
             postCounters: post.counters,
             reactionStatus: post.currentUserReaction ?? null,
+            reactionSummary: post.reactionSummary ?? null,
             reactionPending: false,
             showReactions: false,
             showSeals: false,

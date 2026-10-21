@@ -63,6 +63,7 @@ export function HealthyUsageDialog({
   const [liked, setLiked] = useState<string[]>([]);
   const [blocked, setBlocked] = useState<string[]>([]);
   const [disabledModules, setDisabledModules] = useState<string[]>([]);
+  const [nightRestReminder, setNightRestReminder] = useState(true);
 
   const { data: personalization } = usePersonalization();
 
@@ -78,6 +79,7 @@ export function HealthyUsageDialog({
     setLiked(personalization.likedTopics);
     setBlocked(personalization.blockedTopics);
     setDisabledModules(personalization.disabledModules);
+    setNightRestReminder(personalization.nightRestReminder);
   }, [open, personalization]);
 
   // Um assunto não pode estar nos dois lados: marcar num remove do outro (o backend recusa
@@ -108,6 +110,7 @@ export function HealthyUsageDialog({
         likedTopics: liked,
         blockedTopics: blocked,
         disabledModules,
+        nightRestReminder,
       }),
     onSuccess: () => {
       writeHealthyUsage({ enabled, minutes: clampMinutes(minutes) });
@@ -171,6 +174,20 @@ export function HealthyUsageDialog({
             <span className="block text-xs text-text-subtle">
               {texts.account.healthyUsage.minutesHint}
             </span>
+          </label>
+
+          <label className="flex items-start justify-between gap-3 rounded-2xl border border-border-soft bg-surface-card p-3">
+            <span className="min-w-0">
+              <span className="block text-sm font-medium text-text-strong">
+                {texts.account.healthyUsage.nightRestTitle}
+              </span>
+
+              <span className="mt-0.5 block text-xs text-text-subtle">
+                {texts.account.healthyUsage.nightRestDescription}
+              </span>
+            </span>
+
+            <Switch checked={nightRestReminder} onCheckedChange={setNightRestReminder} />
           </label>
 
           <section className="space-y-2 border-t border-border-soft pt-4">

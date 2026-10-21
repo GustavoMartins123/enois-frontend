@@ -43,17 +43,22 @@ jobs:
           echo "sha_short=${SHA_SHORT}" >> $GITHUB_OUTPUT
           echo "image_ref=${{ env.ECR_REGISTRY }}/${{ env.ECR_REPOSITORY }}:${SHA_SHORT}" >> $GITHUB_OUTPUT
 
+      # PRs (including forks) only validate the image build: the role trusts main only, and the
+      # build below does not push on pull_request. Same gating as the backend workflow.
       - name: ⚙️ Configurar Credenciais AWS via OIDC
+        if: github.event_name != 'pull_request'
         uses: aws-actions/configure-aws-credentials@v6.3.0
         with:
           role-to-assume: arn:aws:iam::818928662779:role/forest-dev-enois-front-ecr
           aws-region: ${{ env.AWS_REGION }}
 
       - name: 🔑 Login no Amazon ECR
+        if: github.event_name != 'pull_request'
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Verifica e cria o repositório no ECR
+        if: github.event_name != 'pull_request'
         uses: int128/create-ecr-repository-action@v1
         with:
           repository: ${{ env.ECR_REPOSITORY }}

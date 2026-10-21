@@ -75,11 +75,10 @@ export function PostCard({
   // Só corta em lista: na página do post o texto inteiro é o conteúdo da página.
   const isCompact = !fullPost && post.content.length > POST_COMPACT_THRESHOLD;
   const [showComments, setShowComments] = useState(fullPost);
-  // Selos do post: vem em lote do backend (aqui e um post so; a listagem pode pedir varios de uma vez).
+  // Selos do post: `forPost` junta os cards da página numa chamada só ao lote do backend.
   const { data: seals } = useQuery({
     queryKey: ["seals", post.id],
-    queryFn: () =>
-      sealsApi.forPosts([post.id]).then((all) => all[post.id] ?? { seals: [], mySeals: [] }),
+    queryFn: () => sealsApi.forPost(post.id),
     staleTime: 60_000,
   });
   // Cada selo alterna sozinho: o backend tira quando já existe, então não há "troca" nem remoção
@@ -459,7 +458,7 @@ export function PostCard({
         </p>
       ) : null}
 
-      <ReactionsSummary postId={post.id} />
+      <ReactionsSummary postId={post.id} initialSummary={post.reactionSummary} />
       <LinkPreviews content={post.content} autoplay />
 
       {post.tags.length > 0 && (
