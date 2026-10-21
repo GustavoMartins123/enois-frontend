@@ -202,8 +202,12 @@ export function NotificationsPopover() {
                   request={request}
                   onAccept={(id) => acceptConnection.mutate(id)}
                   onReject={(id) => rejectConnection.mutate(id)}
-                  accepting={acceptConnection.isPending && acceptConnection.variables === request.fromUserId}
-                  rejecting={rejectConnection.isPending && rejectConnection.variables === request.fromUserId}
+                  accepting={
+                    acceptConnection.isPending && acceptConnection.variables === request.fromUserId
+                  }
+                  rejecting={
+                    rejectConnection.isPending && rejectConnection.variables === request.fromUserId
+                  }
                   onNavigate={() => setOpen(false)}
                 />
               ))
@@ -282,14 +286,10 @@ function ConnectionRequestItem({
       <div className="min-w-0 flex-1">
         <p className="text-sm">
           <span className="font-medium text-text-strong">{name}</span>
-          {username && (
-            <span className="ml-1 text-text-subtle">@{username}</span>
-          )}
+          {username && <span className="ml-1 text-text-subtle">@{username}</span>}
         </p>
 
-        {headline && (
-          <p className="mt-0.5 truncate text-xs text-text-subtle">{headline}</p>
-        )}
+        {headline && <p className="mt-0.5 truncate text-xs text-text-subtle">{headline}</p>}
 
         <div className="mt-2 flex gap-2">
           <button
@@ -315,7 +315,10 @@ function ConnectionRequestItem({
       </div>
 
       <span className="shrink-0 text-xs text-text-subtle">
-        {new Date(request.createdAt).toLocaleDateString("pt-BR", { day: "numeric", month: "short" })}
+        {new Date(request.createdAt).toLocaleDateString("pt-BR", {
+          day: "numeric",
+          month: "short",
+        })}
       </span>
     </div>
   );
