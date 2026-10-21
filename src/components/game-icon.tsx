@@ -5,21 +5,25 @@ import { Gamepad2 } from "lucide-react";
 import { resolveCdnUrl } from "@/lib/api/media";
 
 /**
- * Ícone do jogo em qualquer lista: a capa enviada; sem capa, o **favicon do site onde o jogo
- * vive** (pedido da Mel para a exibição global); sem nenhum dos dois, o controle. O `onError`
- * cobre favicon ausente ou bloqueado — o card nunca fica com imagem quebrada.
+ * Ícone do jogo em qualquer lista: a **foto de perfil do jogo** (quando o criador subiu uma) vence
+ * tudo; sem ela, a capa enviada; sem capa, o **favicon do site onde o jogo vive** (pedido da Mel
+ * para a exibição global); sem nenhum, o controle. O `onError` cobre imagem/favicon ausente ou
+ * bloqueado — o card nunca fica com imagem quebrada.
  */
 export function GameIcon({
   cover,
+  icon,
   url,
   className = "h-12 w-12",
 }: {
   cover?: string | null;
+  /** Foto de perfil própria do jogo: a alternativa ao favicon. */
+  icon?: string | null;
   url?: string | null;
   className?: string;
 }) {
   const [failed, setFailed] = useState(false);
-  const src = cover ? resolveCdnUrl(cover) : faviconOf(url);
+  const src = icon ? resolveCdnUrl(icon) : cover ? resolveCdnUrl(cover) : faviconOf(url);
 
   if (src && !failed) {
     return (

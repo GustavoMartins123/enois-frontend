@@ -52,6 +52,22 @@ export function NotificationsPopover() {
     },
   });
 
+  // Quem AINDA tem pedido pendente. A notificação não guarda o estado do pedido: sem esta lista,
+  // o botão "Aceitar" continuava ativo no Histórico depois de aceito (e clicar de novo não tinha
+  // mais o que fazer). A chave é a mesma da página /rede, então as duas telas compartilham o cache.
+  const pendingRequests = useQuery({
+    queryKey: ["network", "requests"],
+    queryFn: () => networkApi.requests(null, 50),
+    enabled: open,
+  });
+  const pendingActorIds = pendingRequests.data
+    ? new Set(
+        pendingRequests.data.items
+          .filter((request) => request.status === "PENDING")
+          .map((request) => request.fromUserId),
+      )
+    : undefined;
+
   // Módulo desativado não volta pela porta do sino: a notificação dele fica fora da lista
   // (mesma fonte de verdade do menu — /me/preferences).
   const notificationList = (notificationsData?.items ?? []).filter(
@@ -149,6 +165,8 @@ export function NotificationsPopover() {
                 notification={notification}
                 onMarkAsRead={(id) => markAsRead.mutate(id)}
                 onAcceptConnection={(actorId) => acceptConnection.mutate(actorId)}
+                stillPendingActorIds={pendingActorIds}
+                acceptingActorId={acceptConnection.isPending ? acceptConnection.variables : null}
                 onNavigate={() => setOpen(false)}
               />
             ))

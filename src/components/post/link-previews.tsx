@@ -2,7 +2,7 @@ import { texts } from "@/texts";
 import type { PostView } from "@/types/application/feed/post-view";
 import type { LinkPreviewsProps } from "@/types/components/post/link-previews-props";
 
-import { rendersInline } from "@/lib/shared-links";
+import { rendersInline, trimTrailingPunctuation } from "@/lib/shared-links";
 
 import { EmbedPlayer } from "./embed-player";
 import { extractVideoId } from "./extract-video-id";
@@ -20,8 +20,9 @@ export function LinkPreviews({ content, autoplay = false }: LinkPreviewsProps) {
         seen.add(url);
 
         // GIF/imagem/vídeo/áudio de URL direta já são renderizados DENTRO do RichText; repetir
-        // aqui era o que fazia o GIF aparecer duas vezes no post e no comentário.
-        if (rendersInline(url)) return null;
+        // aqui era o que fazia o GIF aparecer duas vezes no post e no comentário. A pontuação final
+        // sai antes da checagem: `.../giphy.gif.` (ponto da frase) tem que ser lido como o GIF dele.
+        if (rendersInline(trimTrailingPunctuation(url))) return null;
 
         const video = extractVideoId(url);
         if (video) {

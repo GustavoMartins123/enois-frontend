@@ -307,7 +307,7 @@ function CommunityDetail() {
               title={texts.communities.detail.bannerHtml.frameTitle}
               className="h-48 w-full rounded-none border-0 shadow-none"
               innerPadding={false}
-              clip
+              autoHeight={false}
             />
           ) : live.cover ? (
             <img src={resolveCdnUrl(live.cover)} alt="" className="h-48 w-full object-cover" />

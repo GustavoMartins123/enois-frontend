@@ -126,7 +126,7 @@ function GrupoPage() {
               html={group.bannerHtml}
               title={group.name}
               className="h-40 w-full rounded-none border-0 shadow-none"
-              clip
+              autoHeight={false}
             />
           ) : group.banner ? (
             <img src={resolveCdnUrl(group.banner)} alt="" className="h-40 w-full object-cover" />

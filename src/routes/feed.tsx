@@ -100,6 +100,31 @@ export const Route = createFileRoute("/feed")({
 
 const FEED_PAGE_SIZE = 20;
 
+/**
+ * A ÚLTIMA categoria usada fica guardada: quem publica sempre no mesmo assunto não precisa
+ * reescolher a cada post. Fica no navegador (como o rascunho) e some com o histórico limpo.
+ */
+const LAST_TOPIC_KEY = "connect-grow-last-topic";
+
+function readLastTopic(): string {
+  if (typeof localStorage === "undefined") return "";
+  try {
+    const saved = localStorage.getItem(LAST_TOPIC_KEY);
+    return saved && (TOPICS as readonly string[]).includes(saved) ? saved : "";
+  } catch {
+    return "";
+  }
+}
+
+function rememberTopic(value: string): void {
+  try {
+    if (value) localStorage.setItem(LAST_TOPIC_KEY, value);
+    else localStorage.removeItem(LAST_TOPIC_KEY);
+  } catch {
+    // modo privado/cota: a escolha vale só para esta sessão.
+  }
+}
+
 function useFeed(tab: HomeTab) {
   // Pagina por cursor: o backend devolve nextCursor e o scroll infinito busca a proxima pagina.
   return useInfiniteQuery({
@@ -171,7 +196,7 @@ function Home() {
   const [postType, setPostType] = useState<PostView["type"]>("INSIGHT");
   // Assunto do post avulso (opcional): é o que liga o post a "O que quero ver"/"não gosto".
   // Em comunidade o post herda o assunto DELA — o seletor nem aparece lá.
-  const [topic, setTopic] = useState("");
+  const [topic, setTopic] = useState<string>(() => readLastTopic());
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [linkedinUrl, setLinkedinUrl] = useState<string | null>(null);
@@ -270,7 +295,7 @@ function Home() {
       setMedia([]);
       setPageHtml("");
       setArticleBody("");
-      setTopic("");
+      // A categoria NÃO é limpa: é a última escolha que fica ativa no próximo post.
       setTypePickerOpen(false);
       setScheduleAt("");
       setSchedulingOpen(false);
@@ -340,7 +365,7 @@ function Home() {
       setMedia([]);
       setPageHtml("");
       setArticleBody("");
-      setTopic("");
+      // A categoria NÃO é limpa: é a última escolha que fica ativa no próximo post.
       setTypePickerOpen(false);
     } catch (err) {
       setPublishError(err instanceof Error ? err.message : texts.feed.composer.publishError);
@@ -542,7 +567,10 @@ function Home() {
                 {/* Seletor de tipo recolhido: mostra o tipo atual e abre a lista completa. */}
                 <select
                   value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
+                  onChange={(e) => {
+                    setTopic(e.target.value);
+                    rememberTopic(e.target.value);
+                  }}
                   aria-label={texts.feed.composer.topic}
                   className={`rounded-full px-3 py-1.5 text-sm font-normal outline-none transition ${
                     topic

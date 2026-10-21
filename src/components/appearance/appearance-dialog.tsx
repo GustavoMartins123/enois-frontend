@@ -11,7 +11,7 @@ import type { AppearanceDialogProps } from "@/types/components/appearance/appear
 import type { ThemeAccent } from "@/types/preferences/theme-accent";
 import type { ThemeBackground } from "@/types/preferences/theme-background";
 import type { ThemePresetId } from "@/types/preferences/theme-preset-id";
-import { Download, Moon, RotateCcw, Sun, Upload } from "lucide-react";
+import { Download, Moon, RotateCcw, Store, Sun, Upload } from "lucide-react";
 
 import { resolveThemeCollection } from "@/lib/theme/build-collection-css";
 import { reportThemeContrast, sameThemeSettings } from "@/lib/theme/build-theme-tokens";
@@ -34,6 +34,7 @@ import { ContrastNotice } from "./contrast-notice";
 import { PresetRow } from "./preset-row";
 import { RangeField } from "./range-field";
 import { ThemePreview } from "./theme-preview";
+import { ThemeSellDialog } from "./theme-sell-dialog";
 
 /** Sliders trabalham em 0–100; a conversão para o valor real fica aqui. */
 const CHROMA_MAX = {
@@ -69,6 +70,7 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
   const [fileMessage, setFileMessage] = useState<{ kind: "ok" | "error"; text: string } | null>(
     null,
   );
+  const [sellOpen, setSellOpen] = useState(false);
 
   const report = useMemo(() => reportThemeContrast(settings, theme), [settings, theme]);
 
@@ -343,6 +345,19 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
 
                 <>{texts.importTheme}</>
               </Button>
+
+              {/* Qualquer aparência (coleção + cores livres + fundos) pode virar tema e ser
+                  vendida: o marketplace deixa de ser só "tema de coleção". */}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-auto rounded-full gap-2 text-xs"
+                onClick={() => setSellOpen(true)}
+              >
+                <Store className="h-3.5 w-3.5" />
+
+                <>{texts.sellTheme}</>
+              </Button>
             </div>
 
             <p className="text-xs font-normal text-text-subtle">
@@ -402,6 +417,8 @@ export function AppearanceDialog({ open, onOpenChange }: AppearanceDialogProps) 
           </div>
         </div>
       </DialogContent>
+
+      <ThemeSellDialog open={sellOpen} onOpenChange={setSellOpen} />
     </Dialog>
   );
 }
