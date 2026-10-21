@@ -61,6 +61,7 @@ import { useToast } from "@/components/ui/toast";
 import { AppContainer } from "@/components/app-container";
 import { CreateExternalJobDialog } from "@/components/create-external-job-dialog";
 import { InfiniteScroll } from "@/components/infinite-scroll";
+import { JobCardSkeletons } from "@/components/skeletons/job-card-skeletons";
 
 export const Route = createFileRoute("/vagas")({
   head: () => ({ meta: [{ title: texts.jobs.seoTitle }] }),
@@ -654,6 +655,10 @@ function Vagas() {
                 </article>
               ))}
             </div>
+
+            {/* Primeira carga (ou troca de filtro): esqueleto no lugar dos cards, em vez da área em
+                branco. Com cards na tela, o spinner embaixo basta para a próxima página. */}
+            {isFetching && allJobs.length === 0 && <JobCardSkeletons />}
 
             {isFetching && allJobs.length > 0 && <LoadingState className="py-6" />}
 

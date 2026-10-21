@@ -47,7 +47,6 @@ import { useMediaUpload } from "@/lib/use-media-upload";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/loading-state";
 import { Pill } from "@/components/ui/pill";
 import { useToast } from "@/components/ui/toast";
 
@@ -60,6 +59,7 @@ import { MentionTextarea } from "@/components/mention-textarea";
 import { NightRestReminder } from "@/components/night-rest-reminder";
 import { PlatformSpacesCard } from "@/components/platform-spaces-card";
 import { PostCard } from "@/components/post-card";
+import { PostCardSkeletons } from "@/components/skeletons/post-card-skeletons";
 import { UserAvatar } from "@/components/user-avatar";
 
 /** Abas válidas da tela inicial (a URL carrega a escolhida). */
@@ -909,7 +909,7 @@ function Home() {
           </div>
 
           <div className="space-y-4">
-            {feedLoading && <LoadingState />}
+            {feedLoading && <PostCardSkeletons />}
             {!feedLoading && feedPosts.map((p) => <PostCard key={p.id} post={p} feedTab={tab} />)}
 
             {!feedLoading && feedPosts.length === 0 && <EmptyState title={texts.feed.empty} />}
