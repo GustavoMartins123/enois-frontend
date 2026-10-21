@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 
 import { getSessionToken } from "./api-client";
+import { readAuthHint, syncAuthHint } from "./auth-hint";
 import { useCurrentUser } from "./current-user";
 
 export function isAuthenticated(): boolean {
@@ -12,17 +13,18 @@ export function isAuthenticated(): boolean {
 /**
  * "Estou logado?" para decidir o que desenhar — sem quebrar a hidratação.
  *
- * O token vive no localStorage, então o **servidor sempre acha que ninguém está logado** e manda o
- * HTML da casca de visitante. Ler o token durante o render fazia o cliente discordar do HTML que já
- * veio pronto: erro de hidratação e a página inteira remontando (o cabeçalho piscava em toda página
- * logada). Aqui a resposta é `false` no primeiro paint (igual ao servidor) e o valor real chega
- * logo depois da montagem.
+ * O token vive no localStorage, que o servidor não enxerga. O primeiro paint usa a pista do cookie
+ * `enois_auth` (ver `auth-hint.ts`), que servidor e cliente leem igual — então o HTML já vem com a
+ * casca certa e a hidratação não discorda. Logo depois da montagem, o valor real (o token) confirma
+ * ou corrige a pista, e a pista é realinhada para a próxima carga.
  */
 export function useIsAuthenticated(): boolean {
-  const [authenticated, setAuthenticated] = useState(false);
+  const [authenticated, setAuthenticated] = useState(readAuthHint);
 
   useEffect(() => {
-    setAuthenticated(isAuthenticated());
+    const hasToken = isAuthenticated();
+    syncAuthHint(hasToken);
+    setAuthenticated(hasToken);
   }, []);
 
   return authenticated;

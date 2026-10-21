@@ -48,6 +48,7 @@ import { Route as BlogsRouteImport } from './routes/blogs'
 import { Route as ApoiarRouteImport } from './routes/apoiar'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProjetosIndexRouteImport } from './routes/projetos.index'
+import { Route as PerfilIndexRouteImport } from './routes/perfil.index'
 import { Route as VagasMinhasRouteImport } from './routes/vagas.minhas'
 import { Route as VagasJobIdRouteImport } from './routes/vagas.$jobId'
 import { Route as ProjetosPainelRouteImport } from './routes/projetos.painel'
@@ -268,6 +269,11 @@ const ProjetosIndexRoute = ProjetosIndexRouteImport.update({
   path: '/projetos/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PerfilIndexRoute = PerfilIndexRouteImport.update({
+  id: '/perfil/',
+  path: '/perfil/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VagasMinhasRoute = VagasMinhasRouteImport.update({
   id: '/minhas',
   path: '/minhas',
@@ -447,6 +453,7 @@ export interface FileRoutesByFullPath {
   '/projetos/painel': typeof ProjetosPainelRoute
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
+  '/perfil/': typeof PerfilIndexRoute
   '/projetos/': typeof ProjetosIndexRoute
   '/blog/$username/$postId': typeof BlogUsernamePostIdRoute
   '/blog/post/$postId': typeof BlogPostPostIdRoute
@@ -512,6 +519,7 @@ export interface FileRoutesByTo {
   '/projetos/painel': typeof ProjetosPainelRoute
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
+  '/perfil': typeof PerfilIndexRoute
   '/projetos': typeof ProjetosIndexRoute
   '/blog/$username/$postId': typeof BlogUsernamePostIdRoute
   '/blog/post/$postId': typeof BlogPostPostIdRoute
@@ -578,6 +586,7 @@ export interface FileRoutesById {
   '/projetos/painel': typeof ProjetosPainelRoute
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
+  '/perfil/': typeof PerfilIndexRoute
   '/projetos/': typeof ProjetosIndexRoute
   '/blog/$username_/$postId': typeof BlogUsernamePostIdRoute
   '/blog/post/$postId': typeof BlogPostPostIdRoute
@@ -645,6 +654,7 @@ export interface FileRouteTypes {
     | '/projetos/painel'
     | '/vagas/$jobId'
     | '/vagas/minhas'
+    | '/perfil/'
     | '/projetos/'
     | '/blog/$username/$postId'
     | '/blog/post/$postId'
@@ -710,6 +720,7 @@ export interface FileRouteTypes {
     | '/projetos/painel'
     | '/vagas/$jobId'
     | '/vagas/minhas'
+    | '/perfil'
     | '/projetos'
     | '/blog/$username/$postId'
     | '/blog/post/$postId'
@@ -775,6 +786,7 @@ export interface FileRouteTypes {
     | '/projetos/painel'
     | '/vagas/$jobId'
     | '/vagas/minhas'
+    | '/perfil/'
     | '/projetos/'
     | '/blog/$username_/$postId'
     | '/blog/post/$postId'
@@ -834,6 +846,7 @@ export interface RootRouteChildren {
   ProfissionalUsernameRoute: typeof ProfissionalUsernameRoute
   ProjetosUsernameRoute: typeof ProjetosUsernameRouteWithChildren
   ProjetosPainelRoute: typeof ProjetosPainelRoute
+  PerfilIndexRoute: typeof PerfilIndexRoute
   ProjetosIndexRoute: typeof ProjetosIndexRoute
   BlogUsernamePostIdRoute: typeof BlogUsernamePostIdRoute
   BlogPostPostIdRoute: typeof BlogPostPostIdRoute
@@ -1113,6 +1126,13 @@ declare module '@tanstack/react-router' {
       path: '/projetos'
       fullPath: '/projetos/'
       preLoaderRoute: typeof ProjetosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/perfil/': {
+      id: '/perfil/'
+      path: '/perfil'
+      fullPath: '/perfil/'
+      preLoaderRoute: typeof PerfilIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/vagas/minhas': {
@@ -1444,6 +1464,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfissionalUsernameRoute: ProfissionalUsernameRoute,
   ProjetosUsernameRoute: ProjetosUsernameRouteWithChildren,
   ProjetosPainelRoute: ProjetosPainelRoute,
+  PerfilIndexRoute: PerfilIndexRoute,
   ProjetosIndexRoute: ProjetosIndexRoute,
   BlogUsernamePostIdRoute: BlogUsernamePostIdRoute,
   BlogPostPostIdRoute: BlogPostPostIdRoute,

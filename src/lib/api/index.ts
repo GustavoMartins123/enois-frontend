@@ -36,4 +36,5 @@ export { recommendationsApi } from "./recommendations";
 export { supportApi } from "./support";
 export { statsApi } from "./stats";
 export { corporateApi } from "./corporate";
+export { resumeImportApi, resumeErrorMessage } from "./resume-import";
 export { api, ApiError, buildQuery, clearSession, getSessionToken } from "../api-client";

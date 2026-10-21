@@ -21,36 +21,48 @@ import { registerServiceWorker } from "@/lib/pwa";
 import { hasSession, isProtectedPath } from "@/lib/require-auth";
 import { useThemeSync } from "@/lib/theme/use-theme-sync";
 
+import { buttonVariants } from "@/components/ui/button-variants";
 import { ToastProvider } from "@/components/ui/toast";
 
 import { AgeGate } from "@/components/age-gate";
 import { ApologyPopup } from "@/components/apology-popup";
+import { AppContainer } from "@/components/app-container";
 import { HealthyUsageGuard } from "@/components/healthy-usage/healthy-usage-guard";
 import { InstallPwaBanner } from "@/components/install-pwa-banner";
 import { ModuleDisabledGate } from "@/components/module-disabled-gate";
 
 import appCss from "../styles.css?url";
 
+/**
+ * 404 dentro da casca do app (cabeçalho e menu), e não numa página solta: quem caiu num link
+ * quebrado continua com a navegação à mão. O provider vem junto porque o notFound da raiz
+ * substitui o RootComponent inteiro — e a casca logada usa react-query.
+ */
 function NotFoundComponent() {
+  const { queryClient } = Route.useRouteContext();
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">{texts.root.notFound.code}</h1>
+    <QueryClientProvider client={queryClient}>
+      <AppContainer>
+        <div className="flex min-h-[60vh] items-center justify-center px-4">
+          <div className="max-w-md text-center">
+            <p className="text-7xl font-bold text-primary">{texts.root.notFound.code}</p>
 
-        <h2 className="mt-4 text-xl font-semibold text-foreground">{texts.root.notFound.title}</h2>
+            <h1 className="mt-4 text-xl font-semibold text-foreground">
+              {texts.root.notFound.title}
+            </h1>
 
-        <p className="mt-2 text-sm text-muted-foreground">{texts.root.notFound.description}</p>
+            <p className="mt-2 text-sm text-muted-foreground">{texts.root.notFound.description}</p>
 
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            {texts.root.notFound.home}
-          </Link>
+            <div className="mt-6">
+              <Link to="/" className={buttonVariants({ size: "lg" })}>
+                {texts.root.notFound.home}
+              </Link>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </AppContainer>
+    </QueryClientProvider>
   );
 }
 

@@ -8,8 +8,8 @@ import type { GroupView } from "@/types/application/group/group-view";
 import { Camera, ChevronRight, Loader2, Plus, Search, Users } from "lucide-react";
 
 import { groupsApi } from "@/lib/api";
-import { getSessionToken } from "@/lib/api-client";
 import { resolveCdnUrl } from "@/lib/api/media";
+import { useIsAuthenticated } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 
@@ -39,7 +40,7 @@ export const Route = createFileRoute("/grupos")({
 function Grupos() {
   const [query, setQuery] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
-  const authenticated = Boolean(getSessionToken());
+  const authenticated = useIsAuthenticated();
 
   // Este arquivo é o PAI de /grupos/$slug: quando um grupo está na URL, quem responde é o filho
   // (a página do grupo) — sem o Outlet, a lista engolia a navegação e ninguém conseguia ENTRAR
@@ -61,23 +62,19 @@ function Grupos() {
   return (
     <AppContainer>
       <div className="mx-auto w-full max-w-4xl space-y-6">
-        <header className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight text-text-strong">
-              {texts.groups.title}
-            </h1>
+        <PageHeader
+          title={texts.groups.title}
+          description={texts.groups.subtitle}
+          actions={
+            authenticated && (
+              <Button className="w-auto rounded-full gap-2" onClick={() => setCreateOpen(true)}>
+                <Plus className="h-4 w-4" />
 
-            <p className="mt-1 text-sm text-muted-foreground">{texts.groups.subtitle}</p>
-          </div>
-
-          {authenticated && (
-            <Button className="w-auto rounded-full gap-2" onClick={() => setCreateOpen(true)}>
-              <Plus className="h-4 w-4" />
-
-              <>{texts.groups.create}</>
-            </Button>
-          )}
-        </header>
+                <>{texts.groups.create}</>
+              </Button>
+            )
+          }
+        />
 
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

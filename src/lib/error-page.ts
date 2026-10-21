@@ -2,7 +2,7 @@ import { texts } from "@/texts";
 
 export function renderErrorPage(): string {
   return `<!doctype html>
-<html lang="en">
+<html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
     <title>${texts.root.error.title}</title>

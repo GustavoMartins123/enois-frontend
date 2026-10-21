@@ -1,13 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { COMMUNITY_FAVORITES_KEY } from "@/constants/community-favorites";
 import { texts } from "@/texts";
 import { Star } from "lucide-react";
 
 import { communitiesApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
-
-/** Chave única das comunidades favoritadas: alimenta a estrela dos cards e a seção do menu. */
-export const COMMUNITY_FAVORITES_KEY = ["community-favorites"];
 
 /** Estrela para favoritar/desfavoritar uma comunidade (bookmark, não exige participar). */
 export function CommunityFavoriteButton({

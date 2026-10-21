@@ -1,3 +1,22 @@
+/**
+ * Data do evento ("2026-10-23") em português curto. Lida em UTC de propósito: a data vem sem fuso
+ * e, lida no fuso local, "2026-10-23" virava 22 de outubro para quem está a oeste de Greenwich.
+ */
+function formatEventDate(date: string): string {
+  const parsed = new Date(`${date}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime())) return date;
+  const sameYear = parsed.getUTCFullYear() === new Date().getFullYear();
+  return parsed
+    .toLocaleDateString("pt-BR", {
+      day: "numeric",
+      month: "short",
+      year: sameYear ? undefined : "numeric",
+      timeZone: "UTC",
+    })
+    .replace(/\./g, "")
+    .replace(/ de /g, " ");
+}
+
 const common = {
   enter: "Entrar",
   createAccount: "Criar conta",
@@ -757,6 +776,9 @@ export const texts = {
       /** O perfil tem teto por seção; o que não coube fica claro em vez de falhar pela metade. */
       capReached:
         "Alguns itens não couberam: o perfil aceita até 10 experiências, 10 formações e 10 certificações.",
+      resumeButton: "Enviar o currículo",
+      resumeHint:
+        "Sem LinkedIn? Suba o currículo: o app lê o arquivo e mostra a mesma prévia antes de salvar. Vale PDF (até 10 MB e 20 páginas) ou .txt/.md. Se for DOC/DOCX, exporte em PDF no seu editor.",
     },
     menu: {
       trigger: "Menu da conta",
@@ -1164,6 +1186,7 @@ export const texts = {
       corporateDestination: (name: string) =>
         `Publicando como ${name} — esta publicação vai para o feed corporativo.`,
     },
+    tabsLabel: "Filtrar publicações",
     tabs: {
       forYou: "Para você",
       news: "Notícias",
@@ -1718,6 +1741,12 @@ export const texts = {
    * O texto diz o que é verdade: o Énóis NÃO hospeda o jogo — ele roda onde o criador publicou, e
    * aqui é o convite. Quando o site de origem proíbe quadro, a tela explica em vez de fingir falha.
    */
+  marketplace: {
+    purchaseConfirmed: "Compra confirmada",
+    purchaseHeld:
+      "As faíscas ficam retidas com segurança até você confirmar que recebeu o conteúdo. Se algo der errado, o reembolso devolve tudo.",
+    keepShopping: "Continuar comprando",
+  },
   projects: {
     seoTitle: "Projetos da comunidade · Énóis",
     seoDescription:
@@ -2016,7 +2045,9 @@ export const texts = {
     seoTitle: "Comunidades · Énóis",
     title: "Comunidades",
     description: "Encontre grupos profissionais, fóruns temáticos e círculos de mentoria.",
+    topicsLabel: "Categorias",
     searchPlaceholder: "Pesquisar comunidades",
+    empty: "Nenhuma comunidade encontrada.",
     createCommunity: "Criar comunidade",
     myTitle: "Suas comunidades",
     created: "Comunidade criada.",
@@ -2167,7 +2198,8 @@ export const texts = {
     ],
     hostedBy: (host: string) => `por ${host}`,
     watchLive: "Assistir ao vivo",
-    dateTime: (date: string, time: string) => `${date} · ${time}`,
+    /** "23 out · 08:00"; o ano só aparece quando não é o atual ("31 dez 2029 · 23:59"). */
+    dateTime: (date: string, time: string) => `${formatEventDate(date)} · ${time}`,
     attend: "Confirmar presença",
     finished: "Encerrado",
     finishedHint:
@@ -2235,7 +2267,12 @@ export const texts = {
       location: "Local:",
       type: "Tipo:",
       locations: ["Remoto", "Híbrido", "Presencial"],
+      /** O backend guarda o código (JUNIOR, INTERN...); a tela mostra o nome em português. */
+      levels: { JUNIOR: "Júnior", MID: "Pleno", SENIOR: "Sênior", LEAD: "Liderança" },
+      types: { CLT: "CLT", PJ: "PJ", FREELANCE: "Freelance", INTERN: "Estágio" },
     },
+    /** Quantas habilidades o card da lista mostra antes do "+N". */
+    moreSkills: (count: number) => `+${count}`,
     searchPlaceholder: "Buscar vagas (ex.: java -estágio)",
     /** Ajuda da busca booleana: mostra a sintaxe sem esconder o essencial. */
     searchHint:
@@ -2355,6 +2392,13 @@ export const texts = {
       verifiedOnly:
         "Para se candidatar é preciso ter a conta verificada (e-mail confirmado ou verificação em duas etapas).",
       verifyIdentity: "Verificar minha conta",
+      resumePrefill: "Preencher com meu currículo",
+      resumePrefillHint:
+        "Suba o currículo (PDF ou texto): o app sugere a mensagem e as respostas. O que ele não achar fica marcado para você preencher — revise antes de enviar.",
+      resumeReading: "Lendo o currículo...",
+      resumeFilled: (filled: number, total: number) =>
+        `${filled} de ${total} campos preenchidos — revise e complete o resto.`,
+      resumeNoSuggestion: "preencha aqui",
     },
     author: {
       label: "Publicado por",

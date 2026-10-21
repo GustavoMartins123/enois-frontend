@@ -8,10 +8,17 @@ export const themesApi = {
 
   /** Os MEUS temas (qualquer estado) — é daqui que o marketplace lista o que dá para vender. */
   mine: () => api.get<ThemeGalleryItem[]>("/temas/galeria/mine"),
-  get: (themeId: string) =>
-    api.get<{ id: string; name: string; packageJson: string; modeDefault: string }>(
-      `/temas/galeria/${themeId}`,
-    ),
+  get: async (themeId: string) => {
+    // Compatibilidade durante o deploy: versões antigas do backend devolviam `package`.
+    const raw = await api.get<{
+      id: string;
+      name: string;
+      packageJson?: string;
+      package?: string;
+      modeDefault: string;
+    }>(`/temas/galeria/${themeId}`);
+    return { ...raw, packageJson: raw.packageJson ?? raw.package ?? "" };
+  },
   publish: (data: {
     name: string;
     description?: string;

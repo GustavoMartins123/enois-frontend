@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
 
+import { COMMUNITY_FAVORITES_KEY } from "@/constants/community-favorites";
 import { TOPICS, TOPIC_LABELS } from "@/constants/community-topics";
 import { texts } from "@/texts";
 import type { Community } from "@/types/application/community/community";
@@ -23,15 +24,18 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
 import { Pill } from "@/components/ui/pill";
+import { PillRow } from "@/components/ui/pill-row";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { CommunityCard } from "@/components/community-card";
-import { COMMUNITY_FAVORITES_KEY } from "@/components/community-favorite-button";
+import { CommunityCardSkeletons } from "@/components/skeletons/community-card-skeletons";
 
 export const Route = createFileRoute("/comunidades")({
   head: () => ({ meta: [{ title: texts.communities.seoTitle }] }),
@@ -66,6 +70,7 @@ function Comunidades() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isLoading: communitiesLoading,
   } = useInfiniteQuery({
     queryKey: ["communities", topic, query],
     queryFn: ({ pageParam }) => communitiesApi.list(topic, pageParam, 20, query || undefined),
@@ -160,28 +165,26 @@ function Comunidades() {
   return (
     <AppContainer>
       <div className="space-y-6">
-        <div className="surface-card flex flex-wrap items-center justify-between gap-3 p-4 sm:gap-4 sm:p-6">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">{texts.communities.title}</h1>
+        <PageHeader
+          title={texts.communities.title}
+          description={texts.communities.description}
+          actions={
+            <CreateCommunityDialog
+              open={open}
+              onOpenChange={(o) => {
+                // Visitante nao abre o formulario: manda para o login.
+                if (o && !needsLogin()) return;
+                setOpen(o);
+              }}
+            >
+              <Button className="rounded-full gap-1.5">
+                <Plus className="h-4 w-4" />
 
-            <p className="mt-1 text-sm text-muted-foreground">{texts.communities.description}</p>
-          </div>
-
-          <CreateCommunityDialog
-            open={open}
-            onOpenChange={(o) => {
-              // Visitante nao abre o formulario: manda para o login.
-              if (o && !needsLogin()) return;
-              setOpen(o);
-            }}
-          >
-            <Button className="rounded-full gap-1.5">
-              <Plus className="h-4 w-4" />
-
-              <>{texts.communities.createCommunity}</>
-            </Button>
-          </CreateCommunityDialog>
-        </div>
+                <>{texts.communities.createCommunity}</>
+              </Button>
+            </CreateCommunityDialog>
+          }
+        />
 
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -196,7 +199,7 @@ function Comunidades() {
           />
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <PillRow label={texts.communities.topicsLabel}>
           {TOPICS.map((t) => (
             <Pill
               key={t}
@@ -206,7 +209,7 @@ function Comunidades() {
               {TOPIC_LABELS[t]}
             </Pill>
           ))}
-        </div>
+        </PillRow>
 
         {mineItems.length > 0 && (
           <section className="space-y-3">
@@ -258,6 +261,14 @@ function Comunidades() {
               ))}
             </div>
           </section>
+        )}
+
+        {/* Esqueleto na primeira carga: antes a área ficava em branco até a lista chegar, e parecia
+            que não existia comunidade nenhuma. */}
+        {communitiesLoading && <CommunityCardSkeletons />}
+
+        {!communitiesLoading && allItems.length === 0 && (
+          <EmptyState title={texts.communities.empty} />
         )}
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

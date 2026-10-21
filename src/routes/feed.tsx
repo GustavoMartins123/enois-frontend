@@ -61,6 +61,7 @@ import { MentionTextarea } from "@/components/mention-textarea";
 import { NightRestReminder } from "@/components/night-rest-reminder";
 import { PlatformSpacesCard } from "@/components/platform-spaces-card";
 import { PostCard } from "@/components/post-card";
+import { PostCardSkeletons } from "@/components/skeletons/post-card-skeletons";
 import { UserAvatar } from "@/components/user-avatar";
 
 /** Abas válidas da tela inicial (a URL carrega a escolhida). */
@@ -491,6 +492,19 @@ function Home() {
               className="hidden"
             />
 
+            {/* O aviso da identidade profissional fica ACIMA da linha do avatar/campo: como item
+                de flex dentro dela, ele ocupava a largura toda, espremia o textarea e empurrava a
+                toolbar para a borda (o relato do perfil profissional "quebrado"). */}
+            {identity === "CORPORATE" && (
+              <div className="mb-2 flex items-center gap-2 rounded-xl bg-primary/10 px-3 py-2 text-xs text-text-strong">
+                <Briefcase className="h-3.5 w-3.5 shrink-0" />
+
+                <span className="min-w-0 break-words">
+                  {texts.feed.composer.corporateDestination(corporate?.name ?? "")}
+                </span>
+              </div>
+            )}
+
             <div className="flex items-start gap-3">
               <UserAvatar
                 frame={profileUser?.avatarFrame}
@@ -502,14 +516,6 @@ function Home() {
               {/* No modo pagina o campo de texto sai de cena: a pagina e o conteudo, e pedir um
                   texto "de post" junto faria a publicacao ser as duas coisas ao mesmo tempo. Quem
                   quiser uma legenda escreve dentro do proprio HTML. */}
-              {identity === "CORPORATE" && (
-                <div className="mb-2 flex w-full items-center gap-2 rounded-xl bg-primary/10 px-3 py-2 text-xs text-text-strong">
-                  <Briefcase className="h-3.5 w-3.5" />
-
-                  <span>{texts.feed.composer.corporateDestination(corporate?.name ?? "")}</span>
-                </div>
-              )}
-
               {!pageMode && (
                 <MentionTextarea
                   value={draft}
@@ -735,7 +741,9 @@ function Home() {
                 </div>
               )}
 
-              <div className="flex items-center gap-2">
+              {/* `ml-auto`: quando não cabe na mesma linha das opções, o Publicar desce e continua
+                  alinhado à direita, onde a pessoa procura — antes caía à esquerda, solto. */}
+              <div className="ml-auto flex items-center gap-2">
                 {/* O motivo da recusa fica na linha de baixo, inteiro: antes ele saía truncado em
                     200px ao lado do botão e a publicação recusada parecia "não fazer nada". */}
                 {publishError && (
@@ -928,7 +936,7 @@ function Home() {
           </div>
 
           <div className="space-y-4">
-            {feedLoading && <LoadingState />}
+            {feedLoading && <PostCardSkeletons />}
             {!feedLoading && feedPosts.map((p) => <PostCard key={p.id} post={p} feedTab={tab} />)}
 
             {!feedLoading && feedPosts.length === 0 && <EmptyState title={texts.feed.empty} />}
@@ -946,7 +954,7 @@ function Home() {
         {/* Right rail: TUDO num único filho do grid. O cartão de doação já foi um filho solto
             aqui — ele esticava até a altura da coluna inteira e empurrava/escondia os outros
             cartões (o que está acontecendo agora) para fora da dobra. */}
-        <aside className="sticky top-20 hidden max-h-[calc(100vh-6rem)] space-y-4 self-start overflow-y-auto lg:block">
+        <aside className="sticky top-20 hidden max-h-[calc(100vh-6rem)] space-y-4 self-start overflow-y-auto scrollbar-on-hover lg:block">
           <ApoieCard />
           <PlatformSpacesCard />
 

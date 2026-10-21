@@ -46,18 +46,23 @@ export function ReactionsSummary({ postId, initialSummary }: ReactionsSummaryPro
         const mine = reactionStatus === type;
         const emoji = REACTION_EMOJIS[type] ?? type;
         const pillClassName = cn(
-          "inline-flex h-7 items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 text-xs transition-colors",
+          "inline-flex h-7 items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 text-xs leading-none transition-colors",
           mine
             ? "border-[#8b5cf6]/40 bg-[#8b5cf6]/15 text-[#c4b5fd] hover:bg-[#8b5cf6]/25"
             : "border-white/10 bg-white/[0.06] text-text-subtle hover:bg-white/10",
         );
         const content = (
           <>
-            <span className={cn("text-base leading-none", !mine && "grayscale-[0.3] opacity-80")}>
+            <span
+              className={cn(
+                "inline-flex h-4 items-center justify-center text-base leading-none",
+                !mine && "grayscale-[0.3] opacity-80",
+              )}
+            >
               {emoji}
             </span>
 
-            <span className="tabular-nums">{count}</span>
+            <span className="tabular-nums leading-none">{count}</span>
           </>
         );
 

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link, useRouterState } from "@tanstack/react-router";
 
+import { COMMUNITY_FAVORITES_KEY } from "@/constants/community-favorites";
 import { texts } from "@/texts";
 import type { NavigationLinksProps } from "@/types/components/navigation/navigation-links-props";
 import { Star } from "lucide-react";
@@ -10,7 +11,6 @@ import { getSessionToken } from "@/lib/api-client";
 import { useDisabledModules } from "@/lib/use-personalization";
 import { cn } from "@/lib/utils";
 
-import { COMMUNITY_FAVORITES_KEY } from "./community-favorite-button";
 import { navigationItems } from "./navigation-items";
 
 export function NavigationLinks({
@@ -58,7 +58,8 @@ export function NavigationLinks({
               onClick={onNavigate}
               title={collapsed ? item.label : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-xl border-l-2 px-3 py-3 text-sm font-normal transition",
+                // py-3 no toque (gaveta do celular); no desktop o menu inteiro precisa caber sem rolar.
+                "flex items-center gap-3 rounded-xl border-l-2 px-3 py-3 text-sm font-normal transition lg:py-2",
                 "group-data-[collapsed=true]/navigation:justify-center group-data-[collapsed=true]/navigation:gap-0 group-data-[collapsed=true]/navigation:px-0",
                 active
                   ? "border-primary bg-surface-2 text-primary"

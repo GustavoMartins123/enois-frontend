@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useMutation } from "@tanstack/react-query";
 
@@ -34,6 +34,14 @@ export function ProfileBannerDialog({
   // A escolha fica na cara: "selecionar nova foto" ou "digitar código HTML" — nada de esconder uma
   // das duas atrás de um botão secundário.
   const [mode, setMode] = useState<"photo" | "html">(initialHtml ? "html" : "photo");
+
+  // O diálogo é reaproveitado ao navegar entre perfis: sem este reset ele abria com o HTML da
+  // pessoa anterior (relato: "o código da capa da Gabriela apareceu na minha edição").
+  useEffect(() => {
+    if (!open) return;
+    setHtml(initialHtml ?? "");
+    setMode(initialHtml ? "html" : "photo");
+  }, [open, initialHtml]);
 
   const save = useMutation({
     mutationFn: (value: string) => profileApi.update({ bannerHtml: value }),

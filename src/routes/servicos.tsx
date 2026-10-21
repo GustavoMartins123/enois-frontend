@@ -10,10 +10,11 @@ import { Briefcase, Handshake, Send, Sparkles } from "lucide-react";
 
 import { servicesApi } from "@/lib/api";
 import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
-import { isAuthenticated } from "@/lib/use-auth";
+import { useIsAuthenticated } from "@/lib/use-auth";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
@@ -29,7 +30,7 @@ export const Route = createFileRoute("/servicos")({
  * de escopo (entregáveis) existe antes de qualquer faísca mover.
  */
 function Servicos() {
-  const authenticated = isAuthenticated();
+  const authenticated = useIsAuthenticated();
   const catalog = useQuery({
     queryKey: ["services", "catalog"],
     queryFn: () => servicesApi.catalog(),
@@ -44,25 +45,21 @@ function Servicos() {
   return (
     <AppContainer>
       <div className="mx-auto w-full max-w-4xl">
-        <header className="mb-4 flex items-start justify-between gap-3">
-          <div>
-            <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
-              <Briefcase className="h-6 w-6 text-primary" />
-              Serviços
-            </h1>
-
-            <p className="mt-1 text-sm text-text-subtle">
-              Trabalho entre pessoas, pago em faíscas. Toda contratação retém as faíscas até você
-              aceitar a entrega — recusa devolve tudo.
-            </p>
-          </div>
-          {authenticated && (
-            <div className="flex shrink-0 gap-2">
-              <NewOfferButton />
-              <NewRequestButton />
-            </div>
-          )}
-        </header>
+        <div className="mb-4">
+          <PageHeader
+            icon={Briefcase}
+            title="Serviços"
+            description="Trabalho entre pessoas, pago em faíscas. Toda contratação retém as faíscas até você aceitar a entrega — recusa devolve tudo."
+            actions={
+              authenticated && (
+                <>
+                  <NewOfferButton />
+                  <NewRequestButton />
+                </>
+              )
+            }
+          />
+        </div>
 
         <div className="mb-4 flex gap-2">
           <button
@@ -162,14 +159,14 @@ function OfferCard({ listing }: { listing: ServiceListing }) {
         disabled={buy.isPending}
         onClick={() => buy.mutate()}
       >
-        {buy.isPending ? "Retendo faíscas…" : "Contratar (escrow)"}
+        {buy.isPending ? "Retendo faíscas…" : "Contratar"}
       </Button>
     </li>
   );
 }
 
 function RequestCard({ request }: { request: ServiceRequest }) {
-  const authenticated = isAuthenticated();
+  const authenticated = useIsAuthenticated();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
@@ -285,7 +282,7 @@ function MyContracts({
         {contracts.map((c) => (
           <li key={c.id} className="surface-card flex flex-wrap items-center gap-2 p-3">
             <span className="min-w-0 flex-1 text-sm">
-              Contratei · {c.price} faíscas
+              Contratei · {formatFaisca(c.price)} faíscas
               {c.escrowState === "HELD" &&
                 (c.deliverableNote ? ` · entrega: ${c.deliverableNote}` : " · aguardando entrega")}
             </span>
@@ -318,7 +315,7 @@ function MyContracts({
         {sellerContracts.map((c) => (
           <li key={c.id} className="surface-card flex flex-wrap items-center gap-2 p-3">
             <span className="min-w-0 flex-1 text-sm">
-              Executei · {c.price} faíscas
+              Executei · {formatFaisca(c.price)} faíscas
               {c.escrowState === "HELD" && !c.deliverableNote && " · entregue o que foi combinado"}
             </span>
 
