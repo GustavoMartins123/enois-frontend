@@ -48,7 +48,7 @@ export function ApoieCard() {
       <div className="h-10" style={{ background: "var(--gradient-primary)" }} />
 
       <div className="space-y-2 px-4 pb-4">
-        <p className="-mt-3 inline-flex w-fit items-center gap-1.5 rounded-full bg-surface-card px-2 py-1 text-xs font-semibold text-primary">
+        <p className="inline-flex w-fit items-center gap-1.5 rounded-full bg-surface-card px-2 py-1 text-xs font-semibold text-primary">
           <Heart className="h-3.5 w-3.5" />
           Apoie o Énóis
         </p>
