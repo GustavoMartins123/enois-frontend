@@ -13,7 +13,7 @@ export function PlatformSpacesCard() {
       <p className="mt-0.5 text-xs text-text-subtle">{texts.platformSpaces.subtitle}</p>
 
       <ul className="mt-3 space-y-1">
-        {PLATFORM_SPACES.map((space) => (
+        {PLATFORM_SPACES.filter((space) => space.inSidebar !== false).map((space) => (
           <li key={space.to}>
             <Link
               to={space.to}
