@@ -3,7 +3,8 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
-import type { CompanyDetail, CompanyMember } from "@/types/application/companies/company-detail";
+import type { CompanyDetail } from "@/types/application/companies/company-detail";
+import type { CompanyMember } from "@/types/application/companies/company-member";
 import { ImagePlus, Loader2, UserPlus } from "lucide-react";
 
 import { companiesApi, searchApi } from "@/lib/api";

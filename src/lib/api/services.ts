@@ -1,9 +1,7 @@
-import type {
-  ServiceContract,
-  ServiceListing,
-  ServiceProposal,
-  ServiceRequest,
-} from "@/types/application/services/service-types";
+import type { ServiceContract } from "@/types/application/services/service-contract";
+import type { ServiceListing } from "@/types/application/services/service-listing";
+import type { ServiceProposal } from "@/types/application/services/service-proposal";
+import type { ServiceRequest } from "@/types/application/services/service-request";
 
 import { api } from "../api-client";
 

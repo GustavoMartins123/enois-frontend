@@ -1,42 +1,8 @@
+import type { CoinDisputeView } from "@/types/application/wallet/coin-dispute-view";
+import type { CoinQuote } from "@/types/application/wallet/coin-quote";
+import type { Wallet } from "@/types/application/wallet/wallet";
+
 import { api } from "../api-client";
-
-/** Lançamento do extrato da faísca. */
-export type WalletEntry = {
-  amount: number;
-  kind: string;
-  message: string | null;
-  /** O identificador da transação (a contestação fala por ele). */
-  refId: string | null;
-  createdAt: string;
-};
-
-export type Wallet = {
-  /** Saldo em MILÉSIMOS de faísca (1 faísca = 1.000 mf). */
-  balance: number;
-  escala: number;
-  cotacaoBrlCents: number;
-  chave: string;
-  entries: WalletEntry[];
-};
-
-/** Uma contestação de transferência na fila de moderação. */
-export type CoinDisputeView = {
-  id: string;
-  entryRef: string;
-  amount: number;
-  reason: string;
-  state: "OPEN" | "UPHELD" | "REJECTED";
-  createdAt: string;
-  reviewNote?: string;
-};
-
-/** A cotação de referência (mini bolsa): NÃO é câmbio — remuneração de criador. */
-export type CoinQuote = {
-  brlCents: number;
-  escala: number;
-  atualizadaEm: string;
-  historico: { brlCents: number; em: string }[];
-};
 
 export const walletApi = {
   wallet: () => api.get<Wallet>("/carteira"),

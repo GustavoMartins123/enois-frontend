@@ -3,15 +3,12 @@ import { type KeyboardEvent, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
+import type { BlocksAction } from "@/types/application/daily-games/blocks-action";
+import type { BlocksState } from "@/types/application/daily-games/blocks-state";
 import { Boxes } from "lucide-react";
 
 import { ApiError, randomUUID } from "@/lib/api-client";
-import {
-  type BlocksAction,
-  type BlocksState,
-  dailyBlocksApi,
-  previousChallengeDate,
-} from "@/lib/api/daily-games";
+import { dailyBlocksApi, previousChallengeDate } from "@/lib/api/daily-games";
 
 import { Button } from "@/components/ui/button";
 

@@ -1,4 +1,5 @@
-import type { IdentityStatus, JobEligibility } from "@/types/application/identity/identity-status";
+import type { IdentityStatus } from "@/types/application/identity/identity-status";
+import type { JobEligibility } from "@/types/application/identity/job-eligibility";
 
 import { api } from "../api-client";
 

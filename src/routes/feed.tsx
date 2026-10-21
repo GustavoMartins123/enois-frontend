@@ -81,12 +81,12 @@ export const Route = createFileRoute("/feed")({
    * A aba vive na URL (`/feed?aba=ALL`): abrir uma publicação e voltar restaura a MESMA aba em que
    * a pessoa estava — antes o retorno caía sempre em "Para você".
    */
-  validateSearch: (search: Record<string, unknown>) => {
-    const aba =
+  validateSearch: (search: Record<string, unknown>): { aba?: HomeTab } => {
+    const aba: HomeTab | undefined =
       typeof search.aba === "string" && HOME_TABS.includes(search.aba as HomeTab)
         ? (search.aba as HomeTab)
-        : "FOR_YOU";
-    return { aba };
+        : undefined;
+    return aba ? { aba } : {};
   },
   head: () => ({
     meta: [
@@ -168,7 +168,7 @@ function Home() {
   // página anterior, e não passeando pelas abas).
   const { aba } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const tab: HomeTab = aba;
+  const tab: HomeTab = aba ?? "FOR_YOU";
   const setTab = (next: HomeTab) => {
     if (next === tab) return;
     void navigate({ search: { aba: next }, replace: true });
@@ -607,28 +607,6 @@ function Home() {
                   aria-label={texts.feed.composer.topic}
                   title={texts.feed.composer.topicHint}
                   className={`max-w-[11rem] rounded-full px-3 py-1.5 text-sm font-normal outline-none transition ${
-                    topic
-                      ? "border border-primary/40 bg-primary/10 text-primary"
-                      : "border border-border-soft text-text-subtle hover:border-primary"
-                  }`}
-                >
-                  <option value="">{texts.feed.composer.topicNone}</option>
-                  {TOPICS.filter((option) => option !== "Todas").map((option) => (
-                    <option key={option} value={option}>
-                      {TOPIC_LABELS[option]}
-                    </option>
-                  ))}
-                </select>
-
-                {/* Seletor de tipo recolhido: mostra o tipo atual e abre a lista completa. */}
-                <select
-                  value={topic}
-                  onChange={(e) => {
-                    setTopic(e.target.value);
-                    rememberTopic(e.target.value);
-                  }}
-                  aria-label={texts.feed.composer.topic}
-                  className={`rounded-full px-3 py-1.5 text-sm font-normal outline-none transition ${
                     topic
                       ? "border border-primary/40 bg-primary/10 text-primary"
                       : "border border-border-soft text-text-subtle hover:border-primary"

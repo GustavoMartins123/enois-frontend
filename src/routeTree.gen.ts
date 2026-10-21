@@ -64,6 +64,8 @@ import { Route as AuthResetRouteImport } from './routes/auth.reset'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as VagasJobIdCandidaturasRouteImport } from './routes/vagas.$jobId.candidaturas'
 import { Route as GamesUsernameGameSlugRouteImport } from './routes/games.$username.$gameSlug'
+import { Route as BlogPostNewRouteImport } from './routes/blog.post.new'
+import { Route as BlogPostPostIdRouteImport } from './routes/blog.post.$postId'
 import { Route as BlogUsernamePostIdRouteImport } from './routes/blog.$username_.$postId'
 
 const VagasRoute = VagasRouteImport.update({
@@ -341,6 +343,16 @@ const GamesUsernameGameSlugRoute = GamesUsernameGameSlugRouteImport.update({
   path: '/$gameSlug',
   getParentRoute: () => GamesUsernameRoute,
 } as any)
+const BlogPostNewRoute = BlogPostNewRouteImport.update({
+  id: '/blog/post/new',
+  path: '/blog/post/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogPostPostIdRoute = BlogPostPostIdRouteImport.update({
+  id: '/blog/post/$postId',
+  path: '/blog/post/$postId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogUsernamePostIdRoute = BlogUsernamePostIdRouteImport.update({
   id: '/blog/$username_/$postId',
   path: '/blog/$username/$postId',
@@ -402,6 +414,8 @@ export interface FileRoutesByFullPath {
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
   '/blog/$username/$postId': typeof BlogUsernamePostIdRoute
+  '/blog/post/$postId': typeof BlogPostPostIdRoute
+  '/blog/post/new': typeof BlogPostNewRoute
   '/games/$username/$gameSlug': typeof GamesUsernameGameSlugRoute
   '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
 }
@@ -460,6 +474,8 @@ export interface FileRoutesByTo {
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
   '/blog/$username/$postId': typeof BlogUsernamePostIdRoute
+  '/blog/post/$postId': typeof BlogPostPostIdRoute
+  '/blog/post/new': typeof BlogPostNewRoute
   '/games/$username/$gameSlug': typeof GamesUsernameGameSlugRoute
   '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
 }
@@ -519,6 +535,8 @@ export interface FileRoutesById {
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
   '/blog/$username_/$postId': typeof BlogUsernamePostIdRoute
+  '/blog/post/$postId': typeof BlogPostPostIdRoute
+  '/blog/post/new': typeof BlogPostNewRoute
   '/games/$username/$gameSlug': typeof GamesUsernameGameSlugRoute
   '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
 }
@@ -579,6 +597,8 @@ export interface FileRouteTypes {
     | '/vagas/$jobId'
     | '/vagas/minhas'
     | '/blog/$username/$postId'
+    | '/blog/post/$postId'
+    | '/blog/post/new'
     | '/games/$username/$gameSlug'
     | '/vagas/$jobId/candidaturas'
   fileRoutesByTo: FileRoutesByTo
@@ -637,6 +657,8 @@ export interface FileRouteTypes {
     | '/vagas/$jobId'
     | '/vagas/minhas'
     | '/blog/$username/$postId'
+    | '/blog/post/$postId'
+    | '/blog/post/new'
     | '/games/$username/$gameSlug'
     | '/vagas/$jobId/candidaturas'
   id:
@@ -695,6 +717,8 @@ export interface FileRouteTypes {
     | '/vagas/$jobId'
     | '/vagas/minhas'
     | '/blog/$username_/$postId'
+    | '/blog/post/$postId'
+    | '/blog/post/new'
     | '/games/$username/$gameSlug'
     | '/vagas/$jobId/candidaturas'
   fileRoutesById: FileRoutesById
@@ -747,6 +771,8 @@ export interface RootRouteChildren {
   PostPostIdRoute: typeof PostPostIdRoute
   ProfissionalUsernameRoute: typeof ProfissionalUsernameRoute
   BlogUsernamePostIdRoute: typeof BlogUsernamePostIdRoute
+  BlogPostPostIdRoute: typeof BlogPostPostIdRoute
+  BlogPostNewRoute: typeof BlogPostNewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1136,6 +1162,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GamesUsernameGameSlugRouteImport
       parentRoute: typeof GamesUsernameRoute
     }
+    '/blog/post/new': {
+      id: '/blog/post/new'
+      path: '/blog/post/new'
+      fullPath: '/blog/post/new'
+      preLoaderRoute: typeof BlogPostNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/post/$postId': {
+      id: '/blog/post/$postId'
+      path: '/blog/post/$postId'
+      fullPath: '/blog/post/$postId'
+      preLoaderRoute: typeof BlogPostPostIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/$username_/$postId': {
       id: '/blog/$username_/$postId'
       path: '/blog/$username/$postId'
@@ -1277,6 +1317,8 @@ const rootRouteChildren: RootRouteChildren = {
   PostPostIdRoute: PostPostIdRoute,
   ProfissionalUsernameRoute: ProfissionalUsernameRoute,
   BlogUsernamePostIdRoute: BlogUsernamePostIdRoute,
+  BlogPostPostIdRoute: BlogPostPostIdRoute,
+  BlogPostNewRoute: BlogPostNewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

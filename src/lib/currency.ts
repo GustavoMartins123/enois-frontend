@@ -5,7 +5,7 @@
  * remonta o texto com o simbolo certo — inclusive para vagas antigas, gravadas antes do campo
  * existir, que ainda tem "R$ 8.000" escrito no valor.
  */
-export type CurrencyCode = "BRL" | "USD" | "EUR";
+import type { CurrencyCode } from "@/types/application/currency/currency-code";
 
 export const CURRENCIES: { code: CurrencyCode; symbol: string; label: string }[] = [
   { code: "BRL", symbol: "R$", label: "Real (R$)" },

@@ -1,9 +1,7 @@
-import type {
-  CompanyDetail,
-  CompanyMember,
-  CompanySummary,
-  ProposalView,
-} from "@/types/application/companies/company-detail";
+import type { CompanyDetail } from "@/types/application/companies/company-detail";
+import type { CompanyMember } from "@/types/application/companies/company-member";
+import type { CompanySummary } from "@/types/application/companies/company-summary";
+import type { ProposalView } from "@/types/application/companies/proposal-view";
 
 import { api } from "../api-client";
 

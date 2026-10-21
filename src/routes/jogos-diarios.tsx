@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
+import type { GameTab } from "@/types/routes/daily-games/game-tab";
 import { Boxes, CheckCircle2, Flame, Gamepad2, Map, Sparkles, Trophy, Type } from "lucide-react";
 
 import {
@@ -24,8 +25,6 @@ export const Route = createFileRoute("/jogos-diarios")({
   head: () => ({ meta: [{ title: "Jogos diários · Énóis" }] }),
   component: DailyGames,
 });
-
-type GameTab = "words" | "maze" | "blocks";
 
 function DailyGames() {
   const [activeTab, setActiveTab] = useState<GameTab>("words");
