@@ -233,6 +233,18 @@
   }
 }
 
+/* Barra de rolagem que só aparece com o mouse em cima. Para colunas fixas (menu lateral):
+   a barra sempre visível, com as setinhas do Windows, parecia um quadro quebrado ao lado
+   do menu, e quase ninguém precisa rolar ali. */
+@utility scrollbar-on-hover {
+  scrollbar-color: transparent transparent;
+
+  &:hover,
+  &:focus-within {
+    scrollbar-color: var(--border) transparent;
+  }
+}
+
 /* Resets de elementos em @layer base: UNLAYERED eles vencem as utilities do
    Tailwind (ordem de camada fala mais alto que especificidade) e um
    `a { color: inherit }` solto MATAVA toda utility de cor de texto em link —

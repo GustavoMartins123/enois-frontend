@@ -28,6 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/ui/page-header";
 import { Pill } from "@/components/ui/pill";
+import { PillRow } from "@/components/ui/pill-row";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 
@@ -195,7 +196,7 @@ function Comunidades() {
           />
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <PillRow label={texts.communities.topicsLabel}>
           {TOPICS.map((t) => (
             <Pill
               key={t}
@@ -205,7 +206,7 @@ function Comunidades() {
               {TOPIC_LABELS[t]}
             </Pill>
           ))}
-        </div>
+        </PillRow>
 
         {mineItems.length > 0 && (
           <section className="space-y-3">

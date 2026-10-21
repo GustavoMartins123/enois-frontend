@@ -3,7 +3,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
 
-import { JOB_LEVELS, JOB_LOCATIONS, JOB_TYPES } from "@/constants/job-options";
+import {
+  JOB_LEVELS,
+  JOB_LOCATIONS,
+  JOB_TYPES,
+  jobLevelLabel,
+  jobTypeLabel,
+} from "@/constants/job-options";
 import {
   FAKE_JOB_REPORT_REASON,
   JOB_REPORT_REASONS,
@@ -37,6 +43,7 @@ import { CURRENCIES, currencySymbol, formatSalary } from "@/lib/currency";
 import { useCurrentUser } from "@/lib/current-user";
 import { canCreateJob, missingReputationToCreateJob } from "@/lib/job-permissions";
 import { requireAuth } from "@/lib/require-auth";
+import { useIsAuthenticated } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -61,6 +68,8 @@ import { useToast } from "@/components/ui/toast";
 import { AppContainer } from "@/components/app-container";
 import { CreateExternalJobDialog } from "@/components/create-external-job-dialog";
 import { InfiniteScroll } from "@/components/infinite-scroll";
+
+const MAX_CARD_SKILLS = 8;
 
 export const Route = createFileRoute("/vagas")({
   head: () => ({ meta: [{ title: texts.jobs.seoTitle }] }),
@@ -126,6 +135,9 @@ function Vagas() {
 
   const reputation = user?.reputation ?? 0;
   const canPublish = canCreateJob(reputation);
+  // Visitante só consulta: os botões de dono e o aviso de reputação ("faltam 151") não dizem
+  // nada a quem ainda não tem conta, e no celular empurravam as vagas para a segunda tela.
+  const authenticated = useIsAuthenticated();
 
   const filters = {
     query: debouncedQuery || undefined,
@@ -247,38 +259,42 @@ function Vagas() {
                 </Button>
               )}
 
-              <Link
-                to="/vagas/minhas"
-                className="inline-flex h-9 items-center rounded-full border border-border-soft px-3 text-sm font-medium transition hover:bg-muted"
-              >
-                {texts.jobs.myJobs}
-              </Link>
+              {authenticated && (
+                <>
+                  <Link
+                    to="/vagas/minhas"
+                    className="inline-flex h-9 items-center rounded-full border border-border-soft px-3 text-sm font-medium transition hover:bg-muted"
+                  >
+                    {texts.jobs.myJobs}
+                  </Link>
 
-              {/* Vaga achada em outro site: cadastra aqui e o botão do card leva ao link. */}
-              <Button
-                size="sm"
-                variant="outline"
-                className="rounded-full gap-1.5"
-                onClick={() => setShowExternal(true)}
-              >
-                <ExternalLink className="h-4 w-4" />
+                  {/* Vaga achada em outro site: cadastra aqui e o botão do card leva ao link. */}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-full gap-1.5"
+                    onClick={() => setShowExternal(true)}
+                  >
+                    <ExternalLink className="h-4 w-4" />
 
-                <>{texts.jobs.external.registerButton}</>
-              </Button>
+                    <>{texts.jobs.external.registerButton}</>
+                  </Button>
 
-              <Button
-                size="sm"
-                className="rounded-full gap-1.5"
-                onClick={() => setShowCreate(true)}
-              >
-                {canPublish ? <Plus className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                  <Button
+                    size="sm"
+                    className="rounded-full gap-1.5"
+                    onClick={() => setShowCreate(true)}
+                  >
+                    {canPublish ? <Plus className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
 
-                <>{texts.jobs.createJob}</>
-              </Button>
+                    <>{texts.jobs.createJob}</>
+                  </Button>
+                </>
+              )}
             </div>
           </div>
 
-          {!canPublish && (
+          {authenticated && user && !canPublish && (
             <p className="mt-3 inline-flex items-start gap-1.5 rounded-lg bg-muted px-3 py-2 text-xs text-muted-foreground">
               <Lock className="mt-0.5 h-3 w-3 shrink-0" />
 
@@ -298,7 +314,7 @@ function Vagas() {
                   active={level === l}
                   onClick={() => setLevel(level === l ? "" : l)}
                 >
-                  {l.charAt(0) + l.slice(1).toLowerCase()}
+                  {jobLevelLabel(l)}
                 </Pill>
               ))}
             </div>
@@ -334,7 +350,7 @@ function Vagas() {
                   active={type === t}
                   onClick={() => setType(type === t ? "" : t)}
                 >
-                  {t}
+                  {jobTypeLabel(t)}
                 </Pill>
               ))}
             </div>
@@ -534,7 +550,8 @@ function Vagas() {
                   )}
 
                   <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                    {j.matchScore && (
+                    {/* `> 0`, e não `&&`: com match 0 o React desenhava um "0" solto antes das tags. */}
+                    {j.matchScore != null && j.matchScore > 0 && (
                       <span className="rounded-full bg-primary-soft px-2.5 py-1 font-medium text-primary inline-flex items-center gap-1">
                         <Sparkles className="h-3 w-3" />
 
@@ -542,11 +559,11 @@ function Vagas() {
                       </span>
                     )}
                     <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
-                      {j.type}
+                      {jobTypeLabel(j.type)}
                     </span>
 
                     <span className="rounded-full bg-muted px-2.5 py-1 text-muted-foreground">
-                      {j.level}
+                      {jobLevelLabel(j.level)}
                     </span>
                     {(j.salaryLabel || formatSalary(j.salary, j.currency)) && (
                       <span className="rounded-full bg-growth/15 px-2.5 py-1 font-medium text-growth">
@@ -555,8 +572,10 @@ function Vagas() {
                     )}
                   </div>
 
+                  {/* Só as primeiras habilidades: vaga com 30+ tags virava uma parede no card e
+                      empurrava os botões para longe. A lista inteira fica na página da vaga. */}
                   <div className="mt-3 flex flex-wrap gap-1.5">
-                    {j.skills.map((s) => (
+                    {j.skills.slice(0, MAX_CARD_SKILLS).map((s) => (
                       <Badge
                         key={s}
                         variant="secondary"
@@ -565,6 +584,12 @@ function Vagas() {
                         {s}
                       </Badge>
                     ))}
+
+                    {j.skills.length > MAX_CARD_SKILLS && (
+                      <Badge variant="secondary" className="rounded-full font-normal">
+                        {texts.jobs.moreSkills(j.skills.length - MAX_CARD_SKILLS)}
+                      </Badge>
+                    )}
                   </div>
 
                   <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border pt-3 text-xs text-muted-foreground">
@@ -851,7 +876,7 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
                 >
                   {JOB_TYPES.map((t) => (
                     <option key={t} value={t}>
-                      {t}
+                      {jobTypeLabel(t)}
                     </option>
                   ))}
                 </select>
@@ -869,7 +894,7 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
                 >
                   {JOB_LEVELS.map((l) => (
                     <option key={l} value={l}>
-                      {l.charAt(0) + l.slice(1).toLowerCase()}
+                      {jobLevelLabel(l)}
                     </option>
                   ))}
                 </select>

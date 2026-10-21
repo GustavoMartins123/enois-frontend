@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, createFileRoute, useMatchRoute, useNavigate } from "@tanstack/react-router";
 
+import { jobLevelLabel, jobTypeLabel } from "@/constants/job-options";
 import { texts } from "@/texts";
 import type { JobApplication } from "@/types/application/job/job-application";
 import {
@@ -258,10 +259,12 @@ function JobDetail() {
             )}
 
             <div className="mt-4 flex flex-wrap gap-2 text-xs">
-              <span className="rounded-full border border-border-soft px-2.5 py-1">{job.type}</span>
+              <span className="rounded-full border border-border-soft px-2.5 py-1">
+                {jobTypeLabel(job.type)}
+              </span>
 
               <span className="rounded-full border border-border-soft px-2.5 py-1">
-                {job.level}
+                {jobLevelLabel(job.level)}
               </span>
 
               {(job.salaryLabel || formatSalary(job.salary, job.currency)) && (

@@ -23,7 +23,7 @@ export function AppSidebar() {
         // Antes era `h-fit` + sticky: com mais itens do que cabia na tela, o fim da lista ficava
         // fora do alcance — sem rolagem nenhuma, porque um elemento do tamanho do conteúdo nunca
         // rola. `overscroll-contain` evita que a rolagem da barra puxe a página junto.
-        "sticky top-20 hidden max-h-[calc(100vh-6rem)] shrink-0 overflow-y-auto overscroll-contain lg:block",
+        "sticky top-20 hidden max-h-[calc(100vh-6rem)] shrink-0 overflow-y-auto overscroll-contain scrollbar-on-hover lg:block",
         sidebarCollapsed ? "w-16" : "w-60",
       )}
       style={{ transition: "width 0.3s cubic-bezier(0.4, 0, 0.2, 1)" }}

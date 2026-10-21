@@ -1183,6 +1183,7 @@ export const texts = {
       corporateDestination: (name: string) =>
         `Publicando como ${name} — esta publicação vai para o feed corporativo.`,
     },
+    tabsLabel: "Filtrar publicações",
     tabs: {
       forYou: "Para você",
       news: "Notícias",
@@ -2036,6 +2037,7 @@ export const texts = {
     seoTitle: "Comunidades · Énóis",
     title: "Comunidades",
     description: "Encontre grupos profissionais, fóruns temáticos e círculos de mentoria.",
+    topicsLabel: "Categorias",
     searchPlaceholder: "Pesquisar comunidades",
     createCommunity: "Criar comunidade",
     myTitle: "Suas comunidades",
@@ -2256,7 +2258,12 @@ export const texts = {
       location: "Local:",
       type: "Tipo:",
       locations: ["Remoto", "Híbrido", "Presencial"],
+      /** O backend guarda o código (JUNIOR, INTERN...); a tela mostra o nome em português. */
+      levels: { JUNIOR: "Júnior", MID: "Pleno", SENIOR: "Sênior", LEAD: "Liderança" },
+      types: { CLT: "CLT", PJ: "PJ", FREELANCE: "Freelance", INTERN: "Estágio" },
     },
+    /** Quantas habilidades o card da lista mostra antes do "+N". */
+    moreSkills: (count: number) => `+${count}`,
     searchPlaceholder: "Buscar vagas (ex.: java -estágio)",
     /** Ajuda da busca booleana: mostra a sintaxe sem esconder o essencial. */
     searchHint:
