@@ -1,13 +1,13 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useRef, useState } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { Job } from "@/types/application/job/job";
-import { CheckCircle2, Loader2, Send } from "lucide-react";
+import { CheckCircle2, FileUp, Loader2, Send } from "lucide-react";
 
-import { ApiError, jobsApi } from "@/lib/api";
+import { ApiError, jobsApi, resumeImportApi } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -36,6 +36,11 @@ export function ApplyJobDialog({ job, children }: { job: Job; children: ReactNod
   const [values, setValues] = useState<Record<string, string>>({});
   const [error, setError] = useState<ApiError | null>(null);
   const [done, setDone] = useState(false);
+  // Campos que o currículo não soube responder: ficam vazios com destaque "preencha aqui".
+  const [unfilled, setUnfilled] = useState<Record<string, string>>({});
+  const [prefillError, setPrefillError] = useState<string | null>(null);
+  const [prefillSummary, setPrefillSummary] = useState<string | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const fields = job.applicationFields ?? [];
   const missingRequired = fields.filter(
@@ -58,6 +63,41 @@ export function ApplyJobDialog({ job, children }: { job: Job; children: ReactNod
     onError: (err) => setError(err instanceof ApiError ? err : null),
   });
 
+  // Preenche a inscrição com o currículo: sobe o arquivo + o id da vaga e recebe mensagem e
+  // respostas sugeridas. Só sugere — a pessoa revisa e envia pelo fluxo existente.
+  const prefill = useMutation({
+    mutationFn: (file: File) => resumeImportApi.prefillApplication(job.id, file),
+    onSuccess: (result) => {
+      setPrefillError(null);
+      if (result.suggestedMessage) setMessage(result.suggestedMessage);
+      setValues((current) => {
+        const next = { ...current };
+        for (const field of result.fields) {
+          if (field.suggestedValue) next[field.fieldId] = field.suggestedValue;
+        }
+        return next;
+      });
+      setUnfilled((current) => {
+        const next = { ...current };
+        for (const field of result.fields) {
+          if (!field.suggestedValue && field.reason) next[field.fieldId] = field.reason;
+          else delete next[field.fieldId];
+        }
+        return next;
+      });
+      setPrefillSummary(texts.jobs.applyDialog.resumeFilled(result.filled, result.total));
+    },
+    onError: (err) =>
+      setPrefillError(err instanceof ApiError ? err.message : texts.errors.unexpected),
+  });
+
+  const handlePrefillFile = (file: File | undefined) => {
+    if (!file) return;
+    setPrefillError(null);
+    setPrefillSummary(null);
+    prefill.mutate(file);
+  };
+
   const close = (next: boolean) => {
     setOpen(next);
     if (!next) {
@@ -66,6 +106,9 @@ export function ApplyJobDialog({ job, children }: { job: Job; children: ReactNod
         setDone(false);
         setMessage("");
         setValues({});
+        setUnfilled({});
+        setPrefillError(null);
+        setPrefillSummary(null);
       }
     }
   };
@@ -117,6 +160,54 @@ export function ApplyJobDialog({ job, children }: { job: Job; children: ReactNod
               </ul>
             </div>
 
+            <div className="space-y-1.5">
+              <input
+                ref={fileRef}
+                type="file"
+                accept=".pdf,.txt,.md,application/pdf,text/plain,text/markdown"
+                className="hidden"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = "";
+                  handlePrefillFile(file);
+                }}
+              />
+
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full rounded-full gap-1.5"
+                disabled={prefill.isPending}
+                onClick={() => fileRef.current?.click()}
+              >
+                {prefill.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FileUp className="h-4 w-4" />
+                )}
+
+                <>
+                  {prefill.isPending
+                    ? texts.jobs.applyDialog.resumeReading
+                    : texts.jobs.applyDialog.resumePrefill}
+                </>
+              </Button>
+
+              <p className="text-xs text-muted-foreground">
+                {texts.jobs.applyDialog.resumePrefillHint}
+              </p>
+
+              {prefillSummary && !prefillError && (
+                <p className="text-xs text-growth">{prefillSummary}</p>
+              )}
+
+              {prefillError && (
+                <p className="rounded-xl bg-destructive/10 px-4 py-2 text-xs text-destructive">
+                  {prefillError}
+                </p>
+              )}
+            </div>
+
             {fields.map((field) => (
               <div key={field.id} className="space-y-1.5">
                 <Label className="text-xs">
@@ -124,12 +215,21 @@ export function ApplyJobDialog({ job, children }: { job: Job; children: ReactNod
                   {field.required && <span className="text-destructive"> *</span>}
                 </Label>
 
+                {unfilled[field.id] && !(values[field.id] ?? "").trim() && (
+                  <p className="text-xs font-medium text-amber-600 dark:text-amber-400">
+                    {texts.jobs.applyDialog.resumeNoSuggestion} — o currículo não trouxe este campo.
+                  </p>
+                )}
+
                 {field.type === "TEXTAREA" ? (
                   <Textarea
                     rows={3}
                     value={values[field.id] ?? ""}
                     onChange={(event) =>
                       setValues((current) => ({ ...current, [field.id]: event.target.value }))
+                    }
+                    placeholder={
+                      unfilled[field.id] ? texts.jobs.applyDialog.resumeNoSuggestion : undefined
                     }
                   />
                 ) : (
@@ -141,7 +241,13 @@ export function ApplyJobDialog({ job, children }: { job: Job; children: ReactNod
                     type={field.type === "NUMBER" ? "number" : "text"}
                     inputMode={field.type === "NUMBER" ? "numeric" : undefined}
                     placeholder={
-                      field.type === "LINK" ? "https://" : field.type === "NUMBER" ? "0" : ""
+                      unfilled[field.id]
+                        ? texts.jobs.applyDialog.resumeNoSuggestion
+                        : field.type === "LINK"
+                          ? "https://"
+                          : field.type === "NUMBER"
+                            ? "0"
+                            : ""
                     }
                   />
                 )}

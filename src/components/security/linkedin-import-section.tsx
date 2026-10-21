@@ -4,9 +4,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { LinkedinImportPreview } from "@/types/application/profile/linkedin-import-preview";
-import { ClipboardPaste } from "lucide-react";
+import { ClipboardPaste, FileUp } from "lucide-react";
 
-import { preferencesApi, profileApi, projectsApi } from "@/lib/api";
+import { preferencesApi, profileApi, projectsApi, resumeImportApi } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +26,9 @@ const LIMITE_POR_SECAO = 10;
 
 /** Teto de projetos do perfil (ProjectsService.MAX_PROJECTS). */
 const LIMITE_PROJETOS = 20;
+
+/** Teto do currículo (o backend aceita PDF de até 10 MB; texto tem teto próprio). */
+const RESUME_MAX_MB = 10;
 
 export function LinkedinImportSection({
   linkedinConectado = false,
@@ -64,6 +67,14 @@ export function LinkedinImportSection({
       aplicarPreview(novo);
       setColando(false);
     },
+    onError: (error) => toast(error.message, "error"),
+  });
+
+  // O caminho VIA CURRÍCULO: a pessoa sobe o PDF (ou .txt/.md) e recebe o retrato no MESMO
+  // formato do LinkedIn — a revisão e o salvamento abaixo são compartilhados, sem tela nova.
+  const importarCurriculo = useMutation({
+    mutationFn: (file: File) => resumeImportApi.importResume(file),
+    onSuccess: aplicarPreview,
     onError: (error) => toast(error.message, "error"),
   });
 
@@ -297,7 +308,47 @@ export function LinkedinImportSection({
                 }}
               />
             </label>
+
+            <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border-soft px-3 py-1.5 text-xs text-text-subtle transition hover:text-text-strong">
+              <FileUp className="h-3.5 w-3.5" />
+
+              <>{texts.account.linkedinImport.resumeButton}</>
+
+              <input
+                type="file"
+                accept=".pdf,.txt,.md,application/pdf,text/plain,text/markdown"
+                className="hidden"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  event.target.value = "";
+                  if (!file) return;
+                  // Mesmo teto do serviço (10 MB): o backend recusa com FILE_TOO_LARGE, mas
+                  // avisar antes poupa o envio inteiro — e o DOC/DOCX avisa na hora que precisa
+                  // sair em PDF (o accept acima já filtra, mas nem todo navegador respeita).
+                  const name = file.name.toLowerCase();
+                  if (/\.(doc|docx)$/.test(name)) {
+                    toast(
+                      "Esse formato não entra: exporte o currículo em PDF no seu editor (Arquivo → Exportar como PDF).",
+                      "error",
+                    );
+                    return;
+                  }
+                  if (file.size > RESUME_MAX_MB * 1024 * 1024) {
+                    toast(
+                      "Arquivo grande demais: o currículo vai até 10 MB (PDF de até 20 páginas) ou 512 KB em texto.",
+                      "error",
+                    );
+                    return;
+                  }
+                  importarCurriculo.mutate(file);
+                }}
+              />
+            </label>
           </div>
+
+          <p className="text-[11px] leading-relaxed text-text-subtle">
+            {texts.account.linkedinImport.resumeHint}
+          </p>
 
           {colando && (
             <div className="space-y-2">
@@ -323,6 +374,10 @@ export function LinkedinImportSection({
       )}
 
       {importar.isPending && <p className="text-xs text-text-subtle">{texts.common.loading}</p>}
+
+      {importarCurriculo.isPending && (
+        <p className="text-xs text-text-subtle">Lendo o currículo...</p>
+      )}
 
       {preview && (
         <div className="space-y-2">

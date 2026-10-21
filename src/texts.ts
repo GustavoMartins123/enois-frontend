@@ -776,6 +776,9 @@ export const texts = {
       /** O perfil tem teto por seção; o que não coube fica claro em vez de falhar pela metade. */
       capReached:
         "Alguns itens não couberam: o perfil aceita até 10 experiências, 10 formações e 10 certificações.",
+      resumeButton: "Enviar o currículo",
+      resumeHint:
+        "Sem LinkedIn? Suba o currículo: o app lê o arquivo e mostra a mesma prévia antes de salvar. Vale PDF (até 10 MB e 20 páginas) ou .txt/.md. Se for DOC/DOCX, exporte em PDF no seu editor.",
     },
     menu: {
       trigger: "Menu da conta",
@@ -2384,6 +2387,13 @@ export const texts = {
       verifiedOnly:
         "Para se candidatar é preciso ter a conta verificada (e-mail confirmado ou verificação em duas etapas).",
       verifyIdentity: "Verificar minha conta",
+      resumePrefill: "Preencher com meu currículo",
+      resumePrefillHint:
+        "Suba o currículo (PDF ou texto): o app sugere a mensagem e as respostas. O que ele não achar fica marcado para você preencher — revise antes de enviar.",
+      resumeReading: "Lendo o currículo...",
+      resumeFilled: (filled: number, total: number) =>
+        `${filled} de ${total} campos preenchidos — revise e complete o resto.`,
+      resumeNoSuggestion: "preencha aqui",
     },
     author: {
       label: "Publicado por",
