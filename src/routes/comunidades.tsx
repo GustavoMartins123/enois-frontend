@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader } from "@/components/ui/page-header";
 import { Pill } from "@/components/ui/pill";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
@@ -160,28 +161,26 @@ function Comunidades() {
   return (
     <AppContainer>
       <div className="space-y-6">
-        <div className="surface-card flex flex-wrap items-center justify-between gap-3 p-4 sm:gap-4 sm:p-6">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">{texts.communities.title}</h1>
+        <PageHeader
+          title={texts.communities.title}
+          description={texts.communities.description}
+          actions={
+            <CreateCommunityDialog
+              open={open}
+              onOpenChange={(o) => {
+                // Visitante nao abre o formulario: manda para o login.
+                if (o && !needsLogin()) return;
+                setOpen(o);
+              }}
+            >
+              <Button className="rounded-full gap-1.5">
+                <Plus className="h-4 w-4" />
 
-            <p className="mt-1 text-sm text-muted-foreground">{texts.communities.description}</p>
-          </div>
-
-          <CreateCommunityDialog
-            open={open}
-            onOpenChange={(o) => {
-              // Visitante nao abre o formulario: manda para o login.
-              if (o && !needsLogin()) return;
-              setOpen(o);
-            }}
-          >
-            <Button className="rounded-full gap-1.5">
-              <Plus className="h-4 w-4" />
-
-              <>{texts.communities.createCommunity}</>
-            </Button>
-          </CreateCommunityDialog>
-        </div>
+                <>{texts.communities.createCommunity}</>
+              </Button>
+            </CreateCommunityDialog>
+          }
+        />
 
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

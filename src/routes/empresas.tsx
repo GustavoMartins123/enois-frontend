@@ -13,6 +13,7 @@ import { useIsAuthenticated } from "@/lib/use-auth";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { LoadingState } from "@/components/ui/loading-state";
+import { PageHeader } from "@/components/ui/page-header";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
@@ -83,11 +84,7 @@ function Empresas() {
           <>{texts.post.back}</>
         </Link>
 
-        <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">{texts.empresas.title}</h1>
-
-          <p className="text-sm text-muted-foreground">{texts.empresas.subtitle}</p>
-        </div>
+        <PageHeader title={texts.empresas.title} description={texts.empresas.subtitle} />
 
         <label className="relative block">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
