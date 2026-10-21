@@ -1,6 +1,7 @@
 import type { RequestOptions } from "@/types/application/api/request-options";
 
 import { notifyBirthDateRequired, notifyParentalConsentRequired } from "./age-required";
+import { clearAuthHint } from "./auth-hint";
 import { resetSessionScopedData } from "./query-client";
 import { dropSessionKey } from "./session-key";
 
@@ -184,6 +185,7 @@ export function clearSession() {
   localStorage.removeItem("session_expires_at");
   localStorage.removeItem("refresh_expires_at");
   localStorage.removeItem("current_user");
+  clearAuthHint();
   dropSessionKey();
   if (hadSession) resetSessionScopedData();
 }
