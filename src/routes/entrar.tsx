@@ -1,8 +1,8 @@
 import { type FormEvent, type ReactNode, useRef, useState } from "react";
-import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
+import { SIGNUP_OPEN } from "@/constants/account";
 import { texts } from "@/texts";
 import type { OAuthProvider } from "@/types/application/auth/oauth-provider";
 import type { TwoFactorChallenge } from "@/types/application/auth/two-factor";
@@ -12,6 +12,7 @@ import type { ForgotPasswordDialogProps } from "@/types/routes/auth/forgot-passw
 import type { LoginFormProps } from "@/types/routes/auth/login-form-props";
 import type { SocialButtonsProps } from "@/types/routes/auth/social-buttons-props";
 import type { TabBtnProps } from "@/types/routes/auth/tab-btn-props";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { ArrowRight, Eye, EyeOff, Loader2, MailCheck, ShieldCheck } from "lucide-react";
 import { z } from "zod";
 
@@ -65,6 +66,8 @@ function Auth() {
   const navigate = useNavigate();
   const [tab, setTab] = useState(initial);
   const [forgotOpen, setForgotOpen] = useState(false);
+  // Cadastros fechados: `/entrar?tab=signup` cai no login e o aviso explica o motivo.
+  const activeTab = SIGNUP_OPEN ? tab : "login";
 
   return (
     <div className="grid grid-cols-1 min-h-screen lg:grid-cols-2">
@@ -140,18 +143,28 @@ function Auth() {
         </div>
 
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
-          <div className="flex items-center gap-1 rounded-full border border-border bg-card p-1">
-            <TabBtn active={tab === "signup"} onClick={() => setTab("signup")}>
-              {texts.common.createAccount}
-            </TabBtn>
+          {SIGNUP_OPEN ? (
+            <div className="flex items-center gap-1 rounded-full border border-border bg-card p-1">
+              <TabBtn active={tab === "signup"} onClick={() => setTab("signup")}>
+                {texts.common.createAccount}
+              </TabBtn>
 
-            <TabBtn active={tab === "login"} onClick={() => setTab("login")}>
-              {texts.common.enter}
-            </TabBtn>
-          </div>
+              <TabBtn active={tab === "login"} onClick={() => setTab("login")}>
+                {texts.common.enter}
+              </TabBtn>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-border bg-card px-4 py-3">
+              <p className="text-sm font-medium text-foreground">{texts.auth.signupClosed.title}</p>
+
+              <p className="mt-1 text-sm text-muted-foreground">
+                {texts.auth.signupClosed.description}
+              </p>
+            </div>
+          )}
 
           <div className="mt-8">
-            {tab === "signup" ? (
+            {activeTab === "signup" ? (
               <SignupForm onDone={() => navigate({ to: "/feed" })} />
             ) : (
               <LoginForm
@@ -340,6 +353,7 @@ function SignupForm(_props: AuthFormProps) {
           aria-hidden="true"
           className="absolute -left-[9999px] h-0 w-0 overflow-hidden opacity-0"
         />
+
         <Field label={texts.auth.fields.fullName} error={errors.name}>
           <Input
             name="name"
@@ -420,7 +434,11 @@ function SignupForm(_props: AuthFormProps) {
 
         {formError && <ErrorBanner error={formError} />}
         {TURNSTILE_SITE_KEY && (
-          <Turnstile ref={turnstileRef} siteKey={TURNSTILE_SITE_KEY} options={{ size: "flexible", theme: "dark" }} />
+          <Turnstile
+            ref={turnstileRef}
+            siteKey={TURNSTILE_SITE_KEY}
+            options={{ size: "flexible", theme: "dark" }}
+          />
         )}
         <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
           {loading ? (
@@ -630,7 +648,11 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
 
         {formError && <ErrorBanner error={formError} />}
         {TURNSTILE_SITE_KEY && (
-          <Turnstile ref={loginTurnstileRef} siteKey={TURNSTILE_SITE_KEY} options={{ size: "flexible", theme: "dark" }} />
+          <Turnstile
+            ref={loginTurnstileRef}
+            siteKey={TURNSTILE_SITE_KEY}
+            options={{ size: "flexible", theme: "dark" }}
+          />
         )}
         <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
           {loading ? (

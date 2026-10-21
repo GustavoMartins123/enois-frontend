@@ -344,6 +344,11 @@ export const texts = {
         { value: "640", label: "Comunidades" },
       ],
     },
+    signupClosed: {
+      title: "Cadastros fechados no momento",
+      description:
+        "A criação de contas está pausada. Quem já tem conta entra normalmente; se você ainda não participa, acompanhe as novidades por aqui.",
+    },
     fields: {
       fullName: "Nome completo",
       email: "E-mail",
@@ -1000,7 +1005,7 @@ export const texts = {
       eyebrow: "Chega junto",
       title: "A internet também é feita das escolhas da gente.",
       description:
-        "O énóis ainda está evoluindo, e é agora que dá para ajudar a definir o que ele vai ser. Criar conta é gratuito, leva um minuto e não pede cartão.",
+        "O énóis ainda está evoluindo, e é agora que dá para acompanhar o que ele vai ser. Quem já tem conta entra normalmente.",
       free: "Acesso gratuito é princípio, não promoção: sem anúncio, sem plano pago e sem versão premium pela metade.",
       createAccount: "Fazer parte do énóis",
       existingAccount: "Já tenho conta",
