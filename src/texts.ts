@@ -1021,6 +1021,14 @@ export const texts = {
       existingAccount: "Já tenho conta",
       finePrint: "Sem cartão de crédito · Sem anúncios · Sem plano premium",
     },
+    securityNote: {
+      eyebrow: "Aviso a quem testa segurança",
+      title: "Testem na sandbox, não contra a nossa API.",
+      body: "Pedimos, por favor, que os testes de segurança sejam realizados em ambiente de sandbox, e não contra a nossa API. Temos os repositórios abertos — tudo é 100% open source — e damos autorização apenas para testes realizados em ambiente simulado. Todo teste executado contra a nossa API será encarado como crime cibernético e denunciado como tal.",
+      closing:
+        "Somos uma rede social sem fins lucrativos que quer ser melhor junto da comunidade. Pedimos que não tentem destruir ideias livres e gratuitas que apenas querem trazer o bem.",
+      repoLink: "Ver os repositórios abertos",
+    },
     footer: {
       copyright: (year: number) =>
         `© ${year} Énóis · Uma rede feita com as pessoas, todos os dias.`,

@@ -5,7 +5,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { SIGNUP_OPEN } from "@/constants/account";
 import { texts } from "@/texts";
-import { ArrowRight, ArrowUpRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight, ShieldAlert } from "lucide-react";
 
 import { statsApi } from "@/lib/api";
 
@@ -515,6 +515,46 @@ function Landing() {
               <p className="mt-2 text-xs text-muted-foreground">
                 {texts.landing.finalCta.finePrint}
               </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-b border-border" aria-labelledby="aviso-seguranca">
+          <div className="mx-auto max-w-6xl px-4 py-14 sm:px-6">
+            <div className="surface-card flex flex-col gap-4 p-6 sm:flex-row sm:gap-6 sm:p-8">
+              <ShieldAlert className="h-8 w-8 shrink-0 text-primary" aria-hidden />
+
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+                  {texts.landing.securityNote.eyebrow}
+                </p>
+
+                <h2
+                  id="aviso-seguranca"
+                  className="mt-2 text-xl font-semibold tracking-tight sm:text-2xl"
+                >
+                  {texts.landing.securityNote.title}
+                </h2>
+
+                <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+                  {texts.landing.securityNote.body}
+                </p>
+
+                <p className="mt-3 max-w-3xl text-sm leading-relaxed text-muted-foreground">
+                  {texts.landing.securityNote.closing}
+                </p>
+
+                <a
+                  href="https://github.com/Rede-ENois"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                >
+                  {texts.landing.securityNote.repoLink}
+
+                  <ArrowUpRight className="h-4 w-4" aria-hidden />
+                </a>
+              </div>
             </div>
           </div>
         </section>
