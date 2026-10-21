@@ -5,15 +5,14 @@ import type { GameCatalogQuery } from "@/types/application/games/game-catalog-qu
 import type { GameComment } from "@/types/application/games/game-comment";
 import type { GameComments } from "@/types/application/games/game-comments";
 import type { GamePage } from "@/types/application/games/game-page";
-import type { GameReview } from "@/types/application/games/game-review";
 import type { GameRatingSummary } from "@/types/application/games/game-rating-summary";
+import type { GameReview } from "@/types/application/games/game-review";
 import type { GameReviews } from "@/types/application/games/game-reviews";
 import type { GameStats } from "@/types/application/games/game-stats";
 import type { GameUpdateView } from "@/types/application/games/game-update-view";
 import type { GameView } from "@/types/application/games/game-view";
 
 import { api, buildQuery } from "../api-client";
-
 
 /**
  * Énóis Games: o catálogo, a página do criador, a biblioteca e o diário de desenvolvimento.

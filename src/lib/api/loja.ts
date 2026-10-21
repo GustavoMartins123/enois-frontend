@@ -15,5 +15,6 @@ export type LojaItem = {
 export const lojaApi = {
   catalog: () => api.get<LojaItem[]>("/loja"),
   buy: (itemId: string) => api.post<{ id: string; owned: boolean }>(`/loja/${itemId}/comprar`, {}),
-  equip: (itemId: string) => api.post<{ id: string; equipped: boolean }>(`/loja/${itemId}/equipar`, {}),
+  equip: (itemId: string) =>
+    api.post<{ id: string; equipped: boolean }>(`/loja/${itemId}/equipar`, {}),
 };

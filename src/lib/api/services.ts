@@ -13,12 +13,15 @@ import { api } from "../api-client";
  */
 export const servicesApi = {
   /** Catálogo público: ofertas e pedidos abertos. */
-  catalog: () =>
-    api.get<{ ofertas: ServiceListing[]; pedidos: ServiceRequest[] }>("/servicos"),
+  catalog: () => api.get<{ ofertas: ServiceListing[]; pedidos: ServiceRequest[] }>("/servicos"),
 
   /** O meu painel: minhas ofertas e meus contratos (comprador e vendedor). */
   mine: () =>
-    api.get<{ ofertas: ServiceListing[]; contratosComoComprador: ServiceContract[]; contratosComoVendedor: ServiceContract[] }>("/servicos/minhas"),
+    api.get<{
+      ofertas: ServiceListing[];
+      contratosComoComprador: ServiceContract[];
+      contratosComoVendedor: ServiceContract[];
+    }>("/servicos/minhas"),
 
   /** Publica uma oferta (teto de 5 abertas por conta). */
   publishListing: (data: {
@@ -55,17 +58,27 @@ export const servicesApi = {
 
   /** Escolhe uma proposta: escrow retido e o pedido fecha. */
   choose: (requestId: string, proposalId: string) =>
-    api.post<{ contractId: string; state: string }>(`/servicos/pedidos/${requestId}/escolher`, { proposalId }),
+    api.post<{ contractId: string; state: string }>(`/servicos/pedidos/${requestId}/escolher`, {
+      proposalId,
+    }),
 
   /** O vendedor entrega (nota do que foi feito). */
   deliver: (contractId: string, note: string) =>
-    api.post<{ contractId: string; state: string }>(`/servicos/contratos/${contractId}/entregar`, { note }),
+    api.post<{ contractId: string; state: string }>(`/servicos/contratos/${contractId}/entregar`, {
+      note,
+    }),
 
   /** O comprador aceita: libera 90% para o vendedor. */
   accept: (contractId: string) =>
-    api.post<{ contractId: string; state: string }>(`/servicos/contratos/${contractId}/aceitar`, {}),
+    api.post<{ contractId: string; state: string }>(
+      `/servicos/contratos/${contractId}/aceitar`,
+      {},
+    ),
 
   /** O comprador recusa: devolve 100%. */
   refund: (contractId: string) =>
-    api.post<{ contractId: string; state: string }>(`/servicos/contratos/${contractId}/reembolso`, {}),
+    api.post<{ contractId: string; state: string }>(
+      `/servicos/contratos/${contractId}/reembolso`,
+      {},
+    ),
 };

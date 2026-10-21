@@ -76,7 +76,9 @@ function VerifyEmail() {
               {texts.auth.verify.doneTitle}
             </h1>
 
-            <p className="mt-2 text-sm text-muted-foreground">{texts.auth.verify.doneDescription}</p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {texts.auth.verify.doneDescription}
+            </p>
 
             <Button
               className="mt-6 w-full rounded-full"

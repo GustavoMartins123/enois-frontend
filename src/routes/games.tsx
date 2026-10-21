@@ -251,6 +251,7 @@ function GamesHub() {
                         <Star className="h-3 w-3 fill-opportunity text-opportunity" />
 
                         <>{ratings.data[g.id].average.toFixed(1)}</>
+
                         <span>({ratings.data[g.id].reviews})</span>
                       </span>
                     )}

@@ -37,5 +37,7 @@ export function formatSalary(
   if (!value) return null;
   const symbol = currencySymbol(currency);
   const parts = value.split(/\s*[–—-]\s*/);
-  return parts.length === 2 ? `${symbol} ${parts[0]} – ${symbol} ${parts[1]}` : `${symbol} ${value}`;
+  return parts.length === 2
+    ? `${symbol} ${parts[0]} – ${symbol} ${parts[1]}`
+    : `${symbol} ${value}`;
 }

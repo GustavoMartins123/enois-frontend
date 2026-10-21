@@ -15,9 +15,7 @@ export type PushState = "unsupported" | "unavailable" | "denied" | "granted" | "
 export function isPushSupported(): boolean {
   if (typeof window === "undefined") return false;
   return (
-    "serviceWorker" in navigator &&
-    "PushManager" in window &&
-    typeof Notification !== "undefined"
+    "serviceWorker" in navigator && "PushManager" in window && typeof Notification !== "undefined"
   );
 }
 
