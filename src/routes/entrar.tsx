@@ -18,6 +18,7 @@ import { ArrowRight, Eye, EyeOff, Loader2, MailCheck, ShieldCheck } from "lucide
 import { z } from "zod";
 
 import { ApiError, authApi } from "@/lib/api";
+import { ISO_DATE, hasMinAge } from "@/lib/min-age";
 import { storeSession } from "@/lib/session";
 import { useCaptchaConfig } from "@/lib/use-captcha-config";
 
@@ -52,17 +53,6 @@ const loginSchema = z.object({
   password: z.string().min(6, texts.auth.validation.loginPasswordMin).max(128),
 });
 
-/** Menor de 18 não cria conta — a data é ISO (aaaa-mm-dd) e o cálculo considera o dia. */
-function hasMinAge(birthDate: string): boolean {
-  const dob = new Date(`${birthDate}T00:00:00`);
-  if (Number.isNaN(dob.getTime())) return false;
-  const now = new Date();
-  let age = now.getFullYear() - dob.getFullYear();
-  const months = now.getMonth() - dob.getMonth();
-  if (months < 0 || (months === 0 && now.getDate() < dob.getDate())) age--;
-  return age >= 18 && age <= 120;
-}
-
 const signupSchema = z.object({
   name: z.string().trim().min(2, texts.auth.validation.signupNameMin).max(80),
   email: z.string().trim().email(texts.auth.validation.invalidEmail).max(255),
@@ -70,7 +60,7 @@ const signupSchema = z.object({
   birthDate: z
     .string()
     .min(1, texts.auth.validation.birthDateRequired)
-    .regex(/^\d{4}-\d{2}-\d{2}$/, texts.auth.validation.birthDateInvalid)
+    .regex(ISO_DATE, texts.auth.validation.birthDateInvalid)
     .refine(hasMinAge, { message: texts.auth.validation.birthDateMinAge }),
   // Checkbox marcado chega como "on"; ausente significa nao aceito.
   acceptedTerms: z

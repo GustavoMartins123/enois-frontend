@@ -53,15 +53,6 @@ export const jobsApi = {
   /** Exclui uma vaga externa cadastrada por mim. */
   removeExternal: (id: string) => api.delete<void>(`/jobs/external/${id}`),
 
-  /** Cadastra uma vaga EXTERNA (achada em outro site): o Énóis lista e o botão vai ao link. */
-  submitExternal: (data: CreateExternalJobInput) => api.post<Job>("/jobs/external", data),
-
-  /** As vagas externas que EU cadastrei (com o direito de excluir). */
-  myExternal: () => api.get<Job[]>("/jobs/external/mine"),
-
-  /** Exclui uma vaga externa cadastrada por mim. */
-  removeExternal: (id: string) => api.delete<void>(`/jobs/external/${id}`),
-
   /** Encerra o processo seletivo: para de aceitar candidatura e preserva as recebidas. */
   close: (jobId: string) => api.post<Job>(`/jobs/${jobId}/close`),
 

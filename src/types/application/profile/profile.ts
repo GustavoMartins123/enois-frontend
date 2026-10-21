@@ -29,6 +29,8 @@ export type Profile = {
   reputation?: number;
   /** Apelido: entra entre parênteses depois do nome (preferência da pessoa). */
   nickname?: string | null;
+  /** Data de nascimento ISO (aaaa-mm-dd) — quem tem conta antes do campo pode ter null. */
+  birthDate?: string | null;
   /** Nome social: substitui o nome de cadastro para todo mundo quando existe. */
   socialName?: string | null;
   /** Pronomes: aparecem só no perfil, como lembrete de como tratar a pessoa. */

@@ -765,7 +765,6 @@ export const texts = {
       healthyUsage: "Uso saudável",
       apoie: "Apoie o Énóis",
       security: "Segurança e verificação",
-      apoie: "Apoie o Énóis",
       deleteAccount: "Excluir conta",
       logout: "Sair",
       loggingOut: "Saindo...",
@@ -1545,6 +1544,7 @@ export const texts = {
     avatarFallback: "Avatar",
     edit: {
       usernameTaken: "Este username já está em uso",
+      birthDateInvalid: "Informe uma data de nascimento válida — é preciso ter 18 anos ou mais.",
       showRanking: "Mostrar o ranking no perfil",
       showRankingHint:
         "Desligue para não ver a seção de ranking (quem está chegando agora) ao abrir um perfil.",
@@ -1564,6 +1564,7 @@ export const texts = {
         bio: "Bio",
         company: "Empresa",
         location: "Localização",
+        birthDate: "Data de nascimento",
         availability: "Disponibilidade",
         portfolio: "Portfólio",
         externalLinks: "Links externos (um por linha)",
@@ -1817,6 +1818,9 @@ export const texts = {
       mobileHint: "No celular, use Tela cheia (ou gire o aparelho) para jogar com mais espaço.",
       openAtOrigin: "Abrir no site do criador",
       loading: "Carregando o jogo…",
+      /** O quadro não avisa quando o site recusa incorporação: a pessoa decide tentar de novo. */
+      blocked:
+        "O jogo não abriu aqui. O site do criador pode não permitir ser exibido dentro de outra página — abra na origem para jogar.",
       retry: "Tentar de novo",
       player: {
         loadingProgress: (progress: number) => `Carregando o jogo… ${progress}%`,
@@ -1839,6 +1843,10 @@ export const texts = {
       favorites: (count: number) => `${count} na biblioteca`,
       share: "Compartilhar",
       shareCopied: "Link do jogo copiado!",
+      stats: (plays: number, players: number) =>
+        plays === 1
+          ? "1 sessão"
+          : `${plays} sessões · ${players} ${players === 1 ? "pessoa jogou" : "pessoas jogaram"}`,
       plays: (count: number) =>
         `${count} ${count === 1 ? "partida iniciada" : "partidas iniciadas"}`,
       players: (count: number) => `${count} ${count === 1 ? "jogador" : "jogadores"}`,
