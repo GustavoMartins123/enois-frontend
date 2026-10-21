@@ -13,6 +13,7 @@ import { useCurrentUser } from "@/lib/current-user";
 import { requireAuth } from "@/lib/require-auth";
 
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 
 import { AppContainer } from "@/components/app-container";
 import { UserAvatar } from "@/components/user-avatar";
@@ -68,11 +69,7 @@ function Rede() {
   return (
     <AppContainer>
       <div className="space-y-6">
-        <div className="surface-card p-4 sm:p-6">
-          <h1 className="text-2xl font-semibold tracking-tight">{texts.network.title}</h1>
-
-          <p className="mt-1 text-sm text-muted-foreground">{texts.network.description}</p>
-
+        <PageHeader title={texts.network.title} description={texts.network.description}>
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <Stat
               label={texts.network.stats.connections}
@@ -86,7 +83,7 @@ function Rede() {
             />
             <Stat label={texts.network.stats.suggestions} value={String(users.length)} />
           </div>
-        </div>
+        </PageHeader>
 
         {(incomingRequests.length > 0 || outgoingRequests.length > 0) && (
           <section>

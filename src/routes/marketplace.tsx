@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
@@ -68,34 +69,30 @@ function Marketplace() {
   return (
     <AppContainer>
       <div className="mx-auto w-full max-w-4xl">
-        <header className="mb-6 flex items-start justify-between gap-3">
-          <div>
-            <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
-              <Store className="h-6 w-6 text-primary" />
-              Marketplace
-            </h1>
+        <div className="mb-6">
+          <PageHeader
+            icon={Store}
+            title="Marketplace"
+            description="Temas feitos pela comunidade, em faíscas. Toda compra passa por escrow: o criador só recebe quando você confirma (ou em 7 dias) — e o reembolso devolve tudo."
+            actions={
+              authenticated && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="rounded-full gap-1.5"
+                    onClick={() => setSellContentOpen(true)}
+                  >
+                    <Store className="h-4 w-4" />
+                    Vender conteúdo
+                  </Button>
 
-            <p className="mt-1 text-sm text-text-subtle">
-              Temas feitos pela comunidade, em faíscas. Toda compra passa por escrow: o criador só
-              recebe quando você confirma (ou em 7 dias) — e o reembolso devolve tudo.
-            </p>
-          </div>
-          {authenticated && (
-            <div className="flex flex-wrap items-center gap-2">
-              <Button
-                size="sm"
-                variant="outline"
-                className="rounded-full gap-1.5"
-                onClick={() => setSellContentOpen(true)}
-              >
-                <Store className="h-4 w-4" />
-                Vender conteúdo
-              </Button>
-
-              <PublishButton />
-            </div>
-          )}
-        </header>
+                  <PublishButton />
+                </>
+              )
+            }
+          />
+        </div>
 
         <div className="mb-4 space-y-2">
           <div className="relative">
