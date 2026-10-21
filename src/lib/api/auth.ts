@@ -12,12 +12,10 @@ import type { OAuthStartResponse } from "@/types/application/auth/oauth-start-re
 import type { SignupChallenge } from "@/types/application/auth/signup-challenge";
 import type { SignupInput } from "@/types/application/auth/signup-input";
 import type { SignupResult } from "@/types/application/auth/signup-result";
-import type {
-  TotpSetup,
-  TwoFactorChallenge,
-  TwoFactorEnableResult,
-  TwoFactorStatus,
-} from "@/types/application/auth/two-factor";
+import type { TotpSetup } from "@/types/application/auth/totp-setup";
+import type { TwoFactorChallenge } from "@/types/application/auth/two-factor-challenge";
+import type { TwoFactorEnableResult } from "@/types/application/auth/two-factor-enable-result";
+import type { TwoFactorStatus } from "@/types/application/auth/two-factor-status";
 
 import { api } from "../api-client";
 

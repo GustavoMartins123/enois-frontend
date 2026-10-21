@@ -20,6 +20,7 @@ import { Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 
 import { ApiError, preferencesApi, profileApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
+import { ISO_DATE, hasMinAge } from "@/lib/min-age";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
@@ -57,6 +58,7 @@ export function EditProfileDialog({ profile, children }: Props) {
   const [bio, setBio] = useState(profile.bio ?? "");
   const [company, setCompany] = useState(profile.company ?? "");
   const [location, setLocation] = useState(profile.location ?? "");
+  const [birthDate, setBirthDate] = useState(profile.birthDate ?? "");
   const [availability, setAvailability] = useState(profile.availability ?? "");
   const [portfolio, setPortfolio] = useState(profile.portfolio ?? "");
   const [linksText, setLinksText] = useState((profile.externalLinks ?? []).join("\n"));
@@ -141,6 +143,11 @@ export function EditProfileDialog({ profile, children }: Props) {
   const handleSave = async () => {
     setUsernameError("");
     setGeneralError(null);
+    // Data preenchida precisa ser real e maior de idade — mesma régua do cadastro.
+    if (birthDate && (!ISO_DATE.test(birthDate) || !hasMinAge(birthDate))) {
+      setGeneralError(texts.profile.edit.birthDateInvalid);
+      return;
+    }
     // Os emblemas vão por endpoint próprio (a lista de até 5 não passa pelo PUT do perfil) e antes
     // do resto: assim o perfil já volta com a lista nova. Lista vazia limpa todos.
     if (badges.join("\n") !== badgesOf(profile).join("\n")) {
@@ -168,9 +175,15 @@ export function EditProfileDialog({ profile, children }: Props) {
       bio: bio || null,
       company: company || null,
       location: location || null,
+      birthDate: birthDate !== (profile.birthDate ?? "") ? birthDate || null : undefined,
       // Apenas apagar o valor, nao alterava o campo. O servidor entende string vazia como "limpar", null como "preservar".
       // Desta forma, se o usuário apagar o campo, ele será removido do perfil de fato.
-      availability: availability !== (profile.availability ?? "") ? (availability === "" ? "" : availability) : undefined,
+      availability:
+        availability !== (profile.availability ?? "")
+          ? availability === ""
+            ? ""
+            : availability
+          : undefined,
       portfolio: portfolio || null,
       externalLinks: linksText
         ? linksText
@@ -381,6 +394,16 @@ export function EditProfileDialog({ profile, children }: Props) {
                     className="h-10 border-border-soft bg-surface-1"
                   />
                 </Field>
+
+                <Field label={texts.profile.edit.fields.birthDate}>
+                  <Input
+                    type="date"
+                    value={birthDate}
+                    onChange={(e) => setBirthDate(e.target.value)}
+                    max={new Date().toISOString().slice(0, 10)}
+                    className="h-10 border-border-soft bg-surface-1"
+                  />
+                </Field>
               </div>
 
               <Field label={texts.profile.edit.fields.availability}>
@@ -452,6 +475,7 @@ export function EditProfileDialog({ profile, children }: Props) {
 
                 <span>
                   <span className="block">{texts.profile.edit.showRanking}</span>
+
                   <span className="block text-xs font-normal text-text-subtle">
                     {texts.profile.edit.showRankingHint}
                   </span>

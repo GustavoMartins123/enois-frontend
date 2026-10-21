@@ -19,6 +19,7 @@ import { Route as ServicosRouteImport } from './routes/servicos'
 import { Route as SegurancaRouteImport } from './routes/seguranca'
 import { Route as SalvosRouteImport } from './routes/salvos'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as ResponsavelRouteImport } from './routes/responsavel'
 import { Route as RedeRouteImport } from './routes/rede'
 import { Route as ProfissionalRouteImport } from './routes/profissional'
 import { Route as PrivacidadeRouteImport } from './routes/privacidade'
@@ -64,6 +65,8 @@ import { Route as AuthResetRouteImport } from './routes/auth.reset'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as VagasJobIdCandidaturasRouteImport } from './routes/vagas.$jobId.candidaturas'
 import { Route as GamesUsernameGameSlugRouteImport } from './routes/games.$username.$gameSlug'
+import { Route as BlogPostNewRouteImport } from './routes/blog.post.new'
+import { Route as BlogPostPostIdRouteImport } from './routes/blog.post.$postId'
 import { Route as BlogUsernamePostIdRouteImport } from './routes/blog.$username_.$postId'
 
 const VagasRoute = VagasRouteImport.update({
@@ -114,6 +117,11 @@ const SalvosRoute = SalvosRouteImport.update({
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResponsavelRoute = ResponsavelRouteImport.update({
+  id: '/responsavel',
+  path: '/responsavel',
   getParentRoute: () => rootRouteImport,
 } as any)
 const RedeRoute = RedeRouteImport.update({
@@ -341,6 +349,16 @@ const GamesUsernameGameSlugRoute = GamesUsernameGameSlugRouteImport.update({
   path: '/$gameSlug',
   getParentRoute: () => GamesUsernameRoute,
 } as any)
+const BlogPostNewRoute = BlogPostNewRouteImport.update({
+  id: '/blog/post/new',
+  path: '/blog/post/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogPostPostIdRoute = BlogPostPostIdRouteImport.update({
+  id: '/blog/post/$postId',
+  path: '/blog/post/$postId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlogUsernamePostIdRoute = BlogUsernamePostIdRouteImport.update({
   id: '/blog/$username_/$postId',
   path: '/blog/$username/$postId',
@@ -376,6 +394,7 @@ export interface FileRoutesByFullPath {
   '/privacidade': typeof PrivacidadeRoute
   '/profissional': typeof ProfissionalRoute
   '/rede': typeof RedeRoute
+  '/responsavel': typeof ResponsavelRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
@@ -402,6 +421,8 @@ export interface FileRoutesByFullPath {
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
   '/blog/$username/$postId': typeof BlogUsernamePostIdRoute
+  '/blog/post/$postId': typeof BlogPostPostIdRoute
+  '/blog/post/new': typeof BlogPostNewRoute
   '/games/$username/$gameSlug': typeof GamesUsernameGameSlugRoute
   '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
 }
@@ -434,6 +455,7 @@ export interface FileRoutesByTo {
   '/privacidade': typeof PrivacidadeRoute
   '/profissional': typeof ProfissionalRoute
   '/rede': typeof RedeRoute
+  '/responsavel': typeof ResponsavelRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
@@ -460,6 +482,8 @@ export interface FileRoutesByTo {
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
   '/blog/$username/$postId': typeof BlogUsernamePostIdRoute
+  '/blog/post/$postId': typeof BlogPostPostIdRoute
+  '/blog/post/new': typeof BlogPostNewRoute
   '/games/$username/$gameSlug': typeof GamesUsernameGameSlugRoute
   '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
 }
@@ -493,6 +517,7 @@ export interface FileRoutesById {
   '/privacidade': typeof PrivacidadeRoute
   '/profissional': typeof ProfissionalRoute
   '/rede': typeof RedeRoute
+  '/responsavel': typeof ResponsavelRoute
   '/robots.txt': typeof RobotsDottxtRoute
   '/salvos': typeof SalvosRoute
   '/seguranca': typeof SegurancaRoute
@@ -519,6 +544,8 @@ export interface FileRoutesById {
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
   '/blog/$username_/$postId': typeof BlogUsernamePostIdRoute
+  '/blog/post/$postId': typeof BlogPostPostIdRoute
+  '/blog/post/new': typeof BlogPostNewRoute
   '/games/$username/$gameSlug': typeof GamesUsernameGameSlugRoute
   '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
 }
@@ -553,6 +580,7 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/profissional'
     | '/rede'
+    | '/responsavel'
     | '/robots.txt'
     | '/salvos'
     | '/seguranca'
@@ -579,6 +607,8 @@ export interface FileRouteTypes {
     | '/vagas/$jobId'
     | '/vagas/minhas'
     | '/blog/$username/$postId'
+    | '/blog/post/$postId'
+    | '/blog/post/new'
     | '/games/$username/$gameSlug'
     | '/vagas/$jobId/candidaturas'
   fileRoutesByTo: FileRoutesByTo
@@ -611,6 +641,7 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/profissional'
     | '/rede'
+    | '/responsavel'
     | '/robots.txt'
     | '/salvos'
     | '/seguranca'
@@ -637,6 +668,8 @@ export interface FileRouteTypes {
     | '/vagas/$jobId'
     | '/vagas/minhas'
     | '/blog/$username/$postId'
+    | '/blog/post/$postId'
+    | '/blog/post/new'
     | '/games/$username/$gameSlug'
     | '/vagas/$jobId/candidaturas'
   id:
@@ -669,6 +702,7 @@ export interface FileRouteTypes {
     | '/privacidade'
     | '/profissional'
     | '/rede'
+    | '/responsavel'
     | '/robots.txt'
     | '/salvos'
     | '/seguranca'
@@ -695,6 +729,8 @@ export interface FileRouteTypes {
     | '/vagas/$jobId'
     | '/vagas/minhas'
     | '/blog/$username_/$postId'
+    | '/blog/post/$postId'
+    | '/blog/post/new'
     | '/games/$username/$gameSlug'
     | '/vagas/$jobId/candidaturas'
   fileRoutesById: FileRoutesById
@@ -728,6 +764,7 @@ export interface RootRouteChildren {
   PrivacidadeRoute: typeof PrivacidadeRoute
   ProfissionalRoute: typeof ProfissionalRoute
   RedeRoute: typeof RedeRoute
+  ResponsavelRoute: typeof ResponsavelRoute
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SalvosRoute: typeof SalvosRoute
   SegurancaRoute: typeof SegurancaRoute
@@ -747,6 +784,8 @@ export interface RootRouteChildren {
   PostPostIdRoute: typeof PostPostIdRoute
   ProfissionalUsernameRoute: typeof ProfissionalUsernameRoute
   BlogUsernamePostIdRoute: typeof BlogUsernamePostIdRoute
+  BlogPostPostIdRoute: typeof BlogPostPostIdRoute
+  BlogPostNewRoute: typeof BlogPostNewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -819,6 +858,13 @@ declare module '@tanstack/react-router' {
       path: '/robots.txt'
       fullPath: '/robots.txt'
       preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/responsavel': {
+      id: '/responsavel'
+      path: '/responsavel'
+      fullPath: '/responsavel'
+      preLoaderRoute: typeof ResponsavelRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/rede': {
@@ -1136,6 +1182,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GamesUsernameGameSlugRouteImport
       parentRoute: typeof GamesUsernameRoute
     }
+    '/blog/post/new': {
+      id: '/blog/post/new'
+      path: '/blog/post/new'
+      fullPath: '/blog/post/new'
+      preLoaderRoute: typeof BlogPostNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/post/$postId': {
+      id: '/blog/post/$postId'
+      path: '/blog/post/$postId'
+      fullPath: '/blog/post/$postId'
+      preLoaderRoute: typeof BlogPostPostIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/blog/$username_/$postId': {
       id: '/blog/$username_/$postId'
       path: '/blog/$username/$postId'
@@ -1258,6 +1318,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacidadeRoute: PrivacidadeRoute,
   ProfissionalRoute: ProfissionalRoute,
   RedeRoute: RedeRoute,
+  ResponsavelRoute: ResponsavelRoute,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SalvosRoute: SalvosRoute,
   SegurancaRoute: SegurancaRoute,
@@ -1277,6 +1338,8 @@ const rootRouteChildren: RootRouteChildren = {
   PostPostIdRoute: PostPostIdRoute,
   ProfissionalUsernameRoute: ProfissionalUsernameRoute,
   BlogUsernamePostIdRoute: BlogUsernamePostIdRoute,
+  BlogPostPostIdRoute: BlogPostPostIdRoute,
+  BlogPostNewRoute: BlogPostNewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

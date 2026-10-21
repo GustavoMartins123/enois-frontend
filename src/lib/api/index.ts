@@ -1,4 +1,5 @@
 export { authApi } from "./auth";
+export { parentalApi } from "./age";
 export { identityApi } from "./identity";
 export { profileApi } from "./profile";
 export { preferencesApi } from "./preferences";

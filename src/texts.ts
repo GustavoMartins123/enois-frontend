@@ -762,7 +762,7 @@ export const texts = {
       sanctions: "Penalidades",
       linkedAccounts: "Contas vinculadas",
       healthyUsage: "Uso saudável",
-      apoie: "Apoie o Énóis",
+      guardian: "Supervisão parental",
       security: "Segurança e verificação",
       apoie: "Apoie o Énóis",
       deleteAccount: "Excluir conta",
@@ -1021,6 +1021,14 @@ export const texts = {
       createAccount: "Fazer parte do énóis",
       existingAccount: "Já tenho conta",
       finePrint: "Sem cartão de crédito · Sem anúncios · Sem plano premium",
+    },
+    securityNote: {
+      eyebrow: "Aviso a quem testa segurança",
+      title: "Testem na sandbox, não contra a nossa API.",
+      body: "Pedimos, por favor, que os testes de segurança sejam realizados em ambiente de sandbox, e não contra a nossa API. Temos os repositórios abertos — tudo é 100% open source — e damos autorização apenas para testes realizados em ambiente simulado. Todo teste executado contra a nossa API será encarado como crime cibernético e denunciado como tal.",
+      closing:
+        "Somos uma rede social sem fins lucrativos que quer ser melhor junto da comunidade. Pedimos que não tentem destruir ideias livres e gratuitas que apenas querem trazer o bem.",
+      repoLink: "Ver os repositórios abertos",
     },
     footer: {
       copyright: (year: number) =>
@@ -1544,6 +1552,7 @@ export const texts = {
     avatarFallback: "Avatar",
     edit: {
       usernameTaken: "Este username já está em uso",
+      birthDateInvalid: "Informe uma data de nascimento válida — é preciso ter 18 anos ou mais.",
       showRanking: "Mostrar o ranking no perfil",
       showRankingHint:
         "Desligue para não ver a seção de ranking (quem está chegando agora) ao abrir um perfil.",
@@ -1563,6 +1572,7 @@ export const texts = {
         bio: "Bio",
         company: "Empresa",
         location: "Localização",
+        birthDate: "Data de nascimento",
         availability: "Disponibilidade",
         portfolio: "Portfólio",
         externalLinks: "Links externos (um por linha)",
@@ -1816,6 +1826,9 @@ export const texts = {
       mobileHint: "No celular, use Tela cheia (ou gire o aparelho) para jogar com mais espaço.",
       openAtOrigin: "Abrir no site do criador",
       loading: "Carregando o jogo…",
+      /** O quadro não avisa quando o site recusa incorporação: a pessoa decide tentar de novo. */
+      blocked:
+        "O jogo não abriu aqui. O site do criador pode não permitir ser exibido dentro de outra página — abra na origem para jogar.",
       retry: "Tentar de novo",
       player: {
         loadingProgress: (progress: number) => `Carregando o jogo… ${progress}%`,
@@ -1838,6 +1851,10 @@ export const texts = {
       favorites: (count: number) => `${count} na biblioteca`,
       share: "Compartilhar",
       shareCopied: "Link do jogo copiado!",
+      stats: (plays: number, players: number) =>
+        plays === 1
+          ? "1 sessão"
+          : `${plays} sessões · ${players} ${players === 1 ? "pessoa jogou" : "pessoas jogaram"}`,
       plays: (count: number) =>
         `${count} ${count === 1 ? "partida iniciada" : "partidas iniciadas"}`,
       players: (count: number) => `${count} ${count === 1 ? "jogador" : "jogadores"}`,
@@ -2961,7 +2978,8 @@ export const texts = {
     empty: "Nenhuma empresa encontrada.",
   },
   /** Diálogo global de regularização da data de nascimento (ECA Digital). */
-  birthDateGate: {
+  /** Diálogo global de regularização da data de nascimento (ECA Digital). */
+  ageGate: {
     title: "Confirme sua data de nascimento",
     description:
       "A plataforma exige a data de nascimento para publicar, comentar e enviar mensagens. Ela fica guardada com a sua conta e não aparece para outras pessoas.",
@@ -2969,9 +2987,58 @@ export const texts = {
     confirm: "Confirmar e continuar",
     later: "Agora não",
     saved: "Data de nascimento registrada. Você já pode publicar.",
-    savedMinor: "Data registrada. A conta segue com as regras para menores de 18 anos.",
+    savedMinor:
+      "Data registrada. Agora falta a autorização de um responsável para liberar a conta.",
     invalid: "Confira a data: ela não pode estar no futuro.",
     error: "Não foi possível salvar a data. Tente de novo.",
+  },
+  /** Área do responsável legal (ECA Digital). */
+  guardian: {
+    title: "Supervisão parental",
+    subtitle: "Autorize ou acompanhe o uso do Énóis por um adolescente sob sua responsabilidade.",
+    loginRequired:
+      "Entre com a sua conta de adulto para responder ao convite e acompanhar os perfis supervisionados.",
+    accepted:
+      "Autorização registrada. A conta do adolescente já pode publicar, comentar e enviar mensagens.",
+    rejected: "Convite recusado. A conta do adolescente continua somente leitura.",
+    inviteTitle: "Pedido de autorização",
+    inviteBody:
+      "Um adolescente indicou você como responsável legal no Énóis. Aceitar autoriza o uso da rede por ele, com as proteções para menores de 18 anos.",
+    bullet1: "Você pode revogar a autorização a qualquer momento.",
+    bullet2: "Você não recebe acesso às conversas privadas nem à senha do adolescente.",
+    bullet3: "A data de nascimento dele não fica pública.",
+    accept: "Autorizar uso",
+    reject: "Recusar",
+    mineTitle: "Perfis que eu supervisiono",
+    loading: "Carregando...",
+    none: "Nenhum perfil supervisionado por esta conta.",
+    since: (date: string) => `autorizado em ${date}`,
+    revoke: "Revogar",
+    revoked: "Autorização revogada. A conta voltou ao modo somente leitura.",
+    error: "Não foi possível concluir agora. Tente de novo.",
+    footer:
+      "A autorização parental é registrada com data e versão dos termos. O Énóis não trata a declaração de idade como verificação oficial.",
+  },
+  /** Supervisão parental: menor sem responsável autorizado (ECA Digital). */
+  parentalGate: {
+    title: "Conta de adolescente protegida",
+    description:
+      "Sua conta é de menor de 18 anos. Para publicar, comentar e enviar mensagens, um responsável legal precisa autorizar o uso da rede.",
+    howItWorks:
+      "Envie o convite para o e-mail do seu responsável. Ele precisa entrar no Énóis com uma conta de adulto e aceitar o convite. Até lá, a conta fica somente leitura.",
+    emailLabel: "E-mail do responsável",
+    invite: "Enviar convite",
+    inviting: "Enviando...",
+    sent: "Convite enviado ao seu responsável.",
+    emailFailed: "Não conseguimos enviar o e-mail agora. Tente novamente em instantes.",
+    sentFor: (email: string) => `Convite enviado para ${email}.`,
+    waiting:
+      "Quando o responsável aceitar, a conta é liberada. Se ele já aceitou, verifique de novo.",
+    checkAgain: "Verificar de novo",
+    checking: "Verificando...",
+    later: "Agora não",
+    invalidEmail: "Informe um e-mail válido.",
+    error: "Não foi possível enviar o convite. Tente de novo.",
   },
   exportTheme: "Exportar tema",
   importTheme: "Importar tema",

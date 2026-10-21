@@ -6,7 +6,7 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import { SIGNUP_OPEN } from "@/constants/account";
 import { texts } from "@/texts";
 import type { OAuthProvider } from "@/types/application/auth/oauth-provider";
-import type { TwoFactorChallenge } from "@/types/application/auth/two-factor";
+import type { TwoFactorChallenge } from "@/types/application/auth/two-factor-challenge";
 import type { AuthFormProps } from "@/types/routes/auth/auth-form-props";
 import type { FieldProps } from "@/types/routes/auth/field-props";
 import type { ForgotPasswordDialogProps } from "@/types/routes/auth/forgot-password-dialog-props";
@@ -14,7 +14,7 @@ import type { LoginFormProps } from "@/types/routes/auth/login-form-props";
 import type { SocialButtonsProps } from "@/types/routes/auth/social-buttons-props";
 import type { TabBtnProps } from "@/types/routes/auth/tab-btn-props";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
-import { ArrowRight, Eye, EyeOff, Loader2, MailCheck, ShieldCheck } from "lucide-react";
+import { ArrowRight, Loader2, MailCheck, ShieldCheck } from "lucide-react";
 import { z } from "zod";
 
 import { ApiError, authApi } from "@/lib/api";
@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 
 import { ErrorBanner } from "@/components/error-banner";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -341,8 +342,8 @@ function SignupForm(_props: AuthFormProps) {
         name: parsed.data.name,
         email: parsed.data.email,
         password: parsed.data.password,
-        acceptedTerms: parsed.data.acceptedTerms === "on",
         birthDate: parsed.data.birthDate,
+        acceptedTerms: parsed.data.acceptedTerms === "on",
         website: fd.get("website") as string | undefined,
         turnstileToken:
           captchaMode === "TURNSTILE"
@@ -423,25 +424,15 @@ function SignupForm(_props: AuthFormProps) {
         </Field>
 
         <Field label={texts.auth.fields.password} error={errors.password}>
-          <div className="relative">
-            <Input
-              name="password"
-              type={show ? "text" : "password"}
-              placeholder={texts.auth.placeholders.newPassword}
-              autoComplete="new-password"
-              required
-              maxLength={128}
-            />
-
-            <button
-              type="button"
-              onClick={() => setShow((s) => !s)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-foreground"
-              aria-label={show ? texts.auth.password.hide : texts.auth.password.show}
-            >
-              {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
-          </div>
+          <PasswordInput
+            name="password"
+            revealed={show}
+            onToggle={() => setShow((value) => !value)}
+            placeholder={texts.auth.placeholders.newPassword}
+            autoComplete="new-password"
+            required
+            maxLength={128}
+          />
         </Field>
 
         <div className="space-y-1.5">
@@ -479,7 +470,7 @@ function SignupForm(_props: AuthFormProps) {
           )}
         </div>
 
-        {formError && <ErrorBanner error={formError} />}
+        {!!formError && <ErrorBanner error={formError} />}
         {captchaMode === "TURNSTILE" && turnstileSiteKey && (
           <Turnstile
             ref={turnstileRef}
@@ -712,28 +703,18 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
             </button>
           }
         >
-          <div className="relative">
-            <Input
-              name="password"
-              type={show ? "text" : "password"}
-              placeholder={texts.auth.placeholders.password}
-              autoComplete="current-password"
-              required
-              maxLength={128}
-            />
-
-            <button
-              type="button"
-              onClick={() => setShow((s) => !s)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-foreground"
-              aria-label={show ? texts.auth.password.hide : texts.auth.password.show}
-            >
-              {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
-          </div>
+          <PasswordInput
+            name="password"
+            revealed={show}
+            onToggle={() => setShow((value) => !value)}
+            placeholder={texts.auth.placeholders.password}
+            autoComplete="current-password"
+            required
+            maxLength={128}
+          />
         </Field>
 
-        {formError && <ErrorBanner error={formError} />}
+        {!!formError && <ErrorBanner error={formError} />}
         {captcha.data?.captchaMode === "TURNSTILE" && turnstileSiteKey && (
           <Turnstile
             ref={loginTurnstileRef}
@@ -949,7 +930,7 @@ function ForgotPasswordDialog({ open, onOpenChange }: ForgotPasswordDialogProps)
               />
               {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
             </div>
-            {formError && <ErrorBanner error={formError} />}
+            {!!formError && <ErrorBanner error={formError} />}
             <Button type="submit" className="w-full gap-2 rounded-full" disabled={loading}>
               {loading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

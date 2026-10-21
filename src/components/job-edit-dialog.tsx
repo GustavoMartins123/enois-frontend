@@ -4,12 +4,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { JOB_LEVELS, JOB_LOCATIONS, JOB_TYPES, SALARY_PERIODS } from "@/constants/job-options";
 import { texts } from "@/texts";
+import type { CurrencyCode } from "@/types/application/currency/currency-code";
 import type { CreateJobInput } from "@/types/application/job/create-job-input";
 import type { Job } from "@/types/application/job/job";
 import type { JobEditDialogProps } from "@/types/components/job/job-edit-dialog-props";
 
 import { jobsApi } from "@/lib/api";
-import { CURRENCIES, type CurrencyCode, currencySymbol } from "@/lib/currency";
+import { CURRENCIES, currencySymbol } from "@/lib/currency";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
@@ -100,7 +101,10 @@ function EditForm({
   const [description, setDescription] = useState(job.description ?? "");
 
   const valid =
-    title.trim() !== "" && company.trim() !== "" && description.trim() !== "" && salaryMin.trim() !== "";
+    title.trim() !== "" &&
+    company.trim() !== "" &&
+    description.trim() !== "" &&
+    salaryMin.trim() !== "";
 
   return (
     <div className="space-y-4 pt-2">
@@ -111,9 +115,7 @@ function EditForm({
       </div>
 
       <div className="space-y-1.5">
-        <Label className="text-xs font-normal text-text-subtle">
-          {texts.jobs.fields.company}
-        </Label>
+        <Label className="text-xs font-normal text-text-subtle">{texts.jobs.fields.company}</Label>
 
         <Input value={company} onChange={(e) => setCompany(e.target.value)} className="bg-muted" />
       </div>
@@ -138,9 +140,7 @@ function EditForm({
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-xs font-normal text-text-subtle">
-            {texts.jobs.fields.type}
-          </Label>
+          <Label className="text-xs font-normal text-text-subtle">{texts.jobs.fields.type}</Label>
 
           <select value={type} onChange={(e) => setType(e.target.value)} className={SELECT_CLASS}>
             {JOB_TYPES.map((t) => (
@@ -152,9 +152,7 @@ function EditForm({
         </div>
 
         <div className="space-y-1.5">
-          <Label className="text-xs font-normal text-text-subtle">
-            {texts.jobs.fields.level}
-          </Label>
+          <Label className="text-xs font-normal text-text-subtle">{texts.jobs.fields.level}</Label>
 
           <select value={level} onChange={(e) => setLevel(e.target.value)} className={SELECT_CLASS}>
             {JOB_LEVELS.map((l) => (
@@ -234,9 +232,7 @@ function EditForm({
       </div>
 
       <div className="space-y-1.5">
-        <Label className="text-xs font-normal text-text-subtle">
-          {texts.jobs.fields.skills}
-        </Label>
+        <Label className="text-xs font-normal text-text-subtle">{texts.jobs.fields.skills}</Label>
 
         <Input
           value={skills}

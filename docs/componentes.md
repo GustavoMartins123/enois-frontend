@@ -166,6 +166,7 @@ Hook para detectar breakpoint mobile (< 768px).
 | Menubar        | Barra de menu                                                           |
 | NavigationMenu | Menu de navegação                                                       |
 | Pagination     | Paginação                                                               |
+| PasswordInput  | Campo de senha com botão de mostrar/ocultar alinhado à caixa            |
 | Popover        | Popover                                                                 |
 | Progress       | Barra de progresso                                                      |
 | RadioGroup     | Grupo de radio buttons                                                  |

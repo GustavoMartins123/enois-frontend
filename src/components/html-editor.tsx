@@ -70,7 +70,8 @@ export function HtmlEditor({
           <div className={previewClassName ?? `mt-3 ${PHONE_FRAME_CLASS}`}>
             <label
               htmlFor="preview"
-              className="inline-flex items-center gap-1.5 text-xs font-normal text-text-subtle">
+              className="inline-flex items-center gap-1.5 text-xs font-normal text-text-subtle"
+            >
               <>{texts.profile.bioHtml.preview}</>
             </label>
 

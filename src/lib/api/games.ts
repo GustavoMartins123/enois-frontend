@@ -14,7 +14,6 @@ import type { GameView } from "@/types/application/games/game-view";
 
 import { api, buildQuery } from "../api-client";
 
-
 /**
  * Énóis Games: o catálogo, a página do criador, a biblioteca e o diário de desenvolvimento.
  *
