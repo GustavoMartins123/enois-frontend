@@ -102,7 +102,7 @@ Página pública de autenticação com duas abas.
 
 - Grid de cards de eventos
 - Card com data, formato (Online/Presencial/Híbrido), título, host, participantes
-- Botão "Confirmar presença"
+- Botão "Confirmar presença" / "Desconfirmar presença"; card marcado com "Você vai" quando `attending`
 - Dialog de criação de evento (título, data, hora, realizador, formato)
 
 **Componentes auxiliares:**
