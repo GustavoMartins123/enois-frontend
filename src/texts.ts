@@ -793,6 +793,16 @@ export const texts = {
       noise:
         "Ei, respira! Bebe uma água, olha pela janela e volta quando quiser. Eu também preciso de uma pausa. 🌿",
       reminderCta: "Vou dar uma pausa",
+      nightRestTitle: "Lembrete de descanso durante a madrugada",
+      nightRestDescription:
+        "Receba uma mensagem de cuidado ao acessar o feed entre meia-noite e cinco da manhã.",
+      nightRest: {
+        title: "Tá com insônia?",
+        body:
+          "Tenta cuidar melhor de ti, ouvir um ruído branco e tentar dormir. É bom ter você aqui pra fazer companhia, mas é melhor ainda ter você saudável.",
+        rest: "Vou tentar descansar",
+        keep: "Continuar no Énóis",
+      },
     },
     changeEmail: {
       title: "Alterar e-mail",

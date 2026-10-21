@@ -57,6 +57,7 @@ import { HtmlEditor } from "@/components/html-editor";
 import { InfiniteScroll } from "@/components/infinite-scroll";
 import { LinkedInSyncPrompt } from "@/components/linkedin-sync-prompt";
 import { MentionTextarea } from "@/components/mention-textarea";
+import { NightRestReminder } from "@/components/night-rest-reminder";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
 
@@ -446,6 +447,8 @@ function Home() {
 
   return (
     <AppContainer>
+      <NightRestReminder />
+
       {/* Pergunta única ao voltar do vínculo com o LinkedIn (flag gravada pelo diálogo de contas). */}
       <LinkedInSyncPrompt />
 
