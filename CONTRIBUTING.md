@@ -6,6 +6,20 @@ fica no repositório `enois-backend` — muita coisa só faz sentido com os dois
 Antes de começar: leia o [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md). Falha de segurança **não** vira
 issue — o canal está no [`SECURITY.md`](SECURITY.md).
 
+## Fluxo via fork
+
+1. Faça o fork de `Rede-ENois/enois-frontend` e clone o seu fork.
+2. Adicione o repositório original: `git remote add upstream git@github.com:Rede-ENois/enois-frontend.git`
+3. Crie a branch a partir da `main` atualizada, com prefixo `feat/`, `fix/`, `chore/` ou `refactor/`:
+
+```bash
+git fetch upstream && git checkout -b feat/minha-mudanca upstream/main
+```
+
+A PR é sempre contra `main`, nunca contra `develop` ou outra branch. Uma PR com o histórico inteiro do
+fork (centenas de commits e arquivos) não é revisável: ninguém consegue saber o que mudou de fato.
+Parta sempre de `upstream/main`.
+
 ## Rodando
 
 ```bash
@@ -75,6 +89,13 @@ descrever.
   O corpo explica o que estava errado antes — não o que o diff já mostra.
 - Descreva na PR **como você verificou**. "Roda" não é verificação.
 - Nunca suba segredo, token, `.env` preenchido ou print de conversa privada.
+- Escolha o template pelo tipo de mudança (`?template=...` na URL ou `gh pr create --template ...`):
+
+  | Tipo                                         | Template     |
+  | -------------------------------------------- | ------------ |
+  | Funcionalidade nova                          | `feature.md` |
+  | Correção de bug                              | `fix.md`     |
+  | Manutenção, docs, CI, dependências, refactor | `chore.md`   |
 
 ## Árvore compartilhada
 

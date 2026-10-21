@@ -25,6 +25,7 @@ import {
 
 import { communitiesApi, feedApi } from "@/lib/api";
 import { sealsApi } from "@/lib/api/seals";
+import { saveFeedScroll } from "@/lib/feed-scroll-restoration";
 import { inlineMediaIds } from "@/lib/rich-text/inline-media";
 import { hideExternalPageUrls } from "@/lib/shared-links";
 import { useAuth } from "@/lib/use-auth";
@@ -60,6 +61,7 @@ const POST_COMPACT_THRESHOLD = 400;
 
 export function PostCard({
   post,
+  feedTab,
   fullPost = false,
   pinned = false,
   onTogglePin,
@@ -72,7 +74,7 @@ export function PostCard({
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
   // Só corta em lista: na página do post o texto inteiro é o conteúdo da página.
   const isCompact = !fullPost && post.content.length > POST_COMPACT_THRESHOLD;
-  const [showComments, setShowComments] = useState(false);
+  const [showComments, setShowComments] = useState(fullPost);
   // Selos do post: vem em lote do backend (aqui e um post so; a listagem pode pedir varios de uma vez).
   const { data: seals } = useQuery({
     queryKey: ["seals", post.id],
@@ -235,6 +237,8 @@ export function PostCard({
 
   return (
     <article
+      id={feedTab ? `feed-post-${post.id}` : undefined}
+      tabIndex={feedTab ? -1 : undefined}
       className={`min-w-0 border border-border-soft bg-surface-card p-4 transition sm:p-5 ${
         // Post de página: sem canto no card, porque o conteúdo tem de alcançar as bordas — o
         // arredondamento do card recortava os cantos da página e era o que sobrava de "rounding".
@@ -385,6 +389,12 @@ export function PostCard({
             <Link
               to="/post/$postId"
               params={{ postId: post.id }}
+              search={feedTab ? { feedTab } : undefined}
+              onClick={() => {
+                if (feedTab) {
+                  saveFeedScroll({ tab: feedTab, postId: post.id, scrollY: window.scrollY });
+                }
+              }}
               className="mt-1 inline-flex text-sm font-normal text-primary hover:underline"
             >
               <>{texts.common.readMore}</>
@@ -411,6 +421,12 @@ export function PostCard({
         <Link
           to="/post/$postId"
           params={{ postId: post.id }}
+          search={feedTab ? { feedTab } : undefined}
+          onClick={() => {
+            if (feedTab) {
+              saveFeedScroll({ tab: feedTab, postId: post.id, scrollY: window.scrollY });
+            }
+          }}
           className="mt-3 inline-flex items-center gap-1.5 text-sm font-normal text-primary hover:underline"
         >
           <FileText className="h-3.5 w-3.5" />

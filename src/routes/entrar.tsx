@@ -1,7 +1,9 @@
-import { type FormEvent, type ReactNode, useState } from "react";
+import { type FormEvent, type ReactNode, useRef, useState } from "react";
 
+import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
+import { SIGNUP_OPEN } from "@/constants/account";
 import { texts } from "@/texts";
 import type { OAuthProvider } from "@/types/application/auth/oauth-provider";
 import type { TwoFactorChallenge } from "@/types/application/auth/two-factor";
@@ -11,11 +13,13 @@ import type { ForgotPasswordDialogProps } from "@/types/routes/auth/forgot-passw
 import type { LoginFormProps } from "@/types/routes/auth/login-form-props";
 import type { SocialButtonsProps } from "@/types/routes/auth/social-buttons-props";
 import type { TabBtnProps } from "@/types/routes/auth/tab-btn-props";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { ArrowRight, Eye, EyeOff, Loader2, MailCheck, ShieldCheck } from "lucide-react";
 import { z } from "zod";
 
 import { ApiError, authApi } from "@/lib/api";
 import { storeSession } from "@/lib/session";
+import { useCaptchaConfig } from "@/lib/use-captcha-config";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -80,6 +84,8 @@ function Auth() {
   const navigate = useNavigate();
   const [tab, setTab] = useState(initial);
   const [forgotOpen, setForgotOpen] = useState(false);
+  // Cadastros fechados: `/entrar?tab=signup` cai no login e o aviso explica o motivo.
+  const activeTab = SIGNUP_OPEN ? tab : "login";
 
   return (
     <div className="grid grid-cols-1 min-h-screen lg:grid-cols-2">
@@ -155,18 +161,28 @@ function Auth() {
         </div>
 
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
-          <div className="flex items-center gap-1 rounded-full border border-border bg-card p-1">
-            <TabBtn active={tab === "signup"} onClick={() => setTab("signup")}>
-              {texts.common.createAccount}
-            </TabBtn>
+          {SIGNUP_OPEN ? (
+            <div className="flex items-center gap-1 rounded-full border border-border bg-card p-1">
+              <TabBtn active={tab === "signup"} onClick={() => setTab("signup")}>
+                {texts.common.createAccount}
+              </TabBtn>
 
-            <TabBtn active={tab === "login"} onClick={() => setTab("login")}>
-              {texts.common.enter}
-            </TabBtn>
-          </div>
+              <TabBtn active={tab === "login"} onClick={() => setTab("login")}>
+                {texts.common.enter}
+              </TabBtn>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-border bg-card px-4 py-3">
+              <p className="text-sm font-medium text-foreground">{texts.auth.signupClosed.title}</p>
+
+              <p className="mt-1 text-sm text-muted-foreground">
+                {texts.auth.signupClosed.description}
+              </p>
+            </div>
+          )}
 
           <div className="mt-8">
-            {tab === "signup" ? (
+            {activeTab === "signup" ? (
               <SignupForm onDone={() => navigate({ to: "/feed" })} />
             ) : (
               <LoginForm
@@ -286,13 +302,27 @@ function Divider() {
   );
 }
 
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
+
 function SignupForm(_props: AuthFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
+  const turnstileRef = useRef<TurnstileInstance>(null);
   /** Conta criada e pendente de confirmação: o formulário dá lugar à tela "confirme seu e-mail". */
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const captcha = useCaptchaConfig();
+  const captchaMode = captcha.data?.captchaMode;
+  const turnstileSiteKey = captcha.data?.turnstileSiteKey ?? TURNSTILE_SITE_KEY;
+  const challenge = useQuery({
+    queryKey: ["auth", "signup-challenge"],
+    queryFn: () => authApi.signupChallenge(),
+    enabled: captchaMode === "CHALLENGE",
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+  });
+  const [challengeAnswer, setChallengeAnswer] = useState("");
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -306,6 +336,10 @@ function SignupForm(_props: AuthFormProps) {
     }
     setErrors({});
     setFormError(null);
+    if (captchaMode === "CHALLENGE" && (!challenge.data || !challengeAnswer.trim())) {
+      setFormError(new Error(texts.auth.captcha.required));
+      return;
+    }
     setLoading(true);
     localStorage.removeItem("session_token");
     localStorage.removeItem("refresh_token");
@@ -318,10 +352,23 @@ function SignupForm(_props: AuthFormProps) {
         password: parsed.data.password,
         birthDate: parsed.data.birthDate,
         acceptedTerms: parsed.data.acceptedTerms === "on",
+        website: fd.get("website") as string | undefined,
+        turnstileToken:
+          captchaMode === "TURNSTILE"
+            ? (turnstileRef.current?.getResponse() ?? undefined)
+            : undefined,
+        challengeId: captchaMode === "CHALLENGE" ? challenge.data?.challengeId : undefined,
+        challengeAnswer: captchaMode === "CHALLENGE" ? Number(challengeAnswer.trim()) : undefined,
       });
       setPendingEmail(result.email);
     } catch (err) {
       setFormError(err);
+      // O captcha é de uso único: depois de uma falha, pede um novo (e limpa a resposta).
+      turnstileRef.current?.reset();
+      if (captchaMode === "CHALLENGE") {
+        setChallengeAnswer("");
+        void challenge.refetch();
+      }
     } finally {
       setLoading(false);
     }
@@ -343,6 +390,16 @@ function SignupForm(_props: AuthFormProps) {
       </div>
 
       <form onSubmit={submit} className="space-y-4" noValidate>
+        {/* Honeypot: campo invisível que bots preenchem e humanos não veem */}
+        <input
+          name="website"
+          type="text"
+          autoComplete="off"
+          tabIndex={-1}
+          aria-hidden="true"
+          className="absolute -left-[9999px] h-0 w-0 overflow-hidden opacity-0"
+        />
+
         <Field label={texts.auth.fields.fullName} error={errors.name}>
           <Input
             name="name"
@@ -432,7 +489,52 @@ function SignupForm(_props: AuthFormProps) {
         </div>
 
         {formError && <ErrorBanner error={formError} />}
-        <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
+        {captchaMode === "TURNSTILE" && turnstileSiteKey && (
+          <Turnstile
+            ref={turnstileRef}
+            siteKey={turnstileSiteKey}
+            options={{ size: "flexible", theme: "dark" }}
+          />
+        )}
+        {captchaMode === "CHALLENGE" && (
+          <div className="space-y-1.5 rounded-xl border border-border-soft bg-surface-1 p-3">
+            <Label htmlFor="challengeAnswer">{texts.auth.captcha.label}</Label>
+
+            <p className="text-sm font-medium text-text-strong">
+              {challenge.isLoading ? texts.auth.captcha.loading : challenge.data?.question}
+            </p>
+
+            <div className="flex items-center gap-2">
+              <Input
+                id="challengeAnswer"
+                inputMode="numeric"
+                autoComplete="off"
+                maxLength={3}
+                value={challengeAnswer}
+                onChange={(event) => setChallengeAnswer(event.target.value.replace(/\D/g, ""))}
+                placeholder={texts.auth.captcha.placeholder}
+                className="w-24"
+              />
+
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-auto rounded-full text-xs"
+                onClick={() => {
+                  setChallengeAnswer("");
+                  void challenge.refetch();
+                }}
+              >
+                {texts.auth.captcha.refresh}
+              </Button>
+            </div>
+          </div>
+        )}
+        <Button
+          type="submit"
+          className="w-full rounded-full gap-2"
+          disabled={loading || (captchaMode === "CHALLENGE" && !challenge.data)}
+        >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
@@ -525,6 +627,9 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
   const [formError, setFormError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
+  const loginTurnstileRef = useRef<TurnstileInstance>(null);
+  const captcha = useCaptchaConfig();
+  const turnstileSiteKey = captcha.data?.turnstileSiteKey ?? TURNSTILE_SITE_KEY;
   /** Conta pendente de confirmação: em vez de "erro", a tela explica e oferece reenviar. */
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   /** Segundo fator pedido pelo backend depois da senha correta. */
@@ -550,6 +655,7 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
       const result = await authApi.login({
         email: parsed.data.email,
         password: parsed.data.password,
+        turnstileToken: loginTurnstileRef.current?.getResponse() ?? undefined,
       });
 
       // Conta com segundo fator: a senha levou ao desafio, não à sessão.
@@ -637,6 +743,13 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
         </Field>
 
         {formError && <ErrorBanner error={formError} />}
+        {captcha.data?.captchaMode === "TURNSTILE" && turnstileSiteKey && (
+          <Turnstile
+            ref={loginTurnstileRef}
+            siteKey={turnstileSiteKey}
+            options={{ size: "flexible", theme: "dark" }}
+          />
+        )}
         <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />

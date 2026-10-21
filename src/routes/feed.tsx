@@ -16,6 +16,7 @@ import type { ComposerActionProps } from "@/types/routes/feed/composer-action-pr
 import type { HomeTab } from "@/types/routes/feed/home-tab";
 import type { MediaItem } from "@/types/routes/feed/media-item";
 import {
+  ArrowUp,
   BarChart3,
   Briefcase,
   Calendar,
@@ -39,6 +40,7 @@ import {
   subscribeActiveIdentity,
 } from "@/lib/active-identity";
 import { authApi, corporateApi, eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
+import { clearFeedScroll, readFeedScroll } from "@/lib/feed-scroll-restoration";
 import { requireAuth } from "@/lib/require-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
@@ -101,7 +103,7 @@ export const Route = createFileRoute("/feed")({
 const FEED_PAGE_SIZE = 20;
 
 /**
- * A ÚLTIMA categoria usada fica guardada: quem publica sempre no mesmo assunto não precisa
+ * A última categoria usada fica guardada: quem publica sempre no mesmo assunto não precisa
  * reescolher a cada post. Fica no navegador (como o rascunho) e some com o histórico limpo.
  */
 const LAST_TOPIC_KEY = "connect-grow-last-topic";
@@ -195,7 +197,7 @@ function Home() {
   const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([]);
   const [postType, setPostType] = useState<PostView["type"]>("INSIGHT");
   // Assunto do post avulso (opcional): é o que liga o post a "O que quero ver"/"não gosto".
-  // Em comunidade o post herda o assunto DELA — o seletor nem aparece lá.
+  // Em comunidade o post herda o assunto DELA — lá o compositor é outro.
   const [topic, setTopic] = useState<string>(() => readLastTopic());
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [publishError, setPublishError] = useState<string | null>(null);
@@ -209,6 +211,7 @@ function Home() {
   // Agendamento: o post fica na fila do backend e só entra no feed na hora marcada.
   const [schedulingOpen, setSchedulingOpen] = useState(false);
   const [scheduleAt, setScheduleAt] = useState("");
+  const [showScrollTop, setShowScrollTop] = useState(false);
   // A identidade ativa manda no tipo: profissional publica BUSINESS (destino: feed
   // corporativo); voltar para social tira o BUSINESS da seleção.
   useEffect(() => {
@@ -286,6 +289,7 @@ function Home() {
         mentionedUserIds: pageMode ? [] : mentionedUserIds,
         ...(pageMode ? { pageHtml } : {}),
         ...(articleMode ? { articleBody } : {}),
+        // O assunto viaja com o agendado e vale quando ele entra no ar.
         ...(topic ? { topic } : {}),
         scheduledAt: new Date(scheduleAt).toISOString(),
       });
@@ -407,6 +411,35 @@ function Home() {
   const mediaType = media.length > 0 ? (media[0].type === "image" ? "image" : "video") : null;
 
   const feedPosts = feedData?.pages.flatMap((page) => page.items) ?? [];
+
+  useEffect(() => {
+    const updateScrollTopVisibility = () => setShowScrollTop(window.scrollY > 400);
+
+    updateScrollTopVisibility();
+    window.addEventListener("scroll", updateScrollTopVisibility, { passive: true });
+    return () => window.removeEventListener("scroll", updateScrollTopVisibility);
+  }, []);
+
+  useEffect(() => {
+    if (feedLoading || feedPosts.length === 0 || typeof window === "undefined") return;
+
+    const savedScroll = readFeedScroll(tab);
+    if (!savedScroll) return;
+
+    const postElement = document.getElementById(`feed-post-${savedScroll.postId}`);
+    if (!postElement && hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
+      return;
+    }
+
+    clearFeedScroll();
+    const restore = () => {
+      window.scrollTo({ top: savedScroll.scrollY, behavior: "auto" });
+      postElement?.focus({ preventScroll: true });
+    };
+
+    requestAnimationFrame(() => requestAnimationFrame(restore));
+  }, [feedLoading, feedPosts.length, fetchNextPage, hasNextPage, isFetchingNextPage, tab]);
 
   const loadNextPage = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -564,6 +597,29 @@ function Home() {
 
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border-soft pt-3 text-sm font-normal text-text-subtle">
               <div className="flex flex-wrap items-center gap-1.5">
+                {/* Categoria do post: guarda a última escolha para o próximo post já nascer nela. */}
+                <select
+                  value={topic}
+                  onChange={(event) => {
+                    setTopic(event.target.value);
+                    rememberTopic(event.target.value);
+                  }}
+                  aria-label={texts.feed.composer.topic}
+                  title={texts.feed.composer.topicHint}
+                  className={`max-w-[11rem] rounded-full px-3 py-1.5 text-sm font-normal outline-none transition ${
+                    topic
+                      ? "border border-primary/40 bg-primary/10 text-primary"
+                      : "border border-border-soft text-text-subtle hover:border-primary"
+                  }`}
+                >
+                  <option value="">{texts.feed.composer.topicNone}</option>
+                  {TOPICS.filter((option) => option !== "Todas").map((option) => (
+                    <option key={option} value={option}>
+                      {TOPIC_LABELS[option]}
+                    </option>
+                  ))}
+                </select>
+
                 {/* Seletor de tipo recolhido: mostra o tipo atual e abre a lista completa. */}
                 <select
                   value={topic}
@@ -883,7 +939,7 @@ function Home() {
 
           <div className="space-y-4">
             {feedLoading && <LoadingState />}
-            {!feedLoading && feedPosts.map((p) => <PostCard key={p.id} post={p} />)}
+            {!feedLoading && feedPosts.map((p) => <PostCard key={p.id} post={p} feedTab={tab} />)}
 
             {!feedLoading && feedPosts.length === 0 && <EmptyState title={texts.feed.empty} />}
 
@@ -1048,6 +1104,20 @@ function Home() {
           )}
         </aside>
       </div>
+
+      {showScrollTop && (
+        <Button
+          type="button"
+          size="icon"
+          variant="outline"
+          aria-label={texts.feed.scrollToTop}
+          title={texts.feed.scrollToTop}
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          className="fixed bottom-6 right-4 z-40 rounded-full border-border-soft bg-surface-card/95 shadow-lg backdrop-blur-sm lg:right-[calc((100vw-min(100vw-3rem,80rem))/2+344px)]"
+        >
+          <ArrowUp className="h-4 w-4" aria-hidden />
+        </Button>
+      )}
     </AppContainer>
   );
 }

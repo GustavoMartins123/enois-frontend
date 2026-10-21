@@ -1,4 +1,5 @@
 import type { StatusResponse } from "@/types/application/api/status-response";
+import type { AuthConfig } from "@/types/application/auth/auth-config";
 import type { AuthResponse } from "@/types/application/auth/auth-response";
 import type { AuthUser } from "@/types/application/auth/auth-user";
 import type { ChangeEmailInput } from "@/types/application/auth/change-email-input";
@@ -8,6 +9,7 @@ import type { LinkedProvider } from "@/types/application/auth/linked-provider";
 import type { LoginInput } from "@/types/application/auth/login-input";
 import type { OAuthMode } from "@/types/application/auth/oauth-mode";
 import type { OAuthStartResponse } from "@/types/application/auth/oauth-start-response";
+import type { SignupChallenge } from "@/types/application/auth/signup-challenge";
 import type { SignupInput } from "@/types/application/auth/signup-input";
 import type { SignupResult } from "@/types/application/auth/signup-result";
 import type {
@@ -20,8 +22,15 @@ import type {
 import { api } from "../api-client";
 
 export const authApi = {
+  /** Modo de captcha ativo no backend (Turnstile, desafio próprio ou nenhum). */
+  config: () => api.get<AuthConfig>("/auth/config"),
+
+  /** Desafio de soma emitido pelo backend quando o Turnstile não está configurado. */
+  signupChallenge: () => api.get<SignupChallenge>("/auth/signup-challenge"),
+
   /** Cria a conta pendente de confirmação e envia o link para o e-mail. */
-  signup: (data: SignupInput) => api.post<SignupResult>("/auth/signup", data),
+  signup: (data: SignupInput) =>
+    api.post<SignupResult>("/auth/signup", data, { fingerprint: true }),
 
   /** Confirma o e-mail pelo token do link e já devolve a sessão. */
   verifyEmail: (token: string) => api.post<AuthResponse>("/auth/email/verify", { token }),
@@ -58,8 +67,7 @@ export const authApi = {
   /** Envia o código que confirma a ativação do segundo fator por e-mail. */
   requestEmailOtp: () => api.post<StatusResponse>("/auth/2fa/email/request"),
 
-  confirmEmailOtp: (code: string) =>
-    api.post<StatusResponse>("/auth/2fa/email/confirm", { code }),
+  confirmEmailOtp: (code: string) => api.post<StatusResponse>("/auth/2fa/email/confirm", { code }),
 
   disableEmailOtp: (password: string) =>
     api.post<StatusResponse>("/auth/2fa/email/disable", { password }),
