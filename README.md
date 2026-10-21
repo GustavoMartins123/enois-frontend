@@ -69,6 +69,9 @@ Sem o `context-path=/api` o backend responde só em `/push/config`, `/notificati
 
 O CI (`.github/workflows/ci.yml`) roda os testes em toda PR.
 
+- `npm install` configura os hooks do git (`simple-git-hooks`): o pre-commit roda `eslint --fix` e `prettier` nos arquivos staged (lint-staged).
+- Em emergência, `git commit --no-verify` pula o hook.
+
 ## Deploy na Vercel
 
 O projeto usa TanStack Start com Nitro. Para a Vercel, o build precisa gerar output com o preset `vercel`; isso esta configurado em `vite.config.ts` via `nitro: { preset: "vercel" }`.
