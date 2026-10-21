@@ -8,8 +8,8 @@ import type { GroupView } from "@/types/application/group/group-view";
 import { Camera, ChevronRight, Loader2, Plus, Search, Users } from "lucide-react";
 
 import { groupsApi } from "@/lib/api";
-import { getSessionToken } from "@/lib/api-client";
 import { resolveCdnUrl } from "@/lib/api/media";
+import { useIsAuthenticated } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
@@ -39,7 +39,7 @@ export const Route = createFileRoute("/grupos")({
 function Grupos() {
   const [query, setQuery] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
-  const authenticated = Boolean(getSessionToken());
+  const authenticated = useIsAuthenticated();
 
   // Este arquivo é o PAI de /grupos/$slug: quando um grupo está na URL, quem responde é o filho
   // (a página do grupo) — sem o Outlet, a lista engolia a navegação e ninguém conseguia ENTRAR

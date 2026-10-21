@@ -10,7 +10,7 @@ import { ExternalLink, Gamepad2, Pencil, Rocket, Send, Star } from "lucide-react
 
 import { gamesApi } from "@/lib/api";
 import { formatFaisca } from "@/lib/faisca";
-import { isAuthenticated } from "@/lib/use-auth";
+import { useIsAuthenticated } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
@@ -43,7 +43,7 @@ function Games() {
  * em /games/{username}.
  */
 function GamesHub() {
-  const authenticated = isAuthenticated();
+  const authenticated = useIsAuthenticated();
   const [query, setQuery] = useState("");
   const [genre, setGenre] = useState("");
   const [stage, setStage] = useState("");

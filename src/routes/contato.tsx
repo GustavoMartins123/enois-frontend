@@ -6,7 +6,7 @@ import { texts } from "@/texts";
 import { ArrowRight, LifeBuoy, Mail } from "lucide-react";
 
 import { supportApi } from "@/lib/api";
-import { isAuthenticated } from "@/lib/use-auth";
+import { useIsAuthenticated } from "@/lib/use-auth";
 
 import { Button } from "@/components/ui/button";
 
@@ -25,7 +25,7 @@ export const Route = createFileRoute("/contato")({
  * caminho e oferece o e-mail do time quando ele existe — ninguem fica sem um canal.
  */
 function Contato() {
-  const authenticated = isAuthenticated();
+  const authenticated = useIsAuthenticated();
 
   if (authenticated) {
     return (

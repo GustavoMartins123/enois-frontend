@@ -9,7 +9,7 @@ import type { PostView } from "@/types/application/feed/post-view";
 import { ArrowLeft, Hash, Lock } from "lucide-react";
 
 import { communitiesApi, feedApi } from "@/lib/api";
-import { hasSession } from "@/lib/require-auth";
+import { useIsAuthenticated } from "@/lib/use-auth";
 
 import { Button } from "@/components/ui/button";
 
@@ -29,7 +29,7 @@ function ChannelPage() {
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const authenticated = hasSession();
+  const authenticated = useIsAuthenticated();
 
   const community = useQuery({
     queryKey: ["community", communityId],

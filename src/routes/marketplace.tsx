@@ -13,7 +13,7 @@ import { BadgeCheck, RotateCcw, Search, Sparkles, Store } from "lucide-react";
 import { marketplaceApi, themesApi } from "@/lib/api";
 import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { registerGalleryCollection } from "@/lib/theme/gallery-collections";
-import { isAuthenticated } from "@/lib/use-auth";
+import { useIsAuthenticated } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/marketplace")({
  * as faíscas ficam retidas até o comprador confirmar (ou pedir reembolso em 7 dias).
  */
 function Marketplace() {
-  const authenticated = isAuthenticated();
+  const authenticated = useIsAuthenticated();
   const [q, setQ] = useState("");
   const [search, setSearch] = useState("");
   const [kind, setKind] = useState<string | null>(null);
