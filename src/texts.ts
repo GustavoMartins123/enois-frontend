@@ -2894,7 +2894,7 @@ export const texts = {
       locked: (count: number, min: number) =>
         `Hoje são ${count} moderador(es); a votação de punição abre a partir de ${min}. Antes disso, somente administradores podem punir.`,
       target: "Username do usuário",
-      targetPlaceholder: "ex.: aminadojava",
+      targetPlaceholder: "ex.: ana-silva",
       type: "Tipo de punição",
       reason: "Motivo",
       reasonPlaceholder: "Descreva o que aconteceu e por que a punição é necessária.",

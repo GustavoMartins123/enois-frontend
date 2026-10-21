@@ -6,7 +6,8 @@ import type { ApiUseCase } from "@/types/application/developers/api-use-case";
  * Catalogo da API publica do Énóis, usado pela pagina /developers.
  *
  * Conteudo tecnico de proposito fora do texts.ts (e referencia de engenharia, nao copy de
- * interface). Os exemplos de resposta sao REAIS, capturados da producao — nada ficticio.
+ * interface). O FORMATO das respostas e real (capturado da producao), mas os DADOS sao
+ * sinteticos: esta pagina e publica, e nome/id/post de pessoa real nao pode ficar exposto.
  * Manter em sincronia com os controllers do backend: cada bloco novo de API entra aqui.
  */
 
@@ -102,10 +103,10 @@ export const apiSections: ApiSection[] = [
         path: "/feed/posts/{postId}",
         access: "public",
         description: "Publicação completa: autor, contadores, mídia, comunidade (quando houver).",
-        request: `curl ${P}/feed/posts/post_396a12bc2bc54ad3966829c751acb021`,
+        request: `curl ${P}/feed/posts/post_0f1e2d3c4b5a69788796a5b4c3d2e1f0`,
         response: `200 OK
-{"id":"post_396a12bc…","authorId":"user_…","authorUsername":"aminadojava",
- "type":"INSIGHT","content":"Pessoal. Post pra coletar ideias…","tags":[],"mediaIds":[],
+{"id":"post_0f1e2d3c…","authorId":"user_…","authorUsername":"ada",
+ "type":"INSIGHT","content":"Texto de exemplo do formato de uma publicacao.","tags":[],"mediaIds":[],
  "createdAt":"2026-10-15T02:16:48Z",
  "counters":{"reactions":26,"comments":23,"saves":3,"shares":4},
  "currentUserReaction":null,"communityId":null,"community":null}`,
@@ -115,7 +116,7 @@ export const apiSections: ApiSection[] = [
         path: "/users/{username}/posts",
         access: "public",
         description: "Publicações de uma pessoa (perfil público).",
-        request: `curl "${P}/users/aminadojava/posts?limit=10"`,
+        request: `curl "${P}/users/ada/posts?limit=10"`,
       },
       {
         method: "POST",
@@ -164,8 +165,8 @@ export const apiSections: ApiSection[] = [
           "Comentários (mais recentes primeiro), com respostas aninhadas por parentCommentId.",
         request: `curl "${P}/feed/posts/$POST_ID/comments?limit=20"`,
         response: `200 OK
-{"items":[{"id":"comment_…","authorUsername":"sergio-de-souza-tomas",
-  "content":"Opa eu notei que agora dá pra editar…","mediaIds":[],"createdAt":"2026-10-15T22:03:52Z"}],
+{"items":[{"id":"comment_…","authorUsername":"ada",
+  "content":"Comentario de exemplo do formato de resposta.","mediaIds":[],"createdAt":"2026-10-15T22:03:52Z"}],
  "nextCursor":"2026-10-15T22:03:52Z"}`,
       },
       {
@@ -228,9 +229,9 @@ export const apiSections: ApiSection[] = [
         access: "public",
         description:
           "Perfil público: headline, empresa, skills, experiências, emblema, capa em HTML (bannerHtml).",
-        request: `curl ${P}/users/aminadojava`,
+        request: `curl ${P}/users/ada`,
         response: `200 OK
-{"id":"user_…","username":"aminadojava","name":"melissa monfre dos santos",
+{"id":"user_…","username":"ada","name":"Ada",
  "headline":"…","company":"…","skills":[…],"bioHtml":null,"bannerHtml":null,"openToWork":false}`,
       },
       {
@@ -246,7 +247,7 @@ export const apiSections: ApiSection[] = [
         description: "Ranking de perfis mais relevantes da rede.",
         request: `curl ${P}/profile/ranking`,
         response: `200 OK
-[{"id":"user_…","username":"lucas-matheus-florentino","name":"Lucas Matheus Florentino","skills":[…]}]`,
+[{"id":"user_…","username":"ada","name":"Ada","skills":[…]}]`,
       },
       {
         method: "PATCH",
@@ -1085,49 +1086,49 @@ export const apiSections: ApiSection[] = [
     endpoints: [
       {
         method: "GET",
-        path: "/services/servicos",
+        path: "/servicos",
         access: "public",
         description: "Catálogo de serviços publicados.",
       },
       {
         method: "POST",
-        path: "/services/servicos/ofertas",
+        path: "/servicos/ofertas",
         access: "auth",
         description: "Publica uma oferta de serviço (sujeita à moderação).",
       },
       {
         method: "POST",
-        path: "/services/servicos/pedidos",
+        path: "/servicos/pedidos",
         access: "auth",
         description: "Abre um pedido de serviço.",
       },
       {
         method: "POST",
-        path: "/services/servicos/pedidos/{requestId}/propostas",
+        path: "/servicos/pedidos/{requestId}/propostas",
         access: "auth",
         description: "Envia uma proposta para um pedido aberto.",
       },
       {
         method: "POST",
-        path: "/services/servicos/pedidos/{requestId}/escolher",
+        path: "/servicos/pedidos/{requestId}/escolher",
         access: "auth",
         description: "Escolhe a proposta e fecha o contrato (o valor fica em custódia).",
       },
       {
         method: "POST",
-        path: "/services/contratos/{contractId}/entregar",
+        path: "/servicos/contratos/{contractId}/entregar",
         access: "auth",
         description: "Entrega o trabalho realizado (o cliente tem X dias para responder).",
       },
       {
         method: "POST",
-        path: "/services/contratos/{contractId}/aceitar",
+        path: "/servicos/contratos/{contractId}/aceitar",
         access: "auth",
         description: "Aceita a entrega e libera o pagamento ao prestador.",
       },
       {
         method: "POST",
-        path: "/services/contratos/{contractId}/reembolso",
+        path: "/servicos/contratos/{contractId}/reembolso",
         access: "auth",
         description: "Reembolso integral: devolve 100% ao cliente.",
       },
@@ -1189,15 +1190,15 @@ export const apiUseCases: ApiUseCase[] = [
     steps: [
       {
         note: "1. Busque o post (autor, contadores, mídia):",
-        code: `curl ${P}/feed/posts/post_396a12bc2bc54ad3966829c751acb021`,
+        code: `curl ${P}/feed/posts/post_0f1e2d3c4b5a69788796a5b4c3d2e1f0`,
       },
       {
         note: "2. Busque a primeira página de comentários:",
-        code: `curl "${P}/feed/posts/post_396a12bc2bc54ad3966829c751acb021/comments?limit=20"`,
+        code: `curl "${P}/feed/posts/post_0f1e2d3c4b5a69788796a5b4c3d2e1f0/comments?limit=20"`,
       },
       {
         note: "3. Pagina enquanto houver nextCursor (mande o valor de volta em ?cursor=):",
-        code: `curl "${P}/feed/posts/post_396a12bc2bc54ad3966829c751acb021/comments?cursor=<nextCursor>&limit=20"`,
+        code: `curl "${P}/feed/posts/post_0f1e2d3c4b5a69788796a5b4c3d2e1f0/comments?cursor=<nextCursor>&limit=20"`,
       },
       {
         note: "Imagens de perfil e mídia vêm com caminho relativo — prefixe com https://enois.ia.br para renderizar.",
