@@ -126,7 +126,7 @@ function GrupoPage() {
               html={group.bannerHtml}
               title={group.name}
               className="h-40 w-full rounded-none border-0 shadow-none"
-              clip
+              autoHeight={false}
             />
           ) : group.banner ? (
             <img src={resolveCdnUrl(group.banner)} alt="" className="h-40 w-full object-cover" />
@@ -360,7 +360,16 @@ function GroupFeed({ group }: { group: GroupView }) {
                 toolbar
               />
 
-              <div className="flex justify-end">
+              <div className="flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  className="w-auto rounded-full"
+                  disabled={!content.trim() || publish.isPending}
+                  onClick={() => setContent("")}
+                >
+                  {texts.common.cancel}
+                </Button>
+
                 <Button
                   className="w-auto rounded-full"
                   disabled={!content.trim() || publish.isPending}

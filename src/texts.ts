@@ -1052,6 +1052,7 @@ export const texts = {
     loadingMore: "Carregando mais publicações...",
     endOfFeed: "Você chegou ao fim do feed.",
     loadMore: "Carregar mais",
+    scrollToTop: "Voltar ao topo",
     share: "Compartilhar",
     empty: "Nada por aqui ainda. Publicações da sua rede aparecem neste feed.",
     composer: {
@@ -1253,8 +1254,23 @@ export const texts = {
     reactions: {
       title: "Reações",
       empty: "Nenhuma reação ainda",
+      /** Estado vazio de uma aba por tipo (o tipo existe no resumo, mas ninguém está nele). */
+      emptyType: "Ninguém reagiu com isso ainda",
+      /** Aba geral do diálogo. */
+      all: "Todas",
+      /** Marca a própria linha na lista de quem reagiu. */
+      you: "(você)",
       react: "Reagir",
+      reactWith: (emoji: string) => `Reagir com ${emoji}`,
+      removeWith: (emoji: string) => `Remover reação ${emoji}`,
       reactedWith: (emoji: string) => `Reagiu com ${emoji}`,
+      /** Palavra do contador (sem número): o número é renderizado à parte. */
+      noun: (count: number) => (count === 1 ? "reação" : "reações"),
+      /** Rótulo acessível do contador "ver quem reagiu". */
+      seeWho: (count: number) => `Ver quem reagiu (${count} ${count === 1 ? "reação" : "reações"})`,
+      error: "Não foi possível reagir. Tente novamente.",
+      permissionError: "Você não tem permissão para reagir neste post.",
+      loadError: "Não foi possível carregar as reações.",
       emojis: {
         LIKE: "👍",
         LOVE: "❤️",
@@ -1410,6 +1426,8 @@ export const texts = {
     connectionsMeta: (count: number) => `· ${count} ${count === 1 ? "conexão" : "conexões"}`,
     reputation: (value: number) => `${value} reputação`,
     reputationMeta: (value: number) => `★ ${value} reputação`,
+    /** Posição na lista (a tela do ranking ainda usa; volta a ser a única forma). */
+    rankingPosition: (position: number) => `${position}º`,
     /** A lista é de chegada: cada linha mostra há quanto tempo a pessoa entrou. */
     joinedToday: "chegou hoje",
     joinedDaysAgo: (days: number) => `há ${days} ${days === 1 ? "dia" : "dias"}`,
@@ -1453,6 +1471,7 @@ export const texts = {
       saved: "Bio atualizada.",
       error: "Não foi possível salvar a bio. Tente novamente.",
       save: "Salvar bio",
+      preview: "Pré visualização"
     },
     projects: {
       title: "Projetos",
@@ -1781,19 +1800,57 @@ export const texts = {
       mobileHint: "No celular, use Tela cheia (ou gire o aparelho) para jogar com mais espaço.",
       openAtOrigin: "Abrir no site do criador",
       loading: "Carregando o jogo…",
-      /** O quadro não avisa quando o site recusa incorporação: a pessoa decide tentar de novo. */
-      blocked:
-        "O jogo não abriu aqui. O site do criador pode não permitir ser exibido dentro de outra página — abra na origem para jogar.",
       retry: "Tentar de novo",
+      player: {
+        loadingProgress: (progress: number) => `Carregando o jogo… ${progress}%`,
+        progressLabel: "Progresso do carregamento do jogo",
+        slow: "Está demorando mais que o normal. Jogos WebGL grandes podem levar alguns minutos, principalmente no celular — o jogo continua carregando.",
+        ready: "Jogo pronto.",
+        unverified:
+          "Se o jogo não aparecer, o site do criador pode não permitir ser exibido dentro do Énóis — use “Abrir no site do criador”.",
+        error: "O jogo avisou que não conseguiu iniciar.",
+        errorDetail: (message: string) => `O jogo avisou que não conseguiu iniciar: ${message}`,
+        fullscreenUnavailable:
+          "Tela cheia não está disponível neste navegador. Gire o aparelho ou abra no site do criador.",
+        unsupportedUrl: "Este endereço não pode ser aberto dentro do Énóis.",
+      },
       favorite: "Guardar na biblioteca",
       unfavorite: "Tirar da biblioteca",
+      favoriteError: "Não foi possível atualizar a biblioteca agora.",
+      accountChanged:
+        "Você trocou de conta. Use “Tentar de novo” para o jogo reconhecer a conta atual.",
       favorites: (count: number) => `${count} na biblioteca`,
       share: "Compartilhar",
       shareCopied: "Link do jogo copiado!",
-      stats: (plays: number, players: number) =>
-        plays === 1
-          ? "1 sessão"
-          : `${plays} sessões · ${players} ${players === 1 ? "pessoa jogou" : "pessoas jogaram"}`,
+      plays: (count: number) =>
+        `${count} ${count === 1 ? "partida iniciada" : "partidas iniciadas"}`,
+      players: (count: number) => `${count} ${count === 1 ? "jogador" : "jogadores"}`,
+      statsHint:
+        "Partida iniciada conta cada vez que alguém aperta Jogar — não prova que o jogo terminou de carregar. Jogador conta cada conta uma vez; quem joga sem entrar conta a cada partida.",
+      spend: {
+        title: "O jogo quer gastar faíscas",
+        amount: (value: string) => `${value} faíscas`,
+        notice:
+          "O gasto só acontece com a sua confirmação. O jogo nunca acessa a sua conta nem a sua sessão — ele apenas pediu.",
+        refuse: "Recusar",
+        confirm: "Confirmar gasto",
+        confirming: "Confirmando…",
+        done: "Gasto confirmado — as faíscas saíram da sua carteira.",
+        error: "Não foi possível confirmar o gasto agora.",
+      },
+      achievement: {
+        title: "Compartilhar conquista",
+        notice: (title: string) =>
+          `Publica no seu feed com a tag do jogo ${title}. A imagem e o texto vêm do jogo — confira antes de publicar.`,
+        imageAlt: "Imagem enviada pelo jogo",
+        cancel: "Cancelar",
+        publish: "Publicar no feed",
+        publishing: "Publicando…",
+        done: "Conquista publicada no seu feed!",
+        error: "Não foi possível publicar a conquista agora.",
+        uploadsDisabled:
+          "O envio de mídia está temporariamente desativado enquanto o armazenamento é migrado.",
+      },
       about: "Sobre o jogo",
       details: "Ficha",
       genres: "Gêneros",
@@ -2837,6 +2894,7 @@ export const texts = {
   },
   exportTheme: "Exportar tema",
   importTheme: "Importar tema",
+  sellTheme: "Vender no marketplace",
   exportFileName: "tema.enois-theme",
   importError: "Arquivo inválido — use um .enois-theme exportado do Énóis.",
   /** Arquivo de uma versão mais nova do app: recusar explicando é melhor que importar pela metade. */

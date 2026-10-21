@@ -19,6 +19,7 @@ import { LoadingState } from "@/components/ui/loading-state";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
+import { GamePlayer } from "@/components/games/game-player";
 
 /**
  * Fila de recursos das penalidades automaticas. Somente administradores (REDE_ADMIN_EMAILS)
@@ -222,20 +223,6 @@ function DisputasSection() {
   );
 }
 
-/** A proporção do quadro, escolhida pelo criador — igual à da página do jogo. */
-const ASPECT: Record<string, string> = {
-  WIDESCREEN: "16 / 9",
-  CLASSIC: "4 / 3",
-  SQUARE: "1 / 1",
-  PORTRAIT: "9 / 16",
-};
-
-/**
- * Ações de administrador contra spam: sanitizar o usuário (apaga do banco todos os posts e
- * comentários dele), banir permanentemente (PERMABAN) e bloquear IPs — o painel lista de onde a
- * conta entrou (registrado no login) para escolher o que bloquear. Somente administradores:
- * para os demais a API devolve 403 e a seção nem aparece.
- */
 function AdminSection() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -525,19 +512,7 @@ function JogosSection() {
               <p className="break-all text-xs text-text-subtle">{g.url}</p>
 
               {testando === g.id ? (
-                <div
-                  className="relative w-full overflow-hidden rounded-xl border border-border-soft"
-                  style={{ aspectRatio: ASPECT[g.aspect] ?? "16 / 9" }}
-                >
-                  <iframe
-                    src={g.url}
-                    title={g.title}
-                    className="h-full w-full border-0"
-                    allow="fullscreen; gamepad; autoplay"
-                    sandbox="allow-scripts allow-same-origin allow-pointer-lock"
-                    referrerPolicy="no-referrer"
-                  />
-                </div>
+                <GamePlayer url={g.url} title={g.title} aspect={g.aspect} autoStart />
               ) : (
                 <div>
                   <Button

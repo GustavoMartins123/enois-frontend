@@ -1,4 +1,5 @@
-import { type FormEvent, type ReactNode, useState } from "react";
+import { type FormEvent, type ReactNode, useRef, useState } from "react";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
@@ -270,11 +271,14 @@ function Divider() {
   );
 }
 
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
+
 function SignupForm(_props: AuthFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
+  const turnstileRef = useRef<TurnstileInstance>(null);
   /** Conta criada e pendente de confirmação: o formulário dá lugar à tela "confirme seu e-mail". */
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
 
@@ -301,6 +305,7 @@ function SignupForm(_props: AuthFormProps) {
         email: parsed.data.email,
         password: parsed.data.password,
         acceptedTerms: parsed.data.acceptedTerms === "on",
+        website: fd.get("website") as string | undefined,
       });
       setPendingEmail(result.email);
     } catch (err) {
@@ -326,6 +331,15 @@ function SignupForm(_props: AuthFormProps) {
       </div>
 
       <form onSubmit={submit} className="space-y-4" noValidate>
+        {/* Honeypot: campo invisível que bots preenchem e humanos não veem */}
+        <input
+          name="website"
+          type="text"
+          autoComplete="off"
+          tabIndex={-1}
+          aria-hidden="true"
+          className="absolute -left-[9999px] h-0 w-0 overflow-hidden opacity-0"
+        />
         <Field label={texts.auth.fields.fullName} error={errors.name}>
           <Input
             name="name"
@@ -405,6 +419,9 @@ function SignupForm(_props: AuthFormProps) {
         </div>
 
         {formError && <ErrorBanner error={formError} />}
+        {TURNSTILE_SITE_KEY && (
+          <Turnstile ref={turnstileRef} siteKey={TURNSTILE_SITE_KEY} options={{ size: "flexible", theme: "dark" }} />
+        )}
         <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -498,6 +515,7 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
   const [formError, setFormError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
+  const loginTurnstileRef = useRef<TurnstileInstance>(null);
   /** Conta pendente de confirmação: em vez de "erro", a tela explica e oferece reenviar. */
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   /** Segundo fator pedido pelo backend depois da senha correta. */
@@ -523,6 +541,7 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
       const result = await authApi.login({
         email: parsed.data.email,
         password: parsed.data.password,
+        turnstileToken: loginTurnstileRef.current?.getResponse() ?? undefined,
       });
 
       // Conta com segundo fator: a senha levou ao desafio, não à sessão.
@@ -610,6 +629,9 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
         </Field>
 
         {formError && <ErrorBanner error={formError} />}
+        {TURNSTILE_SITE_KEY && (
+          <Turnstile ref={loginTurnstileRef} siteKey={TURNSTILE_SITE_KEY} options={{ size: "flexible", theme: "dark" }} />
+        )}
         <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />

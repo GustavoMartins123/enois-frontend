@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import type { HomeTab } from "@/types/routes/feed/home-tab";
 import { ArrowLeft, Loader2 } from "lucide-react";
 
 import { feedApi, mediaApi } from "@/lib/api";
@@ -12,6 +13,17 @@ import { PostCard } from "@/components/post-card";
 import { RichText } from "@/components/post/rich-text";
 
 export const Route = createFileRoute("/post/$postId")({
+  validateSearch: (search: Record<string, unknown>): { feedTab?: HomeTab } => ({
+    feedTab:
+      search.feedTab === "FOR_YOU" ||
+      search.feedTab === "ALL" ||
+      search.feedTab === "FOLLOWING" ||
+      search.feedTab === "RECENT" ||
+      search.feedTab === "PROJECTS" ||
+      search.feedTab === "CORPORATE"
+        ? search.feedTab
+        : undefined,
+  }),
   // Sem `beforeLoad: requireAuth`: o post e o destino do link compartilhado e precisa abrir para
   // quem recebeu. As acoes (reagir, comentar, salvar, compartilhar) e que pedem login.
 
@@ -89,6 +101,7 @@ export const Route = createFileRoute("/post/$postId")({
 
 function PostDetail() {
   const { postId } = Route.useParams();
+  const { feedTab } = Route.useSearch();
 
   const {
     data: post,
@@ -104,6 +117,7 @@ function PostDetail() {
       <div className="space-y-6">
         <Link
           to="/feed"
+          search={{ aba: feedTab ?? "FOR_YOU" }}
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />

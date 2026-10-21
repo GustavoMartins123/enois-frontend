@@ -45,4 +45,10 @@ export type GameView = {
   favorited: boolean;
   /** Destaque pago (G2): o jogo sobe no catálogo enquanto ativo. */
   boosted?: boolean;
+  /** Foto de perfil do jogo: alternativa própria ao favicon do site de origem. */
+  icon?: string | null;
+  /** Banner do topo da página do jogo (foto). */
+  banner?: string | null;
+  /** Banner do topo em HTML/CSS editável, usado quando não há foto. */
+  bannerHtml?: string | null;
 };

@@ -18,7 +18,20 @@ import { useToast } from "@/components/ui/toast";
  * a pessoa marca o que quer e o app cria experiencias, formação, certificações e
  * projetos pelos endpoints normais.
  */
-export function LinkedinImportSection({ linkedinConectado = false }: { linkedinConectado?: boolean }) {
+/** Mesmo teto do serviço (LinkedinImportService.MAX_ZIP_BYTES). */
+const LINKEDIN_ZIP_MAX_MB = 5;
+
+/** Teto do perfil por seção (ProfileExtensionService.MAX_ENTRIES_PER_KIND). */
+const LIMITE_POR_SECAO = 10;
+
+/** Teto de projetos do perfil (ProjectsService.MAX_PROJECTS). */
+const LIMITE_PROJETOS = 20;
+
+export function LinkedinImportSection({
+  linkedinConectado = false,
+}: {
+  linkedinConectado?: boolean;
+}) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [preview, setPreview] = useState<LinkedinImportPreview | null>(null);
@@ -56,10 +69,44 @@ export function LinkedinImportSection({ linkedinConectado = false }: { linkedinC
 
   const salvar = useMutation({
     mutationFn: async () => {
-      if (!preview) return;
+      if (!preview) return { imported: 0, skipped: 0, truncated: false };
+
+      // O que JÁ existe não entra de novo: repetir a importação (ou tentar de novo depois de um
+      // erro) duplicava experiências, formações e projetos no perfil.
+      const [experiences, education, certifications, projects] = await Promise.all([
+        profileApi.experiences.list(),
+        profileApi.education.list(),
+        profileApi.certifications.list(),
+        projectsApi.mine(),
+      ]);
+      const normalizar = (value: string | null | undefined) => (value ?? "").trim().toLowerCase();
+      const chave = (...parts: (string | null | undefined)[]) => parts.map(normalizar).join("|");
+      const jaTenho = {
+        experiences: new Set(experiences.map((item) => chave(item.title, item.company))),
+        education: new Set(education.map((item) => chave(item.school, item.degree))),
+        certifications: new Set(certifications.map((item) => normalizar(item.name))),
+        projects: new Set(projects.map((item) => normalizar(item.title))),
+      };
+
+      // Os tetos do perfil (10 por seção; 20 projetos) valem para a importação também: sem isso,
+      // o 11º item era recusado no meio do caminho e metade do retrato ficava de fora.
+      const vagas = (usados: number, teto: number) => Math.max(0, teto - usados);
+      const limite = {
+        experiences: vagas(experiences.length, LIMITE_POR_SECAO),
+        education: vagas(education.length, LIMITE_POR_SECAO),
+        certifications: vagas(certifications.length, LIMITE_POR_SECAO),
+        projects: vagas(projects.length, LIMITE_PROJETOS),
+      };
+      let truncated = false;
+
       const saves: Promise<unknown>[] = [];
+      let skipped = 0;
+
       preview.experiences.forEach((exp, i) => {
         if (!selected[`exp${i}`]) return;
+        if (jaTenho.experiences.has(chave(exp.title, exp.company))) return void skipped++;
+        if (limite.experiences <= 0) return void (truncated = true);
+        limite.experiences--;
         saves.push(
           profileApi.experiences.create({
             title: exp.title ?? "",
@@ -73,6 +120,9 @@ export function LinkedinImportSection({ linkedinConectado = false }: { linkedinC
       });
       preview.education.forEach((edu, i) => {
         if (!selected[`edu${i}`]) return;
+        if (jaTenho.education.has(chave(edu.school, edu.degree))) return void skipped++;
+        if (limite.education <= 0) return void (truncated = true);
+        limite.education--;
         saves.push(
           profileApi.education.create({
             school: edu.school ?? "",
@@ -86,6 +136,9 @@ export function LinkedinImportSection({ linkedinConectado = false }: { linkedinC
       });
       preview.certifications.forEach((cert, i) => {
         if (!selected[`cert${i}`]) return;
+        if (jaTenho.certifications.has(normalizar(cert.name))) return void skipped++;
+        if (limite.certifications <= 0) return void (truncated = true);
+        limite.certifications--;
         saves.push(
           profileApi.certifications.create({
             name: cert.name,
@@ -99,13 +152,25 @@ export function LinkedinImportSection({ linkedinConectado = false }: { linkedinC
       });
       preview.projects.forEach((project, i) => {
         if (!selected[`proj${i}`]) return;
+        if (jaTenho.projects.has(normalizar(project.title))) return void skipped++;
+        if (limite.projects <= 0) return void (truncated = true);
+        limite.projects--;
         saves.push(
           projectsApi.create({
             title: project.title ?? "",
             stack: [],
             repoUrl: project.url,
             status: null,
-            diary: [],
+            // O card de projeto não tem campo de descrição: o texto do LinkedIn entra como a
+            // PRIMEIRA entrada do diário, datado no início do projeto — antes ele era descartado.
+            diary: project.description
+              ? [
+                  {
+                    date: project.startDate ?? new Date().toISOString().slice(0, 10),
+                    text: project.description,
+                  },
+                ]
+              : [],
             html: null,
           }),
         );
@@ -124,10 +189,18 @@ export function LinkedinImportSection({ linkedinConectado = false }: { linkedinC
         saves.push(profileApi.update({ skills: preview.skills.slice(0, 50) }));
       }
       await Promise.all(saves);
-      return saves.length;
+      return { imported: saves.length, skipped, truncated };
     },
-    onSuccess: (count) => {
-      toast(texts.account.linkedinImport.done(count ?? 0));
+    onSuccess: ({ imported, skipped, truncated }) => {
+      if (imported === 0 && skipped > 0) {
+        toast(texts.account.linkedinImport.nothingNew, "success");
+      } else {
+        toast(
+          texts.account.linkedinImport.done(imported) +
+            (truncated ? ` ${texts.account.linkedinImport.capReached}` : ""),
+          "success",
+        );
+      }
       setPreview(null);
       void queryClient.invalidateQueries({ queryKey: ["me"] });
       void queryClient.invalidateQueries({ queryKey: ["projects"] });
@@ -151,7 +224,12 @@ export function LinkedinImportSection({ linkedinConectado = false }: { linkedinC
             ]
           : []),
         ...(preview.skills?.length
-          ? [{ key: "skills", label: `Habilidades: ${preview.skills.slice(0, 8).join(", ")}${preview.skills.length > 8 ? "…" : ""}` }]
+          ? [
+              {
+                key: "skills",
+                label: `Habilidades: ${preview.skills.slice(0, 8).join(", ")}${preview.skills.length > 8 ? "…" : ""}`,
+              },
+            ]
           : []),
         ...preview.experiences.map((exp, i) => ({
           key: `exp${i}`,
@@ -171,7 +249,9 @@ export function LinkedinImportSection({ linkedinConectado = false }: { linkedinC
       <p className="text-xs font-medium text-text-strong">{texts.account.linkedinImport.title}</p>
 
       <p className="text-xs font-normal text-text-subtle">
-        {linkedinConectado ? texts.account.linkedinImport.hint : texts.account.linkedinImport.connectFirst}
+        {linkedinConectado
+          ? texts.account.linkedinImport.hint
+          : texts.account.linkedinImport.connectFirst}
       </p>
 
       {!preview && (
@@ -205,8 +285,15 @@ export function LinkedinImportSection({ linkedinConectado = false }: { linkedinC
                 className="hidden"
                 onChange={(event) => {
                   const file = event.target.files?.[0];
-                  if (file) importar.mutate(file);
                   event.target.value = "";
+                  if (!file) return;
+                  // Mesmo teto do serviço (5 MB): avisar antes poupa o envio inteiro de um arquivo
+                  // que seria recusado — e explica qual exportação usar.
+                  if (file.size > LINKEDIN_ZIP_MAX_MB * 1024 * 1024) {
+                    toast(texts.account.linkedinImport.tooLarge(LINKEDIN_ZIP_MAX_MB), "error");
+                    return;
+                  }
+                  importar.mutate(file);
                 }}
               />
             </label>
