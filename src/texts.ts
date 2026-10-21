@@ -329,19 +329,7 @@ export const texts = {
       SESSION_EXPIRED: "Sua sessão expirou. Entre novamente.",
       IDEMPOTENCY_KEY_REQUIRED:
         "O backend rejeitou a requisição por falta de Idempotency-Key. Recarregue a página; se o problema persistir, há um bug no front-end (src/lib/api-client.ts).",
-      BIRTH_DATE_REQUIRED:
-        "Confirme sua data de nascimento para continuar. Use o formulário que apareceu na tela.",
     },
-  },
-
-  birthDate: {
-    title: "Data de nascimento",
-    description:
-      "A partir de agora, a data de nascimento é obrigatória para usar a plataforma. Essa informação não será exibida publicamente.",
-    label: "Data de nascimento",
-    required: "Informe sua data de nascimento.",
-    action: "Confirmar",
-    error: "Não foi possível salvar. Tente novamente.",
   },
 
   auth: {
