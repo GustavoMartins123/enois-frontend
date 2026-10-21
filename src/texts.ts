@@ -406,9 +406,9 @@ export const texts = {
     },
     seo: {
       authTitle: "Entrar ou criar conta · Énóis",
-      authDescription: "Acesse sua conta ou comece sua jornada profissional na Énóis.",
+      authDescription: "Acesse sua conta ou entre para o Énóis, uma rede humana feita por gente.",
       resetTitle: "Redefinir senha · Énóis",
-      resetDescription: "Defina uma nova senha para sua conta na Énóis.",
+      resetDescription: "Defina uma nova senha para sua conta no Énóis.",
     },
     captcha: {
       label: "Verificação de segurança",
@@ -3540,7 +3540,7 @@ export const texts = {
 
   legal: {
     footer: {
-      copyright: (year: number) => `© ${year} Énóis · Rede profissional gratuita e humana`,
+      copyright: (year: number) => `© ${year} Énóis · Rede humana gratuita`,
       terms: "Termos de Uso",
       privacy: "Política de Privacidade",
       guidelines: "Diretrizes da Comunidade",
@@ -3717,13 +3717,16 @@ export const texts = {
 
   pwa: {
     themeColor: "#6746f5",
+    /** Descrição do manifesto do PWA: é a frase que o navegador mostra ao convidar a instalar. */
+    manifestDescription:
+      "Rede humana para conexões autênticas: conversa, comunidades, vagas, mentoria, brincadeira e construção junto.",
     offlineTitle: "Você está offline",
     offlineDescription:
       "Não conseguimos falar com o servidor. Verifique sua conexão e tente de novo.",
     offlineRetry: "Tentar novamente",
     install: {
       ariaLabel: "Instalar aplicativo",
-      title: "Instale o app da Énóis",
+      title: "Instale o app do Énóis",
       description: "Abra direto da tela inicial e receba notificações.",
       action: "Instalar",
       close: "Fechar convite de instalação",

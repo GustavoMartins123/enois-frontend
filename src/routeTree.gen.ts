@@ -28,7 +28,6 @@ import { Route as ModeracaoRouteImport } from './routes/moderacao'
 import { Route as MentoriaRouteImport } from './routes/mentoria'
 import { Route as MensagensRouteImport } from './routes/mensagens'
 import { Route as MarketplaceRouteImport } from './routes/marketplace'
-import { Route as ManifestDotwebmanifestRouteImport } from './routes/manifest[.]webmanifest'
 import { Route as JogosDiariosRouteImport } from './routes/jogos-diarios'
 import { Route as HumansDottxtRouteImport } from './routes/humans[.]txt'
 import { Route as GruposRouteImport } from './routes/grupos'
@@ -167,11 +166,6 @@ const MensagensRoute = MensagensRouteImport.update({
 const MarketplaceRoute = MarketplaceRouteImport.update({
   id: '/marketplace',
   path: '/marketplace',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ManifestDotwebmanifestRoute = ManifestDotwebmanifestRouteImport.update({
-  id: '/manifest.webmanifest',
-  path: '/manifest.webmanifest',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JogosDiariosRoute = JogosDiariosRouteImport.update({
@@ -416,7 +410,6 @@ export interface FileRoutesByFullPath {
   '/grupos': typeof GruposRouteWithChildren
   '/humans.txt': typeof HumansDottxtRoute
   '/jogos-diarios': typeof JogosDiariosRoute
-  '/manifest.webmanifest': typeof ManifestDotwebmanifestRoute
   '/marketplace': typeof MarketplaceRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
@@ -482,7 +475,6 @@ export interface FileRoutesByTo {
   '/grupos': typeof GruposRouteWithChildren
   '/humans.txt': typeof HumansDottxtRoute
   '/jogos-diarios': typeof JogosDiariosRoute
-  '/manifest.webmanifest': typeof ManifestDotwebmanifestRoute
   '/marketplace': typeof MarketplaceRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
@@ -549,7 +541,6 @@ export interface FileRoutesById {
   '/grupos': typeof GruposRouteWithChildren
   '/humans.txt': typeof HumansDottxtRoute
   '/jogos-diarios': typeof JogosDiariosRoute
-  '/manifest.webmanifest': typeof ManifestDotwebmanifestRoute
   '/marketplace': typeof MarketplaceRoute
   '/mensagens': typeof MensagensRoute
   '/mentoria': typeof MentoriaRoute
@@ -617,7 +608,6 @@ export interface FileRouteTypes {
     | '/grupos'
     | '/humans.txt'
     | '/jogos-diarios'
-    | '/manifest.webmanifest'
     | '/marketplace'
     | '/mensagens'
     | '/mentoria'
@@ -683,7 +673,6 @@ export interface FileRouteTypes {
     | '/grupos'
     | '/humans.txt'
     | '/jogos-diarios'
-    | '/manifest.webmanifest'
     | '/marketplace'
     | '/mensagens'
     | '/mentoria'
@@ -749,7 +738,6 @@ export interface FileRouteTypes {
     | '/grupos'
     | '/humans.txt'
     | '/jogos-diarios'
-    | '/manifest.webmanifest'
     | '/marketplace'
     | '/mensagens'
     | '/mentoria'
@@ -816,7 +804,6 @@ export interface RootRouteChildren {
   GruposRoute: typeof GruposRouteWithChildren
   HumansDottxtRoute: typeof HumansDottxtRoute
   JogosDiariosRoute: typeof JogosDiariosRoute
-  ManifestDotwebmanifestRoute: typeof ManifestDotwebmanifestRoute
   MarketplaceRoute: typeof MarketplaceRoute
   MensagensRoute: typeof MensagensRoute
   MentoriaRoute: typeof MentoriaRoute
@@ -986,13 +973,6 @@ declare module '@tanstack/react-router' {
       path: '/marketplace'
       fullPath: '/marketplace'
       preLoaderRoute: typeof MarketplaceRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/manifest.webmanifest': {
-      id: '/manifest.webmanifest'
-      path: '/manifest.webmanifest'
-      fullPath: '/manifest.webmanifest'
-      preLoaderRoute: typeof ManifestDotwebmanifestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/jogos-diarios': {
@@ -1434,7 +1414,6 @@ const rootRouteChildren: RootRouteChildren = {
   GruposRoute: GruposRouteWithChildren,
   HumansDottxtRoute: HumansDottxtRoute,
   JogosDiariosRoute: JogosDiariosRoute,
-  ManifestDotwebmanifestRoute: ManifestDotwebmanifestRoute,
   MarketplaceRoute: MarketplaceRoute,
   MensagensRoute: MensagensRoute,
   MentoriaRoute: MentoriaRoute,
