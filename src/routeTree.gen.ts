@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VagasRouteImport } from './routes/vagas'
 import { Route as TermosRouteImport } from './routes/termos'
-import { Route as TemasRouteImport } from './routes/temas'
 import { Route as SuporteRouteImport } from './routes/suporte'
 import { Route as SobreRouteImport } from './routes/sobre'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
@@ -78,11 +77,6 @@ const VagasRoute = VagasRouteImport.update({
 const TermosRoute = TermosRouteImport.update({
   id: '/termos',
   path: '/termos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const TemasRoute = TemasRouteImport.update({
-  id: '/temas',
-  path: '/temas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SuporteRoute = SuporteRouteImport.update({
@@ -409,7 +403,6 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/suporte': typeof SuporteRoute
-  '/temas': typeof TemasRoute
   '/termos': typeof TermosRoute
   '/vagas': typeof VagasRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
@@ -471,7 +464,6 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/suporte': typeof SuporteRoute
-  '/temas': typeof TemasRoute
   '/termos': typeof TermosRoute
   '/vagas': typeof VagasRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
@@ -534,7 +526,6 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/sobre': typeof SobreRoute
   '/suporte': typeof SuporteRoute
-  '/temas': typeof TemasRoute
   '/termos': typeof TermosRoute
   '/vagas': typeof VagasRouteWithChildren
   '/auth/callback': typeof AuthCallbackRoute
@@ -598,7 +589,6 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sobre'
     | '/suporte'
-    | '/temas'
     | '/termos'
     | '/vagas'
     | '/auth/callback'
@@ -660,7 +650,6 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sobre'
     | '/suporte'
-    | '/temas'
     | '/termos'
     | '/vagas'
     | '/auth/callback'
@@ -722,7 +711,6 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/sobre'
     | '/suporte'
-    | '/temas'
     | '/termos'
     | '/vagas'
     | '/auth/callback'
@@ -785,7 +773,6 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   SobreRoute: typeof SobreRoute
   SuporteRoute: typeof SuporteRoute
-  TemasRoute: typeof TemasRoute
   TermosRoute: typeof TermosRoute
   VagasRoute: typeof VagasRouteWithChildren
   AuthCallbackRoute: typeof AuthCallbackRoute
@@ -815,13 +802,6 @@ declare module '@tanstack/react-router' {
       path: '/termos'
       fullPath: '/termos'
       preLoaderRoute: typeof TermosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/temas': {
-      id: '/temas'
-      path: '/temas'
-      fullPath: '/temas'
-      preLoaderRoute: typeof TemasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/suporte': {
@@ -1361,7 +1341,6 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   SobreRoute: SobreRoute,
   SuporteRoute: SuporteRoute,
-  TemasRoute: TemasRoute,
   TermosRoute: TermosRoute,
   VagasRoute: VagasRouteWithChildren,
   AuthCallbackRoute: AuthCallbackRoute,

@@ -1,13 +1,12 @@
 import { useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, createFileRoute } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import { BadgeCheck, RotateCcw, Sparkles, Store } from "lucide-react";
 
 import { marketplaceApi, themesApi } from "@/lib/api";
-import type { ThemeGalleryItem } from "@/lib/api/themes";
 import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { isAuthenticated } from "@/lib/use-auth";
 
@@ -15,6 +14,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import { AppContainer } from "@/components/app-container";
+import { ThemeSellDialog } from "@/components/appearance/theme-sell-dialog";
+
+/** Piso de preço do marketplace: 50 faíscas (o backend também recusa abaixo disso). */
+const MIN_PRICE = parseFaiscaInput("50") ?? 50_000;
 
 export const Route = createFileRoute("/marketplace")({
   head: () => ({ meta: [{ title: "Marketplace · Énóis" }] }),
@@ -57,7 +60,7 @@ function Marketplace() {
               recebe quando você confirma (ou em 7 dias) — e o reembolso devolve tudo.
             </p>
           </div>
-          {authenticated && <SellButton />}
+          {authenticated && <PublishButton />}
         </header>
 
         {purchases.data && purchases.data.length > 0 && <MyPurchases purchases={purchases.data} />}
@@ -76,11 +79,8 @@ function Marketplace() {
             <p className="mt-3 text-sm font-medium">Nada à venda ainda.</p>
 
             <p className="mt-1 text-sm text-text-subtle">
-              Publicou um tema na{" "}
-              <Link to="/temas" className="text-primary-text hover:underline">
-                galeria
-              </Link>
-              ? Venda-o aqui por faíscas.
+              Toque em “Publicar tema” acima: a sua aparência vira uma listagem aqui, por no mínimo
+              50 faíscas.
             </p>
           </div>
         ) : (
@@ -130,7 +130,14 @@ function Miniatura({ packageJson }: { packageJson: string }) {
 function ListingCard({
   listing,
 }: {
-  listing: { id: string; itemId: string; title: string; price: number };
+  listing: {
+    id: string;
+    itemId: string;
+    title: string;
+    price: number;
+    sellerName?: string | null;
+    sellerUsername?: string | null;
+  };
 }) {
   const theme = useQuery({
     queryKey: ["themes", "item", listing.itemId],
@@ -150,6 +157,13 @@ function ListingCard({
           <span className="block truncate font-semibold">{listing.title}</span>
           {theme.data?.name && theme.data.name !== listing.title && (
             <span className="block truncate text-xs text-text-subtle">{theme.data.name}</span>
+          )}
+
+          {(listing.sellerName || listing.sellerUsername) && (
+            <span className="block truncate text-xs text-text-subtle">
+              por {listing.sellerName ?? "conta removida"}
+              {listing.sellerUsername ? ` · @${listing.sellerUsername}` : ""}
+            </span>
           )}
         </span>
 
@@ -271,130 +285,24 @@ function StateChip({ state }: { state: string }) {
   );
 }
 
-/** Lista um dos meus temas da galeria por um preço. */
-function SellButton() {
+/**
+ * Publica a APARÊNCIA ATUAL como tema à venda.
+ *
+ * O formulário vive aqui no marketplace (e não só no diálogo de Aparência) para funcionar no
+ * celular: abre o mesmo `ThemeSellDialog`, que monta o pacote da personalização ativa e lista
+ * com o piso de 50 faíscas.
+ */
+function PublishButton() {
   const [open, setOpen] = useState(false);
-  const [theme, setTheme] = useState<ThemeGalleryItem | null>(null);
-  const [price, setPrice] = useState("50");
-  // A lista é "MEUS temas": antes vinha a galeria PÚBLICA (todos os temas da rede), e a pessoa
-  // via só o tema de outra pessoa — e vender o dela era impossível.
-  const myThemes = useQuery({
-    queryKey: ["themes", "mine"],
-    queryFn: () => themesApi.mine(),
-    enabled: open,
-  });
-  const queryClient = useQueryClient();
-  const publish = useMutation({
-    mutationFn: () =>
-      marketplaceApi.publish({
-        itemId: theme!.id,
-        title: theme!.name,
-        description: theme!.description || undefined,
-        price: parseFaiscaInput(price) ?? 0,
-      }),
-    onSuccess: () => {
-      setOpen(false);
-      setTheme(null);
-      queryClient.invalidateQueries({ queryKey: ["marketplace"] });
-    },
-  });
 
   return (
     <>
       <Button size="sm" className="rounded-full gap-1.5" onClick={() => setOpen(true)}>
         <Sparkles className="h-4 w-4" />
-        Vender tema
+        Publicar tema
       </Button>
 
-      {open && (
-        <div
-          className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4"
-          onClick={() => setOpen(false)}
-        >
-          <div
-            className="surface-card max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl p-5"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h2 className="text-lg font-semibold">Vender um tema</h2>
-
-            <p className="mt-1 text-sm text-text-subtle">
-              Escolhe um tema seu da galeria e o preço em faíscas. Quem compra tem 7 dias para
-              confirmar ou pedir reembolso — você recebe o valor menos 10% da plataforma.
-            </p>
-
-            {!theme ? (
-              <ul className="mt-4 max-h-[45dvh] space-y-2 overflow-y-auto">
-                {(myThemes.data ?? []).map((t) => (
-                  <li key={t.id}>
-                    <button
-                      type="button"
-                      className="surface-card w-full p-2 text-left transition hover:border-primary"
-                      onClick={() => setTheme(t)}
-                    >
-                      <Miniatura packageJson={t.packageJson} />
-
-                      <span className="mt-1.5 block truncate text-sm font-medium">{t.name}</span>
-                    </button>
-                  </li>
-                ))}
-                {(myThemes.data?.length ?? 0) === 0 && (
-                  <li className="py-4 text-center text-sm text-text-subtle">
-                    Você ainda não publicou um tema na galeria.{" "}
-                    <Link
-                      to="/temas"
-                      onClick={() => setOpen(false)}
-                      className="text-primary hover:underline"
-                    >
-                      Publique um tema
-                    </Link>{" "}
-                    e volte aqui para vendê-lo.
-                  </li>
-                )}
-              </ul>
-            ) : (
-              <div className="mt-4">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm font-medium">{theme.name}</span>
-
-                  <Button size="sm" variant="ghost" onClick={() => setTheme(null)}>
-                    trocar
-                  </Button>
-                </div>
-
-                <label className="mt-3 block text-sm">
-                  <span className="mb-1 block font-medium">Preço em faíscas</span>
-
-                  <Input
-                    type="number"
-                    min={1}
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                  />
-                </label>
-                {publish.isError && (
-                  <p className="mt-2 text-sm text-red-500">
-                    Não foi possível listar — o tema já está à venda?
-                  </p>
-                )}
-              </div>
-            )}
-
-            <div className="mt-4 flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => setOpen(false)}>
-                Fechar
-              </Button>
-              {theme && (
-                <Button
-                  disabled={publish.isPending || parseFaiscaInput(price) === null}
-                  onClick={() => publish.mutate()}
-                >
-                  Listar por {formatFaisca(parseFaiscaInput(price) ?? 0)} faíscas
-                </Button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      <ThemeSellDialog open={open} onOpenChange={setOpen} />
     </>
   );
 }
