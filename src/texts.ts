@@ -764,6 +764,7 @@ export const texts = {
       healthyUsage: "Uso saudável",
       guardian: "Supervisão parental",
       security: "Segurança e verificação",
+      apoie: "Apoie o Énóis",
       deleteAccount: "Excluir conta",
       logout: "Sair",
       loggingOut: "Saindo...",
