@@ -41,7 +41,6 @@ import { AppContainer } from "@/components/app-container";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/mentoria")({
-  beforeLoad: requireAuth,
   head: () => ({ meta: [{ title: texts.mentoring.seoTitle }] }),
   component: Mentoria,
 });
@@ -144,7 +143,10 @@ function Mentoria() {
 
                   <RegisterMentorForm
                     key={myMentor?.id ?? "new"}
-                    onSave={(data) => saveMentor.mutate(data)}
+                    onSave={(data) => {
+                      requireAuth();
+                      saveMentor.mutate(data);
+                    }}
                     isPending={saveMentor.isPending}
                     initialExpertise={myMentor?.expertise.join(", ")}
                     initialPrice={myMentor?.price}
@@ -576,6 +578,7 @@ function BookSessionDialog({ mentorId, mentorName }: { mentorId: string; mentorN
                 disabled={!slotId || book.isPending}
                 onClick={() => {
                   setError(null);
+                  requireAuth();
                   book.mutate();
                 }}
               >

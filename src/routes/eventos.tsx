@@ -33,7 +33,6 @@ export const Route = createFileRoute("/eventos")({
     evento:
       typeof search.evento === "string" && search.evento.length > 0 ? search.evento : undefined,
   }),
-  beforeLoad: requireAuth,
   head: () => ({ meta: [{ title: texts.events.seoTitle }] }),
   component: Eventos,
 });
@@ -108,7 +107,10 @@ function Eventos() {
               </DialogHeader>
 
               <CreateEventForm
-                onSave={(data) => createEvent.mutate(data)}
+                onSave={(data) => {
+                  requireAuth();
+                  createEvent.mutate(data);
+                }}
                 isPending={createEvent.isPending}
               />
             </DialogContent>
@@ -211,7 +213,10 @@ function Eventos() {
                     <Button
                       className="mt-4 w-full rounded-full"
                       disabled={attend.isPending}
-                      onClick={() => attend.mutate(e.id)}
+                      onClick={() => {
+                        requireAuth();
+                        attend.mutate(e.id);
+                      }}
                     >
                       {texts.events.attend}
                     </Button>

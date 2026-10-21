@@ -24,8 +24,13 @@ export const PLATFORM_SPACES = [
   },
   {
     to: "/games",
+    label: "Jogos da comunidade",
+    description: "Jogos publicados por quem está aqui.",
+  },
+  {
+    to: "/projetos",
     label: "Projetos da comunidade",
-    description: "Jogos e projetos publicados por quem está aqui.",
+    description: "Apps, sites, pesquisas e experimentos de quem está aqui.",
     inSidebar: true,
   },
 ] as const;

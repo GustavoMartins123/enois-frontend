@@ -47,8 +47,11 @@ import { Route as BloqueadosRouteImport } from './routes/bloqueados'
 import { Route as BlogsRouteImport } from './routes/blogs'
 import { Route as ApoiarRouteImport } from './routes/apoiar'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProjetosIndexRouteImport } from './routes/projetos.index'
 import { Route as VagasMinhasRouteImport } from './routes/vagas.minhas'
 import { Route as VagasJobIdRouteImport } from './routes/vagas.$jobId'
+import { Route as ProjetosPainelRouteImport } from './routes/projetos.painel'
+import { Route as ProjetosUsernameRouteImport } from './routes/projetos.$username'
 import { Route as ProfissionalUsernameRouteImport } from './routes/profissional_.$username'
 import { Route as PostPostIdRouteImport } from './routes/post.$postId'
 import { Route as PerfilUsernameRouteImport } from './routes/perfil.$username'
@@ -63,6 +66,7 @@ import { Route as AuthVerifyRouteImport } from './routes/auth.verify'
 import { Route as AuthResetRouteImport } from './routes/auth.reset'
 import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as VagasJobIdCandidaturasRouteImport } from './routes/vagas.$jobId.candidaturas'
+import { Route as ProjetosUsernameProjectSlugRouteImport } from './routes/projetos.$username.$projectSlug'
 import { Route as GamesUsernameGameSlugRouteImport } from './routes/games.$username.$gameSlug'
 import { Route as BlogPostNewRouteImport } from './routes/blog.post.new'
 import { Route as BlogPostPostIdRouteImport } from './routes/blog.post.$postId'
@@ -259,6 +263,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProjetosIndexRoute = ProjetosIndexRouteImport.update({
+  id: '/projetos/',
+  path: '/projetos/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VagasMinhasRoute = VagasMinhasRouteImport.update({
   id: '/minhas',
   path: '/minhas',
@@ -268,6 +277,16 @@ const VagasJobIdRoute = VagasJobIdRouteImport.update({
   id: '/$jobId',
   path: '/$jobId',
   getParentRoute: () => VagasRoute,
+} as any)
+const ProjetosPainelRoute = ProjetosPainelRouteImport.update({
+  id: '/projetos/painel',
+  path: '/projetos/painel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProjetosUsernameRoute = ProjetosUsernameRouteImport.update({
+  id: '/projetos/$username',
+  path: '/projetos/$username',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ProfissionalUsernameRoute = ProfissionalUsernameRouteImport.update({
   id: '/profissional_/$username',
@@ -339,6 +358,12 @@ const VagasJobIdCandidaturasRoute = VagasJobIdCandidaturasRouteImport.update({
   path: '/candidaturas',
   getParentRoute: () => VagasJobIdRoute,
 } as any)
+const ProjetosUsernameProjectSlugRoute =
+  ProjetosUsernameProjectSlugRouteImport.update({
+    id: '/$projectSlug',
+    path: '/$projectSlug',
+    getParentRoute: () => ProjetosUsernameRoute,
+  } as any)
 const GamesUsernameGameSlugRoute = GamesUsernameGameSlugRouteImport.update({
   id: '/$gameSlug',
   path: '/$gameSlug',
@@ -418,12 +443,16 @@ export interface FileRoutesByFullPath {
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
   '/profissional/$username': typeof ProfissionalUsernameRoute
+  '/projetos/$username': typeof ProjetosUsernameRouteWithChildren
+  '/projetos/painel': typeof ProjetosPainelRoute
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
+  '/projetos/': typeof ProjetosIndexRoute
   '/blog/$username/$postId': typeof BlogUsernamePostIdRoute
   '/blog/post/$postId': typeof BlogPostPostIdRoute
   '/blog/post/new': typeof BlogPostNewRoute
   '/games/$username/$gameSlug': typeof GamesUsernameGameSlugRoute
+  '/projetos/$username/$projectSlug': typeof ProjetosUsernameProjectSlugRoute
   '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
   '/comunidades/$communityId/canais/$channelId': typeof ComunidadesCommunityIdCanaisChannelIdRoute
 }
@@ -479,12 +508,16 @@ export interface FileRoutesByTo {
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
   '/profissional/$username': typeof ProfissionalUsernameRoute
+  '/projetos/$username': typeof ProjetosUsernameRouteWithChildren
+  '/projetos/painel': typeof ProjetosPainelRoute
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
+  '/projetos': typeof ProjetosIndexRoute
   '/blog/$username/$postId': typeof BlogUsernamePostIdRoute
   '/blog/post/$postId': typeof BlogPostPostIdRoute
   '/blog/post/new': typeof BlogPostNewRoute
   '/games/$username/$gameSlug': typeof GamesUsernameGameSlugRoute
+  '/projetos/$username/$projectSlug': typeof ProjetosUsernameProjectSlugRoute
   '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
   '/comunidades/$communityId/canais/$channelId': typeof ComunidadesCommunityIdCanaisChannelIdRoute
 }
@@ -541,12 +574,16 @@ export interface FileRoutesById {
   '/perfil/$username': typeof PerfilUsernameRoute
   '/post/$postId': typeof PostPostIdRoute
   '/profissional_/$username': typeof ProfissionalUsernameRoute
+  '/projetos/$username': typeof ProjetosUsernameRouteWithChildren
+  '/projetos/painel': typeof ProjetosPainelRoute
   '/vagas/$jobId': typeof VagasJobIdRouteWithChildren
   '/vagas/minhas': typeof VagasMinhasRoute
+  '/projetos/': typeof ProjetosIndexRoute
   '/blog/$username_/$postId': typeof BlogUsernamePostIdRoute
   '/blog/post/$postId': typeof BlogPostPostIdRoute
   '/blog/post/new': typeof BlogPostNewRoute
   '/games/$username/$gameSlug': typeof GamesUsernameGameSlugRoute
+  '/projetos/$username/$projectSlug': typeof ProjetosUsernameProjectSlugRoute
   '/vagas/$jobId/candidaturas': typeof VagasJobIdCandidaturasRoute
   '/comunidades/$communityId/canais/$channelId': typeof ComunidadesCommunityIdCanaisChannelIdRoute
 }
@@ -604,12 +641,16 @@ export interface FileRouteTypes {
     | '/perfil/$username'
     | '/post/$postId'
     | '/profissional/$username'
+    | '/projetos/$username'
+    | '/projetos/painel'
     | '/vagas/$jobId'
     | '/vagas/minhas'
+    | '/projetos/'
     | '/blog/$username/$postId'
     | '/blog/post/$postId'
     | '/blog/post/new'
     | '/games/$username/$gameSlug'
+    | '/projetos/$username/$projectSlug'
     | '/vagas/$jobId/candidaturas'
     | '/comunidades/$communityId/canais/$channelId'
   fileRoutesByTo: FileRoutesByTo
@@ -665,12 +706,16 @@ export interface FileRouteTypes {
     | '/perfil/$username'
     | '/post/$postId'
     | '/profissional/$username'
+    | '/projetos/$username'
+    | '/projetos/painel'
     | '/vagas/$jobId'
     | '/vagas/minhas'
+    | '/projetos'
     | '/blog/$username/$postId'
     | '/blog/post/$postId'
     | '/blog/post/new'
     | '/games/$username/$gameSlug'
+    | '/projetos/$username/$projectSlug'
     | '/vagas/$jobId/candidaturas'
     | '/comunidades/$communityId/canais/$channelId'
   id:
@@ -726,12 +771,16 @@ export interface FileRouteTypes {
     | '/perfil/$username'
     | '/post/$postId'
     | '/profissional_/$username'
+    | '/projetos/$username'
+    | '/projetos/painel'
     | '/vagas/$jobId'
     | '/vagas/minhas'
+    | '/projetos/'
     | '/blog/$username_/$postId'
     | '/blog/post/$postId'
     | '/blog/post/new'
     | '/games/$username/$gameSlug'
+    | '/projetos/$username/$projectSlug'
     | '/vagas/$jobId/candidaturas'
     | '/comunidades/$communityId/canais/$channelId'
   fileRoutesById: FileRoutesById
@@ -783,6 +832,9 @@ export interface RootRouteChildren {
   PerfilUsernameRoute: typeof PerfilUsernameRoute
   PostPostIdRoute: typeof PostPostIdRoute
   ProfissionalUsernameRoute: typeof ProfissionalUsernameRoute
+  ProjetosUsernameRoute: typeof ProjetosUsernameRouteWithChildren
+  ProjetosPainelRoute: typeof ProjetosPainelRoute
+  ProjetosIndexRoute: typeof ProjetosIndexRoute
   BlogUsernamePostIdRoute: typeof BlogUsernamePostIdRoute
   BlogPostPostIdRoute: typeof BlogPostPostIdRoute
   BlogPostNewRoute: typeof BlogPostNewRoute
@@ -1056,6 +1108,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/projetos/': {
+      id: '/projetos/'
+      path: '/projetos'
+      fullPath: '/projetos/'
+      preLoaderRoute: typeof ProjetosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/vagas/minhas': {
       id: '/vagas/minhas'
       path: '/minhas'
@@ -1069,6 +1128,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/vagas/$jobId'
       preLoaderRoute: typeof VagasJobIdRouteImport
       parentRoute: typeof VagasRoute
+    }
+    '/projetos/painel': {
+      id: '/projetos/painel'
+      path: '/projetos/painel'
+      fullPath: '/projetos/painel'
+      preLoaderRoute: typeof ProjetosPainelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/projetos/$username': {
+      id: '/projetos/$username'
+      path: '/projetos/$username'
+      fullPath: '/projetos/$username'
+      preLoaderRoute: typeof ProjetosUsernameRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/profissional_/$username': {
       id: '/profissional_/$username'
@@ -1167,6 +1240,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/vagas/$jobId/candidaturas'
       preLoaderRoute: typeof VagasJobIdCandidaturasRouteImport
       parentRoute: typeof VagasJobIdRoute
+    }
+    '/projetos/$username/$projectSlug': {
+      id: '/projetos/$username/$projectSlug'
+      path: '/$projectSlug'
+      fullPath: '/projetos/$username/$projectSlug'
+      preLoaderRoute: typeof ProjetosUsernameProjectSlugRouteImport
+      parentRoute: typeof ProjetosUsernameRoute
     }
     '/games/$username/$gameSlug': {
       id: '/games/$username/$gameSlug'
@@ -1304,6 +1384,17 @@ const VagasRouteChildren: VagasRouteChildren = {
 
 const VagasRouteWithChildren = VagasRoute._addFileChildren(VagasRouteChildren)
 
+interface ProjetosUsernameRouteChildren {
+  ProjetosUsernameProjectSlugRoute: typeof ProjetosUsernameProjectSlugRoute
+}
+
+const ProjetosUsernameRouteChildren: ProjetosUsernameRouteChildren = {
+  ProjetosUsernameProjectSlugRoute: ProjetosUsernameProjectSlugRoute,
+}
+
+const ProjetosUsernameRouteWithChildren =
+  ProjetosUsernameRoute._addFileChildren(ProjetosUsernameRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApoiarRoute: ApoiarRoute,
@@ -1351,6 +1442,9 @@ const rootRouteChildren: RootRouteChildren = {
   PerfilUsernameRoute: PerfilUsernameRoute,
   PostPostIdRoute: PostPostIdRoute,
   ProfissionalUsernameRoute: ProfissionalUsernameRoute,
+  ProjetosUsernameRoute: ProjetosUsernameRouteWithChildren,
+  ProjetosPainelRoute: ProjetosPainelRoute,
+  ProjetosIndexRoute: ProjetosIndexRoute,
   BlogUsernamePostIdRoute: BlogUsernamePostIdRoute,
   BlogPostPostIdRoute: BlogPostPostIdRoute,
   BlogPostNewRoute: BlogPostNewRoute,
