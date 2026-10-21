@@ -3523,7 +3523,7 @@ export const texts = {
 
   post: {
     seoTitle: "Publicação · Énóis",
-    seoDescription: "Veja esta publicação no Énóis — rede profissional gratuita, sem anúncios.",
+    seoDescription: "Veja esta publicação no Énóis — rede humana gratuita, sem anúncios.",
     back: "Voltar",
     loading: "Carregando publicação...",
     notFound: "Publicação não encontrada.",
@@ -3553,12 +3553,12 @@ export const texts = {
     terms: {
       seoTitle: "Termos de Uso · Énóis",
       seoDescription:
-        "Termos de uso da rede profissional Énóis — regras de uso, conduta, conteúdo e responsabilidades.",
+        "Termos de uso da rede humana Énóis — regras de uso, conduta, conteúdo e responsabilidades.",
       title: "Termos de Uso",
       sections: [
         {
           title: "1. Aceitação dos termos e idade mínima",
-          text: 'Ao criar uma conta ou usar qualquer funcionalidade da plataforma Énóis ("plataforma"), você concorda com estes Termos de Uso e com a Política de Privacidade. Se não concordar com qualquer parte deles, não utilize a plataforma.\n\nA plataforma é destinada exclusivamente a pessoas com 18 anos ou mais, por se tratar de uma rede profissional. Ao criar a conta, você declara e confirma ser maior de idade, e esse aceite é registrado com data e hora.',
+          text: 'Ao criar uma conta ou usar qualquer funcionalidade da plataforma Énóis ("plataforma"), você concorda com estes Termos de Uso e com a Política de Privacidade. Se não concordar com qualquer parte deles, não utilize a plataforma.\n\nA plataforma é destinada exclusivamente a pessoas com 18 anos ou mais, por exigência legal e por decisão da comunidade. Ao criar a conta, você declara e confirma ser maior de idade, e esse aceite é registrado com data e hora.',
         },
         {
           title: "2. Definições",
