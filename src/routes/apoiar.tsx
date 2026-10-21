@@ -7,7 +7,6 @@ import {
   Check,
   Copy,
   ExternalLink,
-  Github,
   Heart,
   MessageSquare,
   Server,
@@ -23,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
+import { GithubIcon } from "@/components/icons/github";
 
 export const Route = createFileRoute("/apoiar")({
   head: () => ({
@@ -367,7 +367,7 @@ function Apoiar() {
               className="flex items-center justify-between gap-3 rounded-xl border border-border-soft bg-surface-1 px-4 py-3 text-sm font-medium text-text-strong transition hover:border-primary hover:text-primary"
             >
               <span className="inline-flex min-w-0 items-center gap-2">
-                <Github className="h-4 w-4 shrink-0 text-primary" />
+                <GithubIcon className="h-4 w-4 shrink-0 text-primary" />
 
                 <span className="truncate">github.com/Rede-ENois</span>
               </span>
