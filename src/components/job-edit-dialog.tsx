@@ -2,7 +2,14 @@ import { useState } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { JOB_LEVELS, JOB_LOCATIONS, JOB_TYPES, SALARY_PERIODS } from "@/constants/job-options";
+import {
+  JOB_LEVELS,
+  JOB_LOCATIONS,
+  JOB_TYPES,
+  SALARY_PERIODS,
+  jobLevelLabel,
+  jobTypeLabel,
+} from "@/constants/job-options";
 import { texts } from "@/texts";
 import type { CurrencyCode } from "@/types/application/currency/currency-code";
 import type { CreateJobInput } from "@/types/application/job/create-job-input";
@@ -145,7 +152,7 @@ function EditForm({
           <select value={type} onChange={(e) => setType(e.target.value)} className={SELECT_CLASS}>
             {JOB_TYPES.map((t) => (
               <option key={t} value={t}>
-                {t}
+                {jobTypeLabel(t)}
               </option>
             ))}
           </select>
@@ -157,7 +164,7 @@ function EditForm({
           <select value={level} onChange={(e) => setLevel(e.target.value)} className={SELECT_CLASS}>
             {JOB_LEVELS.map((l) => (
               <option key={l} value={l}>
-                {l.charAt(0) + l.slice(1).toLowerCase()}
+                {jobLevelLabel(l)}
               </option>
             ))}
           </select>

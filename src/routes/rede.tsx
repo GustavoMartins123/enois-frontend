@@ -46,7 +46,10 @@ function Rede() {
   });
 
   const users = usersData?.items ?? [];
-  const pendingRequests = (requestsData?.items ?? []).filter((r) => r.status === "PENDING");
+  // Sem saber quem é a pessoa não dá para separar recebidas de enviadas: espera o `me`.
+  const pendingRequests = currentUserId
+    ? (requestsData?.items ?? []).filter((r) => r.status === "PENDING")
+    : [];
   const incomingRequests = pendingRequests.filter((r) => r.fromUserId !== currentUserId);
   const outgoingRequests = pendingRequests.filter((r) => r.fromUserId === currentUserId);
 

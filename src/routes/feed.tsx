@@ -49,6 +49,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/loading-state";
 import { Pill } from "@/components/ui/pill";
+import { PillRow } from "@/components/ui/pill-row";
 import { useToast } from "@/components/ui/toast";
 
 import { ApoieCard } from "@/components/apoie-card";
@@ -715,7 +716,9 @@ function Home() {
                 </div>
               )}
 
-              <div className="flex items-center gap-2">
+              {/* `ml-auto`: quando não cabe na mesma linha das opções, o Publicar desce e continua
+                  alinhado à direita, onde a pessoa procura — antes caía à esquerda, solto. */}
+              <div className="ml-auto flex items-center gap-2">
                 {/* O motivo da recusa fica na linha de baixo, inteiro: antes ele saía truncado em
                     200px ao lado do botão e a publicação recusada parecia "não fazer nada". */}
                 {publishError && (
@@ -860,7 +863,7 @@ function Home() {
           )}
 
           {/* Tabs */}
-          <div className="flex flex-wrap items-center gap-1.5">
+          <PillRow label={texts.feed.tabsLabel}>
             <Pill active={tab === "FOR_YOU"} onClick={() => setTab("FOR_YOU")}>
               {texts.feed.tabs.forYou}
             </Pill>
@@ -906,7 +909,7 @@ function Home() {
                 {texts.feed.tabs.corporate}
               </Pill>
             )}
-          </div>
+          </PillRow>
 
           <div className="space-y-4">
             {feedLoading && <LoadingState />}
@@ -927,7 +930,7 @@ function Home() {
         {/* Right rail: TUDO num único filho do grid. O cartão de doação já foi um filho solto
             aqui — ele esticava até a altura da coluna inteira e empurrava/escondia os outros
             cartões (o que está acontecendo agora) para fora da dobra. */}
-        <aside className="sticky top-20 hidden max-h-[calc(100vh-6rem)] space-y-4 self-start overflow-y-auto lg:block">
+        <aside className="sticky top-20 hidden max-h-[calc(100vh-6rem)] space-y-4 self-start overflow-y-auto scrollbar-on-hover lg:block">
           <ApoieCard />
           <PlatformSpacesCard />
 

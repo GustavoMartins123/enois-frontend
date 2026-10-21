@@ -233,6 +233,18 @@
   }
 }
 
+/* Barra de rolagem que só aparece com o mouse em cima. Para colunas fixas (menu lateral):
+   a barra sempre visível, com as setinhas do Windows, parecia um quadro quebrado ao lado
+   do menu, e quase ninguém precisa rolar ali. */
+@utility scrollbar-on-hover {
+  scrollbar-color: transparent transparent;
+
+  &:hover,
+  &:focus-within {
+    scrollbar-color: var(--border) transparent;
+  }
+}
+
 /* Resets de elementos em @layer base: UNLAYERED eles vencem as utilities do
    Tailwind (ordem de camada fala mais alto que especificidade) e um
    `a { color: inherit }` solto MATAVA toda utility de cor de texto em link —
@@ -499,120 +511,390 @@
    UserAvatar embrulha o Avatar (que corta tudo com overflow-hidden) num invólucro @container
    e o efeito vaza 30% para cada lado. Medidas em cqw (1cqw = 1% do avatar) ou no viewBox do
    SVG (avatar de raio 50), para escalar do avatar de comentário ao do perfil. */
-.moldura-fx { position: absolute; inset: -30%; z-index: 1; pointer-events: none; }
-.moldura-fx__svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-@keyframes moldura-giro { to { transform: rotate(360deg); } }
+.moldura-fx {
+  position: absolute;
+  inset: -30%;
+  z-index: 1;
+  pointer-events: none;
+}
+.moldura-fx__svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+@keyframes moldura-giro {
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 /* Tempestade: arcos elétricos que acendem fora de compasso, girando devagar, e um relâmpago duplo. */
-.moldura-tempestade__aura { animation: moldura-tempestade-relampago 3.1s linear infinite; }
-.moldura-tempestade__anel { animation: moldura-tempestade-anel 0.4s steps(2, jump-none) infinite; }
-.moldura-tempestade__raios { animation: moldura-giro 14s linear infinite; }
-.moldura-tempestade__raio { opacity: 0; animation: moldura-tempestade-raio 1s linear infinite; }
-@keyframes moldura-tempestade-relampago { 0%, 44%, 58%, 100% { opacity: 0.45; } 46%, 52% { opacity: 1; } 49% { opacity: 0.5; } }
-@keyframes moldura-tempestade-anel { from { opacity: 1; } to { opacity: 0.55; } }
-@keyframes moldura-tempestade-raio { 0% { opacity: 1; } 5% { opacity: 0.3; } 8%, 18% { opacity: 1; } 21% { opacity: 0.4; } 24%, 30% { opacity: 1; } 31%, 100% { opacity: 0; } }
+.moldura-tempestade__aura {
+  animation: moldura-tempestade-relampago 3.1s linear infinite;
+}
+.moldura-tempestade__anel {
+  animation: moldura-tempestade-anel 0.4s steps(2, jump-none) infinite;
+}
+.moldura-tempestade__raios {
+  animation: moldura-giro 14s linear infinite;
+}
+.moldura-tempestade__raio {
+  opacity: 0;
+  animation: moldura-tempestade-raio 1s linear infinite;
+}
+@keyframes moldura-tempestade-relampago {
+  0%,
+  44%,
+  58%,
+  100% {
+    opacity: 0.45;
+  }
+  46%,
+  52% {
+    opacity: 1;
+  }
+  49% {
+    opacity: 0.5;
+  }
+}
+@keyframes moldura-tempestade-anel {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.55;
+  }
+}
+@keyframes moldura-tempestade-raio {
+  0% {
+    opacity: 1;
+  }
+  5% {
+    opacity: 0.3;
+  }
+  8%,
+  18% {
+    opacity: 1;
+  }
+  21% {
+    opacity: 0.4;
+  }
+  24%,
+  30% {
+    opacity: 1;
+  }
+  31%,
+  100% {
+    opacity: 0;
+  }
+}
 
 /* Inferno: cada labareda tremula a partir da base; as brasas sobem e apagam. */
-.moldura-inferno__nucleo { animation: moldura-inferno-nucleo 1.3s ease-in-out infinite; }
-.moldura-inferno__chama { transform-origin: 0 0; animation: moldura-inferno-chama 0.7s ease-in-out infinite; }
-.moldura-inferno__brasa { animation: moldura-inferno-brasa 2s ease-out infinite; }
-@keyframes moldura-inferno-nucleo { 50% { opacity: 0.6; stroke-width: 5; } }
+.moldura-inferno__nucleo {
+  animation: moldura-inferno-nucleo 1.3s ease-in-out infinite;
+}
+.moldura-inferno__chama {
+  transform-origin: 0 0;
+  animation: moldura-inferno-chama 0.7s ease-in-out infinite;
+}
+.moldura-inferno__brasa {
+  animation: moldura-inferno-brasa 2s ease-out infinite;
+}
+@keyframes moldura-inferno-nucleo {
+  50% {
+    opacity: 0.6;
+    stroke-width: 5;
+  }
+}
 @keyframes moldura-inferno-chama {
-  0%, 100% { transform: scale(1, 1); }
-  25% { transform: scale(0.88, 1.2) skewX(5deg); }
-  50% { transform: scale(1.06, 0.85); }
-  75% { transform: scale(0.92, 1.12) skewX(-5deg); }
+  0%,
+  100% {
+    transform: scale(1, 1);
+  }
+  25% {
+    transform: scale(0.88, 1.2) skewX(5deg);
+  }
+  50% {
+    transform: scale(1.06, 0.85);
+  }
+  75% {
+    transform: scale(0.92, 1.12) skewX(-5deg);
+  }
 }
 @keyframes moldura-inferno-brasa {
-  0% { transform: translate(0, 0) scale(1); opacity: 0; }
-  15% { opacity: 1; }
-  100% { transform: translate(var(--deriva), -30px) scale(0.3); opacity: 0; }
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--deriva), -30px) scale(0.3);
+    opacity: 0;
+  }
 }
 
 /* Buraco negro: o tracejado de cada faixa corre um período inteiro por volta (laço sem salto). */
-.moldura-buraco-negro__halo { animation: moldura-buraco-negro-pulso 4s ease-in-out infinite; }
-.moldura-buraco-negro__estrelas { animation: moldura-giro 60s linear infinite; }
-.moldura-buraco-negro__estrela { animation: moldura-buraco-negro-estrela 3s ease-in-out infinite; }
-.moldura-buraco-negro__materia { animation: moldura-buraco-negro-materia 2s linear infinite; }
-.moldura-buraco-negro__fotons { animation: moldura-buraco-negro-fotons 2.2s ease-in-out infinite; }
-.moldura-buraco-negro__x { animation: moldura-buraco-negro-x 1.2s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate; }
-.moldura-buraco-negro__y { animation: moldura-buraco-negro-y 1.2s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate; }
-@keyframes moldura-buraco-negro-pulso { 50% { opacity: 0.6; } }
-@keyframes moldura-buraco-negro-estrela { 50% { opacity: 0.25; } }
-@keyframes moldura-buraco-negro-materia { to { stroke-dashoffset: var(--periodo); } }
-@keyframes moldura-buraco-negro-fotons { 50% { opacity: 0.7; } }
-@keyframes moldura-buraco-negro-x { from { transform: translateX(62px); } to { transform: translateX(-62px); } }
-@keyframes moldura-buraco-negro-y { from { transform: translateY(-6.8px); } to { transform: translateY(6.8px); } }
+.moldura-buraco-negro__halo {
+  animation: moldura-buraco-negro-pulso 4s ease-in-out infinite;
+}
+.moldura-buraco-negro__estrelas {
+  animation: moldura-giro 60s linear infinite;
+}
+.moldura-buraco-negro__estrela {
+  animation: moldura-buraco-negro-estrela 3s ease-in-out infinite;
+}
+.moldura-buraco-negro__materia {
+  animation: moldura-buraco-negro-materia 2s linear infinite;
+}
+.moldura-buraco-negro__fotons {
+  animation: moldura-buraco-negro-fotons 2.2s ease-in-out infinite;
+}
+.moldura-buraco-negro__x {
+  animation: moldura-buraco-negro-x 1.2s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
+}
+.moldura-buraco-negro__y {
+  animation: moldura-buraco-negro-y 1.2s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
+}
+@keyframes moldura-buraco-negro-pulso {
+  50% {
+    opacity: 0.6;
+  }
+}
+@keyframes moldura-buraco-negro-estrela {
+  50% {
+    opacity: 0.25;
+  }
+}
+@keyframes moldura-buraco-negro-materia {
+  to {
+    stroke-dashoffset: var(--periodo);
+  }
+}
+@keyframes moldura-buraco-negro-fotons {
+  50% {
+    opacity: 0.7;
+  }
+}
+@keyframes moldura-buraco-negro-x {
+  from {
+    transform: translateX(62px);
+  }
+  to {
+    transform: translateX(-62px);
+  }
+}
+@keyframes moldura-buraco-negro-y {
+  from {
+    transform: translateY(-6.8px);
+  }
+  to {
+    transform: translateY(6.8px);
+  }
+}
 
 /* Órbita: visível = fora do avatar OU metade de baixo do plano (a de cima passa por trás). */
 /* Contém as caixas transparentes dos planos rotacionados sem cortar as órbitas. */
 .moldura-orbita {
-  position: absolute; inset: 0; overflow: clip;
+  position: absolute;
+  inset: 0;
+  overflow: clip;
 }
 .moldura-orbita__brilho {
-  position: absolute; inset: 18.75%; border-radius: 50%;
-  box-shadow: 0 0 0 1.2cqw rgb(196 181 253 / 0.7), 0 0 7cqw 1cqw rgb(139 92 246 / 0.45);
+  position: absolute;
+  inset: 18.75%;
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 1.2cqw rgb(196 181 253 / 0.7),
+    0 0 7cqw 1cqw rgb(139 92 246 / 0.45);
 }
 .moldura-orbita__plano {
-  position: absolute; inset: 0;
-  -webkit-mask-image: radial-gradient(circle closest-side, transparent 62%, #000 63.5%), linear-gradient(to bottom, transparent 50%, #000 50%);
-  mask-image: radial-gradient(circle closest-side, transparent 62%, #000 63.5%), linear-gradient(to bottom, transparent 50%, #000 50%);
+  position: absolute;
+  inset: 0;
+  -webkit-mask-image:
+    radial-gradient(circle closest-side, transparent 62%, #000 63.5%),
+    linear-gradient(to bottom, transparent 50%, #000 50%);
+  mask-image:
+    radial-gradient(circle closest-side, transparent 62%, #000 63.5%),
+    linear-gradient(to bottom, transparent 50%, #000 50%);
 }
 .moldura-orbita__trilha {
-  position: absolute; left: 50%; top: 50%; width: 132cqw; height: 34cqw; margin: -17cqw 0 0 -66cqw;
-  border: 0.6cqw solid var(--cor); border-radius: 50%; opacity: 0.3;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 132cqw;
+  height: 34cqw;
+  margin: -17cqw 0 0 -66cqw;
+  border: 0.6cqw solid var(--cor);
+  border-radius: 50%;
+  opacity: 0.3;
 }
-.moldura-orbita__x { position: absolute; left: 50%; top: 50%; animation: moldura-orbita-x 1.6s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate; }
+.moldura-orbita__x {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  animation: moldura-orbita-x 1.6s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
+}
 .moldura-orbita__cometa {
-  position: absolute; width: var(--tamanho); height: var(--tamanho); margin: calc(var(--tamanho) / -2); border-radius: 50%;
-  background: var(--cor); box-shadow: 0 0 2.5cqw var(--cor);
+  position: absolute;
+  width: var(--tamanho);
+  height: var(--tamanho);
+  margin: calc(var(--tamanho) / -2);
+  border-radius: 50%;
+  background: var(--cor);
+  box-shadow: 0 0 2.5cqw var(--cor);
   animation: moldura-orbita-y 1.6s cubic-bezier(0.37, 0, 0.63, 1) infinite alternate;
 }
-@keyframes moldura-orbita-x { from { transform: translateX(-66cqw); } to { transform: translateX(66cqw); } }
-@keyframes moldura-orbita-y { from { transform: translateY(-17cqw); } to { transform: translateY(17cqw); } }
+@keyframes moldura-orbita-x {
+  from {
+    transform: translateX(-66cqw);
+  }
+  to {
+    transform: translateX(66cqw);
+  }
+}
+@keyframes moldura-orbita-y {
+  from {
+    transform: translateY(-17cqw);
+  }
+  to {
+    transform: translateY(17cqw);
+  }
+}
 
 /* Glacial: o reflexo dá a volta nos cristais; cintilas e geada se soltando. */
-.moldura-glacial__anel { animation: moldura-glacial-anel 3s ease-in-out infinite; }
-.moldura-glacial__reflexo { opacity: 0; animation: moldura-glacial-reflexo 3.6s ease-in-out infinite; }
-.moldura-glacial__cintila { transform-origin: 0 0; animation: moldura-glacial-cintila 2.2s ease-in-out infinite; }
-.moldura-glacial__geada { animation: moldura-glacial-geada 3s ease-out infinite; }
-@keyframes moldura-glacial-anel { 50% { opacity: 0.6; } }
-@keyframes moldura-glacial-reflexo { 0%, 100% { opacity: 0; } 8% { opacity: 0.85; } 20% { opacity: 0; } }
+.moldura-glacial__anel {
+  animation: moldura-glacial-anel 3s ease-in-out infinite;
+}
+.moldura-glacial__reflexo {
+  opacity: 0;
+  animation: moldura-glacial-reflexo 3.6s ease-in-out infinite;
+}
+.moldura-glacial__cintila {
+  transform-origin: 0 0;
+  animation: moldura-glacial-cintila 2.2s ease-in-out infinite;
+}
+.moldura-glacial__geada {
+  animation: moldura-glacial-geada 3s ease-out infinite;
+}
+@keyframes moldura-glacial-anel {
+  50% {
+    opacity: 0.6;
+  }
+}
+@keyframes moldura-glacial-reflexo {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.85;
+  }
+  20% {
+    opacity: 0;
+  }
+}
 @keyframes moldura-glacial-cintila {
-  0%, 100% { transform: scale(0) rotate(0deg); opacity: 0; }
-  50% { transform: scale(1) rotate(45deg); opacity: 1; }
+  0%,
+  100% {
+    transform: scale(0) rotate(0deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1) rotate(45deg);
+    opacity: 1;
+  }
 }
 @keyframes moldura-glacial-geada {
-  0% { transform: translate(0, 0); opacity: 0; }
-  20% { opacity: 0.9; }
-  100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy));
+    opacity: 0;
+  }
 }
 
 /* Tóxica: os caroços pulsam e giram dentro do filtro goo; as gotas esticam e se soltam. */
-.moldura-toxica__aura { animation: moldura-toxica-aura 2.4s ease-in-out infinite; }
-.moldura-toxica__carocos { animation: moldura-giro 16s linear infinite; }
-.moldura-toxica__caroco { transform-origin: 0 0; animation: moldura-toxica-caroco 2s ease-in-out infinite; }
-.moldura-toxica__gota { transform-origin: 0 0; animation: moldura-toxica-gota 2.6s cubic-bezier(0.55, 0, 0.85, 0.4) infinite; }
-.moldura-toxica__bolha { transform-origin: 0 0; animation: moldura-toxica-bolha 2s ease-out infinite; }
-@keyframes moldura-toxica-aura { 50% { opacity: 0.55; } }
-@keyframes moldura-toxica-caroco { 0%, 100% { transform: scale(0.75); } 50% { transform: scale(1.3); } }
+.moldura-toxica__aura {
+  animation: moldura-toxica-aura 2.4s ease-in-out infinite;
+}
+.moldura-toxica__carocos {
+  animation: moldura-giro 16s linear infinite;
+}
+.moldura-toxica__caroco {
+  transform-origin: 0 0;
+  animation: moldura-toxica-caroco 2s ease-in-out infinite;
+}
+.moldura-toxica__gota {
+  transform-origin: 0 0;
+  animation: moldura-toxica-gota 2.6s cubic-bezier(0.55, 0, 0.85, 0.4) infinite;
+}
+.moldura-toxica__bolha {
+  transform-origin: 0 0;
+  animation: moldura-toxica-bolha 2s ease-out infinite;
+}
+@keyframes moldura-toxica-aura {
+  50% {
+    opacity: 0.55;
+  }
+}
+@keyframes moldura-toxica-caroco {
+  0%,
+  100% {
+    transform: scale(0.75);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+}
 @keyframes moldura-toxica-gota {
-  0% { transform: translateY(0) scale(0.5); }
-  35% { transform: translateY(3px) scale(1); }
-  100% { transform: translateY(28px) scale(0.3); }
+  0% {
+    transform: translateY(0) scale(0.5);
+  }
+  35% {
+    transform: translateY(3px) scale(1);
+  }
+  100% {
+    transform: translateY(28px) scale(0.3);
+  }
 }
 @keyframes moldura-toxica-bolha {
-  0% { transform: translateY(0) scale(0.4); opacity: 0; }
-  15% { opacity: 1; }
-  85% { transform: translateY(-16px) scale(1); opacity: 1; }
-  100% { transform: translateY(-18px) scale(1.6); opacity: 0; }
+  0% {
+    transform: translateY(0) scale(0.4);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    transform: translateY(-16px) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-18px) scale(1.6);
+    opacity: 0;
+  }
 }
 
 /* Sem animação: o desenho fica parado (com dois raios acesos) e as partículas somem. */
 @media (prefers-reduced-motion: reduce) {
-  .moldura-fx * { animation: none !important; }
-  .moldura-fx .moldura-fx__particula { display: none; }
-  .moldura-tempestade__raio:nth-child(-n + 2) { opacity: 1; }
+  .moldura-fx * {
+    animation: none !important;
+  }
+  .moldura-fx .moldura-fx__particula {
+    display: none;
+  }
+  .moldura-tempestade__raio:nth-child(-n + 2) {
+    opacity: 1;
+  }
 }
 
 /* ── Scrollbar na paleta do tema ─────────────────────────────────────────────
