@@ -557,7 +557,7 @@ export const apiSections: ApiSection[] = [
         path: "/media/uploads",
         access: "auth",
         description:
-          "Passo 1. purpose: POST_IMAGE | POST_VIDEO | AVATAR | BANNER | COVER. Teto de 500MB por arquivo.",
+          "Passo 1. purpose: POST_IMAGE | POST_VIDEO | AVATAR | BANNER | COVER. Teto de 500MB por arquivo (URL assinada vale 60 minutos).",
         request: `curl -X POST ${P}/media/uploads \\
   -H "X-Session-Token: $TOKEN" -H "Idempotency-Key: up-1" \\
   -H "Content-Type: application/json" \\
