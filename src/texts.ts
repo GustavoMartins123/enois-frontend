@@ -762,7 +762,7 @@ export const texts = {
       sanctions: "Penalidades",
       linkedAccounts: "Contas vinculadas",
       healthyUsage: "Uso saudável",
-      apoie: "Apoie o Énóis",
+      guardian: "Supervisão parental",
       security: "Segurança e verificação",
       deleteAccount: "Excluir conta",
       logout: "Sair",
@@ -2969,7 +2969,8 @@ export const texts = {
     empty: "Nenhuma empresa encontrada.",
   },
   /** Diálogo global de regularização da data de nascimento (ECA Digital). */
-  birthDateGate: {
+  /** Diálogo global de regularização da data de nascimento (ECA Digital). */
+  ageGate: {
     title: "Confirme sua data de nascimento",
     description:
       "A plataforma exige a data de nascimento para publicar, comentar e enviar mensagens. Ela fica guardada com a sua conta e não aparece para outras pessoas.",
@@ -2977,9 +2978,58 @@ export const texts = {
     confirm: "Confirmar e continuar",
     later: "Agora não",
     saved: "Data de nascimento registrada. Você já pode publicar.",
-    savedMinor: "Data registrada. A conta segue com as regras para menores de 18 anos.",
+    savedMinor:
+      "Data registrada. Agora falta a autorização de um responsável para liberar a conta.",
     invalid: "Confira a data: ela não pode estar no futuro.",
     error: "Não foi possível salvar a data. Tente de novo.",
+  },
+  /** Área do responsável legal (ECA Digital). */
+  guardian: {
+    title: "Supervisão parental",
+    subtitle: "Autorize ou acompanhe o uso do Énóis por um adolescente sob sua responsabilidade.",
+    loginRequired:
+      "Entre com a sua conta de adulto para responder ao convite e acompanhar os perfis supervisionados.",
+    accepted:
+      "Autorização registrada. A conta do adolescente já pode publicar, comentar e enviar mensagens.",
+    rejected: "Convite recusado. A conta do adolescente continua somente leitura.",
+    inviteTitle: "Pedido de autorização",
+    inviteBody:
+      "Um adolescente indicou você como responsável legal no Énóis. Aceitar autoriza o uso da rede por ele, com as proteções para menores de 18 anos.",
+    bullet1: "Você pode revogar a autorização a qualquer momento.",
+    bullet2: "Você não recebe acesso às conversas privadas nem à senha do adolescente.",
+    bullet3: "A data de nascimento dele não fica pública.",
+    accept: "Autorizar uso",
+    reject: "Recusar",
+    mineTitle: "Perfis que eu supervisiono",
+    loading: "Carregando...",
+    none: "Nenhum perfil supervisionado por esta conta.",
+    since: (date: string) => `autorizado em ${date}`,
+    revoke: "Revogar",
+    revoked: "Autorização revogada. A conta voltou ao modo somente leitura.",
+    error: "Não foi possível concluir agora. Tente de novo.",
+    footer:
+      "A autorização parental é registrada com data e versão dos termos. O Énóis não trata a declaração de idade como verificação oficial.",
+  },
+  /** Supervisão parental: menor sem responsável autorizado (ECA Digital). */
+  parentalGate: {
+    title: "Conta de adolescente protegida",
+    description:
+      "Sua conta é de menor de 18 anos. Para publicar, comentar e enviar mensagens, um responsável legal precisa autorizar o uso da rede.",
+    howItWorks:
+      "Envie o convite para o e-mail do seu responsável. Ele precisa entrar no Énóis com uma conta de adulto e aceitar o convite. Até lá, a conta fica somente leitura.",
+    emailLabel: "E-mail do responsável",
+    invite: "Enviar convite",
+    inviting: "Enviando...",
+    sent: "Convite enviado ao seu responsável.",
+    emailFailed: "Não conseguimos enviar o e-mail agora. Tente novamente em instantes.",
+    sentFor: (email: string) => `Convite enviado para ${email}.`,
+    waiting:
+      "Quando o responsável aceitar, a conta é liberada. Se ele já aceitou, verifique de novo.",
+    checkAgain: "Verificar de novo",
+    checking: "Verificando...",
+    later: "Agora não",
+    invalidEmail: "Informe um e-mail válido.",
+    error: "Não foi possível enviar o convite. Tente de novo.",
   },
   exportTheme: "Exportar tema",
   importTheme: "Importar tema",
