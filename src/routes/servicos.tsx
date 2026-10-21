@@ -285,7 +285,7 @@ function MyContracts({
         {contracts.map((c) => (
           <li key={c.id} className="surface-card flex flex-wrap items-center gap-2 p-3">
             <span className="min-w-0 flex-1 text-sm">
-              Contratei · {c.price} faíscas
+              Contratei · {formatFaisca(c.price)} faíscas
               {c.escrowState === "HELD" &&
                 (c.deliverableNote ? ` · entrega: ${c.deliverableNote}` : " · aguardando entrega")}
             </span>
@@ -318,7 +318,7 @@ function MyContracts({
         {sellerContracts.map((c) => (
           <li key={c.id} className="surface-card flex flex-wrap items-center gap-2 p-3">
             <span className="min-w-0 flex-1 text-sm">
-              Executei · {c.price} faíscas
+              Executei · {formatFaisca(c.price)} faíscas
               {c.escrowState === "HELD" && !c.deliverableNote && " · entregue o que foi combinado"}
             </span>
 

@@ -1713,6 +1713,12 @@ export const texts = {
    * O texto diz o que é verdade: o Énóis NÃO hospeda o jogo — ele roda onde o criador publicou, e
    * aqui é o convite. Quando o site de origem proíbe quadro, a tela explica em vez de fingir falha.
    */
+  marketplace: {
+    purchaseConfirmed: "Compra confirmada",
+    purchaseHeld:
+      "As faíscas ficam retidas com segurança até você confirmar que recebeu o conteúdo. Se algo der errado, o reembolso devolve tudo.",
+    keepShopping: "Continuar comprando",
+  },
   projects: {
     seoTitle: "Projetos da comunidade · Énóis",
     seoDescription:

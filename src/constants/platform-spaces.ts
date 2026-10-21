@@ -26,6 +26,7 @@ export const PLATFORM_SPACES = [
     to: "/games",
     label: "Jogos da comunidade",
     description: "Jogos publicados por quem está aqui.",
+    inSidebar: true,
   },
   {
     to: "/projetos",

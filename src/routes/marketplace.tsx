@@ -8,7 +8,7 @@ import { usePreferencesStore } from "@/stores/preferences.store";
 import { texts } from "@/texts";
 import type { MarketplaceListing as MarketplaceListingView } from "@/types/application/marketplace/marketplace-listing";
 import type { MarketplacePurchase } from "@/types/application/marketplace/marketplace-purchase";
-import { BadgeCheck, RotateCcw, Search, Sparkles, Store } from "lucide-react";
+import { BadgeCheck, Check, RotateCcw, Search, Sparkles, Store } from "lucide-react";
 
 import { marketplaceApi, themesApi } from "@/lib/api";
 import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
@@ -17,6 +17,7 @@ import { isAuthenticated } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
 
@@ -44,6 +45,9 @@ function Marketplace() {
   const [kind, setKind] = useState<string | null>(null);
   const [sellContentOpen, setSellContentOpen] = useState(false);
   const [contentPurchase, setContentPurchase] = useState<MarketplacePurchase | null>(null);
+  const [bought, setBought] = useState<{ title: string; price: number; purchaseId: string } | null>(
+    null,
+  );
 
   useEffect(() => {
     const timer = setTimeout(() => setSearch(q.trim()), 300);
@@ -166,12 +170,51 @@ function Marketplace() {
             </p>
           </div>
         ) : (
-          <ul className="grid gap-3 sm:grid-cols-2">
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {catalog.data!.map((l) => (
-              <ListingCard key={l.id} listing={l} />
+              <ListingCard
+                key={l.id}
+                listing={l}
+                onBought={(purchaseId) => setBought({ title: l.title, price: l.price, purchaseId })}
+              />
             ))}
           </ul>
         )}
+        <Dialog open={bought !== null} onOpenChange={(open) => !open && setBought(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 font-normal">
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-primary-soft text-primary">
+                  <Check className="h-5 w-5" />
+                </span>
+
+                <>{texts.marketplace.purchaseConfirmed}</>
+              </DialogTitle>
+            </DialogHeader>
+
+            {bought && (
+              <div className="space-y-4">
+                <div className="rounded-2xl border border-border-soft bg-surface-1 p-4">
+                  <p className="text-sm font-semibold text-text-strong">{bought.title}</p>
+
+                  <p className="mt-1 flex items-center gap-1.5 text-lg font-semibold text-primary">
+                    <Sparkles className="h-4 w-4" />
+                    {formatFaisca(bought.price)} faíscas
+                  </p>
+
+                  <p className="mt-2 text-xs text-text-subtle">{texts.marketplace.purchaseHeld}</p>
+                </div>
+
+                <div className="flex justify-end">
+                  <Button className="rounded-full" onClick={() => setBought(null)}>
+                    {texts.marketplace.keepShopping}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {contentPurchase && (
           <MarketplaceContentDialog
             purchaseId={contentPurchase.id}
@@ -218,7 +261,13 @@ function Miniatura({ packageJson }: { packageJson: string }) {
 }
 
 /** A listagem com o preview do tema (buscado da galeria). */
-function ListingCard({ listing }: { listing: MarketplaceListingView }) {
+function ListingCard({
+  listing,
+  onBought,
+}: {
+  listing: MarketplaceListingView;
+  onBought: (purchaseId: string) => void;
+}) {
   const theme = useQuery({
     queryKey: ["themes", "item", listing.itemId],
     queryFn: () => themesApi.get(listing.itemId),
@@ -226,41 +275,61 @@ function ListingCard({ listing }: { listing: MarketplaceListingView }) {
   const queryClient = useQueryClient();
   const buy = useMutation({
     mutationFn: () => marketplaceApi.buy(listing.id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["marketplace"] }),
+    onSuccess: (result) => {
+      void queryClient.invalidateQueries({ queryKey: ["marketplace"] });
+      onBought(result.purchaseId);
+    },
   });
 
   return (
-    <li className="surface-card min-w-0 overflow-hidden p-4">
-      {theme.data ? <Miniatura packageJson={theme.data.packageJson} /> : null}
-      <div className="mt-2 flex items-center justify-between gap-2">
-        <span className="min-w-0">
-          <span className="block truncate font-semibold">{listing.title}</span>
-          {theme.data?.name && theme.data.name !== listing.title && (
-            <span className="block truncate text-xs text-text-subtle">{theme.data.name}</span>
-          )}
-
-          <span className="block truncate text-xs text-text-subtle">
-            {MARKETPLACE_KIND_LABELS[listing.itemKind]}
-            {(listing.sellerName || listing.sellerUsername) && " · "}
-            {listing.sellerName ?? ""}
-            {listing.sellerUsername ? ` · @${listing.sellerUsername}` : ""}
-          </span>
-        </span>
-
-        <span className="flex shrink-0 items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-sm font-semibold text-primary-text">
-          <Sparkles className="h-3.5 w-3.5" />
-          {formatFaisca(listing.price)}
-        </span>
+    <li className="surface-card flex h-full min-w-0 flex-col overflow-hidden">
+      <div className="p-3 pb-0">
+        {theme.data ? (
+          <Miniatura packageJson={theme.data.packageJson} />
+        ) : (
+          <div
+            className="flex h-16 w-full items-center justify-center rounded-md border border-border-soft"
+            style={{ background: "var(--gradient-primary)" }}
+          >
+            <Store className="h-6 w-6 text-primary-foreground/80" />
+          </div>
+        )}
       </div>
 
-      <Button
-        size="sm"
-        className="mt-3 w-full rounded-full"
-        disabled={buy.isPending}
-        onClick={() => buy.mutate()}
-      >
-        {buy.isPending ? "Retendo faíscas…" : "Comprar"}
-      </Button>
+      <div className="flex flex-1 flex-col gap-2 p-4">
+        <span className="inline-flex w-fit rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-text-subtle">
+          {MARKETPLACE_KIND_LABELS[listing.itemKind]}
+        </span>
+
+        <div className="min-w-0">
+          <h3 className="line-clamp-2 font-semibold text-text-strong">{listing.title}</h3>
+
+          {theme.data?.name && theme.data.name !== listing.title && (
+            <p className="truncate text-xs text-text-subtle">{theme.data.name}</p>
+          )}
+
+          <p className="truncate text-xs text-text-subtle">
+            {listing.sellerName ?? ""}
+            {listing.sellerUsername ? ` · @${listing.sellerUsername}` : ""}
+          </p>
+        </div>
+
+        <div className="mt-auto space-y-2">
+          <span className="flex items-center gap-1.5 text-lg font-semibold text-primary">
+            <Sparkles className="h-4 w-4" />
+            {formatFaisca(listing.price)} faíscas
+          </span>
+
+          <Button
+            size="sm"
+            className="w-full rounded-full"
+            disabled={buy.isPending}
+            onClick={() => buy.mutate()}
+          >
+            {buy.isPending ? "Retendo faíscas…" : "Comprar"}
+          </Button>
+        </div>
+      </div>
     </li>
   );
 }
@@ -327,7 +396,7 @@ function MyPurchases({
                   </span>
 
                   <span className="block text-xs text-text-subtle">
-                    {p.price} faíscas ·{" "}
+                    {formatFaisca(p.price)} faíscas ·{" "}
                     {p.state === "HELD"
                       ? "retidas no escrow"
                       : p.state === "RELEASED"
@@ -402,7 +471,7 @@ function MySales({ sales }: { sales: Awaited<ReturnType<typeof marketplaceApi.sa
       <ul className="space-y-2">
         {sales.map((s) => (
           <li key={s.id} className="surface-card flex items-center gap-2 p-3">
-            <span className="min-w-0 flex-1 text-sm">Venda de {s.price} faíscas</span>
+            <span className="min-w-0 flex-1 text-sm">Venda de {formatFaisca(s.price)} faíscas</span>
 
             <StateChip state={s.state} />
           </li>
