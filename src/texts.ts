@@ -239,7 +239,7 @@ export const texts = {
     themeSearchEmpty: "Nenhum tema com esse nome.",
     categoryAll: "Todas",
     categoryCasa: "Coleções da casa",
-    categoryJogos: "Save points",
+    categoryJogos: "Pontos de save",
     categoryMaquinas: "Máquinas antigas",
     categoryPapel: "Papel e tinta",
     categoryRetro: "Sistema retrô",
@@ -3405,15 +3405,16 @@ export const texts = {
   root: {
     notFound: {
       code: "404",
-      title: "Page not found",
-      description: "The page you're looking for doesn't exist or has been moved.",
-      home: "Go home",
+      title: "Página não encontrada",
+      description: "A página que você procura não existe ou foi movida.",
+      home: "Voltar para o início",
     },
     error: {
-      title: "This page didn't load",
-      description: "Something went wrong on our end. You can try refreshing or head back home.",
-      retry: "Try again",
-      home: "Go home",
+      title: "Esta página não carregou",
+      description:
+        "Algo deu errado do nosso lado. Você pode tentar de novo ou voltar para o início.",
+      retry: "Tentar de novo",
+      home: "Voltar para o início",
     },
     seo: {
       title: "Énóis · Networking profissional humano",
