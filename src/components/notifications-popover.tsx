@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -89,7 +89,17 @@ export function NotificationsPopover() {
   const incomingRequests = (pendingRequests.data?.items ?? []).filter(
     (r) => r.status === "PENDING" && r.fromUserId !== currentUserId,
   );
-  const requestCount = incomingRequests.length;
+  // Quantos items o ConnectionRequestItem escondeu (usuario removido/banido).
+  const [hiddenCount, setHiddenCount] = useState(0);
+  const requestsKey = incomingRequests.map((r) => r.id).join(",");
+  const prevRequestsKey = useRef(requestsKey);
+  useEffect(() => {
+    if (prevRequestsKey.current !== requestsKey) {
+      setHiddenCount(0);
+      prevRequestsKey.current = requestsKey;
+    }
+  }, [requestsKey]);
+  const requestCount = Math.max(0, incomingRequests.length - hiddenCount);
 
   const rejectConnection = useMutation({
     mutationFn: (targetUserId: string) => networkApi.remove(targetUserId),
@@ -209,6 +219,7 @@ export function NotificationsPopover() {
                     rejectConnection.isPending && rejectConnection.variables === request.fromUserId
                   }
                   onNavigate={() => setOpen(false)}
+                  onHidden={() => setHiddenCount((c) => c + 1)}
                 />
               ))
             )
@@ -245,6 +256,7 @@ function ConnectionRequestItem({
   accepting,
   rejecting,
   onNavigate,
+  onHidden,
 }: {
   request: { id: string; fromUserId: string; createdAt: string };
   onAccept: (userId: string) => void;
@@ -252,6 +264,7 @@ function ConnectionRequestItem({
   accepting: boolean;
   rejecting: boolean;
   onNavigate: () => void;
+  onHidden: () => void;
 }) {
   const { data: profile } = useQuery({
     queryKey: ["profile", "by-id", request.fromUserId],
@@ -266,6 +279,13 @@ function ConnectionRequestItem({
   // Usuario banido/removido: o perfil ainda existe mas o username vira "removed-...".
   // Mostrar a solicitacao nao faz sentido — aceitar nao teria efeito.
   const isRemoved = username?.startsWith("removed-") || name === "Usuario removido";
+  const reported = useRef(false);
+  useEffect(() => {
+    if (isRemoved && !reported.current) {
+      reported.current = true;
+      onHidden();
+    }
+  }, [isRemoved, onHidden]);
   if (isRemoved) return null;
 
   return (
