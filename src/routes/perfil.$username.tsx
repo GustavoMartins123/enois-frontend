@@ -326,11 +326,13 @@ function Profile() {
   return (
     <AppContainer>
       <div className="space-y-6">
-        <div className="rounded-2xl border border-border-soft bg-surface-card overflow-hidden">
-          <div className="group relative">
+        {/* Quem recorta os cantos é a capa, não o card: o card cortaria as molduras com
+            efeito, que vazam para fora do avatar. */}
+        <div className="rounded-2xl border border-border-soft bg-surface-card">
+          <div className="group relative overflow-hidden rounded-t-2xl">
             {user.bannerHtml ? (
               // Capa em HTML/CSS: mesmo espaço da foto (mesmas classes), sem moldura própria — quem
-              // recorta é o card, e o quadro já vem com sandbox sem scripts. `clip` é o delimitador:
+              // recorta é a capa, e o quadro já vem com sandbox sem scripts. `clip` é o delimitador:
               // a capa é uma FAIXA da altura que o layout diz, e o HTML do autor é cortado nela —
               // sem ele, um `height: 100vh` na capa realimentava a medida e crescia até tomar a tela.
               <SandboxedHtmlFrame

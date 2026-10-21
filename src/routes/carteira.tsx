@@ -6,6 +6,7 @@ import { ArrowLeft, Send, ShieldAlert, ShoppingBag, Sparkles, TrendingUp, Zap } 
 import { useState } from "react";
 
 import { lojaApi, walletApi } from "@/lib/api";
+import { ANIMATED_FRAMES, isFxFrame } from "@/lib/avatar-frames";
 import { faiscaToBrlCents, formatBrlCents, formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { requireAuth } from "@/lib/require-auth";
 
@@ -417,10 +418,15 @@ function LojaSection() {
       <div key={category.label} className="space-y-2">
         <h3 className="text-sm font-semibold text-text-strong">{category.label}</h3>
         <ul className="grid gap-2 sm:grid-cols-2">
-        {itens.filter((item) => ["moldura-aurora", "moldura-pulsar", "moldura-solar"].includes(item.id) === category.animated).map((item) => (
-          <li key={item.id} className="rounded-xl border border-border-soft p-3">
+        {itens.filter((item) => ANIMATED_FRAMES.includes(item.id) === category.animated).map((item) => (
+          <li key={item.id} className="min-w-0 rounded-xl border border-border-soft p-3">
             <div className="flex items-center gap-3">
-              <UserAvatar frame={item.id} alt={item.name} fallback="✦" className="h-10 w-10" />
+              <UserAvatar
+                frame={item.id}
+                alt={item.name}
+                fallback="✦"
+                className={isFxFrame(item.id) ? "mx-2.5 h-12 w-12" : "h-10 w-10"}
+              />
               <span className="min-w-0 flex-1">
                 <span className="block truncate text-sm font-semibold">{item.name}</span>
                 <span className="block truncate text-xs text-text-subtle">{item.description}</span>
