@@ -1166,7 +1166,8 @@ export const apiSections: ApiSection[] = [
         method: "GET",
         path: "/daily-games/blocks/today",
         access: "public",
-        description: "O estado do jogo de Blocos de hoje (com sessão, inclui o progresso do jogador).",
+        description:
+          "O estado do jogo de Blocos de hoje (com sessão, inclui o progresso do jogador).",
       },
       {
         method: "POST",
@@ -1200,7 +1201,6 @@ export const apiSections: ApiSection[] = [
       },
     ],
   },
-
 ];
 
 export const apiUseCases: ApiUseCase[] = [
