@@ -44,8 +44,8 @@ export const sealsApi = {
    * Selos de UM post, mas em lote: cada card pede o seu e os pedidos do mesmo instante viram uma
    * chamada só ao `forPosts`. Antes cada card chamava `forPosts([id])` e o lote não servia de nada.
    */
-  forPost: (postId: string): Promise<PostSeals> =>
-    new Promise<PostSeals>((resolve, reject) => {
+  forPost: async (postId: string): Promise<PostSeals> =>
+    await new Promise<PostSeals>((resolve, reject) => {
       if (!pendingSeals) {
         pendingSeals = new Map();
         setTimeout(() => {
