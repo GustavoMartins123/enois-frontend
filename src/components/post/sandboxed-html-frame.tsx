@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { SandboxedHtmlFrameProps } from "@/types/components/post/sandboxed-html-frame-props";
 
+import { contentHeight } from "@/lib/html-frame-height";
 import { cn } from "@/lib/utils";
 
 import { useFrameTheme } from "./use-frame-theme";
@@ -42,26 +43,24 @@ export function SandboxedHtmlFrame({
   const grows = autoHeight && !clip;
 
   /**
-   * Altura do conteudo, medida do lado de fora.
+   * Altura do conteudo, medida do lado de fora (a conta em `@/lib/html-frame-height`).
    *
    * Sem `allow-scripts` nao ha script dentro do quadro para avisar o tamanho — mas com
-   * `allow-same-origin` o documento e legivel daqui, entao a conta sai no pai. `scrollHeight` do
-   * `body` e do `documentElement` (o maior dos dois) cobre tanto documento curto quanto conteudo
-   * que estoura, e o `ResizeObserver` refaz a conta quando imagem ou fonte mudam o tamanho.
+   * `allow-same-origin` o documento e legivel daqui, entao a conta sai no pai. O `ResizeObserver`
+   * refaz a conta quando imagem ou fonte mudam o tamanho.
    */
   const measure = useCallback(() => {
     const doc = frame.current?.contentDocument;
     if (!doc) return;
     const body = doc.body;
     const root = doc.documentElement;
-    const conteudo = Math.ceil(
-      Math.max(
-        body?.scrollHeight ?? 0,
-        body?.offsetHeight ?? 0,
-        root?.scrollHeight ?? 0,
-        root?.offsetHeight ?? 0,
-      ),
-    );
+    const conteudo = contentHeight({
+      bodyScrollHeight: body?.scrollHeight ?? 0,
+      bodyOffsetHeight: body?.offsetHeight ?? 0,
+      rootScrollHeight: root?.scrollHeight ?? 0,
+      rootClientHeight: root?.clientHeight ?? 0,
+      rootOffsetHeight: root?.offsetHeight ?? 0,
+    });
     if (conteudo <= 0) return;
     // O teto é o que quebra a realimentação: sem ele, um `height: 100vh` no HTML do autor cresce
     // junto com o quadro (o `vh` É a altura do quadro), o quadro cresce junto com o conteúdo, e a
