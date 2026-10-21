@@ -5,11 +5,12 @@ import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-ro
 
 import { texts } from "@/texts";
 import { ArrowLeft } from "lucide-react";
-import { Ban, Gamepad2, Gavel, ShieldAlert, ShieldOff, Trash2 } from "lucide-react";
 
 import { gamesApi, moderationApi, sanctionsApi, walletApi } from "@/lib/api";
 import { formatFaisca } from "@/lib/faisca";
 import { requireAuth } from "@/lib/require-auth";
+
+import { Ban, Gamepad2, Gavel, ShieldAlert, ShieldOff, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -81,7 +82,9 @@ function Moderacao() {
         </div>
 
         <DisputasSection />
+
         <JogosSection />
+
         <AdminSection />
 
         {isLoading ? (
@@ -144,11 +147,7 @@ function Moderacao() {
 function DisputasSection() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const {
-    data: disputas,
-    error,
-    isLoading,
-  } = useQuery({
+  const { data: disputas, error, isLoading } = useQuery({
     queryKey: ["coin-disputas"],
     queryFn: () => walletApi.disputasPendentes(30),
     retry: false,
@@ -176,7 +175,6 @@ function DisputasSection() {
     <section className="space-y-3" aria-label="Contestações de transferência">
       <div className="flex items-center gap-2">
         <ShieldAlert className="h-4 w-4 text-primary" />
-
         <h2 className="text-sm font-semibold uppercase tracking-widest text-text-subtle">
           Contestações de transferência
         </h2>
@@ -191,18 +189,13 @@ function DisputasSection() {
       ) : (
         <ul className="space-y-3">
           {disputas!.map((d) => (
-            <li
-              key={d.id}
-              className="space-y-2 rounded-2xl border border-border-soft bg-surface-card p-4"
-            >
+            <li key={d.id} className="space-y-2 rounded-2xl border border-border-soft bg-surface-card p-4">
               <p className="text-sm font-semibold">
                 Transferência de {formatFaisca(d.amount)} faíscas · motivo: {d.reason}
               </p>
-
               <p className="text-xs text-text-subtle">
                 {new Date(d.createdAt).toLocaleString("pt-BR")} · ref {d.entryRef.slice(0, 16)}…
               </p>
-
               <div className="flex flex-wrap gap-2 pt-1">
                 <Button
                   size="sm"
@@ -212,7 +205,6 @@ function DisputasSection() {
                 >
                   Procede (reverter)
                 </Button>
-
                 <Button
                   size="sm"
                   variant="outline"
@@ -231,12 +223,6 @@ function DisputasSection() {
   );
 }
 
-/**
- * Ações de administrador contra spam: sanitizar o usuário (apaga do banco todos os posts e
- * comentários dele), banir permanentemente (PERMABAN) e bloquear IPs — o painel lista de onde a
- * conta entrou (registrado no login) para escolher o que bloquear. Somente administradores:
- * para os demais a API devolve 403 e a seção nem aparece.
- */
 function AdminSection() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -249,11 +235,7 @@ function AdminSection() {
     retry: false,
   });
 
-  const {
-    data: ips,
-    refetch: buscarIps,
-    isFetching: buscandoIps,
-  } = useQuery({
+  const { data: ips, refetch: buscarIps, isFetching: buscandoIps } = useQuery({
     queryKey: ["user-ips", username.trim()],
     queryFn: () => moderationApi.userIps(username.trim()),
     enabled: false,
@@ -262,40 +244,27 @@ function AdminSection() {
 
   const sanitizar = useMutation({
     mutationFn: () =>
-      moderationApi.sanitizeUser(
-        username.trim(),
-        motivo.trim() || "Limpeza por spam decidida no painel.",
-      ),
+      moderationApi.sanitizeUser(username.trim(), motivo.trim() || "Limpeza por spam decidida no painel."),
     onSuccess: (resposta) => {
       toast(
         `Conteúdo de @${resposta.username} apagado do banco: ${resposta.posts} posts e ${resposta.comments} comentários.`,
         "success",
       );
     },
-    onError: () =>
-      toast("Não foi possível sanitizar (mínimo de 10 caracteres no motivo).", "error"),
+    onError: () => toast("Não foi possível sanitizar (mínimo de 10 caracteres no motivo).", "error"),
   });
 
   const banir = useMutation({
     mutationFn: ({ tipo }: { tipo: "BAN" | "PERMABAN" }) =>
-      moderationApi.sanctionUser(
-        username.trim(),
-        tipo,
-        motivo.trim() || "Banimento por spam decidido no painel.",
-      ),
+      moderationApi.sanctionUser(username.trim(), tipo, motivo.trim() || "Banimento por spam decidido no painel."),
     onSuccess: (_resposta, vars) => {
-      toast(
-        vars.tipo === "PERMABAN" ? "Banimento permanente aplicado." : "Banimento aplicado.",
-        "success",
-      );
+      toast(vars.tipo === "PERMABAN" ? "Banimento permanente aplicado." : "Banimento aplicado.", "success");
     },
-    onError: () =>
-      toast("Não foi possível banir o usuário (mínimo de 10 caracteres no motivo).", "error"),
+    onError: () => toast("Não foi possível banir o usuário (mínimo de 10 caracteres no motivo).", "error"),
   });
 
   const bloquear = useMutation({
-    mutationFn: ({ ip, reason }: { ip: string; reason: string }) =>
-      moderationApi.blockIp(ip, reason),
+    mutationFn: ({ ip, reason }: { ip: string; reason: string }) => moderationApi.blockIp(ip, reason),
     onSuccess: (_resposta, vars) => {
       toast(`IP ${vars.ip} bloqueado: não cria conta nem entra.`, "success");
       void queryClient.invalidateQueries({ queryKey: ["blocked-ips"] });
@@ -321,7 +290,6 @@ function AdminSection() {
     <section className="space-y-3" aria-label="Ações de administrador">
       <div className="flex items-center gap-2">
         <Ban className="h-4 w-4 text-primary" />
-
         <h2 className="text-sm font-semibold uppercase tracking-widest text-text-subtle">
           Ações de administrador
         </h2>
@@ -335,6 +303,7 @@ function AdminSection() {
             placeholder="@usuário"
             autoComplete="off"
           />
+
           <Input
             value={motivo}
             onChange={(e) => setMotivo(e.target.value)}
@@ -350,11 +319,7 @@ function AdminSection() {
             className="rounded-full gap-1.5"
             disabled={semUsuario || sanitizar.isPending}
             onClick={() => {
-              if (
-                !window.confirm(
-                  `Apagar do banco TODOS os posts e comentários de @${username.trim()}? Sem volta.`,
-                )
-              ) {
+              if (!window.confirm(`Apagar do banco TODOS os posts e comentários de @${username.trim()}? Sem volta.`)) {
                 return;
               }
               sanitizar.mutate();
@@ -370,12 +335,7 @@ function AdminSection() {
             className="rounded-full"
             disabled={semUsuario || banir.isPending}
             onClick={() => {
-              if (
-                !window.confirm(
-                  `Banir PERMANENTEMENTE @${username.trim()}? Sem caminho de recurso.`,
-                )
-              )
-                return;
+              if (!window.confirm(`Banir PERMANENTEMENTE @${username.trim()}? Sem caminho de recurso.`)) return;
               banir.mutate({ tipo: "PERMABAN" });
             }}
           >
@@ -414,9 +374,7 @@ function AdminSection() {
                   variant="destructive"
                   className="rounded-full"
                   disabled={bloquear.isPending}
-                  onClick={() =>
-                    bloquear.mutate({ ip: i.ip, reason: `IP de @${username.trim()} (spam)` })
-                  }
+                  onClick={() => bloquear.mutate({ ip: i.ip, reason: `IP de @${username.trim()} (spam)` })}
                 >
                   Bloquear IP
                 </Button>
@@ -436,7 +394,6 @@ function AdminSection() {
         <div className="rounded-2xl border border-border-soft bg-surface-card p-4">
           <div className="flex items-center gap-2 pb-2">
             <ShieldOff className="h-4 w-4 text-text-subtle" />
-
             <h3 className="text-xs font-semibold uppercase tracking-widest text-text-subtle">
               IPs bloqueados ({bloqueados!.length})
             </h3>
@@ -448,9 +405,7 @@ function AdminSection() {
                 <span className="min-w-0">
                   <span className="break-all font-mono text-xs">{b.ip}</span>
 
-                  {b.reason && (
-                    <span className="ml-2 truncate text-xs text-text-subtle">{b.reason}</span>
-                  )}
+                  {b.reason && <span className="ml-2 truncate text-xs text-text-subtle">{b.reason}</span>}
                 </span>
 
                 <Button
@@ -472,13 +427,6 @@ function AdminSection() {
 }
 
 /**
- * Ações de administrador contra spam: sanitizar o usuário (apaga do banco todos os posts e
- * comentários dele), banir permanentemente (PERMABAN) e bloquear IPs — o painel lista de onde a
- * conta entrou (registrado no login) para escolher o que bloquear. Somente administradores:
- * para os demais a API devolve 403 e a seção nem aparece.
- */
-
-/**
  * A fila de jogos submetidos (E3 do plano): o revisor testa o jogo NO MESMO quadro isolado em
  * que ele vai rodar em produção e decide — aprovado entra no catálogo, recusado volta ao criador
  * com o motivo (que aparece no painel dele junto ao status). Somente administradores — para os
@@ -490,11 +438,7 @@ function JogosSection() {
   const [testando, setTestando] = useState<string | null>(null);
   const [motivos, setMotivos] = useState<Record<string, string>>({});
 
-  const {
-    data: jogos,
-    error,
-    isLoading,
-  } = useQuery({
+  const { data: jogos, error, isLoading } = useQuery({
     queryKey: ["games-pendentes"],
     queryFn: () => gamesApi.pendentes(30),
     retry: false,
@@ -522,7 +466,6 @@ function JogosSection() {
     <section className="space-y-3" aria-label="Jogos esperando revisão">
       <div className="flex items-center gap-2">
         <Gamepad2 className="h-4 w-4 text-primary" />
-
         <h2 className="text-sm font-semibold uppercase tracking-widest text-text-subtle">
           Jogos esperando revisão
         </h2>
@@ -554,8 +497,7 @@ function JogosSection() {
                   <p className="truncate text-sm font-semibold">{g.title}</p>
 
                   <p className="text-xs text-text-subtle">
-                    @{g.username ?? g.userId} ·{" "}
-                    {new Date(g.submittedAt).toLocaleDateString("pt-BR")}
+                    @{g.username ?? g.userId} · {new Date(g.submittedAt).toLocaleDateString("pt-BR")}
                     {g.tags ? ` · ${g.tags}` : ""}
                   </p>
                 </div>

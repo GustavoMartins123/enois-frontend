@@ -1,10 +1,9 @@
 /**
  * Cadastros abertos?
  *
- * A criação de contas foi fechada durante o ataque de contas falsas (2026-10-20). O ataque passou
- * e o cadastro foi reaberto com as defesas que ficaram: captcha no signup, honeypot, data de
- * nascimento (ECA) e o painel de contas suspeitas.
- *
- * Para reabrir: `true` aqui e `rede.auth.signup-enabled=true` no backend (perfil qa/prd).
+ * Cadastros abertos (2026-10-21), com captcha e confirmação de e-mail ANTES de a conta existir:
+ * o backend guarda o cadastro em `pending_signups` e só cria a conta quando o link é usado.
+ * Fechar de novo: `false` aqui e `REDE_AUTH_SIGNUP_ENABLED=false` no backend — os CTAs somem e
+ * `/entrar` abre com o aviso de cadastros fechados.
  */
 export const SIGNUP_OPEN = true;

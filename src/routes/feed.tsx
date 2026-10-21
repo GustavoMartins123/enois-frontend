@@ -60,7 +60,7 @@ import { MentionTextarea } from "@/components/mention-textarea";
 import { PostCard } from "@/components/post-card";
 import { UserAvatar } from "@/components/user-avatar";
 
-/** Todas as abas válidas da tela inicial (a URL carrega a escolhida). */
+/** Abas válidas da tela inicial (a URL carrega a escolhida). */
 const HOME_TABS: HomeTab[] = [
   "FOR_YOU",
   "ALL",
@@ -81,12 +81,12 @@ export const Route = createFileRoute("/feed")({
    * A aba vive na URL (`/feed?aba=ALL`): abrir uma publicação e voltar restaura a MESMA aba em que
    * a pessoa estava — antes o retorno caía sempre em "Para você".
    */
-  validateSearch: (search: Record<string, unknown>): { aba?: HomeTab } => {
-    const aba: HomeTab | undefined =
+  validateSearch: (search: Record<string, unknown>) => {
+    const aba =
       typeof search.aba === "string" && HOME_TABS.includes(search.aba as HomeTab)
         ? (search.aba as HomeTab)
-        : undefined;
-    return aba ? { aba } : {};
+        : "FOR_YOU";
+    return { aba };
   },
   head: () => ({
     meta: [
@@ -168,7 +168,7 @@ function Home() {
   // página anterior, e não passeando pelas abas).
   const { aba } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const tab: HomeTab = aba ?? "FOR_YOU";
+  const tab: HomeTab = aba;
   const setTab = (next: HomeTab) => {
     if (next === tab) return;
     void navigate({ search: { aba: next }, replace: true });
@@ -275,17 +275,22 @@ function Home() {
     setPublishError(null);
     try {
       let mediaIds: string[] = [];
+      let finalContent = content;
       if (!pageMode && media.length > 0) {
         const results = await upload.uploadAll(media.map((m) => ({ file: m.file })));
         mediaIds = results.map((r) => r.mediaId);
+        // Mídia NO MEIO do texto (item 9): pendentes viram ids reais no upload.
+        finalContent = finalContent.replace(/\{\{media:pendente-(\d+)\}\}/g, (_mk, index) => {
+          const uploaded = mediaIds[Number(index)];
+          return uploaded ? `{{media:${uploaded}}}` : "";
+        });
       }
       await schedulePost.mutateAsync({
         type: postType,
-        content: pageMode ? "" : content,
+        content: pageMode ? "" : finalContent,
         mediaIds,
         // As menções viajam com o agendado e valem na PUBLICAÇÃO (quem foi marcado é avisado
-        // quando o post entra no ar, não quando foi agendado). O assunto também: foi declarado
-        // no agendamento, é o que entra no ar.
+        // quando o post entra no ar, não quando foi agendado).
         mentionedUserIds: pageMode ? [] : mentionedUserIds,
         ...(pageMode ? { pageHtml } : {}),
         ...(articleMode ? { articleBody } : {}),
@@ -299,7 +304,6 @@ function Home() {
       setMedia([]);
       setPageHtml("");
       setArticleBody("");
-      // A categoria NÃO é limpa: é a última escolha que fica ativa no próximo post.
       setTypePickerOpen(false);
       setScheduleAt("");
       setSchedulingOpen(false);
@@ -324,27 +328,17 @@ function Home() {
     setPublishError(null);
     try {
       let mediaIds: string[] = [];
-      let finalContent = content;
       if (!pageMode && media.length > 0) {
         const results = await upload.uploadAll(media.map((m) => ({ file: m.file })));
         mediaIds = results.map((r) => r.mediaId);
-        // Mídia NO MEIO do texto (item 9): o composer insere `{{media:pendente-N}}` enquanto a
-        // mídia ainda não subiu; aqui cada pendente vira o id real da mídia que ele representa.
-        // Pendente sem anexo (o usuário removeu o arquivo) some do texto — não há o que renderizar.
-        finalContent = finalContent.replace(/\{\{media:pendente-(\d+)\}\}/g, (marker, index) => {
-          const uploaded = mediaIds[Number(index)];
-          return uploaded ? `{{media:${uploaded}}}` : "";
-        });
       }
       const created = await createPost.mutateAsync({
-        content: pageMode ? "" : finalContent,
+        content: pageMode ? "" : content,
         type: postType,
         mediaIds,
         ...(pageMode ? { pageHtml } : {}),
         ...(articleMode ? { articleBody } : {}),
         mentionedUserIds: pageMode ? [] : mentionedUserIds,
-        // Em comunidade o post herda o assunto DELA — aqui o feed é do autor, então o assunto
-        // escolhido (quando houver) é o que classifica a publicação.
         ...(topic ? { topic } : {}),
       });
       // "Também no LinkedIn": com o LinkedIn vinculado, oferece o compartilhamento pelo
@@ -367,9 +361,9 @@ function Home() {
       setLinkedinUrl(null);
       setPostType("INSIGHT");
       setMedia([]);
+      setPostType("INSIGHT");
       setPageHtml("");
       setArticleBody("");
-      // A categoria NÃO é limpa: é a última escolha que fica ativa no próximo post.
       setTypePickerOpen(false);
     } catch (err) {
       setPublishError(err instanceof Error ? err.message : texts.feed.composer.publishError);
@@ -686,22 +680,6 @@ function Home() {
                     onClick={() => fileRef.current?.click()}
                   />
                 )}
-
-                {/* Item 9: cada anexo ganha "inserir no texto" — o marcador pendente vira a
-                    mídia real no momento do upload, e ela aparece exatamente onde o autor quis. */}
-                {!pageMode &&
-                  media.map((item, index) => (
-                    <button
-                      key={`${item.preview}-${index}`}
-                      type="button"
-                      title={texts.feed.composer.insertInText}
-                      className="inline-flex items-center gap-1 rounded-full border border-dashed border-primary/40 px-2.5 py-1 text-xs font-normal text-primary transition hover:bg-primary/10"
-                      onClick={() => setDraft((current) => `${current}{{media:pendente-${index}}}`)}
-                    >
-                      <Image className="h-3.5 w-3.5" />
-                      {texts.feed.composer.insertMedia(index + 1)}
-                    </button>
-                  ))}
               </div>
 
               {linkedinUrl && (
@@ -932,10 +910,10 @@ function Home() {
         </div>
 
         {/* Right rail */}
-        <aside className="sticky top-20 hidden max-h-[calc(100vh-6rem)] space-y-4 overflow-y-auto lg:block">
-          {/* O convite de doação fica no menu direito: é o que mantém o Énóis gratuito. */}
-          <ApoieCard />
+        {/* O convite de doação fica no menu direito. */}
+        <ApoieCard />
 
+        <aside className="sticky top-20 hidden max-h-[calc(100vh-6rem)] space-y-4 overflow-y-auto lg:block">
           {profileUser && (
             <div className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
               <div className="h-14" style={{ background: "var(--gradient-primary)" }} />

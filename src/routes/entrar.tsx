@@ -343,6 +343,7 @@ function SignupForm(_props: AuthFormProps) {
         password: parsed.data.password,
         birthDate: parsed.data.birthDate,
         acceptedTerms: parsed.data.acceptedTerms === "on",
+        birthDate: parsed.data.birthDate,
         website: fd.get("website") as string | undefined,
         turnstileToken:
           captchaMode === "TURNSTILE"
