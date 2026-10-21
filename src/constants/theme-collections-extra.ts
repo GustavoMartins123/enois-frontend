@@ -576,7 +576,10 @@ export const THEME_COLLECTIONS_EXTRA: ThemeCollection[] = [
         text: { strong: "#0a0a0b", subtle: "#696867", date: "#868584" },
         soft: "#45150c",
         radius: "0px",
-        fontSans: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+        // Mono só nos títulos: no texto corrido inteiro (posts, comentários, formulários) a fonte
+        // de terminal cansava a leitura — no Windows ela vira Consolas, estreita e miúda.
+        fontSans: "Manrope, system-ui, sans-serif",
+        fontDisplay: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
       }),
       dark: palette({
         background: "#0d0d0e",
@@ -590,7 +593,10 @@ export const THEME_COLLECTIONS_EXTRA: ThemeCollection[] = [
         text: { strong: "#f5f7fa", subtle: "#a3a5a7", date: "#818284" },
         soft: "#49160c",
         radius: "0px",
-        fontSans: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+        // Mono só nos títulos: no texto corrido inteiro (posts, comentários, formulários) a fonte
+        // de terminal cansava a leitura — no Windows ela vira Consolas, estreita e miúda.
+        fontSans: "Manrope, system-ui, sans-serif",
+        fontDisplay: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
       }),
     },
     preview: {

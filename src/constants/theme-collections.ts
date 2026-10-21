@@ -200,6 +200,7 @@ export function palette(spec: PaletteSpec): ThemeCollectionTokens {
       };
     })(),
     ...(spec.fontSans ? { "--font-sans": spec.fontSans, "--font-display": spec.fontSans } : {}),
+    ...(spec.fontDisplay ? { "--font-display": spec.fontDisplay } : {}),
     ...spec.extra,
   } satisfies ThemeCollectionTokens;
 }

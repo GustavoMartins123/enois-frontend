@@ -43,6 +43,11 @@ export type PaletteSpec = {
   shadows?: { soft?: string; card?: string };
   radius?: string;
   fontSans?: string;
+  /**
+   * Fonte só dos títulos. Sem ela, os títulos usam a `fontSans`. Serve para o tema ter uma fonte
+   * de personalidade (mono, serifa) sem que o texto corrido inteiro fique nela.
+   */
+  fontDisplay?: string;
   /** O tema é dono da leitura: texto explícito em toda paleta, com contraste conferido. */
   text: { strong: string; subtle: string; date: string };
   /** Transparência nativa das superfícies do tema (Aero 55, Frutiger 72; resto opaco). */
