@@ -92,6 +92,18 @@ function formatPostedAt(dateStr: string | null | undefined): string {
 }
 
 function Vagas() {
+  return <JobsListPage />;
+}
+
+export function JobsListPage({
+  lockedType = null,
+  title = texts.jobs.title,
+  description = texts.jobs.description,
+}: {
+  lockedType?: "FREELANCE" | null;
+  title?: string;
+  description?: string;
+}) {
   const queryClient = useQueryClient();
   const { data: user } = useCurrentUser();
   const matchRoute = useMatchRoute();
@@ -123,7 +135,10 @@ function Vagas() {
   }, [query]);
   const [level, setLevel] = useState("");
   const [location, setLocation] = useState("");
-  const [type, setType] = useState("");
+  const [type, setType] = useState(lockedType ?? "");
+  useEffect(() => {
+    setType(lockedType ?? "");
+  }, [lockedType]);
   const [skills, setSkills] = useState("");
   const [cursor, setCursor] = useState<string | null>(null);
   const [allJobs, setAllJobs] = useState<Job[]>([]);
@@ -135,7 +150,7 @@ function Vagas() {
   const [reportTarget, setReportTarget] = useState<Job | null>(null);
 
   const reputation = user?.reputation ?? 0;
-  const canPublish = canCreateJob(reputation);
+  const canPublish = lockedType === "FREELANCE" || canCreateJob(reputation);
   // Visitante só consulta: os botões de dono e o aviso de reputação ("faltam 151") não dizem
   // nada a quem ainda não tem conta, e no celular empurravam as vagas para a segunda tela.
   const authenticated = useIsAuthenticated();
@@ -144,7 +159,7 @@ function Vagas() {
     query: debouncedQuery || undefined,
     level: level || undefined,
     location: location || undefined,
-    type: type || undefined,
+    type: (lockedType ?? type) || undefined,
     skills: skills || undefined,
   };
 
@@ -185,6 +200,13 @@ function Vagas() {
   // Memo: o `?? []` criava um array novo a cada render e o efeito de acumular a lista abaixo
   // rodava em todo render. Os dois ramos do antigo ternário eram iguais.
   const jobs = useMemo(() => jobsData?.items ?? [], [jobsData]);
+  const visibleJobs = useMemo(
+    () =>
+      lockedType
+        ? allJobs.filter((job) => job.type === lockedType)
+        : allJobs.filter((job) => job.type !== "FREELANCE"),
+    [allJobs, lockedType],
+  );
   const nextCursor = jobsData?.nextCursor ?? null;
 
   // Reset list when filters change
@@ -241,9 +263,9 @@ function Vagas() {
         <div className="surface-card p-4 sm:p-6">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <h1 className="text-2xl font-semibold tracking-tight">{texts.jobs.title}</h1>
+              <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
 
-              <p className="mt-1 text-sm text-muted-foreground">{texts.jobs.description}</p>
+              <p className="mt-1 text-sm text-muted-foreground">{description}</p>
             </div>
 
             <div className="flex flex-wrap items-center gap-2">
@@ -339,23 +361,25 @@ function Vagas() {
             </div>
           </div>
 
-          <div className="mt-3 flex flex-wrap gap-2">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-xs font-medium text-muted-foreground mr-1">
-                {texts.jobs.filters.type}
-              </span>
-              {JOB_TYPES.map((t) => (
-                <Pill
-                  key={t}
-                  size="sm"
-                  active={type === t}
-                  onClick={() => setType(type === t ? "" : t)}
-                >
-                  {jobTypeLabel(t)}
-                </Pill>
-              ))}
+          {!lockedType && (
+            <div className="mt-3 flex flex-wrap gap-2">
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-xs font-medium text-muted-foreground mr-1">
+                  {texts.jobs.filters.type}
+                </span>
+                {JOB_TYPES.map((t) => (
+                  <Pill
+                    key={t}
+                    size="sm"
+                    active={type === t}
+                    onClick={() => setType(type === t ? "" : t)}
+                  >
+                    {jobTypeLabel(t)}
+                  </Pill>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="mt-4 flex flex-wrap gap-3">
             <div className="relative max-w-sm flex-1">
@@ -500,7 +524,7 @@ function Vagas() {
         ) : (
           <>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {allJobs.map((j) => (
+              {visibleJobs.map((j) => (
                 <article key={j.id} className="surface-card flex flex-col p-5">
                   <div className="flex items-start gap-3">
                     <Avatar className="h-12 w-12 rounded-xl">
@@ -689,28 +713,32 @@ function Vagas() {
 
             {isFetching && allJobs.length > 0 && <LoadingState className="py-6" />}
 
-            {!isFetching && allJobs.length === 0 && <EmptyState title={texts.jobs.empty} />}
+            {!isFetching && visibleJobs.length === 0 && <EmptyState title={texts.jobs.empty} />}
           </>
         )}
       </div>
 
-      <CreateJobDialog open={showCreate} onOpenChange={setShowCreate} />
+      <CreateJobDialog open={showCreate} onOpenChange={setShowCreate} lockedType={lockedType} />
       <CreateExternalJobDialog open={showExternal} onOpenChange={setShowExternal} />
       <ReportJobDialog job={reportTarget} onOpenChange={(open) => !open && setReportTarget(null)} />
     </AppContainer>
   );
 }
 
-function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
+function CreateJobDialog({
+  open,
+  onOpenChange,
+  lockedType = null,
+}: CreateJobDialogProps & { lockedType?: "FREELANCE" | null }) {
   const queryClient = useQueryClient();
   const { data: user } = useCurrentUser();
   const reputation = user?.reputation ?? 0;
-  const canPublish = canCreateJob(reputation);
+  const canPublish = lockedType === "FREELANCE" || canCreateJob(reputation);
 
   const [title, setTitle] = useState("");
   const [company, setCompany] = useState("");
   const [location, setLocation] = useState<string>(JOB_LOCATIONS[0]);
-  const [type, setType] = useState<string>(JOB_TYPES[0]);
+  const [type, setType] = useState<string>(lockedType ?? JOB_TYPES[0]);
   const [level, setLevel] = useState<string>(JOB_LEVELS[0]);
   const [salaryMin, setSalaryMin] = useState("");
   const [salaryMax, setSalaryMax] = useState("");
@@ -735,7 +763,7 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
     setTitle("");
     setCompany("");
     setLocation(JOB_LOCATIONS[0]);
-    setType(JOB_TYPES[0]);
+    setType(lockedType ?? JOB_TYPES[0]);
     setLevel(JOB_LEVELS[0]);
     setSalaryMin("");
     setSalaryMax("");
@@ -874,17 +902,23 @@ function CreateJobDialog({ open, onOpenChange }: CreateJobDialogProps) {
                   {texts.jobs.fields.type}
                 </Label>
 
-                <select
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  className={SELECT_CLASS}
-                >
-                  {JOB_TYPES.map((t) => (
-                    <option key={t} value={t}>
-                      {jobTypeLabel(t)}
-                    </option>
-                  ))}
-                </select>
+                {lockedType ? (
+                  <p className="flex h-10 items-center text-sm font-medium">
+                    {jobTypeLabel(lockedType)}
+                  </p>
+                ) : (
+                  <select
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                    className={SELECT_CLASS}
+                  >
+                    {JOB_TYPES.map((t) => (
+                      <option key={t} value={t}>
+                        {jobTypeLabel(t)}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               <div className="space-y-1.5">

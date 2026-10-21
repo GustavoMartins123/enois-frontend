@@ -9,6 +9,7 @@ import {
   FolderKanban,
   Gamepad2,
   GraduationCap,
+  Handshake,
   Home,
   Joystick,
   MessageCircle,
@@ -42,6 +43,7 @@ export const navigationItems: {
   { to: "/salvos", label: texts.navigation.items.saved, icon: Bookmark, module: null },
   { to: "/blogs", label: texts.navigation.items.blogs, icon: BookOpen, module: "BLOGS" },
   { to: "/vagas", label: texts.navigation.items.jobs, icon: Briefcase, module: "JOBS" },
+  { to: "/freelances", label: "Freelances", icon: Handshake, module: "JOBS" },
   {
     to: "/empresas",
     label: texts.navigation.items.companies,

@@ -63,6 +63,9 @@ export const apiSections: ApiSection[] = [
         path: "/auth/2fa/verify",
         access: "public",
         description: "Conclui o login com o código do segundo fator (app autenticador ou e-mail).",
+        request: `curl -X POST ${P}/auth/2fa/verify \\
+  -H "Content-Type: application/json" \\
+  -d '{"challengeId":"<challengeId do login>","code":"123456"}'`,
         response: `200 OK
 {"token":"sess_…","refreshToken":"…"} `,
       },
