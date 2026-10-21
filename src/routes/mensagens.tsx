@@ -136,8 +136,6 @@ function Mensagens() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["messages", activeConversation?.id] });
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
-      setText("");
-      setMedia([]);
     },
   });
 
@@ -209,9 +207,12 @@ function Mensagens() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!activeConversation) return;
+    if (!activeConversation || sendMessage.isPending) return;
     const content = text.trim();
     if (!content && media.length === 0) return;
+    // Limpa na hora para evitar reenvio se Enter disparar duas vezes antes do onSuccess.
+    setText("");
+    setMedia([]);
     setUploadError(null);
     try {
       let mediaIds: string[] = [];
