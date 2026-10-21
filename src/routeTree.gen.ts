@@ -32,6 +32,7 @@ import { Route as JogosDiariosRouteImport } from './routes/jogos-diarios'
 import { Route as HumansDottxtRouteImport } from './routes/humans[.]txt'
 import { Route as GruposRouteImport } from './routes/grupos'
 import { Route as GamesRouteImport } from './routes/games'
+import { Route as FreelancesRouteImport } from './routes/freelances'
 import { Route as FeedRouteImport } from './routes/feed'
 import { Route as EventosRouteImport } from './routes/eventos'
 import { Route as EntrarRouteImport } from './routes/entrar'
@@ -186,6 +187,11 @@ const GruposRoute = GruposRouteImport.update({
 const GamesRoute = GamesRouteImport.update({
   id: '/games',
   path: '/games',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FreelancesRoute = FreelancesRouteImport.update({
+  id: '/freelances',
+  path: '/freelances',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeedRoute = FeedRouteImport.update({
@@ -406,6 +412,7 @@ export interface FileRoutesByFullPath {
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
+  '/freelances': typeof FreelancesRoute
   '/games': typeof GamesRouteWithChildren
   '/grupos': typeof GruposRouteWithChildren
   '/humans.txt': typeof HumansDottxtRoute
@@ -471,6 +478,7 @@ export interface FileRoutesByTo {
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
+  '/freelances': typeof FreelancesRoute
   '/games': typeof GamesRouteWithChildren
   '/grupos': typeof GruposRouteWithChildren
   '/humans.txt': typeof HumansDottxtRoute
@@ -537,6 +545,7 @@ export interface FileRoutesById {
   '/entrar': typeof EntrarRoute
   '/eventos': typeof EventosRoute
   '/feed': typeof FeedRoute
+  '/freelances': typeof FreelancesRoute
   '/games': typeof GamesRouteWithChildren
   '/grupos': typeof GruposRouteWithChildren
   '/humans.txt': typeof HumansDottxtRoute
@@ -604,6 +613,7 @@ export interface FileRouteTypes {
     | '/entrar'
     | '/eventos'
     | '/feed'
+    | '/freelances'
     | '/games'
     | '/grupos'
     | '/humans.txt'
@@ -669,6 +679,7 @@ export interface FileRouteTypes {
     | '/entrar'
     | '/eventos'
     | '/feed'
+    | '/freelances'
     | '/games'
     | '/grupos'
     | '/humans.txt'
@@ -734,6 +745,7 @@ export interface FileRouteTypes {
     | '/entrar'
     | '/eventos'
     | '/feed'
+    | '/freelances'
     | '/games'
     | '/grupos'
     | '/humans.txt'
@@ -800,6 +812,7 @@ export interface RootRouteChildren {
   EntrarRoute: typeof EntrarRoute
   EventosRoute: typeof EventosRoute
   FeedRoute: typeof FeedRoute
+  FreelancesRoute: typeof FreelancesRoute
   GamesRoute: typeof GamesRouteWithChildren
   GruposRoute: typeof GruposRouteWithChildren
   HumansDottxtRoute: typeof HumansDottxtRoute
@@ -1001,6 +1014,13 @@ declare module '@tanstack/react-router' {
       path: '/games'
       fullPath: '/games'
       preLoaderRoute: typeof GamesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/freelances': {
+      id: '/freelances'
+      path: '/freelances'
+      fullPath: '/freelances'
+      preLoaderRoute: typeof FreelancesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/feed': {
@@ -1410,6 +1430,7 @@ const rootRouteChildren: RootRouteChildren = {
   EntrarRoute: EntrarRoute,
   EventosRoute: EventosRoute,
   FeedRoute: FeedRoute,
+  FreelancesRoute: FreelancesRoute,
   GamesRoute: GamesRouteWithChildren,
   GruposRoute: GruposRouteWithChildren,
   HumansDottxtRoute: HumansDottxtRoute,

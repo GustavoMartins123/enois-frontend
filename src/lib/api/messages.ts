@@ -26,6 +26,13 @@ export const messagesApi = {
   sendMessage: (conversationId: string, text: string, mediaIds: string[] = []) =>
     api.post<Message>(`/conversations/${conversationId}/messages`, { text, mediaIds }),
 
+  /** Reage a uma mensagem (o backend alterna: mesmo emoji remove). */
+  react: (conversationId: string, messageId: string, type: string) =>
+    api.post<{ added: boolean }>(
+      `/conversations/${conversationId}/messages/${messageId}/reactions`,
+      { type },
+    ),
+
   markAsRead: (conversationId: string) => api.post<void>(`/conversations/${conversationId}/read`),
 
   /** "Apagar para mim" em massa: esconde as conversas só para quem chama. */

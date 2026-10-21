@@ -2291,6 +2291,10 @@ export const texts = {
       communityFilterHint: "Vagas externas cadastradas pela comunidade, separadas dos agregadores.",
       applyByEmail: "Enviar candidatura",
     },
+    freelanceTitle: "Freelances",
+    freelanceSeoTitle: "Freelances · Énóis",
+    freelanceDescription:
+      "Trabalhos pontuais publicados pela comunidade: qualquer pessoa com conta verificada pode publicar, com a mesma proteção antifraude das vagas.",
     seoTitle: "Vagas · Énóis",
     title: "Oportunidades",
     description: "Vagas filtradas por nível, localização, tipo e habilidades.",

@@ -18,8 +18,14 @@ export const PLATFORM_SPACES = [
   },
   {
     to: "/vagas",
+    label: "Vagas",
+    description: "Vagas de empresas e da comunidade, com filtros e candidatura.",
+    inSidebar: true,
+  },
+  {
+    to: "/freelances",
     label: "Freelances",
-    description: "Vagas e trabalhos por projeto, inclusive da comunidade.",
+    description: "Trabalhos pontuais publicados por qualquer pessoa da comunidade.",
     inSidebar: true,
   },
   {

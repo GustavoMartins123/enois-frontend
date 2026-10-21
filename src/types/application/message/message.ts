@@ -5,4 +5,8 @@ export type Message = {
   /** Até 4 mídias anexadas; o texto pode vir vazio quando há mídia. */
   mediaIds: string[];
   time: string;
+  /** Reações da mensagem: tipo → contagem (vem do backend no histórico). */
+  reactions?: Record<string, number>;
+  /** A reação de quem está vendo (para destacar e permitir desfazer). */
+  myReaction?: string | null;
 };

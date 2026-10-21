@@ -78,7 +78,7 @@ export function NotificationsPopover() {
   const notificationList = (notificationsData?.items ?? []).filter(
     (notification) =>
       !isNotificationHidden(notification.kind, disabledModules) &&
-      notification.kind !== "connection_request",
+      notification.kind.toLowerCase() !== "connection_request",
   );
   const unreadCount = notificationList.filter((notification) => !notification.read).length;
   const displayedNotifications = notificationList.filter((notification) =>
@@ -262,6 +262,11 @@ function ConnectionRequestItem({
   const username = profile?.username;
   const avatar = profile?.avatar;
   const headline = profile?.headline;
+
+  // Usuario banido/removido: o perfil ainda existe mas o username vira "removed-...".
+  // Mostrar a solicitacao nao faz sentido — aceitar nao teria efeito.
+  const isRemoved = username?.startsWith("removed-") || name === "Usuario removido";
+  if (isRemoved) return null;
 
   return (
     <div className="flex items-start gap-3 border-b border-border-soft px-4 py-3 last:border-b-0">
