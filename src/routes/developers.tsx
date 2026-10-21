@@ -2,7 +2,12 @@ import { type ComponentProps, useState } from "react";
 
 import { createFileRoute } from "@tanstack/react-router";
 
-import { API_BASE_URL, apiSections, apiUseCases } from "@/constants/developers-api";
+import {
+  API_BASE_URL,
+  API_V1_BASE_URL,
+  apiSections,
+  apiUseCases,
+} from "@/constants/developers-api";
 import { texts } from "@/texts";
 import type { ApiEndpoint } from "@/types/application/developers/api-endpoint";
 import type { HttpMethod } from "@/types/application/developers/http-method";
@@ -184,6 +189,26 @@ function Developers() {
             </p>
 
             <p>{texts.developersChrome.intro}</p>
+
+            <div className="rounded-xl border border-border-soft p-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
+                {texts.developersChrome.versionTitle}
+              </p>
+
+              <p className="mt-1 text-sm">
+                {texts.developersChrome.versionHint}{" "}
+                <code className="font-mono text-text-strong">{API_V1_BASE_URL}</code>
+              </p>
+
+              <CodeBlock
+                code={`GET ${API_V1_BASE_URL}/feed/posts/$POST_ID
+GET ${API_V1_BASE_URL}          # indice da versao`}
+              />
+
+              <p className="mt-2 text-sm text-text-subtle">{texts.developersChrome.versionNote}</p>
+
+              <p className="mt-1 text-sm text-text-subtle">{texts.developersChrome.versionNow}</p>
+            </div>
 
             <CodeBlock
               code={`# 1. Autentique-se (o mesmo token que o app usa)

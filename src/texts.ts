@@ -2677,6 +2677,13 @@ export const texts = {
       "Tudo sob a mesma base da API. As rotas de leitura pública não pedem credencial; as demais usam a sessão do Énóis no header X-Session-Token — o mesmo token que o app usa, obtido no login.",
     chromeIntroPublic:
       "Sem sessão você já consegue: ler post público e comentários, listar comunidades e o feed delas, vagas (com a origem), eventos, mentores, ranking, busca e estatísticas. Escrever (postar, comentar, reagir, denunciar…) pede a sessão de uma conta real.",
+    versionTitle: "Versão da API",
+    versionHint:
+      "Chame pelo caminho versionado: são as mesmas rotas, com o endereço que não muda quando o backend cresce.",
+    versionNote:
+      "A v1 responde exatamente como a rota sem versão: mesmo corpo, mesmo envelope de erro (código, mensagem e instante). Quem quiser a lista do que existe na versão pede GET /api/v1 — o índice é gerado pelo próprio servidor, então ele não mente.",
+    versionNow:
+      "Por enquanto a v1 acompanha a API atual: é o mesmo contrato com o endereço fixo. Quando o contrato for congelado, a v1 passa a ser a referência e a rota sem versão vira a que muda.",
     paginationTitle: "Paginação",
     errorsTitle: "Erros",
     idempotencyHint:
