@@ -1,6 +1,12 @@
 import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react";
 
-import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  keepPreviousData,
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { REACTION_EMOJIS } from "@/constants/reaction-emojis";
@@ -113,12 +119,17 @@ function Mensagens() {
     hasNextPage: hasOlderMessages,
     isFetchingNextPage: isLoadingOlder,
     isLoading: isLoadingMessages,
+    isPlaceholderData: showingPreviousThread,
   } = useInfiniteQuery({
     queryKey: ["messages", activeConversation?.id],
     queryFn: ({ pageParam }) => messagesApi.listMessages(activeConversation!.id, pageParam),
     initialPageParam: null as string | null,
     getNextPageParam: (last) => last.nextCursor ?? undefined,
     enabled: !!activeConversation,
+    // Trocando de conversa, o filao anterior fica na tela ate o novo chegar: sem isso a area de
+    // mensagens esvaziava e o skeleton piscava a cada clique da lista. Enquanto e o filao antigo
+    // (placeholder) os botoes por mensagem estao inertes — aqueles ids nao sao da conversa aberta.
+    placeholderData: keepPreviousData,
     refetchInterval: 10_000,
   });
 
@@ -577,7 +588,7 @@ function Mensagens() {
                         <div
                           key={m.id}
                           onClick={() => {
-                            if (!selectingMessages) return;
+                            if (!selectingMessages || showingPreviousThread) return;
                             setSelectedMessages((current) => {
                               const next = new Set(current);
                               if (next.has(m.id)) next.delete(m.id);
@@ -648,7 +659,10 @@ function Mensagens() {
                                 <button
                                   key={type}
                                   type="button"
-                                  onClick={() => reactToMessage.mutate({ messageId: m.id, type })}
+                                  onClick={() =>
+                                    !showingPreviousThread &&
+                                    reactToMessage.mutate({ messageId: m.id, type })
+                                  }
                                   className={`inline-flex h-6 items-center gap-1 rounded-full px-1.5 text-xs leading-none transition ${
                                     m.myReaction === type
                                       ? "bg-primary/20 text-primary-text ring-1 ring-primary/40"
@@ -668,7 +682,10 @@ function Mensagens() {
 
                               <ReactionPicker
                                 activeType={(m.myReaction as ReactionType) ?? null}
-                                onReact={(type) => reactToMessage.mutate({ messageId: m.id, type })}
+                                onReact={(type) =>
+                                  !showingPreviousThread &&
+                                  reactToMessage.mutate({ messageId: m.id, type })
+                                }
                                 buttonClassName={`inline-flex h-6 w-6 items-center justify-center rounded-full transition ${
                                   isMe
                                     ? "text-primary-foreground/70 hover:bg-primary-foreground/15"
