@@ -801,10 +801,14 @@ function Home() {
                     onClick={() => fileRef.current?.click()}
                   />
                 )}
-                {!pageMode && media.length > 0 && (
+                {((!pageMode && media.length > 0) || (pageMode && pageHtml.trim().length > 0)) && (
                   <ComposerAction
                     icon={EyeOff}
-                    label={mediaSpoiler ? texts.feed.composer.mediaSpoilerActive : texts.feed.composer.mediaSpoiler}
+                    label={
+                      mediaSpoiler
+                        ? texts.feed.composer.mediaSpoilerActive
+                        : texts.feed.composer.mediaSpoiler
+                    }
                     active={mediaSpoiler}
                     onClick={() => setMediaSpoiler((active) => !active)}
                   />
