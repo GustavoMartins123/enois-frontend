@@ -165,8 +165,8 @@ Cliente central para comunicação com o backend em `https://rede.fly.dev/api`.
 
 | Método | Endpoint                 | Descrição          |
 | ------ | ------------------------ | ------------------ |
-| GET    | `/events`                | Listar eventos     |
-| GET    | `/events/{id}`           | Detalhar evento    |
+| GET    | `/events`                | Listar eventos (`attending` do viewer com sessão) |
+| GET    | `/events/{id}`           | Detalhar evento (`attending` do viewer com sessão) |
 | POST   | `/events`                | Criar evento       |
 | POST   | `/events/{id}/attendees` | Confirmar presença |
 | DELETE | `/events/{id}/attendees` | Cancelar presença  |

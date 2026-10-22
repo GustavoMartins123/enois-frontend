@@ -1,415 +1,508 @@
-import { type FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
-import {
-  BookOpen,
-  Bookmark,
-  Briefcase,
-  Flag,
-  FolderGit2,
-  Heart,
-  HelpCircle,
-  Lightbulb,
-  MessageSquare,
-  Share2,
-} from "lucide-react";
+import { TOPIC_LABELS } from "@/constants/community-topics";
+import { postContentLimit } from "@/constants/post-content-limits";
+import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
+import { POST_SEALS, postSeal } from "@/constants/post-seals";
+import { ARTICLE_BODY_MAX_LENGTH, POST_TYPES } from "@/constants/post-types";
+import { usePostCardStore } from "@/stores/post-card.store";
+import { texts } from "@/texts";
+import type { PostView } from "@/types/application/feed/post-view";
+import type { PostCardProps } from "@/types/components/post/post-card-props";
+import { BookOpen, Clock, FileText, Pin, PinOff, Repeat2, Tag } from "lucide-react";
 
-import {
-  REACTION_EMOJIS,
-  commentsApi,
-  feedApi,
-  mediaApi,
-  profileApi,
-  reactionsApi,
-  reportsApi,
-} from "@/lib/api";
-import type { CommentView, PostView, ReactionType } from "@/lib/api";
-import { resolveCdnUrl } from "@/lib/api/media";
+import { communitiesApi, feedApi } from "@/lib/api";
+import { sealsApi } from "@/lib/api/seals";
+import { saveFeedScroll } from "@/lib/feed-scroll-restoration";
+import { inlineMediaIds } from "@/lib/rich-text/inline-media";
+import { hideExternalPageUrls } from "@/lib/shared-links";
 import { useAuth } from "@/lib/use-auth";
+import { useLiteMode } from "@/lib/use-lite-mode";
+import { cn } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/toast";
 
 import { MentionTextarea } from "@/components/mention-textarea";
-import { UserAvatar } from "@/components/user-avatar";
 
-const typeMeta: Record<
-  PostView["type"],
-  { label: string; icon: React.ElementType; className: string }
-> = {
-  INSIGHT: {
-    label: "Insight",
-    icon: Lightbulb,
-    className: "bg-highlight-insight text-highlight-insight-text",
-  },
-  QUESTION: {
-    label: "Pergunta",
-    icon: HelpCircle,
-    className: "bg-secondary/30 text-secondary-foreground",
-  },
-  PROJECT: {
-    label: "Projeto",
-    icon: FolderGit2,
-    className: "bg-highlight-project text-highlight-project-text",
-  },
-  OPPORTUNITY: {
-    label: "Oportunidade",
-    icon: Briefcase,
-    className: "bg-opportunity/20 text-opportunity-foreground",
-  },
-  ARTICLE: {
-    label: "Artigo",
-    icon: BookOpen,
-    className: "bg-highlight-article text-highlight-article-text",
-  },
-};
+import { AuthorInfo } from "./post/author-info";
+import { formatTime } from "./post/format-time";
+import { LinkPreviews } from "./post/link-previews";
+import { MediaGrid } from "./post/media-grid";
+import { PostActions } from "./post/post-actions";
+import { PostComments } from "./post/post-comments";
+import { PostOwnerMenu } from "./post/post-owner-menu";
+import { PostPage } from "./post/post-page";
+import { ReactionsSummary } from "./post/reactions-summary";
+import { RichText } from "./post/rich-text";
+import { SpoilerMedia } from "./post/spoiler-media";
+import { typeMeta } from "./post/type-meta";
 
-function ReactionsSummary({
-  postId,
-  reactionStatus,
-}: {
-  postId: string;
-  reactionStatus: string | null;
-}) {
-  const { data } = useQuery({
-    queryKey: ["reactions-summary", postId],
-    queryFn: () => reactionsApi.listReactions(postId),
-    staleTime: 30_000,
-  });
+/**
+ * Posts acima disso entram compactados na LISTA: o corte é por linhas (8) e o "Ler mais" abre o
+ * post inteiro. Na página do post o card é o post (`fullPost`), então não corta nem mostra o link —
+ * era o furo: o "Ler mais" levava para a página em que a pessoa já estava e o texto seguia cortado.
+ */
+const POST_COMPACT_THRESHOLD = 400;
 
-  const summary = data?.summary;
-  if (!summary) return null;
-
-  const entries = (Object.entries(summary) as [string, number][]).filter(([, count]) => count > 0);
-  if (entries.length === 0) return null;
-
-  return (
-    <div className="mt-3 flex flex-wrap items-center gap-1.5">
-      {entries.map(([type, count]) => (
-        <span
-          key={type}
-          className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs tabular-nums ${
-            reactionStatus === type
-              ? "bg-primary-soft text-primary"
-              : "bg-muted text-muted-foreground"
-          }`}
-        >
-          {REACTION_EMOJIS[type] ?? type} {count}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function ReactionsDialog({
-  postId,
-  currentUserReaction,
-  currentUserId,
-  open,
-  onOpenChange,
-}: {
-  postId: string;
-  currentUserReaction: string | null;
-  currentUserId?: string;
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-}) {
-  const { data } = useQuery({
-    queryKey: ["reactions", postId],
-    queryFn: () => reactionsApi.listReactions(postId),
-    enabled: open,
-  });
-
-  const apiReactions = data?.reactions ?? [];
-  const reactions =
-    currentUserReaction && currentUserId && !apiReactions.some((r) => r.userId === currentUserId)
-      ? [
-          { userId: currentUserId, type: currentUserReaction, createdAt: new Date().toISOString() },
-          ...apiReactions,
-        ]
-      : apiReactions;
-
-  const uniqueUserIds = [...new Set(reactions.map((r) => r.userId))];
-  const { data: users } = useQuery({
-    queryKey: ["profiles", "by-ids", uniqueUserIds.sort().join(",")],
-    queryFn: async () => {
-      const results = await Promise.all(
-        uniqueUserIds.map((id) => profileApi.getById(id).catch(() => null)),
-      );
-      return Object.fromEntries(results.filter(Boolean).map((u) => [u!.id, u!]));
-    },
-    enabled: open && uniqueUserIds.length > 0,
-  });
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Reações</DialogTitle>
-        </DialogHeader>
-        {reactions.length === 0 ? (
-          <p className="py-8 text-center text-sm text-muted-foreground">Nenhuma reação ainda</p>
-        ) : (
-          <div className="space-y-2 pt-2">
-            {reactions.map((r) => {
-              const user = users?.[r.userId];
-              return (
-                <div
-                  key={`${r.userId}-${r.type}`}
-                  className="flex items-center gap-3 rounded-xl bg-muted/30 p-3"
-                >
-                  <UserAvatar src={user?.avatar} alt={user?.name} className="h-9 w-9 shrink-0" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{user?.name ?? "Carregando..."}</p>
-                  </div>
-                  <span className="text-xl">{REACTION_EMOJIS[r.type] ?? r.type}</span>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-const REPORT_REASONS = [
-  "AI_GENERATED",
-  "FAKE_CONTENT",
-  "SCAM",
-  "DISCRIMINATION",
-  "PREJUDICE",
-  "HARASSMENT",
-  "SPAM",
-  "VIOLENCE",
-  "COPYRIGHT",
-  "OTHER",
-];
-
-function ReportDialog({
-  postId,
-  open,
-  onOpenChange,
-}: {
-  postId: string;
-  open: boolean;
-  onOpenChange: (v: boolean) => void;
-}) {
-  const [reason, setReason] = useState("SPAM");
-  const [description, setDescription] = useState("");
-
-  const submit = async () => {
-    try {
-      await reportsApi.create({
-        targetId: postId,
-        targetType: "POST",
-        reason: reason as any,
-        description: description || undefined,
-      });
-      onOpenChange(false);
-      setDescription("");
-    } catch {
-      /* silent */
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Denunciar post</DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 pt-2">
-          <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Motivo</Label>
-            <select
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm h-10 border-transparent bg-muted"
-            >
-              {REPORT_REASONS.map((r) => (
-                <option key={r} value={r}>
-                  {r.replace(/_/g, " ").toLowerCase()}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-1.5">
-            <Label className="text-xs text-muted-foreground">Descrição (opcional)</Label>
-            <Textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className="h-10 border-transparent bg-muted"
-            />
-          </div>
-          <Button className="w-full rounded-full" onClick={submit}>
-            Denunciar
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-export function PostCard({ post }: { post: PostView }) {
-  const { user: currentUser } = useAuth();
+export function PostCard({
+  post,
+  feedTab,
+  fullPost = false,
+  pinned = false,
+  onTogglePin,
+  pinPending = false,
+}: PostCardProps) {
+  const { requireAuth, user } = useAuth();
+  // Modo lite: nada de player de terceiro montando sozinho no feed.
+  const lite = useLiteMode();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const isOwner = user?.id != null && user.id === post.authorId;
   const meta = typeMeta[post.type] ?? typeMeta.INSIGHT;
-  const [showComments, setShowComments] = useState(false);
-  const [draft, setDraft] = useState("");
-  const [commentMentions, setCommentMentions] = useState<string[]>([]);
-  const [replyToId, setReplyToId] = useState<string | null>(null);
-  const [localComments, setLocalComments] = useState<CommentView[]>([]);
-  const [postCounters, setPostCounters] = useState(post.counters);
-  const [reactionStatus, setReactionStatus] = useState<string | null>(
-    post.currentUserReaction ?? null,
-  );
-  const [saved, setSaved] = useState(false);
-  const [showReactions, setShowReactions] = useState(false);
-  const [showReport, setShowReport] = useState(false);
+  // Só corta em lista: na página do post o texto inteiro é o conteúdo da página.
+  const isCompact = !fullPost && post.content.length > POST_COMPACT_THRESHOLD;
+  const [showComments, setShowComments] = useState(fullPost);
+  // Selos do post: `forPost` junta os cards da página numa chamada só ao lote do backend.
+  const { data: seals } = useQuery({
+    queryKey: ["seals", post.id],
+    queryFn: () => sealsApi.forPost(post.id),
+    staleTime: 60_000,
+  });
+  // Cada selo alterna sozinho: o backend tira quando já existe, então não há "troca" nem remoção
+  // dos outros (a pessoa pode ter quantos quiser neste post).
+  const toggleSeal = useMutation({
+    mutationFn: (seal: string) => sealsApi.toggle(post.id, seal),
+    onSuccess: (result) => {
+      queryClient.setQueryData(["seals", post.id], result);
+      queryClient.invalidateQueries({ queryKey: ["seals", post.id] });
+      queryClient.invalidateQueries({ queryKey: ["seals-people", post.id] });
+    },
+    onError: () => toast(texts.posts.seals.error, "error"),
+  });
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  // A CATEGORIA tambem e editavel (pedido via suporte): o dialogo troca o tipo e as regras de
+  // conteudo o acompanham (PAGE pede HTML, ARTICLE pede o corpo).
+  const [editType, setEditType] = useState<PostView["type"]>(post.type);
+  const [draft, setDraft] = useState(post.content);
+  const [pageDraft, setPageDraft] = useState(post.pageHtml ?? "");
+  const [bodyDraft, setBodyDraft] = useState(post.articleBody ?? "");
+
+  // A listagem (e a resposta da publicação) não carrega o corpo da página: ele pode ter dezenas de
+  // milhares de caracteres e não teria por que viajar no feed inteiro. Quem tem uma página pede o
+  // post único — a mesma chave de cache da página do post, então lá já vem pronto.
+  const needsPage = post.type === "PAGE" && !post.pageHtml;
+  // O corpo do artigo tem o mesmo problema: só a leitura do post único o traz, e a edição precisa
+  // dele (o backend exige o corpo em ARTICLE) — na lista ele não viaja.
+  const needsArticleBody = post.type === "ARTICLE" && !post.articleBody;
+  const { data: pagePost, isLoading: pageLoading } = useQuery({
+    queryKey: ["post", post.id],
+    queryFn: () => feedApi.get(post.id),
+    enabled: needsPage || needsArticleBody,
+  });
+  const pageHtml = post.pageHtml ?? pagePost?.pageHtml ?? "";
+  const articleBody = post.articleBody ?? pagePost?.articleBody ?? "";
+  // Algumas listagens/cache antigos podem não trazer a flag; a leitura detalhada do post é a
+  // fonte de reserva para que um spoiler já publicado não apareça aberto ao entrar no post.
+  const mediaSpoiler = post.mediaSpoiler ?? pagePost?.mediaSpoiler ?? false;
+  // As ações do post (reagir, comentar, compartilhar, salvar, denunciar) moram no `PostActions` —
+  // a mesma peça que o post do blog usa. Aqui fica só o card, que é quem inicializa o estado dele.
+  const initializePostCard = usePostCardStore((state) => state.initializePostCard);
+  const disposePostCard = usePostCardStore((state) => state.disposePostCard);
+  const setShowSeals = usePostCardStore((state) => state.setShowSeals);
+  // `mySeals` é a lista (backend novo); `mySeal` é o campo antigo, para a janela em que o pod do
+  // backend ainda não subiu — sem isso, um selo já dado apareceria apagado.
+  const mySeals = seals ? (seals.mySeals ?? (seals.mySeal ? [seals.mySeal] : [])) : [];
 
   useEffect(() => {
-    setReactionStatus(post.currentUserReaction ?? null);
-  }, [post.currentUserReaction]);
+    initializePostCard(post);
+    return () => disposePostCard(post.id);
+  }, [disposePostCard, initializePostCard, post]);
 
-  const { data: savedData } = useQuery({
-    queryKey: ["saved-posts"],
-    queryFn: () => feedApi.listSaved(),
-    staleTime: 30_000,
+  // A página chega depois do card (requisição própria): preenche o rascunho da edição quando ela
+  // aparece, sem atropelar o que o autor já está digitando no diálogo aberto.
+  useEffect(() => {
+    if (!editOpen) {
+      setPageDraft(pageHtml);
+      setBodyDraft(articleBody);
+    }
+  }, [editOpen, pageHtml, articleBody]);
+
+  // O corpo do artigo pode chegar depois de o diálogo abrir: preenche só o campo ainda vazio,
+  // para não atropelar quem já começou a editar.
+  useEffect(() => {
+    if (editOpen && !bodyDraft && articleBody) setBodyDraft(articleBody);
+  }, [editOpen, articleBody, bodyDraft]);
+
+  // Post proprio: editar o texto e excluir. O backend confere o dono; a UI so evita mostrar para os outros.
+  const editPost = useMutation({
+    mutationFn: () =>
+      feedApi.update(post.id, {
+        content: editType === "PAGE" ? draft.trim() : draft.trim(),
+        tags: post.tags,
+        // O tipo vai sempre; nulo manteria, mas quem manda e o seletor do dialogo.
+        type: editType,
+        // Numa pagina o HTML vai junto (o backend recusa PAGE sem ele); num artigo acontece o
+        // mesmo com o corpo. Nos outros tipos os campos nem sao enviados.
+        ...(editType === "PAGE" ? { pageHtml: pageDraft } : {}),
+        ...(editType === "ARTICLE" ? { articleBody: bodyDraft } : {}),
+      }),
+    onSuccess: () => {
+      setEditOpen(false);
+      toast(texts.posts.owner.edited);
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["post", post.id] });
+      queryClient.invalidateQueries({ queryKey: ["saved-posts"] });
+    },
+    onError: () => toast(texts.posts.owner.error, "error"),
   });
 
-  useEffect(() => {
-    if (savedData) {
-      setSaved(savedData.items.some((p) => p.id === post.id));
-    }
-  }, [savedData, post.id]);
-
-  const totalComments = useMemo(() => postCounters.comments, [postCounters.comments]);
-
-  const submitComment = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const content = draft.trim();
-    if (!content) return;
-
-    try {
-      const newComment = await commentsApi.create(post.id, content, replyToId, commentMentions);
-      setLocalComments((current) => [...current, newComment]);
-      setPostCounters((c) => ({ ...c, comments: c.comments + 1 }));
-      setDraft("");
-      setCommentMentions([]);
-      setReplyToId(null);
-    } catch {
-      // silently fail
-    }
-  };
-
-  const handleReaction = async (type: ReactionType) => {
-    try {
-      if (reactionStatus === type) {
-        const result = await reactionsApi.removeReaction(post.id);
-        setReactionStatus(null);
-        if ("counters" in result) setPostCounters((result as any).counters);
-      } else {
-        const result = await reactionsApi.react(post.id, type);
-        setReactionStatus(type);
-        if ("counters" in result) setPostCounters((result as any).counters);
+  const deletePost = useMutation({
+    mutationFn: () => feedApi.delete(post.id),
+    onSuccess: () => {
+      setDeleteOpen(false);
+      // Exclusão é lógica: dá para desfazer de verdade, então o aviso traz a ação.
+      toast(texts.posts.owner.deleted, "success", {
+        label: texts.posts.owner.undo,
+        onClick: () => {
+          feedApi
+            .restore(post.id)
+            .then(() => {
+              queryClient.invalidateQueries({ queryKey: ["feed"] });
+              queryClient.invalidateQueries({ queryKey: ["post", post.id] });
+              toast(texts.posts.owner.edited);
+            })
+            .catch(() => toast(texts.posts.owner.error, "error"));
+        },
+      });
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["saved-posts"] });
+      // Na pagina do post unico, o conteudo some: volta para o feed em vez de ficar num "nao encontrado".
+      if (typeof window !== "undefined" && window.location.pathname.startsWith("/post/")) {
+        window.location.href = "/feed";
+        return;
       }
-    } catch {
-      // silently fail
+      queryClient.invalidateQueries({ queryKey: ["post", post.id] });
+    },
+    onError: () => toast(texts.posts.owner.error, "error"),
+  });
+
+  const handleSaveEdit = () => {
+    const tipoMudou = editType !== post.type;
+    const contentUnchanged = draft.trim() === post.content;
+    const pageUnchanged = editType !== "PAGE" || pageDraft === (post.pageHtml ?? "");
+    const bodyUnchanged = editType !== "ARTICLE" || bodyDraft.trim() === articleBody.trim();
+
+    // Nada mudou (nem a categoria): fecha sem chamar a API.
+    if (
+      (editType !== "PAGE" && !draft.trim()) ||
+      (!tipoMudou && contentUnchanged && pageUnchanged && bodyUnchanged)
+    ) {
+      setEditOpen(false);
+      return;
     }
+    editPost.mutate();
   };
 
-  const handleSave = async () => {
-    try {
-      const result = saved
-        ? await reactionsApi.removeSave(post.id)
-        : await reactionsApi.save(post.id);
-      setSaved(!saved);
-      setPostCounters(result.counters);
-    } catch {
-      // silently fail
-    }
+  // Seguir a comunidade direto do post: atualiza a lista para esconder o botao e marcar como membro.
+  const followCommunity = useMutation({
+    mutationFn: (communityId: string) => communitiesApi.join(communityId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["post"] });
+      queryClient.invalidateQueries({ queryKey: ["saved-posts"] });
+      queryClient.invalidateQueries({ queryKey: ["community"] });
+    },
+  });
+
+  const handleFollowCommunity = () => {
+    if (!requireAuth()) return;
+    if (!post.community) return;
+    followCommunity.mutate(post.community.id);
   };
 
-  const handleShare = async () => {
-    try {
-      const result = await reactionsApi.share(post.id);
-      setPostCounters(result.counters);
-      const url = `${window.location.origin}/feed/${post.id}`;
-      if (navigator.share) {
-        await navigator.share({ url });
-      } else {
-        await navigator.clipboard.writeText(url);
-      }
-    } catch {
-      // silently fail
-    }
-  };
-
-  const handleDeleteComment = async (commentId: string) => {
-    try {
-      await commentsApi.remove(post.id, commentId);
-      setLocalComments((prev) => prev.filter((c) => c.id !== commentId));
-      setPostCounters((c) => ({ ...c, comments: c.comments - 1 }));
-    } catch {
-      // silently fail
-    }
-  };
-
-  const loadComments = async () => {
-    if (!showComments) {
-      try {
-        const data = await commentsApi.list(post.id);
-        setLocalComments(data.items);
-      } catch {
-        // silently fail
-      }
-    }
-    setShowComments((v) => !v);
-  };
+  // Os comentarios sao carregados pelo proprio PostComments quando a secao abre.
+  const toggleComments = () => setShowComments((value) => !value);
 
   return (
-    <article className="min-w-0 surface-card p-4 transition hover:shadow-[var(--shadow-card)] sm:p-5">
-      <header className="flex justify-between items-start gap-3 ">
+    <article
+      id={feedTab ? `feed-post-${post.id}` : undefined}
+      tabIndex={feedTab ? -1 : undefined}
+      className={`min-w-0 border border-border-soft bg-surface-card p-4 transition sm:p-5 ${
+        // Post de página: sem canto no card, porque o conteúdo tem de alcançar as bordas — o
+        // arredondamento do card recortava os cantos da página e era o que sobrava de "rounding".
+        post.pageHtml ? "rounded-none" : "overflow-hidden rounded-2xl"
+      }`}
+    >
+      {post.repostOf && (
+        <Link
+          to="/post/$postId"
+          params={{ postId: post.repostOf }}
+          className="mb-2 inline-flex items-center gap-1.5 text-xs text-text-subtle transition hover:text-primary"
+        >
+          <Repeat2 className="h-3.5 w-3.5" />
+
+          <>
+            {post.repostWithOpinion
+              ? texts.posts.repostedWithOpinion
+              : texts.posts.repostedFrom(post.repostOfAuthor)}
+          </>
+        </Link>
+      )}
+
+      <header className="flex justify-between items-start gap-3">
         <AuthorInfo
           authorUsername={post.authorUsername}
           authorName={post.authorName}
+          authorBadge={post.authorBadge}
+          authorBadges={post.authorBadges}
+          authorIdentity={post.authorIdentity}
           authorAvatar={post.authorAvatar}
+          authorAvatarFrame={post.authorAvatarFrame}
           createdAt={post.createdAt}
-          fallbackClassName={meta.className}
+          community={post.community}
+          fallbackClassName={meta.classAvatar}
+          onFollowCommunity={handleFollowCommunity}
+          followPending={followCommunity.isPending}
         />
-        <span
-          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${meta.className}`}
-        >
-          {meta.label}
-        </span>
+
+        <div className="flex items-center gap-1.5">
+          {pinned && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-xs font-medium text-primary">
+              <Pin className="h-3 w-3" aria-hidden />
+
+              <>{texts.posts.pin.pinned}</>
+            </span>
+          )}
+
+          {onTogglePin && (
+            <button
+              type="button"
+              onClick={onTogglePin}
+              disabled={pinPending}
+              title={pinned ? texts.posts.pin.unpin : texts.posts.pin.pin}
+              aria-label={pinned ? texts.posts.pin.unpin : texts.posts.pin.pin}
+              className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-muted hover:text-primary disabled:opacity-50"
+            >
+              {pinned ? <PinOff className="h-4 w-4" /> : <Pin className="h-4 w-4" />}
+            </button>
+          )}
+
+          <span
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium ${meta.className}`}
+          >
+            {meta.label}
+          </span>
+
+          {/* O assunto (categoria) do post fica ao lado do tipo, quando o autor classificou. */}
+          {post.topic && (
+            <span
+              className="inline-flex items-center rounded-full border border-border-soft px-2.5 py-1 text-xs font-medium text-text-subtle"
+              title={texts.feed.composer.topic}
+            >
+              {TOPIC_LABELS[post.topic as keyof typeof TOPIC_LABELS] ?? post.topic}
+            </span>
+          )}
+
+          {post.type === "MOMENT" && post.expiresAt && (
+            <span
+              className="inline-flex items-center gap-1 rounded-full border border-amber-500/40 px-2 py-1 text-xs font-normal text-amber-600 dark:text-amber-400"
+              title={texts.posts.momentExpiryTitle}
+            >
+              <Clock className="h-3 w-3" />
+              {texts.posts.momentExpiry(remainingHours(post.expiresAt))}
+            </span>
+          )}
+
+          {isOwner && (
+            <PostOwnerMenu
+              onEdit={() => {
+                setDraft(post.content);
+                setPageDraft(pageHtml);
+                setEditType(post.type);
+                setEditOpen(true);
+              }}
+              onDelete={() => setDeleteOpen(true)}
+            />
+          )}
+        </div>
       </header>
 
-      <p className="mt-4 whitespace-pre-line break-words text-[15px] leading-relaxed text-foreground">
-        {linkifyText(post.content)}
-      </p>
+      {/* Selos da comunidade: ficam no topo, acima do conteudo — e os que a pessoa marcou ficam em
+          destaque (anel). Cada selo é um botão: abre a lista de quem marcou, como a contagem de
+          reações abre a de quem reagiu. A contagem aparece sempre (é a resposta de "quantos"). */}
+      {seals && seals.seals.length > 0 && (
+        <div className="mt-3 flex flex-wrap items-center gap-1.5">
+          {seals.seals.map((item) => {
+            const seal = postSeal(item.seal);
+            if (!seal) return null;
+            return (
+              <button
+                key={item.seal}
+                type="button"
+                onClick={() => setShowSeals(post.id, true)}
+                title={`${seal.label} · ${texts.posts.seals.seeWho}`}
+                aria-label={`${seal.label} · ${texts.posts.seals.seeWho}`}
+                className={cn(
+                  "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium transition hover:border-primary/50",
+                  seal.className,
+                  mySeals.includes(item.seal) && "ring-1 ring-primary/60",
+                )}
+              >
+                <seal.icon className="h-3 w-3" aria-hidden />
 
-      {post.mediaIds.length > 0 && (
-        <div className="mt-4">
-          <MediaGrid mediaIds={post.mediaIds} />
+                <>{seal.label}</>
+
+                <span className="tabular-nums opacity-70">{item.count}</span>
+              </button>
+            );
+          })}
         </div>
       )}
 
-      <ReactionsSummary postId={post.id} reactionStatus={reactionStatus} />
+      {/* Post de pagina pode nao ter texto nenhum: sem paragrafo, so a pagina logo abaixo.
+          Na lista, texto acima de 400 caracteres entra cortado em 8 linhas com o "Ler mais" que
+          abre o post; na propria pagina do post (`fullPost`) nada e cortado — o texto completo mora
+          la. Artigo fica so cortado na lista: o bloco abaixo dele ja e o convite para abrir. */}
+      {hideExternalPageUrls(post.content) !== "" && (
+        <>
+          <RichText
+            content={hideExternalPageUrls(post.content)}
+            mediaIds={post.mediaIds}
+            mediaSpoiler={mediaSpoiler}
+            className={cn(
+              "mt-4 whitespace-pre-line break-words text-base font-normal leading-relaxed text-text-strong",
+              isCompact && "line-clamp-8",
+            )}
+          />
 
-      <LinkPreviews content={post.content} />
+          {isCompact && post.type !== "ARTICLE" && (
+            <Link
+              to="/post/$postId"
+              params={{ postId: post.id }}
+              search={feedTab ? { feedTab } : undefined}
+              onClick={() => {
+                if (feedTab) {
+                  saveFeedScroll({ tab: feedTab, postId: post.id, scrollY: window.scrollY });
+                }
+              }}
+              className="mt-1 inline-flex text-sm font-normal text-primary hover:underline"
+            >
+              <>{texts.common.readMore}</>
+            </Link>
+          )}
+        </>
+      )}
+
+      {/* Repost COM opinião: o texto acima é o comentário; aqui vai o post original citado. */}
+      {post.repostWithOpinion && post.repostOf && (
+        <div className="mt-3 rounded-xl border border-border-soft bg-surface-1 p-3">
+          <Link
+            to="/post/$postId"
+            params={{ postId: post.repostOf }}
+            className="inline-flex items-center gap-1.5 text-xs text-text-subtle transition hover:text-primary"
+          >
+            <Repeat2 className="h-3.5 w-3.5" />
+
+            <>{texts.posts.quotedFrom(post.repostOfAuthor)}</>
+          </Link>
+
+          {post.repostOfContent && (
+            <p className="mt-2 line-clamp-6 whitespace-pre-line break-words text-sm text-text-strong">
+              {post.repostOfContent}
+            </p>
+          )}
+
+          {post.repostOfMediaIds && post.repostOfMediaIds.length > 0 && (
+            <div className="mt-2">
+              <MediaGrid
+                mediaIds={post.repostOfMediaIds}
+                compact
+                mediaSpoiler={mediaSpoiler}
+              />
+            </div>
+          )}
+
+          <Link
+            to="/post/$postId"
+            params={{ postId: post.repostOf }}
+            className="mt-2 inline-flex text-xs text-primary hover:underline"
+          >
+            {texts.posts.viewOriginal}
+          </Link>
+        </div>
+      )}
+
+      {/* Blog: o post-ponteiro so aponta para o cantinho — o conteudo mora la, nao no feed. */}
+      {post.type === "BLOG" && (
+        <Link
+          to="/blog/$username/$postId"
+          params={{ username: post.authorUsername, postId: post.id }}
+          className="mt-3 inline-flex items-center gap-1.5 text-sm font-normal text-primary hover:underline"
+        >
+          <BookOpen className="h-3.5 w-3.5" aria-hidden />
+
+          <>{texts.blog.feed.read}</>
+        </Link>
+      )}
+
+      {/* Artigo tem corpo (completo) na pagina do post; o card mostra o resumo e o convite. */}
+      {post.type === "ARTICLE" && (
+        <Link
+          to="/post/$postId"
+          params={{ postId: post.id }}
+          search={feedTab ? { feedTab } : undefined}
+          onClick={() => {
+            if (feedTab) {
+              saveFeedScroll({ tab: feedTab, postId: post.id, scrollY: window.scrollY });
+            }
+          }}
+          className="mt-3 inline-flex items-center gap-1.5 text-sm font-normal text-primary hover:underline"
+        >
+          <FileText className="h-3.5 w-3.5" />
+
+          <>{texts.feed.composer.article.read}</>
+        </Link>
+      )}
+
+      {post.editedAt && (
+        <p className="mt-1 text-xs font-normal text-text-subtle">
+          {texts.posts.edited} {texts.posts.authorTime(formatTime(post.editedAt))}
+        </p>
+      )}
+
+      {post.mediaIds.length > 0 && (
+        <div className="mt-4">
+          {/* Mídia inserida no texto aparece NO TEXTO (item 9); a grade do fim é só o que
+              sobrou sem marcador — repetir a mesma mídia duas vezes seria estranho. */}
+          <MediaGrid
+            mediaIds={post.mediaIds.filter((id) => !inlineMediaIds(post.content).includes(id))}
+            mediaSpoiler={mediaSpoiler}
+          />
+        </div>
+      )}
+
+      {pageHtml ? (
+        <SpoilerMedia active={mediaSpoiler} label={texts.posts.mediaSpoiler.reveal}>
+          {() => <PostPage postId={post.id} html={pageHtml} />}
+        </SpoilerMedia>
+      ) : pageLoading ? (
+        <p className="mt-4 rounded-xl border border-dashed border-border-soft px-3 py-6 text-center text-xs font-normal text-text-subtle">
+          {texts.posts.page.loading}
+        </p>
+      ) : null}
+
+      <ReactionsSummary postId={post.id} initialSummary={post.reactionSummary} />
+      <LinkPreviews content={post.content} autoplay={!lite} />
 
       {post.tags.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-1.5">
@@ -417,569 +510,210 @@ export function PostCard({ post }: { post: PostView }) {
             <Badge
               key={t}
               variant="secondary"
-              className="rounded-full bg-muted font-normal text-muted-foreground"
+              className="rounded-full border border-border-soft bg-transparent font-normal text-text-subtle"
             >
-              #{t}
+              {texts.posts.tag(t)}
             </Badge>
           ))}
         </div>
       )}
 
-      <footer className="mt-4 flex justify-between flex-wrap items-center gap-1 border-t border-border pt-3 text-sm text-muted-foreground">
-        <div className="flex">
-          <Popover>
-            <PopoverTrigger asChild>
-              <button
-                className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
-                  reactionStatus ? "text-primary" : ""
-                }`}
-                title={reactionStatus ? `Reagiu com ${REACTION_EMOJIS[reactionStatus]}` : "Reagir"}
-              >
-                {reactionStatus ? (
-                  <span className="text-base leading-none">{REACTION_EMOJIS[reactionStatus]}</span>
-                ) : (
-                  <Heart className="h-4 w-4" />
-                )}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent
-              align="start"
-              side="top"
-              className="w-fit rounded-2xl border-border p-1.5"
+      {/* Selos: entram na fileira das ações (a peça é do card, que é quem sabe os selos do post). */}
+      <PostActions post={post} onComments={toggleComments}>
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
+              title={texts.posts.seals.action}
+              aria-label={texts.posts.seals.action}
             >
-              <div className="flex gap-1">
-                {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(
-                  ([type, emoji]) => (
-                    <button
-                      key={type}
-                      onClick={() => handleReaction(type)}
-                      className={`rounded-lg px-2 py-1 text-xl transition hover:bg-muted ${
-                        reactionStatus === type ? "bg-muted ring-1 ring-primary" : ""
-                      }`}
-                      title={type.toLowerCase()}
-                    >
-                      {emoji}
-                    </button>
-                  ),
-                )}
-              </div>
-            </PopoverContent>
-          </Popover>
-          <button
-            onClick={() => setShowReactions(true)}
-            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs tabular-nums transition hover:bg-muted hover:text-foreground text-muted-foreground"
-          >
-            {postCounters.reactions}
-          </button>
-          <button
-            onClick={loadComments}
-            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
-          >
-            <MessageSquare className="h-4 w-4" /> {totalComments}
-          </button>
+              <Tag className="h-4 w-4" />
+            </button>
+          </PopoverTrigger>
 
-          <button
-            onClick={handleShare}
-            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground"
-          >
-            <Share2 className="h-4 w-4" /> Compartilhar
-          </button>
-          <button
-            onClick={() => setShowReport(true)}
-            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
-          >
-            <Flag className="h-4 w-4" />
-          </button>
-        </div>
+          <PopoverContent align="start" className="w-64 p-3">
+            <p className="text-xs font-semibold uppercase tracking-widest text-text-subtle">
+              {texts.posts.seals.title}
+            </p>
 
-        <button
-          onClick={handleSave}
-          className={`flex items-center gap-1.5 rounded-lg px-2 py-1.5 transition hover:bg-muted hover:text-foreground ${
-            saved ? "text-primary" : ""
-          }`}
-        >
-          <Bookmark className={`h-4 w-4`} /> {postCounters.saves}
-        </button>
-      </footer>
-
-      <ReactionsDialog
-        postId={post.id}
-        currentUserReaction={reactionStatus}
-        currentUserId={currentUser?.id}
-        open={showReactions}
-        onOpenChange={setShowReactions}
-      />
-      <ReportDialog postId={post.id} open={showReport} onOpenChange={setShowReport} />
-
-      {showComments && (
-        <section className="mt-4 border-t border-border pt-4">
-          <div className="space-y-3">
-            {localComments
-              .filter((c) => !c.parentCommentId)
-              .map((comment) => {
-                const replies = localComments.filter((r) => r.parentCommentId === comment.id);
+            <div className="mt-2 grid grid-cols-3 gap-1.5">
+              {POST_SEALS.map((seal) => {
+                const mine = mySeals.includes(seal.id);
                 return (
-                  <div key={comment.id}>
-                    <CommentItem
-                      comment={comment}
-                      currentUserId={currentUser?.id}
-                      onDelete={handleDeleteComment}
-                      onReply={async (c) => {
-                        try {
-                          const profile = await profileApi.getById(c.authorId);
-                          if (profile?.username) {
-                            setDraft(`@${profile.username} `);
-                            setCommentMentions([c.authorId]);
-                          }
-                        } catch {
-                          setDraft(`${c.authorName} `);
-                        }
-                        setReplyToId(c.id);
-                      }}
-                    />
-                    {replies.length > 0 && (
-                      <div className="ml-10 mt-2 space-y-2 border-l-2 border-border pl-4">
-                        {replies.map((reply) => {
-                          const parentAuthor = localComments.find(
-                            (c) => c.id === reply.parentCommentId,
-                          )?.authorName;
-                          return (
-                            <CommentItem
-                              key={reply.id}
-                              comment={reply}
-                              replyingTo={parentAuthor}
-                              currentUserId={currentUser?.id}
-                              onDelete={handleDeleteComment}
-                              onReply={async (c) => {
-                                try {
-                                  const profile = await profileApi.getById(c.authorId);
-                                  if (profile?.username) {
-                                    setDraft(`@${profile.username} `);
-                                    setCommentMentions([c.authorId]);
-                                  }
-                                } catch {
-                                  setDraft(`${c.authorName} `);
-                                }
-                                setReplyToId(c.id);
-                              }}
-                            />
-                          );
-                        })}
-                      </div>
+                  <button
+                    key={seal.id}
+                    type="button"
+                    onClick={() => toggleSeal.mutate(seal.id)}
+                    disabled={toggleSeal.isPending}
+                    title={seal.label}
+                    aria-label={seal.label}
+                    aria-pressed={mine}
+                    className={cn(
+                      "flex flex-col items-center gap-1 rounded-lg border px-1 py-2 text-[10px] font-medium transition hover:border-primary/50",
+                      mine
+                        ? "border-primary bg-primary-soft text-primary"
+                        : "border-border-soft text-text-subtle",
                     )}
-                  </div>
+                  >
+                    <seal.icon className="h-4 w-4" aria-hidden />
+
+                    <span className="text-center leading-tight">{seal.label}</span>
+                  </button>
                 );
               })}
-            {localComments.filter((c) => !c.parentCommentId).length === 0 && (
-              <p className="py-4 text-center text-sm text-muted-foreground">
-                Nenhum comentário ainda. Seja o primeiro a comentar.
-              </p>
-            )}
-          </div>
+            </div>
 
-          <form onSubmit={submitComment} className="mt-4 flex items-center gap-2">
-            <UserAvatar
-              src={currentUser?.avatar}
-              alt={currentUser?.name}
-              className="h-8 w-8 shrink-0"
-            />
-            <MentionTextarea
-              value={draft}
-              onChange={(val, ids) => {
-                setDraft(val);
-                setCommentMentions(ids);
-              }}
-              placeholder="Comente com contexto, dúvida ou referência..."
-              className="h-10 resize-none rounded-full bg-muted px-4 py-2 text-sm outline-none"
-              maxLength={280}
-            />
-            <Button type="submit" size="sm" className="rounded-full" disabled={!draft.trim()}>
-              Enviar
-            </Button>
-          </form>
-        </section>
+            <p className="mt-2 text-[11px] leading-snug text-text-subtle">
+              {texts.posts.seals.hint}
+            </p>
+
+            {mySeals.length > 0 && (
+              <button
+                type="button"
+                onClick={() =>
+                  sealsApi.remove(post.id).then((result) => {
+                    queryClient.setQueryData(["seals", post.id], result);
+                    queryClient.invalidateQueries({ queryKey: ["seals-people", post.id] });
+                  })
+                }
+                className="mt-2 w-full rounded-lg px-2 py-1.5 text-xs font-medium text-destructive transition hover:bg-destructive/10"
+              >
+                {texts.posts.seals.remove}
+              </button>
+            )}
+          </PopoverContent>
+        </Popover>
+      </PostActions>
+
+      {isOwner && (
+        <>
+          <Dialog open={editOpen} onOpenChange={setEditOpen}>
+            <DialogContent className="sm:max-w-lg">
+              <DialogHeader>
+                <DialogTitle>{texts.posts.owner.editTitle}</DialogTitle>
+              </DialogHeader>
+
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="text-xs font-normal text-text-subtle">
+                  {texts.feed.composer.typePicker.label}:
+                </span>
+
+                {POST_TYPES.map((option) => (
+                  <button
+                    key={option.id}
+                    type="button"
+                    onClick={() => setEditType(option.id as PostView["type"])}
+                    className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-normal transition ${
+                      editType === option.id
+                        ? "bg-primary text-primary-foreground"
+                        : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
+                    }`}
+                  >
+                    <option.icon className="h-3 w-3" />
+
+                    <>{option.label}</>
+                  </button>
+                ))}
+              </div>
+
+              <MentionTextarea
+                value={draft}
+                maxLength={postContentLimit(editType)}
+                toolbar
+                onChange={(value) => setDraft(value)}
+                placeholder={texts.posts.owner.editDescription}
+                className="rounded-md border border-input bg-transparent px-3 py-2 text-sm"
+              />
+
+              {editType === "PAGE" && (
+                <div>
+                  <label
+                    htmlFor={`page-html-${post.id}`}
+                    className="mb-1 block text-xs font-normal text-text-subtle"
+                  >
+                    {texts.feed.composer.pageLabel}
+                  </label>
+
+                  <Textarea
+                    id={`page-html-${post.id}`}
+                    value={pageDraft}
+                    maxLength={PAGE_HTML_MAX_LENGTH}
+                    onChange={(event) => setPageDraft(event.target.value)}
+                    placeholder={
+                      pageLoading ? texts.posts.page.loading : texts.feed.composer.pagePlaceholder
+                    }
+                    className="min-h-[160px] font-mono text-xs"
+                  />
+                </div>
+              )}
+
+              {editType === "ARTICLE" && (
+                <div>
+                  <span className="mb-1 block text-xs font-normal text-text-subtle">
+                    {texts.feed.composer.article.bodyLabel}
+                  </span>
+
+                  <MentionTextarea
+                    value={bodyDraft}
+                    maxLength={ARTICLE_BODY_MAX_LENGTH}
+                    onChange={(value) => setBodyDraft(value)}
+                    placeholder={
+                      pageLoading
+                        ? texts.posts.page.loading
+                        : texts.feed.composer.article.bodyPlaceholder
+                    }
+                    className="min-h-[160px] rounded-lg border border-border-soft bg-transparent px-3 py-2 text-sm text-text-strong"
+                    rows={6}
+                    toolbar
+                  />
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="rounded-full"
+                  onClick={() => setEditOpen(false)}
+                >
+                  {texts.common.cancel}
+                </Button>
+
+                <Button
+                  className="rounded-full"
+                  disabled={
+                    editPost.isPending ||
+                    (editType !== "PAGE" && !draft.trim()) ||
+                    (editType === "PAGE" && !pageDraft.trim()) ||
+                    (editType === "ARTICLE" && !bodyDraft.trim())
+                  }
+                  onClick={handleSaveEdit}
+                >
+                  {editPost.isPending ? texts.common.saving : texts.posts.owner.save}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
+          <ConfirmDialog
+            open={deleteOpen}
+            onOpenChange={setDeleteOpen}
+            title={texts.posts.owner.deleteTitle}
+            description={texts.posts.owner.deleteDescription}
+            confirmLabel={texts.posts.owner.confirmDelete}
+            destructive
+            pending={deletePost.isPending}
+            onConfirm={() => deletePost.mutate()}
+          />
+        </>
       )}
+
+      {showComments && <PostComments postId={post.id} postAuthorId={post.authorId} />}
     </article>
   );
 }
 
-function CommentItem({
-  comment,
-  replyingTo,
-  currentUserId,
-  onDelete,
-  onReply,
-}: {
-  comment: CommentView;
-  replyingTo?: string;
-  currentUserId?: string;
-  onDelete?: (commentId: string) => void;
-  onReply?: (comment: CommentView) => void;
-}) {
-  const isOwner = currentUserId === comment.authorId;
-  const [commentReaction, setCommentReaction] = useState<string | null>(null);
-
-  const handleCommentReaction = async (type: ReactionType) => {
-    try {
-      if (commentReaction === type) {
-        await reactionsApi.removeCommentReaction(comment.postId, comment.id);
-        setCommentReaction(null);
-      } else {
-        await reactionsApi.reactComment(comment.postId, comment.id, type);
-        setCommentReaction(type);
-      }
-    } catch {}
-  };
-
-  return (
-    <div className="flex gap-3">
-      <UserAvatar
-        src={comment.authorAvatar}
-        alt={comment.authorName}
-        className="h-8 w-8 shrink-0"
-      />
-      <div className="min-w-0 flex-1">
-        <div className="rounded-2xl bg-muted/60 px-3 py-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-semibold">{comment.authorName}</span>
-            {replyingTo && (
-              <span className="text-[11px] text-muted-foreground">respondendo a {replyingTo}</span>
-            )}
-            <span className="text-[11px] text-muted-foreground">
-              {formatTime(comment.createdAt)}
-            </span>
-          </div>
-          <p className="mt-1 break-words text-sm leading-relaxed">{linkifyText(comment.content)}</p>
-        </div>
-        <div className="mt-1 flex items-center gap-2 px-3 text-[11px] font-medium text-muted-foreground">
-          <button
-            onClick={() => onReply?.(comment)}
-            className="transition-colors hover:text-foreground"
-          >
-            Responder
-          </button>
-          <Popover>
-            <PopoverTrigger asChild>
-              <button className="transition-colors hover:text-foreground">
-                {commentReaction ? REACTION_EMOJIS[commentReaction] : "Reagir"}
-              </button>
-            </PopoverTrigger>
-            <PopoverContent
-              align="start"
-              side="top"
-              className="w-fit rounded-2xl border-border p-1.5"
-            >
-              <div className="flex gap-1">
-                {(Object.entries(REACTION_EMOJIS) as [ReactionType, string][]).map(
-                  ([type, emoji]) => (
-                    <button
-                      key={type}
-                      onClick={() => handleCommentReaction(type)}
-                      className={`rounded-lg px-2 py-1 text-lg transition hover:bg-muted ${
-                        commentReaction === type ? "bg-muted ring-1 ring-primary" : ""
-                      }`}
-                    >
-                      {emoji}
-                    </button>
-                  ),
-                )}
-              </div>
-            </PopoverContent>
-          </Popover>
-          {isOwner && onDelete && (
-            <button
-              onClick={() => onDelete(comment.id)}
-              className="text-destructive transition-colors hover:text-destructive/80"
-            >
-              Excluir
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function AuthorInfo({
-  authorUsername,
-  authorName,
-  authorAvatar,
-  createdAt,
-  fallbackClassName,
-}: {
-  authorUsername: string;
-  authorName: string;
-  authorAvatar: string | null;
-  createdAt: string;
-  fallbackClassName?: string;
-}) {
-  return (
-    <div className="flex items-start gap-3">
-      <Link to="/perfil/$username" params={{ username: authorUsername }}>
-        <UserAvatar
-          src={authorAvatar}
-          alt={authorName}
-          className="h-11 w-11"
-          fallbackClassName={fallbackClassName}
-        />
-      </Link>
-      <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <Link
-            to="/perfil/$username"
-            params={{ username: authorUsername }}
-            className="font-semibold hover:underline"
-          >
-            {authorName}
-          </Link>
-          <span className="text-xs text-muted-foreground">· {formatTime(createdAt)}</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function EmbedPlayer({ type, id, url }: { type: string; id: string; url: string }) {
-  const [playing, setPlaying] = useState(false);
-
-  if (!playing) {
-    let thumbnail = "";
-    if (type === "youtube") thumbnail = `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
-    if (type === "dailymotion") thumbnail = `https://www.dailymotion.com/thumbnail/video/${id}`;
-
-    return (
-      <button
-        type="button"
-        onClick={() => setPlaying(true)}
-        className="relative mt-3 block w-full overflow-hidden rounded-xl border border-border text-left transition hover:opacity-90"
-      >
-        {thumbnail ? (
-          <img src={thumbnail} alt="" className="aspect-video w-full bg-muted object-cover" />
-        ) : (
-          <div className="flex aspect-video w-full items-center justify-center bg-muted">
-            <div className="text-center">
-              <p className="text-2xl">
-                {type === "vimeo" ? "🎬" : type === "twitch" ? "📺" : "▶️"}
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Clique para assistir no {type === "youtube" ? "YouTube" : type}
-              </p>
-            </div>
-          </div>
-        )}
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="grid h-12 w-12 place-items-center rounded-full bg-black/60 text-white shadow-lg backdrop-blur">
-            <svg viewBox="0 0 24 24" fill="currentColor" className="ml-0.5 h-5 w-5">
-              <path d="M8 5v14l11-7z" />
-            </svg>
-          </div>
-        </div>
-      </button>
-    );
-  }
-
-  const srcs: Record<string, string> = {
-    youtube: `https://www.youtube.com/embed/${id}?autoplay=1`,
-    vimeo: `https://player.vimeo.com/video/${id}?autoplay=1`,
-    dailymotion: `https://www.dailymotion.com/embed/video/${id}?autoplay=1`,
-    twitch: `https://player.twitch.tv/?video=${id}&parent=${typeof window !== "undefined" ? window.location.hostname : ""}&autoplay=true`,
-  };
-
-  return (
-    <div className="mt-3 overflow-hidden rounded-xl border border-border bg-muted">
-      <iframe
-        src={srcs[type] ?? ""}
-        className="aspect-video w-full"
-        allow="autoplay; fullscreen; encrypted-media"
-        allowFullScreen
-      />
-    </div>
-  );
-}
-
-function LinkPreviews({ content }: { content: string }) {
-  const urlRegex = /https?:\/\/[^\s]+/g;
-  const urls = content.match(urlRegex) ?? [];
-  const seen = new Set<string>();
-
-  return (
-    <>
-      {urls.map((url) => {
-        if (seen.has(url)) return null;
-        seen.add(url);
-
-        const video = extractVideoId(url);
-        if (video) {
-          return <EmbedPlayer key={url} type={video.type} id={video.id} url={url} />;
-        }
-
-        return (
-          <a
-            key={url}
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-2 flex items-center gap-3 rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm transition hover:bg-muted"
-          >
-            <div className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary-soft text-xs font-bold text-primary">
-              {(() => {
-                try {
-                  return new URL(url).hostname.slice(0, 2).toUpperCase();
-                } catch {
-                  return "🌐";
-                }
-              })()}
-            </div>
-            <div className="min-w-0">
-              <p className="truncate font-medium text-foreground">
-                {(() => {
-                  try {
-                    return new URL(url).hostname;
-                  } catch {
-                    return url;
-                  }
-                })()}
-              </p>
-              <p className="truncate text-xs text-muted-foreground">{url}</p>
-            </div>
-          </a>
-        );
-      })}
-    </>
-  );
-}
-
-function extractVideoId(url: string): { type: string; id: string } | null {
-  const patterns: [RegExp, string][] = [
-    [/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/, "youtube"],
-    [/(?:dailymotion\.com\/video\/|dai\.ly\/)([a-zA-Z0-9]+)/, "dailymotion"],
-    [/(?:vimeo\.com\/|player\.vimeo\.com\/video\/)(\d+)/, "vimeo"],
-    [/(?:twitch\.tv\/videos\/|clips\.twitch\.tv\/)([a-zA-Z0-9_-]+)/, "twitch"],
-    [/twitch\.tv\/([a-zA-Z0-9_]+)\/?$/, "twitch"],
-  ];
-  for (const [regex, type] of patterns) {
-    const m = url.match(regex);
-    if (m) return { type, id: m[1] };
-  }
-  return null;
-}
-
-function linkifyText(text: string) {
-  const parts: React.ReactNode[] = [];
-  const regex = /(@\w+|https?:\/\/[^\s]+)/g;
-  let last = 0;
-  let match: RegExpExecArray | null;
-  let key = 0;
-
-  while ((match = regex.exec(text)) !== null) {
-    if (match.index > last) {
-      parts.push(text.slice(last, match.index));
-    }
-    const token = match[0];
-    if (token.startsWith("@")) {
-      const username = token.slice(1);
-      parts.push(
-        <Link
-          key={key++}
-          to="/perfil/$username"
-          params={{ username }}
-          className="font-medium text-primary hover:underline"
-        >
-          {token}
-        </Link>,
-      );
-    } else {
-      parts.push(
-        <a
-          key={key++}
-          href={token}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="break-words text-primary hover:underline"
-        >
-          {token}
-        </a>,
-      );
-    }
-    last = match.index + token.length;
-  }
-  if (last < text.length) {
-    parts.push(text.slice(last));
-  }
-  return parts.length > 0 ? parts : text;
-}
-
-function formatTime(iso: string | null | undefined): string {
-  if (!iso) return "";
-  const date = new Date(iso);
-  if (isNaN(date.getTime())) return "";
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return "agora";
-  if (diffMin < 60) return `há ${diffMin}min`;
-  const diffH = Math.floor(diffMin / 60);
-  if (diffH < 24) return `há ${diffH}h`;
-  const diffD = Math.floor(diffH / 24);
-  if (diffD < 7) return `há ${diffD} dias`;
-  return date.toLocaleDateString("pt-BR");
-}
-
-function MediaGrid({ mediaIds }: { mediaIds: string[] }) {
-  const queryResults = useQueries({
-    queries: mediaIds.map((id) => ({
-      queryKey: ["media", id],
-      queryFn: () => mediaApi.get(id),
-      staleTime: 60_000,
-    })),
-  });
-
-  const items = queryResults.filter((q) => q.data?.cdnUrl).map((q) => q.data!);
-  const [fullscreenUrl, setFullscreenUrl] = useState<string | null>(null);
-
-  if (items.length === 0) return null;
-
-  const isVideo = items.some((m) => m.mimeType.startsWith("video/"));
-
-  if (isVideo) {
-    return (
-      <div className="overflow-hidden rounded-xl border border-border">
-        <video src={resolveCdnUrl(items[0].cdnUrl)} controls className="max-h-96 w-full bg-muted" />
-      </div>
-    );
-  }
-
-  return (
-    <>
-      <div className={`grid gap-2 ${items.length === 1 ? "grid-cols-1" : "grid-cols-2"}`}>
-        {items.map((m) => (
-          <button
-            key={m.id}
-            type="button"
-            onClick={() => setFullscreenUrl(resolveCdnUrl(m.cdnUrl) ?? null)}
-            className="overflow-hidden rounded-xl border border-border text-left"
-          >
-            <img
-              src={resolveCdnUrl(m.cdnUrl)}
-              alt=""
-              className="h-48 w-full object-cover bg-muted transition hover:scale-105"
-            />
-          </button>
-        ))}
-      </div>
-      {fullscreenUrl && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
-          onClick={() => setFullscreenUrl(null)}
-        >
-          <img
-            src={fullscreenUrl}
-            alt=""
-            className="max-h-[90vh] max-w-[90vw] rounded-2xl object-contain"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )}
-    </>
-  );
+/** Quantas horas faltam para o Momento se apagar (arredonda para cima; mínimo 1). */
+function remainingHours(expiresAt: string): number {
+  const diff = new Date(expiresAt).getTime() - Date.now();
+  return Math.max(1, Math.ceil(diff / 3_600_000));
 }

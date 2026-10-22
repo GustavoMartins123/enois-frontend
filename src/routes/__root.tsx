@@ -1,6 +1,6 @@
-import { type ReactNode, useEffect } from "react";
+import { useEffect } from "react";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider } from "@tanstack/react-query";
 import {
   HeadContent,
   Link,
@@ -9,49 +9,76 @@ import {
   createRootRouteWithContext,
   useNavigate,
   useRouter,
+  useRouterState,
 } from "@tanstack/react-router";
 
-import { reportLovableError } from "../lib/lovable-error-reporting";
+import { texts } from "@/texts";
+import type { WithRequiredChildren } from "@/types/components/with-required-children";
+import type { ErrorComponentProps } from "@/types/routes/root/error-component-props";
+import type { RootRouteContext } from "@/types/routes/root/root-route-context";
+
+import { registerServiceWorker } from "@/lib/pwa";
+import { hasSession, isProtectedPath } from "@/lib/require-auth";
+import { useThemeSync } from "@/lib/theme/use-theme-sync";
+
+import { buttonVariants } from "@/components/ui/button-variants";
+import { ToastProvider } from "@/components/ui/toast";
+
+import { AgeGate } from "@/components/age-gate";
+import { AppContainer } from "@/components/app-container";
+import { HealthyUsageGuard } from "@/components/healthy-usage/healthy-usage-guard";
+import { InstallPwaBanner } from "@/components/install-pwa-banner";
+import { LiteModeEffects } from "@/components/lite-mode-effects";
+import { ModuleDisabledGate } from "@/components/module-disabled-gate";
+
 import appCss from "../styles.css?url";
 
+/**
+ * 404 dentro da casca do app (cabeçalho e menu), e não numa página solta: quem caiu num link
+ * quebrado continua com a navegação à mão. O provider vem junto porque o notFound da raiz
+ * substitui o RootComponent inteiro — e a casca logada usa react-query.
+ */
 function NotFoundComponent() {
+  const { queryClient } = Route.useRouteContext();
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
-        </p>
-        <div className="mt-6">
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            Go home
-          </Link>
+    <QueryClientProvider client={queryClient}>
+      <AppContainer>
+        <div className="flex min-h-[60vh] items-center justify-center px-4">
+          <div className="max-w-md text-center">
+            <p className="text-7xl font-bold text-primary">{texts.root.notFound.code}</p>
+
+            <h1 className="mt-4 text-xl font-semibold text-foreground">
+              {texts.root.notFound.title}
+            </h1>
+
+            <p className="mt-2 text-sm text-muted-foreground">{texts.root.notFound.description}</p>
+
+            <div className="mt-6">
+              <Link to="/" className={buttonVariants({ size: "lg" })}>
+                {texts.root.notFound.home}
+              </Link>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </AppContainer>
+    </QueryClientProvider>
   );
 }
 
-function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
+function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
-  useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
-  }, [error]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+          {texts.root.error.title}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
-        </p>
+
+        <p className="mt-2 text-sm text-muted-foreground">{texts.root.error.description}</p>
+
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
             onClick={() => {
@@ -60,13 +87,14 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Try again
+            {texts.root.error.retry}
           </button>
+
           <a
             href="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Go home
+            {texts.root.error.home}
           </a>
         </div>
       </div>
@@ -74,32 +102,45 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
-export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+export const Route = createRootRouteWithContext<RootRouteContext>()({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Conexão · Networking profissional humano" },
+      {
+        name: "viewport",
+        // `interactive-widget` faz o layout encolher com o teclado em vez de rolar a página toda;
+        // no chat, é o que mantém cabeçalho e mensagens no lugar e sobe só o campo de texto.
+        content: "width=device-width, initial-scale=1, interactive-widget=resizes-content",
+      },
+      { title: texts.root.seo.title },
       {
         name: "description",
-        content:
-          "Plataforma de networking profissional com foco em conexões genuínas, mentoria, comunidades e desenvolvimento de carreira.",
+        content: texts.root.seo.description,
       },
-      { property: "og:title", content: "Conexão · Networking profissional humano" },
+      { property: "og:title", content: texts.root.seo.title },
       {
         property: "og:description",
-        content: "Construa relacionamentos profissionais reais — não apenas conexões.",
+        content: texts.root.seo.ogDescription,
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { name: "theme-color", content: texts.pwa.themeColor },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: texts.brand.name },
+      { name: "apple-mobile-web-app-status-bar-style", content: "default" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.webmanifest" },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "icon", href: "/favicon.ico", type: "image/x-icon", sizes: "16x16 32x32 48x48" },
+      { rel: "apple-touch-icon", href: "/icons/apple-touch-icon.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Press+Start+2P&family=UnifrakturCook:wght@700&display=swap",
       },
     ],
   }),
@@ -109,12 +150,37 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
-function RootShell({ children }: { children: ReactNode }) {
+/**
+ * Aplica o tema guardado antes do primeiro paint — e, junto, o Modo lite e a teimosia de
+ * animações (as chaves espelham src/lib/lite-mode.ts): aparelho em modo lite não deve nem
+ * começar a animar para depois parar.
+ *
+ * Sem isso o app nasce claro (e na cor padrão) e só depois de hidratar assume o
+ * tema do usuário — aquele flash. O CSS já vem resolvido do `localStorage`, então
+ * o script só injeta o texto, sem repetir a matemática de cor. A coleção temática
+ * também entra aqui: o atributo `data-theme` precisa existir antes do paint,
+ * porque o CSS estrutural do tema é escopado por ele.
+ */
+const THEME_BOOTSTRAP_SCRIPT = `(function(){try{
+var raw=localStorage.getItem("connect-grow-preferences");
+if(raw){var parsed=JSON.parse(raw);if(parsed&&parsed.state&&parsed.state.theme==="dark"){document.documentElement.classList.add("dark");}}
+var collection=localStorage.getItem("connect-grow-theme-collection");
+if(collection){document.documentElement.setAttribute("data-theme",collection);}
+var lite=localStorage.getItem("connect-grow-lite-mode")==="1";
+if(lite){document.documentElement.setAttribute("data-lite","");}
+else if(localStorage.getItem("connect-grow-force-motion")==="1"){document.documentElement.setAttribute("data-force-motion","");}
+var css=localStorage.getItem("connect-grow-theme-css");
+if(css){var style=document.createElement("style");style.id="app-theme";style.textContent=css;document.head.appendChild(style);}
+}catch(error){}})();`;
+
+function RootShell({ children }: WithRequiredChildren) {
   return (
-    <html lang="en">
+    <html lang="pt-BR">
       <head>
         <HeadContent />
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP_SCRIPT }} />
       </head>
+
       <body>
         {children}
         <Scripts />
@@ -123,35 +189,49 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
-function OAuthCallbackHandler() {
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const params = new URLSearchParams(window.location.search);
-    const token = params.get("token");
-    const refreshToken = params.get("refreshToken");
-    const expiresAt = params.get("expiresAt");
-    const refreshExpiresAt = params.get("refreshExpiresAt");
-    if (token) {
-      localStorage.setItem("session_token", token);
-      if (refreshToken) localStorage.setItem("refresh_token", refreshToken);
-      if (expiresAt) localStorage.setItem("session_expires_at", expiresAt);
-      if (refreshExpiresAt) localStorage.setItem("refresh_expires_at", refreshExpiresAt);
-      navigate({ to: "/feed", replace: true });
-    }
-  }, [navigate]);
-
-  return null;
-}
-
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  // O provider precisa ENVOLVER quem usa react-query: useThemeSync tem um useQuery
+  // (tema da conta) e, fora daqui, derrubava o SSR de todas as paginas
+  // ("No QueryClient set" — o RootComponent roda FORA do proprio provider).
   return (
     <QueryClientProvider client={queryClient}>
-      <OAuthCallbackHandler />
-      <Outlet />
+      <RootInsideProvider />
     </QueryClientProvider>
+  );
+}
+
+function RootInsideProvider() {
+  const router = useRouter();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+
+  useThemeSync();
+
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
+
+  useEffect(() => {
+    // Fallback de autenticacao: o `beforeLoad` das rotas roda no SSR (sem acesso ao
+    // localStorage) e nao e reexecutado na hidratacao, entao quem abre uma rota protegida
+    // direto sem estar logado veria a UI autenticada e erros nas acoes. Aqui no cliente
+    // mandamos para o login, seja qual for a forma de entrada.
+    if (isProtectedPath(pathname) && !hasSession()) {
+      void router.navigate({ to: "/entrar", search: { tab: "login" }, replace: true });
+    }
+  }, [pathname, router]);
+
+  return (
+    <ToastProvider>
+      <ModuleDisabledGate>
+        <Outlet />
+      </ModuleDisabledGate>
+
+      <InstallPwaBanner />
+      <LiteModeEffects />
+      <HealthyUsageGuard />
+      <AgeGate />
+    </ToastProvider>
   );
 }

@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Jogo de teste do protocolo Énóis</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: system-ui, sans-serif;
+      }
+      body {
+        margin: 0;
+        padding: 16px;
+        background: #10131a;
+        color: #e8eaf0;
+      }
+      h1 {
+        font-size: 16px;
+        margin: 0 0 8px;
+      }
+      p {
+        font-size: 13px;
+        margin: 4px 0;
+      }
+      .grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin: 12px 0;
+      }
+      button {
+        font: inherit;
+        font-size: 13px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid #3a4152;
+        background: #1b2030;
+        color: inherit;
+        cursor: pointer;
+      }
+      button:focus-visible {
+        outline: 2px solid #7aa2ff;
+      }
+      progress {
+        width: 100%;
+      }
+      #log {
+        font:
+          12px ui-monospace,
+          monospace;
+        white-space: pre-wrap;
+        background: #0b0d12;
+        border: 1px solid #262c3a;
+        border-radius: 8px;
+        padding: 8px;
+        max-height: 40vh;
+        overflow: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Jogo de teste do protocolo Énóis</h1>
+    <p id="where"></p>
+    <progress id="progress" max="100" value="0"></progress>
+
+    <div class="grid">
+      <button id="load-ok" type="button">Simular carregamento até pronto</button>
+      <button id="load-slow" type="button">Carregar devagar (90 s)</button>
+      <button id="ready" type="button">enois:ready</button>
+      <button id="error" type="button">enois:error</button>
+      <button id="identity" type="button">enois:identity</button>
+      <button id="share" type="button">enois:share</button>
+      <button id="spend" type="button">enois:spend (5 faíscas)</button>
+      <button id="invalid" type="button">Mensagens inválidas</button>
+    </div>
+
+    <div id="log" role="log" aria-live="polite"></div>
+
+    <script>
+      "use strict";
+
+      // Em produção a lista é fixa. `?parent=` existe só para testar com o front local.
+      const params = new URLSearchParams(location.search);
+      const ENOIS_ORIGINS = new Set(["https://enois.ia.br"]);
+      if (params.get("parent")) ENOIS_ORIGINS.add(new URL(params.get("parent")).origin);
+
+      const embedded = window.parent !== window;
+      const log = document.getElementById("log");
+      const progressBar = document.getElementById("progress");
+      let timer = null;
+
+      document.getElementById("where").textContent = embedded
+        ? `Dentro de um quadro. Origens aceitas: ${[...ENOIS_ORIGINS].join(", ")}`
+        : "Fora de um quadro: abra pela página do jogo no Énóis.";
+
+      function write(line) {
+        log.textContent = `${new Date().toLocaleTimeString()} ${line}\n${log.textContent}`;
+      }
+
+      // postMessage com origem errada é descartado pelo navegador: mandar para cada origem da lista
+      // entrega só para a que de fato contém o quadro, sem nunca usar "*".
+      function toEnois(message) {
+        if (!embedded) return write(`(fora do quadro) ${JSON.stringify(message)}`);
+        for (const origin of ENOIS_ORIGINS) window.parent.postMessage(message, origin);
+        write(`→ ${JSON.stringify(message).slice(0, 160)}`);
+      }
+
+      window.addEventListener("message", (event) => {
+        if (event.source !== window.parent || !ENOIS_ORIGINS.has(event.origin)) return;
+        const data = event.data;
+        if (data && data.type === "enois:identity" && typeof data.token === "string") {
+          write(`← identidade recebida (${data.token.length} caracteres). Troque no SEU servidor.`);
+        }
+      });
+
+      function simulate(totalMs) {
+        clearInterval(timer);
+        const started = Date.now();
+        timer = setInterval(
+          () => {
+            const progress = Math.min(100, Math.round(((Date.now() - started) / totalMs) * 100));
+            progressBar.value = progress;
+            toEnois({ type: "enois:loading", version: 1, progress });
+            if (progress >= 100) {
+              clearInterval(timer);
+              toEnois({ type: "enois:ready", version: 1 });
+            }
+          },
+          Math.max(250, totalMs / 20),
+        );
+      }
+
+      document.getElementById("load-ok").onclick = () => simulate(4000);
+      document.getElementById("load-slow").onclick = () => simulate(90000);
+      document.getElementById("ready").onclick = () => toEnois({ type: "enois:ready", version: 1 });
+      document.getElementById("error").onclick = () => {
+        clearInterval(timer);
+        toEnois({ type: "enois:error", version: 1, message: "Falha na inicialização do jogo" });
+      };
+      document.getElementById("identity").onclick = () => toEnois({ type: "enois:identity" });
+      document.getElementById("share").onclick = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = 240;
+        canvas.height = 120;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#264de4";
+        ctx.fillRect(0, 0, 240, 120);
+        ctx.fillStyle = "#fff";
+        ctx.font = "20px sans-serif";
+        ctx.fillText("Nível 10!", 70, 68);
+        toEnois({
+          type: "enois:share",
+          texto: "Cheguei no nível 10 no jogo de teste!",
+          imagem: canvas.toDataURL("image/png"),
+        });
+      };
+      document.getElementById("spend").onclick = () =>
+        toEnois({
+          type: "enois:spend",
+          amount: 5000,
+          motivo: "Poção de teste",
+          requestId: `teste-${Date.now()}`,
+        });
+      document.getElementById("invalid").onclick = () => {
+        for (const message of [
+          null,
+          "enois:ready",
+          [],
+          { type: "enois:loading", version: 1, progress: 150 },
+          { type: "enois:loading", version: 1, progress: "50" },
+          { type: "enois:ready", version: "1" },
+          { type: "enois:error", version: 1, message: { html: "<b>x</b>" } },
+          { type: "enois:spend", amount: -10, requestId: "x" },
+          { type: "enois:share", texto: "", imagem: "data:image/png;base64,AAAA" },
+          { type: "enois:desconhecido" },
+        ]) {
+          toEnois(message);
+        }
+      };
+
+      toEnois({ type: "enois:loading", version: 1, progress: 0 });
+    </script>
+  </body>
+</html>

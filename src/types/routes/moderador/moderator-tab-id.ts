@@ -1,0 +1,14 @@
+export type ModeratorTabId =
+  | "reports"
+  | "games"
+  | "projects"
+  | "support"
+  | "issues"
+  | "history"
+  | "appeals"
+  | "disputes"
+  | "applications"
+  | "users"
+  | "suspicious"
+  | "suspiciousPosts"
+  | "emails";

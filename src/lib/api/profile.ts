@@ -1,111 +1,32 @@
+import type { AgeState } from "@/types/application/profile/age-state";
+import type { Certification } from "@/types/application/profile/certification";
+import type { CertificationRequest } from "@/types/application/profile/certification-request";
+import type { Education } from "@/types/application/profile/education";
+import type { EducationRequest } from "@/types/application/profile/education-request";
+import type { Experience } from "@/types/application/profile/experience";
+import type { ExperienceRequest } from "@/types/application/profile/experience-request";
+import type { Profile } from "@/types/application/profile/profile";
+import type { ProfileNetworkUser } from "@/types/application/profile/profile-network-user";
+import type { UpdateProfileRequest } from "@/types/application/profile/update-profile-request";
+
 import { api } from "../api-client";
 
-export interface UserProfile {
-  id: string;
-  username: string;
-  name: string;
-  headline: string | null;
-  email: string;
-  company: string | null;
-  location: string | null;
-  avatar: string | null;
-  banner: string | null;
-  bio: string | null;
-  skills: string[];
-  goals: string[];
-  availability: string | null;
-  portfolio: string | null;
-  externalLinks: string[];
-  openToWork: boolean;
-  isMentor: boolean;
-  connectionsCount?: number;
-  followersCount?: number;
-  reputation?: number;
-}
-
-export type Profile = UserProfile;
-
-export interface UpdateProfileRequest {
-  username?: string;
-  name?: string;
-  headline?: string | null;
-  company?: string | null;
-  location?: string | null;
-  avatar?: string | null;
-  banner?: string | null;
-  bio?: string | null;
-  skills?: string[];
-  goals?: string[];
-  availability?: string | null;
-  portfolio?: string | null;
-  externalLinks?: string[];
-  openToWork?: boolean;
-  isMentor?: boolean;
-}
-
-export interface Experience {
-  id: string;
-  title: string;
-  company: string;
-  location: string | null;
-  description: string | null;
-  currentlyHere: boolean;
-  startDate: string | null;
-  endDate: string | null;
-}
-
-export interface ExperienceRequest {
-  title: string;
-  company: string;
-  location?: string | null;
-  description?: string | null;
-  startDate?: string | null;
-  endDate?: string | null;
-}
-
-export interface Education {
-  id: string;
-  school: string;
-  degree: string;
-  field: string;
-  description: string | null;
-  currentlyHere: boolean;
-  startDate: string | null;
-  endDate: string | null;
-}
-
-export interface EducationRequest {
-  school: string;
-  degree: string;
-  field: string;
-  description?: string | null;
-  startDate?: string | null;
-  endDate?: string | null;
-}
-
-export interface Certification {
-  id: string;
-  name: string;
-  issuer: string;
-  description: string | null;
-  issueDate: string | null;
-  expirationDate: string | null;
-  credentialUrl: string | null;
-}
-
-export interface CertificationRequest {
-  name: string;
-  issuer: string;
-  description?: string | null;
-  issueDate?: string | null;
-  expirationDate?: string | null;
-  credentialUrl?: string | null;
-}
-
 export const profileApi = {
+  /** Liga/desliga a secao de ranking no perfil (preferencia da conta; padrao: mostrar). */
+  setRanking: (show: boolean) => api.put<{ id: string; status: string }>("/me/ranking", { show }),
+
   me: () => api.get<Profile>("/me"),
 
+  /** Estado de idade (ECA Digital): o que decide se o app pede a data de nascimento. */
+  ageState: () => api.get<AgeState>("/me/age-state"),
+
+  /** Declara (ou corrige) a data de nascimento. Formato ISO: aaaa-mm-dd. */
+  declareBirthDate: (birthDate: string) => api.post<AgeState>("/me/birth-date", { birthDate }),
+
   get: (username: string) => api.get<Profile>(`/users/${username}`),
+
+  network: (username: string, kind: "connections" | "followers") =>
+    api.get<ProfileNetworkUser[]>(`/users/${encodeURIComponent(username)}/${kind}`),
 
   getById: (id: string) => api.get<Profile>(`/users/by-id/${id}`),
 
@@ -113,6 +34,7 @@ export const profileApi = {
 
   experiences: {
     list: () => api.get<Experience[]>("/me/experiences"),
+    byUser: (username: string) => api.get<Experience[]>(`/users/${username}/experiences`),
     create: (data: ExperienceRequest) => api.post<Experience>("/me/experiences", data),
     update: (id: string, data: ExperienceRequest) =>
       api.put<Experience>(`/me/experiences/${id}`, data),

@@ -12,7 +12,12 @@ const Avatar = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AvatarPrimitive.Root
     ref={ref}
-    className={cn("relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full", className)}
+    // `@container` deixa as iniciais do fallback escalarem com o tamanho do avatar
+    // (há avatares de h-6 a h-24 no app) em vez de um tamanho de fonte fixo.
+    className={cn(
+      "@container relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
+      className,
+    )}
     {...props}
   />
 ));

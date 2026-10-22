@@ -228,6 +228,11 @@ interface Event {
   host: string;
   attendees: number;
   cover: string | null;
+  streamUrl: string | null;
+  location: string | null;
+  expired: boolean;
+  /** Viewer confirmed attendance; false without session. */
+  attending: boolean;
 }
 ```
 

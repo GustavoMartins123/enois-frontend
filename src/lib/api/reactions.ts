@@ -1,47 +1,18 @@
+import { REACTION_EMOJIS } from "@/constants/reaction-emojis";
+import type { ActionResponse } from "@/types/application/reaction/action-response";
+import type { ReactionType } from "@/types/application/reaction/reaction-type";
+import type { ReactionsListResponse } from "@/types/application/reaction/reactions-list-response";
+
 import { api } from "../api-client";
 
-export const REACTION_EMOJIS: Record<string, string> = {
-  LIKE: "\u{1F44D}",
-  LOVE: "\u{2764}\u{FE0F}",
-  LAUGH: "\u{1F602}",
-  WOW: "\u{1F62E}",
-  SAD: "\u{1F622}",
-  CELEBRATE: "\u{1F389}",
-  SUPPORT: "\u{1F4AA}",
-  INSIGHTFUL: "\u{1F4A1}",
-};
-
-export type ReactionType = keyof typeof REACTION_EMOJIS;
-
-export interface ActionResponse {
-  postId: string;
-  status: string;
-  counters: {
-    reactions: number;
-    comments: number;
-    saves: number;
-    shares: number;
-  };
-}
-
-export interface ReactionItem {
-  userId: string;
-  type: string;
-  createdAt: string;
-}
+export { REACTION_EMOJIS } from "@/constants/reaction-emojis";
 
 function postReaction(path: string, type: ReactionType) {
-  return api.post<{ status: string }>(path, { type });
+  return api.post<Partial<ActionResponse>>(path, { type });
 }
 
 function removeReaction(path: string) {
-  return api.delete<{ status: string }>(path);
-}
-
-export interface ReactionsListResponse {
-  postId?: string;
-  summary: Record<string, number>;
-  reactions: ReactionItem[];
+  return api.delete<Partial<ActionResponse>>(path);
 }
 
 function listReactions(path: string) {
@@ -70,4 +41,8 @@ export const reactionsApi = {
   removeSave: (postId: string) => api.delete<ActionResponse>(`/feed/posts/${postId}/saves`),
 
   share: (postId: string) => api.post<ActionResponse>(`/feed/posts/${postId}/shares`),
+
+  /** Republica no próprio feed; `opinion` (até 600) transforma em repost com comentário. */
+  repost: (postId: string, opinion?: string) =>
+    api.post<unknown>(`/feed/posts/${postId}/repost`, opinion ? { opinion } : {}),
 };

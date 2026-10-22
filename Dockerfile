@@ -6,6 +6,13 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 COPY . .
+
+# A base da API entra no BUILD (o Vite embute as VITE_* no bundle). Sem esta linha o build cai no
+# fallback do api-client e a imagem publicada aponta para localhost — foi exatamente isso que
+# derrubou o app em 18/10: o bundle servido chamava http://localhost:8081/api.
+ARG VITE_API_BACKEND=https://enois.ia.br/api
+ENV VITE_API_BACKEND=$VITE_API_BACKEND
+
 RUN NITRO_PRESET=node-server npm run build
 
 FROM node:22-alpine AS runner

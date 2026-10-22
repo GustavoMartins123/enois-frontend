@@ -1,0 +1,6 @@
+Contact: mailto:suporte@enois.ia.br
+Contact: https://enois.ia.br/contato
+Expires: 2027-10-18T00:00:00.000Z
+Preferred-Languages: pt-BR, en
+Canonical: https://enois.ia.br/.well-known/security.txt
+Policy: https://enois.ia.br/diretrizes
