@@ -11,9 +11,10 @@ import { supportApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
-import { LoadingState } from "@/components/ui/loading-state";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
+
+import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
 
 const CATEGORIES: SupportCategory[] = ["BUG", "ACCOUNT", "CONTENT", "IDEA", "OTHER"];
 
@@ -120,7 +121,7 @@ export function SupportTicketsSection({
       </div>
 
       {isLoading ? (
-        <LoadingState />
+        <ListRowSkeletons />
       ) : visible.length === 0 ? (
         <div className="rounded-2xl border border-border-soft bg-surface-card p-6 text-center text-sm text-text-subtle">
           <LifeBuoy className="mx-auto mb-2 h-6 w-6 text-primary" />

@@ -7,15 +7,7 @@ import { texts } from "@/texts";
 import type { CreateMentorInput } from "@/types/application/mentor/create-mentor-input";
 import type { MentorCardProps } from "@/types/routes/mentoring/mentor-card-props";
 import type { RegisterMentorFormProps } from "@/types/routes/mentoring/register-mentor-form-props";
-import {
-  Calendar,
-  CheckCircle2,
-  Image as ImageIcon,
-  Loader2,
-  Sparkles,
-  Star,
-  Trash2,
-} from "lucide-react";
+import { Calendar, CheckCircle2, Image as ImageIcon, Sparkles, Star, Trash2 } from "lucide-react";
 
 import { ApiError, mentorsApi, profileApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
@@ -38,6 +30,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
+import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/mentoria")({
@@ -170,11 +163,9 @@ function Mentoria() {
           <p className="text-sm text-muted-foreground">{texts.mentoring.featuredDescription}</p>
 
           {isLoading && (
-            <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-
-              <>{texts.mentoring.loading}</>
-            </p>
+            <div className="mt-4">
+              <ListRowSkeletons count={3} />
+            </div>
           )}
 
           {!isLoading && isError && (
@@ -497,13 +488,7 @@ function BookSessionDialog({ mentorId, mentorName }: { mentorId: string; mentorN
           </div>
         ) : (
           <div className="space-y-4 pt-2">
-            {isLoading && (
-              <p className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-
-                <>{texts.mentoring.slotsLoading}</>
-              </p>
-            )}
+            {isLoading && <ListRowSkeletons count={3} />}
 
             {!isLoading && isError && (
               <div className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
