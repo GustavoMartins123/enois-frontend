@@ -30,6 +30,7 @@ export const profileApi = {
 
   experiences: {
     list: () => api.get<Experience[]>("/me/experiences"),
+    byUser: (username: string) => api.get<Experience[]>(`/users/${username}/experiences`),
     create: (data: ExperienceRequest) => api.post<Experience>("/me/experiences", data),
     update: (id: string, data: ExperienceRequest) =>
       api.put<Experience>(`/me/experiences/${id}`, data),

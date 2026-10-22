@@ -4,4 +4,5 @@ export type CreateFreelanceInput = {
   budgetMin: number;
   budgetMax: number;
   deadline: string;
+  paymentMethod: "CASH" | "FAISCAS";
 };

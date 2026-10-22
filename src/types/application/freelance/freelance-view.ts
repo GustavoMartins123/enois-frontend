@@ -7,12 +7,8 @@ export type FreelanceView = {
   budgetMin: number;
   budgetMax: number;
   deadline: string;
+  paymentMethod: "CASH" | "FAISCAS";
   status: "OPEN" | "CLOSED";
   createdAt: string;
   owned: boolean;
-};
-
-export type FreelancePage = {
-  items: FreelanceView[];
-  nextCursor: string | null;
 };

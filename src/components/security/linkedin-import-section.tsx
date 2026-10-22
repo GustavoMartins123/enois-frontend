@@ -30,6 +30,20 @@ const LIMITE_PROJETOS = 20;
 /** Teto do currículo (o backend aceita PDF de até 10 MB; texto tem teto próprio). */
 const RESUME_MAX_MB = 10;
 
+/** Índice por chave da reimportação: a primeira entrada de cada chave vence. */
+function indexBy<T extends { id: string }>(
+  items: T[],
+  keysOf: (item: T) => Array<string | null | undefined>,
+): Map<string, T> {
+  const index = new Map<string, T>();
+  for (const item of items) {
+    for (const key of keysOf(item)) {
+      if (key && !index.has(key)) index.set(key, item);
+    }
+  }
+  return index;
+}
+
 export function LinkedinImportSection({
   linkedinConectado = false,
 }: {
@@ -80,10 +94,11 @@ export function LinkedinImportSection({
 
   const salvar = useMutation({
     mutationFn: async () => {
-      if (!preview) return { imported: 0, skipped: 0, truncated: false };
+      if (!preview) return { created: 0, updated: 0, truncated: false };
 
-      // O que JÁ existe não entra de novo: repetir a importação (ou tentar de novo depois de um
-      // erro) duplicava experiências, formações e projetos no perfil.
+      // Reimportar é SINCRONIZAR: o que já está no perfil é ATUALIZADO (descrição, período,
+      // local), não duplicado. Título+empresa é a chave principal; empresa (escola/emissor) +
+      // data de início cobre o caso de a pessoa ter corrigido um dos nomes no LinkedIn.
       const [experiences, education, certifications, projects] = await Promise.all([
         profileApi.experiences.list(),
         profileApi.education.list(),
@@ -92,15 +107,30 @@ export function LinkedinImportSection({
       ]);
       const normalizar = (value: string | null | undefined) => (value ?? "").trim().toLowerCase();
       const chave = (...parts: (string | null | undefined)[]) => parts.map(normalizar).join("|");
-      const jaTenho = {
-        experiences: new Set(experiences.map((item) => chave(item.title, item.company))),
-        education: new Set(education.map((item) => chave(item.school, item.degree))),
-        certifications: new Set(certifications.map((item) => normalizar(item.name))),
-        projects: new Set(projects.map((item) => normalizar(item.title))),
+      const comData = (nome?: string | null, data?: string | null) =>
+        nome && data ? chave(nome, data) : null;
+
+      const existentes = {
+        experiences: indexBy(experiences, (item) => [
+          chave(item.title, item.company),
+          comData(item.company, item.startDate),
+        ]),
+        education: indexBy(education, (item) => [
+          chave(item.school, item.degree),
+          comData(item.school, item.startDate),
+        ]),
+        certifications: indexBy(certifications, (item) => [
+          normalizar(item.name),
+          comData(item.issuer, item.issueDate),
+        ]),
+        projects: indexBy(projects, (item) => [
+          normalizar(item.title),
+          item.repoUrl ? normalizar(item.repoUrl) : null,
+        ]),
       };
 
-      // Os tetos do perfil (10 por seção; 20 projetos) valem para a importação também: sem isso,
-      // o 11º item era recusado no meio do caminho e metade do retrato ficava de fora.
+      // Os tetos do perfil (10 por seção; 20 projetos) valem para o que é NOVO — atualizar o
+      // que já existe não ocupa vaga.
       const vagas = (usados: number, teto: number) => Math.max(0, teto - usados);
       const limite = {
         experiences: vagas(experiences.length, LIMITE_POR_SECAO),
@@ -109,85 +139,114 @@ export function LinkedinImportSection({
         projects: vagas(projects.length, LIMITE_PROJETOS),
       };
       let truncated = false;
+      let created = 0;
+      let updated = 0;
 
       const saves: Promise<unknown>[] = [];
-      let skipped = 0;
 
       preview.experiences.forEach((exp, i) => {
         if (!selected[`exp${i}`]) return;
-        if (jaTenho.experiences.has(chave(exp.title, exp.company))) return void skipped++;
+        const atual =
+          existentes.experiences.get(chave(exp.title, exp.company)) ??
+          existentes.experiences.get(comData(exp.company, exp.startDate) ?? "");
+        const payload = {
+          title: exp.title ?? atual?.title ?? "",
+          company: exp.company ?? atual?.company ?? "",
+          location: exp.location ?? atual?.location ?? null,
+          description: exp.description ?? atual?.description ?? null,
+          startDate: exp.startDate ?? atual?.startDate ?? null,
+          // "atual" no arquivo manda: não herda um fim antigo de importação anterior.
+          endDate: exp.currentlyHere ? null : (exp.endDate ?? atual?.endDate ?? null),
+        };
+        if (atual) {
+          updated++;
+          saves.push(profileApi.experiences.update(atual.id, payload));
+          return;
+        }
         if (limite.experiences <= 0) return void (truncated = true);
         limite.experiences--;
-        saves.push(
-          profileApi.experiences.create({
-            title: exp.title ?? "",
-            company: exp.company ?? "",
-            location: exp.location,
-            description: exp.description,
-            startDate: exp.startDate,
-            endDate: exp.endDate,
-          }),
-        );
+        created++;
+        saves.push(profileApi.experiences.create(payload));
       });
+
       preview.education.forEach((edu, i) => {
         if (!selected[`edu${i}`]) return;
-        if (jaTenho.education.has(chave(edu.school, edu.degree))) return void skipped++;
+        const atual =
+          existentes.education.get(chave(edu.school, edu.degree)) ??
+          existentes.education.get(comData(edu.school, edu.startDate) ?? "");
+        const payload = {
+          school: edu.school ?? atual?.school ?? "",
+          degree: edu.degree ?? atual?.degree ?? "",
+          field: edu.field ?? atual?.field ?? "",
+          description: edu.description ?? atual?.description ?? null,
+          startDate: edu.startDate ?? atual?.startDate ?? null,
+          endDate: edu.currentlyHere ? null : (edu.endDate ?? atual?.endDate ?? null),
+        };
+        if (atual) {
+          updated++;
+          saves.push(profileApi.education.update(atual.id, payload));
+          return;
+        }
         if (limite.education <= 0) return void (truncated = true);
         limite.education--;
-        saves.push(
-          profileApi.education.create({
-            school: edu.school ?? "",
-            degree: edu.degree ?? "",
-            field: edu.field ?? "",
-            description: edu.description,
-            startDate: edu.startDate,
-            endDate: edu.endDate,
-          }),
-        );
+        created++;
+        saves.push(profileApi.education.create(payload));
       });
+
       preview.certifications.forEach((cert, i) => {
         if (!selected[`cert${i}`]) return;
-        if (jaTenho.certifications.has(normalizar(cert.name))) return void skipped++;
+        const atual = existentes.certifications.get(normalizar(cert.name));
+        const payload = {
+          name: cert.name,
+          issuer: cert.issuer ?? atual?.issuer ?? "",
+          description: atual?.description ?? null,
+          issueDate: cert.issueDate ?? atual?.issueDate ?? null,
+          expirationDate: atual?.expirationDate ?? null,
+          credentialUrl: atual?.credentialUrl ?? null,
+        };
+        if (atual) {
+          updated++;
+          saves.push(profileApi.certifications.update(atual.id, payload));
+          return;
+        }
         if (limite.certifications <= 0) return void (truncated = true);
         limite.certifications--;
-        saves.push(
-          profileApi.certifications.create({
-            name: cert.name,
-            issuer: cert.issuer ?? "",
-            description: null,
-            issueDate: cert.issueDate,
-            expirationDate: null,
-            credentialUrl: null,
-          }),
-        );
+        created++;
+        saves.push(profileApi.certifications.create(payload));
       });
+
       preview.projects.forEach((project, i) => {
         if (!selected[`proj${i}`]) return;
-        if (jaTenho.projects.has(normalizar(project.title))) return void skipped++;
+        const atual = existentes.projects.get(normalizar(project.title));
+        // O card de projeto não tem campo de descrição: o texto do LinkedIn entra como a
+        // PRIMEIRA entrada do diário. Sem descrição no arquivo, o diário existente fica como está.
+        const diary = project.description
+          ? [
+              {
+                date: project.startDate ?? new Date().toISOString().slice(0, 10),
+                text: project.description.slice(0, 2_000),
+              },
+            ]
+          : undefined;
+        const payload = {
+          title: project.title ?? atual?.title ?? "",
+          stack: atual?.stack ?? [],
+          repoUrl: project.url ?? atual?.repoUrl ?? null,
+          status: atual?.status ?? null,
+          diary: diary ?? atual?.diary ?? [],
+          html: atual?.html ?? null,
+        };
+        if (atual) {
+          updated++;
+          saves.push(projectsApi.update(atual.id, payload));
+          return;
+        }
         if (limite.projects <= 0) return void (truncated = true);
         limite.projects--;
-        saves.push(
-          projectsApi.create({
-            title: project.title ?? "",
-            stack: [],
-            repoUrl: project.url,
-            status: null,
-            // O card de projeto não tem campo de descrição: o texto do LinkedIn entra como a
-            // PRIMEIRA entrada do diário, datado no início do projeto — antes ele era descartado.
-            diary: project.description
-              ? [
-                  {
-                    date: project.startDate ?? new Date().toISOString().slice(0, 10),
-                    // O diário aceita até 2.000 caracteres no backend; descrição maior é
-                    // cortada aqui para não derrubar a importação inteira.
-                    text: project.description.slice(0, 2_000),
-                  },
-                ]
-              : [],
-            html: null,
-          }),
-        );
+        created++;
+        saves.push(projectsApi.create(payload));
       });
+
       // Perfil: os campos do Profile.csv e as skills entram num update único (parcial).
       if (preview.profile && selected.perfil) {
         const campos: Record<string, unknown> = {};
@@ -202,14 +261,14 @@ export function LinkedinImportSection({
         saves.push(profileApi.update({ skills: preview.skills.slice(0, 50) }));
       }
       await Promise.all(saves);
-      return { imported: saves.length, skipped, truncated };
+      return { created, updated, truncated };
     },
-    onSuccess: ({ imported, skipped, truncated }) => {
-      if (imported === 0 && skipped > 0) {
+    onSuccess: ({ created, updated, truncated }) => {
+      if (created === 0 && updated === 0) {
         toast(texts.account.linkedinImport.nothingNew, "success");
       } else {
         toast(
-          texts.account.linkedinImport.done(imported) +
+          texts.account.linkedinImport.done(created, updated) +
             (truncated ? ` ${texts.account.linkedinImport.capReached}` : ""),
           "success",
         );
@@ -217,6 +276,7 @@ export function LinkedinImportSection({
       setPreview(null);
       void queryClient.invalidateQueries({ queryKey: ["me"] });
       void queryClient.invalidateQueries({ queryKey: ["projects"] });
+      void queryClient.invalidateQueries({ queryKey: ["experiences"] });
     },
     onError: (error) => toast(error.message, "error"),
   });

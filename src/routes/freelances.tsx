@@ -5,7 +5,7 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { FreelanceView } from "@/types/application/freelance/freelance-view";
-import { CalendarClock, Handshake, Plus, Sparkles } from "lucide-react";
+import { Banknote, CalendarClock, Handshake, Plus, Sparkles } from "lucide-react";
 
 import { freelancesApi } from "@/lib/api";
 import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
@@ -28,6 +28,10 @@ export const Route = createFileRoute("/freelances")({
 });
 
 const PAGE_SIZE = 24;
+
+/** Dinheiro é exibido em reais inteiros: 1500 → "R$ 1.500". */
+const money = (value: number) =>
+  value.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: 0 });
 
 function Freelances() {
   const authenticated = useIsAuthenticated();
@@ -147,10 +151,17 @@ function FreelanceCard({ item }: { item: FreelanceView }) {
       <p className="line-clamp-4 whitespace-pre-line text-sm text-text-subtle">{item.scope}</p>
 
       <div className="mt-auto flex flex-wrap items-center gap-3 text-sm">
-        <span className="inline-flex items-center gap-1.5 font-semibold text-primary">
-          <Sparkles className="h-4 w-4" />
-          {formatFaisca(item.budgetMin)}–{formatFaisca(item.budgetMax)} faíscas
-        </span>
+        {item.paymentMethod === "CASH" ? (
+          <span className="inline-flex items-center gap-1.5 font-semibold text-growth">
+            <Banknote className="h-4 w-4" />
+            {money(item.budgetMin)}–{money(item.budgetMax)}
+          </span>
+        ) : (
+          <span className="inline-flex items-center gap-1.5 font-semibold text-primary">
+            <Sparkles className="h-4 w-4" />
+            {formatFaisca(item.budgetMin)}–{formatFaisca(item.budgetMax)} faíscas
+          </span>
+        )}
 
         <span className="inline-flex items-center gap-1.5 text-text-subtle">
           <CalendarClock className="h-4 w-4" />
@@ -178,6 +189,7 @@ function CreateFreelanceDialog({
   const [budgetMin, setBudgetMin] = useState("");
   const [budgetMax, setBudgetMax] = useState("");
   const [deadline, setDeadline] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"FAISCAS" | "CASH">("FAISCAS");
 
   const min = parseFaiscaInput(budgetMin) ?? 0;
   const max = parseFaiscaInput(budgetMax) ?? 0;
@@ -196,6 +208,7 @@ function CreateFreelanceDialog({
         budgetMin: min,
         budgetMax: max,
         deadline,
+        paymentMethod,
       }),
     onSuccess: () => {
       toast(texts.jobs.freelancePage.saved, "success");
@@ -205,6 +218,7 @@ function CreateFreelanceDialog({
       setBudgetMin("");
       setBudgetMax("");
       setDeadline("");
+      setPaymentMethod("FAISCAS");
       onOpenChange(false);
     },
     onError: (error) =>
@@ -233,17 +247,40 @@ function CreateFreelanceDialog({
             maxLength={4000}
           />
 
+          <label className="block space-y-1 text-sm">
+            <span className="text-text-subtle">{texts.jobs.freelancePage.payment}</span>
+
+            <select
+              value={paymentMethod}
+              onChange={(event) => setPaymentMethod(event.target.value as "FAISCAS" | "CASH")}
+              aria-label={texts.jobs.freelancePage.payment}
+              className="h-10 w-full rounded-lg border border-border-soft bg-surface-card px-3 text-sm text-text-strong outline-none focus:border-primary"
+            >
+              <option value="FAISCAS">{texts.jobs.freelancePage.paymentFaiscas}</option>
+
+              <option value="CASH">{texts.jobs.freelancePage.paymentCash}</option>
+            </select>
+          </label>
+
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Input
               value={budgetMin}
               onChange={(event) => setBudgetMin(event.target.value)}
-              placeholder={texts.jobs.freelancePage.budgetMin}
+              placeholder={
+                paymentMethod === "CASH"
+                  ? texts.jobs.freelancePage.budgetMinCash
+                  : texts.jobs.freelancePage.budgetMin
+              }
               inputMode="decimal"
             />
             <Input
               value={budgetMax}
               onChange={(event) => setBudgetMax(event.target.value)}
-              placeholder={texts.jobs.freelancePage.budgetMax}
+              placeholder={
+                paymentMethod === "CASH"
+                  ? texts.jobs.freelancePage.budgetMaxCash
+                  : texts.jobs.freelancePage.budgetMax
+              }
               inputMode="decimal"
             />
           </div>

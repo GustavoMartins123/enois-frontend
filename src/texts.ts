@@ -770,9 +770,15 @@ export const texts = {
       pasteRead: "Ler o perfil colado",
       found: (count: number) => `${count} itens encontrados — marque o que quer importar:`,
       save: "Importar selecionados",
-      done: (count: number) => `${count} itens importados do LinkedIn.`,
-      /** Reimportar não duplica: o que já estava no perfil é ignorado. */
-      nothingNew: "Nada novo: o que você marcou já está no seu perfil.",
+      done: (created: number, updated: number) => {
+        const partes: string[] = [];
+        if (created > 0) partes.push(`${created} ${created === 1 ? "item novo" : "itens novos"}`);
+        if (updated > 0)
+          partes.push(`${updated} ${updated === 1 ? "item atualizado" : "itens atualizados"}`);
+        return `LinkedIn sincronizado: ${partes.join(" e ")}.`;
+      },
+      /** Reimportar SINCRONIZA: o que já existe é atualizado, não duplicado. */
+      nothingNew: "Nada mudou: o que você marcou já está igual no seu perfil.",
       /** O perfil tem teto por seção; o que não coube fica claro em vez de falhar pela metade. */
       capReached:
         "Alguns itens não couberam: o perfil aceita até 10 experiências, 10 formações e 10 certificações.",
@@ -1580,6 +1586,12 @@ export const texts = {
       save: "Salvar bio",
       preview: "Pré visualização",
     },
+    experiences: {
+      title: "Experiências",
+      empty: "Nenhuma experiência cadastrada ainda.",
+      present: "atual",
+      hint: "Cargos, empresas, período e o que você fez em cada um.",
+    },
     projects: {
       title: "Projetos",
       hint: "O que você anda construindo — stack, repositório, status e o diário de evolução.",
@@ -2294,7 +2306,7 @@ export const texts = {
     freelancePage: {
       title: "Freelances",
       description:
-        "Trabalhos pontuais com escopo fechado, prazo e faixa de valor. Qualquer pessoa com conta verificada pode publicar.",
+        "Trabalhos pontuais com escopo fechado, prazo e faixa de valor — pagos em dinheiro ou em faíscas. Qualquer pessoa com conta verificada pode publicar.",
       create: "Publicar freela",
       empty: "Nenhum freela aberto agora.",
       emptyHint: "Publique o primeiro: escopo fechado, prazo e faixa de valor.",
@@ -2308,6 +2320,11 @@ export const texts = {
       scopeField: "Escopo fechado (o que será entregue)",
       budgetMin: "Valor mínimo (faíscas)",
       budgetMax: "Valor máximo (faíscas)",
+      budgetMinCash: "Valor mínimo (R$)",
+      budgetMaxCash: "Valor máximo (R$)",
+      payment: "Pagamento",
+      paymentCash: "Dinheiro (R$)",
+      paymentFaiscas: "Faíscas",
       deadlineField: "Prazo",
       submit: "Publicar",
       invalid: "Preencha título, escopo, faixa de valor e prazo.",

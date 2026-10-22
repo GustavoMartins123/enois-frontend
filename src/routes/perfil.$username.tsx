@@ -67,6 +67,7 @@ import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { ProfileBannerDialog } from "@/components/profile-banner-dialog";
 import { ProfileBioDialog } from "@/components/profile-bio-dialog";
 import { ProfileResumeDialog } from "@/components/profile-resume-dialog";
+import { ProfileExperiencesSection } from "@/components/profile/experiences-section";
 import { ProfileProjectsSection } from "@/components/profile/projects-section";
 import { UserAvatar } from "@/components/user-avatar";
 
@@ -659,6 +660,10 @@ function Profile() {
             {/* Projetos: cards abaixo da bio — estruturados (stack, repo, status, diário)
                 ou o HTML próprio do autor. O dono gerencia por aqui mesmo. */}
             <ProfileProjectsSection username={user.username} isOwner={isOwnProfile} />
+
+            {/* Trajetória profissional logo abaixo dos projetos: cargo, empresa, período
+                (com "atual") e descrição, como no LinkedIn. */}
+            <ProfileExperiencesSection username={user.username} />
 
             {user.skills.length > 0 && (
               <Section title={texts.profile.sections.skills}>
