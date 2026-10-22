@@ -446,7 +446,7 @@ function SignupForm(_props: AuthFormProps) {
           )}
         </div>
 
-        {!!formError && <ErrorBanner error={formError} />}
+        {!!formError && <ErrorBanner error={formError} showDetails={false} />}
         {captchaMode === "TURNSTILE" && turnstileSiteKey && (
           <Turnstile
             ref={turnstileRef}
@@ -690,7 +690,7 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
           />
         </Field>
 
-        {!!formError && <ErrorBanner error={formError} />}
+        {!!formError && <ErrorBanner error={formError} showDetails={false} />}
         {captcha.data?.captchaMode === "TURNSTILE" && turnstileSiteKey && (
           <Turnstile
             ref={loginTurnstileRef}
