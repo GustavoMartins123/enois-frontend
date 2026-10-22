@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { SandboxedHtmlFrameProps } from "@/types/components/post/sandboxed-html-frame-props";
 
 import { contentHeight } from "@/lib/html-frame-height";
+import { useLiteMode } from "@/lib/use-lite-mode";
 import { cn } from "@/lib/utils";
 
 import { useFrameTheme } from "./use-frame-theme";
@@ -38,6 +39,9 @@ export function SandboxedHtmlFrame({
 }: SandboxedHtmlFrameProps) {
   const frame = useRef<HTMLIFrameElement>(null);
   const theme = useFrameTheme(frame);
+  // Modo lite: o iframe deixa de receber a permissão de autoplay — a página do autor continua
+  // igual, só não sai tocando sozinha no meio do feed.
+  const lite = useLiteMode();
   const [measured, setMeasured] = useState<number | null>(null);
   // Recorte nunca cresce: a altura vem da classe, e o HTML do autor se ajusta a ela ou é cortado.
   const grows = autoHeight && !clip;
@@ -107,7 +111,7 @@ export function SandboxedHtmlFrame({
       // `autoplay` delega a permissao do autoplay que o autor pediu: midia muda toca sozinha (mesmo
       // dentro do sandbox); com som, o navegador continua exigindo um gesto de quem le.
       sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"
-      allow="autoplay; fullscreen"
+      allow={lite ? "fullscreen" : "autoplay; fullscreen"}
       allowFullScreen
       referrerPolicy="no-referrer"
       loading="lazy"
@@ -128,8 +132,8 @@ export function SandboxedHtmlFrame({
 /**
  * Politica aplicada por dentro do quadro: sem script, sem formulario e sem rede — exceto imagem e
  * midia em https (ou embutidas em data:), que sao o conteudo que a pagina legitimamente carrega e o
- * que toca dentro do post. Nao ha `frame-src`: quadro dentro de quadro fica de fora de proposito
- * (era por ali que entraria player de terceiros, e ele exigiria liberar script).
+ * player SoundCloud, que precisa de um quadro filho para aparecer. O host e fixo e restrito: outros
+ * quadros continuam bloqueados.
  */
 const FRAME_CSP = [
   "default-src 'none'",
@@ -140,7 +144,7 @@ const FRAME_CSP = [
   // O que já está implícito no `default-src 'none'` vai escrito: a lista é a auditoria da política.
   // Quadro dentro de quadro, plugin, formulário, requisição de dados e worker ficam de fora — nenhuma
   // dessas portas existe no que a página precisa fazer.
-  "frame-src 'none'",
+  "frame-src https://w.soundcloud.com",
   "object-src 'none'",
   "connect-src 'none'",
   "worker-src 'none'",

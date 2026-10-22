@@ -6,6 +6,7 @@ import type { EducationRequest } from "@/types/application/profile/education-req
 import type { Experience } from "@/types/application/profile/experience";
 import type { ExperienceRequest } from "@/types/application/profile/experience-request";
 import type { Profile } from "@/types/application/profile/profile";
+import type { ProfileNetworkUser } from "@/types/application/profile/profile-network-user";
 import type { UpdateProfileRequest } from "@/types/application/profile/update-profile-request";
 
 import { api } from "../api-client";
@@ -24,12 +25,16 @@ export const profileApi = {
 
   get: (username: string) => api.get<Profile>(`/users/${username}`),
 
+  network: (username: string, kind: "connections" | "followers") =>
+    api.get<ProfileNetworkUser[]>(`/users/${encodeURIComponent(username)}/${kind}`),
+
   getById: (id: string) => api.get<Profile>(`/users/by-id/${id}`),
 
   update: (data: UpdateProfileRequest) => api.patch<Profile>("/me/profile", data),
 
   experiences: {
     list: () => api.get<Experience[]>("/me/experiences"),
+    byUser: (username: string) => api.get<Experience[]>(`/users/${username}/experiences`),
     create: (data: ExperienceRequest) => api.post<Experience>("/me/experiences", data),
     update: (id: string, data: ExperienceRequest) =>
       api.put<Experience>(`/me/experiences/${id}`, data),

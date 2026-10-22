@@ -20,6 +20,8 @@ export type Job = {
   salaryPeriod?: string | null;
   /** Faixa pronta ("R$ 1.500 / mês"); vagas antigas têm só o texto livre em `salary`. */
   salaryLabel?: string | null;
+  /** A vaga externa declarou que não informa salário. */
+  salaryNotInformed?: boolean;
   skills: string[];
   postedAt: string;
   matchScore: number | null;

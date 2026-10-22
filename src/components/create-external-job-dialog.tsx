@@ -45,6 +45,7 @@ export function CreateExternalJobDialog({ open, onOpenChange }: CreateExternalJo
   const [salaryMin, setSalaryMin] = useState("");
   const [salaryMax, setSalaryMax] = useState("");
   const [salaryPeriod, setSalaryPeriod] = useState<"HOUR" | "DAY" | "MONTH" | "YEAR">("MONTH");
+  const [salaryNotInformed, setSalaryNotInformed] = useState(false);
   const [applyEmail, setApplyEmail] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,6 +70,7 @@ export function CreateExternalJobDialog({ open, onOpenChange }: CreateExternalJo
     setSalaryMin("");
     setSalaryMax("");
     setSalaryPeriod("MONTH");
+    setSalaryNotInformed(false);
     setApplyEmail("");
     setAgreed(false);
     setError(null);
@@ -87,6 +89,7 @@ export function CreateExternalJobDialog({ open, onOpenChange }: CreateExternalJo
       salaryMin: salaryMin.trim() || undefined,
       salaryMax: salaryMax.trim() || undefined,
       salaryPeriod,
+      salaryNotInformed,
       applyEmail: applyEmail.trim() || undefined,
       communityAgreement: agreed,
     });
@@ -215,6 +218,7 @@ export function CreateExternalJobDialog({ open, onOpenChange }: CreateExternalJo
                   onChange={(e) => setSalaryMin(e.target.value)}
                   placeholder={texts.jobs.fields.salaryMinPlaceholder}
                   className="bg-muted"
+                  disabled={salaryNotInformed}
                 />
                 <Input
                   inputMode="numeric"
@@ -222,6 +226,7 @@ export function CreateExternalJobDialog({ open, onOpenChange }: CreateExternalJo
                   onChange={(e) => setSalaryMax(e.target.value)}
                   placeholder={texts.jobs.fields.salaryMaxPlaceholder}
                   className="bg-muted"
+                  disabled={salaryNotInformed}
                 />
 
                 <select
@@ -230,6 +235,7 @@ export function CreateExternalJobDialog({ open, onOpenChange }: CreateExternalJo
                     setSalaryPeriod(e.target.value as "HOUR" | "DAY" | "MONTH" | "YEAR")
                   }
                   className="h-9 rounded-md border border-transparent bg-muted px-3 text-sm"
+                  disabled={salaryNotInformed}
                 >
                   <option value="HOUR">{texts.jobs.fields.salaryPeriodHour}</option>
 
@@ -240,6 +246,29 @@ export function CreateExternalJobDialog({ open, onOpenChange }: CreateExternalJo
                   <option value="YEAR">{texts.jobs.fields.salaryPeriodYear}</option>
                 </select>
               </div>
+
+              <label className="flex items-start gap-2 pt-1 text-xs font-normal text-text-subtle">
+                <input
+                  type="checkbox"
+                  checked={salaryNotInformed}
+                  onChange={(e) => {
+                    setSalaryNotInformed(e.target.checked);
+                    if (e.target.checked) {
+                      setSalaryMin("");
+                      setSalaryMax("");
+                    }
+                  }}
+                  className="mt-0.5 h-4 w-4 shrink-0 accent-primary"
+                />
+
+                <span>
+                  <span className="block text-text-strong">
+                    {texts.jobs.external.salaryNotInformed}
+                  </span>
+
+                  {texts.jobs.external.salaryNotInformedHint}
+                </span>
+              </label>
             </div>
 
             <div className="space-y-1.5">

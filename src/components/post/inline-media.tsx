@@ -5,6 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import { mediaApi } from "@/lib/api";
 import { resolveCdnUrl, withImageKitOriginal } from "@/lib/api/media";
 
+import { LiteVideo } from "./lite-video";
+
 /**
  * Uma mídia NO MEIO do texto (item 9 do backlog): o render do marcador `{{media:<id>}}`.
  *
@@ -39,14 +41,7 @@ export function InlineMedia({ mediaId }: { mediaId: string }) {
   if (media.mimeType.startsWith("video/")) {
     return (
       <div className="my-2 overflow-hidden rounded-xl border border-border-soft">
-        <video
-          src={withImageKitOriginal(media.cdnUrl)}
-          muted
-          playsInline
-          preload="metadata"
-          controls
-          className="max-h-96 w-full bg-surface-1"
-        />
+        <LiteVideo src={withImageKitOriginal(media.cdnUrl)} />
       </div>
     );
   }

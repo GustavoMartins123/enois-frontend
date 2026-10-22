@@ -12,8 +12,9 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/loading-state";
 import { useToast } from "@/components/ui/toast";
+
+import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
 
 /** Triagem de contas recém-criadas: sinais objetivos, seleção múltipla e banimento em lote. */
 export function SuspiciousUsersSection() {
@@ -65,7 +66,7 @@ export function SuspiciousUsersSection() {
   };
 
   if (suspicious.isLoading) {
-    return <LoadingState />;
+    return <ListRowSkeletons />;
   }
 
   if (suspicious.isError) {
@@ -82,6 +83,10 @@ export function SuspiciousUsersSection() {
         </h2>
 
         <p className="text-sm text-text-subtle">{texts.moderator.suspicious.description}</p>
+
+        <p className="rounded-xl bg-primary-soft px-3 py-2 text-xs font-medium text-primary-text">
+          {texts.moderator.suspicious.autoHint}
+        </p>
       </div>
 
       {items.length === 0 ? (

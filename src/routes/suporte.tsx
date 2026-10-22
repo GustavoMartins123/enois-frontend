@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
@@ -7,6 +8,7 @@ import { requireAuth } from "@/lib/require-auth";
 
 import { AppContainer } from "@/components/app-container";
 import { SupportForm } from "@/components/support-form";
+import { MySupportRequests } from "@/components/support/my-support-requests";
 
 export const Route = createFileRoute("/suporte")({
   beforeLoad: requireAuth,
@@ -15,6 +17,8 @@ export const Route = createFileRoute("/suporte")({
 });
 
 function Suporte() {
+  const queryClient = useQueryClient();
+
   return (
     <AppContainer>
       <div className="mx-auto w-full max-w-2xl space-y-6">
@@ -36,8 +40,12 @@ function Suporte() {
 
           <p className="mt-1 text-sm text-muted-foreground">{texts.support.subtitle}</p>
 
-          <SupportForm />
+          <SupportForm
+            onSent={() => void queryClient.invalidateQueries({ queryKey: ["support", "mine"] })}
+          />
         </div>
+
+        <MySupportRequests />
       </div>
     </AppContainer>
   );

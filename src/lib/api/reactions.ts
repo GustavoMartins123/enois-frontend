@@ -41,4 +41,8 @@ export const reactionsApi = {
   removeSave: (postId: string) => api.delete<ActionResponse>(`/feed/posts/${postId}/saves`),
 
   share: (postId: string) => api.post<ActionResponse>(`/feed/posts/${postId}/shares`),
+
+  /** Republica no próprio feed; `opinion` (até 600) transforma em repost com comentário. */
+  repost: (postId: string, opinion?: string) =>
+    api.post<unknown>(`/feed/posts/${postId}/repost`, opinion ? { opinion } : {}),
 };

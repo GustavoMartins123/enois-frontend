@@ -20,7 +20,7 @@ const MIN_MESSAGE = 10;
  * Formulario de pedido de ajuda (atendimento humano). Fica num componente porque aparece em dois
  * lugares: a pagina /suporte (dentro do app) e a /contato (alcancavel sem login).
  */
-export function SupportForm() {
+export function SupportForm({ onSent }: { onSent?: () => void } = {}) {
   const currentUser = getCurrentUser();
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
@@ -71,6 +71,7 @@ export function SupportForm() {
         imageUrl,
       });
       setSent(true);
+      onSent?.();
     } catch (err) {
       setFormError(err instanceof ApiError ? err.message : texts.support.error);
     } finally {

@@ -74,11 +74,13 @@ const ALL_TABS: { id: ModeratorTabId; label: string; icon: typeof Flag; adminOnl
     adminOnly: true,
   },
   { id: "users", label: texts.moderator.tabs.users, icon: Gavel, adminOnly: false },
+  // Triagem de contas em série é trabalho do time inteiro (decisão da dona): qualquer moderador
+  // aprovado vê a fila e pode banir em lote.
   {
     id: "suspicious",
     label: texts.moderator.tabs.suspicious,
     icon: ScanEye,
-    adminOnly: true,
+    adminOnly: false,
   },
   { id: "emails", label: texts.moderator.tabs.emails, icon: Mail, adminOnly: true },
 ];
@@ -201,7 +203,7 @@ function Moderador() {
             {me.admin && activeTab === "disputes" && <DisputesSection />}
             {me.admin && activeTab === "applications" && <ApplicationsSection />}
             {activeTab === "users" && <SanctionSection me={me} />}
-            {me.admin && activeTab === "suspicious" && <SuspiciousUsersSection />}
+            {canModerate && activeTab === "suspicious" && <SuspiciousUsersSection />}
             {me.admin && activeTab === "emails" && <EmailLogSection />}
           </div>
         ) : (

@@ -1,0 +1,65 @@
+import { useEffect, useState } from "react";
+
+import { useQueryClient } from "@tanstack/react-query";
+
+import { readForceMotion, readLiteMode, subscribeLiteFlags, writeLiteMode } from "@/lib/lite-mode";
+import { usePersonalization } from "@/lib/use-personalization";
+
+/**
+ * Liga o Modo lite no documento inteiro (e a teimosia de animações, para quem pediu).
+ *
+ * A conta é a fonte da escolha (`liteMode`); o espelho no aparelho só existe para o primeiro
+ * paint e para quando a resposta ainda não chegou. O `<html data-lite>` desliga animações e
+ * transições pelo CSS, e o cache ganha mais folga: em aparelho fraco, repetir a mesma busca é
+ * justamente o que trava a tela.
+ */
+export function LiteModeEffects() {
+  const queryClient = useQueryClient();
+  const { data } = usePersonalization();
+  const [local, setLocal] = useState({ lite: false, forceMotion: false });
+
+  useEffect(() => {
+    const read = () => setLocal({ lite: readLiteMode(), forceMotion: readForceMotion() });
+    read();
+    return subscribeLiteFlags(read);
+  }, []);
+
+  const lite = data?.liteMode ?? local.lite;
+
+  useEffect(() => {
+    if (data) writeLiteMode(lite);
+  }, [data, lite]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (lite) root.setAttribute("data-lite", "");
+    else root.removeAttribute("data-lite");
+    // Vídeo que já estava tocando sozinho para junto: ligar o modo lite no meio do feed vale
+    // para o que está na tela agora, não só para o próximo vídeo que aparecer.
+    if (lite) {
+      for (const video of document.querySelectorAll("video")) {
+        if (!video.paused) video.pause();
+      }
+    }
+  }, [lite]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    // Modo lite manda: com ele ligado, animação nenhuma acontece de qualquer jeito.
+    if (local.forceMotion && !lite) root.setAttribute("data-force-motion", "");
+    else root.removeAttribute("data-force-motion");
+  }, [local.forceMotion, lite]);
+
+  useEffect(() => {
+    queryClient.setDefaultOptions({
+      queries: {
+        // Cache com mais folga em modo lite: a mesma tela volta do cache em vez de voltar à rede.
+        staleTime: lite ? 5 * 60_000 : 30_000,
+        refetchOnWindowFocus: !lite,
+        retry: 1,
+      },
+    });
+  }, [lite, queryClient]);
+
+  return null;
+}

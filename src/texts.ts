@@ -119,6 +119,9 @@ export const texts = {
     createError: "Não foi possível criar o grupo.",
     joinError: "Não foi possível entrar no grupo.",
     leaveError: "Não foi possível sair do grupo.",
+    share: "Compartilhar",
+    shareCopied: "Link do grupo copiado!",
+    shareError: "Não foi possível compartilhar o grupo.",
     notFound: "Grupo não encontrado.",
     loadError: "Não foi possível carregar os grupos.",
     postMeta: (reactions: number, comments: number) =>
@@ -770,9 +773,15 @@ export const texts = {
       pasteRead: "Ler o perfil colado",
       found: (count: number) => `${count} itens encontrados — marque o que quer importar:`,
       save: "Importar selecionados",
-      done: (count: number) => `${count} itens importados do LinkedIn.`,
-      /** Reimportar não duplica: o que já estava no perfil é ignorado. */
-      nothingNew: "Nada novo: o que você marcou já está no seu perfil.",
+      done: (created: number, updated: number) => {
+        const partes: string[] = [];
+        if (created > 0) partes.push(`${created} ${created === 1 ? "item novo" : "itens novos"}`);
+        if (updated > 0)
+          partes.push(`${updated} ${updated === 1 ? "item atualizado" : "itens atualizados"}`);
+        return `LinkedIn sincronizado: ${partes.join(" e ")}.`;
+      },
+      /** Reimportar SINCRONIZA: o que já existe é atualizado, não duplicado. */
+      nothingNew: "Nada mudou: o que você marcou já está igual no seu perfil.",
       /** O perfil tem teto por seção; o que não coube fica claro em vez de falhar pela metade. */
       capReached:
         "Alguns itens não couberam: o perfil aceita até 10 experiências, 10 formações e 10 certificações.",
@@ -828,6 +837,14 @@ export const texts = {
       noise:
         "Ei, respira! Bebe uma água, olha pela janela e volta quando quiser. Eu também preciso de uma pausa. 🌿",
       reminderCta: "Vou dar uma pausa",
+      liteTitle: "Modo lite",
+      liteDescription:
+        "Aparelho antigo, bateria curta ou internet ruim? O Modo lite desliga as animações, busca tudo em blocos maiores e segura os dados por mais tempo em cache: menos requisições e menos trabalho pro seu celular. A interface é a mesma.",
+      liteWhy:
+        "A gente pensou em otimização de recursos: aparelho antigo não é aparelho de segunda classe. Em vez de pedir um celular novo, o Énóis se adapta ao que você tem.",
+      forceMotionTitle: "Manter as animações neste aparelho",
+      forceMotionDescription:
+        "Seu sistema está pedindo pra reduzir movimento e a gente respeita: as molduras animadas e os efeitos ficam parados. Ligue aqui pra ver as animações mesmo assim.",
       nightRestTitle: "Lembrete de descanso durante a madrugada",
       nightRestDescription:
         "Receba uma mensagem de cuidado ao acessar o feed entre meia-noite e cinco da manhã.",
@@ -1242,6 +1259,7 @@ export const texts = {
       connections: "Conexões",
       followers: "Seguidores",
       suggestions: "Sugestões para você",
+      refreshSuggestions: "Ver outras sugestões",
       suggestionsDescription: "Com base em interesses e objetivos em comum.",
       connect: "Conectar",
       happeningNow: "Acontecendo agora",
@@ -1255,6 +1273,13 @@ export const texts = {
   posts: {
     momentExpiry: (hours: number) => `some em ${hours}h`,
     momentExpiryTitle: "Momento se apaga sozinho em 24 horas",
+    /** Palco de mídia do Modo lite: o vídeo aberto em tela cheia, com o resto da página pausado. */
+    mediaStage: {
+      open: "Assistir em tela cheia",
+      title: "Vídeo",
+      mute: "Silenciar",
+      unmute: "Ativar som",
+    },
     /** Fixar UM post no topo do feed da comunidade/grupo (a administração faz isso). */
     pin: {
       pin: "Fixar no topo",
@@ -1395,6 +1420,8 @@ export const texts = {
         NOTE: "📝",
         FIRE: "🔥",
         CLAP: "👏",
+        CLOWN: "🤡",
+        NAILS: "💅",
       },
     },
     report: {
@@ -1412,6 +1439,24 @@ export const texts = {
       guidelines: "Veja as diretrizes da comunidade",
     },
     share: "Compartilhar",
+    repost: "Republicar",
+    reposted: "Republicado no seu perfil.",
+    alreadyReposted: "Você já republicou este post.",
+    repostError: "Não foi possível republicar agora.",
+    repostTitle: "Republicar",
+    repostDescription:
+      "Publique no seu feed direto, ou escreva uma opinião de até 600 caracteres para aparecer junto com o post original citado.",
+    repostPlain: "Só republicar",
+    repostWithOpinion: "Republicar com opinião",
+    opinionLabel: "Sua opinião (opcional)",
+    opinionPlaceholder: "O que você achou deste post?",
+    opinionCount: (length: number) => `${length}/600`,
+    quotedFrom: (username: string | null | undefined) =>
+      username ? `Publicação original de @${username}` : "Publicação original",
+    viewOriginal: "Ver publicação original",
+    repostedWithOpinion: "Republicou com opinião",
+    repostedFrom: (username: string | null | undefined) =>
+      username ? `Republicado de @${username}` : "Republicado",
     shareCopied: "Link da publicação copiado!",
     save: "Salvar publicação",
     unsave: "Remover dos salvos",
@@ -1424,7 +1469,6 @@ export const texts = {
       replyingTo: (name: string) => `respondendo a ${name}`,
       delete: "Excluir",
       editError: "Não foi possível salvar a edição. Tente de novo.",
-      loading: "Carregando comentários...",
       loadMore: "Ver comentários anteriores",
       loadingMore: "Carregando...",
       error: "Não foi possível carregar os comentários.",
@@ -1508,6 +1552,8 @@ export const texts = {
     waitingResponse: "Aguardando resposta",
     connected: "Conectado",
     connect: "Conectar",
+    removeConnection: "Remover conexão",
+    cancelRequest: "Cancelar solicitação",
     blockUser: "Bloquear",
     unblockUser: "Desbloquear",
     blockTitle: (name: string) => `Bloquear ${name}?`,
@@ -1580,6 +1626,12 @@ export const texts = {
       save: "Salvar bio",
       preview: "Pré visualização",
     },
+    experiences: {
+      title: "Experiências",
+      empty: "Nenhuma experiência cadastrada ainda.",
+      present: "atual",
+      hint: "Cargos, empresas, período e o que você fez em cada um.",
+    },
     projects: {
       title: "Projetos",
       hint: "O que você anda construindo — stack, repositório, status e o diário de evolução.",
@@ -1610,11 +1662,56 @@ export const texts = {
       skills: "Habilidades",
       goals: "Objetivos profissionais",
       recentPosts: "Publicações recentes",
-      availability: "Disponibilidade",
+      availability: "Status atual",
       recommend: "Recomendar",
-      recommendations: "Recomendações",
+      recommendations: "Depoimentos",
       ranking: "Ranking",
       links: "Links",
+    },
+    dashboard: {
+      walletEyebrow: "Sua carteira",
+      walletCaption: "Faíscas disponíveis agora",
+      walletAction: "Abrir carteira",
+      progressTitle: "Presença no Énóis",
+      reputationLabel: "reputação",
+      postsLabel: "publicações",
+      connectionsLabel: "conexões",
+      followersLabel: "seguidores",
+      networkDialog: {
+        connectionsTitle: (name: string) => `Conexões de ${name}`,
+        followersTitle: (name: string) => `Seguidores de ${name}`,
+        emptyConnections: "Este perfil ainda não tem conexões públicas.",
+        emptyFollowers: "Este perfil ainda não tem seguidores.",
+        error: "Não foi possível carregar essa lista agora.",
+      },
+      progressCaption: "Sua presença cresce com o que você compartilha e constrói por aqui.",
+      badgesTitle: "Emblemas em destaque",
+      badgeAlt: "Emblema do perfil",
+      badgesEmpty: "Os emblemas que você escolher aparecem aqui e acompanham seu nome pela rede.",
+      exploreTitle: "Continue explorando",
+      exploreDescription:
+        "Seu perfil é uma parte da experiência. O resto se constrói nas trocas da comunidade.",
+      dailyGames: "Jogos diários",
+      appearance: "Explorar aparências",
+      communityEyebrow: "Seu círculo",
+      communityTitle: "Cantos da comunidade",
+      communityDescription:
+        "Os espaços em que suas conversas, projetos e referências continuam depois do perfil.",
+      communityEmpty: "Entre em uma comunidade para ela aparecer aqui.",
+      communityAction: "Explorar comunidades",
+      composer: {
+        title: "Compartilhe uma ideia",
+        subtitle: "Uma atualização curta também pode abrir uma boa conversa.",
+        start: "Começar publicação",
+        video: "Vídeo",
+        photo: "Foto",
+        article: "Escrever artigo",
+        placeholder: "No que você está trabalhando hoje?",
+        hint: "Publica no seu perfil e no feed da sua rede.",
+        action: "Publicar",
+        success: "Publicação enviada.",
+        error: "Não foi possível publicar agora. Tente novamente.",
+      },
     },
     /** O título continua "Ranking"; a linha abaixo dele diz QUEM está ali (chegada, não disputa). */
     newMembersHint: "Quem está chegando agora — os mais recentes primeiro.",
@@ -1850,6 +1947,12 @@ export const texts = {
     emptyHint: "Você fez um jogo? Envie o link e ele aparece aqui depois da moderação.",
     loading: "Carregando…",
     error: "Não foi possível carregar o catálogo agora.",
+    /** Card "jogados hoje" no painel lateral do feed. */
+    today: {
+      title: "Jogados hoje",
+      subtitle: "As últimas 24 horas da comunidade.",
+      players: (count: number) => `${count} ${count === 1 ? "pessoa jogou" : "pessoas jogaram"}`,
+    },
     /** Página do criador. */
     developer: {
       notFound: "Criador não encontrado.",
@@ -2234,6 +2337,12 @@ export const texts = {
     /** "23 out · 08:00"; o ano só aparece quando não é o atual ("31 dez 2029 · 23:59"). */
     dateTime: (date: string, time: string) => `${formatEventDate(date)} · ${time}`,
     attend: "Confirmar presença",
+    cancelAttend: "Desconfirmar presença",
+    youAreGoing: "Você vai",
+    attendSuccess: "Presença confirmada.",
+    attendError: "Não foi possível confirmar a presença.",
+    cancelAttendanceSuccess: "Presença cancelada.",
+    cancelAttendanceError: "Não foi possível cancelar a presença.",
     finished: "Encerrado",
     finishedHint:
       "Este evento já aconteceu. As confirmações de presença são removidas depois do vencimento (fica só o total).",
@@ -2285,11 +2394,50 @@ export const texts = {
       activities: "Descrição das atividades (opcional)",
       activitiesPlaceholder: "O que a pessoa vai fazer, requisitos e diferenciais...",
       salaryRange: "Faixa salarial (opcional)",
+      salaryNotInformed: "A vaga não informa salário",
+      salaryNotInformedHint:
+        "Marque quando o anúncio original não traz faixa salarial (é comum nos agregadores).",
       applyEmail: "E-mail para candidatura (opcional)",
       applyEmailHint: 'Se informado, o botão do card vira "Enviar candidatura" para este e-mail.',
       communityFilter: "Criadas no Énóis",
       communityFilterHint: "Vagas externas cadastradas pela comunidade, separadas dos agregadores.",
       applyByEmail: "Enviar candidatura",
+    },
+    freelancePage: {
+      title: "Freelances",
+      description:
+        "Trabalhos pontuais com escopo fechado, prazo e faixa de valor — pagos em dinheiro ou em faíscas. Qualquer pessoa com conta verificada pode publicar.",
+      create: "Publicar freela",
+      empty: "Nenhum freela aberto agora.",
+      emptyHint: "Publique o primeiro: escopo fechado, prazo e faixa de valor.",
+      searchPlaceholder: "Buscar freelances por título ou escopo",
+      searchEmpty: "Nenhum freela encontrado",
+      searchEmptyHint: "Tente outra palavra ou limpe a busca para ver todos.",
+      clearSearch: "Limpar busca",
+      budget: "Valor",
+      deadline: "Prazo",
+      scope: "Escopo fechado",
+      close: "Encerrar",
+      closed: "Freela encerrado.",
+      createTitle: "Publicar freela",
+      titleField: "Título do trabalho",
+      scopeField: "Escopo fechado (o que será entregue)",
+      budgetMin: "Valor mínimo (faíscas)",
+      budgetMax: "Valor máximo (faíscas)",
+      budgetMinCash: "Valor mínimo (R$)",
+      budgetMaxCash: "Valor máximo (R$)",
+      payment: "Pagamento",
+      paymentCash: "Dinheiro (R$)",
+      paymentFaiscas: "Faíscas",
+      paymentCashHint:
+        "O Énóis não cobra taxa em dinheiro: o valor é combinado direto com quem publicou.",
+      paymentFaiscasHint:
+        "Em faíscas, a plataforma retém 10% quando o pagamento é liberado — dinheiro não tem taxa.",
+      deadlineField: "Prazo",
+      submit: "Publicar",
+      invalid: "Preencha título, escopo, faixa de valor e prazo.",
+      error: "Não foi possível salvar o freela.",
+      saved: "Freela publicado.",
     },
     freelanceTitle: "Freelances",
     freelanceSeoTitle: "Freelances · Énóis",
@@ -2523,7 +2671,6 @@ export const texts = {
 
   mentoring: {
     seoTitle: "Mentoria · Énóis",
-    loading: "Carregando mentores...",
     loadError: "Não foi possível carregar os mentores agora.",
     retry: "Tentar de novo",
     empty: "Ainda não há mentores publicados. Se você pode ajudar outras pessoas, torne-se mentor.",
@@ -2798,6 +2945,16 @@ export const texts = {
     validationMessage: "Descreva o problema com pelo menos 10 caracteres.",
     validationEmail: "Informe um e-mail válido.",
     error: "Não foi possível enviar o pedido. Tente novamente em instantes.",
+    myRequestsTitle: "Meus pedidos",
+    myRequestsDescription:
+      "Acompanhe o que você abriu. Quando o time conclui, o pedido aparece como resolvido aqui.",
+    myRequestsEmpty: "Você ainda não abriu nenhum pedido.",
+    myRequestsLoading: "Carregando pedidos...",
+    status: {
+      OPEN: "Aberto",
+      IN_PROGRESS: "Em andamento",
+      CLOSED: "Resolvido",
+    } as Record<string, string>,
     contatoSeoTitle: "Contato · Énóis",
     contactTitle: "Fale com a gente",
     contactDescription:
@@ -3027,7 +3184,9 @@ export const texts = {
     suspicious: {
       title: "Contas suspeitas",
       description:
-        "Contas recentes com sinais de cadastro em série: nome repetido ou de teste, e-mail não confirmado, perfil vazio e denúncias contra. Revise e selecione o que banir — o lote não apaga conteúdo, só aplica o banimento pelo fluxo normal.",
+        "Contas recentes com sinais de cadastro em série: nome repetido ou de teste, e-mail não confirmado, perfil vazio e denúncias contra. Revise e selecione o que banir — o lote aplica o banimento pelo fluxo normal, sem apagar conteúdo de quem você está julgando.",
+      autoHint:
+        "Risco acima de 60: a triagem automática bane a conta e apaga o conteúdo sozinha. O que aparece aqui é o que ficou abaixo do teto ou pede julgamento humano.",
       empty: "Nenhuma conta suspeita no período.",
       emptyHint:
         "Os sinais avaliados são nome em série, e-mail não confirmado, perfil vazio e denúncias.",
@@ -3092,7 +3251,7 @@ export const texts = {
         "Issues e tickets já concluídos. A fila ativa mostra apenas o que ainda precisa de atenção.",
       historyEmpty: "Nada no histórico ainda.",
       description:
-        "Pedidos abertos pelo app, separados por categoria. Mover para em andamento ou resolver registra a triagem.",
+        "Pedidos abertos pelo app, separados por categoria. Cada pedido também vira uma issue no GitHub: concluir aqui fecha a issue e avisa quem abriu.",
       empty: "Nenhum ticket nesta categoria.",
       all: "Todas",
       statusAll: "Todos",
@@ -3113,6 +3272,7 @@ export const texts = {
       from: "De",
       image: "Abrir print anexado",
       noMessage: "Sem mensagem.",
+      githubIssue: "Issue no GitHub",
     },
     emails: {
       title: "E-mails enviados",
@@ -3239,15 +3399,6 @@ export const texts = {
     invalid: "Confira a data: ela não pode estar no futuro.",
     error: "Não foi possível salvar a data. Tente de novo.",
   },
-  /** Popup de desculpas pelos últimos dias + faíscas de presente. */
-  apology: {
-    title: "Estamos trabalhando para melhorar o Énóis! 💜",
-    body: "Pedimos desculpas pelos inconvenientes dos últimos dias. Estamos trabalhando ativamente para corrigir problemas, reforçar a segurança e tornar a plataforma cada vez melhor para todo mundo. Obrigada pela paciência e por fazer parte dessa comunidade. O Énóis é feito por pessoas, para pessoas, e seguimos construindo tudo isso com muito cuidado e transparência.",
-    bonus:
-      "Você recebeu 100 faíscas para usar como quiser na loja, no marketplace e nos espaços da comunidade.",
-    together: "Seguimos juntos. 💜",
-    close: "Vamos lá",
-  },
   /** Card de espaços novos no painel lateral. */
   platformSpaces: {
     title: "Novidades para explorar",
@@ -3358,7 +3509,7 @@ export const texts = {
     messageLabel: "Mensagem (opcional)",
     messagePlaceholder: "Por que você está enviando?",
     irreversible:
-      "A transferência é instantânea e não tem reversão — confira o nome e o valor com calma.",
+      "A transferência é instantânea, isenta de taxa e não tem reversão — confira o nome e o valor com calma.",
     confirm: "Confirmar transferência",
     sent: "Faíscas enviadas!",
     transferError: "Não foi possível transferir. Confira a chave e o saldo.",
@@ -3529,7 +3680,6 @@ export const texts = {
     seoTitle: "Publicação · Énóis",
     seoDescription: "Veja esta publicação no Énóis — rede humana gratuita, sem anúncios.",
     back: "Voltar",
-    loading: "Carregando publicação...",
     notFound: "Publicação não encontrada.",
   },
 

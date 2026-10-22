@@ -8,6 +8,10 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 
 /** Quanto tempo de pressão abre o seletor em modo arrastar (o toque curto segue abrindo por clique). */
 const HOLD_MS = 400;
+/** Delay antes de abrir no hover (evita abrir ao passar o mouse de passagem). */
+const HOVER_DELAY_MS = 300;
+/** Delay antes de fechar ao sair do hover (tempo pra mover o mouse pro popup). */
+const HOVER_CLOSE_MS = 400;
 
 /**
  * Emoji sob o ponteiro. O gesto de arrastar passa por cima do popup — que é portado para o body e,
@@ -41,6 +45,8 @@ export function ReactionPicker({
   const [holdMode, setHoldMode] = useState(false);
   const [dragType, setDragType] = useState<ReactionType | null>(null);
   const holdTimer = useRef<number | null>(null);
+  const hoverOpenTimer = useRef<number | null>(null);
+  const hoverCloseTimer = useRef<number | null>(null);
   const swallowClick = useRef(false);
   const onReactRef = useRef(onReact);
   onReactRef.current = onReact;
@@ -52,7 +58,34 @@ export function ReactionPicker({
     }
   };
 
-  useEffect(() => cancelHold, []);
+  const cancelHoverTimers = () => {
+    if (hoverOpenTimer.current !== null) {
+      window.clearTimeout(hoverOpenTimer.current);
+      hoverOpenTimer.current = null;
+    }
+    if (hoverCloseTimer.current !== null) {
+      window.clearTimeout(hoverCloseTimer.current);
+      hoverCloseTimer.current = null;
+    }
+  };
+
+  const scheduleHoverOpen = () => {
+    cancelHoverTimers();
+    hoverOpenTimer.current = window.setTimeout(() => {
+      hoverOpenTimer.current = null;
+      setOpen(true);
+    }, HOVER_DELAY_MS);
+  };
+
+  const scheduleHoverClose = () => {
+    cancelHoverTimers();
+    hoverCloseTimer.current = window.setTimeout(() => {
+      hoverCloseTimer.current = null;
+      setOpen(false);
+    }, HOVER_CLOSE_MS);
+  };
+
+  useEffect(() => () => { cancelHold(); cancelHoverTimers(); }, []);
 
   // Vida do gesto de segurar: o ponteiro é seguido na janela; soltar em cima de um emoji reage e
   // fecha, soltar fora deixa o seletor aberto em modo clique.
@@ -123,6 +156,8 @@ export function ReactionPicker({
               cancelHold();
             }
           }}
+          onMouseEnter={scheduleHoverOpen}
+          onMouseLeave={scheduleHoverClose}
           onContextMenu={(event) => event.preventDefault()}
           onClick={(event) => {
             if (swallowClick.current) {
@@ -139,6 +174,8 @@ export function ReactionPicker({
         align="start"
         side="top"
         onOpenAutoFocus={(event) => event.preventDefault()}
+        onMouseEnter={cancelHoverTimers}
+        onMouseLeave={scheduleHoverClose}
         className="w-fit max-w-[300px] rounded-2xl border-border p-1.5"
       >
         <div className="flex flex-wrap justify-center gap-1">

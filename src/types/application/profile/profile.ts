@@ -27,6 +27,8 @@ export type Profile = {
   connectionsCount?: number;
   followersCount?: number;
   reputation?: number;
+  /** Total de publicações do perfil social. Ausente quando a leitura não calcula contagens. */
+  postsCount?: number | null;
   /** Apelido: entra entre parênteses depois do nome (preferência da pessoa). */
   nickname?: string | null;
   /** Data de nascimento ISO (aaaa-mm-dd) — quem tem conta antes do campo pode ter null. */

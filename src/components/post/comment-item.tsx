@@ -7,6 +7,8 @@ import { texts } from "@/texts";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { CommentItemProps } from "@/types/components/post/comment-item-props";
 
+import { Flag, Heart, MessageCircle, Pencil, Trash2 } from "lucide-react";
+
 import { REACTION_EMOJIS, commentsApi, profileApi, reactionsApi } from "@/lib/api";
 import { useCurrentUser } from "@/lib/current-user";
 import { hideExternalPageUrls } from "@/lib/shared-links";
@@ -233,46 +235,67 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
           )}
         </div>
 
-        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 px-3 text-xs font-normal text-text-subtle sm:gap-x-3">
-          <button onClick={handleReply} className="transition-colors hover:text-primary">
-            {texts.posts.comments.reply}
-          </button>
-
+        <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-0.5 px-3 text-text-subtle">
           <ReactionPicker
             activeType={commentReaction}
             onReact={handleCommentReaction}
-            buttonClassName="transition-colors hover:text-primary"
+            buttonClassName={`flex h-7 items-center gap-1 rounded-full px-1.5 transition-colors hover:bg-surface-2 hover:text-primary ${
+              commentReaction ? "text-primary" : ""
+            }`}
             buttonTitle={texts.posts.reactions.react}
           >
-            {commentReaction ? REACTION_EMOJIS[commentReaction] : texts.posts.reactions.react}
+            {commentReaction ? (
+              <span className="text-sm leading-none">{REACTION_EMOJIS[commentReaction]}</span>
+            ) : (
+              <Heart className="h-3.5 w-3.5" />
+            )}
+            {(comment.reactionCount ?? 0) > 0 && (
+              <span className="text-xs tabular-nums">{comment.reactionCount}</span>
+            )}
           </ReactionPicker>
+
+          <button
+            onClick={handleReply}
+            title={texts.posts.comments.reply}
+            aria-label={texts.posts.comments.reply}
+            className="grid h-7 w-7 place-items-center rounded-full transition-colors hover:bg-surface-2 hover:text-primary"
+          >
+            <MessageCircle className="h-3.5 w-3.5" />
+          </button>
+
           {isOwner && !editing && (
             <button
               onClick={() => {
                 setEditDraft(content);
                 setEditing(true);
               }}
-              className="transition-colors hover:text-primary"
+              title={texts.common.edit}
+              aria-label={texts.common.edit}
+              className="grid h-7 w-7 place-items-center rounded-full transition-colors hover:bg-surface-2 hover:text-primary"
             >
-              {texts.common.edit}
+              <Pencil className="h-3.5 w-3.5" />
             </button>
           )}
 
           {isOwner && (
             <button
               onClick={handleDelete}
-              className="text-destructive transition-colors hover:text-destructive/80"
+              title={texts.posts.comments.delete}
+              aria-label={texts.posts.comments.delete}
+              className="grid h-7 w-7 place-items-center rounded-full text-destructive/70 transition-colors hover:bg-destructive/10 hover:text-destructive"
             >
-              {texts.posts.comments.delete}
+              <Trash2 className="h-3.5 w-3.5" />
             </button>
           )}
 
           {!isOwner && (
             <button
               onClick={() => setReportOpen(true)}
-              className="transition-colors hover:text-primary"
+              title={texts.posts.report.action}
+              aria-label={texts.posts.report.action}
+              className="grid h-7 w-7 place-items-center rounded-full transition-colors hover:bg-surface-2 hover:text-primary"
             >
-              {texts.posts.report.action}
+              <Flag className="h-3.5 w-3.5" />
             </button>
           )}
         </div>

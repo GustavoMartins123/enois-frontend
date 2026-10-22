@@ -16,6 +16,7 @@ import {
   ShoppingBag,
   Users,
   UsersRound,
+  Wrench,
 } from "lucide-react";
 
 /** `module` é o identificador que o backend valida em /me/preferences (null = sempre visível). */
@@ -66,4 +67,5 @@ export const navigationItems: {
     module: "COMMUNITY_PROJECTS",
   },
   { to: "/marketplace", label: "Marketplace", icon: ShoppingBag, module: null },
+  { to: "/servicos", label: "Contratar serviços", icon: Wrench, module: null },
 ];

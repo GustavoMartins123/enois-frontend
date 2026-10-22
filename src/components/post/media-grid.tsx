@@ -8,6 +8,8 @@ import { mediaApi } from "@/lib/api";
 import { resolveCdnUrl, withImageKitOriginal } from "@/lib/api/media";
 import { autoplayVideoRef } from "@/lib/feed/video-autoplay";
 
+import { LiteVideo } from "./lite-video";
+
 /** Grade de mídias do post (vídeo único ou imagens) com visualização em tela cheia.
  *
  * `compact` encolhe as imagens para caber em espacos apertados (comentarios) sem quebrar
@@ -50,18 +52,9 @@ export function MediaGrid({
   if (isVideo) {
     return (
       <div className="overflow-hidden rounded-xl border border-border-soft">
-        <video
-          ref={autoplayVideoRef}
-          src={withImageKitOriginal(items[0].cdnUrl)}
-          // O play/pause automático (um vídeo por vez, sempre mudo) é feito por `autoplayVideoRef`.
-          // `muted` + `playsInline` são o que fazem o play automático ser aceito no navegador (e no
-          // iOS, sem virar tela cheia): o som vem quando a pessoa quiser, pelo controle do vídeo.
-          muted
-          playsInline
-          preload="metadata"
-          controls
-          className="max-h-96 w-full bg-surface-1"
-        />
+        {/* O play/pause automático (um vídeo por vez, sempre mudo) segue o `autoplayVideoRef`; no
+            Modo lite o vídeo não toca no feed — o toque abre o palco, em tela cheia, com som. */}
+        <LiteVideo src={withImageKitOriginal(items[0].cdnUrl)} registerRef={autoplayVideoRef} />
       </div>
     );
   }

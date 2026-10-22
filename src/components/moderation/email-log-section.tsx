@@ -9,7 +9,7 @@ import { Mail } from "lucide-react";
 import { moderationApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
-import { LoadingState } from "@/components/ui/loading-state";
+import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
 
 /** Metadados dos e-mails enviados: útil para ver falha de SMTP sem abrir caixa de mensagens. */
 export function EmailLogSection() {
@@ -58,7 +58,7 @@ export function EmailLogSection() {
       </div>
 
       {isLoading ? (
-        <LoadingState />
+        <ListRowSkeletons />
       ) : emails.length === 0 ? (
         <div className="rounded-2xl border border-border-soft bg-surface-card p-6 text-center text-sm text-text-subtle">
           <Mail className="mx-auto mb-2 h-6 w-6 text-primary" />

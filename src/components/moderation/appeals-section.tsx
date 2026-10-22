@@ -7,8 +7,9 @@ import { sanctionsApi } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { LoadingState } from "@/components/ui/loading-state";
 import { useToast } from "@/components/ui/toast";
+
+import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
 
 /** Recursos de penalidade automática: aprovar libera; negar converte em banimento. */
 export function AppealsSection() {
@@ -42,7 +43,7 @@ export function AppealsSection() {
       <p className="text-sm text-muted-foreground">{texts.sanctions.moderationDescription}</p>
 
       {isLoading ? (
-        <LoadingState />
+        <ListRowSkeletons />
       ) : (data?.length ?? 0) === 0 ? (
         <div className="rounded-2xl border border-border-soft bg-surface-card">
           <EmptyState icon={Gavel} title={texts.sanctions.moderationEmpty} />

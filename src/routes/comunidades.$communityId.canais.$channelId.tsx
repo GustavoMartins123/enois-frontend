@@ -9,7 +9,9 @@ import type { PostView } from "@/types/application/feed/post-view";
 import { ArrowLeft, Hash, Lock } from "lucide-react";
 
 import { communitiesApi, feedApi } from "@/lib/api";
+import { litePageSize } from "@/lib/lite-mode";
 import { useIsAuthenticated } from "@/lib/use-auth";
+import { useLiteMode } from "@/lib/use-lite-mode";
 
 import { Button } from "@/components/ui/button";
 
@@ -24,12 +26,16 @@ export const Route = createFileRoute("/comunidades/$communityId/canais/$channelI
   component: ChannelPage,
 });
 
+/** Tamanho que o mural sempre usou; em modo lite cada página vem maior. */
+const CHANNEL_POSTS_PAGE_SIZE = 20;
+
 function ChannelPage() {
   const { communityId, channelId } = Route.useParams();
   const queryClient = useQueryClient();
   const [draft, setDraft] = useState("");
   const [error, setError] = useState<string | null>(null);
   const authenticated = useIsAuthenticated();
+  const lite = useLiteMode();
 
   const community = useQuery({
     queryKey: ["community", communityId],
@@ -49,7 +55,13 @@ function ChannelPage() {
 
   const posts = useInfiniteQuery({
     queryKey: ["community", communityId, "channel", channelId, "posts"],
-    queryFn: ({ pageParam }) => communitiesApi.channelPosts(communityId, channelId, pageParam, 20),
+    queryFn: ({ pageParam }) =>
+      communitiesApi.channelPosts(
+        communityId,
+        channelId,
+        pageParam,
+        litePageSize(CHANNEL_POSTS_PAGE_SIZE, lite),
+      ),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     enabled: authenticated && joined,

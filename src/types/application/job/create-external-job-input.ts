@@ -11,6 +11,8 @@ export type CreateExternalJobInput = {
   salaryMin?: string;
   salaryMax?: string;
   salaryPeriod?: "HOUR" | "DAY" | "MONTH" | "YEAR";
+  /** A vaga não informa salário (declarado por quem cadastra, como nos agregadores). */
+  salaryNotInformed?: boolean;
   /** E-mail de candidatura opcional: se informado, o botão vira "Enviar candidatura". */
   applyEmail?: string;
   /** Declaração de que a vaga é real e respeita as regras da comunidade. */

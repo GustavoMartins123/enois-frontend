@@ -31,7 +31,7 @@ import {
   subscribeActiveIdentity,
   writeActiveIdentity,
 } from "@/lib/active-identity";
-import { corporateApi } from "@/lib/api";
+import { corporateApi, profileApi } from "@/lib/api";
 import { logout } from "@/lib/logout";
 import { cn } from "@/lib/utils";
 
@@ -66,6 +66,15 @@ export function AccountMenu({ profile }: AccountMenuProps) {
     queryFn: () => corporateApi.me(),
     enabled: menuOpen,
   });
+  // Algumas sessões antigas mantêm no cache um `/me` anterior às molduras. A consulta pública
+  // do próprio @ preenche somente esse detalhe visual até o cache ser renovado.
+  const { data: publicProfile } = useQuery({
+    queryKey: ["profile", profile.username],
+    queryFn: () => profileApi.get(profile.username),
+    enabled: !profile.avatarFrame,
+    staleTime: 60_000,
+  });
+  const avatarFrame = profile.avatarFrame ?? publicProfile?.avatarFrame;
   const identity = effectiveIdentity(chosenIdentity, corporate);
   const chooseIdentity = (next: ActiveIdentity) => {
     writeActiveIdentity(next);
@@ -107,15 +116,17 @@ export function AccountMenu({ profile }: AccountMenuProps) {
       <Popover open={menuOpen} onOpenChange={setMenuOpen}>
         <PopoverTrigger asChild>
           <button
-            className="flex items-center gap-2 rounded-full p-1 pr-3 transition hover:bg-surface-2"
+            className="flex items-center gap-2 rounded-full pr-3 transition hover:bg-surface-2"
             aria-label={texts.account.menu.trigger}
           >
-            <UserAvatar
-              frame={profile.avatarFrame}
-              src={profile.avatar}
-              alt={profile.name}
-              className="h-8 w-8"
-            />
+            <span className="relative flex h-11 w-11 shrink-0 items-center justify-center overflow-visible">
+              <UserAvatar
+                frame={avatarFrame}
+                src={profile.avatar}
+                alt={profile.name}
+                className="h-8 w-8"
+              />
+            </span>
 
             <span className="hidden text-sm font-normal text-text-strong sm:inline">
               {texts.common.profile}
@@ -131,7 +142,7 @@ export function AccountMenu({ profile }: AccountMenuProps) {
         >
           <div className="flex shrink-0 items-center gap-3 border-b border-border-soft px-4 py-3">
             <UserAvatar
-              frame={profile.avatarFrame}
+              frame={avatarFrame}
               src={profile.avatar}
               alt={profile.name}
               className="h-9 w-9"

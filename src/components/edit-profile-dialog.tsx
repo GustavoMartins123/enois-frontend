@@ -649,6 +649,9 @@ function SubList<
     mutationFn: (data: TData) => createApi(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
+      // O perfil público tem a própria query (por username): invalida para a seção
+      // "Experiências" refletir a edição sem precisar recarregar a página.
+      queryClient.invalidateQueries({ queryKey: ["experiences"] });
       setForm({ ...newItem });
       setCurrentlyHere(false);
       setEditingId(null);
@@ -659,6 +662,7 @@ function SubList<
     mutationFn: ({ id, data }: SubListUpdate<TData>) => updateApi(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey: ["experiences"] });
       setEditingId(null);
       setForm({ ...newItem });
       setCurrentlyHere(false);
@@ -667,7 +671,10 @@ function SubList<
 
   const remove = useMutation({
     mutationFn: (id: string) => deleteApi(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey: ["experiences"] });
+    },
   });
 
   const startEdit = (item: T) => {

@@ -1,6 +1,8 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 
+import { PageSkeleton } from "@/components/skeletons/page-skeleton";
+
 import { registerBrowserQueryClient } from "./lib/query-client";
 import { routeTree } from "./routeTree.gen";
 
@@ -24,6 +26,12 @@ export const getRouter = () => {
     context: { queryClient },
     scrollRestoration: true,
     defaultPreloadStaleTime: 0,
+    // Rota lenta (internet fraca, loader demorado): mostra a casca com skeleton em vez de deixar
+    // a tela anterior congelada. 400ms (e não o default de 1s) para o skeleton chegar antes de a
+    // pessoa achar que o clique não pegou; o mínimo de 300ms segura o skeleton em loaders oscilantes.
+    defaultPendingComponent: PageSkeleton,
+    defaultPendingMs: 400,
+    defaultPendingMinMs: 300,
   });
 
   return router;

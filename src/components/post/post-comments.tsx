@@ -9,13 +9,15 @@ import { Image, Loader2, Mic, Send, Square, X } from "lucide-react";
 
 import { commentsApi } from "@/lib/api";
 import { getCurrentUser } from "@/lib/current-user";
+import { litePageSize } from "@/lib/lite-mode";
 import { useAuth } from "@/lib/use-auth";
+import { useLiteMode } from "@/lib/use-lite-mode";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
 
 import { MentionTextarea } from "@/components/mention-textarea";
-import { UserAvatar } from "@/components/user-avatar";
+import { CommentSkeletons } from "@/components/skeletons/comment-skeletons";
 
 import { CommentItem } from "./comment-item";
 import { GifPickerDialog } from "./gif-picker-dialog";
@@ -31,6 +33,9 @@ const PAGE_SIZE = 20;
  * fim; respostas cujo comentario pai ainda nao foi carregado aparecem como raiz para nao sumirem.
  */
 export function PostComments({ postId }: PostIdProps) {
+  // Em modo lite a primeira página (e cada "carregar mais") já vem maior.
+  const lite = useLiteMode();
+  const pageSize = litePageSize(PAGE_SIZE, lite);
   const currentUser = getCurrentUser();
   const { requireAuth } = useAuth();
   const comments = usePostCardStore((state) => state.cards[postId]?.localComments ?? []);
@@ -161,7 +166,7 @@ export function PostComments({ postId }: PostIdProps) {
     setLoading(true);
     setError(null);
     try {
-      const page = await commentsApi.list(postId, null, PAGE_SIZE);
+      const page = await commentsApi.list(postId, null, pageSize);
       setComments(postId, oldestFirst(page.items));
       setCursor(page.nextCursor);
       setHasMore(Boolean(page.nextCursor));
@@ -170,7 +175,7 @@ export function PostComments({ postId }: PostIdProps) {
     } finally {
       setLoading(false);
     }
-  }, [postId, setComments]);
+  }, [postId, setComments, pageSize]);
 
   useEffect(() => {
     void loadFirstPage();
@@ -180,7 +185,7 @@ export function PostComments({ postId }: PostIdProps) {
     if (!cursor || loadingMore) return;
     setLoadingMore(true);
     try {
-      const page = await commentsApi.list(postId, cursor, PAGE_SIZE);
+      const page = await commentsApi.list(postId, cursor, pageSize);
       setComments(postId, oldestFirst([...comments, ...page.items]));
       setCursor(page.nextCursor);
       setHasMore(Boolean(page.nextCursor));
@@ -268,13 +273,7 @@ export function PostComments({ postId }: PostIdProps) {
         // último post da viewport travava o scroll até fechar os comentários).
         className="max-h-[55vh] min-h-0 space-y-3 overflow-y-auto pr-1"
       >
-        {loading && (
-          <p className="inline-flex items-center gap-2 py-4 text-sm font-normal text-text-subtle">
-            <Loader2 className="h-4 w-4 animate-spin" />
-
-            <>{texts.posts.comments.loading}</>
-          </p>
-        )}
+        {loading && <CommentSkeletons />}
 
         {!loading && error && (
           <div className="py-4 text-center">
@@ -322,6 +321,8 @@ export function PostComments({ postId }: PostIdProps) {
             );
           })}
 
+        {loadingMore && <CommentSkeletons count={1} />}
+
         {!loading && !error && hasMore && (
           <div className="pt-1 text-center">
             <Button
@@ -337,7 +338,7 @@ export function PostComments({ postId }: PostIdProps) {
         )}
       </div>
 
-      <form onSubmit={submit} className="mt-4 flex items-start gap-2 sm:gap-2.5">
+      <form onSubmit={submit} className="mt-4">
         <input
           type="text"
           name="website"
@@ -346,14 +347,8 @@ export function PostComments({ postId }: PostIdProps) {
           aria-hidden="true"
           className="hidden"
         />
-        <UserAvatar
-          frame={currentUser?.avatarFrame}
-          src={currentUser?.avatar}
-          alt={currentUser?.name}
-          className="h-8 w-8 shrink-0"
-        />
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0">
           {replyToId && (
             <div className="mb-1 flex items-center gap-2 pl-4 text-xs font-normal text-primary">
               <span className="truncate">

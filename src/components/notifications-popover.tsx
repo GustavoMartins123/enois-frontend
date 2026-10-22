@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { NotificationTab } from "@/types/components/notification/notification-tab";
-import { Bell, Check, CheckCheck, X } from "lucide-react";
+import { Bell, Check, CheckCheck, Loader2, X } from "lucide-react";
 
 import { networkApi, notificationsApi, profileApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
@@ -86,20 +86,35 @@ export function NotificationsPopover() {
   );
 
   const currentUserId = getCurrentUserId();
-  const incomingRequests = (pendingRequests.data?.items ?? []).filter(
+  const rawIncoming = (pendingRequests.data?.items ?? []).filter(
     (r) => r.status === "PENDING" && r.fromUserId !== currentUserId,
   );
-  // Quantos items o ConnectionRequestItem escondeu (usuario removido/banido).
-  const [hiddenCount, setHiddenCount] = useState(0);
-  const requestsKey = incomingRequests.map((r) => r.id).join(",");
-  const prevRequestsKey = useRef(requestsKey);
-  useEffect(() => {
-    if (prevRequestsKey.current !== requestsKey) {
-      setHiddenCount(0);
-      prevRequestsKey.current = requestsKey;
-    }
-  }, [requestsKey]);
-  const requestCount = Math.max(0, incomingRequests.length - hiddenCount);
+
+  // Busca perfis em batch — so depois de carregar filtramos os removidos/inexistentes.
+  const profileQueries = useQueries({
+    queries: rawIncoming.map((r) => ({
+      queryKey: ["profile", "by-id", r.fromUserId],
+      queryFn: () => profileApi.getById(r.fromUserId),
+      retry: 1,
+      staleTime: 60_000,
+    })),
+  });
+  const profilesLoading = rawIncoming.length > 0 && profileQueries.some((q) => q.isLoading);
+  const profilesByUserId = new Map(
+    profileQueries.filter((q) => q.data).map((q) => [q.data!.id, q.data!]),
+  );
+
+  // Filtra removidos/banidos/inexistentes ANTES de contar — badge e lista ja nascem corretos.
+  const incomingRequests = profilesLoading
+    ? []
+    : rawIncoming.filter((r) => {
+        const p = profilesByUserId.get(r.fromUserId);
+        if (!p) return false;
+        if (p.username?.startsWith("removed-")) return false;
+        if (p.name === "Usuario removido") return false;
+        return true;
+      });
+  const requestCount = incomingRequests.length;
 
   const rejectConnection = useMutation({
     mutationFn: (targetUserId: string) => networkApi.remove(targetUserId),
@@ -201,27 +216,36 @@ export function NotificationsPopover() {
 
         <div className="max-h-[28rem] overflow-y-auto">
           {notificationTab === "solicitacoes" ? (
-            incomingRequests.length === 0 ? (
+            profilesLoading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-text-subtle" />
+              </div>
+            ) : incomingRequests.length === 0 ? (
               <p className="px-4 py-8 text-center text-sm font-normal text-text-subtle">
                 {texts.notifications.emptyRequests}
               </p>
             ) : (
-              incomingRequests.map((request) => (
-                <ConnectionRequestItem
-                  key={request.id}
-                  request={request}
-                  onAccept={(id) => acceptConnection.mutate(id)}
-                  onReject={(id) => rejectConnection.mutate(id)}
-                  accepting={
-                    acceptConnection.isPending && acceptConnection.variables === request.fromUserId
-                  }
-                  rejecting={
-                    rejectConnection.isPending && rejectConnection.variables === request.fromUserId
-                  }
-                  onNavigate={() => setOpen(false)}
-                  onHidden={() => setHiddenCount((c) => c + 1)}
-                />
-              ))
+              incomingRequests.map((request) => {
+                const p = profilesByUserId.get(request.fromUserId);
+                return (
+                  <ConnectionRequestItem
+                    key={request.id}
+                    request={request}
+                    profile={p ?? null}
+                    onAccept={(id) => acceptConnection.mutate(id)}
+                    onReject={(id) => rejectConnection.mutate(id)}
+                    accepting={
+                      acceptConnection.isPending &&
+                      acceptConnection.variables === request.fromUserId
+                    }
+                    rejecting={
+                      rejectConnection.isPending &&
+                      rejectConnection.variables === request.fromUserId
+                    }
+                    onNavigate={() => setOpen(false)}
+                  />
+                );
+              })
             )
           ) : displayedNotifications.length === 0 ? (
             <p className="px-4 py-8 text-center text-sm font-normal text-text-subtle">
@@ -248,45 +272,33 @@ export function NotificationsPopover() {
   );
 }
 
-/** Card de solicitação de conexão dentro do sininho. */
+/** Card de solicitação de conexão dentro do sininho. O perfil já vem resolvido pelo pai. */
 function ConnectionRequestItem({
   request,
+  profile,
   onAccept,
   onReject,
   accepting,
   rejecting,
   onNavigate,
-  onHidden,
 }: {
   request: { id: string; fromUserId: string; createdAt: string };
+  profile: {
+    name?: string;
+    username?: string;
+    avatar?: string | null;
+    headline?: string | null;
+  } | null;
   onAccept: (userId: string) => void;
   onReject: (userId: string) => void;
   accepting: boolean;
   rejecting: boolean;
   onNavigate: () => void;
-  onHidden: () => void;
 }) {
-  const { data: profile } = useQuery({
-    queryKey: ["profile", "by-id", request.fromUserId],
-    queryFn: () => profileApi.getById(request.fromUserId),
-  });
-
   const name = profile?.name ?? "Alguém";
   const username = profile?.username;
   const avatar = profile?.avatar;
   const headline = profile?.headline;
-
-  // Usuario banido/removido: o perfil ainda existe mas o username vira "removed-...".
-  // Mostrar a solicitacao nao faz sentido — aceitar nao teria efeito.
-  const isRemoved = username?.startsWith("removed-") || name === "Usuario removido";
-  const reported = useRef(false);
-  useEffect(() => {
-    if (isRemoved && !reported.current) {
-      reported.current = true;
-      onHidden();
-    }
-  }, [isRemoved, onHidden]);
-  if (isRemoved) return null;
 
   return (
     <div className="flex items-start gap-3 border-b border-border-soft px-4 py-3 last:border-b-0">

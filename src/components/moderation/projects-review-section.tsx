@@ -10,8 +10,9 @@ import { communityProjectsApi } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/loading-state";
 import { useToast } from "@/components/ui/toast";
+
+import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
 
 /** Fila de projetos enviados pela comunidade: mesma revisão dos jogos, em espaço próprio. */
 export function ProjectsReviewSection() {
@@ -45,7 +46,7 @@ export function ProjectsReviewSection() {
     onError: () => toast(texts.moderator.projects.error, "error"),
   });
 
-  if (pending.isLoading) return <LoadingState />;
+  if (pending.isLoading) return <ListRowSkeletons />;
   if (pending.isError)
     return <p className="text-sm text-destructive">{texts.moderator.projects.error}</p>;
 

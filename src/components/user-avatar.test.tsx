@@ -34,6 +34,18 @@ describe("UserAvatar com moldura", () => {
     },
   );
 
+  it("corta o efeito da moldura quando o avatar está em um campo compacto", () => {
+    const html = renderToString(
+      <UserAvatar
+        frame="moldura-buraco-negro"
+        frameOverflow="hidden"
+        alt="Ana Lima"
+        className="h-8 w-8"
+      />,
+    );
+    expect(html).toMatch(/class="[^"]*overflow-hidden[^"]*h-8 w-8[^"]*"/);
+  });
+
   it.each(FX_FRAMES)("%s: dois avatares não dividem ids de filtro", (frame) => {
     const html = renderToString(
       <>

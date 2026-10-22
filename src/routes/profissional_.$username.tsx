@@ -7,15 +7,18 @@ import { ArrowLeft, Building2, Globe, Link as LinkIcon, MapPin, UserX } from "lu
 
 import { ApiError, corporateApi, feedApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
+import { litePageSize } from "@/lib/lite-mode";
 import { useAuth } from "@/lib/use-auth";
+import { useLiteMode } from "@/lib/use-lite-mode";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { LoadingState } from "@/components/ui/loading-state";
 
 import { AppContainer } from "@/components/app-container";
 import { PostCard } from "@/components/post-card";
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
+import { PageSkeleton } from "@/components/skeletons/page-skeleton";
+import { PostCardSkeletons } from "@/components/skeletons/post-card-skeletons";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/profissional_/$username")({
@@ -36,6 +39,7 @@ const PAGE_SIZE = 20;
  * um estado vazio, nunca uma página quebrada.
  */
 function ProfessionalProfile() {
+  const lite = useLiteMode();
   const { username } = Route.useParams();
   const { user } = useAuth();
 
@@ -53,20 +57,15 @@ function ProfessionalProfile() {
 
   const posts = useInfiniteQuery({
     queryKey: ["corporate-public", username, "posts"],
-    queryFn: ({ pageParam }) => feedApi.corporateByUsername(username, pageParam, PAGE_SIZE),
+    queryFn: ({ pageParam }) =>
+      feedApi.corporateByUsername(username, pageParam, litePageSize(PAGE_SIZE, lite)),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     enabled: profile.isSuccess,
   });
 
   if (profile.isLoading) {
-    return (
-      <AppContainer>
-        <div className="mx-auto w-full max-w-3xl">
-          <LoadingState />
-        </div>
-      </AppContainer>
-    );
+    return <PageSkeleton />;
   }
 
   if (profile.isError) {
@@ -191,7 +190,7 @@ function ProfessionalProfile() {
           <h2 className="text-lg font-semibold">{texts.corporate.publicProfile.postsTitle}</h2>
 
           {posts.isLoading ? (
-            <LoadingState />
+            <PostCardSkeletons />
           ) : items.length === 0 ? (
             <div className="surface-card">
               <EmptyState icon={Globe} title={texts.corporate.publicProfile.empty} />

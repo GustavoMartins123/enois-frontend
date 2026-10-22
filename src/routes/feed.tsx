@@ -29,6 +29,7 @@ import {
   Film,
   Image,
   Loader2,
+  RefreshCw,
   TrendingUp,
   UserPlus,
   X,
@@ -41,7 +42,9 @@ import {
 } from "@/lib/active-identity";
 import { authApi, corporateApi, eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
 import { clearFeedScroll, readFeedScroll } from "@/lib/feed-scroll-restoration";
+import { litePageSize } from "@/lib/lite-mode";
 import { requireAuth } from "@/lib/require-auth";
+import { useLiteMode } from "@/lib/use-lite-mode";
 import { useMediaUpload } from "@/lib/use-media-upload";
 import { cn } from "@/lib/utils";
 
@@ -54,6 +57,7 @@ import { useToast } from "@/components/ui/toast";
 
 import { ApoieCard } from "@/components/apoie-card";
 import { AppContainer } from "@/components/app-container";
+import { TodayGamesCard } from "@/components/games/today-games-card";
 import { HtmlEditor } from "@/components/html-editor";
 import { InfiniteScroll } from "@/components/infinite-scroll";
 import { LinkedInSyncPrompt } from "@/components/linkedin-sync-prompt";
@@ -149,13 +153,16 @@ function rememberTopic(value: string): void {
 }
 
 function useFeed(tab: HomeTab) {
+  // Em modo lite cada página vem maior: rolar o mesmo tanto custa menos idas ao servidor.
+  const lite = useLiteMode();
+  const pageSize = litePageSize(FEED_PAGE_SIZE, lite);
   // Pagina por cursor: o backend devolve nextCursor e o scroll infinito busca a proxima pagina.
   return useInfiniteQuery({
     queryKey: ["feed", tab],
     queryFn: ({ pageParam }) =>
       tab === "CORPORATE"
-        ? feedApi.corporate(pageParam ?? null, FEED_PAGE_SIZE)
-        : feedApi.list(pageParam ?? null, FEED_PAGE_SIZE, tab),
+        ? feedApi.corporate(pageParam ?? null, pageSize)
+        : feedApi.list(pageParam ?? null, pageSize, tab),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
@@ -171,7 +178,8 @@ function useProfile() {
 function useSuggestions() {
   return useQuery({
     queryKey: ["network", "suggestions"],
-    queryFn: () => networkApi.suggestions(4),
+    // Busca um lote maior: o "ver outras" gira entre os 4 primeiros sem pedir de novo.
+    queryFn: () => networkApi.suggestions(12),
   });
 }
 
@@ -467,6 +475,16 @@ function Home() {
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
   const profileUser = profile;
   const suggestionList = suggestions ?? [];
+  const [suggestionPage, setSuggestionPage] = useState(0);
+  // Gira o lote de 4 a cada clique em "ver outras": não é um novo pedido nem muda a ordem
+  // de afinidade do backend, só revela os próximos nomes do mesmo lote.
+  const visibleSuggestions =
+    suggestionList.length <= 4
+      ? suggestionList
+      : Array.from({ length: 4 }, (_, i) => {
+          const start = (suggestionPage * 4) % suggestionList.length;
+          return suggestionList[(start + i) % suggestionList.length];
+        });
   const eventList = eventsData?.items ?? [];
 
   return (
@@ -508,6 +526,7 @@ function Home() {
             <div className="flex items-start gap-3">
               <UserAvatar
                 frame={profileUser?.avatarFrame}
+                frameOverflow="hidden"
                 src={profileUser?.avatar}
                 alt={profileUser?.name ?? texts.feed.you}
                 className="h-11 w-11"
@@ -957,6 +976,7 @@ function Home() {
         <aside className="sticky top-20 hidden max-h-[calc(100vh-6rem)] space-y-4 self-start overflow-y-auto scrollbar-on-hover lg:block">
           <ApoieCard />
           <PlatformSpacesCard />
+          <TodayGamesCard />
 
           {profileUser && (
             <div className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
@@ -1007,6 +1027,18 @@ function Home() {
                 <h3 className="text-sm font-normal text-text-strong">
                   {texts.feed.sidebar.suggestions}
                 </h3>
+
+                {suggestionList.length > 4 && (
+                  <button
+                    type="button"
+                    aria-label={texts.feed.sidebar.refreshSuggestions}
+                    title={texts.feed.sidebar.refreshSuggestions}
+                    className="ml-auto rounded-full p-1.5 text-text-subtle transition hover:bg-surface-2 hover:text-primary"
+                    onClick={() => setSuggestionPage((page) => page + 1)}
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" />
+                  </button>
+                )}
               </div>
 
               <p className="mt-0.5 text-xs font-normal text-text-subtle">
@@ -1014,7 +1046,7 @@ function Home() {
               </p>
 
               <ul className="mt-4 space-y-3">
-                {suggestionList.map((u) => (
+                {visibleSuggestions.map((u) => (
                   <li key={u.id} className="flex items-center gap-3">
                     <UserAvatar
                       src={u.avatar}
