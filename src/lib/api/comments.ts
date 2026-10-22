@@ -13,6 +13,7 @@ export const commentsApi = {
     mentionedUserIds?: string[],
     mediaIds?: string[],
     website?: string,
+    mediaSpoiler = false,
   ) =>
     api.post<CommentView>(`/feed/posts/${postId}/comments`, {
       content,
@@ -20,6 +21,7 @@ export const commentsApi = {
       mediaIds: mediaIds ?? [],
       mentionedUserIds: mentionedUserIds ?? [],
       website: website ?? "",
+      mediaSpoiler,
     }),
 
   list: (postId: string, cursor?: string | null, limit = 20) =>
@@ -33,4 +35,11 @@ export const commentsApi = {
 
   remove: (postId: string, commentId: string) =>
     api.delete<StatusResponse>(`/feed/posts/${postId}/comments/${commentId}`),
+
+  /** Fixa no topo (autor do post ou do comentário). */
+  pin: (postId: string, commentId: string) =>
+    api.post<StatusResponse>(`/feed/posts/${postId}/comments/${commentId}/pin`),
+
+  unpin: (postId: string, commentId: string) =>
+    api.delete<StatusResponse>(`/feed/posts/${postId}/comments/${commentId}/pin`),
 };

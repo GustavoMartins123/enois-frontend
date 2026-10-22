@@ -87,19 +87,21 @@ export const moderationApi = {
 
   /** Posts denunciados com score alto na pré-triagem (admin). */
   suspiciousPosts: (minScore = 30, limit = 50) =>
-    api.get<SuspiciousPostView[]>(`/admin/posts/suspicious?minScore=${minScore}&limit=${limit}`),
+    api.get<SuspiciousPostView[]>(
+      `/moderation/posts/suspicious?minScore=${minScore}&limit=${limit}`,
+    ),
 
   /** Exclusão em lote (soft delete auditado) dos posts selecionados. */
   bulkDeleteSuspiciousPosts: (postIds: string[], reason: string) =>
-    api.post<BulkDeletePostsResult>("/admin/posts/bulk-delete", { postIds, reason }),
+    api.post<BulkDeletePostsResult>("/moderation/posts/bulk-delete", { postIds, reason }),
 
-  /** Contas recentes com sinais de abuso, para validação humana (admin). */
+  /** Contas recentes com sinais de abuso, para validação humana (time de moderação). */
   suspiciousUsers: (limit = 100, days = 30) =>
-    api.get<SuspiciousUsersView>(`/admin/users/suspicious?limit=${limit}&days=${days}`),
+    api.get<SuspiciousUsersView>(`/moderation/users/suspicious?limit=${limit}&days=${days}`),
 
   /** Banimento em lote: cada item tem resultado próprio; uma conta inválida não cancela as outras. */
   bulkBan: (usernames: string[], type: "BAN" | "PERMABAN", reason: string) =>
-    api.post<BulkBanResult>("/admin/users/bulk-ban", { usernames, type, reason }),
+    api.post<BulkBanResult>("/moderation/users/bulk-ban", { usernames, type, reason }),
 
   /**
    * Sanitizar usuário: apaga do banco TODOS os posts e comentários dele (conta banida por spam).

@@ -17,6 +17,7 @@ export type CommentView = {
   content: string;
   /** Imagens/videos do comentario (upload); GIFs colados por URL continuam no texto. */
   mediaIds?: string[];
+  mediaSpoiler?: boolean;
   createdAt: string;
   /** Quando o autor editou (nulo se nunca editado) — vira o "editado" na tela. */
   editedAt?: string | null;
@@ -25,4 +26,6 @@ export type CommentView = {
   currentUserReaction?: ReactionType | null;
   /** Total de reações no comentário. */
   reactionCount?: number;
+  /** Fixado no topo da lista do post (um por post). */
+  pinned?: boolean;
 };
