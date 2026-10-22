@@ -24,6 +24,7 @@ export function UserAvatar({
   fallback,
   fallbackClassName,
   frame,
+  frameOverflow = "visible",
 }: UserAvatarProps) {
   const label = alt ?? texts.profile.avatarFallback;
   const resolved = resolveCdnUrl(src);
@@ -48,10 +49,15 @@ export function UserAvatar({
   );
   if (!fx || !frame) return avatar;
   // As molduras com efeito saem do círculo e o Avatar corta tudo (overflow-hidden): o tamanho
-  // e o layout de quem chamou vão para um invólucro, e o efeito fica ao lado do Avatar.
+  // e o layout de quem chamou vão para um invólucro, e o efeito fica ao lado do Avatar. Campos
+  // de edição podem optar pelo corte para que a moldura nunca invada o texto.
   return (
     <span
-      className={cn("@container relative isolate flex h-10 w-10 shrink-0 rounded-full", className)}
+      className={cn(
+        "@container relative isolate flex h-10 w-10 shrink-0 rounded-full",
+        frameOverflow === "hidden" && "overflow-hidden",
+        className,
+      )}
       data-avatar-frame={frame}
     >
       {avatar}

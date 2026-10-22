@@ -68,6 +68,10 @@ import { ProfileBannerDialog } from "@/components/profile-banner-dialog";
 import { ProfileBioDialog } from "@/components/profile-bio-dialog";
 import { ProfileResumeDialog } from "@/components/profile-resume-dialog";
 import { ProfileExperiencesSection } from "@/components/profile/experiences-section";
+import { ProfileCommunityShelf } from "@/components/profile/profile-community-shelf";
+import { ProfileExplorePanel } from "@/components/profile/profile-explore-panel";
+import { ProfileGamificationPanel } from "@/components/profile/profile-gamification-panel";
+import { ProfileQuickComposer } from "@/components/profile/profile-quick-composer";
 import { ProfileProjectsSection } from "@/components/profile/projects-section";
 import { UserAvatar } from "@/components/user-avatar";
 
@@ -326,11 +330,11 @@ function Profile() {
 
   return (
     <AppContainer>
-      <div className="space-y-6">
+      <div className="space-y-5 sm:space-y-6">
         {/* Quem recorta os cantos é a capa, não o card: o card cortaria as molduras com
             efeito, que vazam para fora do avatar. */}
-        <div className="rounded-2xl border border-border-soft bg-surface-card">
-          <div className="group relative overflow-hidden rounded-t-2xl">
+        <div className="overflow-hidden rounded-[1.5rem] border border-border-soft bg-surface-card shadow-[0_28px_80px_-48px_color-mix(in_oklab,var(--primary)_95%,transparent)]">
+          <div className="group relative h-[24dvh] min-h-48 overflow-hidden sm:h-[28dvh] sm:min-h-60">
             {user.bannerHtml ? (
               // Capa em HTML/CSS: mesmo espaço da foto (mesmas classes), sem moldura própria — quem
               // recorta é a capa, e o quadro já vem com sandbox sem scripts. `clip` é o delimitador:
@@ -339,22 +343,15 @@ function Profile() {
               <SandboxedHtmlFrame
                 html={user.bannerHtml}
                 title={texts.profile.bannerHtml.frameTitle}
-                className="h-40 w-full rounded-none border-0 shadow-none sm:h-52"
+                className="h-full w-full rounded-none border-0 shadow-none"
                 // Faixa fixa com ROLAGEM interna (pedido da comunidade): o HTML do autor não é
                 // mais cortado — se passar da altura, rola dentro da capa.
                 autoHeight={false}
               />
             ) : user.banner ? (
-              <img
-                src={resolveCdnUrl(user.banner)}
-                alt=""
-                className="h-40 w-full object-cover sm:h-52"
-              />
+              <img src={resolveCdnUrl(user.banner)} alt="" className="h-full w-full object-cover" />
             ) : (
-              <div
-                className="h-40 w-full sm:h-52"
-                style={{ background: "var(--gradient-primary)" }}
-              />
+              <div className="h-full w-full" style={{ background: "var(--gradient-primary)" }} />
             )}
             <input
               ref={bannerRef}
@@ -365,14 +362,14 @@ function Profile() {
             />
           </div>
 
-          <div className="px-4 pb-5 sm:px-6 sm:pb-6">
-            <div className="-mt-12 flex flex-wrap items-end justify-between gap-3 sm:-mt-14 sm:gap-4">
+          <div className="relative px-4 pb-5 sm:px-6 sm:pb-6">
+            <div className="-mt-14 flex flex-wrap items-end justify-between gap-3 sm:-mt-16 sm:gap-4">
               <div className="group relative">
                 <UserAvatar
                   frame={user.avatarFrame}
                   src={resolveCdnUrl(user.avatar)}
                   alt={user.name}
-                  className={`h-24 w-24 ring-4 sm:h-28 sm:w-28 ${FRAME_RING[user.avatarFrame ?? ""] ?? "ring-surface-card"}`}
+                  className={`h-28 w-28 ring-8 shadow-[0_20px_42px_-20px_color-mix(in_oklab,var(--primary)_90%,transparent)] sm:h-32 sm:w-32 ${FRAME_RING[user.avatarFrame ?? ""] ?? "ring-surface-card"}`}
                 />
                 <input
                   ref={avatarRef}
@@ -542,7 +539,7 @@ function Profile() {
               )}
             </div>
 
-            <div className="mt-4">
+            <div className="mt-5">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="min-w-0 break-words text-xl font-normal tracking-tight text-text-strong">
                   {user.name}
@@ -616,17 +613,73 @@ function Profile() {
                 )}
               </p>
             </div>
+
+            <dl className="mt-5 grid overflow-hidden rounded-2xl border border-border-soft bg-surface-1/70 sm:grid-cols-3">
+              <div className="border-b border-border-soft px-4 py-3 sm:border-b-0 sm:border-r">
+                <dt className="text-xs font-medium uppercase tracking-[0.14em] text-text-subtle">
+                  {texts.profile.dashboard.postsLabel}
+                </dt>
+
+                <dd className="mt-1 text-xl font-medium tracking-tight text-text-strong">
+                  {userPosts.length}
+                </dd>
+              </div>
+
+              <div className="border-b border-border-soft px-4 py-3 sm:border-b-0 sm:border-r">
+                <dt className="text-xs font-medium uppercase tracking-[0.14em] text-text-subtle">
+                  {texts.profile.dashboard.connectionsLabel}
+                </dt>
+
+                <dd className="mt-1 text-xl font-medium tracking-tight text-text-strong">
+                  {user.connectionsCount ?? 0}
+                </dd>
+              </div>
+
+              <div className="px-4 py-3">
+                <dt className="text-xs font-medium uppercase tracking-[0.14em] text-text-subtle">
+                  {texts.profile.dashboard.reputationLabel}
+                </dt>
+
+                <dd className="mt-1 text-xl font-medium tracking-tight text-primary">
+                  {user.reputation ?? 0}
+                </dd>
+              </div>
+            </dl>
+
+            <nav
+              aria-label={texts.profile.dashboard.progressTitle}
+              className="mt-4 flex snap-x gap-2 overflow-x-auto border-t border-border-soft pt-4 scrollbar-hide"
+            >
+              {[
+                texts.profile.sections.about,
+                texts.profile.projects.title,
+                texts.profile.sections.recentPosts,
+              ].map((label, index) => (
+                <a
+                  key={label}
+                  href={index === 0 ? "#sobre" : index === 1 ? "#projetos" : "#atividade"}
+                  className="shrink-0 snap-start rounded-full border border-border-soft bg-surface-1 px-4 py-2 text-xs font-medium text-text-subtle transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+                >
+                  {label}
+                </a>
+              ))}
+            </nav>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1fr)_18rem] md:gap-5 xl:grid-cols-[minmax(0,1fr)_20rem] xl:gap-6">
           <div className="space-y-6">
+            {isOwnProfile && <ProfileQuickComposer profile={user} />}
+
             {user.bioHtml ? (
               /* Bio em HTML: card próprio, com o título "Sobre" só na linha de cima e o quadro
                  abaixo encostando nas três bordas. Antes usava o `Section` (que tem padding em
                  volta) com o quadro de celular centralizado — a sobra em volta e a moldura clara
                  do iframe eram o que parecia "borda branca". */
-              <section className="border border-border-soft bg-surface-card">
+              <section
+                id="sobre"
+                className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card shadow-[0_18px_50px_-42px_color-mix(in_oklab,var(--primary)_80%,transparent)]"
+              >
                 {/* Sem canto no card: a bio em HTML vai até as bordas (o raio do card recortava os
                     cantos dela — era o que sobrava de arredondamento). */}
 
@@ -648,7 +701,7 @@ function Profile() {
               </section>
             ) : (
               user.bio && (
-                <Section title={texts.profile.sections.about}>
+                <Section id="sobre" title={texts.profile.sections.about}>
                   <RichText
                     content={user.bio}
                     className="break-words text-sm font-normal leading-relaxed text-text-subtle"
@@ -659,7 +712,9 @@ function Profile() {
 
             {/* Projetos: cards abaixo da bio — estruturados (stack, repo, status, diário)
                 ou o HTML próprio do autor. O dono gerencia por aqui mesmo. */}
-            <ProfileProjectsSection username={user.username} isOwner={isOwnProfile} />
+            <div id="projetos">
+              <ProfileProjectsSection username={user.username} isOwner={isOwnProfile} />
+            </div>
 
             {/* Trajetória profissional logo abaixo dos projetos: cargo, empresa, período
                 (com "atual") e descrição, como no LinkedIn. */}
@@ -692,7 +747,7 @@ function Profile() {
               </Section>
             )}
 
-            <Section title={texts.profile.sections.recentPosts}>
+            <Section id="atividade" title={texts.profile.sections.recentPosts}>
               {userPosts.length === 0 ? (
                 <p className="text-sm font-normal text-text-subtle">{texts.profile.noPosts}</p>
               ) : (
@@ -705,7 +760,14 @@ function Profile() {
             </Section>
           </div>
 
-          <aside className="space-y-6">
+          <aside className="self-start space-y-5">
+            <ProfileGamificationPanel
+              profile={user}
+              isOwner={isOwnProfile}
+              postsCount={userPosts.length}
+            />
+            <ProfileCommunityShelf isOwner={isOwnProfile} />
+
             <Section title={texts.profile.sections.availability} icon={Clock}>
               <p className="break-words text-sm font-normal leading-relaxed text-text-subtle">
                 {user.availability ?? texts.profile.availabilityUnknown}
@@ -821,6 +883,8 @@ function Profile() {
                 </ul>
               </Section>
             )}
+
+            <ProfileExplorePanel />
           </aside>
         </div>
       </div>
@@ -858,9 +922,12 @@ function Profile() {
   );
 }
 
-function Section({ title, icon: Icon, children }: SectionProps) {
+function Section({ title, icon: Icon, children, id }: SectionProps & { id?: string }) {
   return (
-    <section className="rounded-2xl border border-border-soft bg-surface-card p-4 sm:p-6">
+    <section
+      id={id}
+      className="rounded-2xl border border-border-soft bg-surface-card p-4 shadow-[0_18px_50px_-44px_color-mix(in_oklab,var(--primary)_85%,transparent)] sm:p-6"
+    >
       <h2 className="mb-4 flex items-center gap-2 text-base font-normal text-text-strong">
         {Icon && (
           <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-surface-2">
