@@ -1920,6 +1920,12 @@ export const texts = {
     emptyHint: "Você fez um jogo? Envie o link e ele aparece aqui depois da moderação.",
     loading: "Carregando…",
     error: "Não foi possível carregar o catálogo agora.",
+    /** Card "jogados hoje" no painel lateral do feed. */
+    today: {
+      title: "Jogados hoje",
+      subtitle: "As últimas 24 horas da comunidade.",
+      players: (count: number) => `${count} ${count === 1 ? "pessoa jogou" : "pessoas jogaram"}`,
+    },
     /** Página do criador. */
     developer: {
       notFound: "Criador não encontrado.",

@@ -57,6 +57,7 @@ import { useToast } from "@/components/ui/toast";
 
 import { ApoieCard } from "@/components/apoie-card";
 import { AppContainer } from "@/components/app-container";
+import { TodayGamesCard } from "@/components/games/today-games-card";
 import { HtmlEditor } from "@/components/html-editor";
 import { InfiniteScroll } from "@/components/infinite-scroll";
 import { LinkedInSyncPrompt } from "@/components/linkedin-sync-prompt";
@@ -975,6 +976,7 @@ function Home() {
         <aside className="sticky top-20 hidden max-h-[calc(100vh-6rem)] space-y-4 self-start overflow-y-auto scrollbar-on-hover lg:block">
           <ApoieCard />
           <PlatformSpacesCard />
+          <TodayGamesCard />
 
           {profileUser && (
             <div className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
