@@ -219,6 +219,7 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
                 >
                   <RichText
                     content={hideExternalPageUrls(content)}
+                    mediaSpoiler={comment.mediaSpoiler}
                     className="whitespace-pre-line break-words text-sm font-normal leading-relaxed text-text-strong"
                   />
                 </ReadMore>
@@ -226,7 +227,7 @@ export function CommentItem({ comment, replyingTo }: CommentItemProps) {
 
               {comment.mediaIds && comment.mediaIds.length > 0 && (
                 <div className="mt-2 max-w-full">
-                  <MediaGrid mediaIds={comment.mediaIds} compact />
+                  <MediaGrid mediaIds={comment.mediaIds} compact mediaSpoiler={comment.mediaSpoiler} />
                 </div>
               )}
 

@@ -25,6 +25,7 @@ import {
   ChevronRight,
   Clock,
   Code2,
+  EyeOff,
   FileText,
   Film,
   Image,
@@ -231,6 +232,7 @@ function Home() {
   // Em comunidade o post herda o assunto DELA — lá o compositor é outro.
   const [topic, setTopic] = useState<string>(() => readLastTopic());
   const [media, setMedia] = useState<MediaItem[]>([]);
+  const [mediaSpoiler, setMediaSpoiler] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [linkedinUrl, setLinkedinUrl] = useState<string | null>(null);
   // Tipo de publicação e o que manda: Página mostra o editor de HTML, Artigo mostra o editor do
@@ -320,6 +322,7 @@ function Home() {
         type: postType,
         content: pageMode ? "" : finalContent,
         mediaIds,
+        mediaSpoiler,
         // As menções viajam com o agendado e valem na PUBLICAÇÃO (quem foi marcado é avisado
         // quando o post entra no ar, não quando foi agendado).
         mentionedUserIds: pageMode ? [] : mentionedUserIds,
@@ -333,6 +336,7 @@ function Home() {
       setMentionedUserIds([]);
       setPostType("INSIGHT");
       setMedia([]);
+      setMediaSpoiler(false);
       setPageHtml("");
       setArticleBody("");
       setTypePickerOpen(false);
@@ -368,6 +372,7 @@ function Home() {
         content: pageMode ? "" : content,
         type: postType,
         mediaIds,
+        mediaSpoiler,
         ...(pageMode ? { pageHtml } : {}),
         ...(articleMode ? { articleBody } : {}),
         mentionedUserIds: pageMode ? [] : mentionedUserIds,
@@ -394,6 +399,7 @@ function Home() {
       setLinkedinUrl(null);
       setPostType("INSIGHT");
       setMedia([]);
+      setMediaSpoiler(false);
       setPostType("INSIGHT");
       setPageHtml("");
       setArticleBody("");
@@ -431,7 +437,9 @@ function Home() {
   const removeMedia = (index: number) => {
     setMedia((prev) => {
       URL.revokeObjectURL(prev[index].preview);
-      return prev.filter((_, i) => i !== index);
+      const next = prev.filter((_, i) => i !== index);
+      if (next.length === 0) setMediaSpoiler(false);
+      return next;
     });
   };
 
@@ -738,6 +746,14 @@ function Home() {
                     }
                     active={media.length > 0}
                     onClick={() => fileRef.current?.click()}
+                  />
+                )}
+                {!pageMode && media.length > 0 && (
+                  <ComposerAction
+                    icon={EyeOff}
+                    label={mediaSpoiler ? texts.feed.composer.mediaSpoilerActive : texts.feed.composer.mediaSpoiler}
+                    active={mediaSpoiler}
+                    onClick={() => setMediaSpoiler((active) => !active)}
                   />
                 )}
               </div>

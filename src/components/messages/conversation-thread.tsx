@@ -12,7 +12,7 @@ import { texts } from "@/texts";
 import type { MediaItem } from "@/types/routes/feed/media-item";
 import type { ConversationThreadProps } from "@/types/routes/messages/conversation-thread-props";
 import type { SendMessageInput } from "@/types/routes/messages/send-message-input";
-import { ImageIcon, Send, X } from "lucide-react";
+import { EyeOff, ImageIcon, Send, X } from "lucide-react";
 
 import { messagesApi, profileApi } from "@/lib/api";
 import { liteInterval, litePageSize } from "@/lib/lite-mode";
@@ -49,6 +49,7 @@ export function ConversationThread({
   const upload = useMediaUpload();
   const [text, setText] = useState("");
   const [media, setMedia] = useState<MediaItem[]>([]);
+  const [mediaSpoiler, setMediaSpoiler] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [selectingMessages, setSelectingMessages] = useState(false);
   const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
@@ -81,8 +82,8 @@ export function ConversationThread({
   );
 
   const sendMessage = useMutation({
-    mutationFn: ({ conversationId, text, mediaIds }: SendMessageInput) =>
-      messagesApi.sendMessage(conversationId, text, mediaIds),
+    mutationFn: ({ conversationId, text, mediaIds, mediaSpoiler }: SendMessageInput) =>
+      messagesApi.sendMessage(conversationId, text, mediaIds, mediaSpoiler),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["messages", conversation.id] });
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
@@ -115,6 +116,8 @@ export function ConversationThread({
     // Limpa na hora para evitar reenvio se Enter disparar duas vezes antes do onSuccess.
     setText("");
     setMedia([]);
+    const shouldSpoiler = mediaSpoiler;
+    setMediaSpoiler(false);
     setUploadError(null);
     try {
       let mediaIds: string[] = [];
@@ -122,7 +125,12 @@ export function ConversationThread({
         const results = await upload.uploadAll(media.map((item) => ({ file: item.file })));
         mediaIds = results.map((result) => result.mediaId);
       }
-      sendMessage.mutate({ conversationId: conversation.id, text: content, mediaIds });
+      sendMessage.mutate({
+        conversationId: conversation.id,
+        text: content,
+        mediaIds,
+        mediaSpoiler: shouldSpoiler,
+      });
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : texts.messages.mediaError);
     }
@@ -157,7 +165,9 @@ export function ConversationThread({
   const removeMediaItem = (index: number) => {
     setMedia((current) => {
       URL.revokeObjectURL(current[index].preview);
-      return current.filter((_, i) => i !== index);
+      const next = current.filter((_, i) => i !== index);
+      if (next.length === 0) setMediaSpoiler(false);
+      return next;
     });
   };
 
@@ -341,6 +351,20 @@ export function ConversationThread({
                   </button>
                 </div>
               ))}
+              <button
+                type="button"
+                onClick={() => setMediaSpoiler((active) => !active)}
+                className={`inline-flex h-8 items-center gap-1 rounded-full px-2 text-xs transition ${
+                  mediaSpoiler
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
+                }`}
+                aria-label={mediaSpoiler ? texts.messages.mediaSpoilerActive : texts.messages.mediaSpoiler}
+                title={mediaSpoiler ? texts.messages.mediaSpoilerActive : texts.messages.mediaSpoiler}
+              >
+                <EyeOff className="h-3.5 w-3.5" />
+                {mediaSpoiler ? texts.messages.mediaSpoilerActive : texts.messages.mediaSpoiler}
+              </button>
             </div>
           )}
 

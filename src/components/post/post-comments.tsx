@@ -5,7 +5,7 @@ import { texts } from "@/texts";
 import type { CommentView } from "@/types/application/comment/comment-view";
 import type { PostIdProps } from "@/types/components/post/post-id-props";
 import type { MediaItem } from "@/types/routes/feed/media-item";
-import { Image, Loader2, Mic, Send, Square, X } from "lucide-react";
+import { EyeOff, Image, Loader2, Mic, Send, Square, X } from "lucide-react";
 
 import { commentsApi } from "@/lib/api";
 import { getCurrentUser } from "@/lib/current-user";
@@ -56,6 +56,7 @@ export function PostComments({ postId }: PostIdProps) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [media, setMedia] = useState<MediaItem[]>([]);
+  const [mediaSpoiler, setMediaSpoiler] = useState(false);
   const [gifOpen, setGifOpen] = useState(false);
   const [recording, setRecording] = useState(false);
   const [recordedSeconds, setRecordedSeconds] = useState(0);
@@ -227,6 +228,7 @@ export function PostComments({ postId }: PostIdProps) {
         mentions,
         mediaIds,
         String(formData.get("website") ?? ""),
+        mediaSpoiler,
       );
       addComment(postId, created);
       updateCommentCount(postId, 1);
@@ -235,6 +237,7 @@ export function PostComments({ postId }: PostIdProps) {
       setReplyToId(postId, null);
       media.forEach((m) => URL.revokeObjectURL(m.preview));
       setMedia([]);
+      setMediaSpoiler(false);
       // O comentario novo entra no topo; rola a lista para o usuario ver.
       listRef.current?.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
@@ -390,7 +393,11 @@ export function PostComments({ postId }: PostIdProps) {
                     type="button"
                     onClick={() => {
                       URL.revokeObjectURL(item.preview);
-                      setMedia((current) => current.filter((_, index) => index !== i));
+                      setMedia((current) => {
+                        const next = current.filter((_, index) => index !== i);
+                        if (next.length === 0) setMediaSpoiler(false);
+                        return next;
+                      });
                     }}
                     className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-foreground text-background shadow"
                     aria-label={texts.posts.comments.removeMedia}
@@ -409,6 +416,30 @@ export function PostComments({ postId }: PostIdProps) {
                   </button>
                 </div>
               ))}
+              <button
+                type="button"
+                onClick={() => setMediaSpoiler((active) => !active)}
+                className={`inline-flex h-8 items-center gap-1 rounded-full px-2 text-xs transition ${
+                  mediaSpoiler
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
+                }`}
+                aria-label={
+                  mediaSpoiler
+                    ? texts.posts.comments.mediaSpoilerActive
+                    : texts.posts.comments.mediaSpoiler
+                }
+                title={
+                  mediaSpoiler
+                    ? texts.posts.comments.mediaSpoilerActive
+                    : texts.posts.comments.mediaSpoiler
+                }
+              >
+                <EyeOff className="h-3.5 w-3.5" />
+                {mediaSpoiler
+                  ? texts.posts.comments.mediaSpoilerActive
+                  : texts.posts.comments.mediaSpoiler}
+              </button>
             </div>
           )}
 

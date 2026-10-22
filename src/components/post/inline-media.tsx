@@ -5,6 +5,9 @@ import { useQuery } from "@tanstack/react-query";
 import { mediaApi } from "@/lib/api";
 import { resolveCdnUrl, withImageKitOriginal } from "@/lib/api/media";
 
+import { texts } from "@/texts";
+import { SpoilerMedia } from "./spoiler-media";
+
 /**
  * Uma mídia NO MEIO do texto (item 9 do backlog): o render do marcador `{{media:<id>}}`.
  *
@@ -13,7 +16,7 @@ import { resolveCdnUrl, withImageKitOriginal } from "@/lib/api/media";
  * Imagem clica para ver em tela cheia; vídeo e áudio ganham o player (sem autoplay: som que
  * começa sozinho no meio de um texto é o oposto do que esta rede quer).
  */
-export function InlineMedia({ mediaId }: { mediaId: string }) {
+export function InlineMedia({ mediaId, mediaSpoiler = false }: { mediaId: string; mediaSpoiler?: boolean }) {
   const [fullscreen, setFullscreen] = useState(false);
   const { data: media } = useQuery({
     queryKey: ["media", mediaId],
@@ -39,32 +42,42 @@ export function InlineMedia({ mediaId }: { mediaId: string }) {
   if (media.mimeType.startsWith("video/")) {
     return (
       <div className="my-2 overflow-hidden rounded-xl border border-border-soft">
-        <video
-          src={withImageKitOriginal(media.cdnUrl)}
-          muted
-          playsInline
-          preload="metadata"
-          controls
-          className="max-h-96 w-full bg-surface-1"
-        />
+        <SpoilerMedia active={mediaSpoiler} label={texts.posts.mediaSpoiler.reveal}>
+          {() => (
+            <video
+              src={withImageKitOriginal(media.cdnUrl)}
+              muted
+              playsInline
+              preload="metadata"
+              controls
+              className="max-h-96 w-full bg-surface-1"
+            />
+          )}
+        </SpoilerMedia>
       </div>
     );
   }
 
   return (
     <>
-      <button
-        type="button"
-        className="my-2 block w-full cursor-zoom-in overflow-hidden rounded-xl border border-border-soft"
-        onClick={() => setFullscreen(true)}
-      >
-        <img
-          src={resolveCdnUrl(media.cdnUrl)}
-          alt=""
-          loading="lazy"
-          className="max-h-96 w-full bg-surface-1 object-cover"
-        />
-      </button>
+      <div className="my-2 overflow-hidden rounded-xl border border-border-soft">
+        <SpoilerMedia active={mediaSpoiler} label={texts.posts.mediaSpoiler.reveal}>
+          {() => (
+            <button
+              type="button"
+              className="block w-full cursor-zoom-in"
+              onClick={() => setFullscreen(true)}
+            >
+              <img
+                src={resolveCdnUrl(media.cdnUrl)}
+                alt=""
+                loading="lazy"
+                className="max-h-96 w-full bg-surface-1 object-cover"
+              />
+            </button>
+          )}
+        </SpoilerMedia>
+      </div>
 
       {fullscreen && (
         <div

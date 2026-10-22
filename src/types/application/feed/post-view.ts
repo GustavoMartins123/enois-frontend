@@ -48,6 +48,7 @@ export type PostView = {
   articleBody?: string | null;
   tags: string[];
   mediaIds: string[];
+  mediaSpoiler?: boolean;
   createdAt: string;
   visibility: "PUBLIC" | "CONNECTIONS" | "MENTORS";
   counters: {

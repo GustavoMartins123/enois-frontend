@@ -54,6 +54,7 @@ export function MessageBubble({
         {message.text.trim().length > 0 && (
           <RichText
             content={message.text}
+            mediaSpoiler={message.mediaSpoiler}
             className="break-words"
             linkClassName="break-all underline underline-offset-2"
           />
@@ -61,7 +62,7 @@ export function MessageBubble({
 
         {message.mediaIds && message.mediaIds.length > 0 && (
           <div className="mt-1">
-            <MediaGrid mediaIds={message.mediaIds} compact />
+            <MediaGrid mediaIds={message.mediaIds} compact mediaSpoiler={message.mediaSpoiler} />
           </div>
         )}
 
