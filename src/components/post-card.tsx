@@ -12,17 +12,7 @@ import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { PostView } from "@/types/application/feed/post-view";
 import type { PostCardProps } from "@/types/components/post/post-card-props";
-import {
-  BookOpen,
-  Clock,
-  FileText,
-  MoreHorizontal,
-  Pencil,
-  Pin,
-  PinOff,
-  Tag,
-  Trash2,
-} from "lucide-react";
+import { BookOpen, Clock, FileText, Pin, PinOff, Tag } from "lucide-react";
 
 import { communitiesApi, feedApi } from "@/lib/api";
 import { sealsApi } from "@/lib/api/seals";
@@ -48,6 +38,7 @@ import { LinkPreviews } from "./post/link-previews";
 import { MediaGrid } from "./post/media-grid";
 import { PostActions } from "./post/post-actions";
 import { PostComments } from "./post/post-comments";
+import { PostOwnerMenu } from "./post/post-owner-menu";
 import { PostPage } from "./post/post-page";
 import { ReactionsSummary } from "./post/reactions-summary";
 import { RichText } from "./post/rich-text";
@@ -310,40 +301,15 @@ export function PostCard({
           )}
 
           {isOwner && (
-            <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                  title={texts.posts.owner.actions}
-                  aria-label={texts.posts.owner.actions}
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </button>
-              </PopoverTrigger>
-
-              <PopoverContent align="end" className="w-40 rounded-2xl border-border p-1.5">
-                <button
-                  onClick={() => {
-                    setDraft(post.content);
-                    setPageDraft(pageHtml);
-                    setEditType(post.type);
-                    setEditOpen(true);
-                  }}
-                  className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition hover:bg-muted"
-                >
-                  <Pencil className="h-4 w-4" />
-                  {texts.posts.owner.edit}
-                </button>
-
-                <button
-                  onClick={() => setDeleteOpen(true)}
-                  className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-destructive transition hover:bg-destructive/10"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  {texts.posts.owner.delete}
-                </button>
-              </PopoverContent>
-            </Popover>
+            <PostOwnerMenu
+              onEdit={() => {
+                setDraft(post.content);
+                setPageDraft(pageHtml);
+                setEditType(post.type);
+                setEditOpen(true);
+              }}
+              onDelete={() => setDeleteOpen(true)}
+            />
           )}
         </div>
       </header>
