@@ -2345,6 +2345,9 @@ export const texts = {
       activities: "Descrição das atividades (opcional)",
       activitiesPlaceholder: "O que a pessoa vai fazer, requisitos e diferenciais...",
       salaryRange: "Faixa salarial (opcional)",
+      salaryNotInformed: "A vaga não informa salário",
+      salaryNotInformedHint:
+        "Marque quando o anúncio original não traz faixa salarial (é comum nos agregadores).",
       applyEmail: "E-mail para candidatura (opcional)",
       applyEmailHint: 'Se informado, o botão do card vira "Enviar candidatura" para este e-mail.',
       communityFilter: "Criadas no Énóis",
