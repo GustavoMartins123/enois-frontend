@@ -283,7 +283,12 @@ function ConnectionRequestItem({
   onNavigate,
 }: {
   request: { id: string; fromUserId: string; createdAt: string };
-  profile: { name?: string; username?: string; avatar?: string; headline?: string } | null;
+  profile: {
+    name?: string;
+    username?: string;
+    avatar?: string | null;
+    headline?: string | null;
+  } | null;
   onAccept: (userId: string) => void;
   onReject: (userId: string) => void;
   accepting: boolean;
