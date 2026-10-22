@@ -40,6 +40,12 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
 
   const postCounters = card?.postCounters ?? post.counters;
   const reactionStatus = card?.reactionStatus ?? post.currentUserReaction ?? null;
+  // O reactionSummary (contagem real por tipo) é a verdade; postCounters.reactions pode estar
+  // dessincronizado (bug no decrement ou credibilidade que desconta). Soma do summary quando existe.
+  const summaryTotal = post.reactionSummary
+    ? Object.values(post.reactionSummary).reduce((a, b) => a + b, 0)
+    : null;
+  const reactionCount = summaryTotal ?? postCounters.reactions;
   const showReport = card?.showReport ?? false;
   const { toggle: toggleReaction } = usePostReaction(post.id);
   // Enquanto há reação em andamento, o estado otimista manda — a prop do feed não sobrescreve.
@@ -133,16 +139,16 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
             )}
           </ReactionPicker>
 
-          {postCounters.reactions > 0 && (
+          {reactionCount > 0 && (
             <button
               type="button"
               onClick={() => setShowReactions(post.id, true)}
-              title={texts.posts.reactions.seeWho(postCounters.reactions)}
-              aria-label={texts.posts.reactions.seeWho(postCounters.reactions)}
+              title={texts.posts.reactions.seeWho(reactionCount)}
+              aria-label={texts.posts.reactions.seeWho(reactionCount)}
               aria-haspopup="dialog"
               className="flex h-9 items-center rounded-lg px-1.5 text-xs tabular-nums text-muted-foreground transition hover:bg-muted hover:text-foreground hover:underline decoration-dotted underline-offset-4"
             >
-              {postCounters.reactions}
+              {reactionCount}
             </button>
           )}
 
