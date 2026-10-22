@@ -23,7 +23,7 @@ import { AppContainer } from "@/components/app-container";
 
 export const Route = createFileRoute("/meus-servicos")({
   beforeLoad: requireAuth,
-  head: () => ({ meta: [{ title: "Meus serviços · Énóis" }] }),
+  head: () => ({ meta: [{ title: "Gerenciar serviços · Énóis" }] }),
   component: MyServices,
 });
 
@@ -58,7 +58,7 @@ function MyServices() {
             <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
               <Wrench className="h-6 w-6 text-primary" />
 
-              <>Meus serviços</>
+              <>Gerenciar serviços</>
             </h1>
 
             <p className="mt-1 text-sm text-text-subtle">

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 
 import type { ServiceContract } from "@/types/application/services/service-contract";
 import type { ServiceListing } from "@/types/application/services/service-listing";
@@ -68,6 +68,13 @@ function Servicos() {
             actions={
               authenticated && (
                 <>
+                  <Link
+                    to="/meus-servicos"
+                    className="inline-flex h-9 items-center rounded-full border border-border-soft px-3 text-sm font-medium transition hover:bg-muted"
+                  >
+                    Gerenciar serviços
+                  </Link>
+
                   <NewOfferButton />
                   <NewRequestButton />
                 </>

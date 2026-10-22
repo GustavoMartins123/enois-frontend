@@ -67,5 +67,5 @@ export const navigationItems: {
     module: "COMMUNITY_PROJECTS",
   },
   { to: "/marketplace", label: "Marketplace", icon: ShoppingBag, module: null },
-  { to: "/meus-servicos", label: "Meus serviços", icon: Wrench, module: null },
+  { to: "/servicos", label: "Contratar serviços", icon: Wrench, module: null },
 ];
