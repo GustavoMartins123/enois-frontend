@@ -3304,6 +3304,7 @@ export const texts = {
     bonus:
       "Você recebeu 100 faíscas para usar como quiser na loja, no marketplace e nos espaços da comunidade.",
     together: "Seguimos juntos. 💜",
+    dontRemindToday: "Não lembrar novamente hoje",
     close: "Vamos lá",
   },
   /** Card de espaços novos no painel lateral. */
