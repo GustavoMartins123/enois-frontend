@@ -72,6 +72,7 @@ import { ProfileExperiencesSection } from "@/components/profile/experiences-sect
 import { ProfileCommunityShelf } from "@/components/profile/profile-community-shelf";
 import { ProfileExplorePanel } from "@/components/profile/profile-explore-panel";
 import { ProfileGamificationPanel } from "@/components/profile/profile-gamification-panel";
+import { ProfileNetworkDialog } from "@/components/profile/profile-network-dialog";
 import { ProfileQuickComposer } from "@/components/profile/profile-quick-composer";
 import { ProfileProjectsSection } from "@/components/profile/projects-section";
 import { PostCardSkeletons } from "@/components/skeletons/post-card-skeletons";
@@ -160,6 +161,9 @@ function Profile() {
   const [appearanceOpen, setAppearanceOpen] = useState(false);
   // A capa tem duas formas (foto ou HTML/CSS): o dialogo escolhe, e o clique na capa abre ele.
   const [bannerOpen, setBannerOpen] = useState(false);
+  const [networkDialogKind, setNetworkDialogKind] = useState<"connections" | "followers" | null>(
+    null,
+  );
 
   const { data: liveProfile } = useQuery({
     queryKey: ["profile", loaderUser.username],
@@ -238,6 +242,10 @@ function Profile() {
   });
 
   const userPosts = feedData?.pages.flatMap((page) => page.items) ?? [];
+
+  // O card mostrava o tamanho da pagina carregada, entao congelava em 10 para quem tem mais posts
+  // que isso. postsCount e o inteiro do backend; o fallback so vale numa leitura sem contagem.
+  const postsCount = user.postsCount ?? userPosts.length;
 
   const { data: rankingData } = useQuery({
     queryKey: ["ranking"],
@@ -648,26 +656,47 @@ function Profile() {
               </p>
             </div>
 
-            <dl className="mt-5 grid overflow-hidden rounded-2xl border border-border-soft bg-surface-1/70 sm:grid-cols-3">
-              <div className="border-b border-border-soft px-4 py-3 sm:border-b-0 sm:border-r">
-                <dt className="text-xs font-medium uppercase tracking-[0.14em] text-text-subtle">
+            <dl className="mt-5 grid grid-cols-2 overflow-hidden rounded-2xl border border-border-soft bg-surface-1/70 sm:grid-cols-4">
+              <a
+                href="#atividade"
+                className="group border-b border-r border-border-soft px-4 py-3 transition hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:border-b-0"
+              >
+                <dt className="text-xs font-medium uppercase tracking-[0.14em] text-text-subtle group-hover:text-primary">
                   {texts.profile.dashboard.postsLabel}
                 </dt>
 
                 <dd className="mt-1 text-xl font-medium tracking-tight text-text-strong">
-                  {userPosts.length}
+                  {postsCount}
                 </dd>
-              </div>
+              </a>
 
-              <div className="border-b border-border-soft px-4 py-3 sm:border-b-0 sm:border-r">
-                <dt className="text-xs font-medium uppercase tracking-[0.14em] text-text-subtle">
+              <button
+                type="button"
+                onClick={() => setNetworkDialogKind("connections")}
+                className="group border-b border-border-soft px-4 py-3 text-left transition hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:border-b-0 sm:border-r"
+              >
+                <dt className="text-xs font-medium uppercase tracking-[0.14em] text-text-subtle group-hover:text-primary">
                   {texts.profile.dashboard.connectionsLabel}
                 </dt>
 
                 <dd className="mt-1 text-xl font-medium tracking-tight text-text-strong">
                   {user.connectionsCount ?? 0}
                 </dd>
-              </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setNetworkDialogKind("followers")}
+                className="group border-b border-r border-border-soft px-4 py-3 text-left transition hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:border-b-0"
+              >
+                <dt className="text-xs font-medium uppercase tracking-[0.14em] text-text-subtle group-hover:text-primary">
+                  {texts.profile.dashboard.followersLabel}
+                </dt>
+
+                <dd className="mt-1 text-xl font-medium tracking-tight text-text-strong">
+                  {user.followersCount ?? 0}
+                </dd>
+              </button>
 
               <div className="px-4 py-3">
                 <dt className="text-xs font-medium uppercase tracking-[0.14em] text-text-subtle">
@@ -809,7 +838,7 @@ function Profile() {
             <ProfileGamificationPanel
               profile={user}
               isOwner={isOwnProfile}
-              postsCount={userPosts.length}
+              postsCount={postsCount}
             />
             <ProfileCommunityShelf isOwner={isOwnProfile} />
 
@@ -963,6 +992,15 @@ function Profile() {
         }}
       />
       <AppearanceDialog open={appearanceOpen} onOpenChange={setAppearanceOpen} />
+      <ProfileNetworkDialog
+        username={user.username}
+        name={user.name}
+        kind={networkDialogKind ?? "connections"}
+        open={networkDialogKind !== null}
+        onOpenChange={(open) => {
+          if (!open) setNetworkDialogKind(null);
+        }}
+      />
     </AppContainer>
   );
 }
