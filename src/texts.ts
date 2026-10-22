@@ -3420,7 +3420,7 @@ export const texts = {
     messageLabel: "Mensagem (opcional)",
     messagePlaceholder: "Por que você está enviando?",
     irreversible:
-      "A transferência é instantânea e não tem reversão — confira o nome e o valor com calma.",
+      "A transferência é instantânea, isenta de taxa e não tem reversão — confira o nome e o valor com calma.",
     confirm: "Confirmar transferência",
     sent: "Faíscas enviadas!",
     transferError: "Não foi possível transferir. Confira a chave e o saldo.",

@@ -64,7 +64,7 @@ function Servicos() {
           <PageHeader
             icon={Briefcase}
             title="Serviços"
-            description="Trabalho entre pessoas, pago em faíscas. Toda contratação retém as faíscas até você aceitar a entrega — recusa devolve tudo."
+            description="Trabalho entre pessoas, pago em faíscas ou em reais. Em faíscas, o valor fica retido até você aceitar a entrega (recusa devolve tudo) e a plataforma retém 10% na liberação. Em reais, o pagamento é combinado direto com o prestador e o Énóis não cobra taxa. A taxa de 10% incide só em compras; transferências de faíscas entre perfis são isentas."
             actions={
               authenticated && (
                 <>

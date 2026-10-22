@@ -62,8 +62,9 @@ function MyServices() {
             </h1>
 
             <p className="mt-1 text-sm text-text-subtle">
-              Para qualquer prestador: publique o que você faz e cobre em <b>faíscas</b> (com
-              escrow) ou em <b>reais</b> (pagamento combinado direto, sem taxa do Énóis).
+              Para qualquer prestador: publique o que você faz e cobre em <b>faíscas</b> (escrow; a
+              taxa de 10% é só em compras) ou em <b>reais</b> (pagamento combinado direto, sem taxa
+              do Énóis). Transferência direta de faíscas entre perfis é isenta.
             </p>
           </div>
 

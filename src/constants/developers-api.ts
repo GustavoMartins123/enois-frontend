@@ -895,7 +895,7 @@ export const apiSections: ApiSection[] = [
     id: "servicos",
     title: "Serviços freelance (com escrow)",
     description:
-      "Duas faces: OFERTAR (o profissional publica o que faz, modelo Fiverr — teto de 5 abertas por conta) e PEDIR (a demanda publica o que precisa, com orçamento em faixa e entregáveis OBRIGATÓRIOS — a lição dos microprojetos). O contrato nasce HELD: entrega → aceite libera 90%; reembolso devolve 100%.",
+      "Duas faces: OFERTAR (o profissional publica o que faz, modelo Fiverr — teto de 5 abertas por conta) e PEDIR (a demanda publica o que precisa, com orçamento em faixa e entregáveis OBRIGATÓRIOS — a lição dos microprojetos). Em faíscas, o contrato nasce HELD: entrega → aceite libera 90% (10% de taxa); reembolso devolve 100%. Em reais, o pagamento é combinado direto entre as partes e o Énóis não cobra taxa.",
     endpoints: [
       {
         method: "GET",
