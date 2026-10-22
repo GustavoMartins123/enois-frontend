@@ -9,6 +9,10 @@ export const FX_FRAMES = [
   "moldura-orbita",
   "moldura-glacial",
   "moldura-toxica",
+  "moldura-dragao",
+  "moldura-matrix",
+  "moldura-portal",
+  "moldura-holograma",
 ] as const;
 
 /** A categoria "Animadas" da loja: as de anel animado (só CSS) e as com efeito. */

@@ -595,6 +595,9 @@
 .moldura-inferno__nucleo {
   animation: moldura-inferno-nucleo 1.3s ease-in-out infinite;
 }
+.moldura-inferno__nucleo-grosso {
+  animation: moldura-inferno-nucleo-grosso 1.3s ease-in-out infinite;
+}
 .moldura-inferno__chama {
   transform-origin: 0 0;
   animation: moldura-inferno-chama 0.7s ease-in-out infinite;
@@ -604,8 +607,12 @@
 }
 @keyframes moldura-inferno-nucleo {
   50% {
+    opacity: 0;
+  }
+}
+@keyframes moldura-inferno-nucleo-grosso {
+  50% {
     opacity: 0.6;
-    stroke-width: 5;
   }
 }
 @keyframes moldura-inferno-chama {
@@ -881,6 +888,263 @@
   100% {
     transform: translateY(-18px) scale(1.6);
     opacity: 0;
+  }
+}
+
+/* As molduras abaixo (Dragão, Matrix, Portal, Holograma) só animam transform e opacidade: o
+   benchmark mostrou que animar pintura dentro do SVG (stroke-width, stroke-dashoffset) obriga a
+   repintar o SVG inteiro na thread principal a cada quadro. */
+
+/* Dragão: cada escama gira com atraso (segue a cabeça) e ondula para dentro e para fora. */
+/* Keyframes próprios com "from" explícito: em SVG o atributo transform (a posição parada, para
+   movimento reduzido) viraria o ponto de partida de um keyframe que só tem "to". */
+.moldura-dragao__giro {
+  animation: moldura-dragao-giro 8s linear infinite;
+}
+.moldura-dragao__onda {
+  animation: moldura-dragao-onda 1.6s ease-in-out infinite alternate;
+}
+.moldura-dragao__bigode {
+  transform-origin: 12px 0;
+  animation: moldura-dragao-bigode 1.1s ease-in-out infinite alternate;
+}
+.moldura-dragao__perola {
+  animation: moldura-dragao-perola 1.4s ease-in-out infinite;
+}
+@keyframes moldura-dragao-giro {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes moldura-dragao-onda {
+  from {
+    transform: translateY(-3.5px);
+  }
+  to {
+    transform: translateY(3.5px);
+  }
+}
+@keyframes moldura-dragao-bigode {
+  from {
+    transform: rotate(-6deg);
+  }
+  to {
+    transform: rotate(6deg);
+  }
+}
+@keyframes moldura-dragao-perola {
+  50% {
+    opacity: 0.55;
+    transform: scale(1.25);
+  }
+}
+
+/* Matrix: a chuva é HTML (o compositor só desloca as colunas), recortada em anel pela máscara.
+   1cqw = 1% do avatar e o efeito mede 160cqw; a coluna sai de toda acima (-100%) para toda abaixo. */
+.moldura-matrix__chuva {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  -webkit-mask-image: radial-gradient(circle closest-side, transparent 64%, #000 68%, #000 88%, transparent 100%);
+  mask-image: radial-gradient(circle closest-side, transparent 64%, #000 68%, #000 88%, transparent 100%);
+}
+.moldura-matrix__coluna {
+  position: absolute;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 8cqw;
+  margin-left: -4cqw;
+  font: 700 7.2cqw/8cqw ui-monospace, "MS Gothic", "Noto Sans Mono CJK JP", monospace;
+  color: #22c55e;
+  text-shadow: 0 0 1.4cqw #22c55e;
+  animation: moldura-matrix-chuva 3s linear infinite;
+}
+.moldura-matrix__cabeca {
+  color: #ecfdf5;
+  text-shadow: 0 0 1.6cqw #4ade80;
+}
+.moldura-matrix__anel {
+  animation: moldura-matrix-anel 2.2s ease-in-out infinite;
+}
+@keyframes moldura-matrix-chuva {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(160cqw);
+  }
+}
+@keyframes moldura-matrix-anel {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* Portal: os braços giram contra o próprio enrolamento (parecem entrar), as faíscas seguem
+   para dentro e as ondas se fecham na borda do avatar. */
+.moldura-portal__ciano {
+  animation: moldura-giro 3.2s linear infinite reverse;
+}
+.moldura-portal__violeta {
+  animation: moldura-giro 5.5s linear infinite;
+}
+.moldura-portal__aura {
+  animation: moldura-portal-pulso 2.6s ease-in-out infinite;
+}
+.moldura-portal__boca {
+  animation: moldura-portal-pulso 1.8s ease-in-out infinite;
+}
+.moldura-portal__onda {
+  transform-origin: 0 0;
+  opacity: 0;
+  animation: moldura-portal-onda 2.4s ease-in infinite;
+}
+.moldura-portal__faisca {
+  animation: moldura-portal-faisca 2s cubic-bezier(0.5, 0, 0.9, 0.6) infinite;
+}
+@keyframes moldura-portal-pulso {
+  50% {
+    opacity: 0.55;
+  }
+}
+@keyframes moldura-portal-onda {
+  0% {
+    transform: scale(1);
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(0.64);
+    opacity: 0;
+  }
+}
+@keyframes moldura-portal-faisca {
+  0% {
+    transform: rotate(0deg) translateX(78px) scale(1);
+    opacity: 0;
+  }
+  15%,
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: rotate(400deg) translateX(51px) scale(0.2);
+    opacity: 0;
+  }
+}
+
+/* Holograma: tremor de sinal, scan descendo pelo rosto, anéis de dados e glitch RGB em degraus. */
+.moldura-holograma__tremor {
+  animation: moldura-holograma-tremor 3.7s steps(1, end) infinite;
+}
+.moldura-holograma__scan {
+  animation: moldura-holograma-scan 2.6s linear infinite;
+}
+.moldura-holograma__dados {
+  animation: moldura-giro 9s linear infinite;
+}
+.moldura-holograma__marcas {
+  animation: moldura-giro 14s linear infinite reverse;
+}
+.moldura-holograma__arcos {
+  animation: moldura-giro 4s linear infinite;
+}
+.moldura-holograma__magenta {
+  animation: moldura-holograma-glitch-magenta 2.7s steps(1, end) infinite;
+}
+.moldura-holograma__ciano {
+  animation: moldura-holograma-glitch-ciano 2.7s steps(1, end) infinite;
+}
+.moldura-holograma__faixa {
+  opacity: 0;
+  animation: moldura-holograma-faixa 2.5s steps(1, end) infinite;
+}
+@keyframes moldura-holograma-tremor {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  31% {
+    opacity: 0.55;
+  }
+  32% {
+    opacity: 1;
+  }
+  33% {
+    opacity: 0.75;
+  }
+  34% {
+    opacity: 1;
+  }
+  77% {
+    opacity: 0.65;
+  }
+  78% {
+    opacity: 1;
+  }
+}
+@keyframes moldura-holograma-scan {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(104px);
+  }
+}
+@keyframes moldura-holograma-glitch-magenta {
+  0%,
+  88%,
+  95%,
+  100% {
+    transform: translate(-0.6px, 0);
+  }
+  89% {
+    transform: translate(-2.4px, 0.8px);
+  }
+  91% {
+    transform: translate(1.8px, -0.6px);
+  }
+  93% {
+    transform: translate(-1.2px, 0);
+  }
+}
+@keyframes moldura-holograma-glitch-ciano {
+  0%,
+  88%,
+  95%,
+  100% {
+    transform: translate(0.6px, 0);
+  }
+  89% {
+    transform: translate(2.4px, -0.8px);
+  }
+  91% {
+    transform: translate(-1.8px, 0.6px);
+  }
+  93% {
+    transform: translate(1.2px, 0);
+  }
+}
+@keyframes moldura-holograma-faixa {
+  0% {
+    opacity: 0.9;
+    transform: translateX(0);
+  }
+  4% {
+    opacity: 0.6;
+    transform: translateX(6px);
+  }
+  7%,
+  100% {
+    opacity: 0;
+    transform: translateX(0);
   }
 }
 
