@@ -6,6 +6,7 @@ import { mediaApi } from "@/lib/api";
 import { resolveCdnUrl, withImageKitOriginal } from "@/lib/api/media";
 
 import { texts } from "@/texts";
+import { LiteVideo } from "./lite-video";
 import { SpoilerMedia } from "./spoiler-media";
 
 /**
@@ -44,14 +45,7 @@ export function InlineMedia({ mediaId, mediaSpoiler = false }: { mediaId: string
       <div className="my-2 overflow-hidden rounded-xl border border-border-soft">
         <SpoilerMedia active={mediaSpoiler} label={texts.posts.mediaSpoiler.reveal}>
           {() => (
-            <video
-              src={withImageKitOriginal(media.cdnUrl)}
-              muted
-              playsInline
-              preload="metadata"
-              controls
-              className="max-h-96 w-full bg-surface-1"
-            />
+            <LiteVideo src={withImageKitOriginal(media.cdnUrl)} />
           )}
         </SpoilerMedia>
       </div>

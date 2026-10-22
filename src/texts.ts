@@ -1304,6 +1304,13 @@ export const texts = {
     },
     momentExpiry: (hours: number) => `some em ${hours}h`,
     momentExpiryTitle: "Momento se apaga sozinho em 24 horas",
+    /** Palco de mídia do Modo lite: o vídeo aberto em tela cheia, com o resto da página pausado. */
+    mediaStage: {
+      open: "Assistir em tela cheia",
+      title: "Vídeo",
+      mute: "Silenciar",
+      unmute: "Ativar som",
+    },
     /** Fixar UM post no topo do feed da comunidade/grupo (a administração faz isso). */
     pin: {
       pin: "Fixar no topo",
@@ -1467,6 +1474,18 @@ export const texts = {
     reposted: "Republicado no seu perfil.",
     alreadyReposted: "Você já republicou este post.",
     repostError: "Não foi possível republicar agora.",
+    repostTitle: "Republicar",
+    repostDescription:
+      "Publique no seu feed direto, ou escreva uma opinião de até 600 caracteres para aparecer junto com o post original citado.",
+    repostPlain: "Só republicar",
+    repostWithOpinion: "Republicar com opinião",
+    opinionLabel: "Sua opinião (opcional)",
+    opinionPlaceholder: "O que você achou deste post?",
+    opinionCount: (length: number) => `${length}/600`,
+    quotedFrom: (username: string | null | undefined) =>
+      username ? `Publicação original de @${username}` : "Publicação original",
+    viewOriginal: "Ver publicação original",
+    repostedWithOpinion: "Republicou com opinião",
     repostedFrom: (username: string | null | undefined) =>
       username ? `Republicado de @${username}` : "Republicado",
     shareCopied: "Link da publicação copiado!",
@@ -1480,6 +1499,10 @@ export const texts = {
       reply: "Responder",
       replyingTo: (name: string) => `respondendo a ${name}`,
       delete: "Excluir",
+      pin: "Fixar comentário",
+      unpin: "Desafixar comentário",
+      pinned: "Fixado",
+      pinError: "Não foi possível fixar o comentário.",
       editError: "Não foi possível salvar a edição. Tente de novo.",
       loadMore: "Ver comentários anteriores",
       loadingMore: "Carregando...",
@@ -3161,7 +3184,8 @@ export const texts = {
       applications: "Candidaturas",
       users: "Usuários",
       emails: "E-mails",
-      suspicious: "Suspeitos",
+      suspicious: "Contas suspeitas",
+      suspiciousPosts: "Posts suspeitos",
     },
     suspiciousPosts: {
       title: "Posts suspeitos",
@@ -3200,25 +3224,33 @@ export const texts = {
     suspicious: {
       title: "Contas suspeitas",
       description:
-        "Contas recentes com sinais de cadastro em série: nome repetido ou de teste, e-mail não confirmado, perfil vazio e denúncias contra. Revise e selecione o que banir — o lote não apaga conteúdo, só aplica o banimento pelo fluxo normal.",
+        "Contas recentes com sinais de cadastro em série: nome repetido ou de teste, e-mail não confirmado, perfil vazio e denúncias contra. Revise e selecione o que banir — o lote aplica o banimento pelo fluxo normal, sem apagar conteúdo de quem você está julgando.",
+      autoHint:
+        "Risco acima de 60: a triagem automática bane a conta e apaga o conteúdo sozinha. O que aparece aqui é o que ficou abaixo do teto ou pede julgamento humano.",
       empty: "Nenhuma conta suspeita no período.",
       emptyHint:
         "Os sinais avaliados são nome em série, e-mail não confirmado, perfil vazio e denúncias.",
       selectAll: "Selecionar todas",
       clear: "Limpar seleção",
       selected: (count: number) => `${count} selecionada(s)`,
-      reasonPlaceholder: "Motivo do banimento (mínimo de 10 caracteres)",
+      reasonPlaceholder:
+        "Motivo (opcional) — sem ele fica registrado como limpeza de contas em série",
       typeBan: "Banir",
       typePermanent: "Banir permanentemente",
       ban: (count: number) => (count === 0 ? "Banir selecionadas" : `Banir ${count} conta(s)`),
       confirmTitle: "Banir em lote",
       confirmBody: (count: number, type: "BAN" | "PERMABAN") =>
-        `Aplicar ${type === "PERMABAN" ? "banimento permanente" : "banimento"} em ${count} conta(s)? As sessões serão revogadas e o login bloqueado.`,
+        `Aplicar ${type === "PERMABAN" ? "banimento permanente" : "banimento"} em ${count} conta(s)? As sessões serão revogadas, o login bloqueado e o IP de cada conta entra na lista de bloqueio.`,
       confirm: "Banir agora",
       result: (banned: number, already: number, failed: number) =>
         `${banned} banida(s), ${already} já estavam banidas, ${failed} falha(s).`,
+      /** Quem falhou e por quê: sem isso, "N falha(s)" não diz o que fazer. */
+      failures: (details: string) => `Falhas: ${details}`,
+      blockedIps: (count: number) =>
+        count === 0 ? "" : `${count} IP(s) bloqueado(s) junto com o lote.`,
       error: "Não foi possível banir as contas selecionadas.",
       risk: (score: number) => `risco ${score}`,
+      staffChip: "equipe",
       createdAt: (date: string) => `criada em ${date}`,
       counts: (posts: number, comments: number, reports: number) =>
         `${posts} post(s) · ${comments} comentário(s) · ${reports} denúncia(s) contra`,
@@ -3230,6 +3262,7 @@ export const texts = {
         PERFIL_VAZIO: "Perfil vazio",
         CONTA_NOVA: "Conta nova",
         DENUNCIAS_CONTRA: "Denúncias contra",
+        EQUIPE: "Conta da equipe (a automação não pune)",
       } as Record<string, string>,
     },
     projects: {
@@ -3412,16 +3445,6 @@ export const texts = {
       "Data registrada. Agora falta a autorização de um responsável para liberar a conta.",
     invalid: "Confira a data: ela não pode estar no futuro.",
     error: "Não foi possível salvar a data. Tente de novo.",
-  },
-  /** Popup de desculpas pelos últimos dias + faíscas de presente. */
-  apology: {
-    title: "Estamos trabalhando para melhorar o Énóis! 💜",
-    body: "Pedimos desculpas pelos inconvenientes dos últimos dias. Estamos trabalhando ativamente para corrigir problemas, reforçar a segurança e tornar a plataforma cada vez melhor para todo mundo. Obrigada pela paciência e por fazer parte dessa comunidade. O Énóis é feito por pessoas, para pessoas, e seguimos construindo tudo isso com muito cuidado e transparência.",
-    bonus:
-      "Você recebeu 100 faíscas para usar como quiser na loja, no marketplace e nos espaços da comunidade.",
-    together: "Seguimos juntos. 💜",
-    dontRemindToday: "Não lembrar novamente hoje",
-    close: "Vamos lá",
   },
   /** Card de espaços novos no painel lateral. */
   platformSpaces: {

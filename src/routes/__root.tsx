@@ -25,7 +25,6 @@ import { buttonVariants } from "@/components/ui/button-variants";
 import { ToastProvider } from "@/components/ui/toast";
 
 import { AgeGate } from "@/components/age-gate";
-import { ApologyPopup } from "@/components/apology-popup";
 import { AppContainer } from "@/components/app-container";
 import { HealthyUsageGuard } from "@/components/healthy-usage/healthy-usage-guard";
 import { InstallPwaBanner } from "@/components/install-pwa-banner";
@@ -233,7 +232,6 @@ function RootInsideProvider() {
       <LiteModeEffects />
       <HealthyUsageGuard />
       <AgeGate />
-      <ApologyPopup />
     </ToastProvider>
   );
 }

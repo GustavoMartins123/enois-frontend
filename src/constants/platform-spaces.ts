@@ -1,6 +1,6 @@
 /**
- * Os espaços novos que a comunidade deve descobrir (usados no popup de desculpas e no painel
- * lateral do feed). São rotas que já existem — nada de link inventado.
+ * Os espaços novos que a comunidade deve descobrir (painel lateral do feed). São rotas que já
+ * existem — nada de link inventado.
  */
 export const PLATFORM_SPACES = [
   {

@@ -8,8 +8,9 @@ import { mediaApi } from "@/lib/api";
 import { resolveCdnUrl, withImageKitOriginal } from "@/lib/api/media";
 import { autoplayVideoRef } from "@/lib/feed/video-autoplay";
 
-import { SpoilerMedia } from "./spoiler-media";
 import { texts } from "@/texts";
+import { LiteVideo } from "./lite-video";
+import { SpoilerMedia } from "./spoiler-media";
 
 /** Grade de mídias do post (vídeo único ou imagens) com visualização em tela cheia.
  *
@@ -56,14 +57,9 @@ export function MediaGrid({
       <div className="overflow-hidden rounded-xl border border-border-soft">
         <SpoilerMedia active={mediaSpoiler} label={texts.posts.mediaSpoiler.reveal}>
           {(revealed) => (
-            <video
-              ref={revealed ? autoplayVideoRef : undefined}
+            <LiteVideo
               src={withImageKitOriginal(items[0].cdnUrl)}
-              muted
-              playsInline
-              preload="metadata"
-              controls
-              className="max-h-96 w-full bg-surface-1"
+              registerRef={revealed ? autoplayVideoRef : undefined}
             />
           )}
         </SpoilerMedia>

@@ -39,6 +39,12 @@ export type PostView = {
   repostOf?: string | null;
   /** @ do autor original, exibido no crédito "Republicado de @fulano". */
   repostOfAuthor?: string | null;
+  /** Repost COM opinião: o content é o comentário e o original aparece citado. */
+  repostWithOpinion?: boolean;
+  /** Conteúdo do original citado (preenchido na leitura de reposts com opinião). */
+  repostOfContent?: string | null;
+  /** Mídias do original citado. */
+  repostOfMediaIds?: string[] | null;
   /** HTML já sanitizado da mini página (só em posts do tipo PAGE; nulo nos demais). */
   pageHtml?: string | null;
   /**

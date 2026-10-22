@@ -25,6 +25,7 @@ import {
   Shield,
   ShieldAlert,
   ShieldCheck,
+  Trash2,
   UserCheck,
   X,
 } from "lucide-react";
@@ -49,6 +50,7 @@ import { EmailLogSection } from "@/components/moderation/email-log-section";
 import { GamesReviewSection } from "@/components/moderation/games-review-section";
 import { ProjectsReviewSection } from "@/components/moderation/projects-review-section";
 import { SupportTicketsSection } from "@/components/moderation/support-tickets-section";
+import { SuspiciousPostsSection } from "@/components/moderation/suspicious-posts-section";
 import { SuspiciousUsersSection } from "@/components/moderation/suspicious-users-section";
 import { UserPicker } from "@/components/user-picker";
 
@@ -74,11 +76,20 @@ const ALL_TABS: { id: ModeratorTabId; label: string; icon: typeof Flag; adminOnl
     adminOnly: true,
   },
   { id: "users", label: texts.moderator.tabs.users, icon: Gavel, adminOnly: false },
+  // Triagem de contas em série é trabalho do time inteiro (decisão da dona): qualquer moderador
+  // aprovado vê a fila e pode banir em lote.
   {
     id: "suspicious",
     label: texts.moderator.tabs.suspicious,
     icon: ScanEye,
-    adminOnly: true,
+    adminOnly: false,
+  },
+  // Posts denunciados com score alto: exclusão em lote pelo time inteiro, como as contas.
+  {
+    id: "suspiciousPosts",
+    label: texts.moderator.tabs.suspiciousPosts,
+    icon: Trash2,
+    adminOnly: false,
   },
   { id: "emails", label: texts.moderator.tabs.emails, icon: Mail, adminOnly: true },
 ];
@@ -201,7 +212,8 @@ function Moderador() {
             {me.admin && activeTab === "disputes" && <DisputesSection />}
             {me.admin && activeTab === "applications" && <ApplicationsSection />}
             {activeTab === "users" && <SanctionSection me={me} />}
-            {me.admin && activeTab === "suspicious" && <SuspiciousUsersSection />}
+            {canModerate && activeTab === "suspicious" && <SuspiciousUsersSection />}
+            {canModerate && activeTab === "suspiciousPosts" && <SuspiciousPostsSection />}
             {me.admin && activeTab === "emails" && <EmailLogSection />}
           </div>
         ) : (

@@ -42,6 +42,7 @@ export const reactionsApi = {
 
   share: (postId: string) => api.post<ActionResponse>(`/feed/posts/${postId}/shares`),
 
-  /** Republica no próprio feed (cópia com crédito ao autor original). */
-  repost: (postId: string) => api.post<unknown>(`/feed/posts/${postId}/repost`),
+  /** Republica no próprio feed; `opinion` (até 600) transforma em repost com comentário. */
+  repost: (postId: string, opinion?: string) =>
+    api.post<unknown>(`/feed/posts/${postId}/repost`, opinion ? { opinion } : {}),
 };
