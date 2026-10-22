@@ -6,6 +6,7 @@ import type { EducationRequest } from "@/types/application/profile/education-req
 import type { Experience } from "@/types/application/profile/experience";
 import type { ExperienceRequest } from "@/types/application/profile/experience-request";
 import type { Profile } from "@/types/application/profile/profile";
+import type { ProfileNetworkUser } from "@/types/application/profile/profile-network-user";
 import type { UpdateProfileRequest } from "@/types/application/profile/update-profile-request";
 
 import { api } from "../api-client";
@@ -23,6 +24,9 @@ export const profileApi = {
   declareBirthDate: (birthDate: string) => api.post<AgeState>("/me/birth-date", { birthDate }),
 
   get: (username: string) => api.get<Profile>(`/users/${username}`),
+
+  network: (username: string, kind: "connections" | "followers") =>
+    api.get<ProfileNetworkUser[]>(`/users/${encodeURIComponent(username)}/${kind}`),
 
   getById: (id: string) => api.get<Profile>(`/users/by-id/${id}`),
 
