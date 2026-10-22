@@ -76,6 +76,9 @@ export function ConversationThread({
     refetchInterval: liteInterval(10_000, lite),
   });
 
+  const peerLastReadAt = conversation.otherLastReadAt
+    ? new Date(conversation.otherLastReadAt).getTime()
+    : null;
   const messages = (messagesData?.pages.flatMap((page) => page.items) ?? []).sort(
     (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
   );
@@ -265,6 +268,11 @@ export function ConversationThread({
                 key={m.id}
                 message={m}
                 isMe={m.from === currentUserId}
+                readByOther={
+                  peerLastReadAt !== null &&
+                  m.from === currentUserId &&
+                  new Date(m.time).getTime() <= peerLastReadAt
+                }
                 otherUser={otherUser}
                 otherId={otherParticipantId}
                 selecting={selectingMessages}
