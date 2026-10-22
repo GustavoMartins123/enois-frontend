@@ -13,7 +13,9 @@ import { Loader2, Plus, Search, Star, Users } from "lucide-react";
 
 import { communitiesApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
+import { litePageSize } from "@/lib/lite-mode";
 import { useAuth, useIsAuthenticated } from "@/lib/use-auth";
+import { useLiteMode } from "@/lib/use-lite-mode";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -42,11 +44,15 @@ export const Route = createFileRoute("/comunidades")({
   component: Comunidades,
 });
 
+/** Tamanho que o catálogo sempre usou; em modo lite cada página vem maior. */
+const COMMUNITIES_PAGE_SIZE = 20;
+
 function Comunidades() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const matchRoute = useMatchRoute();
   const isAuthenticated = useIsAuthenticated();
+  const lite = useLiteMode();
   const { requireAuth: needsLogin } = useAuth();
   const [topic, setTopic] = useState<CommunityTopic | undefined>(undefined);
   const [search, setSearch] = useState("");
@@ -73,7 +79,13 @@ function Comunidades() {
     isLoading: communitiesLoading,
   } = useInfiniteQuery({
     queryKey: ["communities", topic, query],
-    queryFn: ({ pageParam }) => communitiesApi.list(topic, pageParam, 20, query || undefined),
+    queryFn: ({ pageParam }) =>
+      communitiesApi.list(
+        topic,
+        pageParam,
+        litePageSize(COMMUNITIES_PAGE_SIZE, lite),
+        query || undefined,
+      ),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     enabled: !isDetail,

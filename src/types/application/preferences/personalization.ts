@@ -1,4 +1,4 @@
-/** Os três controles de personalização da conta (GET/PUT /me/preferences). */
+/** Os controles de personalização da conta (GET/PUT /me/preferences). */
 export type Personalization = {
   likedTopics: string[];
   blockedTopics: string[];
@@ -7,4 +7,9 @@ export type Personalization = {
   nightRestReminder: boolean;
   /** Data local (AAAA-MM-DD) da noite em que o popup foi dispensado; null = nunca. */
   nightRestDismissedOn: string | null;
+  /**
+   * Modo lite: sem animações, páginas maiores e cache mais folgado — para aparelho fraco,
+   * bateria curta ou internet ruim. A interface é a mesma.
+   */
+  liteMode: boolean;
 };

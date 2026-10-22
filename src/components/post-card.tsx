@@ -20,6 +20,7 @@ import { saveFeedScroll } from "@/lib/feed-scroll-restoration";
 import { inlineMediaIds } from "@/lib/rich-text/inline-media";
 import { hideExternalPageUrls } from "@/lib/shared-links";
 import { useAuth } from "@/lib/use-auth";
+import { useLiteMode } from "@/lib/use-lite-mode";
 import { cn } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
@@ -60,6 +61,8 @@ export function PostCard({
   pinPending = false,
 }: PostCardProps) {
   const { requireAuth, user } = useAuth();
+  // Modo lite: nada de player de terceiro montando sozinho no feed.
+  const lite = useLiteMode();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const isOwner = user?.id != null && user.id === post.authorId;
@@ -436,7 +439,7 @@ export function PostCard({
       ) : null}
 
       <ReactionsSummary postId={post.id} initialSummary={post.reactionSummary} />
-      <LinkPreviews content={post.content} autoplay />
+      <LinkPreviews content={post.content} autoplay={!lite} />
 
       {post.tags.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-1.5">

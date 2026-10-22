@@ -42,7 +42,9 @@ import {
 } from "@/lib/active-identity";
 import { authApi, corporateApi, eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
 import { clearFeedScroll, readFeedScroll } from "@/lib/feed-scroll-restoration";
+import { litePageSize } from "@/lib/lite-mode";
 import { requireAuth } from "@/lib/require-auth";
+import { useLiteMode } from "@/lib/use-lite-mode";
 import { useMediaUpload } from "@/lib/use-media-upload";
 import { cn } from "@/lib/utils";
 
@@ -150,13 +152,16 @@ function rememberTopic(value: string): void {
 }
 
 function useFeed(tab: HomeTab) {
+  // Em modo lite cada página vem maior: rolar o mesmo tanto custa menos idas ao servidor.
+  const lite = useLiteMode();
+  const pageSize = litePageSize(FEED_PAGE_SIZE, lite);
   // Pagina por cursor: o backend devolve nextCursor e o scroll infinito busca a proxima pagina.
   return useInfiniteQuery({
     queryKey: ["feed", tab],
     queryFn: ({ pageParam }) =>
       tab === "CORPORATE"
-        ? feedApi.corporate(pageParam ?? null, FEED_PAGE_SIZE)
-        : feedApi.list(pageParam ?? null, FEED_PAGE_SIZE, tab),
+        ? feedApi.corporate(pageParam ?? null, pageSize)
+        : feedApi.list(pageParam ?? null, pageSize, tab),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });

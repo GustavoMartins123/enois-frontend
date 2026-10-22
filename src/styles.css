@@ -502,7 +502,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  [data-avatar-frame]::after {
+  html:not([data-force-motion]) [data-avatar-frame]::after {
     animation: none;
   }
 }
@@ -886,13 +886,13 @@
 
 /* Sem animação: o desenho fica parado (com dois raios acesos) e as partículas somem. */
 @media (prefers-reduced-motion: reduce) {
-  .moldura-fx * {
+  html:not([data-force-motion]) .moldura-fx * {
     animation: none !important;
   }
-  .moldura-fx .moldura-fx__particula {
+  html:not([data-force-motion]) .moldura-fx .moldura-fx__particula {
     display: none;
   }
-  .moldura-tempestade__raio:nth-child(-n + 2) {
+  html:not([data-force-motion]) .moldura-tempestade__raio:nth-child(-n + 2) {
     opacity: 1;
   }
 }
@@ -925,4 +925,27 @@
   ::-webkit-scrollbar-corner {
     background: transparent;
   }
+}
+
+/* ── Modo lite ───────────────────────────────────────────────────────────────
+   Aparelho fraco, bateria curta ou internet ruim: o Énóis enxuga o trabalho do
+   navegador sem mexer em UM pixel do layout. O `<html data-lite>` é ligado pelo
+   LiteModeEffects (preferência da conta, espelhada no aparelho para valer já no
+   primeiro paint).
+
+   Durações quase zero (em vez de `animation: none`) porque assim a animação
+   termina no primeiro quadro e o elemento fica no estado final — nada de diálogo
+   ou esqueleto preso no meio do caminho. As partículas das molduras somem porque
+   paradas viram pontinhos soltos em volta do avatar. */
+html[data-lite] *,
+html[data-lite] *::before,
+html[data-lite] *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
+
+html[data-lite] .moldura-fx__particula {
+  display: none;
 }

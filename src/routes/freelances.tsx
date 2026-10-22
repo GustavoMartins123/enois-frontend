@@ -9,8 +9,10 @@ import { Banknote, CalendarClock, Handshake, Plus, Search, Sparkles } from "luci
 
 import { freelancesApi } from "@/lib/api";
 import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
+import { litePageSize } from "@/lib/lite-mode";
 import { requireAuth } from "@/lib/require-auth";
 import { useIsAuthenticated } from "@/lib/use-auth";
+import { useLiteMode } from "@/lib/use-lite-mode";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -35,6 +37,7 @@ const money = (value: number) =>
 
 function Freelances() {
   const authenticated = useIsAuthenticated();
+  const lite = useLiteMode();
   const [open, setOpen] = useState(false);
   const [busca, setBusca] = useState("");
   const [buscaAplicada, setBuscaAplicada] = useState("");
@@ -49,7 +52,7 @@ function Freelances() {
     queryKey: ["freelances", buscaAplicada],
     queryFn: ({ pageParam }) =>
       freelancesApi.list({
-        limit: PAGE_SIZE,
+        limit: litePageSize(PAGE_SIZE, lite),
         cursor: pageParam,
         q: buscaAplicada || undefined,
       }),

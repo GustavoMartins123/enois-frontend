@@ -8,7 +8,10 @@ import type { MediaItem } from "@/types/routes/feed/media-item";
 import { Image, Loader2, Mic, Send, Square, X } from "lucide-react";
 
 import { commentsApi } from "@/lib/api";
+import { getCurrentUser } from "@/lib/current-user";
+import { litePageSize } from "@/lib/lite-mode";
 import { useAuth } from "@/lib/use-auth";
+import { useLiteMode } from "@/lib/use-lite-mode";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
@@ -30,6 +33,10 @@ const PAGE_SIZE = 20;
  * fim; respostas cujo comentario pai ainda nao foi carregado aparecem como raiz para nao sumirem.
  */
 export function PostComments({ postId }: PostIdProps) {
+  // Em modo lite a primeira página (e cada "carregar mais") já vem maior.
+  const lite = useLiteMode();
+  const pageSize = litePageSize(PAGE_SIZE, lite);
+  const currentUser = getCurrentUser();
   const { requireAuth } = useAuth();
   const comments = usePostCardStore((state) => state.cards[postId]?.localComments ?? []);
   const draft = usePostCardStore((state) => state.cards[postId]?.draft ?? "");
@@ -159,7 +166,7 @@ export function PostComments({ postId }: PostIdProps) {
     setLoading(true);
     setError(null);
     try {
-      const page = await commentsApi.list(postId, null, PAGE_SIZE);
+      const page = await commentsApi.list(postId, null, pageSize);
       setComments(postId, oldestFirst(page.items));
       setCursor(page.nextCursor);
       setHasMore(Boolean(page.nextCursor));
@@ -168,7 +175,7 @@ export function PostComments({ postId }: PostIdProps) {
     } finally {
       setLoading(false);
     }
-  }, [postId, setComments]);
+  }, [postId, setComments, pageSize]);
 
   useEffect(() => {
     void loadFirstPage();
@@ -178,7 +185,7 @@ export function PostComments({ postId }: PostIdProps) {
     if (!cursor || loadingMore) return;
     setLoadingMore(true);
     try {
-      const page = await commentsApi.list(postId, cursor, PAGE_SIZE);
+      const page = await commentsApi.list(postId, cursor, pageSize);
       setComments(postId, oldestFirst([...comments, ...page.items]));
       setCursor(page.nextCursor);
       setHasMore(Boolean(page.nextCursor));
@@ -340,6 +347,7 @@ export function PostComments({ postId }: PostIdProps) {
           aria-hidden="true"
           className="hidden"
         />
+
         <div className="min-w-0">
           {replyToId && (
             <div className="mb-1 flex items-center gap-2 pl-4 text-xs font-normal text-primary">

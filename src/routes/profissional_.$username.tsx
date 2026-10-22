@@ -7,7 +7,9 @@ import { ArrowLeft, Building2, Globe, Link as LinkIcon, MapPin, UserX } from "lu
 
 import { ApiError, corporateApi, feedApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
+import { litePageSize } from "@/lib/lite-mode";
 import { useAuth } from "@/lib/use-auth";
+import { useLiteMode } from "@/lib/use-lite-mode";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -37,6 +39,7 @@ const PAGE_SIZE = 20;
  * um estado vazio, nunca uma página quebrada.
  */
 function ProfessionalProfile() {
+  const lite = useLiteMode();
   const { username } = Route.useParams();
   const { user } = useAuth();
 
@@ -54,7 +57,8 @@ function ProfessionalProfile() {
 
   const posts = useInfiniteQuery({
     queryKey: ["corporate-public", username, "posts"],
-    queryFn: ({ pageParam }) => feedApi.corporateByUsername(username, pageParam, PAGE_SIZE),
+    queryFn: ({ pageParam }) =>
+      feedApi.corporateByUsername(username, pageParam, litePageSize(PAGE_SIZE, lite)),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
     enabled: profile.isSuccess,

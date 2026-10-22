@@ -644,6 +644,30 @@ export const apiSections: ApiSection[] = [
         access: "auth",
         description: "Preferências de tema que acompanham a conta entre dispositivos.",
       },
+      {
+        method: "GET",
+        path: "/me/preferences",
+        access: "auth",
+        description:
+          "Personalização da conta: assuntos que quer ver, assuntos que não gosta, módulos desativados, lembrete de madrugada e o Modo lite (menos animações e requisições para aparelho fraco).",
+        request: `curl ${P}/me/preferences \
+  -H "X-Session-Token: $TOKEN"`,
+        response: `200 OK
+{"likedTopics":["TECNOLOGIA"],"blockedTopics":[],"disabledModules":[],"nightRestReminder":true,"liteMode":false}`,
+      },
+      {
+        method: "PUT",
+        path: "/me/preferences",
+        access: "auth",
+        description:
+          "Atualização parcial: só os campos enviados mudam (null preserva o que já estava salvo). Lista vazia volta ao padrão.",
+        request: `curl -X PUT ${P}/me/preferences \
+  -H "Content-Type: application/json" \
+  -H "X-Session-Token: $TOKEN" \
+  -d '{"liteMode":true}'`,
+        response: `200 OK
+{"likedTopics":["TECNOLOGIA"],"blockedTopics":[],"disabledModules":[],"nightRestReminder":true,"liteMode":true}`,
+      },
     ],
   },
   {

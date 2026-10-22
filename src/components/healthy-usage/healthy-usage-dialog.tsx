@@ -14,6 +14,12 @@ import {
   readHealthyUsage,
   writeHealthyUsage,
 } from "@/lib/healthy-usage";
+import {
+  prefersReducedMotion,
+  readForceMotion,
+  writeForceMotion,
+  writeLiteMode,
+} from "@/lib/lite-mode";
 import { usePersonalization } from "@/lib/use-personalization";
 
 import { Button } from "@/components/ui/button";
@@ -64,6 +70,11 @@ export function HealthyUsageDialog({
   const [blocked, setBlocked] = useState<string[]>([]);
   const [disabledModules, setDisabledModules] = useState<string[]>([]);
   const [nightRestReminder, setNightRestReminder] = useState(true);
+  const [liteMode, setLiteMode] = useState(false);
+  const [forceMotion, setForceMotion] = useState(false);
+  // Só aparece para quem o sistema está pedindo menos movimento: nas outras pessoas a chave
+  // não teria efeito nenhum e só faria volume.
+  const [reducedMotionDevice, setReducedMotionDevice] = useState(false);
 
   const { data: personalization } = usePersonalization();
 
@@ -80,7 +91,14 @@ export function HealthyUsageDialog({
     setBlocked(personalization.blockedTopics);
     setDisabledModules(personalization.disabledModules);
     setNightRestReminder(personalization.nightRestReminder);
+    setLiteMode(personalization.liteMode);
   }, [open, personalization]);
+
+  useEffect(() => {
+    if (!open) return;
+    setForceMotion(readForceMotion());
+    setReducedMotionDevice(prefersReducedMotion());
+  }, [open]);
 
   // Um assunto não pode estar nos dois lados: marcar num remove do outro (o backend recusa
   // o conflito, e a tela evita chegar lá).
@@ -111,9 +129,14 @@ export function HealthyUsageDialog({
         blockedTopics: blocked,
         disabledModules,
         nightRestReminder,
+        liteMode,
       }),
     onSuccess: () => {
       writeHealthyUsage({ enabled, minutes: clampMinutes(minutes) });
+      // O atributo no <html> e o cache mais folgado entram pelo LiteModeEffects assim que a
+      // preferência volta do servidor; o espelho no aparelho só adianta o próximo paint.
+      writeLiteMode(liteMode);
+      writeForceMotion(forceMotion);
       void queryClient.invalidateQueries({ queryKey: ["personalization"] });
       toast(texts.personalization.saved, "success");
       onOpenChange(false);
@@ -189,6 +212,44 @@ export function HealthyUsageDialog({
 
             <Switch checked={nightRestReminder} onCheckedChange={setNightRestReminder} />
           </label>
+
+          <label className="flex items-start justify-between gap-3 rounded-2xl border border-border-soft bg-surface-card p-3">
+            <span className="min-w-0">
+              <span className="block text-sm font-medium text-text-strong">
+                {texts.account.healthyUsage.liteTitle}
+              </span>
+
+              <span className="mt-0.5 block text-xs text-text-subtle">
+                {texts.account.healthyUsage.liteDescription}
+              </span>
+
+              <span className="mt-1.5 block text-xs text-text-subtle">
+                {texts.account.healthyUsage.liteWhy}
+              </span>
+            </span>
+
+            <Switch checked={liteMode} onCheckedChange={setLiteMode} />
+          </label>
+
+          {reducedMotionDevice && (
+            <label className="flex items-start justify-between gap-3 rounded-2xl border border-border-soft bg-surface-card p-3">
+              <span className="min-w-0">
+                <span className="block text-sm font-medium text-text-strong">
+                  {texts.account.healthyUsage.forceMotionTitle}
+                </span>
+
+                <span className="mt-0.5 block text-xs text-text-subtle">
+                  {texts.account.healthyUsage.forceMotionDescription}
+                </span>
+              </span>
+
+              <Switch
+                checked={forceMotion && !liteMode}
+                disabled={liteMode}
+                onCheckedChange={setForceMotion}
+              />
+            </label>
+          )}
 
           <section className="space-y-2 border-t border-border-soft pt-4">
             <h3 className="text-sm font-semibold text-text-strong">

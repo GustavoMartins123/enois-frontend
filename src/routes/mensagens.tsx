@@ -20,8 +20,10 @@ import { ArrowLeft, Image as ImageIcon, Search, Send, Smile, X } from "lucide-re
 
 import { messagesApi, networkApi, profileApi } from "@/lib/api";
 import { useCurrentUser } from "@/lib/current-user";
+import { liteInterval, litePageSize } from "@/lib/lite-mode";
 import { requireAuth } from "@/lib/require-auth";
 import { insertSnippet } from "@/lib/rich-text/insert-snippet";
+import { useLiteMode } from "@/lib/use-lite-mode";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
@@ -49,8 +51,13 @@ export const Route = createFileRoute("/mensagens")({
   component: Mensagens,
 });
 
+/** Tamanhos que o app sempre usou; em modo lite cada página vem maior (menos idas ao servidor). */
+const CONVERSATIONS_PAGE_SIZE = 20;
+const MESSAGES_PAGE_SIZE = 50;
+
 function Mensagens() {
   const { conversation } = Route.useSearch();
+  const lite = useLiteMode();
   // Inscrito na query do /me: quando a resposta chega, a tela redesenha com o id certo (sem
   // isso, a busca de "outro participante" ficava com o id de quem esta olhando).
   const { data: currentUser } = useCurrentUser();
@@ -89,11 +96,11 @@ function Mensagens() {
     queryKey: ["conversations", inboxTab === "archived" ? "archived" : "inbox"],
     queryFn: ({ pageParam }) =>
       inboxTab === "archived"
-        ? messagesApi.archivedConversations(pageParam)
-        : messagesApi.listConversations(pageParam),
+        ? messagesApi.archivedConversations(pageParam, litePageSize(CONVERSATIONS_PAGE_SIZE, lite))
+        : messagesApi.listConversations(pageParam, litePageSize(CONVERSATIONS_PAGE_SIZE, lite)),
     initialPageParam: null as string | null,
     getNextPageParam: (last) => last.nextCursor ?? undefined,
-    refetchInterval: 15_000,
+    refetchInterval: liteInterval(15_000, lite),
   });
 
   // O servidor ordena por updatedAt; reforçamos no cliente pelo horário da última mensagem —
@@ -122,7 +129,12 @@ function Mensagens() {
     isPlaceholderData: showingPreviousThread,
   } = useInfiniteQuery({
     queryKey: ["messages", activeConversation?.id],
-    queryFn: ({ pageParam }) => messagesApi.listMessages(activeConversation!.id, pageParam),
+    queryFn: ({ pageParam }) =>
+      messagesApi.listMessages(
+        activeConversation!.id,
+        pageParam,
+        litePageSize(MESSAGES_PAGE_SIZE, lite),
+      ),
     initialPageParam: null as string | null,
     getNextPageParam: (last) => last.nextCursor ?? undefined,
     enabled: !!activeConversation,
@@ -130,7 +142,7 @@ function Mensagens() {
     // mensagens esvaziava e o skeleton piscava a cada clique da lista. Enquanto e o filao antigo
     // (placeholder) os botoes por mensagem estao inertes — aqueles ids nao sao da conversa aberta.
     placeholderData: keepPreviousData,
-    refetchInterval: 10_000,
+    refetchInterval: liteInterval(10_000, lite),
   });
 
   const messages = (messagesData?.pages.flatMap((page) => page.items) ?? []).sort(

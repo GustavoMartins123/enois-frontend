@@ -837,6 +837,14 @@ export const texts = {
       noise:
         "Ei, respira! Bebe uma água, olha pela janela e volta quando quiser. Eu também preciso de uma pausa. 🌿",
       reminderCta: "Vou dar uma pausa",
+      liteTitle: "Modo lite",
+      liteDescription:
+        "Aparelho antigo, bateria curta ou internet ruim? O Modo lite desliga as animações, busca tudo em blocos maiores e segura os dados por mais tempo em cache: menos requisições e menos trabalho pro seu celular. A interface é a mesma.",
+      liteWhy:
+        "A gente pensou em otimização de recursos: aparelho antigo não é aparelho de segunda classe. Em vez de pedir um celular novo, o Énóis se adapta ao que você tem.",
+      forceMotionTitle: "Manter as animações neste aparelho",
+      forceMotionDescription:
+        "Seu sistema está pedindo pra reduzir movimento e a gente respeita: as molduras animadas e os efeitos ficam parados. Ligue aqui pra ver as animações mesmo assim.",
       nightRestTitle: "Lembrete de descanso durante a madrugada",
       nightRestDescription:
         "Receba uma mensagem de cuidado ao acessar o feed entre meia-noite e cinco da manhã.",
