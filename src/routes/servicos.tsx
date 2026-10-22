@@ -1,12 +1,12 @@
 import { useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import type { ServiceContract } from "@/types/application/services/service-contract";
 import type { ServiceListing } from "@/types/application/services/service-listing";
 import type { ServiceRequest } from "@/types/application/services/service-request";
-import { Briefcase, Handshake, Send, Sparkles } from "lucide-react";
+import { Briefcase, Handshake, MessageCircle, Send, Sparkles } from "lucide-react";
 
 import { servicesApi } from "@/lib/api";
 import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 
@@ -138,13 +139,24 @@ function Price({ value, currency }: { value: number; currency: "BRL" | "FAISCA" 
 
 function OfferCard({ listing }: { listing: ServiceListing }) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const { toast } = useToast();
   const buy = useMutation({
     mutationFn: () => servicesApi.buyListing(listing.id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["services"] }),
   });
+  // O chat de servico: abre (ou reaproveita) a conversa com quem presta, com o assunto do
+  // pedido, e leva a pessoa direto para a DM.
+  const chat = useMutation({
+    mutationFn: () => servicesApi.openChat(listing.id),
+    onSuccess: (data) => {
+      void navigate({ to: "/mensagens", search: { conversation: data.conversationId } });
+    },
+    onError: (error) => toast(error.message, "error"),
+  });
 
   return (
-    <li className="surface-card p-4">
+    <li id={`oferta-${listing.id}`} className="surface-card scroll-mt-4 p-4">
       <div className="flex items-start justify-between gap-2">
         <span className="min-w-0">
           <span className="block truncate font-semibold">{listing.title}</span>
@@ -180,14 +192,27 @@ function OfferCard({ listing }: { listing: ServiceListing }) {
 
       <p className="mt-1 text-xs text-text-subtle">Entrega: {listing.deliverables}</p>
 
-      <Button
-        size="sm"
-        className="mt-3 w-full rounded-full"
-        disabled={buy.isPending}
-        onClick={() => buy.mutate()}
-      >
-        {buy.isPending ? "Retendo faíscas…" : "Contratar"}
-      </Button>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button
+          size="sm"
+          className="flex-1 rounded-full"
+          disabled={buy.isPending}
+          onClick={() => buy.mutate()}
+        >
+          {buy.isPending ? "Retendo faíscas…" : "Contratar"}
+        </Button>
+
+        <Button
+          size="sm"
+          variant="outline"
+          className="flex-1 gap-1.5 rounded-full"
+          disabled={chat.isPending}
+          onClick={() => chat.mutate()}
+        >
+          <MessageCircle className="h-3.5 w-3.5" />
+          {chat.isPending ? "Abrindo…" : "Falar com o prestador"}
+        </Button>
+      </div>
     </li>
   );
 }

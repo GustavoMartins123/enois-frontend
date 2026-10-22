@@ -10,9 +10,9 @@ import type { MediaItem } from "@/types/routes/feed/media-item";
 import type { ConversationHeaderProps } from "@/types/routes/messages/conversation-header-props";
 import type { ConversationItemProps } from "@/types/routes/messages/conversation-item-props";
 import type { SendMessageInput } from "@/types/routes/messages/send-message-input";
-import { ArrowLeft, Image as ImageIcon, Search, Send, Smile, X } from "lucide-react";
+import { ArrowLeft, Briefcase, Image as ImageIcon, Search, Send, Smile, X } from "lucide-react";
 
-import { messagesApi, networkApi, profileApi } from "@/lib/api";
+import { messagesApi, networkApi, profileApi, servicesApi } from "@/lib/api";
 import { useCurrentUser } from "@/lib/current-user";
 import { requireAuth } from "@/lib/require-auth";
 import { insertSnippet } from "@/lib/rich-text/insert-snippet";
@@ -20,6 +20,13 @@ import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { EmojiPicker } from "@/components/ui/emoji-picker";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/toast";
@@ -56,7 +63,10 @@ function Mensagens() {
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
-  const [inboxTab, setInboxTab] = useState<"all" | "jobs" | "people" | "archived">("all");
+  const [inboxTab, setInboxTab] = useState<"all" | "jobs" | "services" | "people" | "archived">(
+    "all",
+  );
+  const [servicosAbertos, setServicosAbertos] = useState(false);
   const [selecting, setSelecting] = useState(false);
   const [selectingMessages, setSelectingMessages] = useState(false);
   const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
@@ -92,17 +102,27 @@ function Mensagens() {
   const conversations = [...(conversationsData?.pages.flatMap((page) => page.items) ?? [])].sort(
     (a, b) => (b.time ? Date.parse(b.time) : 0) - (a.time ? Date.parse(a.time) : 0),
   );
-  // Separa a caixa de entrada: conversas de vaga (candidatura) x conversas com pessoas.
-  // Arquivadas não separa por tipo: é a lista de quem foi apagado "para mim", e ali a pessoa quer
-  // reencontrar o que sumiu, não filtrar.
+  // Separa a caixa de entrada: conversas de vaga (candidatura), de serviço (contratação) x
+  // conversas com pessoas. Arquivadas não separa por tipo: é a lista de quem foi apagado
+  // "para mim", e ali a pessoa quer reencontrar o que sumiu, não filtrar.
   const visibleConversations = conversations.filter((c) =>
     inboxTab === "archived" || inboxTab === "all"
       ? true
       : inboxTab === "jobs"
         ? c.kind === "JOB"
-        : c.kind !== "JOB",
+        : inboxTab === "services"
+          ? c.kind === "SERVICE"
+          : c.kind !== "JOB" && c.kind !== "SERVICE",
   );
   const activeConversation = activeId ? conversations.find((c) => c.id === activeId) : null;
+
+  // Os servicos que EU presto: e a opcao de mandar o link do servico na conversa (quem esta
+  // contratando precisa do link do que vai receber).
+  const meusServicos = useQuery({
+    queryKey: ["services", "mine"],
+    queryFn: () => servicesApi.mine(),
+    enabled: servicosAbertos,
+  });
 
   const {
     data: messagesData,
@@ -396,7 +416,7 @@ function Mensagens() {
           </div>
 
           <div className="flex gap-1 border-b border-border px-3 pb-2">
-            {(["all", "jobs", "people", "archived"] as const).map((tab) => (
+            {(["all", "jobs", "services", "people", "archived"] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
@@ -781,6 +801,17 @@ function Mensagens() {
                       placeholder={texts.messages.inputPlaceholder}
                       className="max-h-32 min-h-[40px] w-full resize-none rounded-2xl bg-muted px-4 py-2.5 text-sm outline-none"
                     />
+
+                    <button
+                      type="button"
+                      onClick={() => setServicosAbertos(true)}
+                      className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-text-subtle transition hover:bg-muted hover:text-foreground"
+                      aria-label={texts.messages.attachService}
+                      title={texts.messages.attachService}
+                    >
+                      <Briefcase className="h-4 w-4" />
+                    </button>
+
                     <EmojiPicker
                       onPick={insertEmoji}
                       buttonTitle={texts.posts.formatting.emoji}
@@ -801,6 +832,45 @@ function Mensagens() {
           )}
         </div>
       </div>
+
+      <Dialog open={servicosAbertos} onOpenChange={setServicosAbertos}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{texts.messages.attachServiceTitle}</DialogTitle>
+
+            <DialogDescription>{texts.messages.attachServiceHint}</DialogDescription>
+          </DialogHeader>
+
+          <ul className="max-h-72 space-y-1 overflow-y-auto">
+            {(meusServicos.data?.ofertas ?? []).map((servico) => (
+              <li key={servico.id}>
+                <button
+                  type="button"
+                  className="w-full rounded-lg px-3 py-2 text-left text-sm transition hover:bg-surface-2"
+                  onClick={() => {
+                    setText(
+                      (text ? `${text}\n` : "") +
+                        `${texts.messages.serviceAttachment} ${servico.title} (${servico.category}) — ` +
+                        `${window.location.origin}/servicos#oferta-${servico.id}`,
+                    );
+                    setServicosAbertos(false);
+                  }}
+                >
+                  <span className="block truncate font-medium">{servico.title}</span>
+
+                  <span className="block truncate text-xs text-text-subtle">
+                    {servico.category}
+                  </span>
+                </button>
+              </li>
+            ))}
+
+            {(meusServicos.data?.ofertas ?? []).length === 0 && (
+              <li className="px-3 py-2 text-sm text-text-subtle">{texts.messages.noServices}</li>
+            )}
+          </ul>
+        </DialogContent>
+      </Dialog>
 
       <ConfirmDialog
         open={confirmDelete}

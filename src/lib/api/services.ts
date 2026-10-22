@@ -12,6 +12,12 @@ import { api } from "../api-client";
 export const servicesApi = {
   /** Catálogo público: ofertas e pedidos abertos. */
   catalog: () => api.get<{ ofertas: ServiceListing[]; pedidos: ServiceRequest[] }>("/servicos"),
+  /** Abre (ou reaproveita) a conversa de servico com quem presta e devolve o id dela. */
+  openChat: (listingId: string, message?: string) =>
+    api.post<{ conversationId: string; assunto: string; listingId: string; sellerId: string }>(
+      `/servicos/ofertas/${listingId}/chat`,
+      { message: message ?? "" },
+    ),
 
   /** O meu painel: minhas ofertas e meus contratos (comprador e vendedor). */
   mine: () =>
