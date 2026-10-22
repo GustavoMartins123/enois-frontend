@@ -1273,6 +1273,13 @@ export const texts = {
   posts: {
     momentExpiry: (hours: number) => `some em ${hours}h`,
     momentExpiryTitle: "Momento se apaga sozinho em 24 horas",
+    /** Palco de mídia do Modo lite: o vídeo aberto em tela cheia, com o resto da página pausado. */
+    mediaStage: {
+      open: "Assistir em tela cheia",
+      title: "Vídeo",
+      mute: "Silenciar",
+      unmute: "Ativar som",
+    },
     /** Fixar UM post no topo do feed da comunidade/grupo (a administração faz isso). */
     pin: {
       pin: "Fixar no topo",
@@ -3377,16 +3384,6 @@ export const texts = {
       "Data registrada. Agora falta a autorização de um responsável para liberar a conta.",
     invalid: "Confira a data: ela não pode estar no futuro.",
     error: "Não foi possível salvar a data. Tente de novo.",
-  },
-  /** Popup de desculpas pelos últimos dias + faíscas de presente. */
-  apology: {
-    title: "Estamos trabalhando para melhorar o Énóis! 💜",
-    body: "Pedimos desculpas pelos inconvenientes dos últimos dias. Estamos trabalhando ativamente para corrigir problemas, reforçar a segurança e tornar a plataforma cada vez melhor para todo mundo. Obrigada pela paciência e por fazer parte dessa comunidade. O Énóis é feito por pessoas, para pessoas, e seguimos construindo tudo isso com muito cuidado e transparência.",
-    bonus:
-      "Você recebeu 100 faíscas para usar como quiser na loja, no marketplace e nos espaços da comunidade.",
-    together: "Seguimos juntos. 💜",
-    dontRemindToday: "Não lembrar novamente hoje",
-    close: "Vamos lá",
   },
   /** Card de espaços novos no painel lateral. */
   platformSpaces: {
