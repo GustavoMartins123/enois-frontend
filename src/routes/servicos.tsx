@@ -9,7 +9,7 @@ import type { ServiceRequest } from "@/types/application/services/service-reques
 import { Briefcase, Handshake, Send, Sparkles } from "lucide-react";
 
 import { servicesApi } from "@/lib/api";
-import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
+import { formatBrlCents, formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { useIsAuthenticated } from "@/lib/use-auth";
 
 import { Button } from "@/components/ui/button";
@@ -118,11 +118,12 @@ function Servicos() {
   );
 }
 
-function Price({ value }: { value: number }) {
+function Price({ value, currency }: { value: number; currency: string }) {
+  const label = currency === "BRL" ? formatBrlCents(value) : `${formatFaisca(value)} faíscas`;
   return (
     <span className="flex shrink-0 items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-sm font-semibold text-primary-text">
       <Sparkles className="h-3.5 w-3.5" />
-      {formatFaisca(value)}
+      {label}
     </span>
   );
 }
@@ -146,21 +147,27 @@ function OfferCard({ listing }: { listing: ServiceListing }) {
           </span>
         </span>
 
-        <Price value={listing.price} />
+        <Price value={listing.price} currency={listing.currency} />
       </div>
 
       <p className="mt-2 line-clamp-2 text-sm text-text-subtle">{listing.description}</p>
 
       <p className="mt-1 text-xs text-text-subtle">Entrega: {listing.deliverables}</p>
 
-      <Button
-        size="sm"
-        className="mt-3 w-full rounded-full"
-        disabled={buy.isPending}
-        onClick={() => buy.mutate()}
-      >
-        {buy.isPending ? "Retendo faíscas…" : "Contratar"}
-      </Button>
+      {listing.currency === "BRL" ? (
+        <p className="mt-3 rounded-xl bg-surface-2 px-3 py-2 text-center text-xs text-text-subtle">
+          Pagamento em reais combinado direto com o profissional.
+        </p>
+      ) : (
+        <Button
+          size="sm"
+          className="mt-3 w-full rounded-full"
+          disabled={buy.isPending}
+          onClick={() => buy.mutate()}
+        >
+          {buy.isPending ? "Retendo faíscas…" : "Contratar"}
+        </Button>
+      )}
     </li>
   );
 }
@@ -386,6 +393,7 @@ function NewOfferButton() {
         description: f.description.trim(),
         deliverables: f.deliverables.trim(),
         price: parseFaiscaInput(f.price) ?? 0,
+        currency: "FAISCA",
         deliveryDays: Math.round(Number(f.deliveryDays) || 0),
       }),
     onSuccess: () => {

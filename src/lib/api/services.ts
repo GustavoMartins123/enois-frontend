@@ -28,6 +28,7 @@ export const servicesApi = {
     description: string;
     deliverables: string;
     price: number;
+    currency?: "FAISCA" | "BRL";
     deliveryDays: number;
   }) => api.post<{ id: string; status: string }>("/servicos/ofertas", data),
 
