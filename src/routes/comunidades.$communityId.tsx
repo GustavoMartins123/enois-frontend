@@ -60,6 +60,7 @@ import { MentionTextarea } from "@/components/mention-textarea";
 import { PostCard } from "@/components/post-card";
 import { RichText } from "@/components/post/rich-text";
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
+import { SpoilerPreview } from "@/components/post/spoiler-preview";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/comunidades/$communityId")({
@@ -688,7 +689,13 @@ function CommunityDetail() {
                     key={index}
                     className="relative h-20 w-20 overflow-hidden rounded-xl border border-border-soft"
                   >
-                    <img src={item.preview} alt="" className="h-full w-full object-cover" />
+                    <SpoilerPreview
+                      active={mediaSpoiler}
+                      label={texts.posts.mediaSpoiler.badge}
+                      className="h-full w-full"
+                    >
+                      <img src={item.preview} alt="" className="h-full w-full object-cover" />
+                    </SpoilerPreview>
 
                     <button
                       type="button"

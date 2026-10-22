@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { EmojiPicker } from "@/components/ui/emoji-picker";
 import { useToast } from "@/components/ui/toast";
 
+import { SpoilerPreview } from "@/components/post/spoiler-preview";
 import { MessageSkeletons } from "@/components/skeletons/message-skeletons";
 
 import { ConversationHeader } from "./conversation-header";
@@ -335,11 +336,17 @@ export function ConversationThread({
             <div className="mb-2 flex flex-wrap gap-2">
               {media.map((item, index) => (
                 <div key={item.preview} className="relative">
-                  <img
-                    src={item.preview}
-                    alt=""
-                    className="h-16 w-16 rounded-lg border border-border-soft object-cover"
-                  />
+                  <SpoilerPreview
+                    active={mediaSpoiler}
+                    label={texts.posts.mediaSpoiler.badge}
+                    className="h-16 w-16 rounded-lg"
+                  >
+                    <img
+                      src={item.preview}
+                      alt=""
+                      className="h-16 w-16 rounded-lg border border-border-soft object-cover"
+                    />
+                  </SpoilerPreview>
 
                   <button
                     type="button"

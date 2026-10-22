@@ -1299,6 +1299,7 @@ export const texts = {
 
   posts: {
     mediaSpoiler: {
+      badge: "SPOILER",
       reveal: "Mostrar mídia",
     },
     momentExpiry: (hours: number) => `some em ${hours}h`,

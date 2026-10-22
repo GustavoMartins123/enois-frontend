@@ -17,6 +17,7 @@ import { useMediaUpload } from "@/lib/use-media-upload";
 import { Button } from "@/components/ui/button";
 
 import { MentionTextarea } from "@/components/mention-textarea";
+import { SpoilerPreview } from "@/components/post/spoiler-preview";
 import { CommentSkeletons } from "@/components/skeletons/comment-skeletons";
 
 import { CommentItem } from "./comment-item";
@@ -382,11 +383,17 @@ export function PostComments({ postId }: PostIdProps) {
                       className="h-16 w-56 rounded-lg border border-border-soft"
                     />
                   ) : (
-                    <img
-                      src={item.preview}
-                      alt=""
-                      className="h-16 w-16 rounded-lg border border-border-soft object-cover"
-                    />
+                    <SpoilerPreview
+                      active={mediaSpoiler}
+                      label={texts.posts.mediaSpoiler.badge}
+                      className="h-16 w-16 rounded-lg"
+                    >
+                      <img
+                        src={item.preview}
+                        alt=""
+                        className="h-16 w-16 rounded-lg border border-border-soft object-cover"
+                      />
+                    </SpoilerPreview>
                   )}
 
                   <button

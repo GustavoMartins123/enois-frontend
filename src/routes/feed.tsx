@@ -66,6 +66,7 @@ import { MentionTextarea } from "@/components/mention-textarea";
 import { NightRestReminder } from "@/components/night-rest-reminder";
 import { PlatformSpacesCard } from "@/components/platform-spaces-card";
 import { PostCard } from "@/components/post-card";
+import { SpoilerPreview } from "@/components/post/spoiler-preview";
 import { PostCardSkeletons } from "@/components/skeletons/post-card-skeletons";
 import { UserAvatar } from "@/components/user-avatar";
 
@@ -612,11 +613,16 @@ function Home() {
                         key={i}
                         className="relative overflow-hidden rounded-xl border border-border-soft"
                       >
-                        <img
-                          src={item.preview}
-                          alt=""
-                          className="h-48 w-full object-cover bg-surface-1"
-                        />
+                        <SpoilerPreview
+                          active={mediaSpoiler}
+                          label={texts.posts.mediaSpoiler.badge}
+                        >
+                          <img
+                            src={item.preview}
+                            alt=""
+                            className="h-48 w-full object-cover bg-surface-1"
+                          />
+                        </SpoilerPreview>
 
                         <button
                           type="button"
@@ -630,11 +636,13 @@ function Home() {
                   </div>
                 ) : (
                   <div className="relative overflow-hidden rounded-xl border border-border-soft">
-                    <video
-                      src={media[0].preview}
-                      controls
-                      className="max-h-64 w-full bg-surface-1"
-                    />
+                    <SpoilerPreview active={mediaSpoiler} label={texts.posts.mediaSpoiler.badge}>
+                      <video
+                        src={media[0].preview}
+                        controls
+                        className="max-h-64 w-full bg-surface-1"
+                      />
+                    </SpoilerPreview>
 
                     <button
                       type="button"
