@@ -261,6 +261,16 @@ function Profile() {
     },
   });
 
+  // Desconectar/cancelar sem precisar BLOQUEAR: bloquear é definitivo e esconde a pessoa de
+  // todo o app; para só desfazer a conexão este endpoint deixa o caminho aberto para reconectar.
+  const disconnect = useMutation({
+    mutationFn: () => networkApi.remove(user.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["connection-status", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["network"] });
+    },
+  });
+
   // Abrir conversa: reaproveita a conversa direta existente (o backend nao duplica) e ja entra
   // nela. Antes o botao so levava para a lista de mensagens, deixando a pessoa procurar o contato.
   const openConversation = useMutation({
@@ -495,25 +505,34 @@ function Profile() {
                       <>{texts.profile.message}</>
                     </Button>
 
-                    <Button
-                      size="sm"
-                      className="rounded-full gap-1.5"
-                      onClick={() => {
-                        if (!requireAuth()) return;
-                        connect.mutate();
-                      }}
-                      disabled={
-                        connect.isPending ||
-                        connectionStatus === "ACCEPTED" ||
-                        connectionStatus === "PENDING"
-                      }
-                    >
-                      {connectionStatus === "PENDING"
-                        ? texts.profile.waitingResponse
-                        : connectionStatus === "ACCEPTED"
-                          ? texts.profile.connected
-                          : texts.profile.connect}
-                    </Button>
+                    {connectionStatus === "ACCEPTED" || connectionStatus === "PENDING" ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full gap-1.5"
+                        disabled={disconnect.isPending}
+                        onClick={() => {
+                          if (!requireAuth()) return;
+                          disconnect.mutate();
+                        }}
+                      >
+                        {connectionStatus === "PENDING"
+                          ? texts.profile.cancelRequest
+                          : texts.profile.removeConnection}
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        className="rounded-full gap-1.5"
+                        onClick={() => {
+                          if (!requireAuth()) return;
+                          connect.mutate();
+                        }}
+                        disabled={connect.isPending}
+                      >
+                        {texts.profile.connect}
+                      </Button>
+                    )}
 
                     <BlockUserDialog
                       userId={user.id}

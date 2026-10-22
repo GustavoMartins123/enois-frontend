@@ -29,6 +29,7 @@ import {
   Film,
   Image,
   Loader2,
+  RefreshCw,
   TrendingUp,
   UserPlus,
   X,
@@ -171,7 +172,8 @@ function useProfile() {
 function useSuggestions() {
   return useQuery({
     queryKey: ["network", "suggestions"],
-    queryFn: () => networkApi.suggestions(4),
+    // Busca um lote maior: o "ver outras" gira entre os 4 primeiros sem pedir de novo.
+    queryFn: () => networkApi.suggestions(12),
   });
 }
 
@@ -467,6 +469,16 @@ function Home() {
   }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
   const profileUser = profile;
   const suggestionList = suggestions ?? [];
+  const [suggestionPage, setSuggestionPage] = useState(0);
+  // Gira o lote de 4 a cada clique em "ver outras": não é um novo pedido nem muda a ordem
+  // de afinidade do backend, só revela os próximos nomes do mesmo lote.
+  const visibleSuggestions =
+    suggestionList.length <= 4
+      ? suggestionList
+      : Array.from({ length: 4 }, (_, i) => {
+          const start = (suggestionPage * 4) % suggestionList.length;
+          return suggestionList[(start + i) % suggestionList.length];
+        });
   const eventList = eventsData?.items ?? [];
 
   return (
@@ -1008,6 +1020,18 @@ function Home() {
                 <h3 className="text-sm font-normal text-text-strong">
                   {texts.feed.sidebar.suggestions}
                 </h3>
+
+                {suggestionList.length > 4 && (
+                  <button
+                    type="button"
+                    aria-label={texts.feed.sidebar.refreshSuggestions}
+                    title={texts.feed.sidebar.refreshSuggestions}
+                    className="ml-auto rounded-full p-1.5 text-text-subtle transition hover:bg-surface-2 hover:text-primary"
+                    onClick={() => setSuggestionPage((page) => page + 1)}
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" />
+                  </button>
+                )}
               </div>
 
               <p className="mt-0.5 text-xs font-normal text-text-subtle">
@@ -1015,7 +1039,7 @@ function Home() {
               </p>
 
               <ul className="mt-4 space-y-3">
-                {suggestionList.map((u) => (
+                {visibleSuggestions.map((u) => (
                   <li key={u.id} className="flex items-center gap-3">
                     <UserAvatar
                       src={u.avatar}

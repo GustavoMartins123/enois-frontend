@@ -101,9 +101,7 @@ export function NotificationsPopover() {
   });
   const profilesLoading = rawIncoming.length > 0 && profileQueries.some((q) => q.isLoading);
   const profilesByUserId = new Map(
-    profileQueries
-      .filter((q) => q.data)
-      .map((q) => [q.data!.id, q.data!]),
+    profileQueries.filter((q) => q.data).map((q) => [q.data!.id, q.data!]),
   );
 
   // Filtra removidos/banidos/inexistentes ANTES de contar — badge e lista ja nascem corretos.
@@ -237,10 +235,12 @@ export function NotificationsPopover() {
                     onAccept={(id) => acceptConnection.mutate(id)}
                     onReject={(id) => rejectConnection.mutate(id)}
                     accepting={
-                      acceptConnection.isPending && acceptConnection.variables === request.fromUserId
+                      acceptConnection.isPending &&
+                      acceptConnection.variables === request.fromUserId
                     }
                     rejecting={
-                      rejectConnection.isPending && rejectConnection.variables === request.fromUserId
+                      rejectConnection.isPending &&
+                      rejectConnection.variables === request.fromUserId
                     }
                     onNavigate={() => setOpen(false)}
                   />
