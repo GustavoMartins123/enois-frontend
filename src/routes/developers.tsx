@@ -13,6 +13,8 @@ import type { ApiEndpoint } from "@/types/application/developers/api-endpoint";
 import type { HttpMethod } from "@/types/application/developers/http-method";
 import { Check, Copy } from "lucide-react";
 
+import { ogMetas } from "@/lib/seo";
+
 import { AppContainer } from "@/components/app-container";
 
 export const Route = createFileRoute("/developers")({
@@ -22,6 +24,7 @@ export const Route = createFileRoute("/developers")({
     meta: [
       { title: texts.developers.seoTitle },
       { name: "description", content: texts.developers.seoDescription },
+      ...ogMetas(texts.developers.seoTitle, texts.developers.seoDescription),
     ],
   }),
   component: Developers,
