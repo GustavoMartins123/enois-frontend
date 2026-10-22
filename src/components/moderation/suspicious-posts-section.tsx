@@ -13,8 +13,9 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/loading-state";
 import { useToast } from "@/components/ui/toast";
+
+import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
 
 function signalsOf(raw: string): string[] {
   try {
@@ -71,8 +72,8 @@ export function SuspiciousPostsSection() {
     });
   };
 
-  if (query.isLoading) return <LoadingState />;
-  if (query.isError) return null; // 403 = não é admin
+  if (query.isLoading) return <ListRowSkeletons />;
+  if (query.isError) return null; // 403 = não é do time de moderação
 
   return (
     <section className="space-y-3" aria-label={texts.moderator.suspiciousPosts.title}>

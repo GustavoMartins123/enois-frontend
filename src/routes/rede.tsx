@@ -10,7 +10,9 @@ import { Check, Send, UserMinus, UserPlus, X } from "lucide-react";
 
 import { networkApi, profileApi } from "@/lib/api";
 import { useCurrentUser } from "@/lib/current-user";
+import { liteInterval } from "@/lib/lite-mode";
 import { requireAuth } from "@/lib/require-auth";
+import { useLiteMode } from "@/lib/use-lite-mode";
 
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
@@ -31,6 +33,7 @@ function Rede() {
   const { data: currentUser } = useCurrentUser();
   const currentUserId = currentUser?.id ?? null;
   const [localStatus, setLocalStatus] = useState<Record<string, string>>({});
+  const lite = useLiteMode();
 
   const { data: usersData } = useQuery({
     queryKey: ["network", "users"],
@@ -43,7 +46,7 @@ function Rede() {
   const { data: requestsData } = useQuery({
     queryKey: ["network", "requests"],
     queryFn: () => networkApi.requests(),
-    refetchInterval: 30_000,
+    refetchInterval: liteInterval(30_000, lite),
   });
 
   const users = usersData?.items ?? [];

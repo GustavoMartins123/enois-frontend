@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { PostActionsProps } from "@/types/components/post/post-actions-props";
-import { Bookmark, Flag, Heart, MessageSquare, Share2, Smile } from "lucide-react";
+import { Bookmark, Flag, Heart, MessageSquare, Repeat2, Share2 } from "lucide-react";
 
 import { REACTION_EMOJIS, feedApi, reactionsApi } from "@/lib/api";
 import { usePostReaction } from "@/lib/reactions/use-post-reaction";
@@ -16,6 +16,7 @@ import { useToast } from "@/components/ui/toast";
 import { ReactionPicker } from "./reaction-picker";
 import { ReactionsDialog } from "./reactions-dialog";
 import { ReportDialog } from "./report-dialog";
+import { RepostDialog } from "./repost-dialog";
 import { SealsDialog } from "./seals-dialog";
 
 /**
@@ -40,6 +41,12 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
 
   const postCounters = card?.postCounters ?? post.counters;
   const reactionStatus = card?.reactionStatus ?? post.currentUserReaction ?? null;
+  // O reactionSummary (contagem real por tipo) é a verdade; postCounters.reactions pode estar
+  // dessincronizado (bug no decrement ou credibilidade que desconta). Soma do summary quando existe.
+  const summaryTotal = post.reactionSummary
+    ? Object.values(post.reactionSummary).reduce((a, b) => a + b, 0)
+    : null;
+  const reactionCount = summaryTotal ?? postCounters.reactions;
   const showReport = card?.showReport ?? false;
   const { toggle: toggleReaction } = usePostReaction(post.id);
   // Enquanto há reação em andamento, o estado otimista manda — a prop do feed não sobrescreve.
@@ -86,6 +93,13 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
     }
   };
 
+  // Republicar copia o post para o feed da pessoa, creditando o autor original. Conteúdo de
+  // comunidade/canal e os tipos que não viajam (página, artigo, blog, business, moment) ficam de fora.
+  const canRepost =
+    !post.community && !["PAGE", "ARTICLE", "BLOG", "BUSINESS", "MOMENT"].includes(post.type);
+  // O clique abre o diálogo, que oferece republicar direto ou com uma opinião (até 600).
+  const [repostOpen, setRepostOpen] = useState(false);
+
   const handleShare = async () => {
     if (!requireAuth()) return;
     const url = shareUrl ?? `${window.location.origin}/post/${post.id}`;
@@ -112,7 +126,8 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
   return (
     <>
       <footer className="mt-4 flex flex-wrap items-center justify-between gap-1 border-t border-border pt-3 text-sm text-muted-foreground">
-        <div className="flex flex-wrap">
+        <div className="flex items-center">
+          {/* Coração primeiro — reação principal, estilo LinkedIn. */}
           <ReactionPicker
             activeType={reactionStatus}
             onReact={toggleReaction}
@@ -132,26 +147,18 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
             )}
           </ReactionPicker>
 
-          {/* Contador "ver quem reagiu": sem fundo/borda de propósito — é um link de texto, não
-              pílula. O número é sempre visível; a palavra some em telas estreitas. */}
-          <button
-            type="button"
-            onClick={() => setShowReactions(post.id, true)}
-            title={texts.posts.reactions.seeWho(postCounters.reactions)}
-            aria-label={texts.posts.reactions.seeWho(postCounters.reactions)}
-            aria-haspopup="dialog"
-            className="flex h-9 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 text-muted-foreground transition hover:bg-muted hover:text-foreground hover:underline decoration-dotted underline-offset-4"
-          >
-            <Smile className="h-[18px] w-[18px]" strokeWidth={1.75} aria-hidden />
-
-            <span className="text-xs font-medium leading-none tabular-nums">
-              {postCounters.reactions}
-            </span>
-
-            <span className="hidden text-xs sm:inline">
-              {texts.posts.reactions.noun(postCounters.reactions)}
-            </span>
-          </button>
+          {reactionCount > 0 && (
+            <button
+              type="button"
+              onClick={() => setShowReactions(post.id, true)}
+              title={texts.posts.reactions.seeWho(reactionCount)}
+              aria-label={texts.posts.reactions.seeWho(reactionCount)}
+              aria-haspopup="dialog"
+              className="flex h-9 items-center rounded-lg px-1.5 text-xs tabular-nums text-muted-foreground transition hover:bg-muted hover:text-foreground hover:underline decoration-dotted underline-offset-4"
+            >
+              {reactionCount}
+            </button>
+          )}
 
           <button
             onClick={onComments}
@@ -161,16 +168,28 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
           >
             <MessageSquare className="h-4 w-4" />
 
-            <>{postCounters.comments}</>
+            <span className="text-xs tabular-nums">{postCounters.comments}</span>
           </button>
 
-          {/* Só o ícone: com o rótulo, esta era a única ação que empurrava a fileira para uma
-              segunda linha. O nome continua no title/aria-label, para quem usa leitor de tela. */}
+          {canRepost && (
+            <button
+              onClick={() => {
+                if (!requireAuth()) return;
+                setRepostOpen(true);
+              }}
+              title={texts.posts.repost}
+              aria-label={texts.posts.repost}
+              className="flex items-center rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground"
+            >
+              <Repeat2 className="h-4 w-4" />
+            </button>
+          )}
+
           <button
             onClick={handleShare}
             title={texts.posts.share}
             aria-label={texts.posts.share}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
+            className="flex items-center rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground"
           >
             <Share2 className="h-4 w-4" />
           </button>
@@ -181,7 +200,7 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
             onClick={() => setShowReport(post.id, true)}
             title={texts.posts.report.title}
             aria-label={texts.posts.report.title}
-            className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground text-muted-foreground"
+            className="flex items-center rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground"
           >
             <Flag className="h-4 w-4" />
           </button>
@@ -197,10 +216,11 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
         >
           <Bookmark className="h-4 w-4" />
 
-          <>{postCounters.saves}</>
+          <span className="text-xs tabular-nums">{postCounters.saves}</span>
         </button>
       </footer>
 
+      <RepostDialog postId={post.id} open={repostOpen} onOpenChange={setRepostOpen} />
       <ReactionsDialog postId={post.id} />
       <SealsDialog postId={post.id} />
       <ReportDialog

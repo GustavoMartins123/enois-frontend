@@ -5,4 +5,6 @@ export type UserAvatarProps = {
   className?: string;
   fallback?: string;
   fallbackClassName?: string;
+  /** Em campos compactos, mantém a moldura com efeito dentro do círculo do avatar. */
+  frameOverflow?: "visible" | "hidden";
 };

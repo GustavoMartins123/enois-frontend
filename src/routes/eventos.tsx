@@ -4,12 +4,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import type { PageResponse } from "@/types/application/api/page-response";
 import type { CreateEventRequest } from "@/types/application/event/create-event-request";
+import type { Event } from "@/types/application/event/event";
 import type { CreateEventFormProps } from "@/types/routes/events/create-event-form-props";
 import type { FieldProps } from "@/types/routes/events/field-props";
-import { Calendar, ImagePlus, MapPin, Plus, Users, Video, X } from "lucide-react";
+import { Calendar, Check, ImagePlus, MapPin, Plus, Users, Video, X } from "lucide-react";
 
 import { eventsApi } from "@/lib/api";
+import { ApiError } from "@/lib/api-client";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { requireAuth } from "@/lib/require-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
@@ -26,8 +29,25 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PageHeader } from "@/components/ui/page-header";
+import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
+
+function patchEventAttendance(
+  page: PageResponse<Event> | undefined,
+  eventId: string,
+  attending: boolean,
+): PageResponse<Event> | undefined {
+  if (!page) return page;
+  return {
+    ...page,
+    items: page.items.map((event) => {
+      if (event.id !== eventId || event.attending === attending) return event;
+      const attendees = Math.max(0, (event.attendees ?? 0) + (attending ? 1 : -1));
+      return { ...event, attending, attendees };
+    }),
+  };
+}
 
 export const Route = createFileRoute("/eventos")({
   validateSearch: (search: Record<string, unknown>): { evento?: string } => ({
@@ -40,6 +60,7 @@ export const Route = createFileRoute("/eventos")({
 
 function Eventos() {
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const { evento: eventoDestacado } = Route.useSearch();
   const cardRef = useRef<HTMLDivElement | null>(null);
@@ -51,6 +72,12 @@ function Eventos() {
   });
 
   const events = eventsData?.items ?? [];
+
+  const setAttendance = (eventId: string, attending: boolean) => {
+    queryClient.setQueryData<PageResponse<Event>>(["events"], (prev) =>
+      patchEventAttendance(prev, eventId, attending),
+    );
+  };
 
   // Deep link (?evento=id): rola até o card e o destaca por alguns segundos.
   //
@@ -72,8 +99,47 @@ function Eventos() {
 
   const attend = useMutation({
     mutationFn: (eventId: string) => eventsApi.attend(eventId),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["events"] }),
+    onMutate: async (eventId) => {
+      await queryClient.cancelQueries({ queryKey: ["events"] });
+      const previous = queryClient.getQueryData<PageResponse<Event>>(["events"]);
+      setAttendance(eventId, true);
+      return { previous };
+    },
+    onError: (error, eventId, context) => {
+      if (error instanceof ApiError && error.code === "ALREADY_ATTENDING") {
+        setAttendance(eventId, true);
+        toast(texts.events.attendSuccess);
+        return;
+      }
+      if (context?.previous) queryClient.setQueryData(["events"], context.previous);
+      toast(texts.events.attendError, "error");
+    },
+    onSuccess: () => toast(texts.events.attendSuccess),
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: ["events"] }),
   });
+
+  const cancelAttendance = useMutation({
+    mutationFn: (eventId: string) => eventsApi.cancelAttendance(eventId),
+    onMutate: async (eventId) => {
+      await queryClient.cancelQueries({ queryKey: ["events"] });
+      const previous = queryClient.getQueryData<PageResponse<Event>>(["events"]);
+      setAttendance(eventId, false);
+      return { previous };
+    },
+    onError: (error, eventId, context) => {
+      if (error instanceof ApiError && error.code === "NOT_ATTENDING") {
+        setAttendance(eventId, false);
+        toast(texts.events.cancelAttendanceSuccess);
+        return;
+      }
+      if (context?.previous) queryClient.setQueryData(["events"], context.previous);
+      toast(texts.events.cancelAttendanceError, "error");
+    },
+    onSuccess: () => toast(texts.events.cancelAttendanceSuccess),
+    onSettled: () => void queryClient.invalidateQueries({ queryKey: ["events"] }),
+  });
+
+  const attendancePending = attend.isPending || cancelAttendance.isPending;
 
   const createEvent = useMutation({
     mutationFn: (data: CreateEventRequest) => eventsApi.create(data),
@@ -121,13 +187,18 @@ function Eventos() {
             const formatLabel = texts.events.formats[e.format] ?? e.format;
             const Icon = e.format === "ONLINE" ? Video : MapPin;
             const [, month, day] = (e.date ?? "").split("-");
+            const isAttending = e.attending === true;
             return (
               <article
                 key={e.id}
                 id={`evento-${e.id}`}
                 ref={e.id === eventoDestacado ? cardRef : undefined}
                 className={`surface-card overflow-hidden transition ${
-                  e.id === eventoDestacado && recemChegado ? "ring-2 ring-primary" : ""
+                  e.id === eventoDestacado && recemChegado
+                    ? "ring-2 ring-primary"
+                    : isAttending
+                      ? "ring-2 ring-primary/45"
+                      : ""
                 }`}
               >
                 <div className="relative">
@@ -152,6 +223,17 @@ function Eventos() {
 
                       <>{formatLabel}</>
                     </Badge>
+
+                    {isAttending && !e.expired ? (
+                      <Badge
+                        variant="outline"
+                        className="rounded-full border-primary/30 bg-primary/10 font-normal text-primary"
+                      >
+                        <Check className="mr-1 h-3 w-3" />
+
+                        <>{texts.events.youAreGoing}</>
+                      </Badge>
+                    ) : null}
 
                     {e.expired && (
                       <Badge
@@ -211,13 +293,18 @@ function Eventos() {
                   ) : (
                     <Button
                       className="mt-4 w-full rounded-full"
-                      disabled={attend.isPending}
+                      variant={isAttending ? "outline" : "default"}
+                      disabled={attendancePending}
                       onClick={() => {
                         requireAuth();
-                        attend.mutate(e.id);
+                        if (isAttending) {
+                          cancelAttendance.mutate(e.id);
+                        } else {
+                          attend.mutate(e.id);
+                        }
                       }}
                     >
-                      {texts.events.attend}
+                      <>{isAttending ? texts.events.cancelAttend : texts.events.attend}</>
                     </Button>
                   )}
                 </div>

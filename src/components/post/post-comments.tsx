@@ -5,17 +5,20 @@ import { texts } from "@/texts";
 import type { CommentView } from "@/types/application/comment/comment-view";
 import type { PostIdProps } from "@/types/components/post/post-id-props";
 import type { MediaItem } from "@/types/routes/feed/media-item";
-import { Image, Loader2, Mic, Send, Square, X } from "lucide-react";
+import { EyeOff, Image, Loader2, Mic, Send, Square, X } from "lucide-react";
 
 import { commentsApi } from "@/lib/api";
 import { getCurrentUser } from "@/lib/current-user";
+import { litePageSize } from "@/lib/lite-mode";
 import { useAuth } from "@/lib/use-auth";
+import { useLiteMode } from "@/lib/use-lite-mode";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
 import { Button } from "@/components/ui/button";
 
 import { MentionTextarea } from "@/components/mention-textarea";
-import { UserAvatar } from "@/components/user-avatar";
+import { SpoilerPreview } from "@/components/post/spoiler-preview";
+import { CommentSkeletons } from "@/components/skeletons/comment-skeletons";
 
 import { CommentItem } from "./comment-item";
 import { GifPickerDialog } from "./gif-picker-dialog";
@@ -30,7 +33,10 @@ const PAGE_SIZE = 20;
  * mais recentes primeiro, "ver comentarios anteriores" carrega a proxima pagina e acrescenta no
  * fim; respostas cujo comentario pai ainda nao foi carregado aparecem como raiz para nao sumirem.
  */
-export function PostComments({ postId }: PostIdProps) {
+export function PostComments({ postId, postAuthorId }: { postId: string; postAuthorId: string }) {
+  // Em modo lite a primeira página (e cada "carregar mais") já vem maior.
+  const lite = useLiteMode();
+  const pageSize = litePageSize(PAGE_SIZE, lite);
   const currentUser = getCurrentUser();
   const { requireAuth } = useAuth();
   const comments = usePostCardStore((state) => state.cards[postId]?.localComments ?? []);
@@ -51,6 +57,7 @@ export function PostComments({ postId }: PostIdProps) {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [media, setMedia] = useState<MediaItem[]>([]);
+  const [mediaSpoiler, setMediaSpoiler] = useState(false);
   const [gifOpen, setGifOpen] = useState(false);
   const [recording, setRecording] = useState(false);
   const [recordedSeconds, setRecordedSeconds] = useState(0);
@@ -154,14 +161,18 @@ export function PostComments({ postId }: PostIdProps) {
   // O servidor entrega do mais novo para o mais antigo (cursor), mas a leitura de uma thread
   // fica confusa assim. Ordenamos por data crescente no cliente e, ao carregar páginas
   // anteriores, mesclamos mantendo o mais antigo no topo.
+  // Fixado sempre primeiro; o resto em ordem crescente (a thread se lê de cima para baixo).
   const oldestFirst = (items: CommentView[]) =>
-    [...items].sort((a, b) => a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id));
+    [...items].sort((a, b) => {
+      if (Boolean(a.pinned) !== Boolean(b.pinned)) return a.pinned ? -1 : 1;
+      return a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id);
+    });
 
   const loadFirstPage = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const page = await commentsApi.list(postId, null, PAGE_SIZE);
+      const page = await commentsApi.list(postId, null, pageSize);
       setComments(postId, oldestFirst(page.items));
       setCursor(page.nextCursor);
       setHasMore(Boolean(page.nextCursor));
@@ -170,7 +181,7 @@ export function PostComments({ postId }: PostIdProps) {
     } finally {
       setLoading(false);
     }
-  }, [postId, setComments]);
+  }, [postId, setComments, pageSize]);
 
   useEffect(() => {
     void loadFirstPage();
@@ -180,7 +191,7 @@ export function PostComments({ postId }: PostIdProps) {
     if (!cursor || loadingMore) return;
     setLoadingMore(true);
     try {
-      const page = await commentsApi.list(postId, cursor, PAGE_SIZE);
+      const page = await commentsApi.list(postId, cursor, pageSize);
       setComments(postId, oldestFirst([...comments, ...page.items]));
       setCursor(page.nextCursor);
       setHasMore(Boolean(page.nextCursor));
@@ -222,6 +233,7 @@ export function PostComments({ postId }: PostIdProps) {
         mentions,
         mediaIds,
         String(formData.get("website") ?? ""),
+        mediaSpoiler,
       );
       addComment(postId, created);
       updateCommentCount(postId, 1);
@@ -230,6 +242,7 @@ export function PostComments({ postId }: PostIdProps) {
       setReplyToId(postId, null);
       media.forEach((m) => URL.revokeObjectURL(m.preview));
       setMedia([]);
+      setMediaSpoiler(false);
       // O comentario novo entra no topo; rola a lista para o usuario ver.
       listRef.current?.scrollTo({ top: 0, behavior: "smooth" });
     } catch {
@@ -268,13 +281,7 @@ export function PostComments({ postId }: PostIdProps) {
         // último post da viewport travava o scroll até fechar os comentários).
         className="max-h-[55vh] min-h-0 space-y-3 overflow-y-auto pr-1"
       >
-        {loading && (
-          <p className="inline-flex items-center gap-2 py-4 text-sm font-normal text-text-subtle">
-            <Loader2 className="h-4 w-4 animate-spin" />
-
-            <>{texts.posts.comments.loading}</>
-          </p>
-        )}
+        {loading && <CommentSkeletons />}
 
         {!loading && error && (
           <div className="py-4 text-center">
@@ -305,7 +312,11 @@ export function PostComments({ postId }: PostIdProps) {
             );
             return (
               <div key={comment.id}>
-                <CommentItem comment={comment} />
+                <CommentItem
+                  comment={comment}
+                  postAuthorId={postAuthorId}
+                  onPinChanged={() => void loadFirstPage()}
+                />
 
                 {replies.length > 0 && (
                   <div className="ml-6 mt-2 space-y-2 border-l-2 border-border-soft pl-3 sm:ml-10 sm:pl-4">
@@ -314,6 +325,8 @@ export function PostComments({ postId }: PostIdProps) {
                         key={reply.id}
                         comment={reply}
                         replyingTo={byId.get(reply.parentCommentId ?? "")?.authorName}
+                        postAuthorId={postAuthorId}
+                        onPinChanged={() => void loadFirstPage()}
                       />
                     ))}
                   </div>
@@ -321,6 +334,8 @@ export function PostComments({ postId }: PostIdProps) {
               </div>
             );
           })}
+
+        {loadingMore && <CommentSkeletons count={1} />}
 
         {!loading && !error && hasMore && (
           <div className="pt-1 text-center">
@@ -337,7 +352,7 @@ export function PostComments({ postId }: PostIdProps) {
         )}
       </div>
 
-      <form onSubmit={submit} className="mt-4 flex items-start gap-2 sm:gap-2.5">
+      <form onSubmit={submit} className="mt-4">
         <input
           type="text"
           name="website"
@@ -346,14 +361,8 @@ export function PostComments({ postId }: PostIdProps) {
           aria-hidden="true"
           className="hidden"
         />
-        <UserAvatar
-          frame={currentUser?.avatarFrame}
-          src={currentUser?.avatar}
-          alt={currentUser?.name}
-          className="h-8 w-8 shrink-0"
-        />
 
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0">
           {replyToId && (
             <div className="mb-1 flex items-center gap-2 pl-4 text-xs font-normal text-primary">
               <span className="truncate">
@@ -384,18 +393,28 @@ export function PostComments({ postId }: PostIdProps) {
                       className="h-16 w-56 rounded-lg border border-border-soft"
                     />
                   ) : (
-                    <img
-                      src={item.preview}
-                      alt=""
-                      className="h-16 w-16 rounded-lg border border-border-soft object-cover"
-                    />
+                    <SpoilerPreview
+                      active={mediaSpoiler}
+                      label={texts.posts.mediaSpoiler.badge}
+                      className="h-16 w-16 rounded-lg"
+                    >
+                      <img
+                        src={item.preview}
+                        alt=""
+                        className="h-16 w-16 rounded-lg border border-border-soft object-cover"
+                      />
+                    </SpoilerPreview>
                   )}
 
                   <button
                     type="button"
                     onClick={() => {
                       URL.revokeObjectURL(item.preview);
-                      setMedia((current) => current.filter((_, index) => index !== i));
+                      setMedia((current) => {
+                        const next = current.filter((_, index) => index !== i);
+                        if (next.length === 0) setMediaSpoiler(false);
+                        return next;
+                      });
                     }}
                     className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-foreground text-background shadow"
                     aria-label={texts.posts.comments.removeMedia}
@@ -414,6 +433,30 @@ export function PostComments({ postId }: PostIdProps) {
                   </button>
                 </div>
               ))}
+              <button
+                type="button"
+                onClick={() => setMediaSpoiler((active) => !active)}
+                className={`inline-flex h-8 items-center gap-1 rounded-full px-2 text-xs transition ${
+                  mediaSpoiler
+                    ? "bg-primary text-primary-foreground"
+                    : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
+                }`}
+                aria-label={
+                  mediaSpoiler
+                    ? texts.posts.comments.mediaSpoilerActive
+                    : texts.posts.comments.mediaSpoiler
+                }
+                title={
+                  mediaSpoiler
+                    ? texts.posts.comments.mediaSpoilerActive
+                    : texts.posts.comments.mediaSpoiler
+                }
+              >
+                <EyeOff className="h-3.5 w-3.5" />
+                {mediaSpoiler
+                  ? texts.posts.comments.mediaSpoilerActive
+                  : texts.posts.comments.mediaSpoiler}
+              </button>
             </div>
           )}
 

@@ -9,8 +9,8 @@ export type ServiceListing = {
   description: string;
   deliverables: string;
   price: number;
-  /** "BRL" (centavos) ou "FAISCA" (milesimos de faisca). */
-  currency: "BRL" | "FAISCA";
+  /** FAISCA (escrow, milesimos de faisca) ou BRL (pagamento direto, centavos). */
+  currency: "BRL" | "FAISCA" | string;
   deliveryDays: number;
   status: "ACTIVE" | "REMOVED";
   createdAt: string;

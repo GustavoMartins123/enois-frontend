@@ -15,6 +15,10 @@ export const preferencesApi = {
   /** Personalização da experiência (assuntos preferidos/bloqueados e módulos desativados). */
   getPersonalization: () => api.get<Personalization>("/me/preferences"),
 
+  /** Marca o lembrete da madrugada como visto nesta data local (AAAA-MM-DD). */
+  dismissNightRest: (night: string) =>
+    api.post<Personalization>("/me/preferences/night-rest/dismissed", { night }),
+
   setPersonalization: (data: Partial<Personalization>) =>
     api.put<Personalization>("/me/preferences", data),
 

@@ -17,10 +17,15 @@ export type CommentView = {
   content: string;
   /** Imagens/videos do comentario (upload); GIFs colados por URL continuam no texto. */
   mediaIds?: string[];
+  mediaSpoiler?: boolean;
   createdAt: string;
   /** Quando o autor editou (nulo se nunca editado) — vira o "editado" na tela. */
   editedAt?: string | null;
   status: "ACTIVE" | "DELETED";
   /** Reação do próprio leitor — é o que mantém o like ao recarregar a página. */
   currentUserReaction?: ReactionType | null;
+  /** Total de reações no comentário. */
+  reactionCount?: number;
+  /** Fixado no topo da lista do post (um por post). */
+  pinned?: boolean;
 };

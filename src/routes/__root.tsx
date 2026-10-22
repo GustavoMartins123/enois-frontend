@@ -25,10 +25,10 @@ import { buttonVariants } from "@/components/ui/button-variants";
 import { ToastProvider } from "@/components/ui/toast";
 
 import { AgeGate } from "@/components/age-gate";
-import { ApologyPopup } from "@/components/apology-popup";
 import { AppContainer } from "@/components/app-container";
 import { HealthyUsageGuard } from "@/components/healthy-usage/healthy-usage-guard";
 import { InstallPwaBanner } from "@/components/install-pwa-banner";
+import { LiteModeEffects } from "@/components/lite-mode-effects";
 import { ModuleDisabledGate } from "@/components/module-disabled-gate";
 
 import appCss from "../styles.css?url";
@@ -140,7 +140,7 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Press+Start+2P&family=UnifrakturCook:wght@700&display=swap",
       },
     ],
   }),
@@ -151,7 +151,9 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
 });
 
 /**
- * Aplica o tema guardado antes do primeiro paint.
+ * Aplica o tema guardado antes do primeiro paint — e, junto, o Modo lite e a teimosia de
+ * animações (as chaves espelham src/lib/lite-mode.ts): aparelho em modo lite não deve nem
+ * começar a animar para depois parar.
  *
  * Sem isso o app nasce claro (e na cor padrão) e só depois de hidratar assume o
  * tema do usuário — aquele flash. O CSS já vem resolvido do `localStorage`, então
@@ -164,6 +166,9 @@ var raw=localStorage.getItem("connect-grow-preferences");
 if(raw){var parsed=JSON.parse(raw);if(parsed&&parsed.state&&parsed.state.theme==="dark"){document.documentElement.classList.add("dark");}}
 var collection=localStorage.getItem("connect-grow-theme-collection");
 if(collection){document.documentElement.setAttribute("data-theme",collection);}
+var lite=localStorage.getItem("connect-grow-lite-mode")==="1";
+if(lite){document.documentElement.setAttribute("data-lite","");}
+else if(localStorage.getItem("connect-grow-force-motion")==="1"){document.documentElement.setAttribute("data-force-motion","");}
 var css=localStorage.getItem("connect-grow-theme-css");
 if(css){var style=document.createElement("style");style.id="app-theme";style.textContent=css;document.head.appendChild(style);}
 }catch(error){}})();`;
@@ -224,9 +229,9 @@ function RootInsideProvider() {
       </ModuleDisabledGate>
 
       <InstallPwaBanner />
+      <LiteModeEffects />
       <HealthyUsageGuard />
       <AgeGate />
-      <ApologyPopup />
     </ToastProvider>
   );
 }

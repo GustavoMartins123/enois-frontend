@@ -3,7 +3,7 @@ import type { ServiceListing } from "@/types/application/services/service-listin
 import type { ServiceProposal } from "@/types/application/services/service-proposal";
 import type { ServiceRequest } from "@/types/application/services/service-request";
 
-import { api } from "../api-client";
+import { api, buildQuery } from "../api-client";
 
 /**
  * Serviços freelance (Fase 5): ofertar (Fiverr) e solicitar (demanda), pagos em
@@ -11,7 +11,11 @@ import { api } from "../api-client";
  */
 export const servicesApi = {
   /** Catálogo público: ofertas e pedidos abertos. */
-  catalog: () => api.get<{ ofertas: ServiceListing[]; pedidos: ServiceRequest[] }>("/servicos"),
+  catalog: (params: { q?: string; category?: string } = {}) =>
+    api.get<{ ofertas: ServiceListing[]; pedidos: ServiceRequest[] }>(
+      `/servicos${buildQuery(params)}`,
+    ),
+
   /** Abre (ou reaproveita) a conversa de servico com quem presta e devolve o id dela. */
   openChat: (listingId: string, message?: string) =>
     api.post<{ conversationId: string; assunto: string; listingId: string; sellerId: string }>(
@@ -34,6 +38,7 @@ export const servicesApi = {
     description: string;
     deliverables: string;
     price: number;
+    currency?: "FAISCA" | "BRL";
     deliveryDays: number;
   }) => api.post<{ id: string; status: string }>("/servicos/ofertas", data),
 

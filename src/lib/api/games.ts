@@ -11,6 +11,7 @@ import type { GameReviews } from "@/types/application/games/game-reviews";
 import type { GameStats } from "@/types/application/games/game-stats";
 import type { GameUpdateView } from "@/types/application/games/game-update-view";
 import type { GameView } from "@/types/application/games/game-view";
+import type { TrendingGame } from "@/types/application/games/trending-game";
 
 import { api, buildQuery } from "../api-client";
 
@@ -115,6 +116,12 @@ export const gamesApi = {
     api.post<{ plays: number }>(`/games/${encodeURIComponent(gameId)}/play`, {}),
 
   stats: (gameId: string) => api.get<GameStats>(`/games/${encodeURIComponent(gameId)}/stats`),
+
+  /**
+   * "Jogados hoje": o ranking dos últimos 24 horas, do mais jogado para o menos. Público e sem
+   * sessão — o card abre no feed de quem acabou de chegar.
+   */
+  trendingToday: (limit = 6) => api.get<TrendingGame[]>(`/games/hoje${buildQuery({ limit })}`),
 
   /**
    * Números de uso do jogo (só o criador): totais + série diária de visualizações, partidas,

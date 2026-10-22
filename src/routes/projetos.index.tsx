@@ -7,9 +7,11 @@ import { texts } from "@/texts";
 import { Code2, FolderKanban, Globe, Plus, Search } from "lucide-react";
 
 import { communityProjectsApi } from "@/lib/api";
+import { litePageSize } from "@/lib/lite-mode";
 import { requireAuth } from "@/lib/require-auth";
 import { ogMetas } from "@/lib/seo";
 import { useIsAuthenticated } from "@/lib/use-auth";
+import { useLiteMode } from "@/lib/use-lite-mode";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -33,6 +35,7 @@ export const Route = createFileRoute("/projetos/")({
 const PAGE_SIZE = 24;
 
 function ProjectsCatalog() {
+  const lite = useLiteMode();
   const authenticated = useIsAuthenticated();
   const [term, setTerm] = useState("");
   const [query, setQuery] = useState("");
@@ -50,7 +53,7 @@ function ProjectsCatalog() {
       communityProjectsApi.catalog({
         query: query || undefined,
         order,
-        limit: PAGE_SIZE,
+        limit: litePageSize(PAGE_SIZE, lite),
         cursor: pageParam,
       }),
     initialPageParam: null as string | null,

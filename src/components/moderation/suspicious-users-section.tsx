@@ -12,8 +12,9 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/loading-state";
 import { useToast } from "@/components/ui/toast";
+
+import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
 
 /** Triagem de contas recém-criadas: sinais objetivos, seleção múltipla e banimento em lote. */
 export function SuspiciousUsersSection() {
@@ -43,6 +44,17 @@ export function SuspiciousUsersSection() {
         texts.moderator.suspicious.result(result.banned, result.alreadyBanned, result.failed),
         result.failed > 0 ? "error" : "success",
       );
+      // "N falha(s)" sozinho não diz o que aconteceu: quem falhou e por quê vem junto.
+      const failures = result.items
+        .filter((item) => item.status === "FAILED")
+        .slice(0, 3)
+        .map((item) => `@${item.username} (${item.message})`);
+      if (failures.length > 0) {
+        toast(texts.moderator.suspicious.failures(failures.join(", ")), "error");
+      }
+      if (result.blockedIps.length > 0) {
+        toast(texts.moderator.suspicious.blockedIps(result.blockedIps.length), "success");
+      }
       void queryClient.invalidateQueries({ queryKey: ["moderator", "suspicious"] });
     },
     onError: (error) => {
@@ -65,7 +77,7 @@ export function SuspiciousUsersSection() {
   };
 
   if (suspicious.isLoading) {
-    return <LoadingState />;
+    return <ListRowSkeletons />;
   }
 
   if (suspicious.isError) {
@@ -82,6 +94,10 @@ export function SuspiciousUsersSection() {
         </h2>
 
         <p className="text-sm text-text-subtle">{texts.moderator.suspicious.description}</p>
+
+        <p className="rounded-xl bg-primary-soft px-3 py-2 text-xs font-medium text-primary-text">
+          {texts.moderator.suspicious.autoHint}
+        </p>
       </div>
 
       {items.length === 0 ? (
@@ -134,7 +150,7 @@ export function SuspiciousUsersSection() {
                 variant="destructive"
                 size="sm"
                 className="w-auto rounded-full"
-                disabled={selected.size === 0 || reason.trim().length < 10}
+                disabled={selected.size === 0}
                 onClick={() => setConfirmOpen(true)}
               >
                 {texts.moderator.suspicious.ban(selected.size)}
@@ -183,6 +199,12 @@ export function SuspiciousUsersSection() {
                         <span className="rounded-full bg-primary-soft px-2 py-0.5 text-[11px] font-semibold text-primary-text">
                           {texts.moderator.suspicious.risk(item.riskScore)}
                         </span>
+
+                        {item.staff && (
+                          <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold text-text-strong">
+                            {texts.moderator.suspicious.staffChip}
+                          </span>
+                        )}
                       </span>
 
                       <span className="block text-xs text-text-subtle">

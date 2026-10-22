@@ -8,6 +8,10 @@ import { mediaApi } from "@/lib/api";
 import { resolveCdnUrl, withImageKitOriginal } from "@/lib/api/media";
 import { autoplayVideoRef } from "@/lib/feed/video-autoplay";
 
+import { texts } from "@/texts";
+import { LiteVideo } from "./lite-video";
+import { SpoilerMedia } from "./spoiler-media";
+
 /** Grade de mídias do post (vídeo único ou imagens) com visualização em tela cheia.
  *
  * `compact` encolhe as imagens para caber em espacos apertados (comentarios) sem quebrar
@@ -16,7 +20,8 @@ import { autoplayVideoRef } from "@/lib/feed/video-autoplay";
 export function MediaGrid({
   mediaIds,
   compact = false,
-}: Pick<PostView, "mediaIds"> & { compact?: boolean }) {
+  mediaSpoiler = false,
+}: Pick<PostView, "mediaIds"> & { compact?: boolean; mediaSpoiler?: boolean }) {
   const queryResults = useQueries({
     queries: mediaIds.map((id) => ({
       queryKey: ["media", id],
@@ -50,18 +55,14 @@ export function MediaGrid({
   if (isVideo) {
     return (
       <div className="overflow-hidden rounded-xl border border-border-soft">
-        <video
-          ref={autoplayVideoRef}
-          src={withImageKitOriginal(items[0].cdnUrl)}
-          // O play/pause automático (um vídeo por vez, sempre mudo) é feito por `autoplayVideoRef`.
-          // `muted` + `playsInline` são o que fazem o play automático ser aceito no navegador (e no
-          // iOS, sem virar tela cheia): o som vem quando a pessoa quiser, pelo controle do vídeo.
-          muted
-          playsInline
-          preload="metadata"
-          controls
-          className="max-h-96 w-full bg-surface-1"
-        />
+        <SpoilerMedia active={mediaSpoiler} label={texts.posts.mediaSpoiler.reveal}>
+          {(revealed) => (
+            <LiteVideo
+              src={withImageKitOriginal(items[0].cdnUrl)}
+              registerRef={revealed ? autoplayVideoRef : undefined}
+            />
+          )}
+        </SpoilerMedia>
       </div>
     );
   }
@@ -70,27 +71,31 @@ export function MediaGrid({
     <>
       {/* 1:1 (pedido da comunidade): a imagem ocupa um quadrado e o recorte é sempre o mesmo,
           em vez da faixa de altura fixa que cortava fotos altas ou largas. */}
-      <div
-        className={`grid gap-2 ${items.length === 1 ? "grid-cols-1" : "grid-cols-2"} ${
-          compact ? "max-w-[280px]" : ""
-        }`}
-      >
-        {items.map((m) => (
-          <button
-            key={m.id}
-            type="button"
-            onClick={() => setFullscreenUrl(resolveCdnUrl(m.cdnUrl) ?? null)}
-            className="overflow-hidden rounded-xl border border-border-soft text-left"
+      <SpoilerMedia active={mediaSpoiler} label={texts.posts.mediaSpoiler.reveal}>
+        {() => (
+          <div
+            className={`grid gap-2 ${items.length === 1 ? "grid-cols-1" : "grid-cols-2"} ${
+              compact ? "max-w-[280px]" : ""
+            }`}
           >
-            <img
-              src={resolveCdnUrl(m.cdnUrl)}
-              alt=""
-              loading="lazy"
-              className="aspect-square w-full bg-surface-1 object-cover transition hover:scale-105"
-            />
-          </button>
-        ))}
-      </div>
+            {items.map((m) => (
+              <button
+                key={m.id}
+                type="button"
+                onClick={() => setFullscreenUrl(resolveCdnUrl(m.cdnUrl) ?? null)}
+                className="overflow-hidden rounded-xl border border-border-soft text-left"
+              >
+                <img
+                  src={resolveCdnUrl(m.cdnUrl)}
+                  alt=""
+                  loading="lazy"
+                  className="aspect-square w-full bg-surface-1 object-cover transition hover:scale-105"
+                />
+              </button>
+            ))}
+          </div>
+        )}
+      </SpoilerMedia>
       {fullscreenUrl && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"

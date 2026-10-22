@@ -2,6 +2,8 @@ import type { AutoplayEntry } from "@/types/lib/feed/autoplay-entry";
 import type { AutoplayEnvironment } from "@/types/lib/feed/autoplay-environment";
 import type { AutoplayVideo } from "@/types/lib/feed/autoplay-video";
 
+import { readLiteMode } from "@/lib/lite-mode";
+
 /** Fração mínima visível para um vídeo ficar elegível a começar a tocar. */
 export const ENTER_VISIBLE = 0.6;
 /** Enquanto o vídeo ativo mantiver pelo menos essa fração visível, ele continua tocando. */
@@ -296,9 +298,14 @@ function browserEnvironment(): AutoplayEnvironment {
 
 let shared: ReturnType<typeof createVideoAutoplay> | undefined;
 
-/** Ref callback (React 19) para o `<video>`: registra no coordenador único e devolve o cleanup. */
+/**
+ * Ref callback (React 19) para o `<video>`: registra no coordenador único e devolve o cleanup.
+ *
+ * Em modo lite não registra nada: vídeo que toca sozinho é justamente o "acontecendo sozinho"
+ * que o aparelho fraco não aguenta — a pessoa aperta play quando quiser.
+ */
 export function autoplayVideoRef(el: HTMLVideoElement | null) {
-  if (!el) return;
+  if (!el || readLiteMode()) return;
   shared ??= createVideoAutoplay(browserEnvironment());
   return shared.register(el);
 }

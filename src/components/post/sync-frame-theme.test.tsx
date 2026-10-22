@@ -104,6 +104,8 @@ describe("syncFrameTheme", () => {
     expect(srcDoc).toContain("light-dark(#555,#c8c6dc)");
     expect(srcDoc).toContain("light-dark(#e3e3e3,#3f3d55)");
     expect(srcDoc).not.toContain("background:#f5f5f5");
+    expect(srcDoc).toContain("frame-src https://w.soundcloud.com");
+    expect(srcDoc).not.toContain("frame-src https:;");
     expect(iframe?.getAttribute("sandbox")).not.toContain("allow-scripts");
     expect(iframe?.getAttribute("sandbox")).toBe(
       "allow-same-origin allow-popups allow-popups-to-escape-sandbox",

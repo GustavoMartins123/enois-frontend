@@ -13,4 +13,6 @@ export type Event = {
   location: string | null;
   /** O evento já aconteceu: sai da vitrine e não aceita mais confirmação de presença. */
   expired: boolean;
+  /** Viewer confirmed attendance (false without session). */
+  attending: boolean;
 };

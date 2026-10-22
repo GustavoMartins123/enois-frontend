@@ -1,10 +1,10 @@
 import { useState } from "react";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { NotificationTab } from "@/types/components/notification/notification-tab";
-import { Bell, Check, CheckCheck, X } from "lucide-react";
+import { Bell, Check, CheckCheck, Loader2, X } from "lucide-react";
 
 import { networkApi, notificationsApi, profileApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
@@ -75,20 +75,61 @@ export function NotificationsPopover() {
   // (mesma fonte de verdade do menu — /me/preferences).
   // Convites de conexao agora vivem na tab Solicitacoes — tirar das notificacoes normais
   // evita duplicidade (a mesma pessoa aparecia em Novas e em Solicitacoes ao mesmo tempo).
-  const notificationList = (notificationsData?.items ?? []).filter(
+  // Conversa tem canal próprio (aba Chat): misturar com curtida/convite no sino fazia a pessoa
+  // perder mensagem no meio do resto — e o pedido do suporte foi justamente separar.
+  const isChatNotification = (kind: string) => kind.toLowerCase() === "new_message";
+  const visibleNotifications = (notificationsData?.items ?? []).filter(
+    (notification) => !isNotificationHidden(notification.kind, disabledModules),
+  );
+  const chatNotifications = visibleNotifications.filter((notification) =>
+    isChatNotification(notification.kind),
+  );
+  const notificationList = visibleNotifications.filter(
     (notification) =>
-      !isNotificationHidden(notification.kind, disabledModules) &&
-      notification.kind.toLowerCase() !== "connection_request",
+      notification.kind.toLowerCase() !== "connection_request" &&
+      !isChatNotification(notification.kind),
   );
   const unreadCount = notificationList.filter((notification) => !notification.read).length;
-  const displayedNotifications = notificationList.filter((notification) =>
-    notificationTab === "novas" ? !notification.read : notification.read,
-  );
+  const chatUnreadCount = chatNotifications.filter((notification) => !notification.read).length;
+  // O sino continua sinalizando mensagem nova (senão a aba Chat passaria despercebida); o que muda
+  // é que ela não se mistura mais com curtida/convite na lista de Novas.
+  const totalUnread = unreadCount + chatUnreadCount;
+  const displayedNotifications =
+    notificationTab === "chat"
+      ? chatNotifications
+      : notificationList.filter((notification) =>
+          notificationTab === "novas" ? !notification.read : notification.read,
+        );
 
   const currentUserId = getCurrentUserId();
-  const incomingRequests = (pendingRequests.data?.items ?? []).filter(
+  const rawIncoming = (pendingRequests.data?.items ?? []).filter(
     (r) => r.status === "PENDING" && r.fromUserId !== currentUserId,
   );
+
+  // Busca perfis em batch — so depois de carregar filtramos os removidos/inexistentes.
+  const profileQueries = useQueries({
+    queries: rawIncoming.map((r) => ({
+      queryKey: ["profile", "by-id", r.fromUserId],
+      queryFn: () => profileApi.getById(r.fromUserId),
+      retry: 1,
+      staleTime: 60_000,
+    })),
+  });
+  const profilesLoading = rawIncoming.length > 0 && profileQueries.some((q) => q.isLoading);
+  const profilesByUserId = new Map(
+    profileQueries.filter((q) => q.data).map((q) => [q.data!.id, q.data!]),
+  );
+
+  // Filtra removidos/banidos/inexistentes ANTES de contar — badge e lista ja nascem corretos.
+  const incomingRequests = profilesLoading
+    ? []
+    : rawIncoming.filter((r) => {
+        const p = profilesByUserId.get(r.fromUserId);
+        if (!p) return false;
+        if (p.username?.startsWith("removed-")) return false;
+        if (p.name === "Usuario removido") return false;
+        return true;
+      });
   const requestCount = incomingRequests.length;
 
   const rejectConnection = useMutation({
@@ -104,15 +145,15 @@ export function NotificationsPopover() {
         <button
           className="relative grid h-10 w-10 place-items-center rounded-full text-text-subtle transition hover:bg-surface-2 hover:text-primary"
           aria-label={
-            unreadCount > 0
-              ? texts.notifications.unreadLabel(unreadCount)
+            totalUnread > 0
+              ? texts.notifications.unreadLabel(totalUnread)
               : texts.notifications.title
           }
         >
           <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
+          {totalUnread > 0 && (
             <span className="absolute right-1.5 top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-primary text-xs font-medium leading-none text-primary-foreground">
-              {unreadCount > 9 ? texts.notifications.overflowCount : unreadCount}
+              {totalUnread > 9 ? texts.notifications.overflowCount : totalUnread}
             </span>
           )}
         </button>
@@ -172,6 +213,24 @@ export function NotificationsPopover() {
 
           <button
             type="button"
+            onClick={() => setNotificationTab("chat")}
+            className={cn(
+              "flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-normal transition",
+              notificationTab === "chat"
+                ? "border-b-2 border-primary text-primary"
+                : "text-text-subtle hover:text-text-strong",
+            )}
+          >
+            <>{texts.notifications.tabs.chat}</>
+            {chatUnreadCount > 0 && (
+              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-xs text-primary-foreground">
+                {chatUnreadCount}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
             onClick={() => setNotificationTab("solicitacoes")}
             className={cn(
               "flex flex-1 items-center justify-center gap-1.5 py-2.5 text-xs font-normal transition",
@@ -191,32 +250,44 @@ export function NotificationsPopover() {
 
         <div className="max-h-[28rem] overflow-y-auto">
           {notificationTab === "solicitacoes" ? (
-            incomingRequests.length === 0 ? (
+            profilesLoading ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-text-subtle" />
+              </div>
+            ) : incomingRequests.length === 0 ? (
               <p className="px-4 py-8 text-center text-sm font-normal text-text-subtle">
                 {texts.notifications.emptyRequests}
               </p>
             ) : (
-              incomingRequests.map((request) => (
-                <ConnectionRequestItem
-                  key={request.id}
-                  request={request}
-                  onAccept={(id) => acceptConnection.mutate(id)}
-                  onReject={(id) => rejectConnection.mutate(id)}
-                  accepting={
-                    acceptConnection.isPending && acceptConnection.variables === request.fromUserId
-                  }
-                  rejecting={
-                    rejectConnection.isPending && rejectConnection.variables === request.fromUserId
-                  }
-                  onNavigate={() => setOpen(false)}
-                />
-              ))
+              incomingRequests.map((request) => {
+                const p = profilesByUserId.get(request.fromUserId);
+                return (
+                  <ConnectionRequestItem
+                    key={request.id}
+                    request={request}
+                    profile={p ?? null}
+                    onAccept={(id) => acceptConnection.mutate(id)}
+                    onReject={(id) => rejectConnection.mutate(id)}
+                    accepting={
+                      acceptConnection.isPending &&
+                      acceptConnection.variables === request.fromUserId
+                    }
+                    rejecting={
+                      rejectConnection.isPending &&
+                      rejectConnection.variables === request.fromUserId
+                    }
+                    onNavigate={() => setOpen(false)}
+                  />
+                );
+              })
             )
           ) : displayedNotifications.length === 0 ? (
             <p className="px-4 py-8 text-center text-sm font-normal text-text-subtle">
               {notificationTab === "novas"
                 ? texts.notifications.emptyNew
-                : texts.notifications.emptyHistory}
+                : notificationTab === "chat"
+                  ? texts.notifications.emptyChat
+                  : texts.notifications.emptyHistory}
             </p>
           ) : (
             displayedNotifications.map((notification) => (
@@ -237,9 +308,10 @@ export function NotificationsPopover() {
   );
 }
 
-/** Card de solicitação de conexão dentro do sininho. */
+/** Card de solicitação de conexão dentro do sininho. O perfil já vem resolvido pelo pai. */
 function ConnectionRequestItem({
   request,
+  profile,
   onAccept,
   onReject,
   accepting,
@@ -247,26 +319,22 @@ function ConnectionRequestItem({
   onNavigate,
 }: {
   request: { id: string; fromUserId: string; createdAt: string };
+  profile: {
+    name?: string;
+    username?: string;
+    avatar?: string | null;
+    headline?: string | null;
+  } | null;
   onAccept: (userId: string) => void;
   onReject: (userId: string) => void;
   accepting: boolean;
   rejecting: boolean;
   onNavigate: () => void;
 }) {
-  const { data: profile } = useQuery({
-    queryKey: ["profile", "by-id", request.fromUserId],
-    queryFn: () => profileApi.getById(request.fromUserId),
-  });
-
   const name = profile?.name ?? "Alguém";
   const username = profile?.username;
   const avatar = profile?.avatar;
   const headline = profile?.headline;
-
-  // Usuario banido/removido: o perfil ainda existe mas o username vira "removed-...".
-  // Mostrar a solicitacao nao faz sentido — aceitar nao teria efeito.
-  const isRemoved = username?.startsWith("removed-") || name === "Usuario removido";
-  if (isRemoved) return null;
 
   return (
     <div className="flex items-start gap-3 border-b border-border-soft px-4 py-3 last:border-b-0">

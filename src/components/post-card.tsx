@@ -12,17 +12,7 @@ import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { PostView } from "@/types/application/feed/post-view";
 import type { PostCardProps } from "@/types/components/post/post-card-props";
-import {
-  BookOpen,
-  Clock,
-  FileText,
-  MoreHorizontal,
-  Pencil,
-  Pin,
-  PinOff,
-  Tag,
-  Trash2,
-} from "lucide-react";
+import { BookOpen, Clock, FileText, Pin, PinOff, Repeat2, Tag } from "lucide-react";
 
 import { communitiesApi, feedApi } from "@/lib/api";
 import { sealsApi } from "@/lib/api/seals";
@@ -30,6 +20,7 @@ import { saveFeedScroll } from "@/lib/feed-scroll-restoration";
 import { inlineMediaIds } from "@/lib/rich-text/inline-media";
 import { hideExternalPageUrls } from "@/lib/shared-links";
 import { useAuth } from "@/lib/use-auth";
+import { useLiteMode } from "@/lib/use-lite-mode";
 import { cn } from "@/lib/utils";
 
 import { Badge } from "@/components/ui/badge";
@@ -48,9 +39,11 @@ import { LinkPreviews } from "./post/link-previews";
 import { MediaGrid } from "./post/media-grid";
 import { PostActions } from "./post/post-actions";
 import { PostComments } from "./post/post-comments";
+import { PostOwnerMenu } from "./post/post-owner-menu";
 import { PostPage } from "./post/post-page";
 import { ReactionsSummary } from "./post/reactions-summary";
 import { RichText } from "./post/rich-text";
+import { SpoilerMedia } from "./post/spoiler-media";
 import { typeMeta } from "./post/type-meta";
 
 /**
@@ -69,6 +62,8 @@ export function PostCard({
   pinPending = false,
 }: PostCardProps) {
   const { requireAuth, user } = useAuth();
+  // Modo lite: nada de player de terceiro montando sozinho no feed.
+  const lite = useLiteMode();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const isOwner = user?.id != null && user.id === post.authorId;
@@ -116,6 +111,9 @@ export function PostCard({
   });
   const pageHtml = post.pageHtml ?? pagePost?.pageHtml ?? "";
   const articleBody = post.articleBody ?? pagePost?.articleBody ?? "";
+  // Algumas listagens/cache antigos podem não trazer a flag; a leitura detalhada do post é a
+  // fonte de reserva para que um spoiler já publicado não apareça aberto ao entrar no post.
+  const mediaSpoiler = post.mediaSpoiler ?? pagePost?.mediaSpoiler ?? false;
   // As ações do post (reagir, comentar, compartilhar, salvar, denunciar) moram no `PostActions` —
   // a mesma peça que o post do blog usa. Aqui fica só o card, que é quem inicializa o estado dele.
   const initializePostCard = usePostCardStore((state) => state.initializePostCard);
@@ -245,6 +243,22 @@ export function PostCard({
         post.pageHtml ? "rounded-none" : "overflow-hidden rounded-2xl"
       }`}
     >
+      {post.repostOf && (
+        <Link
+          to="/post/$postId"
+          params={{ postId: post.repostOf }}
+          className="mb-2 inline-flex items-center gap-1.5 text-xs text-text-subtle transition hover:text-primary"
+        >
+          <Repeat2 className="h-3.5 w-3.5" />
+
+          <>
+            {post.repostWithOpinion
+              ? texts.posts.repostedWithOpinion
+              : texts.posts.repostedFrom(post.repostOfAuthor)}
+          </>
+        </Link>
+      )}
+
       <header className="flex justify-between items-start gap-3">
         <AuthorInfo
           authorUsername={post.authorUsername}
@@ -310,40 +324,15 @@ export function PostCard({
           )}
 
           {isOwner && (
-            <Popover>
-              <PopoverTrigger asChild>
-                <button
-                  className="rounded-lg p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                  title={texts.posts.owner.actions}
-                  aria-label={texts.posts.owner.actions}
-                >
-                  <MoreHorizontal className="h-4 w-4" />
-                </button>
-              </PopoverTrigger>
-
-              <PopoverContent align="end" className="w-40 rounded-2xl border-border p-1.5">
-                <button
-                  onClick={() => {
-                    setDraft(post.content);
-                    setPageDraft(pageHtml);
-                    setEditType(post.type);
-                    setEditOpen(true);
-                  }}
-                  className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm transition hover:bg-muted"
-                >
-                  <Pencil className="h-4 w-4" />
-                  {texts.posts.owner.edit}
-                </button>
-
-                <button
-                  onClick={() => setDeleteOpen(true)}
-                  className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-sm text-destructive transition hover:bg-destructive/10"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  {texts.posts.owner.delete}
-                </button>
-              </PopoverContent>
-            </Popover>
+            <PostOwnerMenu
+              onEdit={() => {
+                setDraft(post.content);
+                setPageDraft(pageHtml);
+                setEditType(post.type);
+                setEditOpen(true);
+              }}
+              onDelete={() => setDeleteOpen(true)}
+            />
           )}
         </div>
       </header>
@@ -389,6 +378,7 @@ export function PostCard({
           <RichText
             content={hideExternalPageUrls(post.content)}
             mediaIds={post.mediaIds}
+            mediaSpoiler={mediaSpoiler}
             className={cn(
               "mt-4 whitespace-pre-line break-words text-base font-normal leading-relaxed text-text-strong",
               isCompact && "line-clamp-8",
@@ -411,6 +401,45 @@ export function PostCard({
             </Link>
           )}
         </>
+      )}
+
+      {/* Repost COM opinião: o texto acima é o comentário; aqui vai o post original citado. */}
+      {post.repostWithOpinion && post.repostOf && (
+        <div className="mt-3 rounded-xl border border-border-soft bg-surface-1 p-3">
+          <Link
+            to="/post/$postId"
+            params={{ postId: post.repostOf }}
+            className="inline-flex items-center gap-1.5 text-xs text-text-subtle transition hover:text-primary"
+          >
+            <Repeat2 className="h-3.5 w-3.5" />
+
+            <>{texts.posts.quotedFrom(post.repostOfAuthor)}</>
+          </Link>
+
+          {post.repostOfContent && (
+            <p className="mt-2 line-clamp-6 whitespace-pre-line break-words text-sm text-text-strong">
+              {post.repostOfContent}
+            </p>
+          )}
+
+          {post.repostOfMediaIds && post.repostOfMediaIds.length > 0 && (
+            <div className="mt-2">
+              <MediaGrid
+                mediaIds={post.repostOfMediaIds}
+                compact
+                mediaSpoiler={mediaSpoiler}
+              />
+            </div>
+          )}
+
+          <Link
+            to="/post/$postId"
+            params={{ postId: post.repostOf }}
+            className="mt-2 inline-flex text-xs text-primary hover:underline"
+          >
+            {texts.posts.viewOriginal}
+          </Link>
+        </div>
       )}
 
       {/* Blog: o post-ponteiro so aponta para o cantinho — o conteudo mora la, nao no feed. */}
@@ -457,12 +486,15 @@ export function PostCard({
               sobrou sem marcador — repetir a mesma mídia duas vezes seria estranho. */}
           <MediaGrid
             mediaIds={post.mediaIds.filter((id) => !inlineMediaIds(post.content).includes(id))}
+            mediaSpoiler={mediaSpoiler}
           />
         </div>
       )}
 
       {pageHtml ? (
-        <PostPage postId={post.id} html={pageHtml} />
+        <SpoilerMedia active={mediaSpoiler} label={texts.posts.mediaSpoiler.reveal}>
+          {() => <PostPage postId={post.id} html={pageHtml} />}
+        </SpoilerMedia>
       ) : pageLoading ? (
         <p className="mt-4 rounded-xl border border-dashed border-border-soft px-3 py-6 text-center text-xs font-normal text-text-subtle">
           {texts.posts.page.loading}
@@ -470,7 +502,7 @@ export function PostCard({
       ) : null}
 
       <ReactionsSummary postId={post.id} initialSummary={post.reactionSummary} />
-      <LinkPreviews content={post.content} autoplay />
+      <LinkPreviews content={post.content} autoplay={!lite} />
 
       {post.tags.length > 0 && (
         <div className="mt-4 flex flex-wrap gap-1.5">
@@ -675,7 +707,7 @@ export function PostCard({
         </>
       )}
 
-      {showComments && <PostComments postId={post.id} />}
+      {showComments && <PostComments postId={post.id} postAuthorId={post.authorId} />}
     </article>
   );
 }
