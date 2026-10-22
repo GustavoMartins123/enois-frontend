@@ -11,11 +11,12 @@ import { useAuth } from "@/lib/use-auth";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
-import { LoadingState } from "@/components/ui/loading-state";
 
 import { AppContainer } from "@/components/app-container";
 import { PostCard } from "@/components/post-card";
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
+import { PageSkeleton } from "@/components/skeletons/page-skeleton";
+import { PostCardSkeletons } from "@/components/skeletons/post-card-skeletons";
 import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/profissional_/$username")({
@@ -60,13 +61,7 @@ function ProfessionalProfile() {
   });
 
   if (profile.isLoading) {
-    return (
-      <AppContainer>
-        <div className="mx-auto w-full max-w-3xl">
-          <LoadingState />
-        </div>
-      </AppContainer>
-    );
+    return <PageSkeleton />;
   }
 
   if (profile.isError) {
@@ -191,7 +186,7 @@ function ProfessionalProfile() {
           <h2 className="text-lg font-semibold">{texts.corporate.publicProfile.postsTitle}</h2>
 
           {posts.isLoading ? (
-            <LoadingState />
+            <PostCardSkeletons />
           ) : items.length === 0 ? (
             <div className="surface-card">
               <EmptyState icon={Globe} title={texts.corporate.publicProfile.empty} />

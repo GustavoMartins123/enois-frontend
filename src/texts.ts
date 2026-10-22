@@ -1435,7 +1435,6 @@ export const texts = {
       replyingTo: (name: string) => `respondendo a ${name}`,
       delete: "Excluir",
       editError: "Não foi possível salvar a edição. Tente de novo.",
-      loading: "Carregando comentários...",
       loadMore: "Ver comentários anteriores",
       loadingMore: "Carregando...",
       error: "Não foi possível carregar os comentários.",
@@ -2622,7 +2621,6 @@ export const texts = {
 
   mentoring: {
     seoTitle: "Mentoria · Énóis",
-    loading: "Carregando mentores...",
     loadError: "Não foi possível carregar os mentores agora.",
     retry: "Tentar de novo",
     empty: "Ainda não há mentores publicados. Se você pode ajudar outras pessoas, torne-se mentor.",
@@ -3640,7 +3638,6 @@ export const texts = {
     seoTitle: "Publicação · Énóis",
     seoDescription: "Veja esta publicação no Énóis — rede humana gratuita, sem anúncios.",
     back: "Voltar",
-    loading: "Carregando publicação...",
     notFound: "Publicação não encontrada.",
   },
 

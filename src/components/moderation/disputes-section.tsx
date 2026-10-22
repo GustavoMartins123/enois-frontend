@@ -7,8 +7,9 @@ import { walletApi } from "@/lib/api";
 import { formatFaisca } from "@/lib/faisca";
 
 import { Button } from "@/components/ui/button";
-import { LoadingState } from "@/components/ui/loading-state";
 import { useToast } from "@/components/ui/toast";
+
+import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
 
 /**
  * Contestações de transferência: deferir reverte e pune o golpista; rejeitar pune quem contestou
@@ -52,7 +53,7 @@ export function DisputesSection() {
       </div>
 
       {isLoading ? (
-        <LoadingState />
+        <ListRowSkeletons />
       ) : (data?.length ?? 0) === 0 ? (
         <p className="rounded-2xl border border-border-soft bg-surface-card p-4 text-sm text-text-subtle">
           Nenhuma contestação esperando decisão.

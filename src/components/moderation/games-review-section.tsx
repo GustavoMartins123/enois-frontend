@@ -9,10 +9,10 @@ import { moderationApi } from "@/lib/api";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/loading-state";
 import { useToast } from "@/components/ui/toast";
 
 import { GamePlayer } from "@/components/games/game-player";
+import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
 
 /** Fila de jogos enviados pela comunidade: testar no mesmo quadro isolado e aprovar/recusar. */
 export function GamesReviewSection() {
@@ -47,7 +47,7 @@ export function GamesReviewSection() {
       </h2>
 
       {isLoading ? (
-        <LoadingState />
+        <ListRowSkeletons />
       ) : (jogos?.length ?? 0) === 0 ? (
         <p className="rounded-2xl border border-border-soft bg-surface-card p-4 text-sm text-text-subtle">
           {texts.moderator.games.empty}

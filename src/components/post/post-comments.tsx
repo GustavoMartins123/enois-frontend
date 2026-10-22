@@ -14,6 +14,7 @@ import { useMediaUpload } from "@/lib/use-media-upload";
 import { Button } from "@/components/ui/button";
 
 import { MentionTextarea } from "@/components/mention-textarea";
+import { CommentSkeletons } from "@/components/skeletons/comment-skeletons";
 
 import { CommentItem } from "./comment-item";
 import { GifPickerDialog } from "./gif-picker-dialog";
@@ -265,13 +266,7 @@ export function PostComments({ postId }: PostIdProps) {
         // último post da viewport travava o scroll até fechar os comentários).
         className="max-h-[55vh] min-h-0 space-y-3 overflow-y-auto pr-1"
       >
-        {loading && (
-          <p className="inline-flex items-center gap-2 py-4 text-sm font-normal text-text-subtle">
-            <Loader2 className="h-4 w-4 animate-spin" />
-
-            <>{texts.posts.comments.loading}</>
-          </p>
-        )}
+        {loading && <CommentSkeletons />}
 
         {!loading && error && (
           <div className="py-4 text-center">
@@ -318,6 +313,8 @@ export function PostComments({ postId }: PostIdProps) {
               </div>
             );
           })}
+
+        {loadingMore && <CommentSkeletons count={1} />}
 
         {!loading && !error && hasMore && (
           <div className="pt-1 text-center">
