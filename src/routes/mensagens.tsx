@@ -28,6 +28,8 @@ import { AppContainer } from "@/components/app-container";
 import { MediaGrid } from "@/components/post/media-grid";
 import { ReactionPicker } from "@/components/post/reaction-picker";
 import { RichText } from "@/components/post/rich-text";
+import { ConversationListSkeletons } from "@/components/skeletons/conversation-list-skeletons";
+import { MessageSkeletons } from "@/components/skeletons/message-skeletons";
 import { UserAvatar } from "@/components/user-avatar";
 import { UserBadges } from "@/components/user-badge";
 
@@ -76,6 +78,7 @@ function Mensagens() {
     fetchNextPage: fetchMoreConversations,
     hasNextPage: hasMoreConversations,
     isFetchingNextPage: isLoadingMoreConversations,
+    isLoading: isLoadingConversations,
   } = useInfiniteQuery({
     queryKey: ["conversations", inboxTab === "archived" ? "archived" : "inbox"],
     queryFn: ({ pageParam }) =>
@@ -109,6 +112,7 @@ function Mensagens() {
     fetchNextPage: fetchOlderMessages,
     hasNextPage: hasOlderMessages,
     isFetchingNextPage: isLoadingOlder,
+    isLoading: isLoadingMessages,
   } = useInfiniteQuery({
     queryKey: ["messages", activeConversation?.id],
     queryFn: ({ pageParam }) => messagesApi.listMessages(activeConversation!.id, pageParam),
@@ -142,7 +146,8 @@ function Mensagens() {
   const reactToMessage = useMutation({
     mutationFn: ({ messageId, type }: { messageId: string; type: string }) =>
       messagesApi.react(activeConversation!.id, messageId, type),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["messages", activeConversation?.id] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["messages", activeConversation?.id] }),
   });
 
   const createConversation = useMutation({
@@ -465,7 +470,11 @@ function Mensagens() {
           )}
 
           <ul className="flex-1 overflow-y-auto overscroll-contain">
-            {visibleConversations.length === 0 ? (
+            {isLoadingConversations ? (
+              <li>
+                <ConversationListSkeletons />
+              </li>
+            ) : visibleConversations.length === 0 ? (
               <li className="p-4 text-center text-sm text-muted-foreground">
                 {inboxTab === "archived"
                   ? texts.messages.noArchived
@@ -555,7 +564,9 @@ function Mensagens() {
                   </div>
                 )}
                 <div className="space-y-3">
-                  {activeMessages.length === 0 ? (
+                  {isLoadingMessages ? (
+                    <MessageSkeletons />
+                  ) : activeMessages.length === 0 ? (
                     <p className="py-16 text-center text-sm text-muted-foreground">
                       {texts.messages.noMessages}
                     </p>

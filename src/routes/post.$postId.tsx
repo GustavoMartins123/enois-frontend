@@ -3,7 +3,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { HomeTab } from "@/types/routes/feed/home-tab";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 import { feedApi, mediaApi } from "@/lib/api";
 import { buildPostShareMeta } from "@/lib/open-graph";
@@ -11,6 +11,7 @@ import { buildPostShareMeta } from "@/lib/open-graph";
 import { AppContainer } from "@/components/app-container";
 import { PostCard } from "@/components/post-card";
 import { RichText } from "@/components/post/rich-text";
+import { PostCardSkeletons } from "@/components/skeletons/post-card-skeletons";
 
 export const Route = createFileRoute("/post/$postId")({
   validateSearch: (search: Record<string, unknown>): { feedTab?: HomeTab } => ({
@@ -126,11 +127,7 @@ function PostDetail() {
         </Link>
 
         {isLoading ? (
-          <div className="surface-card p-8 text-center">
-            <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" />
-
-            <p className="mt-3 text-sm text-muted-foreground">{texts.post.loading}</p>
-          </div>
+          <PostCardSkeletons count={1} />
         ) : isError || !post ? (
           <div className="surface-card p-8 text-center">
             <p className="text-sm text-muted-foreground">{texts.post.notFound}</p>

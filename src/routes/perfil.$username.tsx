@@ -1,6 +1,6 @@
 import { type ChangeEvent, useCallback, useRef, useState } from "react";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
@@ -60,6 +60,7 @@ import { AppearanceDialog } from "@/components/appearance/appearance-dialog";
 import { BlockUserDialog } from "@/components/block-user-dialog";
 import { EditProfileDialog } from "@/components/edit-profile-dialog";
 import { ImageCropDialog } from "@/components/image-crop-dialog";
+import { InfiniteScroll } from "@/components/infinite-scroll";
 import { PostCard } from "@/components/post-card";
 import { ReportDialog } from "@/components/post/report-dialog";
 import { RichText } from "@/components/post/rich-text";
@@ -73,7 +74,11 @@ import { ProfileExplorePanel } from "@/components/profile/profile-explore-panel"
 import { ProfileGamificationPanel } from "@/components/profile/profile-gamification-panel";
 import { ProfileQuickComposer } from "@/components/profile/profile-quick-composer";
 import { ProfileProjectsSection } from "@/components/profile/projects-section";
+import { PostCardSkeletons } from "@/components/skeletons/post-card-skeletons";
 import { UserAvatar } from "@/components/user-avatar";
+
+/** Paginas de "Publicacoes recentes": o mesmo tamanho do feed, para nao sobrecarregar o perfil. */
+const USER_POSTS_PAGE_SIZE = 10;
 
 /** As molduras da loja (C3): o anel que cada uma pinta ao redor do avatar. */
 const FRAME_RING: Record<string, string> = {
@@ -217,12 +222,22 @@ function Profile() {
     },
   });
 
-  const { data: feedData } = useQuery({
+  // Paginado por cursor: a listagem simples devolvia só a primeira pagina, e o post antigo
+  // ficava inalcancavel no proprio perfil — quem procurava algo de meses atras nao encontrava.
+  const {
+    data: feedData,
+    hasNextPage: hasMoreUserPosts,
+    isFetchingNextPage: isLoadingMoreUserPosts,
+    fetchNextPage: fetchMoreUserPosts,
+    isLoading: userPostsLoading,
+  } = useInfiniteQuery({
     queryKey: ["feed", "user", user.id],
-    queryFn: () => feedApi.listByUserId(user.id),
+    queryFn: ({ pageParam }) => feedApi.listByUserId(user.id, pageParam, USER_POSTS_PAGE_SIZE),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
 
-  const userPosts = feedData?.items ?? [];
+  const userPosts = feedData?.pages.flatMap((page) => page.items) ?? [];
 
   const { data: rankingData } = useQuery({
     queryKey: ["ranking"],
@@ -748,13 +763,24 @@ function Profile() {
             )}
 
             <Section id="atividade" title={texts.profile.sections.recentPosts}>
-              {userPosts.length === 0 ? (
+              {userPostsLoading && <PostCardSkeletons count={2} />}
+
+              {!userPostsLoading && userPosts.length === 0 && (
                 <p className="text-sm font-normal text-text-subtle">{texts.profile.noPosts}</p>
-              ) : (
+              )}
+
+              {!userPostsLoading && userPosts.length > 0 && (
                 <div className="space-y-4">
                   {userPosts.map((p) => (
                     <PostCard key={p.id} post={p} />
                   ))}
+
+                  <InfiniteScroll
+                    hasMore={Boolean(hasMoreUserPosts)}
+                    loading={isLoadingMoreUserPosts}
+                    onLoadMore={() => void fetchMoreUserPosts()}
+                    loadingLabel={texts.feed.loadingMore}
+                  />
                 </div>
               )}
             </Section>
