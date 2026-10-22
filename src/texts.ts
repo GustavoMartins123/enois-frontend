@@ -1432,6 +1432,12 @@ export const texts = {
       guidelines: "Veja as diretrizes da comunidade",
     },
     share: "Compartilhar",
+    repost: "Republicar",
+    reposted: "Republicado no seu perfil.",
+    alreadyReposted: "Você já republicou este post.",
+    repostError: "Não foi possível republicar agora.",
+    repostedFrom: (username: string | null | undefined) =>
+      username ? `Republicado de @${username}` : "Republicado",
     shareCopied: "Link da publicação copiado!",
     save: "Salvar publicação",
     unsave: "Remover dos salvos",

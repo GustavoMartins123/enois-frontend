@@ -35,6 +35,10 @@ export type PostView = {
   content: string;
   /** Assunto do post (taxonomia da plataforma); nulo quando não classificado. */
   topic?: string | null;
+  /** Post original de uma republicação (null = post original). */
+  repostOf?: string | null;
+  /** @ do autor original, exibido no crédito "Republicado de @fulano". */
+  repostOfAuthor?: string | null;
   /** HTML já sanitizado da mini página (só em posts do tipo PAGE; nulo nos demais). */
   pageHtml?: string | null;
   /**

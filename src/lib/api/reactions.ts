@@ -41,4 +41,7 @@ export const reactionsApi = {
   removeSave: (postId: string) => api.delete<ActionResponse>(`/feed/posts/${postId}/saves`),
 
   share: (postId: string) => api.post<ActionResponse>(`/feed/posts/${postId}/shares`),
+
+  /** Republica no próprio feed (cópia com crédito ao autor original). */
+  repost: (postId: string) => api.post<unknown>(`/feed/posts/${postId}/repost`),
 };

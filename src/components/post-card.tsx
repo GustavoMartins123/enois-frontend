@@ -12,7 +12,7 @@ import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { PostView } from "@/types/application/feed/post-view";
 import type { PostCardProps } from "@/types/components/post/post-card-props";
-import { BookOpen, Clock, FileText, Pin, PinOff, Tag } from "lucide-react";
+import { BookOpen, Clock, FileText, Pin, PinOff, Repeat2, Tag } from "lucide-react";
 
 import { communitiesApi, feedApi } from "@/lib/api";
 import { sealsApi } from "@/lib/api/seals";
@@ -239,6 +239,18 @@ export function PostCard({
         post.pageHtml ? "rounded-none" : "overflow-hidden rounded-2xl"
       }`}
     >
+      {post.repostOf && (
+        <Link
+          to="/post/$postId"
+          params={{ postId: post.repostOf }}
+          className="mb-2 inline-flex items-center gap-1.5 text-xs text-text-subtle transition hover:text-primary"
+        >
+          <Repeat2 className="h-3.5 w-3.5" />
+
+          <>{texts.posts.repostedFrom(post.repostOfAuthor)}</>
+        </Link>
+      )}
+
       <header className="flex justify-between items-start gap-3">
         <AuthorInfo
           authorUsername={post.authorUsername}

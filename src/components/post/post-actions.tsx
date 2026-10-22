@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { PostActionsProps } from "@/types/components/post/post-actions-props";
-import { Bookmark, Flag, Heart, MessageSquare, Share2 } from "lucide-react";
+import { Bookmark, Flag, Heart, MessageSquare, Repeat2, Share2 } from "lucide-react";
 
-import { REACTION_EMOJIS, feedApi, reactionsApi } from "@/lib/api";
+import { ApiError, REACTION_EMOJIS, feedApi, reactionsApi } from "@/lib/api";
 import { usePostReaction } from "@/lib/reactions/use-post-reaction";
 import { useAuth } from "@/lib/use-auth";
 
@@ -30,6 +30,7 @@ import { SealsDialog } from "./seals-dialog";
 export function PostActions({ post, onComments, shareUrl, children }: PostActionsProps) {
   const { requireAuth, user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const initializePostCard = usePostCardStore((state) => state.initializePostCard);
   const disposePostCard = usePostCardStore((state) => state.disposePostCard);
   const card = usePostCardStore((state) => state.cards[post.id]);
@@ -89,6 +90,30 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
       setPostCounters(post.id, result.counters);
     } catch {
       // silently fail
+    }
+  };
+
+  // Republicar copia o post para o feed da pessoa, creditando o autor original. Conteúdo de
+  // comunidade/canal e os tipos que não viajam (página, artigo, blog, business, moment) ficam de fora.
+  const canRepost =
+    !post.community && !["PAGE", "ARTICLE", "BLOG", "BUSINESS", "MOMENT"].includes(post.type);
+  const [reposting, setReposting] = useState(false);
+  const handleRepost = async () => {
+    if (!requireAuth()) return;
+    setReposting(true);
+    try {
+      await reactionsApi.repost(post.id);
+      toast(texts.posts.reposted, "success");
+      void queryClient.invalidateQueries({ queryKey: ["feed"] });
+    } catch (error) {
+      toast(
+        error instanceof ApiError && error.code === "ALREADY_REPOSTED"
+          ? texts.posts.alreadyReposted
+          : texts.posts.repostError,
+        "error",
+      );
+    } finally {
+      setReposting(false);
     }
   };
 
@@ -159,8 +184,21 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
             className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground"
           >
             <MessageSquare className="h-4 w-4" />
+
             <span className="text-xs tabular-nums">{postCounters.comments}</span>
           </button>
+
+          {canRepost && (
+            <button
+              onClick={handleRepost}
+              disabled={reposting}
+              title={texts.posts.repost}
+              aria-label={texts.posts.repost}
+              className="flex items-center rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground disabled:opacity-50"
+            >
+              <Repeat2 className="h-4 w-4" />
+            </button>
+          )}
 
           <button
             onClick={handleShare}
@@ -192,6 +230,7 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
           }`}
         >
           <Bookmark className="h-4 w-4" />
+
           <span className="text-xs tabular-nums">{postCounters.saves}</span>
         </button>
       </footer>
