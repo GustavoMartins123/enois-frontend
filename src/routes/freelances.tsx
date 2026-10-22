@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { FreelanceView } from "@/types/application/freelance/freelance-view";
-import { Banknote, CalendarClock, Handshake, Plus, Sparkles } from "lucide-react";
+import { Banknote, CalendarClock, Handshake, Plus, Search, Sparkles } from "lucide-react";
 
 import { freelancesApi } from "@/lib/api";
 import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
@@ -36,10 +36,23 @@ const money = (value: number) =>
 function Freelances() {
   const authenticated = useIsAuthenticated();
   const [open, setOpen] = useState(false);
+  const [busca, setBusca] = useState("");
+  const [buscaAplicada, setBuscaAplicada] = useState("");
+
+  // Espera a pessoa parar de digitar: uma requisição por termo, não por tecla.
+  useEffect(() => {
+    const timer = setTimeout(() => setBuscaAplicada(busca.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [busca]);
 
   const query = useInfiniteQuery({
-    queryKey: ["freelances"],
-    queryFn: ({ pageParam }) => freelancesApi.list({ limit: PAGE_SIZE, cursor: pageParam }),
+    queryKey: ["freelances", buscaAplicada],
+    queryFn: ({ pageParam }) =>
+      freelancesApi.list({
+        limit: PAGE_SIZE,
+        cursor: pageParam,
+        q: buscaAplicada || undefined,
+      }),
     initialPageParam: null as string | null,
     getNextPageParam: (last) => last.nextCursor,
   });
@@ -77,17 +90,46 @@ function Freelances() {
           )}
         </header>
 
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-subtle" />
+          <Input
+            value={busca}
+            onChange={(event) => setBusca(event.target.value)}
+            placeholder={texts.jobs.freelancePage.searchPlaceholder}
+            aria-label={texts.jobs.freelancePage.searchPlaceholder}
+            maxLength={80}
+            className="pl-9"
+          />
+        </div>
+
         {query.isLoading ? (
           <LoadingState />
         ) : query.isError ? (
           <p className="text-sm text-destructive">{texts.jobs.freelancePage.error}</p>
         ) : items.length === 0 ? (
           <div className="surface-card">
-            <EmptyState
-              icon={Handshake}
-              title={texts.jobs.freelancePage.empty}
-              description={texts.jobs.freelancePage.emptyHint}
-            />
+            {buscaAplicada ? (
+              <EmptyState
+                icon={Search}
+                title={texts.jobs.freelancePage.searchEmpty}
+                description={texts.jobs.freelancePage.searchEmptyHint}
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-1 w-auto rounded-full"
+                  onClick={() => setBusca("")}
+                >
+                  {texts.jobs.freelancePage.clearSearch}
+                </Button>
+              </EmptyState>
+            ) : (
+              <EmptyState
+                icon={Handshake}
+                title={texts.jobs.freelancePage.empty}
+                description={texts.jobs.freelancePage.emptyHint}
+              />
+            )}
           </div>
         ) : (
           <>
