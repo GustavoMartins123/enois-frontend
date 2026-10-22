@@ -2249,6 +2249,12 @@ export const texts = {
     /** "23 out · 08:00"; o ano só aparece quando não é o atual ("31 dez 2029 · 23:59"). */
     dateTime: (date: string, time: string) => `${formatEventDate(date)} · ${time}`,
     attend: "Confirmar presença",
+    cancelAttend: "Desconfirmar presença",
+    youAreGoing: "Você vai",
+    attendSuccess: "Presença confirmada.",
+    attendError: "Não foi possível confirmar a presença.",
+    cancelAttendanceSuccess: "Presença cancelada.",
+    cancelAttendanceError: "Não foi possível cancelar a presença.",
     finished: "Encerrado",
     finishedHint:
       "Este evento já aconteceu. As confirmações de presença são removidas depois do vencimento (fica só o total).",

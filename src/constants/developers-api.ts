@@ -362,15 +362,16 @@ export const apiSections: ApiSection[] = [
         method: "GET",
         path: "/events",
         access: "public",
-        description: "Lista eventos (vitrine).",
+        description:
+          "Lista eventos (vitrine). Com sessão, attending reflete se o viewer confirmou presença.",
         response: `200 OK
-{"items":[{"id":"event_…","title":"…","date":"2029-12-31","time":"23:59","format":"ONLINE","attendees":2}]}`,
+{"items":[{"id":"event_…","title":"…","date":"2029-12-31","time":"23:59","format":"ONLINE","attendees":2,"attending":false,"expired":false}]}`,
       },
       {
         method: "GET",
         path: "/events/{eventId}",
         access: "public",
-        description: "Detalhe do evento.",
+        description: "Detalhe do evento (attending do viewer quando autenticado).",
       },
       { method: "POST", path: "/events", access: "auth", description: "Cria evento." },
       {
