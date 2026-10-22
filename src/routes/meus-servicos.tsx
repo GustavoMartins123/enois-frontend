@@ -63,7 +63,7 @@ function MyServices() {
 
             <p className="mt-1 text-sm text-text-subtle">
               Para qualquer prestador: publique o que você faz e cobre em <b>faíscas</b> (com
-              escrow) ou em <b>reais</b> (pagamento combinado direto).
+              escrow) ou em <b>reais</b> (pagamento combinado direto, sem taxa do Énóis).
             </p>
           </div>
 
@@ -260,6 +260,12 @@ function NewServiceDialog({
               />
             </div>
           </div>
+
+          <p className="text-xs text-text-subtle">
+            {currency === "BRL"
+              ? "Em reais o Énóis não cobra taxa: o pagamento é combinado direto com o cliente."
+              : "Em faíscas o Énóis retém 10% ao liberar o pagamento. Em dinheiro não há taxa."}
+          </p>
 
           <div className="flex justify-end gap-2 pt-1">
             <Button variant="outline" className="rounded-full" onClick={() => onOpenChange(false)}>

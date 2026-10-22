@@ -220,17 +220,23 @@ function OfferCard({ listing }: { listing: ServiceListing }) {
 
       {listing.currency === "BRL" ? (
         <p className="mt-3 rounded-xl bg-surface-2 px-3 py-2 text-center text-xs text-text-subtle">
-          Pagamento em reais combinado direto com o profissional.
+          Pagamento em reais combinado direto com o profissional, sem taxa do Énóis.
         </p>
       ) : (
-        <Button
-          size="sm"
-          className="mt-3 w-full rounded-full"
-          disabled={buy.isPending}
-          onClick={() => buy.mutate()}
-        >
-          {buy.isPending ? "Retendo faíscas…" : "Contratar"}
-        </Button>
+        <>
+          <Button
+            size="sm"
+            className="mt-3 w-full rounded-full"
+            disabled={buy.isPending}
+            onClick={() => buy.mutate()}
+          >
+            {buy.isPending ? "Retendo faíscas…" : "Contratar"}
+          </Button>
+
+          <p className="mt-1 text-center text-xs text-text-subtle">
+            Em faíscas, o Énóis retém 10% ao liberar o pagamento. Dinheiro não tem taxa.
+          </p>
+        </>
       )}
     </li>
   );

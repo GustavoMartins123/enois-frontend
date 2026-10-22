@@ -302,6 +302,12 @@ function CreateFreelanceDialog({
 
               <option value="CASH">{texts.jobs.freelancePage.paymentCash}</option>
             </select>
+
+            <p className="text-xs text-text-subtle">
+              {paymentMethod === "CASH"
+                ? texts.jobs.freelancePage.paymentCashHint
+                : texts.jobs.freelancePage.paymentFaiscasHint}
+            </p>
           </label>
 
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

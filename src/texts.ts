@@ -2332,6 +2332,10 @@ export const texts = {
       payment: "Pagamento",
       paymentCash: "Dinheiro (R$)",
       paymentFaiscas: "Faíscas",
+      paymentCashHint:
+        "O Énóis não cobra taxa em dinheiro: o valor é combinado direto com quem publicou.",
+      paymentFaiscasHint:
+        "Em faíscas, a plataforma retém 10% quando o pagamento é liberado — dinheiro não tem taxa.",
       deadlineField: "Prazo",
       submit: "Publicar",
       invalid: "Preencha título, escopo, faixa de valor e prazo.",
