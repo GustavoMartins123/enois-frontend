@@ -1443,6 +1443,18 @@ export const texts = {
     reposted: "Republicado no seu perfil.",
     alreadyReposted: "Você já republicou este post.",
     repostError: "Não foi possível republicar agora.",
+    repostTitle: "Republicar",
+    repostDescription:
+      "Publique no seu feed direto, ou escreva uma opinião de até 600 caracteres para aparecer junto com o post original citado.",
+    repostPlain: "Só republicar",
+    repostWithOpinion: "Republicar com opinião",
+    opinionLabel: "Sua opinião (opcional)",
+    opinionPlaceholder: "O que você achou deste post?",
+    opinionCount: (length: number) => `${length}/600`,
+    quotedFrom: (username: string | null | undefined) =>
+      username ? `Publicação original de @${username}` : "Publicação original",
+    viewOriginal: "Ver publicação original",
+    repostedWithOpinion: "Republicou com opinião",
     repostedFrom: (username: string | null | undefined) =>
       username ? `Republicado de @${username}` : "Republicado",
     shareCopied: "Link da publicação copiado!",

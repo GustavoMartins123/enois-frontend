@@ -247,7 +247,11 @@ export function PostCard({
         >
           <Repeat2 className="h-3.5 w-3.5" />
 
-          <>{texts.posts.repostedFrom(post.repostOfAuthor)}</>
+          <>
+            {post.repostWithOpinion
+              ? texts.posts.repostedWithOpinion
+              : texts.posts.repostedFrom(post.repostOfAuthor)}
+          </>
         </Link>
       )}
 
@@ -392,6 +396,41 @@ export function PostCard({
             </Link>
           )}
         </>
+      )}
+
+      {/* Repost COM opinião: o texto acima é o comentário; aqui vai o post original citado. */}
+      {post.repostWithOpinion && post.repostOf && (
+        <div className="mt-3 rounded-xl border border-border-soft bg-surface-1 p-3">
+          <Link
+            to="/post/$postId"
+            params={{ postId: post.repostOf }}
+            className="inline-flex items-center gap-1.5 text-xs text-text-subtle transition hover:text-primary"
+          >
+            <Repeat2 className="h-3.5 w-3.5" />
+
+            <>{texts.posts.quotedFrom(post.repostOfAuthor)}</>
+          </Link>
+
+          {post.repostOfContent && (
+            <p className="mt-2 line-clamp-6 whitespace-pre-line break-words text-sm text-text-strong">
+              {post.repostOfContent}
+            </p>
+          )}
+
+          {post.repostOfMediaIds && post.repostOfMediaIds.length > 0 && (
+            <div className="mt-2">
+              <MediaGrid mediaIds={post.repostOfMediaIds} compact />
+            </div>
+          )}
+
+          <Link
+            to="/post/$postId"
+            params={{ postId: post.repostOf }}
+            className="mt-2 inline-flex text-xs text-primary hover:underline"
+          >
+            {texts.posts.viewOriginal}
+          </Link>
+        </div>
       )}
 
       {/* Blog: o post-ponteiro so aponta para o cantinho — o conteudo mora la, nao no feed. */}
