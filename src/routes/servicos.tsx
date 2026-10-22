@@ -118,7 +118,16 @@ function Servicos() {
   );
 }
 
-function Price({ value }: { value: number }) {
+function Price({ value, currency }: { value: number; currency: "BRL" | "FAISCA" }) {
+  if (currency === "BRL") {
+    return (
+      <span className="flex shrink-0 items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-sm font-semibold text-primary-text">
+        <span className="text-xs">R$</span>
+        {(value / 100).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+      </span>
+    );
+  }
+
   return (
     <span className="flex shrink-0 items-center gap-1 rounded-full bg-primary-soft px-2.5 py-1 text-sm font-semibold text-primary-text">
       <Sparkles className="h-3.5 w-3.5" />
@@ -146,8 +155,26 @@ function OfferCard({ listing }: { listing: ServiceListing }) {
           </span>
         </span>
 
-        <Price value={listing.price} />
+        <Price value={listing.price} currency={listing.currency} />
       </div>
+
+      {listing.sellerName && (
+        <p className="mt-2 flex items-center gap-2 text-xs text-text-subtle">
+          {listing.sellerAvatar ? (
+            <img
+              src={listing.sellerAvatar}
+              alt=""
+              className="h-6 w-6 shrink-0 rounded-full object-cover"
+            />
+          ) : (
+            <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-soft text-[10px] font-semibold text-primary-text">
+              {listing.sellerName.slice(0, 1).toUpperCase()}
+            </span>
+          )}
+
+          <span className="truncate">{listing.sellerName}</span>
+        </p>
+      )}
 
       <p className="mt-2 line-clamp-2 text-sm text-text-subtle">{listing.description}</p>
 
