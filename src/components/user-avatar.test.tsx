@@ -46,10 +46,12 @@ describe("UserAvatar com moldura", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it.each(["moldura-desconhecida", "toString"])(
-    "efeito desconhecido %s não quebra a tela: não desenha nada",
+  it.each(["moldura-desconhecida", "moldura-dragao", "toString"])(
+    "efeito desconhecido %s falha com um erro explícito",
     (frame) => {
-      expect(renderToString(<AvatarFrameFx frame={frame} />)).toBe("");
+      expect(() => renderToString(<AvatarFrameFx frame={frame} />)).toThrow(
+        `Moldura com efeito não suportada: ${frame}`,
+      );
     },
   );
 });
