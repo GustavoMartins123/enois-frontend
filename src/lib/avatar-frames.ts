@@ -11,7 +11,7 @@ export const FX_FRAMES = [
   "moldura-toxica",
   "moldura-nebulosa",
   "moldura-supernova",
-  "moldura-prisma",
+  "moldura-galaxia",
   "moldura-portal",
   "moldura-holograma",
 ] as const;

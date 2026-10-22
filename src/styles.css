@@ -1012,44 +1012,77 @@
   }
 }
 
-/* Prisma: cada caco soma duas flutuações de períodos diferentes (alturas e giros sorteados
-   por caco em variáveis), então nenhum vidro repete o movimento de outro nem o próprio. */
-.moldura-prisma__flutua {
-  animation: moldura-prisma-flutua 6s ease-in-out infinite;
+.moldura-galaxia,
+.moldura-galaxia__camada,
+.moldura-galaxia__sistema {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 50%;
+  pointer-events: none;
+  user-select: none;
 }
-.moldura-prisma__deriva {
-  animation: moldura-prisma-deriva 3s ease-in-out infinite alternate;
+.moldura-galaxia__camada {
+  object-fit: contain;
 }
-.moldura-prisma__reflexo {
-  animation: moldura-prisma-reflexo 4s ease-in-out infinite;
+.moldura-galaxia__sistema {
+  animation: moldura-galaxia-giro 18s linear infinite;
 }
-@keyframes moldura-prisma-flutua {
-  0%,
-  100% {
-    transform: translateY(0) rotate(var(--g0));
-  }
-  23% {
-    transform: translateY(var(--a)) rotate(var(--g1));
-  }
-  51% {
-    transform: translateY(var(--b)) rotate(var(--g0));
-  }
-  76% {
-    transform: translateY(var(--c)) rotate(var(--g1));
-  }
+.moldura-galaxia__gas {
+  animation: moldura-galaxia-giro 41s linear infinite;
+  opacity: 0.85;
 }
-@keyframes moldura-prisma-deriva {
+.moldura-galaxia__particulas--a {
+  animation: moldura-galaxia-particulas 13s linear infinite;
+  animation-delay: -1s;
+}
+.moldura-galaxia__particulas--b {
+  animation: moldura-galaxia-particulas 27s linear infinite;
+  animation-delay: -5.4s;
+}
+.moldura-galaxia__movimento {
+  animation-play-state: paused;
+}
+.moldura-galaxia--ativa .moldura-galaxia__movimento {
+  animation-play-state: running;
+}
+.moldura-galaxia--ativa .moldura-galaxia__sistema,
+.moldura-galaxia--ativa .moldura-galaxia__gas {
+  will-change: transform;
+}
+.moldura-galaxia--ativa .moldura-galaxia__particulas {
+  will-change: transform, opacity;
+}
+@keyframes moldura-galaxia-giro {
   to {
-    transform: translateY(var(--d));
+    transform: rotate(-360deg);
   }
 }
-@keyframes moldura-prisma-reflexo {
-  0%,
-  100% {
-    opacity: 0.25;
+@keyframes moldura-galaxia-particulas {
+  0% {
+    transform: rotate(0deg) scale(1);
+    opacity: 0.35;
+  }
+  12.5%,
+  62.5% {
+    opacity: 0.85;
+  }
+  25%,
+  75% {
+    opacity: 0.45;
+  }
+  37.5%,
+  87.5% {
+    opacity: 1;
   }
   50% {
-    opacity: 1;
+    transform: rotate(-180deg) scale(1.018);
+    opacity: 0.4;
+  }
+  100% {
+    transform: rotate(-360deg) scale(1);
+    opacity: 0.35;
   }
 }
 
@@ -1220,6 +1253,12 @@
   }
   .moldura-tempestade__raio:nth-child(-n + 2) {
     opacity: 1;
+  }
+  .moldura-galaxia .moldura-galaxia__movimento {
+    will-change: auto;
+  }
+  .moldura-galaxia__particulas {
+    opacity: 0.7;
   }
 }
 

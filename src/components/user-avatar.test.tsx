@@ -42,11 +42,13 @@ describe("UserAvatar com moldura", () => {
       </>,
     );
     const ids = [...html.matchAll(/ id="([^"]+)"/g)].map((m) => m[1]);
-    if (frame !== "moldura-orbita") expect(ids.length).toBeGreaterThan(0);
+    if (frame !== "moldura-orbita" && frame !== "moldura-galaxia") {
+      expect(ids.length).toBeGreaterThan(0);
+    }
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  it.each(["moldura-desconhecida", "moldura-dragao", "toString"])(
+  it.each(["moldura-desconhecida", "moldura-dragao", "moldura-prisma", "toString"])(
     "efeito desconhecido %s não quebra a tela: não desenha nada",
     (frame) => {
       expect(renderToString(<AvatarFrameFx frame={frame} />)).toBe("");

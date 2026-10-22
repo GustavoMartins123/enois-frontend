@@ -1,13 +1,13 @@
 import type { AvatarFrameFxProps } from "@/types/components/avatar-frames/avatar-frame-fx-props";
 
 import { BuracoNegroFx } from "./buraco-negro";
+import { GalaxiaFx } from "./galaxia";
 import { GlacialFx } from "./glacial";
 import { HologramaFx } from "./holograma";
 import { InfernoFx } from "./inferno";
 import { NebulosaFx } from "./nebulosa";
 import { OrbitaFx } from "./orbita";
 import { PortalFx } from "./portal";
-import { PrismaFx } from "./prisma";
 import { SupernovaFx } from "./supernova";
 import { TempestadeFx } from "./tempestade";
 import { ToxicaFx } from "./toxica";
@@ -22,7 +22,7 @@ const EFEITOS: Record<string, () => React.JSX.Element> = {
   "moldura-toxica": ToxicaFx,
   "moldura-nebulosa": NebulosaFx,
   "moldura-supernova": SupernovaFx,
-  "moldura-prisma": PrismaFx,
+  "moldura-galaxia": GalaxiaFx,
   "moldura-portal": PortalFx,
   "moldura-holograma": HologramaFx,
 };
