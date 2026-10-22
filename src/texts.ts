@@ -3215,6 +3215,7 @@ export const texts = {
         count === 0 ? "" : `${count} IP(s) bloqueado(s) junto com o lote.`,
       error: "Não foi possível banir as contas selecionadas.",
       risk: (score: number) => `risco ${score}`,
+      staffChip: "equipe",
       createdAt: (date: string) => `criada em ${date}`,
       counts: (posts: number, comments: number, reports: number) =>
         `${posts} post(s) · ${comments} comentário(s) · ${reports} denúncia(s) contra`,
@@ -3226,6 +3227,7 @@ export const texts = {
         PERFIL_VAZIO: "Perfil vazio",
         CONTA_NOVA: "Conta nova",
         DENUNCIAS_CONTRA: "Denúncias contra",
+        EQUIPE: "Conta da equipe (a automação não pune)",
       } as Record<string, string>,
     },
     projects: {
