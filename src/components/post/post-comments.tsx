@@ -362,6 +362,7 @@ export function PostComments({ postId }: PostIdProps) {
                 onClick={() => setReplyToId(postId, null)}
                 className="shrink-0 text-text-subtle hover:text-foreground"
                 aria-label={texts.posts.comments.cancelReply}
+                title={texts.posts.comments.cancelReply}
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -394,6 +395,7 @@ export function PostComments({ postId }: PostIdProps) {
                     }}
                     className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-foreground text-background shadow"
                     aria-label={texts.posts.comments.removeMedia}
+                    title={texts.posts.comments.removeMedia}
                   >
                     <X className="h-3 w-3" />
                   </button>
@@ -441,6 +443,7 @@ export function PostComments({ postId }: PostIdProps) {
                 onClick={() => fileInputRef.current?.click()}
                 className="grid h-8 w-8 place-items-center rounded-full text-text-subtle transition hover:bg-surface-2 hover:text-primary"
                 aria-label={texts.posts.comments.attachMedia}
+                title={texts.posts.comments.attachMedia}
               >
                 <Image className="h-4 w-4" />
               </button>

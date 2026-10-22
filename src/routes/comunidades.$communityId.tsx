@@ -393,6 +393,8 @@ function CommunityDetail() {
                     <Button
                       variant="outline"
                       className="w-auto rounded-full gap-1.5"
+                      aria-label={texts.communities.transfer.action}
+                      title={texts.communities.transfer.action}
                       onClick={() => setTransferOpen(true)}
                     >
                       <Crown className="h-4 w-4" />
@@ -403,6 +405,8 @@ function CommunityDetail() {
                     <Button
                       variant="outline"
                       className="w-auto rounded-full gap-1.5 text-destructive"
+                      aria-label={texts.communities.delete.action}
+                      title={texts.communities.delete.action}
                       onClick={() => setDeleteOpen(true)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -678,6 +682,8 @@ function CommunityDetail() {
                           return current.filter((_, i) => i !== index);
                         })
                       }
+                      aria-label={texts.common.remove}
+                      title={texts.common.remove}
                       className="absolute right-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-surface-card/80 text-text-strong"
                     >
                       <X className="h-3 w-3" />
