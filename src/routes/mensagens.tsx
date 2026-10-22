@@ -415,7 +415,10 @@ function Mensagens() {
             )}
           </div>
 
-          <div className="flex gap-1 border-b border-border px-3 pb-2">
+          {/* A faixa de abas quebra a linha no celular: com cinco abas ("Todas", "Vagas",
+              "Serviços", "Pessoas", "Arquivadas") a última ficava cortada na borda em tela de
+              360px — e cortada sem nenhuma pista de que havia mais. */}
+          <div className="flex flex-wrap gap-1 border-b border-border px-3 pb-2">
             {(["all", "jobs", "services", "people", "archived"] as const).map((tab) => (
               <button
                 key={tab}
