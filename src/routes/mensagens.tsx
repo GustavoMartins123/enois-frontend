@@ -139,12 +139,16 @@ function Mensagens() {
       setText("");
       setMedia([]);
     },
+    // Sem isto, a mensagem que nao saia (conta restrita, conversa arquivada, erro de rede)
+    // sumia sem aviso nenhum: a pessoa clicava em enviar e o app nao dizia nada.
+    onError: (error) => toast(error.message, "error"),
   });
 
   const reactToMessage = useMutation({
     mutationFn: ({ messageId, type }: { messageId: string; type: string }) =>
       messagesApi.react(activeConversation!.id, messageId, type),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["messages", activeConversation?.id] }),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["messages", activeConversation?.id] }),
   });
 
   const createConversation = useMutation({
