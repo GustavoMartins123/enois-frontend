@@ -1404,6 +1404,8 @@ export const texts = {
         NOTE: "📝",
         FIRE: "🔥",
         CLAP: "👏",
+        CLOWN: "🤡",
+        NAILS: "💅",
       },
     },
     report: {

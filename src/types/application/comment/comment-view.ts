@@ -23,4 +23,6 @@ export type CommentView = {
   status: "ACTIVE" | "DELETED";
   /** Reação do próprio leitor — é o que mantém o like ao recarregar a página. */
   currentUserReaction?: ReactionType | null;
+  /** Total de reações no comentário. */
+  reactionCount?: number;
 };
