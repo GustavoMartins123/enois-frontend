@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
@@ -6,7 +6,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import type { ServiceContract } from "@/types/application/services/service-contract";
 import type { ServiceListing } from "@/types/application/services/service-listing";
 import type { ServiceRequest } from "@/types/application/services/service-request";
-import { Briefcase, Handshake, Send, Sparkles } from "lucide-react";
+import { Briefcase, Handshake, Search, Send, Sparkles } from "lucide-react";
 
 import { servicesApi } from "@/lib/api";
 import { formatBrlCents, formatFaisca, parseFaiscaInput } from "@/lib/faisca";
@@ -31,10 +31,25 @@ export const Route = createFileRoute("/servicos")({
  */
 function Servicos() {
   const authenticated = useIsAuthenticated();
+  const [term, setTerm] = useState("");
+  const [search, setSearch] = useState("");
+  const [category, setCategory] = useState<string | null>(null);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSearch(term.trim()), 300);
+    return () => window.clearTimeout(timer);
+  }, [term]);
   const catalog = useQuery({
-    queryKey: ["services", "catalog"],
-    queryFn: () => servicesApi.catalog(),
+    queryKey: ["services", "catalog", search, category],
+    queryFn: () =>
+      servicesApi.catalog({
+        q: search || undefined,
+        category: category || undefined,
+      }),
   });
+  const categories = useMemo(() => {
+    const all = [...(catalog.data?.ofertas ?? []), ...(catalog.data?.pedidos ?? [])];
+    return [...new Set(all.map((item) => item.category).filter(Boolean))].slice(0, 12);
+  }, [catalog.data]);
   const mine = useQuery({
     queryKey: ["services", "mine"],
     queryFn: () => servicesApi.mine(),
@@ -77,6 +92,48 @@ function Servicos() {
           >
             Pedidos abertos
           </button>
+        </div>
+
+        <div className="mb-4 space-y-2">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-subtle" />
+            <Input
+              value={term}
+              onChange={(event) => setTerm(event.target.value)}
+              placeholder="Buscar serviço, pedido ou entregável"
+              className="pl-9"
+            />
+          </div>
+
+          {categories.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                onClick={() => setCategory(null)}
+                className={
+                  category === null
+                    ? "rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
+                    : "rounded-full border border-border-soft px-3 py-1 text-xs font-medium text-text-subtle"
+                }
+              >
+                Todas
+              </button>
+              {categories.map((value) => (
+                <button
+                  key={value}
+                  type="button"
+                  onClick={() => setCategory(category === value ? null : value)}
+                  className={
+                    category === value
+                      ? "rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
+                      : "rounded-full border border-border-soft px-3 py-1 text-xs font-medium text-text-subtle"
+                  }
+                >
+                  {value}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {mine.data && (

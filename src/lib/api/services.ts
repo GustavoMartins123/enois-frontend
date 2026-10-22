@@ -3,7 +3,7 @@ import type { ServiceListing } from "@/types/application/services/service-listin
 import type { ServiceProposal } from "@/types/application/services/service-proposal";
 import type { ServiceRequest } from "@/types/application/services/service-request";
 
-import { api } from "../api-client";
+import { api, buildQuery } from "../api-client";
 
 /**
  * Serviços freelance (Fase 5): ofertar (Fiverr) e solicitar (demanda), pagos em
@@ -11,7 +11,10 @@ import { api } from "../api-client";
  */
 export const servicesApi = {
   /** Catálogo público: ofertas e pedidos abertos. */
-  catalog: () => api.get<{ ofertas: ServiceListing[]; pedidos: ServiceRequest[] }>("/servicos"),
+  catalog: (params: { q?: string; category?: string } = {}) =>
+    api.get<{ ofertas: ServiceListing[]; pedidos: ServiceRequest[] }>(
+      `/servicos${buildQuery(params)}`,
+    ),
 
   /** O meu painel: minhas ofertas e meus contratos (comprador e vendedor). */
   mine: () =>

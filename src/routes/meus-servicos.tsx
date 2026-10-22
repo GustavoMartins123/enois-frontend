@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 import type { ServiceListing } from "@/types/application/services/service-listing";
-import { Plus, Wrench } from "lucide-react";
+import { Plus, Search, Wrench } from "lucide-react";
 
 import { servicesApi } from "@/lib/api";
 import { formatBrlCents, formatFaisca, parseFaiscaInput } from "@/lib/faisca";
@@ -29,6 +29,7 @@ export const Route = createFileRoute("/meus-servicos")({
 
 function MyServices() {
   const [open, setOpen] = useState(false);
+  const [term, setTerm] = useState("");
   const mine = useQuery({ queryKey: ["services", "mine"], queryFn: () => servicesApi.mine() });
 
   if (mine.isLoading) {
@@ -39,7 +40,15 @@ function MyServices() {
     );
   }
 
-  const offers = mine.data?.ofertas ?? [];
+  const allOffers = mine.data?.ofertas ?? [];
+  const needle = term.trim().toLowerCase();
+  const offers = needle
+    ? allOffers.filter((offer) =>
+        `${offer.title} ${offer.description} ${offer.deliverables} ${offer.category}`
+          .toLowerCase()
+          .includes(needle),
+      )
+    : allOffers;
 
   return (
     <AppContainer>
@@ -53,8 +62,8 @@ function MyServices() {
             </h1>
 
             <p className="mt-1 text-sm text-text-subtle">
-              Publique o que você faz e cobre em <b>faíscas</b> (com escrow) ou em <b>reais</b>{" "}
-              (pagamento combinado direto).
+              Para qualquer prestador: publique o que você faz e cobre em <b>faíscas</b> (com
+              escrow) ou em <b>reais</b> (pagamento combinado direto).
             </p>
           </div>
 
@@ -64,6 +73,16 @@ function MyServices() {
             <>Publicar serviço</>
           </Button>
         </header>
+
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-subtle" />
+          <Input
+            value={term}
+            onChange={(event) => setTerm(event.target.value)}
+            placeholder="Buscar nos meus serviços"
+            className="pl-9"
+          />
+        </div>
 
         {offers.length === 0 ? (
           <div className="surface-card">
