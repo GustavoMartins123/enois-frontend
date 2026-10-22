@@ -20,6 +20,7 @@ import {
   Pin,
   PinOff,
   Plus,
+  Share2,
   Smile,
   Trash2,
   Users,
@@ -117,6 +118,27 @@ function GrupoPage() {
 
   const canManage = group.viewerRole === "OWNER" || group.viewerRole === "ADMIN";
 
+  // Compartilhar por link: Web Share API quando existe (mobile), copiar para a área de
+  // transferência como fallback. O grupo é acessível pelo link para quem não é membro —
+  // a página mostra a prévia pública e o botão de entrar.
+  const share = async () => {
+    const url = `${window.location.origin}/grupos/${group.slug}`;
+    const data = { title: group.name, text: group.description ?? group.name, url };
+    try {
+      if (typeof navigator !== "undefined" && navigator.share) {
+        await navigator.share(data);
+        return;
+      }
+      await navigator.clipboard.writeText(url);
+      toast(texts.groups.shareCopied, "success");
+    } catch (error) {
+      // AbortError = usuário cancelou o menu de compartilhar; não é erro.
+      if ((error as DOMException)?.name !== "AbortError") {
+        toast(texts.groups.shareError, "error");
+      }
+    }
+  };
+
   return (
     <AppContainer>
       <div className="mx-auto w-full max-w-3xl space-y-6">
@@ -210,6 +232,15 @@ function GrupoPage() {
                   {texts.groups.edit}
                 </Button>
               )}
+
+              <Button
+                variant="outline"
+                className="w-auto rounded-full gap-1.5"
+                onClick={() => void share()}
+              >
+                <Share2 className="h-3.5 w-3.5" />
+                {texts.groups.share}
+              </Button>
             </div>
           </div>
         </div>

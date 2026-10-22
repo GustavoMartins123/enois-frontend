@@ -119,6 +119,9 @@ export const texts = {
     createError: "Não foi possível criar o grupo.",
     joinError: "Não foi possível entrar no grupo.",
     leaveError: "Não foi possível sair do grupo.",
+    share: "Compartilhar",
+    shareCopied: "Link do grupo copiado!",
+    shareError: "Não foi possível compartilhar o grupo.",
     notFound: "Grupo não encontrado.",
     loadError: "Não foi possível carregar os grupos.",
     postMeta: (reactions: number, comments: number) =>
