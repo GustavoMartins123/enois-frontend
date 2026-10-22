@@ -83,6 +83,10 @@ export function SuspiciousUsersSection() {
         </h2>
 
         <p className="text-sm text-text-subtle">{texts.moderator.suspicious.description}</p>
+
+        <p className="rounded-xl bg-primary-soft px-3 py-2 text-xs font-medium text-primary-text">
+          {texts.moderator.suspicious.autoHint}
+        </p>
       </div>
 
       {items.length === 0 ? (

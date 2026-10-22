@@ -3184,7 +3184,9 @@ export const texts = {
     suspicious: {
       title: "Contas suspeitas",
       description:
-        "Contas recentes com sinais de cadastro em série: nome repetido ou de teste, e-mail não confirmado, perfil vazio e denúncias contra. Revise e selecione o que banir — o lote não apaga conteúdo, só aplica o banimento pelo fluxo normal.",
+        "Contas recentes com sinais de cadastro em série: nome repetido ou de teste, e-mail não confirmado, perfil vazio e denúncias contra. Revise e selecione o que banir — o lote aplica o banimento pelo fluxo normal, sem apagar conteúdo de quem você está julgando.",
+      autoHint:
+        "Risco acima de 60: a triagem automática bane a conta e apaga o conteúdo sozinha. O que aparece aqui é o que ficou abaixo do teto ou pede julgamento humano.",
       empty: "Nenhuma conta suspeita no período.",
       emptyHint:
         "Os sinais avaliados são nome em série, e-mail não confirmado, perfil vazio e denúncias.",
