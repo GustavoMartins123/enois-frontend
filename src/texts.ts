@@ -1842,6 +1842,18 @@ export const texts = {
     description:
       "Feitos pela comunidade. O Énóis não hospeda: cada jogo roda no lugar onde o criador o publicou — aqui só o convite.",
     searchPlaceholder: "Buscar jogo, criador ou tag",
+    /** Categorias de jogo: a comunidade e os jogos diários (que eram uma página à parte). */
+    categoryCommunity: "Jogos da comunidade",
+    categoryDaily: "Jogos diários",
+    categoryHint: "Os jogos da comunidade e os desafios do dia moram no mesmo lugar.",
+    allGamesTitle: "Todos os jogos",
+    allGamesHint: "O catálogo inteiro da comunidade, para ir direto no que você procura.",
+    allGamesShow: "Ver o catálogo",
+    allGamesHide: "Esconder o catálogo",
+    dailyNeedsAccount: "Os desafios do dia são para quem tem conta",
+    dailyNeedsAccountHint:
+      "Entre para jogar palavras, labirinto e blocos — e concuir os três rende faíscas.",
+    dailyEnter: "Entrar para jogar",
     mostPlayed: "Mais jogados",
     alphabetical: "A-Z",
     loadMore: "Carregar mais",
