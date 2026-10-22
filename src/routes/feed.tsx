@@ -508,6 +508,7 @@ function Home() {
             <div className="flex items-start gap-3">
               <UserAvatar
                 frame={profileUser?.avatarFrame}
+                frameOverflow="hidden"
                 src={profileUser?.avatar}
                 alt={profileUser?.name ?? texts.feed.you}
                 className="h-11 w-11"
