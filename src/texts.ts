@@ -3122,6 +3122,20 @@ export const texts = {
    * Admins (allowlist de username no backend) decidem candidaturas e podem punir qualquer usuário.
    */
   moderator: {
+    panic: {
+      title: "Modo pânico",
+      description:
+        "Bloqueia toda escrita da aplicação (POST/PUT/PATCH/DELETE) com 429 imediatamente. O login e este botão continuam funcionando para você poder desligar.",
+      active:
+        "ATIVO — toda escrita está respondendo 429. Desligue para a aplicação voltar ao normal.",
+      activate: "Ativar modo pânico",
+      deactivate: "Desativar modo pânico",
+      confirmTitle: "Ativar o modo pânico?",
+      confirmBody:
+        "Publicações, comentários, mensagens, cadastros e qualquer outra escrita vão falhar com 429 até você desligar. A API de login e este botão continuam acessíveis.",
+      done: (active: boolean) => (active ? "Modo pânico ATIVADO." : "Modo pânico desativado."),
+      error: "Não foi possível alterar o modo pânico.",
+    },
     seoTitle: "Painel de moderador · Énóis",
     back: "Voltar",
     title: "Painel de moderador",
