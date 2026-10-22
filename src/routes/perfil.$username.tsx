@@ -1,37 +1,56 @@
-import { useCallback, useRef, useState } from "react";
+import { type ChangeEvent, useCallback, useRef, useState } from "react";
 
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 
+import {
+  profileNameFontFamily,
+  profileNameTheme,
+  profileNameThemePaint,
+} from "@/constants/profile-name-fonts";
+import { usePreferencesStore } from "@/stores/preferences.store";
+import { texts } from "@/texts";
+import type { UpdateProfileRequest } from "@/types/application/profile/update-profile-request";
+import type { ProfileCropPurpose } from "@/types/routes/profile/profile-crop-purpose";
+import type { RecommendationItemProps } from "@/types/routes/profile/recommendation-item-props";
+import type { SectionProps } from "@/types/routes/profile/section-props";
 import {
   Briefcase,
   Camera,
   Clock,
+  Flag,
+  Gamepad2,
+  Image as ImageIcon,
   Link as LinkIcon,
   MapPin,
   MessageCircle,
+  Palette,
   Settings,
-  Sparkles,
+  ShieldCheck,
+  ShieldOff,
   Star,
   Target,
   ThumbsUp,
   Trophy,
-  UserPlus,
 } from "lucide-react";
 
 import {
   ApiError,
   feedApi,
+  gamesApi,
+  messagesApi,
   networkApi,
   profileApi,
   rankingApi,
   recommendationsApi,
 } from "@/lib/api";
+import { authApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
+import { buildShareTags } from "@/lib/open-graph";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
+import { cn } from "@/lib/utils";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -41,12 +60,41 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/components/ui/toast";
 
-import { AppShell } from "@/components/app-shell";
+import { AppContainer } from "@/components/app-container";
+import { AppearanceDialog } from "@/components/appearance/appearance-dialog";
+import { BlockUserDialog } from "@/components/block-user-dialog";
 import { EditProfileDialog } from "@/components/edit-profile-dialog";
 import { ImageCropDialog } from "@/components/image-crop-dialog";
+import { InfiniteScroll } from "@/components/infinite-scroll";
 import { PostCard } from "@/components/post-card";
+import { ReportDialog } from "@/components/post/report-dialog";
+import { RichText } from "@/components/post/rich-text";
+import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
+import { ProfileBannerDialog } from "@/components/profile-banner-dialog";
+import { ProfileBioDialog } from "@/components/profile-bio-dialog";
+import { ProfileResumeDialog } from "@/components/profile-resume-dialog";
+import { ProfileExperiencesSection } from "@/components/profile/experiences-section";
+import { ProfileCommunityShelf } from "@/components/profile/profile-community-shelf";
+import { ProfileExplorePanel } from "@/components/profile/profile-explore-panel";
+import { ProfileGamificationPanel } from "@/components/profile/profile-gamification-panel";
+import { ProfileNetworkDialog } from "@/components/profile/profile-network-dialog";
+import { ProfileQuickComposer } from "@/components/profile/profile-quick-composer";
+import { ProfileProjectsSection } from "@/components/profile/projects-section";
+import { PostCardSkeletons } from "@/components/skeletons/post-card-skeletons";
 import { UserAvatar } from "@/components/user-avatar";
+
+/** Paginas de "Publicacoes recentes": o mesmo tamanho do feed, para nao sobrecarregar o perfil. */
+const USER_POSTS_PAGE_SIZE = 10;
+
+/** As molduras da loja (C3): o anel que cada uma pinta ao redor do avatar. */
+const FRAME_RING: Record<string, string> = {
+  "moldura-ambar": "ring-amber-400",
+  "moldura-esmeralda": "ring-emerald-400",
+  "moldura-violeta": "ring-violet-500",
+  "moldura-coral": "ring-rose-400",
+};
 
 export const Route = createFileRoute("/perfil/$username")({
   loader: async ({ params }) => {
@@ -57,48 +105,72 @@ export const Route = createFileRoute("/perfil/$username")({
       throw notFound();
     }
   },
-  head: ({ loaderData }) => ({
-    meta: [
-      { title: `${loaderData?.user.name ?? "Perfil"} · Conexão` },
-      { name: "description", content: loaderData?.user.headline ?? "Perfil profissional" },
-    ],
-  }),
+  head: ({ loaderData, params }) => {
+    const user = loaderData?.user;
+    const title = texts.profile.seoTitle(user?.name ?? texts.profile.seoFallbackTitle);
+    return {
+      meta: buildShareTags({
+        title,
+        description: user?.headline || texts.profile.seoFallbackDescription,
+        url: `${texts.siteUrl}/perfil/${encodeURIComponent(params.username)}`,
+        imageUrl:
+          resolveCdnUrl(user?.banner || user?.avatar) || `${texts.siteUrl}/icons/icon-512.png`,
+        imageAlt: user?.name ? `Perfil de ${user.name} no Énóis` : title,
+      }),
+    };
+  },
   notFoundComponent: () => (
-    <AppShell>
-      <div className="surface-card p-10 text-center">
-        <p className="text-lg font-semibold">Pessoa não encontrada</p>
-        <Link to="/" className="mt-2 inline-block text-sm text-primary hover:underline">
-          Voltar para o início
+    <AppContainer>
+      <div className="rounded-2xl border border-border-soft bg-surface-card p-10 text-center">
+        <p className="text-base font-normal text-text-strong">{texts.profile.notFound}</p>
+
+        <Link to="/" className="mt-2 inline-block text-sm font-normal text-primary hover:underline">
+          {texts.profile.backHome}
         </Link>
       </div>
-    </AppShell>
+    </AppContainer>
   ),
   errorComponent: () => (
-    <AppShell>
-      <div className="surface-card p-10 text-center">
-        <p>Não foi possível carregar este perfil.</p>
+    <AppContainer>
+      <div className="rounded-2xl border border-border-soft bg-surface-card p-10 text-center">
+        <p className="text-sm font-normal text-text-subtle">{texts.profile.loadError}</p>
       </div>
-    </AppShell>
+    </AppContainer>
   ),
   component: Profile,
 });
 
+/** "chegou hoje" / "há 3 dias" a partir da data de entrada (nulo quando não há data). */
+function joinedLabel(joinedAt: string | null): string | null {
+  if (!joinedAt) return null;
+  const ms = Date.parse(joinedAt);
+  if (Number.isNaN(ms)) return null;
+  const days = Math.max(0, Math.floor((Date.now() - ms) / 86_400_000));
+  return days === 0 ? texts.profile.joinedToday : texts.profile.joinedDaysAgo(days);
+}
+
 function Profile() {
   const { user: loaderUser } = Route.useLoaderData();
   const { user: me, requireAuth } = useAuth();
+
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
   const avatarUpload = useMediaUpload();
   const bannerUpload = useMediaUpload();
   const avatarRef = useRef<HTMLInputElement>(null);
   const bannerRef = useRef<HTMLInputElement>(null);
-  const [hoveringAvatar, setHoveringAvatar] = useState(false);
-  const [hoveringBanner, setHoveringBanner] = useState(false);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
-  const [cropPurpose, setCropPurpose] = useState<"AVATAR" | "BANNER" | null>(null);
-  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [cropPurpose, setCropPurpose] = useState<ProfileCropPurpose | null>(null);
   const [recommendOpen, setRecommendOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const [recommendComment, setRecommendComment] = useState("");
+  const [appearanceOpen, setAppearanceOpen] = useState(false);
+  // A capa tem duas formas (foto ou HTML/CSS): o dialogo escolhe, e o clique na capa abre ele.
+  const [bannerOpen, setBannerOpen] = useState(false);
+  const [networkDialogKind, setNetworkDialogKind] = useState<"connections" | "followers" | null>(
+    null,
+  );
 
   const { data: liveProfile } = useQuery({
     queryKey: ["profile", loaderUser.username],
@@ -108,6 +180,50 @@ function Profile() {
 
   const user = liveProfile ?? loaderUser;
   const isOwnProfile = me?.id === user.id;
+  const localNameFont = usePreferencesStore((state) => state.displayNameFont);
+  const localNameColor = usePreferencesStore((state) => state.displayNameColor);
+  const localNameTheme = usePreferencesStore((state) => state.displayNameTheme);
+  const renderedNameTheme = isOwnProfile ? (localNameTheme ?? user.nameTheme) : user.nameTheme;
+  const renderedNameThemeDefinition = profileNameTheme(renderedNameTheme);
+  const renderedNameFont = isOwnProfile
+    ? (localNameFont ?? user.nameFont ?? renderedNameThemeDefinition.font)
+    : (user.nameFont ?? renderedNameThemeDefinition.font);
+  const renderedNameColor = isOwnProfile ? (localNameColor ?? user.nameColor) : user.nameColor;
+
+  // Selo "Dev de jogos" (G2 do plano dos games): só aparece quando a pessoa TEM presença de dev
+  // de verdade — jogo publicado ou página de criador preenchida. O DONO da conta recebe 200 do
+  // backend mesmo sem nada (é a mesma rota que alimenta o painel para montar a página), então a
+  // resposta sozinha não basta: sem conteúdo, o chip não existe nem no próprio perfil.
+  const { data: gamesDev } = useQuery({
+    queryKey: ["games", "developer", user.username],
+    queryFn: () => gamesApi.developer(user.username),
+    retry: false,
+    staleTime: 300_000,
+  });
+  const temPaginaDeDev = Boolean(
+    gamesDev &&
+    (gamesDev.games.length > 0 ||
+      gamesDev.displayName ||
+      gamesDev.headline ||
+      gamesDev.bio ||
+      gamesDev.links.length > 0),
+  );
+
+  // O currículo só existe na projeção do DONO (/me): o perfil público não traz, de propósito.
+  const { data: myProfile } = useQuery({
+    queryKey: ["me"],
+    queryFn: () => profileApi.me(),
+    enabled: isOwnProfile,
+    staleTime: 60_000,
+  });
+
+  // Estado de verificação da conta (e-mail/2FA): vem de /auth/me, não do perfil público.
+  const { data: authMe } = useQuery({
+    queryKey: ["auth-me"],
+    queryFn: () => authApi.me(),
+    enabled: isOwnProfile,
+    staleTime: 60_000,
+  });
 
   const { data: connectionData } = useQuery({
     queryKey: ["connection-status", user.id],
@@ -116,21 +232,36 @@ function Profile() {
   });
 
   const connectionStatus = connectionData?.status ?? null;
+  const blocked = connectionData?.blocked ?? false;
 
   const updateProfile = useMutation({
-    mutationFn: (data: { avatar?: string; banner?: string }) => profileApi.update(data),
+    mutationFn: (data: Pick<UpdateProfileRequest, "avatar" | "banner">) => profileApi.update(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["me"] });
       queryClient.invalidateQueries({ queryKey: ["profile", user.username] });
     },
   });
 
-  const { data: feedData } = useQuery({
+  // Paginado por cursor: a listagem simples devolvia só a primeira pagina, e o post antigo
+  // ficava inalcancavel no proprio perfil — quem procurava algo de meses atras nao encontrava.
+  const {
+    data: feedData,
+    hasNextPage: hasMoreUserPosts,
+    isFetchingNextPage: isLoadingMoreUserPosts,
+    fetchNextPage: fetchMoreUserPosts,
+    isLoading: userPostsLoading,
+  } = useInfiniteQuery({
     queryKey: ["feed", "user", user.id],
-    queryFn: () => feedApi.listByUserId(user.id),
+    queryFn: ({ pageParam }) => feedApi.listByUserId(user.id, pageParam, USER_POSTS_PAGE_SIZE),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
   });
 
-  const userPosts = feedData?.items ?? [];
+  const userPosts = feedData?.pages.flatMap((page) => page.items) ?? [];
+
+  // O card mostrava o tamanho da pagina carregada, entao congelava em 10 para quem tem mais posts
+  // que isso. postsCount e o inteiro do backend; o fallback so vale numa leitura sem contagem.
+  const postsCount = user.postsCount ?? userPosts.length;
 
   const { data: rankingData } = useQuery({
     queryKey: ["ranking"],
@@ -154,6 +285,31 @@ function Profile() {
     },
   });
 
+  // Desconectar/cancelar sem precisar BLOQUEAR: bloquear é definitivo e esconde a pessoa de
+  // todo o app; para só desfazer a conexão este endpoint deixa o caminho aberto para reconectar.
+  const disconnect = useMutation({
+    mutationFn: () => networkApi.remove(user.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["connection-status", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["network"] });
+    },
+  });
+
+  // Abrir conversa: reaproveita a conversa direta existente (o backend nao duplica) e ja entra
+  // nela. Antes o botao so levava para a lista de mensagens, deixando a pessoa procurar o contato.
+  const openConversation = useMutation({
+    mutationFn: () => messagesApi.openDirect(user.id),
+    onSuccess: (conversation) => {
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      navigate({ to: "/mensagens", search: { conversation: conversation.id } });
+    },
+  });
+
+  const handleMessage = () => {
+    if (!requireAuth()) return;
+    openConversation.mutate();
+  };
+
   const recommend = useMutation({
     mutationFn: () => recommendationsApi.create(user.id, { comment: recommendComment }),
     onSuccess: () => {
@@ -163,22 +319,40 @@ function Profile() {
     },
   });
 
-  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const src = URL.createObjectURL(file);
-    setCropImageSrc(src);
-    setCropPurpose("AVATAR");
-    setCropFile(file);
+  // GIF animado nao passa pelo recorte: o canvas converteria o primeiro frame em JPEG
+  // e mataria a animacao, entao o arquivo original vai direto pro upload.
+  const handleGifUpload = async (file: File, purpose: "AVATAR" | "BANNER") => {
+    try {
+      const upload = purpose === "AVATAR" ? avatarUpload : bannerUpload;
+      const result = await upload.upload(file, purpose);
+      const field = purpose === "AVATAR" ? "avatar" : "banner";
+      await updateProfile.mutateAsync({ [field]: result.cdnUrl });
+    } catch {
+      toast(texts.profile.imageUploadError, "error");
+    }
   };
 
-  const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  // Limpar o input e essencial: o navegador nao dispara `change` quando o usuario escolhe o MESMO
+  // arquivo duas vezes, e a impressao que fica e "a imagem nao carrega".
+  const openCrop = (input: HTMLInputElement, purpose: "AVATAR" | "BANNER") => {
+    const file = input.files?.[0];
+    input.value = "";
     if (!file) return;
-    const src = URL.createObjectURL(file);
-    setCropImageSrc(src);
-    setCropPurpose("BANNER");
-    setCropFile(file);
+    const isGif = file.type === "image/gif" || file.name.toLowerCase().endsWith(".gif");
+    if (isGif) {
+      void handleGifUpload(file, purpose);
+      return;
+    }
+    setCropImageSrc(URL.createObjectURL(file));
+    setCropPurpose(purpose);
+  };
+
+  const handleAvatarUpload = (event: ChangeEvent<HTMLInputElement>) => {
+    openCrop(event.target, "AVATAR");
+  };
+
+  const handleBannerUpload = (event: ChangeEvent<HTMLInputElement>) => {
+    openCrop(event.target, "BANNER");
   };
 
   const handleCropComplete = useCallback(
@@ -193,7 +367,6 @@ function Profile() {
       if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
       setCropImageSrc(null);
       setCropPurpose(null);
-      setCropFile(null);
     },
     [cropPurpose, cropImageSrc, avatarUpload, bannerUpload, updateProfile],
   );
@@ -202,40 +375,32 @@ function Profile() {
     if (cropImageSrc) URL.revokeObjectURL(cropImageSrc);
     setCropImageSrc(null);
     setCropPurpose(null);
-    setCropFile(null);
   }, [cropImageSrc]);
 
   return (
-    <AppShell>
-      <div className="space-y-6">
-        <div className="surface-card overflow-hidden">
-          <div
-            className="relative"
-            onMouseEnter={() => setHoveringBanner(true)}
-            onMouseLeave={() => setHoveringBanner(false)}
-          >
-            {user.banner ? (
-              <img
-                src={resolveCdnUrl(user.banner)}
-                alt=""
-                className="h-40 w-full object-cover sm:h-52"
+    <AppContainer>
+      <div className="space-y-5 sm:space-y-6">
+        {/* Quem recorta os cantos é a capa, não o card: o card cortaria as molduras com
+            efeito, que vazam para fora do avatar. */}
+        <div className="overflow-hidden rounded-[1.5rem] border border-border-soft bg-surface-card shadow-[0_28px_80px_-48px_color-mix(in_oklab,var(--primary)_95%,transparent)]">
+          <div className="group relative h-[24dvh] min-h-48 overflow-hidden sm:h-[28dvh] sm:min-h-60">
+            {user.bannerHtml ? (
+              // Capa em HTML/CSS: mesmo espaço da foto (mesmas classes), sem moldura própria — quem
+              // recorta é a capa, e o quadro já vem com sandbox sem scripts. `clip` é o delimitador:
+              // a capa é uma FAIXA da altura que o layout diz, e o HTML do autor é cortado nela —
+              // sem ele, um `height: 100vh` na capa realimentava a medida e crescia até tomar a tela.
+              <SandboxedHtmlFrame
+                html={user.bannerHtml}
+                title={texts.profile.bannerHtml.frameTitle}
+                className="h-full w-full rounded-none border-0 shadow-none"
+                // Faixa fixa com ROLAGEM interna (pedido da comunidade): o HTML do autor não é
+                // mais cortado — se passar da altura, rola dentro da capa.
+                autoHeight={false}
               />
+            ) : user.banner ? (
+              <img src={resolveCdnUrl(user.banner)} alt="" className="h-full w-full object-cover" />
             ) : (
-              <div className="h-40 w-full bg-gradient-to-r from-primary/20 to-primary/5 sm:h-52" />
-            )}
-            {isOwnProfile && hoveringBanner && (
-              <button
-                type="button"
-                onClick={() => bannerRef.current?.click()}
-                className="absolute inset-0 flex items-center justify-center bg-black/30 text-white transition"
-                disabled={bannerUpload.status === "uploading"}
-              >
-                {bannerUpload.status === "uploading" ? (
-                  "Enviando..."
-                ) : (
-                  <Camera className="h-6 w-6" />
-                )}
-              </button>
+              <div className="h-full w-full" style={{ background: "var(--gradient-primary)" }} />
             )}
             <input
               ref={bannerRef}
@@ -245,28 +410,16 @@ function Profile() {
               onChange={handleBannerUpload}
             />
           </div>
-          <div className="px-4 pb-5 sm:px-6 sm:pb-6">
-            <div className="-mt-12 flex flex-wrap items-end justify-between gap-3 sm:-mt-14 sm:gap-4">
-              <div
-                className="relative"
-                onMouseEnter={() => setHoveringAvatar(true)}
-                onMouseLeave={() => setHoveringAvatar(false)}
-              >
+
+          <div className="relative px-4 pb-5 sm:px-6 sm:pb-6">
+            <div className="-mt-14 flex flex-wrap items-end justify-between gap-3 sm:-mt-16 sm:gap-4">
+              <div className="group relative">
                 <UserAvatar
+                  frame={user.avatarFrame}
                   src={resolveCdnUrl(user.avatar)}
                   alt={user.name}
-                  className="h-24 w-24 ring-4 ring-card sm:h-28 sm:w-28"
+                  className={`h-28 w-28 ring-8 shadow-[0_20px_42px_-20px_color-mix(in_oklab,var(--primary)_90%,transparent)] sm:h-32 sm:w-32 ${FRAME_RING[user.avatarFrame ?? ""] ?? "ring-surface-card"}`}
                 />
-                {isOwnProfile && hoveringAvatar && (
-                  <button
-                    type="button"
-                    onClick={() => avatarRef.current?.click()}
-                    className="absolute inset-0 flex items-center justify-center rounded-full bg-black/30 text-white transition"
-                    disabled={avatarUpload.status === "uploading"}
-                  >
-                    {avatarUpload.status === "uploading" ? "..." : <Camera className="h-5 w-5" />}
-                  </button>
-                )}
                 <input
                   ref={avatarRef}
                   type="file"
@@ -275,171 +428,501 @@ function Profile() {
                   onChange={handleAvatarUpload}
                 />
               </div>
+
               <div className="flex flex-wrap gap-2">
                 {isOwnProfile ? (
-                  <EditProfileDialog profile={user}>
-                    <Button variant="outline" className="rounded-full gap-1.5">
-                      <Settings className="h-4 w-4" /> Editar perfil
+                  <>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full gap-1.5"
+                      onClick={() => avatarRef.current?.click()}
+                      disabled={avatarUpload.status === "uploading"}
+                    >
+                      <Camera className="h-4 w-4" />
+
+                      <>
+                        {avatarUpload.status === "uploading"
+                          ? texts.common.sending
+                          : texts.posts.editPhoto}
+                      </>
                     </Button>
-                  </EditProfileDialog>
+
+                    <EditProfileDialog profile={user}>
+                      <Button variant="outline" size="sm" className="rounded-full gap-1.5">
+                        <Settings className="h-4 w-4" />
+
+                        <>{texts.profile.editProfile}</>
+                      </Button>
+                    </EditProfileDialog>
+
+                    {/* UM botão para a capa: o diálogo já oferece as duas formas (foto ou HTML).
+                        Havia dois abrindo o mesmo diálogo — um deles com o rótulo antigo. */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full gap-1.5"
+                      onClick={() => setBannerOpen(true)}
+                      disabled={bannerUpload.status === "uploading"}
+                    >
+                      <ImageIcon className="h-4 w-4" />
+
+                      <>
+                        {bannerUpload.status === "uploading"
+                          ? texts.common.sending
+                          : texts.profile.bannerHtml.action}
+                      </>
+                    </Button>
+
+                    <ProfileResumeDialog
+                      resumeUrl={myProfile?.resumeUrl}
+                      resumeName={myProfile?.resumeName}
+                      onSaved={() => {
+                        queryClient.invalidateQueries({ queryKey: ["me"] });
+                      }}
+                    />
+                    <ProfileBioDialog
+                      initialHtml={user.bioHtml ?? null}
+                      onSaved={() => {
+                        queryClient.invalidateQueries({ queryKey: ["me"] });
+                        queryClient.invalidateQueries({ queryKey: ["profile", user.username] });
+                        queryClient.invalidateQueries({ queryKey: ["auth-me"] });
+                      }}
+                    />
+
+                    {/* Personalização do tema: fica no próprio perfil, que é onde a pessoa
+                        cuida da conta. As cores valem só neste dispositivo. */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full gap-1.5"
+                      onClick={() => setAppearanceOpen(true)}
+                    >
+                      <Palette className="h-4 w-4" />
+
+                      <>{texts.appearance.action}</>
+                    </Button>
+
+                    {/* Sem identidade verificada a reputação é multiplicada por zero: o caminho para
+                        resolver (confirmar e-mail ou ligar o 2FA) fica aqui, no próprio perfil. */}
+                    {authMe && !authMe.identityVerified && (
+                      <Link to="/seguranca">
+                        <Button size="sm" className="rounded-full gap-1.5">
+                          <ShieldCheck className="h-4 w-4" />
+
+                          <>{texts.auth.twoFactor.verifyIdentity}</>
+                        </Button>
+                      </Link>
+                    )}
+                  </>
                 ) : (
                   <>
                     <Button
                       variant="outline"
+                      size="sm"
                       className="rounded-full gap-1.5"
-                      onClick={() => {
-                        if (!requireAuth()) return;
-                        navigate({ to: "/mensagens" });
-                      }}
+                      onClick={handleMessage}
+                      disabled={openConversation.isPending}
                     >
-                      <MessageCircle className="h-4 w-4" /> Mensagem
+                      <MessageCircle className="h-4 w-4" />
+
+                      <>{texts.profile.message}</>
                     </Button>
-                    <Button
-                      className="rounded-full gap-1.5"
-                      onClick={() => {
-                        if (!requireAuth()) return;
-                        connect.mutate();
-                      }}
-                      disabled={
-                        connect.isPending ||
-                        connectionStatus === "ACCEPTED" ||
-                        connectionStatus === "PENDING"
+
+                    {connectionStatus === "ACCEPTED" || connectionStatus === "PENDING" ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full gap-1.5"
+                        disabled={disconnect.isPending}
+                        onClick={() => {
+                          if (!requireAuth()) return;
+                          disconnect.mutate();
+                        }}
+                      >
+                        {connectionStatus === "PENDING"
+                          ? texts.profile.cancelRequest
+                          : texts.profile.removeConnection}
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        className="rounded-full gap-1.5"
+                        onClick={() => {
+                          if (!requireAuth()) return;
+                          connect.mutate();
+                        }}
+                        disabled={connect.isPending}
+                      >
+                        {texts.profile.connect}
+                      </Button>
+                    )}
+
+                    <BlockUserDialog
+                      userId={user.id}
+                      name={user.name}
+                      blocked={blocked}
+                      onDone={() =>
+                        queryClient.invalidateQueries({ queryKey: ["connection-status", user.id] })
                       }
+                    />
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full gap-1.5"
+                      onClick={() => setReportOpen(true)}
                     >
-                      {connectionStatus === "PENDING"
-                        ? "Aguardando resposta"
-                        : connectionStatus === "ACCEPTED"
-                          ? "Conectado"
-                          : "Conectar"}
+                      <Flag className="h-4 w-4" />
+
+                      <>{texts.posts.report.action}</>
                     </Button>
+
+                    <ReportDialog
+                      targetId={user.id}
+                      targetType="USER"
+                      open={reportOpen}
+                      onOpenChange={setReportOpen}
+                    />
                   </>
                 )}
               </div>
+
+              {blocked && (
+                <p className="mt-3 flex items-center gap-2 rounded-lg bg-muted px-3 py-2 text-xs font-normal text-text-subtle">
+                  <ShieldOff className="h-4 w-4 shrink-0" />
+
+                  <>{texts.profile.blockedBadge}</>
+                </p>
+              )}
             </div>
-            <div className="mt-4">
+
+            <div className="mt-5">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="break-words text-xl font-semibold tracking-tight sm:text-2xl">
+                <h1
+                  className={cn(
+                    "min-w-0 break-words text-xl font-normal tracking-tight text-text-strong",
+                    renderedNameThemeDefinition.className,
+                  )}
+                  style={{
+                    fontFamily: profileNameFontFamily(renderedNameFont),
+                    ...(renderedNameThemeDefinition.colors.length > 1
+                      ? {
+                          backgroundImage: profileNameThemePaint(
+                            renderedNameTheme,
+                            renderedNameColor,
+                          ),
+                          WebkitBackgroundClip: "text",
+                          backgroundClip: "text",
+                          color: "transparent",
+                        }
+                      : { color: renderedNameColor ?? undefined }),
+                  }}
+                >
                   {user.name}
                 </h1>
+
+                {/* Vulgo: etiqueta ao lado do nome, escolhida pela própria pessoa. */}
+                {user.aka && (
+                  <span className="rounded-full bg-surface-2 px-2 py-0.5 text-xs font-normal text-text-subtle">
+                    {texts.profile.aka(user.aka)}
+                  </span>
+                )}
+
+                {/* Emblemas: até 5, PNG pequeno colado ao nome — fora do <h1> para não entrar no
+                    texto do título. Quem escolhe é a própria pessoa, nas configurações. */}
+                {(user.badges?.length ? user.badges : user.badge ? [user.badge] : []).map(
+                  (badge) => (
+                    <img
+                      key={badge}
+                      src={resolveCdnUrl(badge)}
+                      alt=""
+                      className="h-4 w-4 shrink-0 rounded-full object-cover"
+                    />
+                  ),
+                )}
+
                 {user.openToWork && (
-                  <span className="rounded-full bg-growth/15 px-2.5 py-0.5 text-xs font-medium text-growth">
-                    Aberto a oportunidades
+                  <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-normal text-growth">
+                    {texts.profile.openToWork}
                   </span>
                 )}
                 {user.isMentor && (
-                  <span className="rounded-full bg-primary-soft px-2.5 py-0.5 text-xs font-medium text-primary">
-                    Mentor disponível
+                  <span className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-normal text-primary">
+                    {texts.profile.mentorAvailable}
                   </span>
                 )}
+                {temPaginaDeDev && (
+                  <Link
+                    to="/games/$username"
+                    params={{ username: user.username }}
+                    className="inline-flex items-center gap-1 rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-normal text-primary hover:underline"
+                  >
+                    <Gamepad2 className="h-3 w-3" />
+
+                    <>{texts.games.developer.devChip}</>
+                  </Link>
+                )}
               </div>
-              <p className="mt-1 break-words text-foreground">{user.headline}</p>
-              <p className="mt-3 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+
+              <p className="mt-1 break-words text-sm font-normal text-primary">{user.headline}</p>
+
+              <p className="mt-3 flex flex-wrap items-center gap-4 text-sm font-normal text-text-subtle">
                 {user.company && (
                   <span className="inline-flex items-center gap-1.5">
-                    <Briefcase className="h-4 w-4" /> {user.company}
+                    <Briefcase className="h-4 w-4" />
+
+                    <>{user.company}</>
                   </span>
                 )}
                 {user.location && (
                   <span className="inline-flex items-center gap-1.5">
-                    <MapPin className="h-4 w-4" /> {user.location}
+                    <MapPin className="h-4 w-4" />
+
+                    <>{user.location}</>
                   </span>
                 )}
-                <span>· {user.connectionsCount} conexões</span>
+                <span>{texts.profile.connectionsMeta(user.connectionsCount ?? 0)}</span>
                 {(user.reputation ?? 0) > 0 && (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-opportunity/15 px-2 py-0.5 text-xs font-medium text-opportunity-foreground">
-                    ★ {user.reputation ?? 0} reputação
+                  <span className="inline-flex items-center gap-1 rounded-full bg-opportunity/15 px-2 py-0.5 text-xs font-normal text-opportunity-foreground">
+                    {texts.profile.reputationMeta(user.reputation ?? 0)}
                   </span>
                 )}
               </p>
             </div>
+
+            <dl className="mt-5 grid grid-cols-2 overflow-hidden rounded-2xl border border-border-soft bg-surface-1/70 sm:grid-cols-4">
+              <a
+                href="#atividade"
+                className="group border-b border-r border-border-soft px-4 py-3 transition hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:border-b-0"
+              >
+                <dt className="text-xs font-medium uppercase tracking-[0.14em] text-text-subtle group-hover:text-primary">
+                  {texts.profile.dashboard.postsLabel}
+                </dt>
+
+                <dd className="mt-1 text-xl font-medium tracking-tight text-text-strong">
+                  {postsCount}
+                </dd>
+              </a>
+
+              <button
+                type="button"
+                onClick={() => setNetworkDialogKind("connections")}
+                className="group border-b border-border-soft px-4 py-3 text-left transition hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:border-b-0 sm:border-r"
+              >
+                <dt className="text-xs font-medium uppercase tracking-[0.14em] text-text-subtle group-hover:text-primary">
+                  {texts.profile.dashboard.connectionsLabel}
+                </dt>
+
+                <dd className="mt-1 text-xl font-medium tracking-tight text-text-strong">
+                  {user.connectionsCount ?? 0}
+                </dd>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setNetworkDialogKind("followers")}
+                className="group border-b border-r border-border-soft px-4 py-3 text-left transition hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary sm:border-b-0"
+              >
+                <dt className="text-xs font-medium uppercase tracking-[0.14em] text-text-subtle group-hover:text-primary">
+                  {texts.profile.dashboard.followersLabel}
+                </dt>
+
+                <dd className="mt-1 text-xl font-medium tracking-tight text-text-strong">
+                  {user.followersCount ?? 0}
+                </dd>
+              </button>
+
+              <div className="px-4 py-3">
+                <dt className="text-xs font-medium uppercase tracking-[0.14em] text-text-subtle">
+                  {texts.profile.dashboard.reputationLabel}
+                </dt>
+
+                <dd className="mt-1 text-xl font-medium tracking-tight text-primary">
+                  {user.reputation ?? 0}
+                </dd>
+              </div>
+            </dl>
+
+            <nav
+              aria-label={texts.profile.dashboard.progressTitle}
+              className="mt-4 flex snap-x gap-2 overflow-x-auto border-t border-border-soft pt-4 scrollbar-hide"
+            >
+              {[
+                texts.profile.sections.about,
+                texts.profile.projects.title,
+                texts.profile.sections.recentPosts,
+              ].map((label, index) => (
+                <a
+                  key={label}
+                  href={index === 0 ? "#sobre" : index === 1 ? "#projetos" : "#atividade"}
+                  className="shrink-0 snap-start rounded-full border border-border-soft bg-surface-1 px-4 py-2 text-xs font-medium text-text-subtle transition hover:-translate-y-0.5 hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+                >
+                  {label}
+                </a>
+              ))}
+            </nav>
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-[minmax(0,1fr)_18rem] md:gap-5 xl:grid-cols-[minmax(0,1fr)_20rem] xl:gap-6">
           <div className="space-y-6">
-            {user.bio && (
-              <Section title="Sobre">
-                <p className="break-words text-[15px] leading-relaxed text-foreground">
-                  {user.bio}
-                </p>
-              </Section>
+            {isOwnProfile && <ProfileQuickComposer profile={user} />}
+
+            {user.bioHtml ? (
+              /* Bio em HTML: card próprio, com o título "Sobre" só na linha de cima e o quadro
+                 abaixo encostando nas três bordas. Antes usava o `Section` (que tem padding em
+                 volta) com o quadro de celular centralizado — a sobra em volta e a moldura clara
+                 do iframe eram o que parecia "borda branca". */
+              <section
+                id="sobre"
+                className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card shadow-[0_18px_50px_-42px_color-mix(in_oklab,var(--primary)_80%,transparent)]"
+              >
+                {/* Sem canto no card: a bio em HTML vai até as bordas (o raio do card recortava os
+                    cantos dela — era o que sobrava de arredondamento). */}
+
+                <h2 className="px-4 pb-3 pt-4 text-base font-normal text-text-strong sm:px-6 sm:pt-6">
+                  <>{texts.profile.sections.about}</>
+                </h2>
+
+                {/* Sem borda, sem cantos e sem folga interna do quadro: o card dá o acabamento e o
+                    HTML do autor usa todo o resto do espaço. O quadro cresce com o conteúdo, mas
+                    com TETO: uma bio gigante — ou um `100vh` colado por engano — para de crescer
+                    aqui em vez de empurrar a página inteira para baixo. */}
+                <SandboxedHtmlFrame
+                  html={user.bioHtml}
+                  title={texts.profile.bioHtml.frameTitle}
+                  className="h-[520px] w-full rounded-none border-0 bg-transparent shadow-none"
+                  innerPadding={false}
+                  maxHeight={1200}
+                />
+              </section>
+            ) : (
+              user.bio && (
+                <Section id="sobre" title={texts.profile.sections.about}>
+                  <RichText
+                    content={user.bio}
+                    className="break-words text-sm font-normal leading-relaxed text-text-subtle"
+                  />
+                </Section>
+              )
             )}
 
+            {/* Projetos: cards abaixo da bio — estruturados (stack, repo, status, diário)
+                ou o HTML próprio do autor. O dono gerencia por aqui mesmo. */}
+            <div id="projetos">
+              <ProfileProjectsSection username={user.username} isOwner={isOwnProfile} />
+            </div>
+
+            {/* Trajetória profissional logo abaixo dos projetos: cargo, empresa, período
+                (com "atual") e descrição, como no LinkedIn. */}
+            <ProfileExperiencesSection username={user.username} />
+
             {user.skills.length > 0 && (
-              <Section title="Habilidades">
-                <div className="flex flex-wrap gap-2">
+              <Section title={texts.profile.sections.skills}>
+                <div className="flex flex-wrap gap-1.5">
                   {user.skills.map((s: string) => (
-                    <Badge
+                    <span
                       key={s}
-                      className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft"
+                      className="rounded-full bg-surface-2 px-2.5 py-0.5 text-xs font-normal text-primary"
                     >
                       {s}
-                    </Badge>
+                    </span>
                   ))}
                 </div>
               </Section>
             )}
 
             {user.goals.length > 0 && (
-              <Section title="Objetivos profissionais" icon={Target}>
-                <div className="grid gap-3 sm:grid-cols-3">
+              <Section title={texts.profile.sections.goals} icon={Target}>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {user.goals.map((goal: string) => (
-                    <div key={goal} className="rounded-xl border border-border bg-muted/40 p-4">
-                      <p className="break-words text-sm font-medium">{goal}</p>
+                    <div key={goal} className="rounded-xl border border-border-soft p-4">
+                      <p className="break-words text-sm font-normal text-text-strong">{goal}</p>
                     </div>
                   ))}
                 </div>
               </Section>
             )}
 
-            <Section title="Publicações recentes">
-              {userPosts.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Ainda não há publicações.</p>
-              ) : (
+            <Section id="atividade" title={texts.profile.sections.recentPosts}>
+              {userPostsLoading && <PostCardSkeletons count={2} />}
+
+              {!userPostsLoading && userPosts.length === 0 && (
+                <p className="text-sm font-normal text-text-subtle">{texts.profile.noPosts}</p>
+              )}
+
+              {!userPostsLoading && userPosts.length > 0 && (
                 <div className="space-y-4">
                   {userPosts.map((p) => (
                     <PostCard key={p.id} post={p} />
                   ))}
+
+                  <InfiniteScroll
+                    hasMore={Boolean(hasMoreUserPosts)}
+                    loading={isLoadingMoreUserPosts}
+                    onLoadMore={() => void fetchMoreUserPosts()}
+                    loadingLabel={texts.feed.loadingMore}
+                  />
                 </div>
               )}
             </Section>
           </div>
 
-          <aside className="space-y-6">
-            <Section title="Disponibilidade" icon={Clock}>
-              <p className="break-words text-sm leading-relaxed text-foreground">
-                {user.availability ?? "Não informada"}
+          <aside className="self-start space-y-5">
+            <ProfileGamificationPanel
+              profile={user}
+              isOwner={isOwnProfile}
+              postsCount={postsCount}
+            />
+            <ProfileCommunityShelf isOwner={isOwnProfile} />
+
+            <Section title={texts.profile.sections.availability} icon={Clock}>
+              <p className="break-words text-sm font-normal leading-relaxed text-text-subtle">
+                {user.availability ?? texts.profile.availabilityUnknown}
               </p>
             </Section>
 
             {!isOwnProfile && (
-              <Section title="Recomendar" icon={ThumbsUp}>
-                <p className="mb-3 text-sm text-muted-foreground">
-                  Recomende este perfil para ajudar a comunidade.
+              <Section title={texts.profile.sections.recommend} icon={ThumbsUp}>
+                <p className="mb-3 text-sm font-normal text-text-subtle">
+                  {texts.profile.recommendDescription}
                 </p>
+
                 <Dialog open={recommendOpen} onOpenChange={setRecommendOpen}>
                   <DialogTrigger asChild>
-                    <Button className="w-full rounded-full gap-1.5">
-                      <ThumbsUp className="h-4 w-4" /> Recomendar
+                    <Button size="sm" className="w-full rounded-full gap-1.5">
+                      <ThumbsUp className="h-4 w-4" />
+
+                      <>{texts.profile.recommendAction}</>
                     </Button>
                   </DialogTrigger>
+
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Recomendar {user.name}</DialogTitle>
+                      <DialogTitle className="font-normal">
+                        {texts.profile.recommendTitle(user.name)}
+                      </DialogTitle>
                     </DialogHeader>
+
                     <div className="space-y-4 pt-2">
                       <Textarea
                         value={recommendComment}
                         onChange={(e) => setRecommendComment(e.target.value)}
-                        placeholder="Descreva como conhece este profissional..."
+                        placeholder={texts.profile.recommendPlaceholder}
                         rows={3}
+                        className="border-border-soft bg-surface-1 text-sm font-normal"
                       />
+
                       <Button
+                        size="sm"
                         className="w-full rounded-full"
                         disabled={!recommendComment.trim() || recommend.isPending}
                         onClick={() => recommend.mutate()}
                       >
-                        {recommend.isPending ? "Enviando..." : "Enviar recomendação"}
+                        {recommend.isPending
+                          ? texts.common.sending
+                          : texts.profile.sendRecommendation}
                       </Button>
                     </div>
                   </DialogContent>
@@ -448,7 +931,7 @@ function Profile() {
             )}
 
             {recommendationsData && recommendationsData.length > 0 && (
-              <Section title="Recomendações" icon={Star}>
+              <Section title={texts.profile.sections.recommendations} icon={Star}>
                 <div className="space-y-3">
                   {recommendationsData.map((rec) => (
                     <RecommendationItem key={rec.id} recommendation={rec} />
@@ -457,31 +940,39 @@ function Profile() {
               </Section>
             )}
 
-            {rankingData && rankingData.length > 0 && (
-              <Section title="Ranking" icon={Trophy}>
+            {/* A seção é OPCIONAL (pedido via suporte): quem desligou nas configurações não vê —
+                a preferência é de quem LÊ, não do perfil visitado. Desde 2026-10-20 a lista é de
+                CHEGADA (mais recentes primeiro), e o texto acima da lista diz isso. */}
+            {me?.showRanking !== false && rankingData && rankingData.length > 0 && (
+              <Section title={texts.profile.sections.ranking} icon={Trophy}>
+                <p className="-mt-1 mb-2 text-xs font-normal text-text-subtle">
+                  {texts.profile.newMembersHint}
+                </p>
+
                 <div className="space-y-2">
-                  {rankingData.slice(0, 5).map((u, i) => (
+                  {rankingData.slice(0, 5).map((u) => (
                     <div key={u.id} className="flex items-center gap-3">
-                      <span
-                        className={`w-5 text-center text-sm font-bold ${i < 3 ? "text-opportunity" : "text-muted-foreground"}`}
-                      >
-                        {i + 1}º
-                      </span>
                       <Link to="/perfil/$username" params={{ username: u.username }}>
                         <UserAvatar src={u.avatar} alt={u.name} className="h-8 w-8 shrink-0" />
                       </Link>
+
                       <div className="min-w-0 flex-1">
                         <Link
                           to="/perfil/$username"
                           params={{ username: u.username }}
-                          className="truncate text-sm font-medium hover:underline"
+                          className="truncate text-sm font-normal text-text-strong hover:underline"
                         >
                           {u.name}
                         </Link>
                       </div>
-                      <span className="text-xs font-semibold text-opportunity-foreground">
-                        {u.reputation}
-                      </span>
+
+                      {/* A coluna da direita é QUANDO chegou (o número de reputação não descreve
+                          mais esta lista). */}
+                      {joinedLabel(u.joinedAt) && (
+                        <span className="shrink-0 text-xs font-normal text-text-subtle">
+                          {joinedLabel(u.joinedAt)}
+                        </span>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -489,20 +980,24 @@ function Profile() {
             )}
 
             {user.externalLinks.length > 0 && (
-              <Section title="Links">
-                <ul className="space-y-2 text-sm">
+              <Section title={texts.profile.sections.links}>
+                <ul className="space-y-2 text-sm font-normal">
                   {user.externalLinks.map((link: string) => (
-                    <li key={link} className="flex items-center gap-2 text-muted-foreground">
+                    <li key={link} className="flex items-center gap-2 text-text-subtle">
                       <LinkIcon className="h-4 w-4" />
-                      <span className="truncate text-foreground">{link}</span>
+
+                      <span className="truncate text-text-strong">{link}</span>
                     </li>
                   ))}
                 </ul>
               </Section>
             )}
+
+            <ProfileExplorePanel />
           </aside>
         </div>
       </div>
+
       <div className="h-4 lg:hidden" />
 
       {cropImageSrc && cropPurpose && (
@@ -513,52 +1008,87 @@ function Profile() {
           }}
           imageSrc={cropImageSrc}
           aspect={cropPurpose === "AVATAR" ? 1 : 3}
-          title={cropPurpose === "AVATAR" ? "Ajustar foto de perfil" : "Ajustar foto de capa"}
+          title={cropPurpose === "AVATAR" ? texts.profile.cropAvatar : texts.profile.cropCover}
           onCropComplete={handleCropComplete}
         />
       )}
-    </AppShell>
+
+      {/* Dialogo da capa: sem ele, clicar na capa (ou em "Mudar capa") so mudava um estado que
+          ninguem lia — o clique parecia nao fazer nada. */}
+      <ProfileBannerDialog
+        open={bannerOpen}
+        onOpenChange={setBannerOpen}
+        initialHtml={user.bannerHtml ?? null}
+        onPickPhoto={() => bannerRef.current?.click()}
+        onSaved={() => {
+          queryClient.invalidateQueries({ queryKey: ["me"] });
+          queryClient.invalidateQueries({ queryKey: ["profile", user.username] });
+          queryClient.invalidateQueries({ queryKey: ["auth-me"] });
+        }}
+      />
+      <AppearanceDialog
+        open={appearanceOpen}
+        onOpenChange={setAppearanceOpen}
+        profileName={user.name}
+        profileNameFont={user.nameFont ?? undefined}
+        profileNameColor={user.nameColor}
+        profileNameTheme={user.nameTheme ?? undefined}
+      />
+      <ProfileNetworkDialog
+        username={user.username}
+        name={user.name}
+        kind={networkDialogKind ?? "connections"}
+        open={networkDialogKind !== null}
+        onOpenChange={(open) => {
+          if (!open) setNetworkDialogKind(null);
+        }}
+      />
+    </AppContainer>
   );
 }
 
-function Section({
-  title,
-  icon: Icon,
-  children,
-}: {
-  title: string;
-  icon?: React.ElementType;
-  children: React.ReactNode;
-}) {
+function Section({ title, icon: Icon, children, id }: SectionProps & { id?: string }) {
   return (
-    <section className="surface-card p-4 sm:p-6">
-      <h2 className="mb-4 flex items-center gap-2 text-base font-semibold">
-        {Icon && <Icon className="h-4 w-4 text-primary" />}
-        {title}
+    <section
+      id={id}
+      className="rounded-2xl border border-border-soft bg-surface-card p-4 shadow-[0_18px_50px_-44px_color-mix(in_oklab,var(--primary)_85%,transparent)] sm:p-6"
+    >
+      <h2 className="mb-4 flex items-center gap-2 text-base font-normal text-text-strong">
+        {Icon && (
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-xl bg-surface-2">
+            <Icon className="h-4 w-4 text-primary" />
+          </span>
+        )}
+        <>{title}</>
       </h2>
       {children}
     </section>
   );
 }
 
-function RecommendationItem({
-  recommendation,
-}: {
-  recommendation: { recommenderId: string; comment: string };
-}) {
+function RecommendationItem({ recommendation }: RecommendationItemProps) {
   const { data: recommender } = useQuery({
     queryKey: ["profile", "by-id", recommendation.recommenderId],
     queryFn: () => profileApi.getById(recommendation.recommenderId),
   });
 
   return (
-    <div className="rounded-xl bg-muted/50 p-3">
+    <div className="rounded-xl bg-surface-1 p-3">
       <div className="flex items-center gap-2 mb-2">
-        <UserAvatar src={recommender?.avatar} alt={recommender?.name} className="h-6 w-6" />
-        <span className="text-xs font-medium">{recommender?.name ?? "Usuário"}</span>
+        <UserAvatar
+          frame={recommender?.avatarFrame}
+          src={recommender?.avatar}
+          alt={recommender?.name}
+          className="h-6 w-6"
+        />
+
+        <span className="text-xs font-medium text-text-strong">
+          {recommender?.name ?? texts.profile.userFallback}
+        </span>
       </div>
-      <p className="break-words text-sm leading-relaxed text-muted-foreground">
-        "{recommendation.comment}"
+
+      <p className="break-words text-sm font-normal leading-relaxed text-text-subtle">
+        {texts.profile.recommendationQuote(recommendation.comment)}
       </p>
     </div>
   );

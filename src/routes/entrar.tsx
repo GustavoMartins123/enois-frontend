@@ -1,19 +1,37 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, type ReactNode, useRef, useState } from "react";
 
+import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
-import { ArrowRight, Eye, EyeOff, Loader2, Sparkles } from "lucide-react";
+import { SIGNUP_OPEN } from "@/constants/account";
+import { texts } from "@/texts";
+import type { OAuthProvider } from "@/types/application/auth/oauth-provider";
+import type { TwoFactorChallenge } from "@/types/application/auth/two-factor-challenge";
+import type { AuthFormProps } from "@/types/routes/auth/auth-form-props";
+import type { FieldProps } from "@/types/routes/auth/field-props";
+import type { ForgotPasswordDialogProps } from "@/types/routes/auth/forgot-password-dialog-props";
+import type { LoginFormProps } from "@/types/routes/auth/login-form-props";
+import type { SocialButtonsProps } from "@/types/routes/auth/social-buttons-props";
+import type { TabBtnProps } from "@/types/routes/auth/tab-btn-props";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
+import { ArrowRight, Loader2, MailCheck, ShieldCheck } from "lucide-react";
 import { z } from "zod";
 
 import { ApiError, authApi } from "@/lib/api";
+import { ogMetas } from "@/lib/seo";
+import { storeSession } from "@/lib/session";
+import { useCaptchaConfig } from "@/lib/use-captcha-config";
 
 import { Button } from "@/components/ui/button";
+import { DateTextInput } from "@/components/ui/date-text-input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 
+import { AuthHero } from "@/components/auth-hero";
+import { ErrorBanner } from "@/components/error-banner";
 import { ThemeToggle } from "@/components/theme-toggle";
-
-type Tab = "login" | "signup";
 
 const searchSchema = z.object({
   tab: z.enum(["login", "signup"]).optional().default("signup"),
@@ -23,34 +41,50 @@ export const Route = createFileRoute("/entrar")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Entrar ou criar conta · Conexão" },
+      { title: texts.auth.seo.authTitle },
       {
         name: "description",
-        content: "Acesse sua conta ou comece sua jornada profissional na Conexão.",
+        content: texts.auth.seo.authDescription,
       },
+      ...ogMetas(texts.auth.seo.authTitle, texts.auth.seo.authDescription),
     ],
   }),
   component: Auth,
 });
 
 const loginSchema = z.object({
-  email: z.string().trim().email("E-mail inválido").max(255),
-  password: z.string().min(6, "Senha precisa ter ao menos 6 caracteres").max(128),
+  email: z.string().trim().email(texts.auth.validation.invalidEmail).max(255),
+  password: z.string().min(6, texts.auth.validation.loginPasswordMin).max(128),
 });
 
 const signupSchema = z.object({
-  name: z.string().trim().min(2, "Como podemos te chamar?").max(80),
-  email: z.string().trim().email("E-mail inválido").max(255),
-  password: z.string().min(8, "Use ao menos 8 caracteres").max(128),
+  name: z.string().trim().min(2, texts.auth.validation.signupNameMin).max(80),
+  email: z.string().trim().email(texts.auth.validation.invalidEmail).max(255),
+  password: z.string().min(8, texts.auth.validation.passwordMin).max(128),
+  // ECA Digital: a data de nascimento e obrigatoria no cadastro (o backend recalcula a idade).
+  birthDate: z
+    .string()
+    .min(1, texts.auth.validation.birthDateRequired)
+    .refine((value) => value <= new Date().toISOString().slice(0, 10), {
+      message: texts.auth.validation.birthDateFuture,
+    }),
+  // Checkbox marcado chega como "on"; ausente significa nao aceito.
+  acceptedTerms: z
+    .string()
+    .optional()
+    .refine((value) => value === "on", { message: texts.auth.validation.termsRequired }),
 });
 
 function Auth() {
-  const initial = Route.useSearch().tab as Tab;
+  const initial = Route.useSearch().tab;
   const navigate = useNavigate();
-  const [tab, setTab] = useState<Tab>(initial);
+  const [tab, setTab] = useState(initial);
+  const [forgotOpen, setForgotOpen] = useState(false);
+  // Cadastros fechados: `/entrar?tab=signup` cai no login e o aviso explica o motivo.
+  const activeTab = SIGNUP_OPEN ? tab : "login";
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
+    <div className="grid grid-cols-1 min-h-screen lg:grid-cols-2">
       {/* Brand side */}
       <aside
         className="relative hidden flex-col justify-between overflow-hidden p-10 text-primary-foreground lg:flex"
@@ -66,85 +100,82 @@ function Auth() {
         />
 
         <Link to="/" className="relative flex items-center gap-2">
-          <div className="grid h-9 w-9 place-items-center rounded-xl bg-primary-foreground/20 backdrop-blur">
-            <Sparkles className="h-4 w-4" />
-          </div>
-          <span className="text-lg font-semibold tracking-tight">Conexão</span>
+          <img src="/brand/mark-primary.svg" alt="" className="h-9 w-9 shrink-0" />
+
+          <span className="text-lg font-semibold tracking-tight">
+            <>{texts.brand.prefix}</>
+
+            <span className="gradient-text">{texts.brand.accent}</span>
+          </span>
         </Link>
 
-        <div className="relative max-w-md">
-          <p className="text-sm font-medium uppercase tracking-wider text-primary-foreground/80">
-            Networking com propósito
-          </p>
-          <h2 className="mt-3 text-4xl font-semibold leading-tight tracking-tight">
-            "Encontrei aqui as conversas que mudaram minha carreira."
-          </h2>
-          <div className="mt-6 flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-primary-foreground/25" />
-            <div>
-              <p className="font-medium">Marina Rocha</p>
-              <p className="text-sm text-primary-foreground/75">Engenheira Sênior · Nubank</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative grid grid-cols-3 gap-4 text-sm">
-          {[
-            { v: "120k+", l: "Profissionais" },
-            { v: "2.8k", l: "Mentores ativos" },
-            { v: "640", l: "Comunidades" },
-          ].map((s) => (
-            <div key={s.l}>
-              <p className="text-2xl font-semibold">{s.v}</p>
-              <p className="text-primary-foreground/75">{s.l}</p>
-            </div>
-          ))}
-        </div>
+        <AuthHero />
       </aside>
 
       {/* Form side */}
       <section className="flex flex-col px-6 py-10 sm:px-12">
         <div className="flex items-center justify-between lg:hidden">
           <Link to="/" className="flex items-center gap-2">
-            <div
-              className="grid h-9 w-9 place-items-center rounded-xl text-primary-foreground"
-              style={{ background: "var(--gradient-primary)" }}
-            >
-              <Sparkles className="h-4 w-4" />
-            </div>
-            <span className="font-semibold tracking-tight">Conexão</span>
+            <img src="/brand/mark-primary.svg" alt="" className="h-9 w-9 shrink-0" />
+
+            <span className="font-semibold tracking-tight">
+              <>{texts.brand.prefix}</>
+
+              <span className="gradient-text">{texts.brand.accent}</span>
+            </span>
           </Link>
+
           <ThemeToggle />
         </div>
 
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
-          <div className="flex items-center gap-1 rounded-full border border-border bg-card p-1">
-            <TabBtn active={tab === "signup"} onClick={() => setTab("signup")}>
-              Criar conta
-            </TabBtn>
-            <TabBtn active={tab === "login"} onClick={() => setTab("login")}>
-              Entrar
-            </TabBtn>
-          </div>
+          {SIGNUP_OPEN ? (
+            <div className="flex items-center gap-1 rounded-full border border-border bg-card p-1">
+              <TabBtn active={tab === "signup"} onClick={() => setTab("signup")}>
+                {texts.common.createAccount}
+              </TabBtn>
+
+              <TabBtn active={tab === "login"} onClick={() => setTab("login")}>
+                {texts.common.enter}
+              </TabBtn>
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-border bg-card px-4 py-3">
+              <p className="text-sm font-medium text-foreground">{texts.auth.signupClosed.title}</p>
+
+              <p className="mt-1 text-sm text-muted-foreground">
+                {texts.auth.signupClosed.description}
+              </p>
+            </div>
+          )}
 
           <div className="mt-8">
-            {tab === "signup" ? (
+            {activeTab === "signup" ? (
               <SignupForm onDone={() => navigate({ to: "/feed" })} />
             ) : (
-              <LoginForm onDone={() => navigate({ to: "/feed" })} />
+              <LoginForm
+                onDone={() => navigate({ to: "/feed" })}
+                onForgot={() => setForgotOpen(true)}
+              />
             )}
           </div>
 
+          <ForgotPasswordDialog open={forgotOpen} onOpenChange={setForgotOpen} />
+
           <p className="mt-6 text-center text-xs text-muted-foreground">
-            Ao continuar, você concorda com nossos{" "}
-            <a href="#" className="text-primary hover:underline">
-              Termos
-            </a>{" "}
-            e{" "}
-            <a href="#" className="text-primary hover:underline">
-              Política de Privacidade
-            </a>
-            .
+            <>{texts.auth.terms.prefix}</>
+
+            <Link to="/termos" className="text-primary hover:underline">
+              {texts.auth.terms.terms}
+            </Link>
+
+            <>{texts.auth.terms.conjunction}</>
+
+            <Link to="/privacidade" className="text-primary hover:underline">
+              {texts.auth.terms.privacy}
+            </Link>
+
+            <>{texts.auth.terms.end}</>
           </p>
         </div>
       </section>
@@ -152,15 +183,7 @@ function Auth() {
   );
 }
 
-function TabBtn({
-  active,
-  children,
-  onClick,
-}: {
-  active: boolean;
-  children: React.ReactNode;
-  onClick: () => void;
-}) {
+function TabBtn({ active, children, onClick }: TabBtnProps) {
   return (
     <button
       onClick={onClick}
@@ -175,41 +198,51 @@ function TabBtn({
   );
 }
 
-function SocialButtons() {
-  const [loading, setLoading] = useState<"GOOGLE" | "APPLE" | null>(null);
+/** Entrada social: os provedores habilitados em ENABLED_OAUTH_PROVIDERS (Google, LinkedIn). */
+function SocialButtons({ mode }: SocialButtonsProps) {
+  const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const startOAuth = async (provider: "GOOGLE" | "APPLE") => {
+  const start = async (provider: OAuthProvider) => {
     setLoading(provider);
     setError(null);
-    // Simulate attempt then fail — SSO não configurado neste ambiente.
-    await new Promise((r) => setTimeout(r, 400));
-    setError(
-      `Função não implementada: login com ${provider === "GOOGLE" ? "Google" : "Apple"} ainda não está configurado.`,
-    );
-    setLoading(null);
+    try {
+      // O backend registra state + nonce no servidor e devolve a URL de autorização.
+      // `mode` faz o backend recusar cadastro com e-mail que já existe, em vez de entrar na conta.
+      const start = await authApi.oauthStart(provider, mode);
+      window.location.href = start.authorizationUrl;
+    } catch (err) {
+      // Sem o aplicativo aprovado no provedor o start falha: explicamos em vez de vazar o erro cru.
+      const detail = err instanceof ApiError && import.meta.env.DEV ? ` (${err.message})` : "";
+      setError(`${texts.auth.social.pendingApproval}${detail}`);
+      setLoading(null);
+    }
   };
 
+  const providerButton = (provider: OAuthProvider, icon: ReactNode, label: string) => (
+    <button
+      type="button"
+      onClick={() => start(provider)}
+      disabled={loading !== null}
+      className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium transition hover:bg-muted disabled:opacity-50"
+    >
+      {loading === provider ? <Loader2 className="h-4 w-4 animate-spin" /> : icon}
+      <>{label}</>
+    </button>
+  );
+
   return (
-    <div className="grid gap-2">
-      <button
-        type="button"
-        onClick={() => startOAuth("GOOGLE")}
-        disabled={loading !== null}
-        className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium transition hover:bg-muted disabled:opacity-50"
-      >
-        {loading === "GOOGLE" ? <Loader2 className="h-4 w-4 animate-spin" /> : <GoogleIcon />}
-        Continuar com Google
-      </button>
-      <button
-        type="button"
-        onClick={() => startOAuth("APPLE")}
-        disabled={loading !== null}
-        className="flex items-center justify-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-medium transition hover:bg-muted disabled:opacity-50"
-      >
-        {loading === "APPLE" ? <Loader2 className="h-4 w-4 animate-spin" /> : <AppleIcon />}
-        Continuar com Apple
-      </button>
+    <div className="grid grid-cols-1 gap-2">
+      {providerButton(
+        "GOOGLE",
+        <GoogleIcon />,
+        mode === "signup" ? texts.auth.social.googleSignup : texts.auth.social.google,
+      )}
+      {providerButton(
+        "LINKEDIN",
+        <LinkedinIcon />,
+        mode === "signup" ? texts.auth.social.linkedinSignup : texts.auth.social.linkedin,
+      )}
       {error && (
         <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p>
       )}
@@ -217,20 +250,47 @@ function SocialButtons() {
   );
 }
 
+function LinkedinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" fill="#0A66C2" aria-hidden>
+      <path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.36V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zM7.12 20.45H3.56V9h3.56v11.45z" />
+    </svg>
+  );
+}
+
 function Divider() {
   return (
     <div className="my-5 flex items-center gap-3 text-xs text-muted-foreground">
       <div className="h-px flex-1 bg-border" />
-      ou com e-mail
+
+      <>{texts.auth.social.divider}</>
+
       <div className="h-px flex-1 bg-border" />
     </div>
   );
 }
 
-function SignupForm({ onDone }: { onDone: () => void }) {
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined;
+
+function SignupForm(_props: AuthFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
+  const turnstileRef = useRef<TurnstileInstance>(null);
+  /** Conta criada e pendente de confirmação: o formulário dá lugar à tela "confirme seu e-mail". */
+  const [pendingEmail, setPendingEmail] = useState<string | null>(null);
+  const captcha = useCaptchaConfig();
+  const captchaMode = captcha.data?.captchaMode;
+  const turnstileSiteKey = captcha.data?.turnstileSiteKey ?? TURNSTILE_SITE_KEY;
+  const challenge = useQuery({
+    queryKey: ["auth", "signup-challenge"],
+    queryFn: () => authApi.signupChallenge(),
+    enabled: captchaMode === "CHALLENGE",
+    staleTime: 0,
+    refetchOnWindowFocus: false,
+  });
+  const [challengeAnswer, setChallengeAnswer] = useState("");
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -243,95 +303,203 @@ function SignupForm({ onDone }: { onDone: () => void }) {
       return;
     }
     setErrors({});
+    setFormError(null);
+    if (captchaMode === "CHALLENGE" && (!challenge.data || !challengeAnswer.trim())) {
+      setFormError(new Error(texts.auth.captcha.required));
+      return;
+    }
     setLoading(true);
     localStorage.removeItem("session_token");
     localStorage.removeItem("refresh_token");
     localStorage.removeItem("current_user");
     try {
+      // O cadastro não abre sessão: a conta nasce pendente até confirmar o e-mail.
       const result = await authApi.signup({
         name: parsed.data.name,
         email: parsed.data.email,
         password: parsed.data.password,
+        birthDate: parsed.data.birthDate,
+        acceptedTerms: parsed.data.acceptedTerms === "on",
+        website: fd.get("website") as string | undefined,
+        turnstileToken:
+          captchaMode === "TURNSTILE"
+            ? (turnstileRef.current?.getResponse() ?? undefined)
+            : undefined,
+        challengeId: captchaMode === "CHALLENGE" ? challenge.data?.challengeId : undefined,
+        challengeAnswer: captchaMode === "CHALLENGE" ? Number(challengeAnswer.trim()) : undefined,
       });
-      localStorage.setItem("session_token", result.token);
-      localStorage.setItem("refresh_token", result.refreshToken);
-      localStorage.setItem("session_expires_at", result.expiresAt);
-      localStorage.setItem("refresh_expires_at", result.refreshExpiresAt);
-      localStorage.setItem("current_user", JSON.stringify(result.user));
-      onDone();
+      setPendingEmail(result.email);
     } catch (err) {
-      if (err instanceof ApiError) {
-        setErrors({ form: err.message });
-      } else {
-        setErrors({ form: "Erro inesperado. Tente novamente." });
+      setFormError(err);
+      // O captcha é de uso único: depois de uma falha, pede um novo (e limpa a resposta).
+      turnstileRef.current?.reset();
+      if (captchaMode === "CHALLENGE") {
+        setChallengeAnswer("");
+        void challenge.refetch();
       }
     } finally {
       setLoading(false);
     }
   };
 
+  if (pendingEmail) {
+    return <EmailPendingScreen email={pendingEmail} />;
+  }
+
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Vamos começar.</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Crie sua conta em menos de um minuto.</p>
+      <h1 className="text-2xl font-semibold tracking-tight">{texts.auth.signup.title}</h1>
+
+      <p className="mt-1 text-sm text-muted-foreground">{texts.auth.signup.subtitle}</p>
 
       <div className="mt-6">
-        <SocialButtons />
+        <SocialButtons mode="signup" />
         <Divider />
       </div>
 
       <form onSubmit={submit} className="space-y-4" noValidate>
-        <Field label="Nome completo" error={errors.name}>
+        {/* Honeypot: campo invisível que bots preenchem e humanos não veem */}
+        <input
+          name="website"
+          type="text"
+          autoComplete="off"
+          tabIndex={-1}
+          aria-hidden="true"
+          className="absolute -left-[9999px] h-0 w-0 overflow-hidden opacity-0"
+        />
+
+        <Field label={texts.auth.fields.fullName} error={errors.name}>
           <Input
             name="name"
-            placeholder="Maria da Silva"
+            placeholder={texts.auth.placeholders.name}
             autoComplete="name"
             required
             maxLength={80}
           />
         </Field>
-        <Field label="E-mail" error={errors.email}>
+
+        <Field label={texts.auth.fields.birthDate} error={errors.birthDate}>
+          <DateTextInput
+            name="birthDate"
+            required
+            autoComplete="bday"
+            min={`${new Date().getFullYear() - 120}-01-01`}
+            max={new Date().toISOString().slice(0, 10)}
+          />
+        </Field>
+
+        <Field label={texts.auth.fields.email} error={errors.email}>
           <Input
             name="email"
             type="email"
-            placeholder="voce@exemplo.com"
+            placeholder={texts.auth.placeholders.email}
             autoComplete="email"
             required
             maxLength={255}
           />
         </Field>
-        <Field label="Senha" error={errors.password}>
-          <div className="relative">
-            <Input
-              name="password"
-              type={show ? "text" : "password"}
-              placeholder="Mínimo de 8 caracteres"
-              autoComplete="new-password"
-              required
-              maxLength={128}
-            />
-            <button
-              type="button"
-              onClick={() => setShow((s) => !s)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-foreground"
-              aria-label={show ? "Ocultar senha" : "Mostrar senha"}
-            >
-              {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-            </button>
-          </div>
+
+        <Field label={texts.auth.fields.password} error={errors.password}>
+          <PasswordInput
+            name="password"
+            revealed={show}
+            onToggle={() => setShow((value) => !value)}
+            placeholder={texts.auth.placeholders.newPassword}
+            autoComplete="new-password"
+            required
+            maxLength={128}
+          />
         </Field>
 
-        {errors.form && (
-          <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
-            {errors.form}
-          </p>
+        <div className="space-y-1.5">
+          <label className="flex items-start gap-2 text-xs font-normal text-text-subtle">
+            <input type="checkbox" name="acceptedTerms" className="mt-0.5 h-4 w-4 shrink-0" />
+
+            <span>
+              <>{texts.auth.signup.termsPrefix}</>
+
+              <Link
+                to="/termos"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                <>{texts.auth.signup.termsLink}</>
+              </Link>
+
+              <>{texts.auth.signup.termsAnd}</>
+
+              <Link
+                to="/privacidade"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                <>{texts.auth.signup.privacyLink}</>
+              </Link>
+
+              <>{texts.auth.signup.termsSuffix}</>
+            </span>
+          </label>
+          {errors.acceptedTerms && (
+            <p className="text-xs text-destructive">{errors.acceptedTerms}</p>
+          )}
+        </div>
+
+        {!!formError && <ErrorBanner error={formError} showDetails={false} />}
+        {captchaMode === "TURNSTILE" && turnstileSiteKey && (
+          <Turnstile
+            ref={turnstileRef}
+            siteKey={turnstileSiteKey}
+            options={{ size: "flexible", theme: "dark" }}
+          />
         )}
-        <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
+        {captchaMode === "CHALLENGE" && (
+          <div className="space-y-1.5 rounded-xl border border-border-soft bg-surface-1 p-3">
+            <Label htmlFor="challengeAnswer">{texts.auth.captcha.label}</Label>
+
+            <p className="text-sm font-medium text-text-strong">
+              {challenge.isLoading ? texts.auth.captcha.loading : challenge.data?.question}
+            </p>
+
+            <div className="flex items-center gap-2">
+              <Input
+                id="challengeAnswer"
+                inputMode="numeric"
+                autoComplete="off"
+                maxLength={3}
+                value={challengeAnswer}
+                onChange={(event) => setChallengeAnswer(event.target.value.replace(/\D/g, ""))}
+                placeholder={texts.auth.captcha.placeholder}
+                className="w-24"
+              />
+
+              <Button
+                type="button"
+                variant="ghost"
+                className="w-auto rounded-full text-xs"
+                onClick={() => {
+                  setChallengeAnswer("");
+                  void challenge.refetch();
+                }}
+              >
+                {texts.auth.captcha.refresh}
+              </Button>
+            </div>
+          </div>
+        )}
+        <Button
+          type="submit"
+          className="w-full rounded-full gap-2"
+          disabled={loading || (captchaMode === "CHALLENGE" && !challenge.data)}
+        >
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <>
-              Criar conta <ArrowRight className="h-4 w-4" />
+              <>{texts.common.createAccount} </>
+
+              <ArrowRight className="h-4 w-4" />
             </>
           )}
         </Button>
@@ -340,10 +508,90 @@ function SignupForm({ onDone }: { onDone: () => void }) {
   );
 }
 
-function LoginForm({ onDone }: { onDone: () => void }) {
+/**
+ * Estado "aguardando confirmação": mostrado logo após o cadastro e também quando o login encontra
+ * uma conta pendente. Aqui fica claro o que fazer e há reenvio, com o resultado de cada tentativa.
+ */
+function EmailPendingScreen({ email }: { email: string }) {
+  const [state, setState] = useState<"idle" | "sending" | "sent" | "failed" | "limited">("idle");
+
+  const resend = async () => {
+    setState("sending");
+    try {
+      await authApi.resendVerification(email);
+      setState("sent");
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 429) {
+        setState("limited");
+        return;
+      }
+      setState("failed");
+    }
+  };
+
+  return (
+    <div>
+      <MailCheck className="h-7 w-7 text-primary" />
+
+      <h1 className="mt-3 text-2xl font-semibold tracking-tight">{texts.auth.pending.title}</h1>
+
+      <p className="mt-2 text-sm text-muted-foreground">{texts.auth.pending.description(email)}</p>
+
+      <ul className="mt-4 space-y-1.5 text-sm font-normal text-muted-foreground">
+        <li>· {texts.auth.pending.step1}</li>
+
+        <li>· {texts.auth.pending.step2}</li>
+
+        <li>· {texts.auth.pending.step3}</li>
+      </ul>
+
+      {state === "sent" && (
+        <p className="mt-4 rounded-xl bg-growth/10 px-4 py-2 text-sm text-growth">
+          {texts.auth.pending.sent}
+        </p>
+      )}
+
+      {state === "failed" && (
+        <p className="mt-4 rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
+          {texts.auth.pending.failed}
+        </p>
+      )}
+
+      {state === "limited" && (
+        <p className="mt-4 rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
+          {texts.auth.pending.limited}
+        </p>
+      )}
+
+      <Button
+        className="mt-6 w-full rounded-full gap-2"
+        onClick={resend}
+        disabled={state === "sending"}
+      >
+        {state === "sending" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+
+        <>{state === "sending" ? texts.auth.pending.sending : texts.auth.pending.resend}</>
+      </Button>
+
+      <p className="mt-4 text-center text-xs text-muted-foreground">
+        <>{texts.auth.pending.wrongEmail}</>
+      </p>
+    </div>
+  );
+}
+
+function LoginForm({ onDone, onForgot }: LoginFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState<unknown>(null);
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
+  const loginTurnstileRef = useRef<TurnstileInstance>(null);
+  const captcha = useCaptchaConfig();
+  const turnstileSiteKey = captcha.data?.turnstileSiteKey ?? TURNSTILE_SITE_KEY;
+  /** Conta pendente de confirmação: em vez de "erro", a tela explica e oferece reenviar. */
+  const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
+  /** Segundo fator pedido pelo backend depois da senha correta. */
+  const [challenge, setChallenge] = useState<TwoFactorChallenge | null>(null);
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -356,6 +604,7 @@ function LoginForm({ onDone }: { onDone: () => void }) {
       return;
     }
     setErrors({});
+    setFormError(null);
     setLoading(true);
     localStorage.removeItem("session_token");
     localStorage.removeItem("refresh_token");
@@ -364,85 +613,99 @@ function LoginForm({ onDone }: { onDone: () => void }) {
       const result = await authApi.login({
         email: parsed.data.email,
         password: parsed.data.password,
+        turnstileToken: loginTurnstileRef.current?.getResponse() ?? undefined,
       });
-      localStorage.setItem("session_token", result.token);
-      localStorage.setItem("refresh_token", result.refreshToken);
-      localStorage.setItem("session_expires_at", result.expiresAt);
-      localStorage.setItem("refresh_expires_at", result.refreshExpiresAt);
-      localStorage.setItem("current_user", JSON.stringify(result.user));
+
+      // Conta com segundo fator: a senha levou ao desafio, não à sessão.
+      if ("twoFactorRequired" in result) {
+        setChallenge(result);
+        return;
+      }
+
+      storeSession(result);
       onDone();
     } catch (err) {
-      if (err instanceof ApiError) {
-        setErrors({ form: err.message });
-      } else {
-        setErrors({ form: "Erro inesperado. Tente novamente." });
+      if (err instanceof ApiError && err.code === "EMAIL_NOT_VERIFIED") {
+        setUnverifiedEmail(parsed.data.email);
+        return;
       }
+      setFormError(err);
     } finally {
       setLoading(false);
     }
   };
 
+  if (unverifiedEmail) {
+    return <EmailPendingScreen email={unverifiedEmail} />;
+  }
+
+  if (challenge) {
+    return <TwoFactorForm challenge={challenge} onDone={onDone} />;
+  }
+
   return (
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Bem-vindo de volta.</h1>
-      <p className="mt-1 text-sm text-muted-foreground">Continue de onde parou.</p>
+      <h1 className="text-2xl font-semibold tracking-tight">{texts.auth.login.title}</h1>
+
+      <p className="mt-1 text-sm text-muted-foreground">{texts.auth.login.subtitle}</p>
 
       <div className="mt-6">
-        <SocialButtons />
+        <SocialButtons mode="login" />
         <Divider />
       </div>
 
       <form onSubmit={submit} className="space-y-4" noValidate>
-        <Field label="E-mail" error={errors.email}>
+        <Field label={texts.auth.fields.email} error={errors.email}>
           <Input
             name="email"
             type="email"
-            placeholder="voce@exemplo.com"
+            placeholder={texts.auth.placeholders.email}
             autoComplete="email"
             required
             maxLength={255}
           />
         </Field>
+
         <Field
-          label="Senha"
+          label={texts.auth.fields.password}
           error={errors.password}
           right={
-            <a href="#" className="text-xs font-medium text-primary hover:underline">
-              Esqueci minha senha
-            </a>
-          }
-        >
-          <div className="relative">
-            <Input
-              name="password"
-              type={show ? "text" : "password"}
-              placeholder="Sua senha"
-              autoComplete="current-password"
-              required
-              maxLength={128}
-            />
             <button
               type="button"
-              onClick={() => setShow((s) => !s)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-foreground"
-              aria-label={show ? "Ocultar senha" : "Mostrar senha"}
+              onClick={onForgot}
+              className="text-xs font-medium text-primary hover:underline"
             >
-              {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {texts.auth.password.forgot}
             </button>
-          </div>
+          }
+        >
+          <PasswordInput
+            name="password"
+            revealed={show}
+            onToggle={() => setShow((value) => !value)}
+            placeholder={texts.auth.placeholders.password}
+            autoComplete="current-password"
+            required
+            maxLength={128}
+          />
         </Field>
 
-        {errors.form && (
-          <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">
-            {errors.form}
-          </p>
+        {!!formError && <ErrorBanner error={formError} showDetails={false} />}
+        {captcha.data?.captchaMode === "TURNSTILE" && turnstileSiteKey && (
+          <Turnstile
+            ref={loginTurnstileRef}
+            siteKey={turnstileSiteKey}
+            options={{ size: "flexible", theme: "dark" }}
+          />
         )}
         <Button type="submit" className="w-full rounded-full gap-2" disabled={loading}>
           {loading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <>
-              Entrar <ArrowRight className="h-4 w-4" />
+              <>{texts.common.enter} </>
+
+              <ArrowRight className="h-4 w-4" />
             </>
           )}
         </Button>
@@ -451,17 +714,110 @@ function LoginForm({ onDone }: { onDone: () => void }) {
   );
 }
 
-function Field({
-  label,
-  error,
-  right,
-  children,
+/**
+ * Segundo passo do login: código do aplicativo authenticator ou o código enviado por e-mail.
+ * O backend devolve `method`, então a tela já sabe o que pedir (e oferece reenviar só no caso do e-mail).
+ */
+function TwoFactorForm({
+  challenge,
+  onDone,
 }: {
-  label: string;
-  error?: string;
-  right?: React.ReactNode;
-  children: React.ReactNode;
+  challenge: TwoFactorChallenge;
+  onDone: () => void;
 }) {
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [resent, setResent] = useState(false);
+
+  const byEmail = challenge.method === "EMAIL";
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setError(null);
+    setLoading(true);
+    try {
+      const result = await authApi.verifyTwoFactor(challenge.challengeId, code.trim());
+      storeSession(result);
+      onDone();
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error(texts.auth.twoFactor.error));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resend = async () => {
+    setError(null);
+    try {
+      await authApi.resendTwoFactor(challenge.challengeId);
+      setResent(true);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error(texts.auth.twoFactor.error));
+    }
+  };
+
+  return (
+    <div>
+      <ShieldCheck className="h-7 w-7 text-primary" />
+
+      <h1 className="mt-3 text-2xl font-semibold tracking-tight">{texts.auth.twoFactor.title}</h1>
+
+      <p className="mt-1 text-sm text-muted-foreground">
+        {byEmail ? texts.auth.twoFactor.emailHint : texts.auth.twoFactor.totpHint}
+      </p>
+
+      <form onSubmit={submit} className="mt-6 space-y-4" noValidate>
+        <Field label={texts.auth.twoFactor.code}>
+          <Input
+            name="code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            autoFocus
+            maxLength={byEmail ? 6 : 12}
+            value={code}
+            onChange={(event) => setCode(event.target.value)}
+            placeholder={byEmail ? "000000" : texts.auth.twoFactor.codePlaceholder}
+          />
+        </Field>
+
+        {resent && (
+          <p className="rounded-xl bg-growth/10 px-4 py-2 text-sm text-growth">
+            {texts.auth.twoFactor.resent}
+          </p>
+        )}
+
+        {error ? <ErrorBanner error={error} /> : null}
+
+        <Button
+          type="submit"
+          className="w-full rounded-full gap-2"
+          disabled={loading || !code.trim()}
+        >
+          {loading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <ShieldCheck className="h-4 w-4" />
+          )}
+
+          <>{texts.auth.twoFactor.confirm}</>
+        </Button>
+
+        {byEmail && (
+          <Button type="button" variant="ghost" className="w-full rounded-full" onClick={resend}>
+            {texts.auth.twoFactor.resend}
+          </Button>
+        )}
+
+        <p className="text-center text-xs text-muted-foreground">
+          {texts.auth.twoFactor.recoveryHint}
+        </p>
+      </form>
+    </div>
+  );
+}
+
+function Field({ label, error, right, children }: FieldProps) {
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
@@ -474,6 +830,101 @@ function Field({
   );
 }
 
+function ForgotPasswordDialog({ open, onOpenChange }: ForgotPasswordDialogProps) {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState<unknown>(null);
+  const [loading, setLoading] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const submit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const fd = new FormData(e.currentTarget);
+    const email = String(fd.get("email") ?? "").trim();
+    if (!z.string().email().safeParse(email).success) {
+      setErrors({ email: texts.auth.validation.invalidEmail });
+      return;
+    }
+    setErrors({});
+    setFormError(null);
+    setLoading(true);
+    try {
+      await authApi.forgotPassword(email);
+      setSent(true);
+    } catch (err) {
+      setFormError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const close = () => {
+    setSent(false);
+    setErrors({});
+    onOpenChange(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => (v ? onOpenChange(v) : close())}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle className="font-semibold tracking-tight">
+            {texts.auth.forgot.title}
+          </DialogTitle>
+        </DialogHeader>
+        {sent ? (
+          <div className="space-y-4 pb-2 pt-2">
+            <div className="flex items-start gap-3 rounded-xl bg-primary/10 p-4">
+              <MailCheck className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+
+              <div>
+                <p className="text-sm font-medium">{texts.auth.forgot.checkEmail}</p>
+
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {texts.auth.forgot.sentDescription}
+                </p>
+              </div>
+            </div>
+
+            <Button className="w-full rounded-full" onClick={close}>
+              {texts.auth.forgot.understood}
+            </Button>
+          </div>
+        ) : (
+          <form onSubmit={submit} className="space-y-4 pb-2 pt-2" noValidate>
+            <p className="text-sm text-muted-foreground">{texts.auth.forgot.description}</p>
+
+            <div className="space-y-1.5">
+              <Label className="text-sm font-medium">{texts.auth.fields.email}</Label>
+
+              <Input
+                name="email"
+                type="email"
+                placeholder={texts.auth.placeholders.email}
+                autoComplete="email"
+                required
+                maxLength={255}
+              />
+              {errors.email && <p className="text-xs text-destructive">{errors.email}</p>}
+            </div>
+            {!!formError && <ErrorBanner error={formError} />}
+            <Button type="submit" className="w-full gap-2 rounded-full" disabled={loading}>
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <>{texts.auth.forgot.sendLink} </>
+
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </Button>
+          </form>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function GoogleIcon() {
   return (
     <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden>
@@ -481,14 +932,6 @@ function GoogleIcon() {
         fill="#EA4335"
         d="M12 10.2v3.9h5.5c-.2 1.4-1.6 4.1-5.5 4.1-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.5 14.7 2.6 12 2.6 6.8 2.6 2.6 6.8 2.6 12s4.2 9.4 9.4 9.4c5.4 0 9-3.8 9-9.2 0-.6-.1-1.1-.2-1.6H12z"
       />
-    </svg>
-  );
-}
-
-function AppleIcon() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-4 w-4 fill-foreground" aria-hidden>
-      <path d="M16.4 12.7c0-2.4 2-3.6 2.1-3.6-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.2.9-4 2.4-1.7 3-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3.1 2.4 1.3-.1 1.7-.8 3.2-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.3.9-1.3 1.3-2.6 1.3-2.7-.1 0-2.6-1-2.7-3.9zM14 5.4c.7-.8 1.2-1.9 1-3-1 .1-2.2.7-2.9 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.2-.5 2.9-1.4z" />
     </svg>
   );
 }

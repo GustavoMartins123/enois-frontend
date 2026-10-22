@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      # Uma PR por família: vinte PRs de patch do mesmo ecossistema ninguém revisa.
+      react:
+        patterns: ["react*", "@types/react*"]
+      tanstack:
+        patterns: ["@tanstack/*"]
+      tailwind:
+        patterns: ["tailwindcss", "@tailwindcss/*"]
+      lint-and-test:
+        patterns: ["eslint*", "@eslint/*", "prettier*", "vitest", "@vitest/*", "typescript"]
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly

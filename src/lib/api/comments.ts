@@ -1,21 +1,9 @@
+import type { PageResponse } from "@/types/application/api/page-response";
+import type { StatusResponse } from "@/types/application/api/status-response";
+import type { CommentView } from "@/types/application/comment/comment-view";
+import type { EditedComment } from "@/types/application/comment/edited-comment";
+
 import { api, buildQuery } from "../api-client";
-
-export interface CommentView {
-  id: string;
-  postId: string;
-  authorId: string;
-  authorName: string;
-  authorAvatar: string | null;
-  parentCommentId: string | null;
-  content: string;
-  createdAt: string;
-  status: "ACTIVE" | "DELETED";
-}
-
-export interface PageResponse<T> {
-  items: T[];
-  nextCursor: string | null;
-}
 
 export const commentsApi = {
   create: (
@@ -23,11 +11,17 @@ export const commentsApi = {
     content: string,
     parentCommentId?: string | null,
     mentionedUserIds?: string[],
+    mediaIds?: string[],
+    website?: string,
+    mediaSpoiler = false,
   ) =>
     api.post<CommentView>(`/feed/posts/${postId}/comments`, {
       content,
       parentCommentId: parentCommentId ?? null,
+      mediaIds: mediaIds ?? [],
       mentionedUserIds: mentionedUserIds ?? [],
+      website: website ?? "",
+      mediaSpoiler,
     }),
 
   list: (postId: string, cursor?: string | null, limit = 20) =>
@@ -35,6 +29,17 @@ export const commentsApi = {
       `/feed/posts/${postId}/comments${buildQuery({ cursor, limit })}`,
     ),
 
+  /** Edicao do proprio comentario: so o autor (o backend recusa os demais). */
+  update: (postId: string, commentId: string, content: string) =>
+    api.patch<EditedComment>(`/feed/posts/${postId}/comments/${commentId}`, { content }),
+
   remove: (postId: string, commentId: string) =>
-    api.delete<{ status: string }>(`/feed/posts/${postId}/comments/${commentId}`),
+    api.delete<StatusResponse>(`/feed/posts/${postId}/comments/${commentId}`),
+
+  /** Fixa no topo (autor do post ou do comentário). */
+  pin: (postId: string, commentId: string) =>
+    api.post<StatusResponse>(`/feed/posts/${postId}/comments/${commentId}/pin`),
+
+  unpin: (postId: string, commentId: string) =>
+    api.delete<StatusResponse>(`/feed/posts/${postId}/comments/${commentId}/pin`),
 };

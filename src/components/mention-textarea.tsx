@@ -1,19 +1,53 @@
-import { type KeyboardEvent, useEffect, useRef, useState } from "react";
+import {
+  type FormEvent,
+  type KeyboardEvent,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 
 import { useQuery } from "@tanstack/react-query";
 
-import { type UserSearchResult, usersApi } from "@/lib/api";
+import { texts } from "@/texts";
+import type { UserSearchResult } from "@/types/application/user/user-search-result";
+import type { Props } from "@/types/components/mention-textarea/props";
+import type { MentionListSide } from "@/types/lib/mentions/list-placement";
+import type { RichTextFormat } from "@/types/lib/rich-text/rich-text-format";
 
+import { usersApi } from "@/lib/api";
+import {
+  MENTION_LIST_GAP,
+  MENTION_LIST_MAX_HEIGHT,
+  mentionListSide,
+  mentionListSpaceAbove,
+} from "@/lib/mentions/list-placement";
+import { applyFormat } from "@/lib/rich-text/apply-format";
+import { insertSnippet } from "@/lib/rich-text/insert-snippet";
+
+import { CharCounter } from "@/components/ui/char-counter";
+
+import { RichTextToolbar } from "@/components/rich-text-toolbar";
 import { UserAvatar } from "@/components/user-avatar";
 
-interface Props {
-  value: string;
-  onChange: (value: string, mentionedUserIds: string[]) => void;
-  placeholder?: string;
-  className?: string;
-  maxLength?: number;
-  rows?: number;
+/** Altura mínima da caixa, em linhas de texto, para dar espaço de revisar o que foi escrito. */
+const MIN_ROWS = 4;
+
+/**
+ * O primeiro `<header>` da página pode ser o de um post. O que cobre a busca é o sticky do topo.
+ */
+function stickyHeaderBottom(node: HTMLElement): number {
+  const header = node.ownerDocument.querySelector("header.sticky");
+  return header?.getBoundingClientRect().bottom ?? 0;
 }
+
+/** Atalhos de teclado da formatacao; `mod` e Ctrl no Windows/Linux e Cmd no Mac. */
+const SHORTCUTS: Record<string, RichTextFormat> = {
+  b: "bold",
+  i: "italic",
+  e: "code",
+  k: "link",
+};
 
 export function MentionTextarea({
   value,
@@ -22,10 +56,24 @@ export function MentionTextarea({
   className = "",
   maxLength,
   rows,
+  toolbar = false,
+  onPasteImages,
 }: Props) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [mentionQuery, setMentionQuery] = useState("");
   const [mentionIndex, setMentionIndex] = useState(-1);
+  const [listSide, setListSide] = useState<MentionListSide>("above");
+
+  // Auto-expansao: cresce com o texto ate o teto (240px); dali em diante rola dentro.
+  // Layout, não effect: a altura tem de estar aplicada antes da medida da lista, no mesmo frame.
+  useLayoutEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 240)}px`;
+  }, [value]);
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [mentionedIds, setMentionedIds] = useState<string[]>([]);
 
@@ -38,6 +86,68 @@ export function MentionTextarea({
   useEffect(() => {
     setSelectedIdx(0);
   }, [results.length]);
+
+  const listOpen = mentionQuery.length >= 2 && results.length > 0;
+
+  // Acompanha o texto: cresce conforme você escreve e encolhe ao apagar, nunca
+  // ficando menor que MIN_ROWS linhas — assim dá pra reler e editar o que digitou.
+  useLayoutEffect(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+
+    const styles = getComputedStyle(el);
+    const parsedLineHeight = parseFloat(styles.lineHeight);
+    const lineHeight = Number.isFinite(parsedLineHeight) ? parsedLineHeight : 20;
+    const verticalPadding = parseFloat(styles.paddingTop) + parseFloat(styles.paddingBottom);
+    const minHeight = MIN_ROWS * lineHeight + verticalPadding;
+
+    el.style.height = "auto";
+    el.style.height = `${Math.max(el.scrollHeight, minHeight)}px`;
+  }, [value]);
+
+  // O scroll não borbulha: sem capture, rolar um diálogo não reavalia o lado.
+  // Declarado depois dos efeitos de altura para medir o campo já crescido.
+  useLayoutEffect(() => {
+    if (!listOpen) return;
+
+    const measure = () => {
+      const node = rootRef.current;
+      if (!node) return;
+      const rect = node.getBoundingClientRect();
+      const next = mentionListSide(
+        mentionListSpaceAbove(rect.top, stickyHeaderBottom(node)),
+        window.innerHeight - rect.bottom,
+        MENTION_LIST_MAX_HEIGHT + MENTION_LIST_GAP,
+      );
+      setListSide((current) => (current === next ? current : next));
+    };
+
+    measure();
+    window.addEventListener("resize", measure);
+    window.addEventListener("scroll", measure, true);
+    return () => {
+      window.removeEventListener("resize", measure);
+      window.removeEventListener("scroll", measure, true);
+    };
+  }, [listOpen, value]);
+
+  // O campo continua a edição da menção. Fora da lista e do campo, o clique dispensa
+  // o painel — senão ele fica por cima de Tipo, abas e do resto da página.
+  useEffect(() => {
+    if (!listOpen) return;
+
+    const closeOnOutside = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Node)) return;
+      if (listRef.current?.contains(target)) return;
+      if (textareaRef.current?.contains(target)) return;
+      setMentionQuery("");
+      setMentionIndex(-1);
+    };
+
+    document.addEventListener("mousedown", closeOnOutside);
+    return () => document.removeEventListener("mousedown", closeOnOutside);
+  }, [listOpen]);
 
   const updateMention = (text: string, cursor: number) => {
     const before = text.slice(0, cursor);
@@ -57,7 +167,7 @@ export function MentionTextarea({
     setMentionIndex(at);
   };
 
-  const handleInput = (e: React.FormEvent<HTMLTextAreaElement>) => {
+  const handleInput = (e: FormEvent<HTMLTextAreaElement>) => {
     const el = e.currentTarget;
     const next = el.value;
     const cursor = el.selectionStart;
@@ -84,7 +194,56 @@ export function MentionTextarea({
     });
   };
 
+  /** Formata o trecho selecionado e devolve o foco/cursor para dentro do campo. */
+  const formatSelection = (format: RichTextFormat) => {
+    const element = textareaRef.current;
+    if (!element) return;
+
+    const result = applyFormat(value, element.selectionStart, element.selectionEnd, format);
+    onChange(result.value, mentionedIds);
+
+    // O valor volta pelo `value` (componente controlado): a selecao so pode ser reposta depois
+    // do proximo paint, quando o textarea ja tem o texto novo.
+    requestAnimationFrame(() => {
+      const node = textareaRef.current;
+      if (!node) return;
+      node.focus();
+      node.setSelectionRange(result.selectionStart, result.selectionEnd);
+    });
+  };
+
+  /**
+   * Emoji do seletor: entra na posição do cursor, substituindo o que estiver selecionado (o mesmo
+   * contrato das formatações). O campo não perde o foco ao escolher, então a posição é a que a
+   * pessoa estava vendo. Passar do limite não insere — o contador de caracteres já avisa.
+   */
+  const insertEmoji = (emoji: string) => {
+    const element = textareaRef.current;
+    const start = element?.selectionStart ?? value.length;
+    const end = element?.selectionEnd ?? start;
+    const result = insertSnippet(value, start, end, emoji);
+    if (maxLength !== undefined && result.value.length > maxLength) return;
+
+    onChange(result.value, mentionedIds);
+
+    requestAnimationFrame(() => {
+      const node = textareaRef.current;
+      if (!node) return;
+      node.focus();
+      node.setSelectionRange(result.selectionStart, result.selectionEnd);
+    });
+  };
+
   const handleKey = (e: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (toolbar && (e.ctrlKey || e.metaKey) && !e.altKey) {
+      const shortcut = SHORTCUTS[e.key.toLowerCase()];
+      if (shortcut) {
+        e.preventDefault();
+        formatSelection(shortcut);
+        return;
+      }
+    }
+
     if (mentionIndex === -1 || results.length === 0) return;
     if (e.key === "ArrowDown") {
       e.preventDefault();
@@ -108,19 +267,48 @@ export function MentionTextarea({
   };
 
   return (
-    <div className="relative min-w-0 flex-1">
+    <div ref={rootRef} className="relative min-w-0 flex-1">
+      {toolbar && (
+        <RichTextToolbar
+          label={texts.posts.formatting.toolbar}
+          onFormat={formatSelection}
+          onEmoji={insertEmoji}
+          className="mb-1.5"
+        />
+      )}
+
       <textarea
         ref={textareaRef}
         value={value}
         onInput={handleInput}
         onKeyDown={handleKey}
+        onPaste={(event) => {
+          if (!onPasteImages) return;
+          const files = Array.from(event.clipboardData?.files ?? []).filter((file) =>
+            file.type.startsWith("image/"),
+          );
+          if (files.length === 0) return;
+          event.preventDefault();
+          onPasteImages(files);
+        }}
         placeholder={placeholder}
-        className={`w-full resize-none ${className}`}
+        className={`max-h-[240px] w-full resize-none overflow-y-auto ${className}`}
         maxLength={maxLength}
         rows={rows}
       />
-      {mentionQuery.length >= 2 && results.length > 0 && (
-        <div className="absolute bottom-full left-0 right-0 z-50 mb-1 max-h-48 overflow-y-auto rounded-xl border border-border bg-popover shadow-lg">
+
+      {/* Mesmo contador de todo campo com limite (Input/Textarea usam o CharCounter via withCounter):
+          um so lugar decide o aviso de "perto do limite" e o "limite atingido". */}
+      {maxLength !== undefined && <CharCounter length={value.length} max={maxLength} />}
+
+      {/* `bottom-full` fixo cobria a busca do /feed: o composer fica sob o header. */}
+      {listOpen && (
+        <div
+          ref={listRef}
+          className={`absolute left-0 right-0 z-50 max-h-48 overflow-y-auto rounded-xl border border-border bg-popover shadow-lg ${
+            listSide === "below" ? "top-full mt-1" : "bottom-full mb-1"
+          }`}
+        >
           {results.map((user, i) => (
             <button
               key={user.id}
@@ -135,9 +323,13 @@ export function MentionTextarea({
               }`}
             >
               <UserAvatar src={user.avatar} alt={user.name} className="h-8 w-8 shrink-0" />
+
               <div className="min-w-0">
                 <p className="truncate font-medium">{user.name}</p>
-                <p className="truncate text-xs text-muted-foreground">@{user.username}</p>
+
+                <p className="truncate text-xs text-muted-foreground">
+                  {texts.mentions.username(user.username)}
+                </p>
               </div>
             </button>
           ))}

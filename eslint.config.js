@@ -5,6 +5,9 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
+import jsxContentSpacing from "./eslint/rules/jsx-content-spacing.js";
+import typeBoundaries from "./eslint/rules/type-boundaries.js";
+
 export default tseslint.config(
   { ignores: ["dist", ".output", ".vinxi", ".vercel"] },
   {
@@ -17,6 +20,12 @@ export default tseslint.config(
     plugins: {
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
+      local: {
+        rules: {
+          "jsx-content-spacing": jsxContentSpacing,
+          "type-boundaries": typeBoundaries,
+        },
+      },
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
@@ -32,8 +41,16 @@ export default tseslint.config(
           ],
         },
       ],
-      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+      // `useToast` mora junto do ToastProvider de propósito (o contexto é privado do arquivo) e é
+      // importado de "@/components/ui/toast" em ~55 lugares: separar só para o fast refresh do
+      // toast não justifica mexer em tudo isso.
+      "react-refresh/only-export-components": [
+        "warn",
+        { allowConstantExport: true, allowExportNames: ["useToast"] },
+      ],
       "@typescript-eslint/no-unused-vars": "off",
+      "local/jsx-content-spacing": "error",
+      "local/type-boundaries": "error",
     },
   },
   eslintPluginPrettier,

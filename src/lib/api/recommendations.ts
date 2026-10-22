@@ -1,16 +1,7 @@
+import type { CreateRecommendationInput } from "@/types/application/recommendation/create-recommendation-input";
+import type { Recommendation } from "@/types/application/recommendation/recommendation";
+
 import { api } from "../api-client";
-
-export interface Recommendation {
-  id: string;
-  recommenderId: string;
-  recommendedId: string;
-  comment: string;
-  createdAt: string;
-}
-
-export interface CreateRecommendationInput {
-  comment: string;
-}
 
 export const recommendationsApi = {
   create: (targetId: string, data: CreateRecommendationInput) =>

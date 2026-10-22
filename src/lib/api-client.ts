@@ -1,4 +1,21 @@
-const API_BACKEND = import.meta.env.VITE_API_BACKEND ?? "http://localhost:8081/api";
+import type { RequestOptions } from "@/types/application/api/request-options";
+
+import { notifyBirthDateRequired, notifyParentalConsentRequired } from "./age-required";
+import { clearAuthHint } from "./auth-hint";
+import { getDeviceId } from "./device-id";
+import { resetSessionScopedData } from "./query-client";
+import { dropSessionKey } from "./session-key";
+
+/**
+ * Base da API.
+ *
+ * O padrao e RELATIVO (`/api`): em producao o proprio host serve a API, e no dev o proxy do Vite
+ * encaminha para o backend (ver `BACKEND_TARGET` no vite.config.ts). O fallback antigo era
+ * `http://localhost:8081/api`, e quando um build saiu sem a variavel (Dockerfile sem ARG) a imagem
+ * publicada passou a chamar localhost DENTRO do navegador de quem usava — o app ficou vazio e o
+ * login dizia "nao foi possivel conectar ao servidor".
+ */
+const API_BACKEND = import.meta.env.VITE_API_BACKEND ?? "/api";
 
 function baseUrl(): string {
   if (typeof window === "undefined") return API_BACKEND;
@@ -11,6 +28,7 @@ export class ApiError extends Error {
     public status: number,
     public code: string | undefined,
     message: string,
+    public path?: string,
   ) {
     super(message);
     this.name = "ApiError";
@@ -26,17 +44,85 @@ function authHeaders(): Record<string, string> {
   const token = getToken();
   const headers: Record<string, string> = {};
   if (token) headers["X-Session-Token"] = token;
+  // Identificador opaco do dispositivo (não é MAC): correlaciona requisições e uploads nos logs.
+  const deviceId = getDeviceId();
+  if (deviceId) headers["X-Device-Id"] = deviceId;
   return headers;
 }
 
-function idemKey(): Record<string, string> {
-  return { "Idempotency-Key": crypto.randomUUID() };
+export function randomUUID(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  const bytes = new Uint8Array(16);
+  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+    crypto.getRandomValues(bytes);
+  } else {
+    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+  }
+  bytes[6] = (bytes[6] & 0x0f) | 0x40;
+  bytes[8] = (bytes[8] & 0x3f) | 0x80;
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
-let isRefreshing = false;
+/**
+ * Fingerprint leve do dispositivo: hash de sinais que bots em proxies distintos compartilham
+ * (mesmo User-Agent, idioma, resolução). Não é biometria — é só o bastante para agrupar
+ * cadastros do mesmo navegador atrás de IPs diferentes.
+ */
+function deviceFingerprint(): string {
+  if (typeof window === "undefined") return "";
+  const signals = [
+    navigator.userAgent,
+    navigator.language,
+    `${screen.width}x${screen.height}`,
+    Intl.DateTimeFormat().resolvedOptions().timeZone,
+  ].join("|");
+  let hash = 0;
+  for (let i = 0; i < signals.length; i++) {
+    hash = ((hash << 5) - hash + signals.charCodeAt(i)) | 0;
+  }
+  return (hash >>> 0).toString(36);
+}
 
-async function tryRefreshToken(): Promise<boolean> {
-  const token = localStorage.getItem("refresh_token");
+function idemKey(): Record<string, string> {
+  return { "Idempotency-Key": randomUUID() };
+}
+
+/** Renova quando faltar menos que isso para expirar, em vez de esperar o 401. */
+const REFRESH_WINDOW_MS = 5 * 60 * 1000;
+
+let refreshPromise: Promise<boolean> | null = null;
+
+function refreshTokenValue(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("refresh_token");
+}
+
+function sessionExpiresAt(): number | null {
+  if (typeof window === "undefined") return null;
+  const raw = localStorage.getItem("session_expires_at");
+  if (!raw) return null;
+  const parsed = Date.parse(raw);
+  return Number.isNaN(parsed) ? null : parsed;
+}
+
+/**
+ * Renova a sessao uma unica vez, mesmo com varias chamadas concorrentes: todas aguardam a MESMA
+ * promessa. Sem isso, cada 401 paralelo disparava um refresh proprio e rotacionava o token varias
+ * vezes, derrubando a sessao.
+ */
+function refreshSession(): Promise<boolean> {
+  if (refreshPromise) return refreshPromise;
+  refreshPromise = doRefresh().finally(() => {
+    refreshPromise = null;
+  });
+  return refreshPromise;
+}
+
+async function doRefresh(): Promise<boolean> {
+  const token = refreshTokenValue();
   if (!token) return false;
 
   try {
@@ -46,6 +132,7 @@ async function tryRefreshToken(): Promise<boolean> {
       body: JSON.stringify({ refreshToken: token }),
     });
 
+    // Recusa explicita (expirado/revogado): a sessao acabou.
     if (!response.ok) {
       clearSession();
       return false;
@@ -59,24 +146,66 @@ async function tryRefreshToken(): Promise<boolean> {
     localStorage.setItem("refresh_expires_at", body.refreshExpiresAt);
     return true;
   } catch {
+    // Falha de rede nao encerra a sessao: o token pode continuar valido. Quem decide e o 401.
     return false;
   }
 }
 
-function clearSession() {
+/** Havendo sessao perto de expirar, renova antes da requisicao (evita o 401 e a ida ao login). */
+async function refreshIfNeeded(): Promise<void> {
+  const expiresAt = sessionExpiresAt();
+  if (expiresAt === null) return;
+  if (expiresAt - Date.now() > REFRESH_WINDOW_MS) return;
+  if (!refreshTokenValue()) return;
+  await refreshSession();
+}
+
+// Voltar para a aba depois de um tempo era o gatilho do "logout": a proxima chamada vinha 401 e
+// jogava a pessoa para o login. Ao ficar visivel, renova de forma transparente se estiver vencendo.
+//
+// No app instalado (PWA) o `visibilitychange` sozinho nao basta: retomar pelo icone, voltar da
+// bfcache ou recuperar a rede nao disparam esse evento em varias plataformas (iOS principalmente),
+// e a pessoa cai no login sem entender. `pageshow` e `online` fecham essa lacuna.
+if (typeof window !== "undefined") {
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      void refreshIfNeeded();
+    }
+  });
+
+  window.addEventListener("pageshow", () => {
+    void refreshIfNeeded();
+  });
+
+  window.addEventListener("online", () => {
+    void refreshIfNeeded();
+  });
+}
+
+export function clearSession() {
+  const hadSession = localStorage.getItem("session_token") !== null;
   localStorage.removeItem("session_token");
   localStorage.removeItem("refresh_token");
   localStorage.removeItem("session_expires_at");
   localStorage.removeItem("refresh_expires_at");
   localStorage.removeItem("current_user");
+  clearAuthHint();
+  dropSessionKey();
+  if (hadSession) resetSessionScopedData();
 }
 
 async function request<T>(
   method: string,
   path: string,
   body?: unknown,
-  opts?: { idempotent?: boolean },
+  opts?: RequestOptions,
 ): Promise<T> {
+  // Renova proativamente antes de sair com um token que esta vencendo (as rotas de auth cuidam
+  // da propria sessao e nao passam por aqui).
+  if (!path.startsWith("/auth/")) {
+    await refreshIfNeeded();
+  }
+
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...authHeaders(),
@@ -85,17 +214,33 @@ async function request<T>(
   if (opts?.idempotent) {
     Object.assign(headers, idemKey());
   }
+  if (opts?.fingerprint) {
+    const fp = deviceFingerprint();
+    if (fp) headers["X-Device-Fingerprint"] = fp;
+  }
 
-  const response = await fetch(`${baseUrl()}${path}`, {
-    method,
-    headers,
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${baseUrl()}${path}`, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch {
+    throw new ApiError(
+      0,
+      "NETWORK_ERROR",
+      "Não foi possível conectar ao servidor. Verifique sua conexão e se o backend está no ar.",
+      path,
+    );
+  }
 
-  if ((response.status === 401 || response.status === 403) && !isRefreshing) {
-    isRefreshing = true;
-    const refreshed = await tryRefreshToken();
-    isRefreshing = false;
+  const hadSession = Boolean(headers["X-Session-Token"]);
+  // 401 e sessao invalida/expirada (tenta refresh e, se nao der, manda para o login). 403 e
+  // PERMISSAO negada, nao sessao: derrubar o usuario aqui era um erro (quem tem conta pendente de
+  // verificacao, por exemplo, era desconectado em vez de ler o aviso).
+  if (response.status === 401 && hadSession && !path.startsWith("/auth/")) {
+    const refreshed = await refreshSession();
 
     if (refreshed) {
       headers["X-Session-Token"] = getToken() ?? "";
@@ -123,12 +268,45 @@ async function request<T>(
       response.status,
       "SESSION_EXPIRED",
       "Sessão expirada. Faça login novamente.",
+      path,
     );
   }
 
+  // Sem sessao nao redireciona daqui (ha consultas autenticadas em telas publicas, como "posts
+  // salvos" num post compartilhado): quem barra o acesso e o guard de rota.
+  //
+  // O que o backend respondeu vem SEMPRE primeiro: era isso que fazia senha errada no login exibir
+  // "É necessário entrar para ver isso" — a resposta de 401 ja dizia "Email ou senha invalidos".
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
-    throw new ApiError(response.status, errorBody?.code, errorBody?.message ?? response.statusText);
+    if (
+      !errorBody?.code &&
+      !errorBody?.message &&
+      (response.status === 401 || response.status === 403) &&
+      !hadSession
+    ) {
+      throw new ApiError(
+        response.status,
+        "UNAUTHENTICATED",
+        "É necessário entrar para ver isso.",
+        path,
+      );
+    }
+    // Escrever (postar, comentar, mensagem) exige a data de nascimento declarada: em vez de só
+    // mostrar o erro, o app abre o diálogo de regularização em qualquer tela.
+    if (errorBody?.code === "BIRTH_DATE_REQUIRED") {
+      notifyBirthDateRequired();
+    }
+    // Menor sem autorizacao do responsavel: abre a tela de supervisao em qualquer acao bloqueada.
+    if (errorBody?.code === "PARENTAL_CONSENT_REQUIRED") {
+      notifyParentalConsentRequired();
+    }
+    throw new ApiError(
+      response.status,
+      errorBody?.code,
+      errorBody?.message ?? response.statusText,
+      path,
+    );
   }
 
   if (response.status === 204 || response.headers.get("content-length") === "0") {
@@ -143,7 +321,8 @@ async function request<T>(
 
 export const api = {
   get: <T>(path: string) => request<T>("GET", path),
-  post: <T>(path: string, body?: unknown) => request<T>("POST", path, body, { idempotent: true }),
+  post: <T>(path: string, body?: unknown, opts?: RequestOptions) =>
+    request<T>("POST", path, body, { idempotent: true, ...opts }),
   put: <T>(path: string, body?: unknown) => request<T>("PUT", path, body, { idempotent: true }),
   patch: <T>(path: string, body?: unknown) => request<T>("PATCH", path, body, { idempotent: true }),
   delete: <T>(path: string) => request<T>("DELETE", path, null, { idempotent: true }),
