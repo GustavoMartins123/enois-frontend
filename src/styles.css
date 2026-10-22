@@ -1012,78 +1012,44 @@
   }
 }
 
-/* Matrix: as fitas duplicadas deslizam uma altura completa e fecham o ciclo sem emenda.
-   A máscara protege o rosto; o fundo verde profundo sustenta o código também no tema claro. */
-.moldura-matrix__chuva {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  border-radius: 50%;
-  background: radial-gradient(
-    circle closest-side,
-    transparent 59%,
-    #001e10b3 66%,
-    #00251599 80%,
-    #00331a66 89%,
-    transparent 100%
-  );
-  mask-image: radial-gradient(
-    circle closest-side,
-    transparent 59%,
-    #000 65%,
-    #000 90%,
-    transparent 100%
-  );
+/* Prisma: cada caco soma duas flutuações de períodos diferentes (alturas e giros sorteados
+   por caco em variáveis), então nenhum vidro repete o movimento de outro nem o próprio. */
+.moldura-prisma__flutua {
+  animation: moldura-prisma-flutua 6s ease-in-out infinite;
 }
-.moldura-matrix__coluna {
-  position: absolute;
-  top: 0;
-  width: 9cqw;
-  margin-left: -4.5cqw;
-  font:
-    600 8.5cqw/9cqw ui-monospace,
-    monospace;
-  text-align: center;
-  color: #42f583;
-  text-shadow: 0 0 2cqw #1bdb61;
-  animation: moldura-matrix-chuva 5s linear infinite;
+.moldura-prisma__deriva {
+  animation: moldura-prisma-deriva 3s ease-in-out infinite alternate;
 }
-.moldura-matrix__fita {
-  display: block;
-  height: 180cqw;
+.moldura-prisma__reflexo {
+  animation: moldura-prisma-reflexo 4s ease-in-out infinite;
 }
-.moldura-matrix__codigo {
-  display: block;
-  white-space: pre;
-  color: transparent;
-  background: linear-gradient(#159b58aa, #2ddc76 35%, #82ffaf);
-  background-clip: text;
-}
-.moldura-matrix__cabeca {
-  display: block;
-  height: 9cqw;
-  color: #e0ffe9;
-  text-shadow:
-    0 0 2cqw #7affac,
-    0 0 3cqw #2bff72;
-}
-.moldura-matrix__anel {
-  animation: moldura-giro 16s linear infinite;
-}
-.moldura-matrix__scan {
-  animation: moldura-matrix-scan 4.8s linear infinite;
-}
-@keyframes moldura-matrix-chuva {
-  from {
-    transform: translateY(-50%);
+@keyframes moldura-prisma-flutua {
+  0%,
+  100% {
+    transform: translateY(0) rotate(var(--g0));
   }
-  to {
-    transform: translateY(0);
+  23% {
+    transform: translateY(var(--a)) rotate(var(--g1));
+  }
+  51% {
+    transform: translateY(var(--b)) rotate(var(--g0));
+  }
+  76% {
+    transform: translateY(var(--c)) rotate(var(--g1));
   }
 }
-@keyframes moldura-matrix-scan {
+@keyframes moldura-prisma-deriva {
   to {
-    transform: translateY(140px);
+    transform: translateY(var(--d));
+  }
+}
+@keyframes moldura-prisma-reflexo {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
   }
 }
 
