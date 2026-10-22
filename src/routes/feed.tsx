@@ -25,6 +25,7 @@ import {
   ChevronRight,
   Clock,
   Code2,
+  EyeOff,
   FileText,
   Film,
   Image,
@@ -44,6 +45,7 @@ import { authApi, corporateApi, eventsApi, feedApi, networkApi, profileApi } fro
 import { clearFeedScroll, readFeedScroll } from "@/lib/feed-scroll-restoration";
 import { litePageSize } from "@/lib/lite-mode";
 import { requireAuth } from "@/lib/require-auth";
+import { ogMetas } from "@/lib/seo";
 import { useLiteMode } from "@/lib/use-lite-mode";
 import { useMediaUpload } from "@/lib/use-media-upload";
 import { cn } from "@/lib/utils";
@@ -57,6 +59,7 @@ import { useToast } from "@/components/ui/toast";
 
 import { ApoieCard } from "@/components/apoie-card";
 import { AppContainer } from "@/components/app-container";
+import { TodayGamesCard } from "@/components/games/today-games-card";
 import { HtmlEditor } from "@/components/html-editor";
 import { InfiniteScroll } from "@/components/infinite-scroll";
 import { LinkedInSyncPrompt } from "@/components/linkedin-sync-prompt";
@@ -64,6 +67,7 @@ import { MentionTextarea } from "@/components/mention-textarea";
 import { NightRestReminder } from "@/components/night-rest-reminder";
 import { PlatformSpacesCard } from "@/components/platform-spaces-card";
 import { PostCard } from "@/components/post-card";
+import { SpoilerPreview } from "@/components/post/spoiler-preview";
 import { PostCardSkeletons } from "@/components/skeletons/post-card-skeletons";
 import { UserAvatar } from "@/components/user-avatar";
 
@@ -119,6 +123,7 @@ export const Route = createFileRoute("/feed")({
         name: "description",
         content: texts.feed.seo.description,
       },
+      ...ogMetas(texts.feed.seo.title, texts.feed.seo.description),
     ],
   }),
   component: Home,
@@ -203,6 +208,7 @@ function Home() {
   };
   // A lista de tipos de feed fica recolhida: o botao mostra o escolhido e abre a lista.
   const [menuTipoFeed, setMenuTipoFeed] = useState(false);
+  const [menuTopic, setMenuTopic] = useState(false);
   const {
     data: feedData,
     // Somente a PRIMEIRA carga mostra o esqueleto. `isFetching` tambem fica true ao paginar, e
@@ -230,6 +236,7 @@ function Home() {
   // Em comunidade o post herda o assunto DELA — lá o compositor é outro.
   const [topic, setTopic] = useState<string>(() => readLastTopic());
   const [media, setMedia] = useState<MediaItem[]>([]);
+  const [mediaSpoiler, setMediaSpoiler] = useState(false);
   const [publishError, setPublishError] = useState<string | null>(null);
   const [linkedinUrl, setLinkedinUrl] = useState<string | null>(null);
   // Tipo de publicação e o que manda: Página mostra o editor de HTML, Artigo mostra o editor do
@@ -319,6 +326,7 @@ function Home() {
         type: postType,
         content: pageMode ? "" : finalContent,
         mediaIds,
+        mediaSpoiler,
         // As menções viajam com o agendado e valem na PUBLICAÇÃO (quem foi marcado é avisado
         // quando o post entra no ar, não quando foi agendado).
         mentionedUserIds: pageMode ? [] : mentionedUserIds,
@@ -332,6 +340,7 @@ function Home() {
       setMentionedUserIds([]);
       setPostType("INSIGHT");
       setMedia([]);
+      setMediaSpoiler(false);
       setPageHtml("");
       setArticleBody("");
       setTypePickerOpen(false);
@@ -367,6 +376,7 @@ function Home() {
         content: pageMode ? "" : content,
         type: postType,
         mediaIds,
+        mediaSpoiler,
         ...(pageMode ? { pageHtml } : {}),
         ...(articleMode ? { articleBody } : {}),
         mentionedUserIds: pageMode ? [] : mentionedUserIds,
@@ -393,6 +403,7 @@ function Home() {
       setLinkedinUrl(null);
       setPostType("INSIGHT");
       setMedia([]);
+      setMediaSpoiler(false);
       setPostType("INSIGHT");
       setPageHtml("");
       setArticleBody("");
@@ -430,7 +441,9 @@ function Home() {
   const removeMedia = (index: number) => {
     setMedia((prev) => {
       URL.revokeObjectURL(prev[index].preview);
-      return prev.filter((_, i) => i !== index);
+      const next = prev.filter((_, i) => i !== index);
+      if (next.length === 0) setMediaSpoiler(false);
+      return next;
     });
   };
 
@@ -603,11 +616,16 @@ function Home() {
                         key={i}
                         className="relative overflow-hidden rounded-xl border border-border-soft"
                       >
-                        <img
-                          src={item.preview}
-                          alt=""
-                          className="h-48 w-full object-cover bg-surface-1"
-                        />
+                        <SpoilerPreview
+                          active={mediaSpoiler}
+                          label={texts.posts.mediaSpoiler.badge}
+                        >
+                          <img
+                            src={item.preview}
+                            alt=""
+                            className="h-48 w-full object-cover bg-surface-1"
+                          />
+                        </SpoilerPreview>
 
                         <button
                           type="button"
@@ -621,11 +639,13 @@ function Home() {
                   </div>
                 ) : (
                   <div className="relative overflow-hidden rounded-xl border border-border-soft">
-                    <video
-                      src={media[0].preview}
-                      controls
-                      className="max-h-64 w-full bg-surface-1"
-                    />
+                    <SpoilerPreview active={mediaSpoiler} label={texts.posts.mediaSpoiler.badge}>
+                      <video
+                        src={media[0].preview}
+                        controls
+                        className="max-h-64 w-full bg-surface-1"
+                      />
+                    </SpoilerPreview>
 
                     <button
                       type="button"
@@ -651,27 +671,71 @@ function Home() {
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-border-soft pt-3 text-sm font-normal text-text-subtle">
               <div className="flex flex-wrap items-center gap-1.5">
                 {/* Categoria do post: guarda a última escolha para o próximo post já nascer nela. */}
-                <select
-                  value={topic}
-                  onChange={(event) => {
-                    setTopic(event.target.value);
-                    rememberTopic(event.target.value);
-                  }}
-                  aria-label={texts.feed.composer.topic}
-                  title={texts.feed.composer.topicHint}
-                  className={`max-w-[11rem] rounded-full px-3 py-1.5 text-sm font-normal outline-none transition ${
-                    topic
-                      ? "border border-primary/40 bg-primary/10 text-primary"
-                      : "border border-border-soft text-text-subtle hover:border-primary"
-                  }`}
-                >
-                  <option value="">{texts.feed.composer.topicNone}</option>
-                  {TOPICS.filter((option) => option !== "Todas").map((option) => (
-                    <option key={option} value={option}>
-                      {TOPIC_LABELS[option]}
-                    </option>
-                  ))}
-                </select>
+                <Popover open={menuTopic} onOpenChange={setMenuTopic}>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label={texts.feed.composer.topic}
+                      title={texts.feed.composer.topicHint}
+                      className={cn(
+                        "inline-flex max-w-[11rem] items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-normal transition",
+                        topic
+                          ? "border border-primary/40 bg-primary/10 text-primary"
+                          : "border border-border-soft text-text-subtle hover:border-primary",
+                      )}
+                    >
+                      <span className="truncate">
+                        {topic
+                          ? (TOPIC_LABELS[topic as keyof typeof TOPIC_LABELS] ?? topic)
+                          : texts.feed.composer.topicNone}
+                      </span>
+
+                      <ChevronDown className="h-3.5 w-3.5 shrink-0 text-text-subtle" />
+                    </button>
+                  </PopoverTrigger>
+
+                  <PopoverContent align="start" className="w-56 p-1">
+                    <div className="flex max-h-72 flex-col gap-0.5 overflow-y-auto">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setTopic("");
+                          rememberTopic("");
+                          setMenuTopic(false);
+                        }}
+                        className={cn(
+                          "rounded-lg px-3 py-2 text-left text-sm font-normal transition",
+                          topic === ""
+                            ? "bg-primary-soft text-primary-text"
+                            : "text-text-subtle hover:bg-surface-2 hover:text-text-strong",
+                        )}
+                      >
+                        {texts.feed.composer.topicNone}
+                      </button>
+
+                      {TOPICS.filter((option) => option !== "Todas").map((option) => (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => {
+                            setTopic(option);
+                            rememberTopic(option);
+                            setMenuTopic(false);
+                          }}
+                          aria-pressed={topic === option}
+                          className={cn(
+                            "rounded-lg px-3 py-2 text-left text-sm font-normal transition",
+                            topic === option
+                              ? "bg-primary-soft text-primary-text"
+                              : "text-text-subtle hover:bg-surface-2 hover:text-text-strong",
+                          )}
+                        >
+                          {TOPIC_LABELS[option]}
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
 
                 {/* Seletor de tipo recolhido: mostra o tipo atual e abre a lista completa. */}
                 <div className="relative">
@@ -737,6 +801,18 @@ function Home() {
                     }
                     active={media.length > 0}
                     onClick={() => fileRef.current?.click()}
+                  />
+                )}
+                {((!pageMode && media.length > 0) || (pageMode && pageHtml.trim().length > 0)) && (
+                  <ComposerAction
+                    icon={EyeOff}
+                    label={
+                      mediaSpoiler
+                        ? texts.feed.composer.mediaSpoilerActive
+                        : texts.feed.composer.mediaSpoiler
+                    }
+                    active={mediaSpoiler}
+                    onClick={() => setMediaSpoiler((active) => !active)}
                   />
                 )}
               </div>
@@ -975,6 +1051,7 @@ function Home() {
         <aside className="sticky top-20 hidden max-h-[calc(100vh-6rem)] space-y-4 self-start overflow-y-auto scrollbar-on-hover lg:block">
           <ApoieCard />
           <PlatformSpacesCard />
+          <TodayGamesCard />
 
           {profileUser && (
             <div className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card">

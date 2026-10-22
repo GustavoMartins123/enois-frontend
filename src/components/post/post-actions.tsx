@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { PostActionsProps } from "@/types/components/post/post-actions-props";
-import { Bookmark, Flag, Heart, MessageSquare, Share2 } from "lucide-react";
+import { Bookmark, Flag, Heart, MessageSquare, Repeat2, Share2 } from "lucide-react";
 
 import { REACTION_EMOJIS, feedApi, reactionsApi } from "@/lib/api";
 import { usePostReaction } from "@/lib/reactions/use-post-reaction";
@@ -16,6 +16,7 @@ import { useToast } from "@/components/ui/toast";
 import { ReactionPicker } from "./reaction-picker";
 import { ReactionsDialog } from "./reactions-dialog";
 import { ReportDialog } from "./report-dialog";
+import { RepostDialog } from "./repost-dialog";
 import { SealsDialog } from "./seals-dialog";
 
 /**
@@ -92,6 +93,13 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
     }
   };
 
+  // Republicar copia o post para o feed da pessoa, creditando o autor original. Conteúdo de
+  // comunidade/canal e os tipos que não viajam (página, artigo, blog, business, moment) ficam de fora.
+  const canRepost =
+    !post.community && !["PAGE", "ARTICLE", "BLOG", "BUSINESS", "MOMENT"].includes(post.type);
+  // O clique abre o diálogo, que oferece republicar direto ou com uma opinião (até 600).
+  const [repostOpen, setRepostOpen] = useState(false);
+
   const handleShare = async () => {
     if (!requireAuth()) return;
     const url = shareUrl ?? `${window.location.origin}/post/${post.id}`;
@@ -159,8 +167,23 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
             className="flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground"
           >
             <MessageSquare className="h-4 w-4" />
+
             <span className="text-xs tabular-nums">{postCounters.comments}</span>
           </button>
+
+          {canRepost && (
+            <button
+              onClick={() => {
+                if (!requireAuth()) return;
+                setRepostOpen(true);
+              }}
+              title={texts.posts.repost}
+              aria-label={texts.posts.repost}
+              className="flex items-center rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground"
+            >
+              <Repeat2 className="h-4 w-4" />
+            </button>
+          )}
 
           <button
             onClick={handleShare}
@@ -192,10 +215,12 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
           }`}
         >
           <Bookmark className="h-4 w-4" />
+
           <span className="text-xs tabular-nums">{postCounters.saves}</span>
         </button>
       </footer>
 
+      <RepostDialog postId={post.id} open={repostOpen} onOpenChange={setRepostOpen} />
       <ReactionsDialog postId={post.id} />
       <SealsDialog postId={post.id} />
       <ReportDialog

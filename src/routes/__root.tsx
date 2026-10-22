@@ -25,7 +25,6 @@ import { buttonVariants } from "@/components/ui/button-variants";
 import { ToastProvider } from "@/components/ui/toast";
 
 import { AgeGate } from "@/components/age-gate";
-import { ApologyPopup } from "@/components/apology-popup";
 import { AppContainer } from "@/components/app-container";
 import { HealthyUsageGuard } from "@/components/healthy-usage/healthy-usage-guard";
 import { InstallPwaBanner } from "@/components/install-pwa-banner";
@@ -141,7 +140,7 @@ export const Route = createRootRouteWithContext<RootRouteContext>()({
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Press+Start+2P&family=UnifrakturCook:wght@700&display=swap",
       },
     ],
   }),
@@ -233,7 +232,6 @@ function RootInsideProvider() {
       <LiteModeEffects />
       <HealthyUsageGuard />
       <AgeGate />
-      <ApologyPopup />
     </ToastProvider>
   );
 }
