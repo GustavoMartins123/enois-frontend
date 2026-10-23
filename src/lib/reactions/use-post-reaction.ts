@@ -15,6 +15,8 @@ import { useToast } from "@/components/ui/toast";
 import { reactionsQueryOptions } from "./query-options";
 import { applyReactionToSummary, removeReactionFromSummary } from "./summary";
 
+const RAPID_CLICK_WINDOW_MS = 400;
+
 /**
  * Alterna a reação do post de forma otimista.
  *
@@ -33,8 +35,10 @@ export function usePostReaction(postId: string): UsePostReactionResult {
 
   const reactionStatus = card?.reactionStatus ?? null;
   const queryKey = reactionsQueryOptions(postId).queryKey;
+  const mutationKey = ["post-reaction", postId] as const;
 
   const mutation = useMutation({
+    mutationKey,
     mutationFn: ({ type, remove }: ReactionVariables) =>
       remove ? reactionsApi.removeReaction(postId) : reactionsApi.react(postId, type),
     onMutate: async ({ type, remove }) => {
@@ -124,12 +128,20 @@ export function usePostReaction(postId: string): UsePostReactionResult {
 
   const toggle = (type: ReactionType) => {
     if (!requireAuth()) return;
-    // O hook roda em DUAS instâncias por post (PostActions e ReactionsSummary) e
-    // `mutation.isPending` só enxerga a própria instância. Consultamos também o flag
-    // compartilhado do store (getState lê o valor mais fresco, sem depender do re-render) para
-    // não disparar duas mutações concorrentes no mesmo post.
-    if (mutation.isPending || usePostCardStore.getState().cards[postId]?.reactionPending) return;
-    mutation.mutate({ type, remove: reactionStatus === type });
+    const currentCard = usePostCardStore.getState().cards[postId];
+    // O cache marca a mutação como pendente antes do await em onMutate, inclusive entre
+    // as instâncias de PostActions e ReactionsSummary. A janela curta também absorve
+    // o segundo clique quando a resposta chega antes de um duplo clique terminar.
+    const now = Date.now();
+    const hasRecentMutation = queryClient
+      .getMutationCache()
+      .findAll({ mutationKey, exact: true })
+      .some(
+        ({ state }) =>
+          state.status === "pending" || now - state.submittedAt < RAPID_CLICK_WINDOW_MS,
+      );
+    if (hasRecentMutation || currentCard?.reactionPending) return;
+    mutation.mutate({ type, remove: currentCard?.reactionStatus === type });
   };
 
   return { toggle, isPending: mutation.isPending, reactionStatus };
