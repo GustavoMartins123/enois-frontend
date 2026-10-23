@@ -884,14 +884,16 @@ export const texts = {
     },
     changeEmail: {
       title: "Alterar e-mail",
-      description: "Depois de trocar, use o novo e-mail para entrar na plataforma.",
+      description:
+        "Enviaremos um link de confirmação para o novo endereço. A troca só vale depois do clique.",
       current: (email: string) => `E-mail atual: ${email}`,
       newEmail: "Novo e-mail",
       newEmailPlaceholder: "novo@exemplo.com",
       password: "Senha atual",
       passwordHint: "Confirme sua senha para concluir a troca.",
       action: "Salvar e-mail",
-      success: "E-mail atualizado com sucesso.",
+      success:
+        "Enviamos um link de confirmação para o novo e-mail. Abra a mensagem para concluir a troca.",
       invalidEmail: "Digite um e-mail válido.",
       sameEmail: "Esse já é o seu e-mail atual.",
       error: "Não foi possível alterar o e-mail. Tente novamente.",
