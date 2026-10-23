@@ -99,9 +99,24 @@ export function DeveloperOriginsSection() {
               className="flex items-center justify-between gap-2 rounded-lg border border-border-soft bg-surface-1 px-3 py-2 text-sm"
             >
               <span className="inline-flex min-w-0 items-center gap-2">
-                <Globe className="h-4 w-4 shrink-0 text-primary" />
+                <Globe
+                  className={
+                    item.blocked
+                      ? "h-4 w-4 shrink-0 text-destructive"
+                      : "h-4 w-4 shrink-0 text-primary"
+                  }
+                />
 
-                <span className="truncate text-text-strong">{item.origin}</span>
+                <span className="flex min-w-0 flex-col">
+                  <span className="truncate text-text-strong">{item.origin}</span>
+
+                  {item.blocked && (
+                    <span className="truncate text-xs text-destructive">
+                      {texts.developers.originBlocked}
+                      {item.blockedReason ? ` — ${item.blockedReason}` : ""}
+                    </span>
+                  )}
+                </span>
               </span>
 
               <button

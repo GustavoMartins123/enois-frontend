@@ -2920,7 +2920,7 @@ export const texts = {
       "Construa clientes, ferramentas e integrações para o Énóis. Esta é a documentação oficial.",
     originsTitle: "Origens autorizadas",
     originsDescription:
-      "Toda requisição ao backend precisa de uma origem cadastrada. O navegador manda Origin sozinho; chamadas de servidor (SSR, curl, integrações) precisam mandar X-Client-Origin: https://meuapp.com. A origem do próprio Énóis é liberada automaticamente; cadastre a do seu app abaixo.",
+      "Toda requisição ao backend precisa de uma origem cadastrada. O navegador manda Origin sozinho; chamadas de servidor (SSR, curl, integrações) precisam mandar X-Client-Origin: https://meuapp.com. A origem do próprio Énóis é liberada automaticamente; cadastre a do seu app abaixo. Rotas de administração e moderação aceitam apenas a origem do frontend.",
     originsLogin: "Entre na sua conta para cadastrar a origem do seu app.",
     originPlaceholder: "https://meuapp.com",
     originAdd: "Cadastrar origem",
@@ -2930,7 +2930,8 @@ export const texts = {
     originRemoved: "Origem removida.",
     originError: "Não foi possível cadastrar a origem.",
     originValidHint:
-      "Use só o domínio com https (http é aceito apenas em localhost). Sem origem cadastrada, a requisição recebe 403 ORIGIN_REQUIRED.",
+      "Use só o domínio com https (http é aceito apenas em localhost). Sem origem cadastrada, a requisição recebe 403 ORIGIN_REQUIRED. Atividade suspeita derruba a origem automaticamente.",
+    originBlocked: "Bloqueada por atividade suspeita",
     philosophyTitle: "Filosofia",
     philosophy:
       "A API existe para ampliar o acesso à informação e automatizar processos — nunca para fabricar interação social. Publicar conteúdo automaticamente (IA, bots, integrações) é proibido; criar e agendar posts pela funcionalidade oficial, com você no controle, é permitido.",
