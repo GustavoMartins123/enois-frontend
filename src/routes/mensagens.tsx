@@ -48,7 +48,9 @@ function Mensagens() {
   const [activeId, setActiveId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
-  const [inboxTab, setInboxTab] = useState<"all" | "jobs" | "people" | "archived">("all");
+  const [inboxTab, setInboxTab] = useState<"all" | "jobs" | "services" | "people" | "archived">(
+    "all",
+  );
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -82,7 +84,7 @@ function Mensagens() {
   const conversations = [...(conversationsData?.pages.flatMap((page) => page.items) ?? [])].sort(
     (a, b) => (b.time ? Date.parse(b.time) : 0) - (a.time ? Date.parse(a.time) : 0),
   );
-  // Separa a caixa de entrada: conversas de vaga (candidatura) x conversas com pessoas.
+  // Separa a caixa de entrada: vagas (candidatura), serviços (contratação) e pessoas.
   // Arquivadas não separa por tipo: é a lista de quem foi apagado "para mim", e ali a pessoa quer
   // reencontrar o que sumiu, não filtrar.
   const visibleConversations = conversations.filter((c) =>
@@ -90,7 +92,9 @@ function Mensagens() {
       ? true
       : inboxTab === "jobs"
         ? c.kind === "JOB"
-        : c.kind !== "JOB",
+        : inboxTab === "services"
+          ? c.kind === "SERVICE"
+          : c.kind !== "JOB" && c.kind !== "SERVICE",
   );
   const activeConversation = activeId ? conversations.find((c) => c.id === activeId) : null;
 
@@ -232,8 +236,9 @@ function Mensagens() {
             )}
           </div>
 
-          <div className="flex gap-1 border-b border-border px-3 pb-2">
-            {(["all", "jobs", "people", "archived"] as const).map((tab) => (
+          {/* `flex-wrap`: com cinco abas o rótulo maior ("Arquivadas") estoura a coluna no celular. */}
+          <div className="flex flex-wrap gap-1 border-b border-border px-3 pb-2">
+            {(["all", "jobs", "services", "people", "archived"] as const).map((tab) => (
               <button
                 key={tab}
                 type="button"
