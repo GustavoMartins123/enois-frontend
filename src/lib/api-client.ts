@@ -10,8 +10,9 @@ import { dropSessionKey } from "./session-key";
 /**
  * Base da API.
  *
- * O padrao e RELATIVO (`/api`): em producao o proprio host serve a API, e no dev o proxy do Vite
- * encaminha para o backend (ver `BACKEND_TARGET` no vite.config.ts). O fallback antigo era
+ * Em producao a API mora em OUTRO host (`https://api.enois.ia.br/api`, ver `ARG VITE_API_BACKEND`
+ * no Dockerfile) — o host do front nao expoe `/api`. No dev o padrao e RELATIVO (`/api`) e o proxy
+ * do Vite encaminha para o backend (ver `BACKEND_TARGET` no vite.config.ts). O fallback antigo era
  * `http://localhost:8081/api`, e quando um build saiu sem a variavel (Dockerfile sem ARG) a imagem
  * publicada passou a chamar localhost DENTRO do navegador de quem usava — o app ficou vazio e o
  * login dizia "nao foi possivel conectar ao servidor".
@@ -22,6 +23,18 @@ function baseUrl(): string {
   if (typeof window === "undefined") return API_BACKEND;
   if (import.meta.env.DEV) return "/api";
   return API_BACKEND;
+}
+
+/**
+ * URL absoluta de um caminho da API (SEM o prefixo `/api`).
+ *
+ * Serve para o que nao passa pelo cliente `api` (redirect do navegador, `fetch` de multipart): um
+ * caminho relativo a `/api` assume que o host do front tambem serve a API, o que so vale em dev.
+ * Era o que quebrava o login com LinkedIn — o navegador era mandado para `enois.ia.br/api/...` e
+ * recebia o 404 do proprio front, sem nunca chegar no backend.
+ */
+export function apiUrl(path: string): string {
+  return `${baseUrl()}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
 export class ApiError extends Error {
