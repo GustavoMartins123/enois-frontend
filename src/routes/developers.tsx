@@ -16,6 +16,7 @@ import { Check, Copy } from "lucide-react";
 import { ogMetas } from "@/lib/seo";
 
 import { AppContainer } from "@/components/app-container";
+import { DeveloperOriginsSection } from "@/components/developers/developer-origins-section";
 
 export const Route = createFileRoute("/developers")({
   // Pagina PUBLICA de documentacao. O subdominio developers.enois.ia.br aponta para ca quando o
@@ -181,6 +182,14 @@ function Developers() {
 
         <Section title={texts.developers.philosophyTitle} id="filosofia">
           <p className="mt-2 text-sm font-normal text-text-subtle">{texts.developers.philosophy}</p>
+        </Section>
+
+        <Section title={texts.developers.originsTitle} id="origens">
+          <p className="mt-2 text-sm font-normal text-text-subtle">
+            {texts.developers.originsDescription}
+          </p>
+
+          <DeveloperOriginsSection />
         </Section>
 
         <Section title={texts.developersChrome.startTitle} id="comecando">
