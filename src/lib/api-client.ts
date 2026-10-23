@@ -1,3 +1,4 @@
+import type { RefreshOutcome } from "@/types/application/api/refresh-outcome";
 import type { RequestOptions } from "@/types/application/api/request-options";
 
 import { notifyBirthDateRequired, notifyParentalConsentRequired } from "./age-required";
@@ -108,7 +109,7 @@ function idemKey(): Record<string, string> {
 /** Renova quando faltar menos que isso para expirar, em vez de esperar o 401. */
 const REFRESH_WINDOW_MS = 5 * 60 * 1000;
 
-let refreshPromise: Promise<boolean> | null = null;
+let refreshPromise: Promise<RefreshOutcome> | null = null;
 
 function refreshTokenValue(): string | null {
   if (typeof window === "undefined") return null;
@@ -128,7 +129,7 @@ function sessionExpiresAt(): number | null {
  * promessa. Sem isso, cada 401 paralelo disparava um refresh proprio e rotacionava o token varias
  * vezes, derrubando a sessao.
  */
-function refreshSession(): Promise<boolean> {
+function refreshSession(): Promise<RefreshOutcome> {
   if (refreshPromise) return refreshPromise;
   refreshPromise = doRefresh().finally(() => {
     refreshPromise = null;
@@ -136,9 +137,9 @@ function refreshSession(): Promise<boolean> {
   return refreshPromise;
 }
 
-async function doRefresh(): Promise<boolean> {
+async function doRefresh(): Promise<RefreshOutcome> {
   const token = refreshTokenValue();
-  if (!token) return false;
+  if (!token) return "refused";
 
   try {
     const response = await fetch(`${baseUrl()}/auth/refresh`, {
@@ -147,10 +148,15 @@ async function doRefresh(): Promise<boolean> {
       body: JSON.stringify({ refreshToken: token }),
     });
 
-    // Recusa explicita (expirado/revogado): a sessao acabou.
-    if (!response.ok) {
+    // So a recusa EXPLICITA (401/403) significa sessao encerrada. Um 429 do limitador ou um 502
+    // durante o deploy sao falhas do servidor, nao prova de que a sessao morreu — deslogar aqui
+    // era o que fazia a pessoa cair no login "sem motivo".
+    if (response.status === 401 || response.status === 403) {
       clearSession();
-      return false;
+      return "refused";
+    }
+    if (!response.ok) {
+      return "unavailable";
     }
 
     const data = await response.json();
@@ -159,10 +165,10 @@ async function doRefresh(): Promise<boolean> {
     localStorage.setItem("refresh_token", body.refreshToken);
     localStorage.setItem("session_expires_at", body.expiresAt);
     localStorage.setItem("refresh_expires_at", body.refreshExpiresAt);
-    return true;
+    return "renewed";
   } catch {
     // Falha de rede nao encerra a sessao: o token pode continuar valido. Quem decide e o 401.
-    return false;
+    return "unavailable";
   }
 }
 
@@ -257,7 +263,18 @@ async function request<T>(
   if (response.status === 401 && hadSession && !path.startsWith("/auth/")) {
     const refreshed = await refreshSession();
 
-    if (refreshed) {
+    if (refreshed === "unavailable") {
+      // Servidor instavel (429/5xx/rede). NAO encerra a sessao: a proxima tentativa pode dar certo
+      // e o token continua no storage. Antes, qualquer falha aqui virava logout na hora.
+      throw new ApiError(
+        0,
+        "SESSION_CHECK_UNAVAILABLE",
+        "Não foi possível confirmar sua sessão agora. Tente de novo em instantes.",
+        path,
+      );
+    }
+
+    if (refreshed === "renewed") {
       headers["X-Session-Token"] = getToken() ?? "";
       const retry = await fetch(`${baseUrl()}${path}`, {
         method,
