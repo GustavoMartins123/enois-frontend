@@ -2,6 +2,7 @@ import { type ReactNode, useMemo } from "react";
 
 import { Link } from "@tanstack/react-router";
 
+import { texts } from "@/texts";
 import type { RichTextProps } from "@/types/components/post/rich-text-props";
 import type { RichNode } from "@/types/lib/rich-text/rich-node";
 
@@ -10,7 +11,6 @@ import { splitByInlineMedia } from "@/lib/rich-text/inline-media";
 import { parseRichText } from "@/lib/rich-text/parse";
 import { directMediaKind, gifMediaUrl } from "@/lib/shared-links";
 import { cn } from "@/lib/utils";
-import { texts } from "@/texts";
 
 import { InlineMedia } from "./inline-media";
 import { SpoilerMedia } from "./spoiler-media";
@@ -28,7 +28,13 @@ import { SpoilerText } from "./spoiler-text";
  * servidor de terceiro sai como link, porque imagem remota carrega sozinha e entrega o IP de quem
  * lê para quem publicou.
  */
-export function RichText({ content, className, linkClassName, mediaIds, mediaSpoiler }: RichTextProps) {
+export function RichText({
+  content,
+  className,
+  linkClassName,
+  mediaIds,
+  mediaSpoiler,
+}: RichTextProps) {
   const linkClass = linkClassName ?? "text-primary hover:underline";
 
   // Imagem NO MEIO do texto (item 9): quando há mídias anexadas, o conteúdo é dividido nos
@@ -47,7 +53,11 @@ export function RichText({ content, className, linkClassName, mediaIds, mediaSpo
         // na gravação; aqui é a segunda trava) — o texto ao redor continua.
         if (chunk.kind === "media") {
           return mediaIds?.includes(chunk.mediaId) ? (
-            <InlineMedia key={`media-${chunkKey}`} mediaId={chunk.mediaId} mediaSpoiler={mediaSpoiler} />
+            <InlineMedia
+              key={`media-${chunkKey}`}
+              mediaId={chunk.mediaId}
+              mediaSpoiler={mediaSpoiler}
+            />
           ) : null;
         }
         return parseRichText(chunk.text).map((block, key) =>
@@ -58,7 +68,12 @@ export function RichText({ content, className, linkClassName, mediaIds, mediaSpo
   );
 }
 
-function renderBlock(block: RichNode, key: React.Key, linkClass: string, mediaSpoiler = false): ReactNode {
+function renderBlock(
+  block: RichNode,
+  key: React.Key,
+  linkClass: string,
+  mediaSpoiler = false,
+): ReactNode {
   switch (block.kind) {
     case "heading":
       return (
@@ -92,7 +107,9 @@ function renderBlock(block: RichNode, key: React.Key, linkClass: string, mediaSp
         <div key={key} className="my-2 overflow-x-auto">
           <table className="w-full border-collapse text-sm">
             <tbody>
-              {block.children?.map((child, index) => renderBlock(child, index, linkClass, mediaSpoiler))}
+              {block.children?.map((child, index) =>
+                renderBlock(child, index, linkClass, mediaSpoiler),
+              )}
             </tbody>
           </table>
         </div>
@@ -101,7 +118,9 @@ function renderBlock(block: RichNode, key: React.Key, linkClass: string, mediaSp
     case "tableRow":
       return (
         <tr key={key}>
-          {block.children?.map((child, index) => renderBlock(child, index, linkClass, mediaSpoiler))}
+          {block.children?.map((child, index) =>
+            renderBlock(child, index, linkClass, mediaSpoiler),
+          )}
         </tr>
       );
 
@@ -130,11 +149,15 @@ function renderBlock(block: RichNode, key: React.Key, linkClass: string, mediaSp
 
       return block.ordered ? (
         <ol key={key} className="my-2 list-decimal space-y-1 pl-5">
-          {block.children?.map((child, index) => renderBlock(child, index, linkClass, mediaSpoiler))}
+          {block.children?.map((child, index) =>
+            renderBlock(child, index, linkClass, mediaSpoiler),
+          )}
         </ol>
       ) : (
         <ul key={key} className={cn("my-2 space-y-1", task ? "list-none pl-0" : "list-disc pl-5")}>
-          {block.children?.map((child, index) => renderBlock(child, index, linkClass, mediaSpoiler))}
+          {block.children?.map((child, index) =>
+            renderBlock(child, index, linkClass, mediaSpoiler),
+          )}
         </ul>
       );
     }
@@ -217,10 +240,13 @@ function renderInline(nodes: RichNode[], linkClass: string, mediaSpoiler = false
         if (isMidiaDireta(node.href)) {
           return renderMidia(node.href!, index, mediaSpoiler);
         }
+        if (!safeRichHref(node.href)) {
+          return <span key={index}>{inner}</span>;
+        }
         return (
           <a
             key={index}
-            href={node.href}
+            href={safeRichHref(node.href) ?? undefined}
             target="_blank"
             rel="noopener noreferrer"
             className={cn("break-words", linkClass)}
@@ -269,6 +295,14 @@ const HEADING_SIZE: Record<number, string> = {
   2: "text-base",
   3: "text-base",
 };
+
+/** Defesa extra na renderização: só http(s) e caminho relativo viram href (E-07). */
+function safeRichHref(href?: string | null): string | null {
+  if (!href) return null;
+  if (href.startsWith("/") || href.startsWith("#")) return href;
+  const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(href)?.[1]?.toLowerCase();
+  return scheme === undefined || scheme === "http" || scheme === "https" ? href : null;
+}
 
 /** O endereço é MÍDIA direta (GIF de Giphy/Tenor, imagem/vídeo/áudio por extensão)? */
 function isMidiaDireta(href?: string | null): boolean {

@@ -57,7 +57,8 @@ export const authApi = {
   startTotpSetup: () => api.post<TotpSetup>("/auth/2fa/totp/setup"),
 
   /** Confirma o código do app e devolve os códigos de recuperação. */
-  enableTotp: (code: string) => api.post<TwoFactorEnableResult>("/auth/2fa/totp/enable", { code }),
+  enableTotp: (code: string, password: string) =>
+    api.post<TwoFactorEnableResult>("/auth/2fa/totp/enable", { code, password }),
 
   disableTotp: (password: string) =>
     api.post<StatusResponse>("/auth/2fa/totp/disable", { password }),
