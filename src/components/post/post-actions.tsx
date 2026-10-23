@@ -4,10 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
+import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { PostActionsProps } from "@/types/components/post/post-actions-props";
 import { Bookmark, Flag, Heart, MessageSquare, Repeat2, Share2 } from "lucide-react";
 
 import { REACTION_EMOJIS, feedApi, reactionsApi } from "@/lib/api";
+import { prefersReducedMotion, readForceMotion, readLiteMode } from "@/lib/lite-mode";
 import { usePostReaction } from "@/lib/reactions/use-post-reaction";
 import { useAuth } from "@/lib/use-auth";
 import { useMountedOnce } from "@/lib/use-mounted-once";
@@ -41,7 +43,7 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
   const setShowReport = usePostCardStore((state) => state.setShowReport);
 
   const postCounters = card?.postCounters ?? post.counters;
-  const reactionStatus = card?.reactionStatus ?? post.currentUserReaction ?? null;
+  const reactionStatus = card ? card.reactionStatus : (post.currentUserReaction ?? null);
   // O reactionSummary (contagem real por tipo) é a verdade; postCounters.reactions pode estar
   // dessincronizado (bug no decrement ou credibilidade que desconta). Soma do summary quando existe.
   const summaryTotal = post.reactionSummary
@@ -58,6 +60,18 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
   // Enquanto há reação em andamento, o estado otimista manda — a prop do feed não sobrescreve.
   const reactionPendingRef = useRef(false);
   reactionPendingRef.current = card?.reactionPending ?? false;
+  const wasReactionPending = useRef(card?.reactionPending ?? false);
+  const [reactionPulse, setReactionPulse] = useState<ReactionType | null>(null);
+
+  useEffect(() => {
+    const pending = card?.reactionPending ?? false;
+    // Só a nova ação dispara o pulso: carregar o feed ou desfazer uma falha não celebra a reação.
+    if (pending && !wasReactionPending.current) {
+      const motionAllowed = !readLiteMode() && (readForceMotion() || !prefersReducedMotion());
+      setReactionPulse(motionAllowed ? reactionStatus : null);
+    }
+    wasReactionPending.current = pending;
+  }, [card?.reactionPending, reactionStatus]);
 
   useEffect(() => {
     initializePostCard(post);
@@ -147,11 +161,21 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
                 : texts.posts.reactions.react
             }
           >
-            {reactionStatus ? (
-              <span className="text-base leading-none">{REACTION_EMOJIS[reactionStatus]}</span>
-            ) : (
-              <Heart className="h-4 w-4" />
-            )}
+            <span
+              key={reactionStatus ?? "none"}
+              className={`grid h-4 w-4 place-items-center ${
+                reactionPulse && reactionPulse === reactionStatus
+                  ? "post-action-reaction-pulse"
+                  : ""
+              }`}
+              onAnimationEnd={() => setReactionPulse(null)}
+            >
+              {reactionStatus ? (
+                <span className="text-base leading-none">{REACTION_EMOJIS[reactionStatus]}</span>
+              ) : (
+                <Heart className="h-4 w-4" />
+              )}
+            </span>
           </ReactionPicker>
 
           {reactionCount > 0 && (
@@ -217,11 +241,12 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
           onClick={handleSave}
           title={saved ? texts.posts.unsave : texts.posts.save}
           aria-label={saved ? texts.posts.unsave : texts.posts.save}
-          className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition hover:bg-muted hover:text-foreground ${
-            saved ? "text-primary" : ""
+          aria-pressed={saved}
+          className={`flex items-center gap-1.5 rounded-lg px-2.5 py-2.5 transition-colors hover:bg-muted ${
+            saved ? "text-primary" : "hover:text-foreground"
           }`}
         >
-          <Bookmark className="h-4 w-4" />
+          <Bookmark className="post-action-bookmark h-4 w-4" data-saved={saved} />
 
           <span className="text-xs tabular-nums">{postCounters.saves}</span>
         </button>
