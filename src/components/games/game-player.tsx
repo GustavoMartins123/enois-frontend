@@ -10,7 +10,7 @@ import {
 
 import { texts } from "@/texts";
 import type { GamePlayerProps } from "@/types/components/games/game-player-props";
-import { ExternalLink, Gamepad2, Loader2, Maximize2, RotateCcw } from "lucide-react";
+import { ExternalLink, Gamepad2, Loader2, Maximize2, MoveVertical, RotateCcw } from "lucide-react";
 
 import { SLOW_LOADING_MS, initialPlayerState, playerReducer } from "@/lib/games/game-player-state";
 import {
@@ -53,9 +53,11 @@ export function GamePlayer({
     start ? playerReducer(initialPlayerState, { type: "start" }) : initialPlayerState,
   );
   const container = useRef<HTMLDivElement>(null);
+  const viewport = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLIFrameElement>(null);
   const identityPending = useRef(false);
   const [showMobileHint, setShowMobileHint] = useState(true);
+  const [expanded, setExpanded] = useState(false);
   const latest = useRef({ identity, onShareRequest, onSpendRequest });
   // No servidor (e na hidratação) o quadro não existe: o sandbox depende da origem do Énóis, que só
   // o navegador conhece.
@@ -175,15 +177,19 @@ export function GamePlayer({
     <div
       ref={container}
       data-status={state.status}
+      data-expanded={expanded}
       className="overflow-hidden rounded-2xl border border-border-soft bg-surface-card"
     >
       {/* No celular o 16:9 deixa o quadro com ~200px e o menu do jogo sai da tela. */}
       <div
+        ref={viewport}
         className={cn(
           "relative w-full",
-          tallOnMobile
-            ? "max-sm:h-[70svh] max-sm:min-h-80 sm:aspect-[var(--game-aspect)]"
-            : "aspect-[var(--game-aspect)]",
+          expanded
+            ? "aspect-[var(--game-aspect)] min-h-[max(80svh,48rem)] resize-y overflow-hidden"
+            : tallOnMobile
+              ? "max-sm:h-[70svh] max-sm:min-h-80 sm:aspect-[var(--game-aspect)]"
+              : "aspect-[var(--game-aspect)]",
         )}
         style={{ "--game-aspect": ASPECT[aspect ?? ""] ?? "16 / 9" } as CSSProperties}
       >
@@ -224,6 +230,12 @@ export function GamePlayer({
           </button>
         )}
       </div>
+
+      {expanded && (
+        <p className="hidden border-t border-border-soft px-3 py-2 text-xs text-text-subtle sm:block">
+          {t.resizeHint}
+        </p>
+      )}
 
       <div aria-live="polite">
         {state.status === "loading" && (
@@ -307,6 +319,23 @@ export function GamePlayer({
               <>{t.retry}</>
             </Button>
           )}
+
+          <Button
+            variant="ghost"
+            size="sm"
+            className="rounded-full gap-1.5 text-xs"
+            disabled={!started}
+            aria-pressed={expanded}
+            onClick={() => {
+              // Limpa a altura escrita pelo resize nativo sem desmontar o iframe.
+              if (expanded) viewport.current?.style.removeProperty("height");
+              setExpanded((current) => !current);
+            }}
+          >
+            <MoveVertical className="h-3.5 w-3.5" />
+
+            <>{expanded ? t.restoreWindow : t.expandWindow}</>
+          </Button>
 
           <Button
             variant="ghost"

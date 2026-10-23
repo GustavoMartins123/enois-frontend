@@ -195,6 +195,48 @@ describe("GamePlayer — ciclo de vida", () => {
     act(() => vi.advanceTimersByTime(3000));
     expect(host.textContent).not.toContain(texts.games.game.mobileHint);
   });
+
+  it("amplia e restaura a janela sem reiniciar o jogo ou perder a sessão", () => {
+    const onStart = vi.fn();
+    render({ onStart });
+    expect(player().dataset.expanded).toBe("false");
+    expect(button(texts.games.game.expandWindow)!.disabled).toBe(true);
+    play();
+    send({ type: "enois:ready", version: 1 });
+    const originalFrame = iframe()!;
+
+    act(() => button(texts.games.game.expandWindow)!.click());
+    expect(player().dataset.expanded).toBe("true");
+    expect(button(texts.games.game.restoreWindow)!.getAttribute("aria-pressed")).toBe("true");
+    expect(iframe()).toBe(originalFrame);
+    expect(player().dataset.status).toBe("ready");
+
+    // O redimensionamento nativo grava uma altura no elemento; restaurar deve removê-la.
+    originalFrame.parentElement!.style.height = "1100px";
+    act(() => button(texts.games.game.restoreWindow)!.click());
+    expect(originalFrame.parentElement!.style.height).toBe("");
+    expect(player().dataset.expanded).toBe("false");
+    expect(iframe()).toBe(originalFrame);
+    expect(onStart).toHaveBeenCalledTimes(1);
+    expect(player().dataset.status).toBe("ready");
+  });
+
+  it("ampliar um jogo não muda a janela dos outros jogos", () => {
+    act(() =>
+      root.render(
+        <>
+          <GamePlayer url={GAME_URL} title="Jogo amplo" aspect="WIDESCREEN" autoStart />
+          <GamePlayer url={GAME_URL} title="Jogo vertical" aspect="PORTRAIT" autoStart />
+        </>,
+      ),
+    );
+    const players = host.querySelectorAll<HTMLElement>("[data-expanded]");
+    const frames = [...host.querySelectorAll("iframe")];
+    act(() => button(texts.games.game.expandWindow)!.click());
+    expect(players[0].dataset.expanded).toBe("true");
+    expect(players[1].dataset.expanded).toBe("false");
+    expect([...host.querySelectorAll("iframe")]).toEqual(frames);
+  });
 });
 
 describe("GamePlayer — origem e janela", () => {
