@@ -99,6 +99,9 @@ export function CommentItem({ comment, replyingTo, postAuthorId, onPinChanged }:
       setDraft(postId, `${comment.authorName} `);
     }
     setReplyToId(postId, comment.id);
+    setTimeout(() => {
+      document.getElementById(`comment-form-${postId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 50);
   };
 
   const handleDelete = async () => {

@@ -352,7 +352,7 @@ export function PostComments({ postId, postAuthorId }: { postId: string; postAut
         )}
       </div>
 
-      <form onSubmit={submit} className="mt-4">
+      <form onSubmit={submit} className="mt-4" id={`comment-form-${postId}`}>
         <input
           type="text"
           name="website"
