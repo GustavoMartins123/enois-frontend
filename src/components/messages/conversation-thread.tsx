@@ -12,9 +12,9 @@ import { texts } from "@/texts";
 import type { MediaItem } from "@/types/routes/feed/media-item";
 import type { ConversationThreadProps } from "@/types/routes/messages/conversation-thread-props";
 import type { SendMessageInput } from "@/types/routes/messages/send-message-input";
-import { EyeOff, ImageIcon, Send, X } from "lucide-react";
+import { Briefcase, EyeOff, ImageIcon, Send, X } from "lucide-react";
 
-import { messagesApi, profileApi } from "@/lib/api";
+import { messagesApi, profileApi, servicesApi } from "@/lib/api";
 import { liteInterval, litePageSize } from "@/lib/lite-mode";
 import { insertSnippet } from "@/lib/rich-text/insert-snippet";
 import { useLiteMode } from "@/lib/use-lite-mode";
@@ -52,6 +52,7 @@ export function ConversationThread({
   const [media, setMedia] = useState<MediaItem[]>([]);
   const [mediaSpoiler, setMediaSpoiler] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [showServices, setShowServices] = useState(false);
   const [selectingMessages, setSelectingMessages] = useState(false);
   const [selectedMessages, setSelectedMessages] = useState<Set<string>>(new Set());
   const messagesScrollRef = useRef<HTMLDivElement>(null);
@@ -92,7 +93,26 @@ export function ConversationThread({
       queryClient.invalidateQueries({ queryKey: ["messages", conversation.id] });
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
     },
+    // Sem isto o envio falhava em silêncio: o texto já tinha sido limpo e a pessoa achava que
+    // tinha mandado.
+    onError: () => toast(texts.messages.sendError, "error"),
   });
+
+  // O prestador pode oferecer o serviço dele DENTRO da conversa: o painel só busca as ofertas
+  // quando abre (uma chamada por abertura, não a cada mensagem digitada).
+  const { data: myServices, isLoading: isLoadingServices } = useQuery({
+    queryKey: ["services", "mine"],
+    queryFn: () => servicesApi.mine(),
+    enabled: showServices,
+  });
+
+  const attachService = (listing: { id: string; title: string }) => {
+    const origin = typeof window === "undefined" ? "" : window.location.origin;
+    const snippet = `${texts.messages.serviceAttachment} ${listing.title} — ${origin}/servicos#oferta-${listing.id}`;
+    setText((previous) => (previous.trim() ? `${previous.trimEnd()}\n${snippet}` : snippet));
+    setShowServices(false);
+    messageInputRef.current?.focus();
+  };
 
   const reactToMessage = useMutation({
     mutationFn: ({ messageId, type }: { messageId: string; type: string }) =>
@@ -375,8 +395,12 @@ export function ConversationThread({
                     ? "bg-primary text-primary-foreground"
                     : "border border-border-soft text-text-subtle hover:border-primary hover:text-primary"
                 }`}
-                aria-label={mediaSpoiler ? texts.messages.mediaSpoilerActive : texts.messages.mediaSpoiler}
-                title={mediaSpoiler ? texts.messages.mediaSpoilerActive : texts.messages.mediaSpoiler}
+                aria-label={
+                  mediaSpoiler ? texts.messages.mediaSpoilerActive : texts.messages.mediaSpoiler
+                }
+                title={
+                  mediaSpoiler ? texts.messages.mediaSpoilerActive : texts.messages.mediaSpoiler
+                }
               >
                 <EyeOff className="h-3.5 w-3.5" />
                 {mediaSpoiler ? texts.messages.mediaSpoilerActive : texts.messages.mediaSpoiler}
@@ -385,6 +409,38 @@ export function ConversationThread({
           )}
 
           {uploadError && <p className="mb-2 text-xs text-destructive">{uploadError}</p>}
+
+          {showServices && (
+            <div className="mb-2 rounded-xl border border-border-soft bg-surface-2 p-2">
+              <p className="px-1 text-xs font-medium">{texts.messages.attachServiceTitle}</p>
+
+              <p className="px-1 pb-2 text-[11px] text-text-subtle">
+                {texts.messages.attachServiceHint}
+              </p>
+
+              {isLoadingServices ? (
+                <p className="px-1 py-2 text-xs text-text-subtle">{texts.messages.loadingOlder}</p>
+              ) : (myServices?.ofertas ?? []).length === 0 ? (
+                <p className="px-1 py-2 text-xs text-text-subtle">{texts.messages.noServices}</p>
+              ) : (
+                <ul className="max-h-40 space-y-1 overflow-y-auto overscroll-contain">
+                  {(myServices?.ofertas ?? []).map((listing) => (
+                    <li key={listing.id}>
+                      <button
+                        type="button"
+                        onClick={() => attachService(listing)}
+                        className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs transition hover:bg-surface-card"
+                      >
+                        <span className="min-w-0 flex-1 truncate">{listing.title}</span>
+
+                        <span className="shrink-0 text-text-subtle">{listing.category}</span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
 
           <div className="flex items-end gap-2">
             <input
@@ -404,6 +460,19 @@ export function ConversationThread({
               title={texts.messages.attachMedia}
             >
               <ImageIcon className="h-4 w-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowServices((open) => !open)}
+              className={`grid h-10 w-10 shrink-0 place-items-center rounded-full transition hover:bg-muted hover:text-foreground ${
+                showServices ? "bg-muted text-primary" : "text-text-subtle"
+              }`}
+              aria-label={texts.messages.attachService}
+              aria-expanded={showServices}
+              title={texts.messages.attachService}
+            >
+              <Briefcase className="h-4 w-4" />
             </button>
 
             <textarea

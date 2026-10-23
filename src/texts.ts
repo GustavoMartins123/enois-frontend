@@ -2854,6 +2854,7 @@ export const texts = {
     removeMedia: "Remover mídia",
     mediaLimit: "Anexe no máximo 4 imagens por mensagem.",
     mediaError: "Não foi possível enviar a imagem.",
+    sendError: "Não foi possível enviar a mensagem. Tente de novo.",
     mediaSpoiler: "Marcar mídias como spoiler",
     mediaSpoilerActive: "Mídias marcadas como spoiler",
     conversationFallback: "Conversa",

@@ -61,11 +61,23 @@ export function EmbedPlayer({ type, id, autoplay = false }: EmbedPlayerProps) {
   );
 }
 
-/** Capa antes de tocar: miniatura do provedor (uma imagem, sem script) ou um bloco com o nome dele. */
+/**
+ * Capa antes de tocar: miniatura do provedor (uma imagem, sem script) ou um bloco com o nome dele.
+ *
+ * O `maxresdefault.jpg` do YouTube só existe quando o vídeo foi enviado em HD; nos demais o CDN
+ * responde 404 e o card ficava sem capa. O `onError` cai para o `hqdefault.jpg`, que existe para
+ * todo vídeo — e se esse também falhar, mostra o bloco com o nome do provedor.
+ */
 function PosterThumbnail({ type, id }: { type: string; id: string }) {
+  // 0 = maxres, 1 = hq (existe em todo vídeo), 2 = desiste e mostra o bloco.
+  const [tentativa, setTentativa] = useState(0);
   const thumbnail =
     type === "youtube"
-      ? `https://img.youtube.com/vi/${id}/maxresdefault.jpg`
+      ? tentativa === 0
+        ? `https://img.youtube.com/vi/${id}/maxresdefault.jpg`
+        : tentativa === 1
+          ? `https://img.youtube.com/vi/${id}/hqdefault.jpg`
+          : ""
       : type === "dailymotion"
         ? `https://www.dailymotion.com/thumbnail/video/${id}`
         : "";
@@ -76,6 +88,8 @@ function PosterThumbnail({ type, id }: { type: string; id: string }) {
         src={thumbnail}
         alt=""
         loading="lazy"
+        decoding="async"
+        onError={() => setTentativa((atual) => atual + 1)}
         className="aspect-video w-full bg-surface-1 object-cover"
       />
     );
