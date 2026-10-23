@@ -32,6 +32,8 @@ env:
   # Origem pública que o SSR declara ao backend (X-Client-Origin). Precisa ser a origem da QA:
   # o backend só aceita origens da allowlist (CORS_ALLOWED_ORIGINS=https://enois-qa.b7cloud.tech).
   VITE_SITE_URL_QA: https://enois-qa.b7cloud.tech
+  VITE_API_BACKEND_PROD: https://api.enois.ia.br/api
+  VITE_SITE_URL_PROD: https://enois.ia.br
 
 permissions:
   contents: read
@@ -97,9 +99,17 @@ jobs:
           username: ${{ secrets.HARBOR_USER }}
           password: ${{ secrets.HARBOR_PASSWORD }}
 
-      # Hoje só existe o ambiente QA, então o build-arg de API aponta pra lá sempre.
-      # Quando o node de prod dedicado existir, bifurcar por branch (main -> VITE_API_BACKEND_PROD).
-      #
+      - name: 🏷️ Definir build-args por branch
+        id: buildargs
+        run: |
+          if [ "${{ steps.vars.outputs.branch }}" = "main" ]; then
+            echo "api_backend=${{ env.VITE_API_BACKEND_PROD }}" >> "$GITHUB_OUTPUT"
+            echo "site_url=${{ env.VITE_SITE_URL_PROD }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "api_backend=${{ env.VITE_API_BACKEND_QA }}" >> "$GITHUB_OUTPUT"
+            echo "site_url=${{ env.VITE_SITE_URL_QA }}" >> "$GITHUB_OUTPUT"
+          fi
+
       # push:true direto no buildx (buildkit) dá 400 no token service do Harbor com
       # multi-tag num push só (bug conhecido buildkit x Harbor 2.11 — não é bug nosso,
       # não tocar na config do Harbor, que funciona normal pras pipes do GitLab).
@@ -112,8 +122,8 @@ jobs:
           push: false
           load: true
           build-args: |
-            VITE_API_BACKEND=${{ env.VITE_API_BACKEND_QA }}
-            VITE_SITE_URL=${{ env.VITE_SITE_URL_QA }}
+            VITE_API_BACKEND=${{ steps.buildargs.outputs.api_backend }}
+            VITE_SITE_URL=${{ steps.buildargs.outputs.site_url }}
           tags: |
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.image_tag }}
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.branch }}
@@ -186,3 +196,64 @@ jobs:
         run: |
           sleep 5
           curl -sfI --max-time 15 https://enois-qa.b7cloud.tech | head -1
+
+  # ===========================================================================
+  # Deploy PROD — SOMENTE branch main, SOMENTE push/workflow_dispatch, self-hosted
+  # ===========================================================================
+  deploy-prod:
+    name: 🚢 Deploy → PROD (enois-node1)
+    needs: build-and-push
+    if: >
+      needs.build-and-push.outputs.branch == 'main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: [self-hosted, enois, docker-prod4]
+    steps:
+      - name: 🚢 Recriar container via Portainer API (endpoint enois-node1)
+        env:
+          PORTAINER_BASE_URL: ${{ secrets.PORTAINER_BASE_URL }}
+          PORTAINER_API_KEY: ${{ secrets.PORTAINER_API_KEY }}
+          PORTAINER_ENDPOINT_ID_PROD: 10
+          IMAGE_REF: ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/${{ env.IMAGE_NAME }}:${{ needs.build-and-push.outputs.image_tag }}
+          HARBOR_USER: ${{ secrets.HARBOR_USER }}
+          HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD }}
+        run: |
+          set -euo pipefail
+          API="${PORTAINER_BASE_URL}/api/endpoints/${PORTAINER_ENDPOINT_ID_PROD}/docker"
+          AUTH=(-H "X-API-Key: ${PORTAINER_API_KEY}" -H "Referer: ${PORTAINER_BASE_URL}")
+          PROD_CONTAINER_NAME="enois-prod-frontend"
+
+          echo "==> Pull ${IMAGE_REF}"
+          ENCODED_IMAGE=$(python3 -c "import urllib.parse,os;print(urllib.parse.quote(os.environ['IMAGE_REF'].rsplit(':',1)[0]))")
+          TAG=$(echo "${IMAGE_REF}" | rev | cut -d: -f1 | rev)
+          REGISTRY_AUTH=$(python3 -c "import json,base64,os;print(base64.b64encode(json.dumps({'username':os.environ['HARBOR_USER'],'password':os.environ['HARBOR_PASSWORD'],'serveraddress':'${HARBOR_REGISTRY}'}).encode()).decode())")
+          curl -sf -X POST "${AUTH[@]}" -H "X-Registry-Auth: ${REGISTRY_AUTH}" "${API}/images/create?fromImage=${ENCODED_IMAGE}&tag=${TAG}"
+
+          echo "==> Stop + remove container antigo (ignora erro se não existir)"
+          curl -s -X POST "${AUTH[@]}" "${API}/containers/${PROD_CONTAINER_NAME}/stop" || true
+          curl -s -X DELETE "${AUTH[@]}" "${API}/containers/${PROD_CONTAINER_NAME}?v=1" || true
+
+          echo "==> Criar container novo"
+          cat > /tmp/enois-frontend-prod-deploy.json <<EOF
+          {
+            "Image": "${IMAGE_REF}",
+            "Env": ["PORT=3000", "NODE_ENV=production"],
+            "ExposedPorts": {"3000/tcp": {}},
+            "HostConfig": {
+              "RestartPolicy": {"Name": "unless-stopped"},
+              "Memory": 536870912,
+              "MemorySwap": 536870912,
+              "MemoryReservation": 268435456,
+              "PortBindings": {"3000/tcp": [{"HostPort": "8106"}]}
+            }
+          }
+          EOF
+          curl -sf -X POST "${AUTH[@]}" -H "Content-Type: application/json" \
+            "${API}/containers/create?name=${PROD_CONTAINER_NAME}" -d @/tmp/enois-frontend-prod-deploy.json
+
+          echo "==> Start"
+          curl -sf -X POST "${AUTH[@]}" "${API}/containers/${PROD_CONTAINER_NAME}/start"
+
+      - name: 🩺 Health check
+        run: |
+          sleep 5
+          curl -sfI --max-time 15 https://enois.ia.br | head -1
