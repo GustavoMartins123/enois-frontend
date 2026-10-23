@@ -29,6 +29,9 @@ env:
   # Changing this for a running container requires a rebuild, not just a redeploy.
   # (This exact gotcha took the AWS deploy down once — see Dockerfile comment.)
   VITE_API_BACKEND_QA: https://enois-api-qa.b7cloud.tech/api
+  # Origem pública que o SSR declara ao backend (X-Client-Origin). Precisa ser a origem da QA:
+  # o backend só aceita origens da allowlist (CORS_ALLOWED_ORIGINS=https://enois-qa.b7cloud.tech).
+  VITE_SITE_URL_QA: https://enois-qa.b7cloud.tech
 
 permissions:
   contents: read
@@ -57,6 +60,7 @@ jobs:
           tags: enois/frontend:pr-check
           build-args: |
             VITE_API_BACKEND=${{ env.VITE_API_BACKEND_QA }}
+            VITE_SITE_URL=${{ env.VITE_SITE_URL_QA }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -109,6 +113,7 @@ jobs:
           load: true
           build-args: |
             VITE_API_BACKEND=${{ env.VITE_API_BACKEND_QA }}
+            VITE_SITE_URL=${{ env.VITE_SITE_URL_QA }}
           tags: |
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.image_tag }}
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.branch }}
