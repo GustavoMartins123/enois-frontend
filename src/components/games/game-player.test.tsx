@@ -208,6 +208,11 @@ describe("GamePlayer — ciclo de vida", () => {
     act(() => button(texts.games.game.expandWindow)!.click());
     expect(player().dataset.expanded).toBe("true");
     expect(button(texts.games.game.restoreWindow)!.getAttribute("aria-pressed")).toBe("true");
+    const viewport = originalFrame.parentElement!;
+    expect(viewport.className).toContain("max-sm:min-h-[calc(100dvh-8rem)]");
+    expect(viewport.className).toContain("max-sm:max-h-[calc(100dvh-8rem)]");
+    expect(viewport.className).toContain("max-sm:resize-none");
+    expect(viewport.className).toContain("sm:resize-y");
     expect(iframe()).toBe(originalFrame);
     expect(player().dataset.status).toBe("ready");
 

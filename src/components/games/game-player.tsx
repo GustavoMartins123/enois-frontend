@@ -186,7 +186,7 @@ export function GamePlayer({
         className={cn(
           "relative w-full",
           expanded
-            ? "aspect-[var(--game-aspect)] min-h-[max(80svh,48rem)] resize-y overflow-hidden"
+            ? "aspect-[var(--game-aspect)] max-sm:min-h-[calc(100dvh-8rem)] max-sm:max-h-[calc(100dvh-8rem)] max-sm:resize-none sm:min-h-[max(80svh,48rem)] sm:resize-y overflow-hidden"
             : tallOnMobile
               ? "max-sm:h-[70svh] max-sm:min-h-80 sm:aspect-[var(--game-aspect)]"
               : "aspect-[var(--game-aspect)]",
