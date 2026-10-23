@@ -2918,6 +2918,18 @@ export const texts = {
     title: "API do Énóis",
     subtitle:
       "Construa clientes, ferramentas e integrações para o Énóis. Esta é a documentação oficial.",
+    originsTitle: "Origens autorizadas",
+    originsDescription:
+      "Para chamar a API pública a partir de um navegador, cadastre a origem exata do seu app (ex.: https://meuapp.com). O CORS só libera origens cadastradas; chamadas de servidor (sem navegador) não precisam.",
+    originsLogin: "Entre na sua conta para cadastrar a origem do seu app.",
+    originPlaceholder: "https://meuapp.com",
+    originAdd: "Cadastrar origem",
+    originEmpty: "Nenhuma origem cadastrada ainda.",
+    originRemove: "Remover",
+    originAdded: "Origem cadastrada.",
+    originRemoved: "Origem removida.",
+    originError: "Não foi possível cadastrar a origem.",
+    originValidHint: "Use só o domínio com https (http é aceito apenas em localhost).",
     philosophyTitle: "Filosofia",
     philosophy:
       "A API existe para ampliar o acesso à informação e automatizar processos — nunca para fabricar interação social. Publicar conteúdo automaticamente (IA, bots, integrações) é proibido; criar e agendar posts pela funcionalidade oficial, com você no controle, é permitido.",
@@ -3122,6 +3134,22 @@ export const texts = {
    * Admins (allowlist de username no backend) decidem candidaturas e podem punir qualquer usuário.
    */
   moderator: {
+    panic: {
+      title: "Modo pânico",
+      description:
+        "Bloqueia toda escrita da aplicação (POST/PUT/PATCH/DELETE) com 429 imediatamente. O login e este botão continuam funcionando para você poder desligar.",
+      active:
+        "ATIVO — toda escrita está respondendo 429. Desligue para a aplicação voltar ao normal.",
+      activate: "Ativar modo pânico",
+      deactivate: "Desativar modo pânico",
+      confirmTitle: "Ativar o modo pânico?",
+      confirmBody:
+        "Publicações, comentários, mensagens, cadastros e qualquer outra escrita vão falhar com 429 até você desligar. A API de login e este botão continuam acessíveis.",
+      done: (active: boolean) => (active ? "Modo pânico ATIVADO." : "Modo pânico desativado."),
+      error: "Não foi possível alterar o modo pânico.",
+      envLocked:
+        "Modo pânico travado pela variável de ambiente PANIC_MODE. Para voltar ao normal, esvazie o secret e faça um novo deploy.",
+    },
     seoTitle: "Painel de moderador · Énóis",
     back: "Voltar",
     title: "Painel de moderador",
