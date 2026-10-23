@@ -95,12 +95,18 @@ jobs:
 
       # Hoje só existe o ambiente QA, então o build-arg de API aponta pra lá sempre.
       # Quando o node de prod dedicado existir, bifurcar por branch (main -> VITE_API_BACKEND_PROD).
-      - name: 🚀 Build & Push
+      #
+      # push:true direto no buildx (buildkit) dá 400 no token service do Harbor com
+      # multi-tag num push só (bug conhecido buildkit x Harbor 2.11 — não é bug nosso,
+      # não tocar na config do Harbor, que funciona normal pras pipes do GitLab).
+      # Fix: build local (load) + docker push classico por tag, igual ao fluxo do GitLab.
+      - name: 🚀 Build (local, sem push)
         uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
-          push: true
+          push: false
+          load: true
           build-args: |
             VITE_API_BACKEND=${{ env.VITE_API_BACKEND_QA }}
           tags: |
@@ -108,6 +114,13 @@ jobs:
             ${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.branch }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: 📤 Push para Harbor (docker push classico, tag por tag)
+        run: |
+          set -euo pipefail
+          IMG="${{ env.HARBOR_REGISTRY }}/${{ env.HARBOR_PROJECT }}/${{ env.IMAGE_NAME }}"
+          docker push "${IMG}:${{ steps.vars.outputs.image_tag }}"
+          docker push "${IMG}:${{ steps.vars.outputs.branch }}"
 
   # ===========================================================================
   # Deploy QA — SOMENTE branch qa, SOMENTE push/workflow_dispatch, self-hosted
