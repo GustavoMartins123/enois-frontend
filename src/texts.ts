@@ -2920,7 +2920,7 @@ export const texts = {
       "Construa clientes, ferramentas e integrações para o Énóis. Esta é a documentação oficial.",
     originsTitle: "Origens autorizadas",
     originsDescription:
-      "Para chamar a API pública a partir de um navegador, cadastre a origem exata do seu app (ex.: https://meuapp.com). O CORS só libera origens cadastradas; chamadas de servidor (sem navegador) não precisam.",
+      "Toda requisição ao backend precisa de uma origem cadastrada. O navegador manda Origin sozinho; chamadas de servidor (SSR, curl, integrações) precisam mandar X-Client-Origin: https://meuapp.com. A origem do próprio Énóis é liberada automaticamente; cadastre a do seu app abaixo.",
     originsLogin: "Entre na sua conta para cadastrar a origem do seu app.",
     originPlaceholder: "https://meuapp.com",
     originAdd: "Cadastrar origem",
@@ -2929,14 +2929,15 @@ export const texts = {
     originAdded: "Origem cadastrada.",
     originRemoved: "Origem removida.",
     originError: "Não foi possível cadastrar a origem.",
-    originValidHint: "Use só o domínio com https (http é aceito apenas em localhost).",
+    originValidHint:
+      "Use só o domínio com https (http é aceito apenas em localhost). Sem origem cadastrada, a requisição recebe 403 ORIGIN_REQUIRED.",
     philosophyTitle: "Filosofia",
     philosophy:
       "A API existe para ampliar o acesso à informação e automatizar processos — nunca para fabricar interação social. Publicar conteúdo automaticamente (IA, bots, integrações) é proibido; criar e agendar posts pela funcionalidade oficial, com você no controle, é permitido.",
     baseUrlTitle: "Base da API",
     baseUrlHint: "Todas as rotas ficam sob",
     baseUrlNote:
-      "Respostas JSON. Timestamps em UTC (ISO-8601). Identificadores são estáveis (prefixados por tipo).",
+      "Respostas JSON. Timestamps em UTC (ISO-8601). Identificadores são estáveis (prefixados por tipo). Toda requisição precisa de uma origem cadastrada: o navegador manda Origin; chamadas de servidor mandam X-Client-Origin.",
     authTitle: "Autenticação",
     authIntro:
       "As rotas públicas não pedem credencial. As demais usam a sessão do Énóis (a mesma do app):",
