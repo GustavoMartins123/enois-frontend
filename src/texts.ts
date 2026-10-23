@@ -2923,7 +2923,7 @@ export const texts = {
       "Construa clientes, ferramentas e integrações para o Énóis. Esta é a documentação oficial.",
     originsTitle: "Origens autorizadas",
     originsDescription:
-      "Toda requisição ao backend precisa de uma origem cadastrada. O navegador manda Origin sozinho; chamadas de servidor (SSR, curl, integrações) precisam mandar X-Client-Origin: https://meuapp.com. A origem do próprio Énóis é liberada automaticamente; cadastre a do seu app abaixo.",
+      "Toda requisição ao backend precisa de uma origem cadastrada. O navegador manda Origin sozinho; chamadas de servidor (SSR, curl, integrações) precisam mandar X-Client-Origin: https://meuapp.com. A origem do próprio Énóis é liberada automaticamente; cadastre a do seu app abaixo. Rotas de administração e moderação aceitam apenas a origem do frontend.",
     originsLogin: "Entre na sua conta para cadastrar a origem do seu app.",
     originPlaceholder: "https://meuapp.com",
     originAdd: "Cadastrar origem",
