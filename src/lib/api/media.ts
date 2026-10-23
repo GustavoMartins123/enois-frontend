@@ -69,17 +69,24 @@ export const mediaApi = {
   delete: (mediaId: string) => api.delete<Pick<MediaAsset, "id" | "status">>(`/media/${mediaId}`),
 
   /**
-   * Sobe o arquivo direto no storage por URL assinada (S3).
+   * Sobe o arquivo para o endereço que o servidor devolveu.
    *
    * Os cabecalhos vêm assinados pelo servidor: o `Content-Type` precisa ser EXATAMENTE o mesmo, ou
-   * o S3 recusa a subida (403). Nada de credencial aqui — a URL já autoriza aquela subida.
+   * o storage recusa a subida. Com o gateway do b7 a subida passa pelo próprio app
+   * (`PUT /api/storage/{chave}`), que exige a sessão de quem é dono do asset — por isso o token vai
+   * junto. Na AWS, a URL assinada direto no bucket ignora esse cabecalho extra.
    */
   uploadToSignedUrl: async (
     signedUrl: string,
     file: File,
     headers: Record<string, string> = {},
   ) => {
-    const response = await fetch(signedUrl, { method: "PUT", body: file, headers });
+    const token = getSessionToken();
+    const response = await fetch(signedUrl, {
+      method: "PUT",
+      body: file,
+      headers: token ? { ...headers, "X-Session-Token": token } : headers,
+    });
 
     if (!response.ok) {
       const body = await response.text().catch(() => "");
