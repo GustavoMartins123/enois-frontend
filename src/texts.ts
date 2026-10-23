@@ -1201,6 +1201,7 @@ export const texts = {
     share: "Compartilhar",
     empty: "Nada por aqui ainda. Publicações da sua rede aparecem neste feed.",
     composer: {
+      removeMedia: "Remover mídia",
       topic: "Assunto",
       insertInText: "Inserir no texto",
       insertMedia: (number: number) => `Inserir mídia ${number} no texto`,
@@ -1544,6 +1545,7 @@ export const texts = {
       uploadFailed: "Não foi possível enviar a mídia. Tente de novo.",
     },
     video: {
+      playerTitle: "Vídeo do post",
       openLabel: "abrir no site",
       watchOn: (provider: string) => `Clique para assistir no ${provider}`,
       icons: {
@@ -2823,6 +2825,7 @@ export const texts = {
   messages: {
     seoTitle: "Mensagens · Énóis",
     title: "Mensagens",
+    send: "Enviar mensagem",
     back: "Voltar",
     new: "Nova",
     searchContacts: "Buscar contatos...",

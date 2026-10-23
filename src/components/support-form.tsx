@@ -177,6 +177,7 @@ export function SupportForm({ onSent }: { onSent?: () => void } = {}) {
             <button
               type="button"
               aria-label={texts.support.removeImage}
+              title={texts.support.removeImage}
               onClick={() => setImageUrl(null)}
               className="absolute -right-1.5 -top-1.5 grid h-6 w-6 place-items-center rounded-full bg-surface-card text-muted-foreground shadow-md transition hover:text-destructive"
             >
