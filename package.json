@@ -19,7 +19,7 @@
     "test:eslint-rules": "node eslint/rules/jsx-content-spacing.test.js && node eslint/rules/type-boundaries.test.js",
     "format": "prettier --write .",
     "prepare": "simple-git-hooks",
-    "generate:api": "tsx scripts/fetch-openapi-spec.ts && tsx scripts/generate-api.ts",
+    "generate:api": "tsx scripts/fetch-openapi-spec.ts --fetch && tsx scripts/generate-api.ts",
     "generate:api:watch": "orval --config orval.config.ts --watch"
   },
   "dependencies": {

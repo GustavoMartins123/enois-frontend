@@ -39,6 +39,17 @@ npx vitest run       # testes de lógica pura
 npm run build        # build de produção
 ```
 
+### Cliente OpenAPI
+
+O contrato usado pelo Orval fica em `specs/openapi.json` como um ponto de partida local. Os arquivos
+gerados em `src/lib/api/generated/` e `src/types/generated/` não são versionados. Com o backend
+rodando, `npm run generate:api` busca `GET /api/openapi.json`, valida que o documento tem pelo menos
+um caminho e só então gera o cliente Zod. Se o backend estiver indisponível ou o contrato estiver
+vazio, o comando falha para não produzir um cliente falso.
+
+`npm run generate:api:watch` observa apenas o contrato já salvo e não faz chamadas ao backend; use-o
+depois de uma execução bem-sucedida de `npm run generate:api`.
+
 **Nada disso vê a tela.** Se a mudança aparece para quem usa, abra o navegador e olhe — e conte na PR
 o que você viu. Build verde com tela quebrada é o jeito mais fácil de publicar um bug.
 
