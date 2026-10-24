@@ -28,6 +28,7 @@ import {
   ShieldCheck,
   Trash2,
   UserCheck,
+  Users,
   X,
 } from "lucide-react";
 
@@ -46,6 +47,7 @@ import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { AppealsSection } from "@/components/moderation/appeals-section";
+import { ContributorsSection } from "@/components/moderation/contributors-section";
 import { DisputesSection } from "@/components/moderation/disputes-section";
 import { EmailLogSection } from "@/components/moderation/email-log-section";
 import { GamesReviewSection } from "@/components/moderation/games-review-section";
@@ -100,6 +102,12 @@ const ALL_TABS: { id: ModeratorTabId; label: string; icon: typeof Flag; adminOnl
     label: texts.moderator.tabs.monitoring,
     icon: Activity,
     adminOnly: false,
+  },
+  {
+    id: "contributors",
+    label: texts.moderator.tabs.contributors,
+    icon: Users,
+    adminOnly: true,
   },
 ];
 
@@ -228,6 +236,7 @@ function Moderador() {
             {canModerate && activeTab === "suspiciousPosts" && <SuspiciousPostsSection />}
             {canModerate && activeTab === "emails" && <EmailLogSection />}
             {canModerate && activeTab === "monitoring" && <MonitoringSection />}
+            {me.admin && activeTab === "contributors" && <ContributorsSection />}
           </div>
         ) : (
           <ApplicationSection me={me} />
