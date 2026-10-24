@@ -6,6 +6,7 @@ import { texts } from "@/texts";
 import type { MonitoringEvent } from "@/types/application/monitoring/monitoring-event";
 import type { MonitoringEventLevel } from "@/types/application/monitoring/monitoring-event-level";
 import type { MonitoringMinutePoint } from "@/types/application/monitoring/monitoring-minute-point";
+import type { MonitoringResource } from "@/types/application/monitoring/monitoring-resource";
 import { Activity, AlertTriangle, Cpu, Pause, Play, RefreshCw, Search, Server } from "lucide-react";
 
 import { monitoringApi } from "@/lib/api";
@@ -136,8 +137,27 @@ export function MonitoringSection() {
 
       <div className="grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4">
         <Kpi
+          label={texts.moderator.monitoring.requestsPerSecond}
+          value={data.requestsPerSecond.toFixed(1)}
+        />
+        <Kpi
           label={texts.moderator.monitoring.requestsPerMinute}
           value={number.format(data.requestsLastMinute)}
+        />
+        <Kpi
+          label={texts.moderator.monitoring.inFlight}
+          value={`${number.format(data.inFlight)} / ${number.format(data.peakInFlight)}`}
+        />
+        <Kpi
+          label={texts.moderator.monitoring.requestsTotal}
+          value={number.format(data.requestsTotal)}
+        />
+        <Kpi label={texts.moderator.monitoring.p50} value={`${number.format(data.p50Ms)} ms`} />
+        <Kpi label={texts.moderator.monitoring.p95} value={`${number.format(data.p95Ms)} ms`} />
+        <Kpi label={texts.moderator.monitoring.p99} value={`${number.format(data.p99Ms)} ms`} />
+        <Kpi
+          label={texts.moderator.monitoring.maxLatency}
+          value={`${number.format(data.maxMs)} ms`}
         />
         <Kpi
           label={texts.moderator.monitoring.errors5xx}
@@ -149,14 +169,53 @@ export function MonitoringSection() {
           value={number.format(data.errors4xxLastMinute)}
           tone="warn"
         />
-        <Kpi label={texts.moderator.monitoring.p95} value={`${number.format(data.p95Ms)} ms`} />
+        <Kpi
+          label={texts.moderator.monitoring.slow}
+          value={number.format(data.slowLastMinute)}
+          tone="warn"
+        />
+        <Kpi
+          label={texts.moderator.monitoring.rateLimited}
+          value={number.format(data.rateLimitedLastMinute)}
+          tone="danger"
+        />
         <Kpi label={texts.moderator.monitoring.errorRate} value={`${data.errorRate.toFixed(1)}%`} />
         <Kpi label={texts.moderator.monitoring.uptime} value={formatUptime(data.uptimeSeconds)} />
         <Kpi
           label={texts.moderator.monitoring.heap}
-          value={`${Math.round(data.jvm.heapUsedBytes / 1024 / 1024)} / ${Math.round(data.jvm.heapMaxBytes / 1024 / 1024)} MB`}
+          value={`${formatBytes(data.resources.heapUsedBytes)} / ${formatBytes(data.resources.heapMaxBytes)}`}
         />
-        <Kpi label={texts.moderator.monitoring.threads} value={number.format(data.jvm.threads)} />
+        <Kpi
+          label={texts.moderator.monitoring.threads}
+          value={number.format(data.resources.threads)}
+        />
+      </div>
+
+      <div className="flex flex-wrap gap-1.5">
+        {data.statusCounts.map((item) => (
+          <span
+            key={item.label}
+            className={cn(
+              "rounded-full px-2 py-0.5 text-[11px] font-medium",
+              item.label === "5xx"
+                ? "bg-destructive/10 text-destructive"
+                : item.label === "4xx"
+                  ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                  : "bg-surface-2 text-text-subtle",
+            )}
+          >
+            {item.label}: {number.format(item.count)}
+          </span>
+        ))}
+
+        {data.methodCounts.map((item) => (
+          <span
+            key={item.label}
+            className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] text-text-subtle"
+          >
+            {item.label}: {number.format(item.count)}
+          </span>
+        ))}
       </div>
 
       {data.droppedEvents > 0 && (
@@ -218,6 +277,34 @@ export function MonitoringSection() {
           </div>
         </div>
       </div>
+
+      <div className="grid min-w-0 gap-3 lg:grid-cols-2">
+        <div className="surface-card min-w-0 p-3">
+          <div className="mb-2 flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
+              {texts.moderator.monitoring.latencyTitle}
+            </p>
+
+            <div className="flex items-center gap-2 text-[10px] text-text-subtle">
+              <Legend color="var(--primary)" label="p95" />
+              <Legend color="var(--destructive)" label="p99" />
+              <Legend color="#f59e0b" label="max" />
+            </div>
+          </div>
+
+          <LatencyChart series={data.series} />
+        </div>
+
+        <div className="surface-card min-w-0 p-3">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-subtle">
+            {texts.moderator.monitoring.resourceChartTitle}
+          </p>
+
+          <ResourceChart series={data.series} />
+        </div>
+      </div>
+
+      <ResourcePanel resource={data.resources} />
 
       <div className="surface-card min-w-0 p-3">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
@@ -407,7 +494,7 @@ function TrafficChart({ series }: { series: MonitoringMinutePoint[] }) {
       </svg>
 
       <div className="flex justify-between text-[10px] text-text-subtle">
-        <span>{texts.moderator.monitoring.last30}</span>
+        <span>{texts.moderator.monitoring.last60}</span>
 
         <span>
           {texts.moderator.monitoring.peak}: {number.format(max)}
@@ -456,6 +543,267 @@ function EventRow({ event }: { event: MonitoringEvent }) {
       </td>
     </tr>
   );
+}
+
+function LatencyChart({ series }: { series: MonitoringMinutePoint[] }) {
+  const width = 600;
+  const height = 110;
+  const max = Math.max(
+    1,
+    ...series.map((point) => Math.max(point.p99Ms, point.maxMs, point.p95Ms)),
+  );
+  const step = width / Math.max(1, series.length - 1);
+  const line = (value: (point: MonitoringMinutePoint) => number) =>
+    series
+      .map((point, index) => `${index * step},${height - (value(point) / max) * (height - 6)}`)
+      .join(" ");
+
+  return (
+    <div>
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        className="h-28 w-full"
+        role="img"
+        aria-label={texts.moderator.monitoring.latencyTitle}
+      >
+        <polyline
+          points={line((point) => point.p95Ms)}
+          fill="none"
+          stroke="var(--primary)"
+          strokeWidth={1.8}
+        />
+        <polyline
+          points={line((point) => point.p99Ms)}
+          fill="none"
+          stroke="var(--destructive)"
+          strokeWidth={1.4}
+        />
+        <polyline
+          points={line((point) => point.maxMs)}
+          fill="none"
+          stroke="#f59e0b"
+          strokeWidth={1}
+          opacity={0.8}
+        />
+      </svg>
+
+      <div className="flex justify-between text-[10px] text-text-subtle">
+        <span>{texts.moderator.monitoring.last60}</span>
+
+        <span>
+          {texts.moderator.monitoring.peak}: {number.format(max)} ms
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function ResourceChart({ series }: { series: MonitoringMinutePoint[] }) {
+  const cpuMax = 100;
+  const heapMax = Math.max(1, ...series.map((point) => point.heapMb));
+
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <MiniLine
+        label={texts.moderator.monitoring.legendCpu}
+        values={series.map((point) => point.cpuPercent)}
+        max={cpuMax}
+        suffix="%"
+        color="var(--primary)"
+      />
+      <MiniLine
+        label={texts.moderator.monitoring.legendHeap}
+        values={series.map((point) => point.heapMb)}
+        max={heapMax}
+        suffix="MB"
+        color="#8b5cf6"
+      />
+    </div>
+  );
+}
+
+function MiniLine({
+  label,
+  values,
+  max,
+  suffix,
+  color,
+}: {
+  label: string;
+  values: number[];
+  max: number;
+  suffix: string;
+  color: string;
+}) {
+  const width = 280;
+  const height = 80;
+  const step = width / Math.max(1, values.length - 1);
+  const points = values
+    .map((value, index) => `${index * step},${height - (value / Math.max(1, max)) * (height - 4)}`)
+    .join(" ");
+  const last = values[values.length - 1] ?? 0;
+
+  return (
+    <div className="min-w-0">
+      <div className="flex items-center justify-between text-[10px] text-text-subtle">
+        <span>{label}</span>
+
+        <span className="tabular-nums text-text-strong">
+          {number.format(Math.round(last))} {suffix}
+        </span>
+      </div>
+
+      <svg viewBox={`0 0 ${width} ${height}`} className="h-20 w-full" role="img" aria-label={label}>
+        <polyline points={points} fill="none" stroke={color} strokeWidth={1.8} />
+      </svg>
+    </div>
+  );
+}
+
+function ResourcePanel({ resource }: { resource: MonitoringResource }) {
+  const pool = resource.dbPool;
+  const diskUsed =
+    resource.diskTotalBytes > 0 ? resource.diskTotalBytes - resource.diskFreeBytes : -1;
+  const systemUsed =
+    resource.systemMemoryTotalBytes > 0
+      ? resource.systemMemoryTotalBytes - resource.systemMemoryFreeBytes
+      : -1;
+
+  return (
+    <div className="surface-card min-w-0 p-3">
+      <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-text-subtle">
+        {texts.moderator.monitoring.resourcesTitle}
+      </p>
+
+      <div className="grid min-w-0 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <UsageBar
+          label={texts.moderator.monitoring.heapUsed}
+          used={resource.heapUsedBytes}
+          total={resource.heapMaxBytes}
+          detail={`${formatBytes(resource.heapUsedBytes)} / ${formatBytes(resource.heapMaxBytes)}`}
+        />
+        <UsageBar
+          label={texts.moderator.monitoring.cpuProcess}
+          used={Math.max(0, resource.processCpuPercent)}
+          total={100}
+          detail={`${resource.processCpuPercent < 0 ? "—" : resource.processCpuPercent.toFixed(0)}%`}
+        />
+        <UsageBar
+          label={texts.moderator.monitoring.cpuSystem}
+          used={Math.max(0, resource.systemCpuPercent)}
+          total={100}
+          detail={`${resource.systemCpuPercent < 0 ? "—" : resource.systemCpuPercent.toFixed(0)}%`}
+        />
+        <UsageBar
+          label={texts.moderator.monitoring.disk}
+          used={Math.max(0, diskUsed)}
+          total={resource.diskTotalBytes}
+          detail={
+            resource.diskTotalBytes > 0
+              ? `${formatBytes(resource.diskFreeBytes)} livres de ${formatBytes(resource.diskTotalBytes)}`
+              : "—"
+          }
+        />
+        <UsageBar
+          label={texts.moderator.monitoring.systemMemory}
+          used={Math.max(0, systemUsed)}
+          total={resource.systemMemoryTotalBytes}
+          detail={
+            resource.systemMemoryTotalBytes > 0
+              ? `${formatBytes(resource.systemMemoryFreeBytes)} livres de ${formatBytes(resource.systemMemoryTotalBytes)}`
+              : "—"
+          }
+        />
+        <UsageBar
+          label={texts.moderator.monitoring.cgroupMemory}
+          used={Math.max(0, resource.cgroupMemoryUsedBytes)}
+          total={resource.cgroupMemoryMaxBytes}
+          detail={
+            resource.cgroupMemoryMaxBytes > 0
+              ? `${formatBytes(resource.cgroupMemoryUsedBytes)} / ${formatBytes(resource.cgroupMemoryMaxBytes)}`
+              : "—"
+          }
+        />
+        <Stat
+          label={texts.moderator.monitoring.loadAverage}
+          value={resource.loadAverage < 0 ? "—" : resource.loadAverage.toFixed(2)}
+        />
+        <Stat
+          label={texts.moderator.monitoring.threadsPeak}
+          value={`${number.format(resource.threads)} / ${number.format(resource.peakThreads)}`}
+        />
+        <Stat
+          label={texts.moderator.monitoring.gc}
+          value={`${number.format(resource.gcCount)} · ${number.format(resource.gcTimeMs)} ms`}
+        />
+        <Stat
+          label={texts.moderator.monitoring.classes}
+          value={number.format(resource.loadedClasses)}
+        />
+        <Stat
+          label={texts.moderator.monitoring.nonHeap}
+          value={formatBytes(resource.nonHeapUsedBytes)}
+        />
+        <Stat
+          label={texts.moderator.monitoring.dbPool}
+          value={pool ? `${pool.active} / ${pool.max} ativos · ${pool.waiting} esperando` : "—"}
+        />
+        <Stat
+          label={texts.moderator.monitoring.cgroupCpu}
+          value={resource.cgroupCpuCores > 0 ? `${resource.cgroupCpuCores.toFixed(2)} cores` : "—"}
+        />
+      </div>
+    </div>
+  );
+}
+
+function UsageBar({
+  label,
+  used,
+  total,
+  detail,
+}: {
+  label: string;
+  used: number;
+  total: number;
+  detail: string;
+}) {
+  const percent = total > 0 ? Math.min(100, (used / total) * 100) : 0;
+
+  return (
+    <div className="min-w-0">
+      <div className="flex items-center justify-between gap-2 text-[10px] text-text-subtle">
+        <span className="truncate">{label}</span>
+
+        <span className="shrink-0 tabular-nums text-text-strong">{percent.toFixed(0)}%</span>
+      </div>
+
+      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-2">
+        <div
+          className={cn("h-full rounded-full", percent >= 90 ? "bg-destructive" : "bg-primary")}
+          style={{ width: `${percent}%` }}
+        />
+      </div>
+
+      <p className="mt-1 truncate text-[10px] text-text-subtle">{detail}</p>
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="min-w-0 rounded-lg border border-border-soft bg-surface-1 px-2 py-1.5">
+      <p className="truncate text-[10px] uppercase tracking-wide text-text-subtle">{label}</p>
+
+      <p className="truncate text-xs font-medium tabular-nums text-text-strong">{value}</p>
+    </div>
+  );
+}
+
+function formatBytes(value: number) {
+  if (value < 0) return "—";
+  if (value >= 1024 ** 3) return `${(value / 1024 ** 3).toFixed(1)} GB`;
+  return `${Math.round(value / 1024 / 1024)} MB`;
 }
 
 function formatUptime(seconds: number) {
