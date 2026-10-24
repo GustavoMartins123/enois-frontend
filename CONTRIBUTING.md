@@ -16,9 +16,10 @@ issue — o canal está no [`SECURITY.md`](SECURITY.md).
 git fetch upstream && git checkout -b feat/minha-mudanca upstream/main
 ```
 
-A PR é sempre contra `main`, nunca contra `develop` ou outra branch. Uma PR com o histórico inteiro do
-fork (centenas de commits e arquivos) não é revisável: ninguém consegue saber o que mudou de fato.
-Parta sempre de `upstream/main`.
+A PR é sempre contra `qa`: o fluxo é `feature` → `qa` → `main` (o merge `qa` → `main` acontece
+depois que a mudança é validada na qa). Uma PR com o histórico inteiro do fork (centenas de commits
+e arquivos) não é revisável: ninguém consegue saber o que mudou de fato. Parta sempre da `qa`
+atualizada (`upstream/qa`).
 
 ## Rodando
 
