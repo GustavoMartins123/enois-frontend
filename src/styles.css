@@ -1489,6 +1489,79 @@
     opacity: 0.6;
   }
 }
+/* A cada 6s uma rajada atravessa a foto, levando uma folha, e a foto (o Avatar, irmão do
+   .moldura-fx no invólucro) balança no mesmo compasso: inclina quando o vento passa no meio e
+   volta oscilando. */
+.moldura-vendaval__rajada {
+  opacity: 0;
+  animation: moldura-vendaval-rajada 6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.moldura-vendaval__rajada-folha {
+  opacity: 0;
+  animation: moldura-vendaval-rajada-folha 6s ease-in-out infinite;
+  animation-delay: 0.12s;
+}
+.moldura-vendaval__rodopio {
+  transform-origin: 0 0;
+  animation: moldura-giro 0.6s linear infinite;
+}
+[data-avatar-frame="moldura-vendaval"] > :not(.moldura-fx) {
+  animation: moldura-vendaval-sopro 6s ease-out infinite;
+}
+@keyframes moldura-vendaval-rajada {
+  0% {
+    transform: translateX(-75px);
+    opacity: 0;
+  }
+  4% {
+    opacity: 0.8;
+  }
+  14% {
+    opacity: 0.7;
+  }
+  19%,
+  100% {
+    transform: translateX(75px);
+    opacity: 0;
+  }
+}
+@keyframes moldura-vendaval-rajada-folha {
+  0% {
+    transform: translate(-70px, 6px);
+    opacity: 0;
+  }
+  5%,
+  16% {
+    opacity: 1;
+  }
+  10% {
+    transform: translate(0, -6px);
+  }
+  20%,
+  100% {
+    transform: translate(72px, 4px);
+    opacity: 0;
+  }
+}
+@keyframes moldura-vendaval-sopro {
+  0%,
+  7% {
+    transform: none;
+  }
+  12% {
+    transform: translateX(1.2%) rotate(7deg);
+  }
+  17% {
+    transform: translateX(-0.4%) rotate(-3deg);
+  }
+  22% {
+    transform: rotate(1.2deg);
+  }
+  27%,
+  100% {
+    transform: none;
+  }
+}
 @keyframes moldura-vendaval-folha {
   0%,
   100% {
@@ -1597,6 +1670,9 @@
   }
   html:not([data-force-motion]) .moldura-fx .moldura-fx__particula {
     display: none;
+  }
+  html:not([data-force-motion]) [data-avatar-frame="moldura-vendaval"] > :not(.moldura-fx) {
+    animation: none;
   }
   html:not([data-force-motion]) .moldura-tempestade__raio:nth-child(-n + 2) {
     opacity: 1;

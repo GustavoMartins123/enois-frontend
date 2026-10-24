@@ -22,6 +22,22 @@ function risco(raio: number, queda: number, arco: number, espessura: number): st
   return `M${[...fora, ...dentro].join(" L")} Z`;
 }
 
+/** Rajada que cruza a foto: traço horizontal ondulado, centrado na origem e fino nas pontas. */
+function rajada(comprimento: number, espessura: number, onda: number): string {
+  const passos = 24;
+  const cima: string[] = [];
+  const baixo: string[] = [];
+  for (let i = 0; i <= passos; i++) {
+    const t = i / passos;
+    const x = round(-comprimento / 2 + comprimento * t);
+    const y = onda * Math.sin(t * 2 * Math.PI);
+    const meia = (espessura * Math.sin(Math.PI * t)) / 2 + 0.1;
+    cima.push(`${x} ${round(y - meia)}`);
+    baixo.unshift(`${x} ${round(y + meia)}`);
+  }
+  return `M${[...cima, ...baixo].join(" L")} Z`;
+}
+
 const RISCOS = Array.from({ length: 9 }, (_, i) => ({
   inicio: round(i * 40 + rand() * 20),
   d: risco(57 + rand() * 11, 5 + rand() * 5, 50 + rand() * 60, 1.4 + rand() * 1.6),
@@ -37,12 +53,26 @@ const FOLHAS = ["#f59e0b", "#84cc16", "#ea580c"].map((cor, i) => ({
   atraso: round(-i * 0.9 - rand() * 0.4),
 }));
 
+// As linhas saem quase juntas, em leque, para a rajada passar como um sopro só.
+const RAJADAS = [
+  { y: -20, comprimento: 58, espessura: 2.2, onda: 2, atraso: 0 },
+  { y: -6, comprimento: 72, espessura: 2.8, onda: -2.5, atraso: 0.08 },
+  { y: 8, comprimento: 64, espessura: 2.4, onda: 2.2, atraso: 0.16 },
+  { y: 21, comprimento: 50, espessura: 1.8, onda: -1.8, atraso: 0.26 },
+].map((r) => ({ ...r, d: rajada(r.comprimento, r.espessura, r.onda) }));
+
+const FOLHA = "M0 -3.6 C2.4 -2.4 2.4 2 0 3.6 C-2.4 2 -2.4 -2.4 0 -3.6 Z";
+
 const POEIRA = Array.from({ length: 8 }, () => {
   const [x, y] = polar(58 + rand() * 12, rand() * 360);
   return { x, y, r: round(0.5 + rand() * 0.5) };
 });
 
-/** Vendaval: rajadas em espiral girando em volta do avatar, poeira e folhas levadas pelo vento. */
+/**
+ * Vendaval: rajadas em espiral girando em volta do avatar, poeira e folhas levadas pelo vento.
+ * De tempos em tempos uma rajada atravessa a foto, levando uma folha, e a foto balança no mesmo
+ * compasso (a animação da foto fica no styles.css, presa ao invólucro da moldura).
+ */
 export function VendavalFx() {
   const id = useFxId();
   return (
@@ -91,7 +121,7 @@ export function VendavalFx() {
         <g key={f.cor} className="moldura-vendaval__voo" style={{ animationDelay: `${f.atraso}s` }}>
           <g transform={`translate(0 ${-f.raio})`}>
             <path
-              d="M0 -3.6 C2.4 -2.4 2.4 2 0 3.6 C-2.4 2 -2.4 -2.4 0 -3.6 Z"
+              d={FOLHA}
               fill={f.cor}
               className="moldura-fx__particula moldura-vendaval__folha"
               style={{ animationDelay: `${f.atraso}s` }}
@@ -99,6 +129,26 @@ export function VendavalFx() {
           </g>
         </g>
       ))}
+
+      {RAJADAS.map((r, i) => (
+        <g key={i} transform={`translate(0 ${r.y})`}>
+          <path
+            d={r.d}
+            fill="#f0f9ff"
+            className="moldura-vendaval__rajada"
+            style={{ animationDelay: `${r.atraso}s` }}
+          />
+        </g>
+      ))}
+      <g transform="translate(0 -12)">
+        <g className="moldura-vendaval__rajada-folha">
+          <path
+            d={FOLHA}
+            fill="#84cc16"
+            className="moldura-fx__particula moldura-vendaval__rodopio"
+          />
+        </g>
+      </g>
     </svg>
   );
 }
