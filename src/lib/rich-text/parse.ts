@@ -366,9 +366,19 @@ function readDestination(
   if (end === -1) return null;
 
   const url = restoreEscapes(text.slice(close + 2, end)).trim();
-  if (url === "" || /\s/.test(url)) return null;
+  if (url === "" || /\s/.test(url) || !isSafeMarkdownUrl(url)) return null;
 
   return { label: text.slice(start + 1, close), url, end: end + 1 };
+}
+
+/**
+ * Markdown com `[x](javascript:...)` virava link executável (E-07). Só http(s) e caminhos
+ * relativos; qualquer outro esquema fica como texto.
+ */
+function isSafeMarkdownUrl(url: string): boolean {
+  if (url.startsWith("/") || url.startsWith("#")) return true;
+  const scheme = /^([a-z][a-z0-9+.-]*):/i.exec(url)?.[1]?.toLowerCase();
+  return scheme === undefined || scheme === "http" || scheme === "https";
 }
 
 /**

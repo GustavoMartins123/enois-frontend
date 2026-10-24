@@ -9,6 +9,7 @@ import { ArrowLeft, Globe, MapPin, Users } from "lucide-react";
 import { companiesApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { getCurrentUser } from "@/lib/current-user";
+import { safeHttpUrl } from "@/lib/safe-url";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -223,9 +224,9 @@ function Empresa() {
                   {company.location}
                 </span>
               )}
-              {company.website && (
+              {company.website && safeHttpUrl(company.website) && (
                 <a
-                  href={company.website}
+                  href={safeHttpUrl(company.website) ?? undefined}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-primary hover:underline"
@@ -283,8 +284,11 @@ function Empresa() {
                   {project.deadline && (
                     <span>
                       <strong className="text-text-strong">{texts.empresa.deadline}:</strong>{" "}
+                      {/* O prazo vem como data pura ("2026-10-30"). `new Date` lê isso como
+                          meia-noite UTC, que no Brasil ainda é o dia anterior: o prazo aparecia
+                          um dia antes. Meio-dia local, como em /freelances, mantém o dia. */}
                       {texts.empresa.deadlineBy(
-                        new Date(project.deadline).toLocaleDateString("pt-BR"),
+                        new Date(`${project.deadline}T12:00:00`).toLocaleDateString("pt-BR"),
                       )}
                     </span>
                   )}

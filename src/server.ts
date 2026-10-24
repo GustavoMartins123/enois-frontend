@@ -57,7 +57,7 @@ const SECURITY_HEADERS: Record<string, string> = {
   ].join("; "),
   "x-frame-options": "DENY",
   "x-content-type-options": "nosniff",
-  "referrer-policy": "strict-origin-when-cross-origin",
+  "referrer-policy": "no-referrer",
   "permissions-policy": "geolocation=(), microphone=(), camera=()",
   "strict-transport-security": "max-age=31536000; includeSubDomains",
 };
