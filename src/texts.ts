@@ -3491,6 +3491,13 @@ export const texts = {
       colHttp: "HTTP",
       last60: "60 min atrás",
       peak: "pico",
+      copyEvent: "Copiar mensagem completa",
+      copyAll: "Copiar tudo",
+      copied: "Copiado.",
+      copyFailed: "Não foi possível copiar.",
+      showMore: "mostrar mais",
+      showLess: "mostrar menos",
+      loadMore: "Carregar mais eventos",
     },
     sanction: {
       title: "Punição por votação",

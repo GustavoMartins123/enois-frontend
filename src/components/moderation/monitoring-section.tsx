@@ -1,13 +1,23 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { MonitoringEvent } from "@/types/application/monitoring/monitoring-event";
 import type { MonitoringEventLevel } from "@/types/application/monitoring/monitoring-event-level";
 import type { MonitoringMinutePoint } from "@/types/application/monitoring/monitoring-minute-point";
 import type { MonitoringResource } from "@/types/application/monitoring/monitoring-resource";
-import { Activity, AlertTriangle, Cpu, Pause, Play, RefreshCw, Search, Server } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  Copy,
+  Cpu,
+  Pause,
+  Play,
+  RefreshCw,
+  Search,
+  Server,
+} from "lucide-react";
 
 import { monitoringApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -15,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/loading-state";
+import { useToast } from "@/components/ui/toast";
 
 const number = new Intl.NumberFormat("pt-BR");
 
@@ -49,22 +60,37 @@ export function MonitoringSection() {
     retry: false,
   });
 
+  const { toast } = useToast();
+
   const filtered = Boolean(level || type || debounced);
-  const events = useQuery({
+  const events = useInfiniteQuery({
     queryKey: ["monitoring", "events", level, type, debounced],
-    queryFn: () =>
+    queryFn: ({ pageParam }) =>
       monitoringApi.events({
         level: level || undefined,
         type: type || undefined,
         q: debounced || undefined,
+        before: pageParam || undefined,
+        limit: 100,
       }),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) =>
+      lastPage.length >= 100 ? (lastPage[lastPage.length - 1]?.createdAt ?? undefined) : undefined,
     enabled: filtered,
     refetchInterval: paused ? false : 3_000,
     retry: false,
   });
 
   const data = overview.data;
-  const rows = filtered ? (events.data ?? []) : (data?.recent ?? []);
+  const rows = filtered ? (events.data?.pages.flat() ?? []) : (data?.recent ?? []);
+
+  const copiarLinhas = async (linhas: MonitoringEvent[]) => {
+    const ok = await copyText(linhas.map(eventLine).join("\n"));
+    toast(
+      ok ? texts.moderator.monitoring.copied : texts.moderator.monitoring.copyFailed,
+      ok ? "success" : "error",
+    );
+  };
   const types = useMemo(() => data?.types24h.map((item) => item.label) ?? [], [data]);
 
   if (overview.isLoading) {
@@ -312,11 +338,24 @@ export function MonitoringSection() {
             {texts.moderator.monitoring.eventsTitle}
           </p>
 
-          <span className="text-[10px] text-text-subtle">
-            {texts.moderator.monitoring.updatedAt(
-              new Date(data.generatedAt).toLocaleTimeString("pt-BR", { hour12: false }),
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-text-subtle">
+              {texts.moderator.monitoring.updatedAt(
+                new Date(data.generatedAt).toLocaleTimeString("pt-BR", { hour12: false }),
+              )}
+            </span>
+
+            {rows.length > 0 && (
+              <button
+                type="button"
+                onClick={() => copiarLinhas(rows)}
+                className="inline-flex h-7 items-center gap-1 rounded-lg border border-border-soft px-2 text-[10px] text-text-subtle transition hover:text-text-strong"
+              >
+                <Copy className="h-3 w-3" />
+                {texts.moderator.monitoring.copyAll}
+              </button>
             )}
-          </span>
+          </div>
         </div>
 
         <div className="mb-3 flex flex-wrap items-center gap-2">
@@ -404,10 +443,24 @@ export function MonitoringSection() {
 
               <tbody>
                 {rows.map((event) => (
-                  <EventRow key={event.id} event={event} />
+                  <EventRow key={event.id} event={event} onCopy={() => copiarLinhas([event])} />
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {filtered && events.hasNextPage && (
+          <div className="mt-2 text-center">
+            <Button
+              size="sm"
+              variant="outline"
+              className="rounded-full"
+              disabled={events.isFetchingNextPage}
+              onClick={() => events.fetchNextPage()}
+            >
+              {texts.moderator.monitoring.loadMore}
+            </Button>
           </div>
         )}
       </div>
@@ -504,7 +557,10 @@ function TrafficChart({ series }: { series: MonitoringMinutePoint[] }) {
   );
 }
 
-function EventRow({ event }: { event: MonitoringEvent }) {
+function EventRow({ event, onCopy }: { event: MonitoringEvent; onCopy: () => void }) {
+  const [expanded, setExpanded] = useState(false);
+  const long = event.message.length > 140;
+
   return (
     <tr className="border-t border-border-soft align-top">
       <td className="whitespace-nowrap px-2 py-1.5 font-mono text-[10px] text-text-subtle">
@@ -525,7 +581,31 @@ function EventRow({ event }: { event: MonitoringEvent }) {
       <td className="whitespace-nowrap px-2 py-1.5 text-[10px] text-text-subtle">{event.type}</td>
 
       <td className="max-w-[20rem] px-2 py-1.5">
-        <p className="break-words text-text-strong">{event.message}</p>
+        <p className={cn("break-words text-text-strong", long && !expanded && "line-clamp-2")}>
+          {event.message}
+        </p>
+
+        <div className="mt-0.5 flex items-center gap-2">
+          {long && (
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              className="text-[10px] text-primary hover:underline"
+            >
+              {expanded ? texts.moderator.monitoring.showLess : texts.moderator.monitoring.showMore}
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={onCopy}
+            aria-label={texts.moderator.monitoring.copyEvent}
+            title={texts.moderator.monitoring.copyEvent}
+            className="inline-flex h-5 w-5 items-center justify-center rounded text-text-subtle transition hover:bg-surface-2 hover:text-text-strong"
+          >
+            <Copy className="h-3 w-3" />
+          </button>
+        </div>
 
         {event.requestId && (
           <p className="mt-0.5 truncate font-mono text-[9px] text-text-subtle">
@@ -813,4 +893,28 @@ function formatUptime(seconds: number) {
   if (days > 0) return `${days}d ${hours}h`;
   if (hours > 0) return `${hours}h ${minutes}m`;
   return `${minutes}m`;
+}
+
+/** Uma linha legível do evento, para colar em relatório ou ticket. */
+function eventLine(event: MonitoringEvent): string {
+  const http = event.status
+    ? `${event.method ?? ""} ${event.route ?? event.path ?? ""} ${event.status}`.trim()
+    : "";
+  return [
+    `[${event.createdAt} ${event.level} ${event.type}]`,
+    event.message,
+    http ? `(${http})` : "",
+    event.requestId ? `req=${event.requestId}` : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+}
+
+async function copyText(value: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(value);
+    return true;
+  } catch {
+    return false;
+  }
 }
