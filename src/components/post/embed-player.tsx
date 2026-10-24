@@ -32,6 +32,8 @@ export function EmbedPlayer({ type, id, autoplay = false }: EmbedPlayerProps) {
           <iframe
             src={buildEmbedUrl(type, id, {
               autoplay: true,
+              // Autoplay em tela: mudo (regra do navegador). Clique na capa: com som.
+              muted: autoPlaying,
               host: typeof window !== "undefined" ? window.location.hostname : "",
             })}
             title={texts.posts.video.playerTitle}

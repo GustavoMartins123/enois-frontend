@@ -3226,6 +3226,7 @@ export const texts = {
    * Admins (allowlist de username no backend) decidem candidaturas e podem punir qualquer usuário.
    */
   moderator: {
+    tabSelector: "Escolher a aba do painel",
     panic: {
       title: "Modo pânico",
       description:
@@ -3361,6 +3362,11 @@ export const texts = {
       experience: "Experiência",
       acceptedAt: "Termos aceitos em",
       saveError: "Não foi possível mudar o status.",
+      contact: "Contato",
+      review: "Começar análise",
+      approve: "Aprovar",
+      reject: "Recusar",
+      done: "Decidida",
     },
     suspiciousPosts: {
       title: "Posts suspeitos",
@@ -3579,6 +3585,12 @@ export const texts = {
       colHttp: "HTTP",
       last60: "60 min atrás",
       peak: "pico",
+      moedaTitle: "Moeda",
+      moedaTotal: "Total (gênese)",
+      moedaCofre: "No cofre",
+      moedaCirculacao: "Em circulação",
+      moedaCoerente: "Coerente: a soma de todas as contas fecha com o total.",
+      moedaDivergente: "Divergência: a soma dos saldos não fecha com o total — investigar.",
       copyEvent: "Copiar mensagem completa",
       copyAll: "Copiar tudo",
       copied: "Copiado.",
@@ -3586,6 +3598,10 @@ export const texts = {
       showMore: "mostrar mais",
       showLess: "mostrar menos",
       loadMore: "Carregar mais eventos",
+      fromLabel: "De (data e hora)",
+      toLabel: "Até (data e hora)",
+      lastHour: "Última hora",
+      clearDates: "Limpar datas",
     },
     sanction: {
       title: "Punição por votação",
@@ -3622,6 +3638,17 @@ export const texts = {
       proposedBy: (username: string) => `Proposta de @${username}`,
     },
     admin: {
+      adminsTitle: "Administradores",
+      adminsEmpty: "Nenhum administrador além de você.",
+      adminsAddLabel: "Username do novo admin",
+      adminsAddPlaceholder: "ex.: ana-silva",
+      adminsAdd: "Promover a admin",
+      adminsPromoted: (username: string) => `@${username} agora é admin.`,
+      adminsRevokeError: "Não foi possível atualizar o papel de admin.",
+      adminsRevoke: "Remover admin",
+      adminsRevokeTitle: "Remover administrador",
+      adminsRevokeBody: (username: string) =>
+        `Remover @${username} do papel de administrador? A pessoa perde o acesso administrativo.`,
       applicationsTitle: "Candidaturas a moderador",
       applicationsEmpty: "Nenhuma candidatura pendente.",
       applicant: "Candidato",

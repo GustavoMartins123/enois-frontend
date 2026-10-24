@@ -10,6 +10,7 @@ import type { MonitoringResource } from "@/types/application/monitoring/monitori
 import {
   Activity,
   AlertTriangle,
+  Coins,
   Copy,
   Cpu,
   Pause,
@@ -20,6 +21,7 @@ import {
 } from "lucide-react";
 
 import { monitoringApi } from "@/lib/api";
+import { formatFaisca } from "@/lib/faisca";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
@@ -47,6 +49,10 @@ export function MonitoringSection() {
   const [type, setType] = useState("");
   const [search, setSearch] = useState("");
   const [debounced, setDebounced] = useState("");
+  // Intervalo de tempo dos eventos: guardamos o valor cru do campo datetime-local
+  // e convertemos para ISO só na consulta.
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => setDebounced(search.trim()), 350);
@@ -62,14 +68,24 @@ export function MonitoringSection() {
 
   const { toast } = useToast();
 
-  const filtered = Boolean(level || type || debounced);
+  // Supply da moeda: só administração tem acesso; para os demais o cartão simplesmente não aparece.
+  const supply = useQuery({
+    queryKey: ["monitoring", "supply"],
+    queryFn: () => monitoringApi.supply(),
+    refetchInterval: paused ? false : 30_000,
+    retry: false,
+  });
+
+  const filtered = Boolean(level || type || debounced || from || to);
   const events = useInfiniteQuery({
-    queryKey: ["monitoring", "events", level, type, debounced],
+    queryKey: ["monitoring", "events", level, type, debounced, from, to],
     queryFn: ({ pageParam }) =>
       monitoringApi.events({
         level: level || undefined,
         type: type || undefined,
         q: debounced || undefined,
+        from: from ? new Date(from).toISOString() : undefined,
+        to: to ? new Date(to).toISOString() : undefined,
         before: pageParam || undefined,
         limit: 100,
       }),
@@ -332,6 +348,92 @@ export function MonitoringSection() {
 
       <ResourcePanel resource={data.resources} />
 
+      {supply.data && (
+        <div className="surface-card min-w-0 p-3">
+          <div className="mb-2 flex items-center gap-2">
+            <Coins className="h-4 w-4 text-primary" />
+
+            <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
+              {texts.moderator.monitoring.moedaTitle}
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+            <Kpi
+              label={texts.moderator.monitoring.moedaTotal}
+              value={formatFaisca(supply.data.total)}
+            />
+            <Kpi
+              label={texts.moderator.monitoring.moedaCofre}
+              value={formatFaisca(supply.data.cofre)}
+            />
+            <Kpi
+              label={texts.moderator.monitoring.moedaCirculacao}
+              value={formatFaisca(supply.data.circulacao)}
+            />
+          </div>
+
+          <p
+            className={cn(
+              "mt-2 text-[11px]",
+              supply.data.coerente ? "text-growth" : "text-destructive",
+            )}
+          >
+            {supply.data.coerente
+              ? texts.moderator.monitoring.moedaCoerente
+              : texts.moderator.monitoring.moedaDivergente}
+          </p>
+        </div>
+      )}
+
+      {supply.data && (
+        <div className="surface-card min-w-0 p-3">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-text-subtle">
+              <Coins className="h-3.5 w-3.5" />
+              {texts.moderator.monitoring.moedaTitle}
+            </p>
+
+            <span
+              className={cn(
+                "rounded-full px-2 py-0.5 text-[10px] font-medium",
+                supply.data.coerente
+                  ? "bg-growth/10 text-growth"
+                  : "bg-destructive/10 text-destructive",
+              )}
+              title={
+                supply.data.coerente
+                  ? texts.moderator.monitoring.moedaCoerente
+                  : texts.moderator.monitoring.moedaDivergente
+              }
+            >
+              {supply.data.coerente ? "✓" : "⚠"}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {[
+              [texts.moderator.monitoring.moedaTotal, supply.data.total],
+              [texts.moderator.monitoring.moedaCofre, supply.data.cofre],
+              [texts.moderator.monitoring.moedaCirculacao, supply.data.circulacao],
+            ].map(([label, value]) => (
+              <div
+                key={label}
+                className="min-w-0 rounded-xl border border-border-soft bg-surface-card p-2"
+              >
+                <p className="truncate text-[10px] uppercase tracking-wide text-text-subtle">
+                  {label}
+                </p>
+
+                <p className="text-sm font-semibold text-text-strong">
+                  {formatFaisca(value as number)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="surface-card min-w-0 p-3">
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <p className="text-xs font-semibold uppercase tracking-wide text-text-subtle">
@@ -389,6 +491,52 @@ export function MonitoringSection() {
               </option>
             ))}
           </select>
+
+          <input
+            type="datetime-local"
+            value={from}
+            onChange={(event) => setFrom(event.target.value)}
+            aria-label={texts.moderator.monitoring.fromLabel}
+            title={texts.moderator.monitoring.fromLabel}
+            className="h-8 rounded-lg border border-border-soft bg-surface-1 px-2 text-xs text-text-strong"
+          />
+          <input
+            type="datetime-local"
+            value={to}
+            onChange={(event) => setTo(event.target.value)}
+            aria-label={texts.moderator.monitoring.toLabel}
+            title={texts.moderator.monitoring.toLabel}
+            className="h-8 rounded-lg border border-border-soft bg-surface-1 px-2 text-xs text-text-strong"
+          />
+
+          <button
+            type="button"
+            onClick={() => {
+              setFrom(localInput(new Date(Date.now() - 3_600_000)));
+              setTo("");
+            }}
+            className={cn(
+              "inline-flex h-8 items-center gap-1 rounded-lg px-2 text-xs",
+              from && !to
+                ? "bg-primary/10 text-primary"
+                : "border border-border-soft text-text-subtle hover:text-primary",
+            )}
+          >
+            {texts.moderator.monitoring.lastHour}
+          </button>
+
+          {(from || to) && (
+            <button
+              type="button"
+              onClick={() => {
+                setFrom("");
+                setTo("");
+              }}
+              className="inline-flex h-8 items-center rounded-lg border border-border-soft px-2 text-xs text-text-subtle hover:text-text-strong"
+            >
+              {texts.moderator.monitoring.clearDates}
+            </button>
+          )}
 
           <div className="relative min-w-[10rem] flex-1">
             <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-text-subtle" />
@@ -790,7 +938,7 @@ function ResourcePanel({ resource }: { resource: MonitoringResource }) {
           total={resource.systemMemoryTotalBytes}
           detail={
             resource.systemMemoryTotalBytes > 0
-              ? `${formatBytes(resource.systemMemoryFreeBytes)} livres de ${formatBytes(resource.systemMemoryTotalBytes)}`
+              ? `${formatBytes(resource.systemMemoryFreeBytes)} disponíveis de ${formatBytes(resource.systemMemoryTotalBytes)}`
               : "—"
           }
         />
@@ -893,6 +1041,12 @@ function formatUptime(seconds: number) {
   if (days > 0) return `${days}d ${hours}h`;
   if (hours > 0) return `${hours}h ${minutes}m`;
   return `${minutes}m`;
+}
+
+/** Converte um Date para o valor cru de um campo datetime-local (hora local). */
+function localInput(date: Date): string {
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+  return local.toISOString().slice(0, 16);
 }
 
 /** Uma linha legível do evento, para colar em relatório ou ticket. */
