@@ -10,6 +10,7 @@ import type { SanctionProposalDecision } from "@/types/application/moderation/sa
 import type { SanctionProposalView } from "@/types/application/moderation/sanction-proposal-view";
 import type { ModeratorTabId } from "@/types/routes/moderador/moderator-tab-id";
 import {
+  Activity,
   ArrowLeft,
   Bug,
   Check,
@@ -48,6 +49,8 @@ import { AppealsSection } from "@/components/moderation/appeals-section";
 import { DisputesSection } from "@/components/moderation/disputes-section";
 import { EmailLogSection } from "@/components/moderation/email-log-section";
 import { GamesReviewSection } from "@/components/moderation/games-review-section";
+import { MonitoringSection } from "@/components/moderation/monitoring-section";
+import { PanicModeSection } from "@/components/moderation/panic-mode-section";
 import { ProjectsReviewSection } from "@/components/moderation/projects-review-section";
 import { SupportTicketsSection } from "@/components/moderation/support-tickets-section";
 import { SuspiciousPostsSection } from "@/components/moderation/suspicious-posts-section";
@@ -92,6 +95,12 @@ const ALL_TABS: { id: ModeratorTabId; label: string; icon: typeof Flag; adminOnl
     adminOnly: false,
   },
   { id: "emails", label: texts.moderator.tabs.emails, icon: Mail, adminOnly: true },
+  {
+    id: "monitoring",
+    label: texts.moderator.tabs.monitoring,
+    icon: Activity,
+    adminOnly: true,
+  },
 ];
 
 /**
@@ -176,6 +185,8 @@ function Moderador() {
           <p className="text-sm text-muted-foreground">{texts.moderator.description}</p>
         </header>
 
+        {me.admin && <PanicModeSection />}
+
         {canModerate ? (
           <div className="space-y-4">
             <div className="flex gap-1 overflow-x-auto pb-1" role="tablist">
@@ -215,6 +226,7 @@ function Moderador() {
             {canModerate && activeTab === "suspicious" && <SuspiciousUsersSection />}
             {canModerate && activeTab === "suspiciousPosts" && <SuspiciousPostsSection />}
             {me.admin && activeTab === "emails" && <EmailLogSection />}
+            {me.admin && activeTab === "monitoring" && <MonitoringSection />}
           </div>
         ) : (
           <ApplicationSection me={me} />

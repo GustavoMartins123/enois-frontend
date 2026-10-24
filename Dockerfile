@@ -31,6 +31,13 @@ ENV PORT=3000
 
 COPY --from=builder /app/.output ./.output
 
+# Processo sem privilégios (E-17): o runtime não precisa de root para servir o SSR.
+# Remove o npm/npx do runtime: o app só precisa do Node, e o npm da imagem-base carrega
+# dependências (pacote/sigstore/brace-expansion) que só existem no build.
+RUN addgroup -S app && adduser -S app -G app \
+    && rm -rf /usr/local/lib/node_modules/npm /usr/local/bin/npm /usr/local/bin/npx
+USER app
+
 EXPOSE 3000
 
 CMD ["node", ".output/server/index.mjs"]
