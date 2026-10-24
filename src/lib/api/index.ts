@@ -38,6 +38,7 @@ export { rankingApi } from "./ranking";
 export { usersApi } from "./users";
 export { recommendationsApi } from "./recommendations";
 export { supportApi } from "./support";
+export { contributorsApi } from "./contributors";
 export { statsApi } from "./stats";
 export { corporateApi } from "./corporate";
 export { resumeImportApi, resumeErrorMessage } from "./resume-import";
