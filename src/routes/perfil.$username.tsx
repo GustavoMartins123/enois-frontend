@@ -412,13 +412,13 @@ function Profile() {
           </div>
 
           <div className="relative px-4 pb-5 sm:px-6 sm:pb-6">
-            <div className="-mt-14 flex flex-wrap items-end justify-between gap-3 sm:-mt-16 sm:gap-4">
+            <div className="flex flex-wrap items-end justify-between gap-3 sm:gap-4">
               <div className="group relative">
                 <UserAvatar
                   frame={user.avatarFrame}
                   src={resolveCdnUrl(user.avatar)}
                   alt={user.name}
-                  className={`h-28 w-28 ring-8 shadow-[0_20px_42px_-20px_color-mix(in_oklab,var(--primary)_90%,transparent)] sm:h-32 sm:w-32 ${FRAME_RING[user.avatarFrame ?? ""] ?? "ring-surface-card"}`}
+                  className={`-mt-14 sm:-mt-16 h-28 w-28 ring-8 shadow-[0_20px_42px_-20px_color-mix(in_oklab,var(--primary)_90%,transparent)] sm:h-32 sm:w-32 ${FRAME_RING[user.avatarFrame ?? ""] ?? "ring-surface-card"}`}
                 />
                 <input
                   ref={avatarRef}
