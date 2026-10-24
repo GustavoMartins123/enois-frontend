@@ -44,6 +44,7 @@ import { useToast } from "@/components/ui/toast";
 import { AppContainer } from "@/components/app-container";
 import { HtmlEditor } from "@/components/html-editor";
 import { MentionTextarea } from "@/components/mention-textarea";
+import { formatTime } from "@/components/post/format-time";
 import { ReactionPicker } from "@/components/post/reaction-picker";
 import { ReportDialog } from "@/components/post/report-dialog";
 import { RichText } from "@/components/post/rich-text";
@@ -275,13 +276,13 @@ function GroupFeed({ group }: { group: GroupView }) {
   const topics = topicsData?.items ?? [];
   const canManage = group.viewerRole === "OWNER" || group.viewerRole === "ADMIN";
   const canModerate = ["OWNER", "ADMIN", "MODERATOR"].includes(group.viewerRole ?? "");
-  const activeTopicId = topicId ?? topics.find((topic) => topic.status === "OPEN")?.id ?? null;
+  const activeTopicId = topicId;
   const activeTopic = topics.find((topic) => topic.id === activeTopicId) ?? null;
 
   const { data: postsData, isLoading: postsLoading } = useQuery({
     queryKey: ["group-posts", group.id, activeTopicId],
     queryFn: () => groupsApi.posts(group.id, activeTopicId ?? undefined),
-    enabled: Boolean(activeTopicId),
+    enabled: group.joined,
   });
 
   // O fixado pode ser de um tópico que não está aberto (ou de uma página antiga): vem do endpoint
@@ -427,6 +428,11 @@ function GroupFeed({ group }: { group: GroupView }) {
                   key={post.id}
                   groupId={group.id}
                   post={post}
+                  topicName={
+                    activeTopicId === null
+                      ? topics.find((topic) => topic.id === post.topicId)?.name
+                      : undefined
+                  }
                   canModerate={canModerate}
                   canPin={canManage}
                 />
@@ -472,11 +478,13 @@ function GroupFeed({ group }: { group: GroupView }) {
 function GroupPostItem({
   groupId,
   post,
+  topicName,
   canModerate,
   canPin,
 }: {
   groupId: string;
   post: GroupPost;
+  topicName?: string;
   canModerate: boolean;
   canPin: boolean;
 }) {
@@ -545,6 +553,11 @@ function GroupPostItem({
   });
 
   const currentReaction = (post.myReaction as ReactionType | null) ?? null;
+  const createdAt = new Date(post.createdAt);
+  const createdTime = createdAt.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   return (
     <li className="rounded-2xl border border-border-soft bg-surface-card p-4">
@@ -567,6 +580,14 @@ function GroupPostItem({
             <>{texts.posts.pin.pinned}</>
           </span>
         )}
+      </div>
+
+      <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-text-subtle">
+        <time dateTime={post.createdAt} title={createdAt.toLocaleString("pt-BR")}>
+          {`${formatTime(post.createdAt)} · ${createdTime}`}
+        </time>
+
+        {topicName && <span className="break-words">{`· ${topicName}`}</span>}
       </div>
 
       <RichText
@@ -662,6 +683,14 @@ function GroupPostItem({
 
                       <UserBadges badges={item.authorBadges} />
                     </p>
+
+                    <time
+                      dateTime={item.createdAt}
+                      title={new Date(item.createdAt).toLocaleString("pt-BR")}
+                      className="block text-xs text-text-subtle"
+                    >
+                      {`${formatTime(item.createdAt)} · ${new Date(item.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`}
+                    </time>
 
                     <RichText
                       content={item.content}
