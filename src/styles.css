@@ -1324,6 +1324,272 @@
   }
 }
 
+/* Maré: o anel é um tubo com água. A maré enche e vaza, a água balança, as duas camadas da
+   superfície correm em sentidos opostos, bolhas sobem e o peixe vai e volta pelo fundo. */
+.moldura-mare__nivel {
+  animation: moldura-mare-nivel 8s ease-in-out infinite alternate;
+}
+.moldura-mare__balanco {
+  animation: moldura-mare-balanco 3.4s ease-in-out infinite alternate;
+}
+.moldura-mare__tras {
+  animation: moldura-mare-onda 2.6s linear infinite;
+}
+.moldura-mare__frente {
+  animation: moldura-mare-onda 1.9s linear infinite;
+}
+.moldura-mare__bolha {
+  animation: moldura-mare-bolha 2.6s ease-in infinite;
+}
+.moldura-mare__nado {
+  animation: moldura-mare-nado 7s ease-in-out infinite;
+}
+.moldura-mare__peixe {
+  animation: moldura-mare-peixe 7s linear infinite;
+}
+@keyframes moldura-mare-nivel {
+  to {
+    transform: translateY(-22px);
+  }
+}
+@keyframes moldura-mare-balanco {
+  from {
+    transform: rotate(-6deg);
+  }
+  to {
+    transform: rotate(6deg);
+  }
+}
+@keyframes moldura-mare-onda {
+  to {
+    transform: translateX(var(--periodo));
+  }
+}
+@keyframes moldura-mare-bolha {
+  0% {
+    transform: translateY(0) scale(0.5);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-12px) scale(1.1);
+    opacity: 0;
+  }
+}
+/* O giro leva o peixe pelo fundo do tubo; o espelhamento vira o peixe nas pontas do caminho. */
+@keyframes moldura-mare-nado {
+  0%,
+  100% {
+    transform: rotate(-40deg);
+  }
+  50% {
+    transform: rotate(40deg);
+  }
+}
+@keyframes moldura-mare-peixe {
+  0%,
+  49.9% {
+    transform: scaleX(-1);
+  }
+  50%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+/* Trepadeira: as folhas brotam de baixo para cima, a flor abre no topo e tudo murcha junto. */
+.moldura-trepadeira__folha {
+  transform-origin: 0 0;
+  animation: moldura-trepadeira-folha 9s ease-out infinite;
+}
+.moldura-trepadeira__flor {
+  transform-origin: 0 0;
+  animation: moldura-trepadeira-flor 9s ease-out infinite;
+}
+@keyframes moldura-trepadeira-folha {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  8% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+  12%,
+  62% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  72% {
+    transform: scale(0.8) rotate(20deg);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+@keyframes moldura-trepadeira-flor {
+  0% {
+    transform: scale(0) rotate(-60deg);
+    opacity: 0;
+  }
+  10% {
+    transform: scale(1.15) rotate(0deg);
+    opacity: 1;
+  }
+  14%,
+  52% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  62% {
+    transform: scale(0.6) rotate(30deg);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+/* Vendaval: rajadas em espiral girando em ritmos diferentes, poeira e folhas levadas. */
+.moldura-vendaval__giro {
+  animation: moldura-giro 2.4s linear infinite;
+}
+.moldura-vendaval__risco {
+  animation: moldura-vendaval-risco 1.8s ease-in-out infinite;
+}
+.moldura-vendaval__poeira {
+  animation: moldura-giro 1.4s linear infinite;
+}
+.moldura-vendaval__voo {
+  animation: moldura-giro 2.7s linear infinite;
+}
+.moldura-vendaval__folha {
+  transform-origin: 0 0;
+  animation:
+    moldura-giro 0.9s linear infinite,
+    moldura-vendaval-folha 2.7s ease-in-out infinite;
+}
+@keyframes moldura-vendaval-risco {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.9;
+  }
+  60% {
+    opacity: 0.6;
+  }
+}
+@keyframes moldura-vendaval-folha {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  15%,
+  65% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0;
+  }
+}
+
+/* Vaga-lumes: noite no campo. Estrelas piscam, o capim balança, os vaga-lumes batem as asas
+   e voam em volta com rastro, e luzes distantes acendem fora de compasso. */
+.moldura-vaga-lumes__estrela {
+  transform-origin: 0 0;
+  animation: moldura-vaga-lumes-estrela 2.4s ease-in-out infinite;
+}
+.moldura-vaga-lumes__distante {
+  animation: moldura-vaga-lumes-distante 3s ease-in-out infinite;
+}
+.moldura-vaga-lumes__capim {
+  transform-origin: 0 0;
+  animation: moldura-vaga-lumes-capim 3.2s ease-in-out infinite alternate;
+}
+.moldura-vaga-lumes__orbita {
+  animation: moldura-giro 16s linear infinite;
+}
+.moldura-vaga-lumes__voo {
+  animation: moldura-vaga-lumes-voo 3s ease-in-out infinite;
+}
+.moldura-vaga-lumes__luz {
+  animation: moldura-vaga-lumes-luz 2s ease-in-out infinite;
+}
+.moldura-vaga-lumes__asa {
+  transform-origin: 0 0;
+  animation: moldura-vaga-lumes-asa 0.12s linear infinite alternate;
+}
+@keyframes moldura-vaga-lumes-estrela {
+  0%,
+  100% {
+    transform: scale(0.4);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes moldura-vaga-lumes-distante {
+  0%,
+  100% {
+    opacity: 0.1;
+  }
+  45% {
+    opacity: 0.15;
+  }
+  60% {
+    opacity: 0.85;
+  }
+  78% {
+    opacity: 0.15;
+  }
+}
+@keyframes moldura-vaga-lumes-capim {
+  from {
+    transform: rotate(-5deg);
+  }
+  to {
+    transform: rotate(5deg);
+  }
+}
+@keyframes moldura-vaga-lumes-voo {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  33% {
+    transform: translate(var(--dx), var(--dy));
+  }
+  66% {
+    transform: translate(calc(var(--dy) * -1), var(--dx));
+  }
+}
+@keyframes moldura-vaga-lumes-luz {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes moldura-vaga-lumes-asa {
+  to {
+    transform: scaleY(0.25);
+  }
+}
+
 /* Sem animação: o desenho fica parado (com dois raios acesos) e as partículas somem. */
 @media (prefers-reduced-motion: reduce) {
   html:not([data-force-motion]) .moldura-fx * {
