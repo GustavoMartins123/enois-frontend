@@ -171,4 +171,27 @@ describe("syncFrameTheme", () => {
     expect(updated?.getAttribute("srcdoc")).toBe(srcDoc);
     expect(updated?.getAttribute("sandbox")).not.toContain("allow-scripts");
   });
+
+  it("uses the opaque script-enabled sandbox only for the SoundCloud mode", async () => {
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    root = createRoot(host);
+
+    await act(async () => {
+      root?.render(
+        <SandboxedHtmlFrame
+          html='<iframe src="https://w.soundcloud.com/player/"></iframe>'
+          title="SoundCloud"
+          allowSoundCloudPlayer
+          autoHeight={false}
+        />,
+      );
+    });
+
+    const iframe = host.querySelector("iframe");
+    expect(iframe?.getAttribute("sandbox")).toBe(
+      "allow-scripts allow-popups allow-popups-to-escape-sandbox",
+    );
+    expect(iframe?.getAttribute("srcdoc")).toContain("frame-src https://w.soundcloud.com");
+  });
 });
