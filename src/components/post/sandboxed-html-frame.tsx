@@ -39,7 +39,9 @@ export function SandboxedHtmlFrame({
   clip = false,
 }: SandboxedHtmlFrameProps) {
   const frame = useRef<HTMLIFrameElement>(null);
-  const theme = useFrameTheme(frame);
+  // SoundCloud requires an opaque sandbox origin, so the parent cannot inspect or style its
+  // document. The player keeps its own theme; regular HTML frames retain app theme synchronization.
+  const theme = useFrameTheme(frame, !allowSoundCloudPlayer);
   // Modo lite: o iframe deixa de receber a permissão de autoplay — a página do autor continua
   // igual, só não sai tocando sozinha no meio do feed.
   const lite = useLiteMode();

@@ -11,10 +11,14 @@ import { syncFrameTheme } from "./sync-frame-theme";
  * O `useThemeSync` do root grava a classe e o CSS do tema num efeito do pai, que roda depois
  * deste. O observador pega essa gravação e copia o resultado já calculado para o quadro.
  */
-export function useFrameTheme(frame: RefObject<HTMLIFrameElement | null>): Theme {
+export function useFrameTheme(
+  frame: RefObject<HTMLIFrameElement | null>,
+  enabled = true,
+): Theme {
   const theme = usePreferencesStore((state) => state.theme);
 
   useEffect(() => {
+    if (!enabled) return;
     const element = frame.current;
     if (!element) return;
 
@@ -27,7 +31,7 @@ export function useFrameTheme(frame: RefObject<HTMLIFrameElement | null>): Theme
       element.removeEventListener("load", apply);
       stop();
     };
-  }, [frame, theme]);
+  }, [enabled, frame, theme]);
 
   return theme;
 }

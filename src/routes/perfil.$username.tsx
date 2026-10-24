@@ -47,6 +47,7 @@ import {
 import { authApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { buildShareTags } from "@/lib/open-graph";
+import { isApprovedSoundCloudEmbed } from "@/lib/soundcloud-embed";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 import { cn } from "@/lib/utils";
@@ -385,14 +386,13 @@ function Profile() {
         <div className="overflow-hidden rounded-[1.5rem] border border-border-soft bg-surface-card shadow-[0_28px_80px_-48px_color-mix(in_oklab,var(--primary)_95%,transparent)]">
           <div className="group relative h-[24dvh] min-h-48 overflow-hidden sm:h-[28dvh] sm:min-h-60">
             {user.bannerHtml ? (
-              // O widget SoundCloud precisa de scripts no iframe aninhado. A opção mantém o HTML
-              // numa origem opaca; a CSP só permite o host oficial do player.
+              // Só o embed oficial recebe scripts; HTML arbitrário continua no sandbox sem scripts.
               <SandboxedHtmlFrame
                 html={user.bannerHtml}
                 title={texts.profile.bannerHtml.frameTitle}
                 className="h-full w-full rounded-none border-0 shadow-none"
                 autoHeight={false}
-                allowSoundCloudPlayer
+                allowSoundCloudPlayer={isApprovedSoundCloudEmbed(user.bannerHtml)}
               />
             ) : user.banner ? (
               <img src={resolveCdnUrl(user.banner)} alt="" className="h-full w-full object-cover" />
