@@ -68,16 +68,6 @@ export function ErrorBanner({ error, className, showDetails = true }: ErrorBanne
         >
           <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
         </button>
-        {showDetails && (
-          <button
-            type="button"
-            onClick={() => setOpen((v) => !v)}
-            className="shrink-0 p-0.5 text-destructive/70 transition hover:text-destructive"
-            aria-label={open ? texts.errors.details.hide : texts.errors.details.show}
-          >
-            <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
-          </button>
-        )}
       </div>
 
       {showDetails && open && (
