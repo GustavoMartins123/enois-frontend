@@ -467,8 +467,11 @@ export const texts = {
       linkedinSignup: "Criar conta com LinkedIn",
       divider: "ou com e-mail",
       /** Aplicativo OAuth ainda em aprovação/verificação, então a entrada por ele falha. */
-      pendingApproval:
-        "O login com Google está aguardando aprovação do OAuth e ainda não foi liberado. Entre com e-mail e senha por enquanto.",
+      pendingApproval: (provider: string) =>
+        `O login com ${provider} está aguardando aprovação do OAuth e ainda não foi liberado. Entre com e-mail e senha por enquanto.`,
+      /** O ambiente desligou o provedor: a API recusa o start com 403 `OAUTH_PROVIDER_DISABLED`. */
+      providerDisabled: (provider: string) =>
+        `O login com ${provider} não está disponível neste ambiente. Entre com e-mail e senha por enquanto.`,
       callbackError: "Não foi possível concluir o login social. Tente novamente.",
       /** O convite de login social expira em 15 min e é de uso único (voltar/reusar cai aqui). */
       stateExpired:
@@ -3001,6 +3004,7 @@ export const texts = {
     originError: "Não foi possível cadastrar a origem.",
     originValidHint:
       "Use só o domínio com https (http é aceito apenas em localhost). Sem origem cadastrada, a requisição recebe 403 ORIGIN_REQUIRED.",
+    originBlocked: "Bloqueada por atividade suspeita",
     sandboxTitle: "API pública = sandbox. Produção só com pedido aprovado",
     sandboxBody:
       "Os exemplos desta página apontam para o ambiente de testes (sandbox). Quem precisa falar com a API de produção abre um pedido no suporte com os dados abaixo — a gente confere e libera o acesso.",
