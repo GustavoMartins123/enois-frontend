@@ -718,6 +718,110 @@ function ReportsSection({ admin }: { admin: boolean }) {
   );
 }
 
+function AdminsSection({ onChanged }: { onChanged: () => void }) {
+  const { toast } = useToast();
+  const [username, setUsername] = useState("");
+  const [revoking, setRevoking] = useState<string | null>(null);
+
+  const { data: admins, isLoading } = useQuery({
+    queryKey: ["moderator", "admins"],
+    queryFn: () => moderationApi.admins(),
+    retry: false,
+  });
+
+  const promover = useMutation({
+    mutationFn: () => moderationApi.promoteAdmin(username.trim()),
+    onSuccess: (_result, _vars) => {
+      toast(texts.moderator.admin.adminsPromoted(username.trim()), "success");
+      setUsername("");
+      onChanged();
+    },
+    onError: () => toast(texts.moderator.admin.adminsRevokeError, "error"),
+  });
+
+  const revogar = useMutation({
+    mutationFn: (target: string) => moderationApi.revokeAdmin(target),
+    onSuccess: () => {
+      setRevoking(null);
+      onChanged();
+    },
+    onError: () => {
+      setRevoking(null);
+      toast(texts.moderator.admin.adminsRevokeError, "error");
+    },
+  });
+
+  return (
+    <section className="space-y-3">
+      <h2 className="text-sm font-semibold uppercase tracking-widest text-text-subtle">
+        {texts.moderator.admin.adminsTitle}
+      </h2>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Input
+          value={username}
+          onChange={(event) => setUsername(event.target.value)}
+          placeholder={texts.moderator.admin.adminsAddPlaceholder}
+          aria-label={texts.moderator.admin.adminsAddLabel}
+          className="max-w-xs"
+        />
+
+        <Button
+          size="sm"
+          disabled={promover.isPending || username.trim().length === 0}
+          onClick={() => promover.mutate()}
+        >
+          {texts.moderator.admin.adminsAdd}
+        </Button>
+      </div>
+
+      {isLoading ? (
+        <LoadingState />
+      ) : (admins?.length ?? 0) === 0 ? (
+        <p className="rounded-2xl border border-border-soft bg-surface-card p-4 text-sm text-text-subtle">
+          {texts.moderator.admin.adminsEmpty}
+        </p>
+      ) : (
+        <ul className="space-y-2">
+          {admins!.map((admin) => (
+            <li
+              key={admin.id}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border-soft bg-surface-card p-3"
+            >
+              <div className="min-w-0">
+                <p className="truncate text-sm text-text-strong">{admin.name ?? admin.username}</p>
+
+                <p className="truncate text-xs text-text-subtle">@{admin.username}</p>
+              </div>
+
+              <Button
+                size="sm"
+                variant="destructive"
+                className="rounded-full"
+                disabled={revogar.isPending}
+                onClick={() => setRevoking(admin.username)}
+              >
+                {texts.moderator.admin.adminsRevoke}
+              </Button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      <ConfirmDialog
+        open={revoking !== null}
+        onOpenChange={(open) => !open && setRevoking(null)}
+        title={texts.moderator.admin.adminsRevokeTitle}
+        description={texts.moderator.admin.adminsRevokeBody(revoking ?? "")}
+        confirmLabel={texts.moderator.admin.adminsRevoke}
+        destructive
+        pending={revogar.isPending}
+        onConfirm={() => revoking && revogar.mutate(revoking)}
+      />
+    </section>
+  );
+}
+
 function ApplicationsSection() {
   const queryClient = useQueryClient();
 
@@ -741,6 +845,7 @@ function ApplicationsSection() {
 
   return (
     <div className="space-y-5">
+      <AdminsSection onChanged={invalidate} />
       <AddModeratorForm onChanged={invalidate} />
 
       <section className="space-y-3">

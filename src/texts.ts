@@ -3632,6 +3632,17 @@ export const texts = {
       proposedBy: (username: string) => `Proposta de @${username}`,
     },
     admin: {
+      adminsTitle: "Administradores",
+      adminsEmpty: "Nenhum administrador além de você.",
+      adminsAddLabel: "Username do novo admin",
+      adminsAddPlaceholder: "ex.: ana-silva",
+      adminsAdd: "Promover a admin",
+      adminsPromoted: (username: string) => `@${username} agora é admin.`,
+      adminsRevokeError: "Não foi possível atualizar o papel de admin.",
+      adminsRevoke: "Remover admin",
+      adminsRevokeTitle: "Remover administrador",
+      adminsRevokeBody: (username: string) =>
+        `Remover @${username} do papel de administrador? A pessoa perde o acesso administrativo.`,
       applicationsTitle: "Candidaturas a moderador",
       applicationsEmpty: "Nenhuma candidatura pendente.",
       applicant: "Candidato",
