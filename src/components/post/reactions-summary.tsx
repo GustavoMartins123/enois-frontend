@@ -20,15 +20,16 @@ import { cn } from "@/lib/utils";
  * outra troca. Sem card no store (o blog monta o card num efeito do PostActions) a pílula vira
  * texto, para não existir alvo de clique que não tem onde gravar.
  */
-export function ReactionsSummary({ postId, initialSummary }: ReactionsSummaryProps) {
+export function ReactionsSummary({ post, initialSummary }: ReactionsSummaryProps) {
+  const postId = post.id;
   const card = usePostCardStore((state) => state.cards[postId]);
-  const reactionStatus = card?.reactionStatus ?? null;
+  const reactionStatus = post.currentUserReaction ?? null;
   // Com o resumo vindo do feed, nada é buscado: o cache só existe depois de reagir ou abrir o
   // diálogo (aí ele manda). Sem resumo (blog, resposta antiga), o card busca como antes.
   const hasInitialSummary = initialSummary != null;
   const { data } = useQuery({ ...reactionsQueryOptions(postId), enabled: !hasInitialSummary });
   const summary = data?.summary ?? initialSummary ?? {};
-  const { toggle, isPending } = usePostReaction(postId);
+  const { toggle, isPending } = usePostReaction(postId, post);
 
   // A ordem fica no ref: o resumo é otimista, então reordenar a cada clique moveria a pílula no
   // meio do toque. Só a entrada de um tipo novo (ou o primeiro load) reordena por contagem.

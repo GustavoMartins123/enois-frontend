@@ -1,4 +1,4 @@
-﻿import type { PostCardState } from "@/types/stores/post-card-state";
+import type { PostCardState } from "@/types/stores/post-card-state";
 
 /**
  * O estado dos cards de post: um por post, pela chave do id.

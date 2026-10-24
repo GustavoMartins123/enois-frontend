@@ -1,4 +1,4 @@
-﻿import type { PostCardState } from "@/types/stores/post-card-state";
+import type { PostCardState } from "@/types/stores/post-card-state";
 import type { PostCardStore } from "@/types/stores/post-card-store";
 import { create } from "zustand";
 

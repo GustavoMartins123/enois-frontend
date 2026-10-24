@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Estado UI efêmero do card de post - APENAS o que não vive no TanStack Query cache.
  *
  * Estado que NÃO está aqui (já vive no cache via feed query / comments query):

@@ -2,12 +2,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
+import type { PostView } from "@/types/application/feed/post-view";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { ReactionsListResponse } from "@/types/application/reaction/reactions-list-response";
 import type { ReactionVariables } from "@/types/lib/reactions/reaction-variables";
 import type { UsePostReactionResult } from "@/types/lib/reactions/use-post-reaction-result";
 
 import { ApiError, reactionsApi } from "@/lib/api";
+import { updatePostInQueryCache } from "@/lib/feed/post-query-cache";
 import { useAuth } from "@/lib/use-auth";
 
 import { useToast } from "@/components/ui/toast";
@@ -22,16 +24,13 @@ import { applyReactionToSummary, removeReactionFromSummary } from "./summary";
  * mesmo remove. O clique pinta na hora (cache do React Query + store do card) e só depois
  * fala com o servidor; a falha devolve o que estava antes e avisa.
  */
-export function usePostReaction(postId: string): UsePostReactionResult {
+export function usePostReaction(postId: string, post: PostView): UsePostReactionResult {
   const queryClient = useQueryClient();
   const { requireAuth, user } = useAuth();
   const { toast } = useToast();
-  const card = usePostCardStore((state) => state.cards[postId]);
-  const setReactionStatus = usePostCardStore((state) => state.setReactionStatus);
-  const setPostCounters = usePostCardStore((state) => state.setPostCounters);
   const setReactionPending = usePostCardStore((state) => state.setReactionPending);
 
-  const reactionStatus = card?.reactionStatus ?? null;
+  const reactionStatus = post.currentUserReaction ?? null;
   const queryKey = reactionsQueryOptions(postId).queryKey;
 
   const mutation = useMutation({
@@ -43,25 +42,34 @@ export function usePostReaction(postId: string): UsePostReactionResult {
 
       const previousSummary = queryClient.getQueryData<ReactionsListResponse>(queryKey);
       const previousReaction = reactionStatus;
-      const previousCounters = card?.postCounters ?? null;
+      const previousCounters = post.counters;
 
       setReactionPending(postId, true);
-      setReactionStatus(postId, remove ? null : type);
-
-      // Contagem total otimista: trocar de tipo não muda o total; reagir soma; remover subtrai.
-      if (previousCounters) {
-        const delta = remove ? -1 : previousReaction && previousReaction !== type ? 0 : 1;
-        setPostCounters(postId, {
-          ...previousCounters,
-          reactions: Math.max(0, previousCounters.reactions + delta),
-        });
-      }
+      const delta = remove ? -1 : previousReaction && previousReaction !== type ? 0 : 1;
+      updatePostInQueryCache(queryClient, postId, (current) => {
+        const baseSummary = current.reactionSummary ?? {};
+        const withoutMine =
+          previousReaction && previousReaction !== type
+            ? removeReactionFromSummary(baseSummary, previousReaction)
+            : baseSummary;
+        return {
+          ...current,
+          currentUserReaction: remove ? null : type,
+          counters: {
+            ...current.counters,
+            reactions: Math.max(0, current.counters.reactions + delta),
+          },
+          reactionSummary: remove
+            ? removeReactionFromSummary(baseSummary, previousReaction ?? type)
+            : applyReactionToSummary(withoutMine, type),
+        };
+      });
 
       // A lista do diálogo recebe a minha entrada na hora; o refetch do fim troca pela do servidor.
       queryClient.setQueryData<ReactionsListResponse>(queryKey, (current) => {
         // Sem cache (o card leu o resumo do próprio post), parte das contagens do feed, não de zero.
         const base = current ?? {
-          summary: card?.reactionSummary ?? {},
+          summary: post.reactionSummary ?? {},
           reactions: [],
           partial: true,
         };
@@ -96,9 +104,11 @@ export function usePostReaction(postId: string): UsePostReactionResult {
           queryClient.removeQueries({ queryKey });
         }
 
-        setReactionStatus(postId, context.previousReaction);
-
-        if (context.previousCounters) setPostCounters(postId, context.previousCounters);
+        updatePostInQueryCache(queryClient, postId, (current) => ({
+          ...current,
+          currentUserReaction: context.previousReaction,
+          counters: context.previousCounters ?? current.counters,
+        }));
       }
 
       if (error instanceof ApiError && error.status === 403) {
@@ -112,12 +122,17 @@ export function usePostReaction(postId: string): UsePostReactionResult {
     onSuccess: (result) => {
       // A resposta traz as contagens exatas do servidor — melhor que o palpite otimista.
       if (result && "counters" in result && result.counters) {
-        setPostCounters(postId, result.counters);
+        updatePostInQueryCache(queryClient, postId, (current) => ({
+          ...current,
+          counters: result.counters ?? current.counters,
+        }));
       }
     },
     onSettled: () => {
       // Uma única revalidação no fim: o cache volta a refletir o servidor (some a entrada otimista).
       queryClient.invalidateQueries({ queryKey });
+      queryClient.invalidateQueries({ queryKey: ["feed"] });
+      queryClient.invalidateQueries({ queryKey: ["post", postId] });
       setReactionPending(postId, false);
     },
   });
