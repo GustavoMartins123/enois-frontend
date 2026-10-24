@@ -16,10 +16,8 @@ function onVisibilityChange() {
 
 /** Um observer e um listener para todas as molduras, sem render React por quadro. */
 function observeAvatar(target: Element) {
+  if (typeof IntersectionObserver === "undefined") return;
   if (!observer) {
-    if (typeof IntersectionObserver === "undefined") {
-      throw new Error("As animações de avatar exigem IntersectionObserver.");
-    }
     observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {

@@ -141,15 +141,35 @@ describe("Animação das molduras do avatar", () => {
     expect(host.querySelector("[data-avatar-animating]")).toBeNull();
   });
 
-  it("falha explicitamente sem IntersectionObserver e não registra recursos", async () => {
+  it("marca uma única vez o nó do anel CSS e observa esse mesmo nó", async () => {
+    await act(async () => root.render(<UserAvatar frame="moldura-aurora" />));
+    const marked = host.querySelectorAll("[data-avatar-animated]");
+    expect(marked).toHaveLength(1);
+    expect(marked[0].getAttribute("data-avatar-frame")).toBe("moldura-aurora");
+    expect(host.querySelector(".moldura-fx")).toBeNull();
+    expect(observe).toHaveBeenCalledTimes(1);
+    expect(observe).toHaveBeenCalledWith(marked[0]);
+  });
+
+  it("marca uma única vez o invólucro da moldura FX e observa o nó que contém o efeito", async () => {
+    await act(async () => root.render(<UserAvatar frame="moldura-orbita" />));
+    const marked = host.querySelectorAll("[data-avatar-animated]");
+    expect(marked).toHaveLength(1);
+    expect(marked[0].querySelector(".moldura-fx")).not.toBeNull();
+    expect(observe).toHaveBeenCalledTimes(1);
+    expect(observe).toHaveBeenCalledWith(marked[0]);
+  });
+
+  it("sem IntersectionObserver deixa a moldura estática sem observar nem quebrar", async () => {
     const addListener = vi.spyOn(document, "addEventListener");
     vi.stubGlobal("IntersectionObserver", undefined);
-    const render = async () => {
-      await act(async () => root.render(<UserAvatar frame="moldura-inferno" />));
-    };
-    await expect(render()).rejects.toThrow("As animações de avatar exigem IntersectionObserver.");
+    await act(async () => root.render(<UserAvatar frame="moldura-inferno" />));
+    expect(host.querySelector(".moldura-fx")).not.toBeNull();
+    expect(host.querySelector("[data-avatar-animated]")).not.toBeNull();
     expect(host.querySelector("[data-avatar-animating]")).toBeNull();
     expect(addListener.mock.calls.filter(([name]) => name === "visibilitychange")).toHaveLength(0);
     expect(createObserver).not.toHaveBeenCalled();
+    await act(async () => root.render(null));
+    expect(host.querySelector("[data-avatar-frame]")).toBeNull();
   });
 });
