@@ -20,6 +20,7 @@ export { searchApi } from "./search";
 export { reportsApi, REPORT_REASONS } from "./reports";
 export { sanctionsApi } from "./sanctions";
 export { moderationApi } from "./moderation";
+export { monitoringApi } from "./monitoring";
 export { sealsApi } from "./seals";
 export { companiesApi } from "./companies";
 export { gamesApi } from "./games";

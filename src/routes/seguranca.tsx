@@ -200,11 +200,12 @@ function TotpSection({ status, onError, onDone }: SectionProps) {
   });
 
   const enable = useMutation({
-    mutationFn: () => authApi.enableTotp(code.trim()),
+    mutationFn: () => authApi.enableTotp(code.trim(), password),
     onSuccess: (data) => {
       setBackupCodes(data.backupCodes);
       setSetup(null);
       setCode("");
+      setPassword("");
       onDone();
     },
     onError: (err) => onError(err, texts.auth.twoFactor.error),
@@ -326,9 +327,22 @@ function TotpSection({ status, onError, onDone }: SectionProps) {
             />
           </div>
 
+          <div className="space-y-1.5">
+            <Label className="text-xs text-muted-foreground">
+              {texts.auth.twoFactor.passwordRequired}
+            </Label>
+
+            <Input
+              type="password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              placeholder={texts.auth.twoFactor.passwordHelp}
+            />
+          </div>
+
           <Button
             className="w-full rounded-full"
-            disabled={code.trim().length !== 6 || enable.isPending}
+            disabled={code.trim().length !== 6 || !password || enable.isPending}
             onClick={() => enable.mutate()}
           >
             {texts.auth.twoFactor.totpEnable}
