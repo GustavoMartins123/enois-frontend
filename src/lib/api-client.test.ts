@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { notifyBirthDateRequired } from "./age-required";
-import { api } from "./api-client";
+import { ApiError, api } from "./api-client";
 
 vi.mock("./auth-hint", () => ({ clearAuthHint: vi.fn() }));
 vi.mock("./query-client", () => ({ resetSessionScopedData: vi.fn() }));
@@ -118,8 +118,42 @@ describe("resposta da operação após renovar a sessão", () => {
     const error = new TypeError("Failed to fetch");
     fetchMock.mockRejectedValueOnce(error);
 
-    await expect(api.get("/recurso")).rejects.toBe(error);
+    const request = api.get("/recurso");
+    await expect(request).rejects.toBeInstanceOf(ApiError);
+    await expect(request).rejects.toMatchObject({
+      status: 0,
+      code: "NETWORK_ERROR",
+      path: "/recurso",
+    });
     expect(localStorage.getItem("session_token")).toBe("token-novo");
+    expect(localStorage.getItem("refresh_token")).toBe("refresh-novo");
     expect(location.href).toBe("/feed");
+    expect(fetchMock).toHaveBeenCalledTimes(3);
   });
+
+  it.each([429, 500, 502, 503, "rede"])(
+    "preserva a sessão sem repetir a operação quando o refresh falha: %s",
+    async (failure) => {
+      fetchMock.mockReset();
+      fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+      if (typeof failure === "number") {
+        fetchMock.mockResolvedValueOnce(new Response(null, { status: failure }));
+      } else {
+        fetchMock.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+      }
+
+      const request = api.get("/recurso");
+      await expect(request).rejects.toBeInstanceOf(ApiError);
+      await expect(request).rejects.toMatchObject({
+        status: 0,
+        code: "SESSION_CHECK_UNAVAILABLE",
+        path: "/recurso",
+      });
+      expect(localStorage.getItem("session_token")).toBe("token-antigo");
+      expect(localStorage.getItem("refresh_token")).toBe("refresh-antigo");
+      expect(location.href).toBe("/feed");
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(fetchMock.mock.calls[1][0]).toBe("/api/auth/refresh");
+    },
+  );
 });

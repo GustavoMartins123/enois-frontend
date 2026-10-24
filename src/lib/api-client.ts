@@ -277,11 +277,20 @@ async function request<T>(
 
     if (refreshed === "renewed") {
       headers["X-Session-Token"] = getToken() ?? "";
-      response = await fetch(`${baseUrl()}${path}`, {
-        method,
-        headers,
-        body: body ? JSON.stringify(body) : undefined,
-      });
+      try {
+        response = await fetch(`${baseUrl()}${path}`, {
+          method,
+          headers,
+          body: body ? JSON.stringify(body) : undefined,
+        });
+      } catch {
+        throw new ApiError(
+          0,
+          "NETWORK_ERROR",
+          "Não foi possível conectar ao servidor. Verifique sua conexão e se o backend está no ar.",
+          path,
+        );
+      }
     }
 
     // Uma falha da operação após renovar não significa que a sessão foi recusada.
