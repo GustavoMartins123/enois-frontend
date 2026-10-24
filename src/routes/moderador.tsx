@@ -67,11 +67,11 @@ const ALL_TABS: { id: ModeratorTabId; label: string; icon: typeof Flag; adminOnl
   { id: "reports", label: texts.moderator.tabs.reports, icon: Flag, adminOnly: false },
   { id: "games", label: texts.moderator.tabs.games, icon: Gamepad2, adminOnly: false },
   { id: "projects", label: texts.moderator.tabs.projects, icon: FolderKanban, adminOnly: false },
-  { id: "support", label: texts.moderator.tabs.support, icon: LifeBuoy, adminOnly: true },
-  { id: "issues", label: texts.moderator.tabs.issues, icon: Bug, adminOnly: true },
-  { id: "history", label: texts.moderator.tabs.history, icon: History, adminOnly: true },
-  { id: "appeals", label: texts.moderator.tabs.appeals, icon: ShieldAlert, adminOnly: true },
-  { id: "disputes", label: texts.moderator.tabs.disputes, icon: Scale, adminOnly: true },
+  { id: "support", label: texts.moderator.tabs.support, icon: LifeBuoy, adminOnly: false },
+  { id: "issues", label: texts.moderator.tabs.issues, icon: Bug, adminOnly: false },
+  { id: "history", label: texts.moderator.tabs.history, icon: History, adminOnly: false },
+  { id: "appeals", label: texts.moderator.tabs.appeals, icon: ShieldAlert, adminOnly: false },
+  { id: "disputes", label: texts.moderator.tabs.disputes, icon: Scale, adminOnly: false },
   {
     id: "applications",
     label: texts.moderator.tabs.applications,
@@ -94,12 +94,12 @@ const ALL_TABS: { id: ModeratorTabId; label: string; icon: typeof Flag; adminOnl
     icon: Trash2,
     adminOnly: false,
   },
-  { id: "emails", label: texts.moderator.tabs.emails, icon: Mail, adminOnly: true },
+  { id: "emails", label: texts.moderator.tabs.emails, icon: Mail, adminOnly: false },
   {
     id: "monitoring",
     label: texts.moderator.tabs.monitoring,
     icon: Activity,
-    adminOnly: true,
+    adminOnly: false,
   },
 ];
 
@@ -107,8 +107,9 @@ const ALL_TABS: { id: ModeratorTabId; label: string; icon: typeof Flag; adminOnl
  * Painel de moderador.
  *
  * - Sem papel: mostra a credibilidade e, se elegível (>= 200), o formulário de candidatura.
- * - Moderador aprovado: denúncias e fila de jogos.
- * - Admin: todas as filas, candidaturas, punição direta e log de e-mails.
+ * - Moderador aprovado: todas as filas do painel (denúncias, jogos, suporte e histórico,
+ *   recursos, disputas, usuários, contas suspostas, e-mails e monitoramento).
+ * - Admin: o mesmo, mais as candidaturas e a gestão de moderadores.
  *
  * Quem decide o papel é o backend; esta tela só reflete `/moderation/me`.
  */
@@ -214,19 +215,19 @@ function Moderador() {
             {activeTab === "reports" && <ReportsSection admin={me.admin} />}
             {activeTab === "games" && <GamesReviewSection />}
             {activeTab === "projects" && <ProjectsReviewSection />}
-            {me.admin && activeTab === "support" && <SupportTicketsSection mode="active" />}
-            {me.admin && activeTab === "issues" && (
+            {canModerate && activeTab === "support" && <SupportTicketsSection mode="active" />}
+            {canModerate && activeTab === "issues" && (
               <SupportTicketsSection lockedCategory="BUG" mode="active" />
             )}
-            {me.admin && activeTab === "history" && <SupportTicketsSection mode="history" />}
-            {me.admin && activeTab === "appeals" && <AppealsSection />}
-            {me.admin && activeTab === "disputes" && <DisputesSection />}
+            {canModerate && activeTab === "history" && <SupportTicketsSection mode="history" />}
+            {canModerate && activeTab === "appeals" && <AppealsSection />}
+            {canModerate && activeTab === "disputes" && <DisputesSection />}
             {me.admin && activeTab === "applications" && <ApplicationsSection />}
             {activeTab === "users" && <SanctionSection me={me} />}
             {canModerate && activeTab === "suspicious" && <SuspiciousUsersSection />}
             {canModerate && activeTab === "suspiciousPosts" && <SuspiciousPostsSection />}
-            {me.admin && activeTab === "emails" && <EmailLogSection />}
-            {me.admin && activeTab === "monitoring" && <MonitoringSection />}
+            {canModerate && activeTab === "emails" && <EmailLogSection />}
+            {canModerate && activeTab === "monitoring" && <MonitoringSection />}
           </div>
         ) : (
           <ApplicationSection me={me} />
@@ -1006,7 +1007,7 @@ function SanctionSection({ me }: { me: ModeratorMeView }) {
 
   return (
     <div className="space-y-4">
-      {me.admin && <DirectSanctionForm />}
+      {(me.moderator || me.admin) && <DirectSanctionForm />}
 
       {me.moderator &&
         (votingEnabled ? (
