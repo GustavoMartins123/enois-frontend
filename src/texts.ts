@@ -3226,6 +3226,7 @@ export const texts = {
    * Admins (allowlist de username no backend) decidem candidaturas e podem punir qualquer usuário.
    */
   moderator: {
+    tabSelector: "Escolher a aba do painel",
     panic: {
       title: "Modo pânico",
       description:
@@ -3361,6 +3362,11 @@ export const texts = {
       experience: "Experiência",
       acceptedAt: "Termos aceitos em",
       saveError: "Não foi possível mudar o status.",
+      contact: "Contato",
+      review: "Começar análise",
+      approve: "Aprovar",
+      reject: "Recusar",
+      done: "Decidida",
     },
     suspiciousPosts: {
       title: "Posts suspeitos",

@@ -938,7 +938,7 @@ function ResourcePanel({ resource }: { resource: MonitoringResource }) {
           total={resource.systemMemoryTotalBytes}
           detail={
             resource.systemMemoryTotalBytes > 0
-              ? `${formatBytes(resource.systemMemoryFreeBytes)} livres de ${formatBytes(resource.systemMemoryTotalBytes)}`
+              ? `${formatBytes(resource.systemMemoryFreeBytes)} disponíveis de ${formatBytes(resource.systemMemoryTotalBytes)}`
               : "—"
           }
         />
