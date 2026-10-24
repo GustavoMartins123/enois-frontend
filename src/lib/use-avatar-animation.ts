@@ -16,36 +16,34 @@ function onVisibilityChange() {
 
 /** Um observer e um listener para todas as molduras, sem render React por quadro. */
 function observeAvatar(target: Element) {
-  if (targets.size === 0) {
-    document.addEventListener("visibilitychange", onVisibilityChange);
-    if (typeof IntersectionObserver !== "undefined") {
-      observer = new IntersectionObserver(
-        (entries) => {
-          for (const entry of entries) {
-            if (!targets.has(entry.target)) continue;
-            if (entry.isIntersecting) visible.add(entry.target);
-            else visible.delete(entry.target);
-            syncVisibility(entry.target);
-          }
-        },
-        // O efeito se estende além do avatar, inclusive no tamanho maior do perfil.
-        { rootMargin: "40px" },
-      );
+  if (!observer) {
+    if (typeof IntersectionObserver === "undefined") {
+      throw new Error("As animações de avatar exigem IntersectionObserver.");
     }
+    observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!targets.has(entry.target)) continue;
+          if (entry.isIntersecting) visible.add(entry.target);
+          else visible.delete(entry.target);
+          syncVisibility(entry.target);
+        }
+      },
+      // O efeito se estende além do avatar, inclusive no tamanho maior do perfil.
+      { rootMargin: "40px" },
+    );
+    document.addEventListener("visibilitychange", onVisibilityChange);
   }
+  const avatarObserver = observer;
   targets.add(target);
-  if (observer) observer.observe(target);
-  else {
-    visible.add(target);
-    syncVisibility(target);
-  }
+  avatarObserver.observe(target);
   return () => {
-    observer?.unobserve(target);
+    avatarObserver.unobserve(target);
     targets.delete(target);
     visible.delete(target);
     target.removeAttribute("data-avatar-animating");
     if (targets.size === 0) {
-      observer?.disconnect();
+      avatarObserver.disconnect();
       observer = null;
       document.removeEventListener("visibilitychange", onVisibilityChange);
     }
@@ -54,6 +52,7 @@ function observeAvatar(target: Element) {
 
 export function useAvatarAnimation(frame: string | null | undefined) {
   const ref = useRef<HTMLSpanElement>(null);
+  // Trocar entre moldura FX e anel muda o nó do ref e também frame, que refaz a observação.
   useEffect(() => {
     if (frame && ANIMATED_FRAMES.includes(frame) && ref.current) return observeAvatar(ref.current);
   }, [frame]);

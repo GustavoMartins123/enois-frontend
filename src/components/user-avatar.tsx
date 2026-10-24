@@ -34,7 +34,7 @@ export function UserAvatar({
   const animationRef = useAvatarAnimation(frame);
   const avatar = (
     <Avatar
-      ref={fx ? undefined : animationRef}
+      ref={!fx && animated ? animationRef : undefined}
       className={fx ? "h-full w-full" : className}
       data-avatar-frame={fx ? undefined : frame || undefined}
       data-avatar-animated={!fx && animated ? true : undefined}
@@ -58,14 +58,14 @@ export function UserAvatar({
   // de edição podem optar pelo corte para que a moldura nunca invada o texto.
   return (
     <span
-      ref={animationRef}
+      ref={animated ? animationRef : undefined}
       className={cn(
         "@container relative isolate flex h-10 w-10 shrink-0 rounded-full",
         frameOverflow === "hidden" && "overflow-hidden",
         className,
       )}
       data-avatar-frame={frame}
-      data-avatar-animated
+      data-avatar-animated={animated ? true : undefined}
     >
       {avatar}
       <AvatarFrameFx frame={frame} />

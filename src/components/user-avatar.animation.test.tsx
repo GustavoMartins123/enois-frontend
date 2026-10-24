@@ -4,6 +4,8 @@ import { act } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { ANIMATED_FRAMES } from "@/lib/avatar-frames";
+
 import { UserAvatar } from "./user-avatar";
 
 describe("Animação das molduras do avatar", () => {
@@ -74,6 +76,14 @@ describe("Animação das molduras do avatar", () => {
     expect(host.querySelector("[data-avatar-animating]")).toBeNull();
   });
 
+  it("não marca nem observa uma moldura FX que não seja animada", async () => {
+    vi.spyOn(ANIMATED_FRAMES, "includes").mockReturnValue(false);
+    await act(async () => root.render(<UserAvatar frame="moldura-orbita" />));
+    expect(host.querySelector(".moldura-fx")).not.toBeNull();
+    expect(host.querySelector("[data-avatar-animated]")).toBeNull();
+    expect(createObserver).not.toHaveBeenCalled();
+  });
+
   it("pausa fora da tela e na aba oculta e retoma apenas as molduras visíveis", async () => {
     await act(async () =>
       root.render(
@@ -131,14 +141,15 @@ describe("Animação das molduras do avatar", () => {
     expect(host.querySelector("[data-avatar-animating]")).toBeNull();
   });
 
-  it("mantém a pausa da aba mesmo sem IntersectionObserver", async () => {
+  it("falha explicitamente sem IntersectionObserver e não registra recursos", async () => {
+    const addListener = vi.spyOn(document, "addEventListener");
     vi.stubGlobal("IntersectionObserver", undefined);
-    await act(async () => root.render(<UserAvatar frame="moldura-inferno" />));
-    const avatar = host.querySelector("[data-avatar-animated]")!;
-    expect(avatar.hasAttribute("data-avatar-animating")).toBe(true);
-    hidden = true;
-    document.dispatchEvent(new Event("visibilitychange"));
-    expect(avatar.hasAttribute("data-avatar-animating")).toBe(false);
+    const render = async () => {
+      await act(async () => root.render(<UserAvatar frame="moldura-inferno" />));
+    };
+    await expect(render()).rejects.toThrow("As animações de avatar exigem IntersectionObserver.");
+    expect(host.querySelector("[data-avatar-animating]")).toBeNull();
+    expect(addListener.mock.calls.filter(([name]) => name === "visibilitychange")).toHaveLength(0);
     expect(createObserver).not.toHaveBeenCalled();
   });
 });
