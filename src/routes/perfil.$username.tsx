@@ -960,7 +960,7 @@ function Profile() {
                         <Link
                           to="/perfil/$username"
                           params={{ username: u.username }}
-                          className="truncate text-sm font-normal text-text-strong hover:underline"
+                          className="block truncate text-sm font-normal text-text-strong hover:underline"
                         >
                           {u.name}
                         </Link>
