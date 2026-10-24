@@ -31,3 +31,9 @@
 
 - **Rodada 1** (manual, 2026-10-24): inventário criado; índice completo de rotas (60+ páginas) no
   `rotas.md`; documentos novos: temas, push, monitoramento-painel.
+
+## Como continuar
+
+Este esforço continua por rodadas automáticas (20 em 20 minutos) enquanto houver itens pendentes.
+Se uma rodada não estiver rodando: abra uma nova conversa e peça "retomar a documentação dos
+módulos/páginas" — o agente lê este painel e segue daqui, marcando o log abaixo a cada rodada.
