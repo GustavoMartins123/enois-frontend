@@ -66,21 +66,20 @@ const DISTANTES = Array.from({ length: 7 }, (_, i) => {
   return { x, y, duracao: round(2.6 + rand() * 2), atraso: round(-rand() * 4.6) };
 });
 
-function orbita(v: (typeof VAGA_LUMES)[number], atrasoExtra = 0): CSSProperties {
-  const atraso = round(-v.inicio * v.volta + atrasoExtra);
+function orbita(v: (typeof VAGA_LUMES)[number], rastro = 0): CSSProperties {
   return {
     animationDuration: `${v.volta}s`,
-    animationDelay: `${atraso}s`,
+    animationDelay: `${round(rastro - v.volta)}s`,
     animationDirection: v.sentido === 1 ? "normal" : "reverse",
   };
 }
 
-function voo(v: (typeof VAGA_LUMES)[number], atrasoExtra = 0): CSSProperties {
+function voo(v: (typeof VAGA_LUMES)[number], rastro = 0): CSSProperties {
   return {
     "--dx": v.dx,
     "--dy": v.dy,
     animationDuration: `${v.voo}s`,
-    animationDelay: `${round(-v.inicio * v.voo + atrasoExtra)}s`,
+    animationDelay: `${round(rastro - v.voo)}s`,
   } as CSSProperties;
 }
 
@@ -167,7 +166,7 @@ export function VagaLumesFx() {
       ))}
 
       {VAGA_LUMES.map((v, i) => (
-        <g key={i}>
+        <g key={i} transform={`rotate(${round(v.inicio * 360)})`}>
           {RASTRO.map((lag, j) => (
             <g key={j} className="moldura-vaga-lumes__orbita" style={orbita(v, lag)}>
               <g transform={`translate(0 ${-v.raio})`}>

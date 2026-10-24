@@ -11,7 +11,7 @@ function raioDaVinha(angulo: number): number {
 }
 
 function caule(de: number, ate: number): string {
-  const passos = Math.abs(ate - de) / 3;
+  const passos = Math.ceil(Math.abs(ate - de) / 3);
   const pontos = Array.from({ length: passos + 1 }, (_, i) => {
     const angulo = de + ((ate - de) * i) / passos;
     return polar(raioDaVinha(angulo), angulo).join(" ");

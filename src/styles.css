@@ -972,7 +972,10 @@
   }
 }
 
+/* `> :not(.moldura-fx)` é a foto, que algumas molduras animam (vendaval). O :not também deixa a
+   pausa mais específica que a regra `animation` da moldura, que senão voltaria a rodar. */
 [data-avatar-animated]:not([data-avatar-animating])::after,
+[data-avatar-animated]:not([data-avatar-animating]) > :not(.moldura-fx),
 [data-avatar-animated]:not([data-avatar-animating]) .moldura-fx * {
   animation-play-state: paused;
 }
