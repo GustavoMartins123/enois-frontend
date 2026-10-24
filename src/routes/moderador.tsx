@@ -198,26 +198,31 @@ function Moderador() {
 
         {canModerate ? (
           <div className="space-y-4">
-            <div className="flex gap-1 overflow-x-auto pb-1" role="tablist">
-              {visibleTabs.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={activeTab === item.id}
-                  onClick={() => setTab(item.id)}
-                  className={cn(
-                    "inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition",
-                    activeTab === item.id
-                      ? "bg-primary text-primary-foreground"
-                      : "border border-border-soft text-text-subtle hover:border-primary/50 hover:text-primary",
-                  )}
-                >
-                  <item.icon className="h-3.5 w-3.5" />
+            <div className="flex items-center gap-2" role="tablist">
+              <select
+                value={activeTab}
+                onChange={(event) => setTab(event.target.value as ModeratorTabId)}
+                aria-label={texts.moderator.tabSelector}
+                className="h-9 w-full max-w-72 rounded-lg border border-border-soft bg-surface-card px-3 text-sm text-text-strong sm:w-auto sm:flex-1"
+              >
+                {visibleTabs.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.label}
+                  </option>
+                ))}
+              </select>
 
-                  <>{item.label}</>
-                </button>
-              ))}
+              <div
+                className={cn(
+                  "hidden h-9 items-center gap-1.5 rounded-lg px-3 text-xs sm:flex",
+                  "bg-surface-2 text-text-subtle",
+                )}
+              >
+                {(() => {
+                  const Current = visibleTabs.find((item) => item.id === activeTab)?.icon;
+                  return Current ? <Current className="h-4 w-4 text-primary" /> : null;
+                })()}
+              </div>
             </div>
 
             {activeTab === "reports" && <ReportsSection admin={me.admin} />}
