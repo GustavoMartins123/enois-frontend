@@ -11,6 +11,7 @@ import { resolveCdnUrl } from "@/lib/api/media";
 import { getCurrentUserId } from "@/lib/current-user";
 import { formatarData } from "@/lib/date/format";
 import { isNotificationHidden } from "@/lib/notification-module";
+import { useIsAuthenticated } from "@/lib/use-auth";
 import { useDisabledModules } from "@/lib/use-personalization";
 import { cn } from "@/lib/utils";
 
@@ -25,10 +26,13 @@ export function NotificationsPopover() {
   const [open, setOpen] = useState(false);
 
   const disabledModules = useDisabledModules();
+  const authenticated = useIsAuthenticated();
 
   const { data: notificationsData } = useQuery({
     queryKey: ["notifications"],
     queryFn: () => notificationsApi.list(),
+    enabled: authenticated,
+    staleTime: 30_000,
   });
 
   const markAsRead = useMutation({
