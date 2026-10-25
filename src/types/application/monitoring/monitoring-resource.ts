@@ -22,5 +22,6 @@ export type MonitoringResource = {
   cgroupMemoryUsedBytes: number;
   cgroupMemoryMaxBytes: number;
   cgroupCpuCores: number;
+  cgroupCpuPercent: number;
   dbPool: MonitoringDbPool | null;
 };

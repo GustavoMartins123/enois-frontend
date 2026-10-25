@@ -977,9 +977,19 @@ function ResourcePanel({ resource }: { resource: MonitoringResource }) {
           label={texts.moderator.monitoring.dbPool}
           value={pool ? `${pool.active} / ${pool.max} ativos · ${pool.waiting} esperando` : "—"}
         />
-        <Stat
+        <UsageBar
           label={texts.moderator.monitoring.cgroupCpu}
-          value={resource.cgroupCpuCores > 0 ? `${resource.cgroupCpuCores.toFixed(2)} cores` : "—"}
+          used={resource.cgroupCpuPercent ?? -1}
+          total={100}
+          detail={
+            resource.cgroupCpuPercent >= 0
+              ? resource.cgroupCpuCores > 0
+                ? `${resource.cgroupCpuPercent.toFixed(0)}% de ${resource.cgroupCpuCores.toFixed(2)} cores`
+                : `${resource.cgroupCpuPercent.toFixed(0)}% (sem limite)`
+              : resource.cgroupCpuCores > 0
+                ? `${resource.cgroupCpuCores.toFixed(2)} cores (sem uso atual)`
+                : "—"
+          }
         />
       </div>
     </div>
