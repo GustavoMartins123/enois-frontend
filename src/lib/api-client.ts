@@ -299,20 +299,31 @@ async function request<T>(
           path,
         );
       }
+
+      // A renovação funcionou (token novo válido no storage), mas a operação
+      // repetida falhou.
+      // 401 no retry → o token novo também foi rejeitado: sessão expirada de
+      //     fato, cai para o clearSession() abaixo.
+      // Qualquer outro status (403, 429, 5xx): a sessão É válida; o erro é da
+      //     operação e deve chegar à tela sem deslogar quem está usando (#183).
+      if (retry.status !== 401) {
+        const errorBody = await retry.json().catch(() => null);
+        throw new ApiError(
+          retry.status,
+          errorBody?.code,
+          errorBody?.message ?? retry.statusText,
+          path,
+        );
+      }
     }
 
-    // Uma falha da operação após renovar não significa que a sessão foi recusada.
-    if (refreshed === "refused" || response.status === HttpStatus.UNAUTHORIZED) {
-      clearSession();
-      if (typeof window !== "undefined") {
-        window.location.href = "/entrar?tab=login";
-      }
-      throw new ApiError(
-        response.status,
-        "SESSION_EXPIRED",
-        "Sessão expirada. Faça login novamente.",
-        path,
-      );
+    // Só chega aqui quando:
+    //  • refreshSession retornou "refused" (401/403 no /auth/refresh → token morto), ou
+    //  • o retry após renovação também veio 401 (token novo rejeitado).
+    // Em ambos os casos a sessão acabou de verdade: limpa e redireciona.
+    clearSession();
+    if (typeof window !== "undefined") {
+      window.location.href = "/entrar?tab=login";
     }
   }
 
