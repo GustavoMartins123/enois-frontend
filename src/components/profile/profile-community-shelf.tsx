@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
-import { TOPIC_LABELS } from "@/constants/community-topics";
+import { topicLabel } from "@/constants/community-topics";
 import { texts } from "@/texts";
 import type { ProfileCommunityShelfProps } from "@/types/components/profile/profile-community-shelf-props";
 import { ArrowUpRight, Hash, Users } from "lucide-react";
@@ -82,7 +82,9 @@ export function ProfileCommunityShelf({ isOwner }: ProfileCommunityShelfProps) {
                   </span>
 
                   <span className="mt-0.5 flex items-center gap-2 text-xs text-text-subtle">
-                    <span className="truncate">{TOPIC_LABELS[community.topic]}</span>
+                    {community.topic && (
+                      <span className="truncate">{topicLabel(community.topic)}</span>
+                    )}
 
                     <span className="inline-flex shrink-0 items-center gap-1">
                       <Users className="h-3 w-3" aria-hidden="true" />
