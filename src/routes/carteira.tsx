@@ -6,8 +6,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { texts } from "@/texts";
 import { ArrowLeft, Send, ShieldAlert, ShoppingBag, Sparkles, TrendingUp, Zap } from "lucide-react";
 
-import { lojaApi, walletApi } from "@/lib/api";
-import { ANIMATED_FRAMES } from "@/lib/avatar-frames";
+import { walletApi } from "@/lib/api";
 import { dataHora } from "@/lib/date/format";
 import { faiscaToBrlCents, formatBrlCents, formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { requireAuth } from "@/lib/require-auth";
@@ -15,12 +14,13 @@ import { requireAuth } from "@/lib/require-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { LoadingState } from "@/components/ui/loading-state";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
-import { UserAvatar } from "@/components/user-avatar";
 import { UserPicker } from "@/components/user-picker";
+import { FrameShop } from "@/components/wallet/frame-shop";
 
 export const Route = createFileRoute("/carteira")({
   beforeLoad: requireAuth,
@@ -109,7 +109,7 @@ function Carteira() {
 
   return (
     <AppContainer>
-      <div className="mx-auto w-full max-w-2xl space-y-6">
+      <div className="mx-auto w-full max-w-5xl space-y-6">
         <Link
           to="/feed"
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
@@ -119,53 +119,131 @@ function Carteira() {
           <>{texts.wallet.back}</>
         </Link>
 
-        <div className="surface-card space-y-4 p-6">
-          <div className="flex items-center gap-2 text-text-subtle">
-            <Sparkles className="h-4 w-4 text-primary" />
+        <div className="space-y-2">
+          <h1 className="text-3xl font-semibold tracking-tight text-text-strong">
+            {texts.frameShop.title}
+          </h1>
 
-            <span className="text-xs font-medium uppercase tracking-widest">
-              {texts.wallet.title}
-            </span>
-          </div>
-
-          {isLoading ? (
-            <LoadingState />
-          ) : isError ? (
-            <div className="rounded-xl border border-border-soft p-4 text-sm text-text-subtle">
-              Não foi possível carregar a carteira agora.
-              <Button
-                size="sm"
-                variant="outline"
-                className="ml-2 rounded-full"
-                onClick={() => refetch()}
-              >
-                Tentar de novo
-              </Button>
-            </div>
-          ) : (
-            <p className="text-4xl font-semibold tracking-tight text-text-strong">
-              {formatFaisca(wallet?.balance ?? 0)}{" "}
-              <span className="text-lg font-normal text-text-subtle">faíscas</span>
-            </p>
-          )}
-
-          {wallet && (
-            <p className="text-xs text-text-subtle">
-              {texts.wallet.chaveLabel}:{" "}
-              <span className="font-mono text-text-strong">{wallet.chave}</span>
-            </p>
-          )}
-
-          <Button className="rounded-full gap-2" onClick={() => setPayOpen(true)}>
-            <Send className="h-4 w-4" />
-            {texts.wallet.pay}
-          </Button>
-
-          <p className="text-xs leading-relaxed text-text-subtle">{texts.wallet.notice}</p>
+          <p className="text-sm text-text-subtle">{texts.frameShop.subtitle}</p>
         </div>
 
-        <CotacaoCard mf={wallet?.balance ?? 0} />
-        <LojaSection />
+        <Tabs defaultValue="loja">
+          <TabsList className="wallet-shop-tabs">
+            <TabsTrigger value="carteira">{texts.frameShop.walletTab}</TabsTrigger>
+
+            <TabsTrigger value="loja">
+              <ShoppingBag className="h-4 w-4" />
+              {texts.frameShop.storeTab}
+            </TabsTrigger>
+
+            <TabsTrigger value="minhas">{texts.frameShop.ownedTab}</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="carteira" className="mx-auto max-w-2xl space-y-6 pt-5">
+            <div className="surface-card space-y-4 p-6">
+              <div className="flex items-center gap-2 text-text-subtle">
+                <Sparkles className="h-4 w-4 text-primary" />
+
+                <span className="text-xs font-medium uppercase tracking-widest">
+                  {texts.wallet.title}
+                </span>
+              </div>
+
+              {isLoading ? (
+                <LoadingState />
+              ) : isError ? (
+                <div className="rounded-xl border border-border-soft p-4 text-sm text-text-subtle">
+                  Não foi possível carregar a carteira agora.
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="ml-2 rounded-full"
+                    onClick={() => refetch()}
+                  >
+                    Tentar de novo
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-4xl font-semibold tracking-tight text-text-strong">
+                  {formatFaisca(wallet?.balance ?? 0)}{" "}
+                  <span className="text-lg font-normal text-text-subtle">faíscas</span>
+                </p>
+              )}
+
+              {wallet && (
+                <p className="text-xs text-text-subtle">
+                  {texts.wallet.chaveLabel}:{" "}
+                  <span className="font-mono text-text-strong">{wallet.chave}</span>
+                </p>
+              )}
+
+              <Button className="rounded-full gap-2" onClick={() => setPayOpen(true)}>
+                <Send className="h-4 w-4" />
+                {texts.wallet.pay}
+              </Button>
+
+              <p className="text-xs leading-relaxed text-text-subtle">{texts.wallet.notice}</p>
+            </div>
+
+            <CotacaoCard mf={wallet?.balance ?? 0} />
+
+            <section className="space-y-3">
+              <h2 className="text-sm font-semibold uppercase tracking-widest text-text-subtle">
+                {texts.wallet.history}
+              </h2>
+
+              {entries.length === 0 ? (
+                <div className="rounded-2xl border border-border-soft bg-surface-card p-6 text-sm text-muted-foreground">
+                  <Zap className="mb-2 h-4 w-4 text-primary" />
+                  {texts.wallet.historyEmpty}
+                </div>
+              ) : (
+                <ul className="divide-y divide-border-soft overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
+                  {entries.map((entry, index) => (
+                    <li key={index} className="flex items-center gap-3 p-4">
+                      <span
+                        className={`text-sm font-semibold ${entry.amount >= 0 ? "text-green-600 dark:text-green-400" : "text-destructive"}`}
+                      >
+                        {entry.amount >= 0 ? "+" : ""}
+                        {formatFaisca(entry.amount)}
+                      </span>
+
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-sm text-text-strong">
+                          {entry.message || (texts.wallet.kind[entry.kind] ?? entry.kind)}
+                        </span>
+
+                        <span className="block text-xs text-text-subtle">
+                          {dataHora(entry.createdAt)}
+                        </span>
+                      </span>
+
+                      {entry.kind === "TRANSFER_OUT" && entry.refId && (
+                        <button
+                          type="button"
+                          className="shrink-0 rounded-full border border-border-soft px-2 py-1 text-xs text-text-subtle transition hover:border-destructive hover:text-destructive"
+                          onClick={() =>
+                            setContestar({ refId: entry.refId!, motivo: "golpe", descricao: "" })
+                          }
+                        >
+                          Contestar
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          </TabsContent>
+
+          <TabsContent value="loja" className="pt-5">
+            <FrameShop />
+          </TabsContent>
+
+          <TabsContent value="minhas" className="pt-5">
+            <FrameShop onlyOwned />
+          </TabsContent>
+        </Tabs>
 
         {payOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -304,54 +382,6 @@ function Carteira() {
             </div>
           </div>
         )}
-
-        <section className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-text-subtle">
-            {texts.wallet.history}
-          </h2>
-
-          {entries.length === 0 ? (
-            <div className="rounded-2xl border border-border-soft bg-surface-card p-6 text-sm text-muted-foreground">
-              <Zap className="mb-2 h-4 w-4 text-primary" />
-              {texts.wallet.historyEmpty}
-            </div>
-          ) : (
-            <ul className="divide-y divide-border-soft overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
-              {entries.map((entry, index) => (
-                <li key={index} className="flex items-center gap-3 p-4">
-                  <span
-                    className={`text-sm font-semibold ${entry.amount >= 0 ? "text-green-600 dark:text-green-400" : "text-destructive"}`}
-                  >
-                    {entry.amount >= 0 ? "+" : ""}
-                    {formatFaisca(entry.amount)}
-                  </span>
-
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm text-text-strong">
-                      {entry.message || (texts.wallet.kind[entry.kind] ?? entry.kind)}
-                    </span>
-
-                    <span className="block text-xs text-text-subtle">
-                      {dataHora(entry.createdAt)}
-                    </span>
-                  </span>
-
-                  {entry.kind === "TRANSFER_OUT" && entry.refId && (
-                    <button
-                      type="button"
-                      className="shrink-0 rounded-full border border-border-soft px-2 py-1 text-xs text-text-subtle transition hover:border-destructive hover:text-destructive"
-                      onClick={() =>
-                        setContestar({ refId: entry.refId!, motivo: "golpe", descricao: "" })
-                      }
-                    >
-                      Contestar
-                    </button>
-                  )}
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
       </div>
     </AppContainer>
   );
@@ -447,123 +477,5 @@ function Sparkline({ valores, subiu }: { valores: number[]; subiu: boolean }) {
         stroke="currentColor"
       />
     </svg>
-  );
-}
-
-/**
- * A LOJA de cosméticos (plano C3): molduras de avatar nativas por faíscas — compra
- * direta (auditada no ledger, sem escrow) e equipar. Só aparência, nunca alcance.
- */
-function LojaSection() {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  const catalog = useQuery({ queryKey: ["loja"], queryFn: () => lojaApi.catalog() });
-  const buy = useMutation({
-    mutationFn: (id: string) => lojaApi.buy(id),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["loja"] });
-      void queryClient.invalidateQueries({ queryKey: ["carteira"] });
-      toast("Moldura comprada. Agora você pode equipá-la.", "success");
-    },
-    onError: () =>
-      toast("Não foi possível comprar a moldura. Confira seu saldo e tente novamente.", "error"),
-  });
-  const equip = useMutation({
-    mutationFn: (id: string) => lojaApi.equip(id),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["loja"] });
-      void queryClient.invalidateQueries({ queryKey: ["profile"] });
-      void queryClient.invalidateQueries({ queryKey: ["me"] });
-      void queryClient.invalidateQueries({ queryKey: ["feed"] });
-    },
-    onError: () => toast("Não foi possível atualizar a moldura. Tente novamente.", "error"),
-  });
-
-  const itens = catalog.data ?? [];
-  if (catalog.isLoading) return null;
-
-  return (
-    <section className="surface-card space-y-3 p-6" aria-label="Loja de molduras">
-      <div className="flex items-center gap-2 text-text-subtle">
-        <ShoppingBag className="h-4 w-4 text-primary" />
-
-        <span className="text-xs font-medium uppercase tracking-widest">
-          Loja · molduras de avatar
-        </span>
-      </div>
-
-      {[
-        { label: "Simples", animated: false },
-        { label: "Animadas", animated: true },
-      ].map((category) => (
-        <div key={category.label} className="space-y-2">
-          <h3 className="text-sm font-semibold text-text-strong">{category.label}</h3>
-
-          <ul className="grid gap-2 sm:grid-cols-2">
-            {itens
-              .filter((item) => ANIMATED_FRAMES.includes(item.id) === category.animated)
-              .map((item) => (
-                <li key={item.id} className="min-w-0 rounded-xl border border-border-soft p-3">
-                  <div className="flex items-center gap-3">
-                    <UserAvatar
-                      frame={item.id}
-                      alt={item.name}
-                      fallback="✦"
-                      className="h-10 w-10"
-                    />
-
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold">{item.name}</span>
-
-                      <span className="block truncate text-xs text-text-subtle">
-                        {item.description}
-                      </span>
-                    </span>
-
-                    <span className="shrink-0 text-sm font-semibold text-primary-text">
-                      {formatFaisca(item.priceMf)}
-                    </span>
-                  </div>
-
-                  <div className="mt-2 flex justify-end gap-2">
-                    {item.equipped ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="rounded-full"
-                        disabled={equip.isPending}
-                        onClick={() => equip.mutate("none")}
-                      >
-                        Desequipar
-                      </Button>
-                    ) : item.owned ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="rounded-full"
-                        disabled={equip.isPending}
-                        onClick={() => equip.mutate(item.id)}
-                      >
-                        Equipar
-                      </Button>
-                    ) : (
-                      <Button
-                        size="sm"
-                        className="rounded-full"
-                        disabled={buy.isPending}
-                        onClick={() => buy.mutate(item.id)}
-                      >
-                        Comprar
-                      </Button>
-                    )}
-                  </div>
-                </li>
-              ))}
-          </ul>
-        </div>
-      ))}
-
-      <p className="text-xs text-text-subtle">A moldura equipada acompanha seu avatar.</p>
-    </section>
   );
 }
