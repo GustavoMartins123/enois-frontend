@@ -150,6 +150,8 @@ export function usePostReaction(postId: string, post: PostView): UsePostReaction
       }
       toast(messageFor(error), "error");
     } finally {
+      // Revalidação única, DEPOIS da resposta do servidor — inclusive no sucesso: o resumo e a
+      // lista passam a refletir o que o servidor gravou, e o otimismo não fica valendo sozinho.
       inFlight.delete(postId);
       setIsPending(false);
       setReactionPending(postId, false);
