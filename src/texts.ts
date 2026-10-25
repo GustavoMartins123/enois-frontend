@@ -3189,7 +3189,10 @@ export const texts = {
       "Restrições ativas na sua conta e o andamento dos seus recursos. A decisão final é sempre de uma pessoa do time.",
     empty: "Nenhuma penalidade na sua conta.",
     emptyHint: "Isto não é um histórico de elogios — é só o que de fato restringiu a conta.",
-    type: { RESTRICTION: "Restrição", BAN: "Banimento" } as Record<string, string>,
+    type: { RESTRICTION: "Restrição", SUSPENDED: "Suspensão", BAN: "Banimento" } as Record<
+      string,
+      string
+    >,
     statusLabel: {
       ACTIVE: "Ativa",
       REMOVED: "Removida",
@@ -3211,6 +3214,8 @@ export const texts = {
     restrictedNotice:
       "Sua conta está restrita: você não pode publicar nem comentar enquanto a restrição estiver ativa.",
     bannedNotice: "Sua conta está banida após revisão do recurso. Se precisar, fale com o suporte.",
+    suspendedNotice:
+      "Sua conta está suspensa: você não entra nem publica até recorrer ou o prazo terminar.",
     moderationTitle: "Moderação · recursos",
     moderationDescription:
       "Fila de recursos de penalidade automática. Aprovar remove a restrição; negar converte em banimento (sessões revogadas).",
