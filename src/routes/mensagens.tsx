@@ -237,7 +237,7 @@ function Mensagens() {
           </div>
 
           {/* `flex-wrap`: com cinco abas o rótulo maior ("Arquivadas") estoura a coluna no celular. */}
-          <div className="flex flex-wrap gap-1 border-b border-border px-3 pb-2">
+          <div className="flex flex-wrap gap-1 border-b border-border px-3 pb-2 pt-2">
             {(["all", "jobs", "services", "people", "archived"] as const).map((tab) => (
               <button
                 key={tab}

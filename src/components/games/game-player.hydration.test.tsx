@@ -4,7 +4,7 @@ import { act } from "react";
 import type { GamePlayerProps } from "@/types/components/games/game-player-props";
 import { renderToString } from "react-dom/server";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { builtinEnvironments } from "vitest/environments";
+import { builtinEnvironments } from "vitest/runtime";
 
 import { GamePlayer } from "./game-player";
 

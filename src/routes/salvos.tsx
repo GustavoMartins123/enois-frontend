@@ -4,7 +4,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { texts } from "@/texts";
 import { ArrowLeft, Bookmark } from "lucide-react";
 
-import { feedApi } from "@/lib/api";
+import { savedPostsQueryOptions } from "@/lib/feed/saved-posts";
 import { requireAuth } from "@/lib/require-auth";
 
 import { EmptyState } from "@/components/ui/empty-state";
@@ -20,10 +20,7 @@ export const Route = createFileRoute("/salvos")({
 });
 
 function SavedPosts() {
-  const { data: savedData } = useQuery({
-    queryKey: ["saved-posts"],
-    queryFn: () => feedApi.listSaved(),
-  });
+  const { data: savedData } = useQuery(savedPostsQueryOptions());
 
   const savedPosts = savedData?.items ?? [];
 
