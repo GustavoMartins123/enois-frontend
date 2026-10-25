@@ -14,9 +14,12 @@ import {
 
 import { texts } from "@/texts";
 import type { WithRequiredChildren } from "@/types/components/with-required-children";
+import type { PushNavigateMessage } from "@/types/push/push-navigate-message";
 import type { ErrorComponentProps } from "@/types/routes/root/error-component-props";
 import type { RootRouteContext } from "@/types/routes/root/root-route-context";
+import { navigateToHref } from "@/utils/navigation";
 
+import { hrefDoPush } from "@/lib/push-navigation";
 import { registerServiceWorker } from "@/lib/pwa";
 import { hasSession, isProtectedPath } from "@/lib/require-auth";
 import { useThemeSync } from "@/lib/theme/use-theme-sync";
@@ -211,6 +214,21 @@ function RootInsideProvider() {
   useEffect(() => {
     registerServiceWorker();
   }, []);
+
+  useEffect(() => {
+    // Clique na notificacao PUSH: o service worker nao conhece as rotas do app (a tabela esta em
+    // src/utils/navigation.ts), entao ele devolve o href para a aba traduzir. Sem isso, o worker
+    // navegaria direto para o caminho de API que o backend manda ("/api/feed/posts/xxx") e o
+    // clique abriria a API em vez do post.
+    if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return;
+    const onMessage = (event: MessageEvent) => {
+      const href = hrefDoPush(event.data as PushNavigateMessage | null);
+      if (!href) return;
+      navigateToHref(href, (opts) => void router.navigate(opts));
+    };
+    navigator.serviceWorker.addEventListener("message", onMessage);
+    return () => navigator.serviceWorker.removeEventListener("message", onMessage);
+  }, [router]);
 
   useEffect(() => {
     // Fallback de autenticacao: o `beforeLoad` das rotas roda no SSR (sem acesso ao
