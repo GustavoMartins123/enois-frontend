@@ -220,7 +220,7 @@ function BlogPostPage() {
               lendo), não o do post no feed. */}
           {feedPost && (
             <div className="px-5 pb-4 sm:px-8 sm:pb-5">
-              <ReactionsSummary postId={post.id} />
+              <ReactionsSummary post={feedPost} />
               <PostActions
                 post={feedPost}
                 onComments={focusComments}
