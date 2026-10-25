@@ -642,7 +642,11 @@ function CommunityDetail() {
                   <button
                     type="button"
                     onClick={() => setMediaSpoiler((active) => !active)}
-                    title={mediaSpoiler ? texts.feed.composer.mediaSpoilerActive : texts.feed.composer.mediaSpoiler}
+                    title={
+                      mediaSpoiler
+                        ? texts.feed.composer.mediaSpoilerActive
+                        : texts.feed.composer.mediaSpoiler
+                    }
                     className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-normal transition ${
                       mediaSpoiler
                         ? "bg-primary text-primary-foreground"
@@ -650,7 +654,9 @@ function CommunityDetail() {
                     }`}
                   >
                     <EyeOff className="h-3.5 w-3.5" />
-                    {mediaSpoiler ? texts.feed.composer.mediaSpoilerActive : texts.feed.composer.mediaSpoiler}
+                    {mediaSpoiler
+                      ? texts.feed.composer.mediaSpoilerActive
+                      : texts.feed.composer.mediaSpoiler}
                   </button>
                 )}
 

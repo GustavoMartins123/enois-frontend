@@ -2995,6 +2995,8 @@ export const texts = {
     originsDescription:
       "Toda requisição ao backend precisa de uma origem cadastrada. O navegador manda Origin sozinho; chamadas de servidor (SSR, curl, integrações) precisam mandar X-Client-Origin: https://meuapp.com. A origem do próprio Énóis é liberada automaticamente; cadastre a do seu app abaixo. Rotas de administração e moderação aceitam apenas a origem do frontend.",
     originsLogin: "Entre na sua conta para cadastrar a origem do seu app.",
+    /** Aviso na origem cadastrada que a API bloqueou (a coluna fica com o motivo). */
+    originBlocked: "Bloqueada por atividade suspeita",
     originPlaceholder: "https://meuapp.com",
     originAdd: "Cadastrar origem",
     originEmpty: "Nenhuma origem cadastrada ainda.",
@@ -3003,8 +3005,7 @@ export const texts = {
     originRemoved: "Origem removida.",
     originError: "Não foi possível cadastrar a origem.",
     originValidHint:
-      "Use só o domínio com https (http é aceito apenas em localhost). Sem origem cadastrada, a requisição recebe 403 ORIGIN_REQUIRED.",
-    originBlocked: "Bloqueada por atividade suspeita",
+      "Use só o domínio com https (http é aceito apenas em localhost). Sem origem cadastrada, a requisição recebe 403 ORIGIN_NOT_ALLOWED (e ORIGIN_REQUIRED quando a chamada não manda origem nenhuma).",
     sandboxTitle: "API pública = sandbox. Produção só com pedido aprovado",
     sandboxBody:
       "Os exemplos desta página apontam para o ambiente de testes (sandbox). Quem precisa falar com a API de produção abre um pedido no suporte com os dados abaixo — a gente confere e libera o acesso.",

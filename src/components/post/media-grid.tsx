@@ -2,13 +2,13 @@ import { useState } from "react";
 
 import { useQueries } from "@tanstack/react-query";
 
+import { texts } from "@/texts";
 import type { PostView } from "@/types/application/feed/post-view";
 
 import { mediaApi } from "@/lib/api";
 import { resolveCdnUrl, withImageKitOriginal } from "@/lib/api/media";
 import { autoplayVideoRef } from "@/lib/feed/video-autoplay";
 
-import { texts } from "@/texts";
 import { LiteVideo } from "./lite-video";
 import { SpoilerMedia } from "./spoiler-media";
 
