@@ -12,7 +12,7 @@
  * cliente recarrega sozinho quando o novo SW assume (ver src/lib/pwa.ts).
  */
 
-const VERSION = "enois-v7";
+const VERSION = "enois-v8";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGES_CACHE = `${VERSION}-pages`;
 
@@ -85,17 +85,28 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const url = event.notification.data?.url || "/notificacoes";
 
+  // O href que o backend manda na notificacao e um caminho de API ("/api/feed/posts/xxx"), e a
+  // rota do APP esta na tabela do front (src/utils/navigation.ts), que o service worker nao
+  // conhece. Navegar direto para o href abriria a API em vez do post. Entao o worker pergunta a
+  // aba: quem tem a tabela de rotas e traduz.
+  const ehCaminhoDeApi = url.startsWith("/api/");
+
   event.waitUntil(
     self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
       // Se o app ja esta aberto, so foca e navega (evita abrir outra aba).
       for (const client of clients) {
         if ("focus" in client) {
           client.focus();
-          if ("navigate" in client) client.navigate(url).catch(() => {});
+          if (ehCaminhoDeApi && "postMessage" in client) {
+            client.postMessage({ type: "enois:navigate", href: url });
+          } else if ("navigate" in client) {
+            client.navigate(url).catch(() => {});
+          }
           return undefined;
         }
       }
-      return self.clients.openWindow(url);
+      // Sem aba aberta: o caminho de API nao abre nada de util — abre as notificacoes do app.
+      return self.clients.openWindow(ehCaminhoDeApi ? "/notificacoes" : url);
     }),
   );
 });
