@@ -156,7 +156,8 @@ export function usePostReaction(postId: string, post: PostView): UsePostReaction
           state.status === "pending" || now - state.submittedAt < RAPID_CLICK_WINDOW_MS,
       );
     if (hasRecentMutation || currentCard?.reactionPending) return;
-    mutation.mutate({ type, remove: currentCard?.reactionStatus === type });
+    const current = queryClient.getQueryData<PostView>(["post", postId]) ?? post;
+    mutation.mutate({ type, remove: (current.currentUserReaction ?? null) === type });
   };
 
   return { toggle, isPending: mutation.isPending, reactionStatus };

@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 import { useQuery } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
@@ -5,6 +7,7 @@ import { texts } from "@/texts";
 import { mediaApi } from "@/lib/api";
 import { resolveCdnUrl, withImageKitOriginal } from "@/lib/api/media";
 
+import { ImageLightbox } from "./image-lightbox";
 import { LiteVideo } from "./lite-video";
 import { SpoilerMedia } from "./spoiler-media";
 

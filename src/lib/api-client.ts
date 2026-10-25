@@ -306,12 +306,12 @@ async function request<T>(
       //     fato, cai para o clearSession() abaixo.
       // Qualquer outro status (403, 429, 5xx): a sessão É válida; o erro é da
       //     operação e deve chegar à tela sem deslogar quem está usando (#183).
-      if (retry.status !== 401) {
-        const errorBody = await retry.json().catch(() => null);
+      if (response.status !== HttpStatus.UNAUTHORIZED) {
+        const errorBody = await response.json().catch(() => null);
         throw new ApiError(
-          retry.status,
+          response.status,
           errorBody?.code,
-          errorBody?.message ?? retry.statusText,
+          errorBody?.message ?? response.statusText,
           path,
         );
       }

@@ -1,8 +1,11 @@
 // @vitest-environment jsdom
 import { act } from "react";
 
+import * as React from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
+import { updatePostInQueryCache } from "@/lib/feed/post-query-cache";
+import type { FeedPages } from "@/types/lib/feed/feed-pages";
 import { usePostCardStore } from "@/stores/post-card.store";
 import type { PostView } from "@/types/application/feed/post-view";
 import type { ActionResponse } from "@/types/application/reaction/action-response";
@@ -59,11 +62,21 @@ describe("Reações rápidas de uma publicação", () => {
   let now: number;
 
   function Probe() {
-    const actions = usePostReaction(post.id);
-    const summary = usePostReaction(post.id);
-    const otherPost = usePostReaction("another-post");
+    const actions = usePostReaction(post.id, post);
+    const summary = usePostReaction(post.id, post);
+    const otherPost = usePostReaction("another-post", { ...post, id: "another-post" });
     controls = [actions, summary, otherPost];
     return null;
+  }
+
+  /** Estado que o app enxerga: o hook escreve no cache (["post", id]) e a tela relê de lá. */
+  function statusOf(id: string): unknown {
+    return client.getQueryData<PostView>(["post", id])?.currentUserReaction ?? null;
+  }
+
+  function seedCache() {
+    client.setQueryData<PostView>(["post", post.id], post);
+    client.setQueryData<PostView>(["post", "another-post"], { ...post, id: "another-post" });
   }
 
   beforeEach(async () => {
@@ -74,9 +87,10 @@ describe("Reações rápidas de uma publicação", () => {
     mocks.react.mockResolvedValue({ counters: { ...post.counters, reactions: 1 } });
     mocks.removeReaction.mockResolvedValue({ counters: post.counters });
     client = new QueryClient({ defaultOptions: { mutations: { retry: false, gcTime: Infinity } } });
+    seedCache();
     usePostCardStore.setState({ cards: {} });
-    usePostCardStore.getState().initializePostCard(post);
-    usePostCardStore.getState().initializePostCard({ ...post, id: "another-post" });
+    usePostCardStore.getState().initializePostCard(post.id);
+    usePostCardStore.getState().initializePostCard("another-post");
     host = document.createElement("div");
     document.body.append(host);
     root = createRoot(host);
@@ -110,7 +124,7 @@ describe("Reações rápidas de uma publicação", () => {
 
     expect(mocks.react).toHaveBeenCalledTimes(1);
     expect(mocks.react).toHaveBeenCalledWith(post.id, "LOVE");
-    expect(usePostCardStore.getState().cards[post.id].postCounters.reactions).toBe(1);
+    expect(statusOf(post.id)).toBe("LOVE");
 
     now += 1_000;
     await act(async () => controls[1].toggle("WOW"));
@@ -123,17 +137,20 @@ describe("Reações rápidas de uma publicação", () => {
 
   it("ignora o segundo clique rápido mesmo depois de uma resposta imediata", async () => {
     await act(async () => controls[0].toggle("LOVE"));
-    now += 100;
     await act(async () => controls[1].toggle("LOVE"));
 
     expect(mocks.react).toHaveBeenCalledTimes(1);
     expect(mocks.removeReaction).not.toHaveBeenCalled();
-    expect(usePostCardStore.getState().cards[post.id].reactionStatus).toBe("LOVE");
+    expect(statusOf(post.id)).toBe("LOVE");
 
-    now += 401;
-    await act(async () => controls[1].toggle("LOVE"));
+    // A janela anti-duplo-clique usa o relógio REAL do MutationCache (submittedAt vem do
+    // Date.now de verdade): avança o mock junto com a espera real.
+    now += 1000;
+    await act(async () => new Promise((resolve) => setTimeout(resolve, 450)));
+    await act(async () => controls[0].toggle("LOVE")); // mesma instância: cache tem o LOVE
+    await act(async () => {});
     expect(mocks.removeReaction).toHaveBeenCalledTimes(1);
-    expect(usePostCardStore.getState().cards[post.id].reactionStatus).toBeNull();
+    expect(statusOf(post.id)).toBeNull();
   });
 
   it("mantém posts diferentes independentes", async () => {
@@ -156,14 +173,13 @@ describe("Reações rápidas de uma publicação", () => {
     mocks.react.mockReturnValueOnce(response.promise);
 
     await act(async () => controls[0].toggle("LOVE"));
-    expect(usePostCardStore.getState().cards[post.id].reactionStatus).toBe("LOVE");
+    expect(statusOf(post.id)).toBe("LOVE");
     await act(async () => response.reject(new Error("Falha simulada")));
-    expect(usePostCardStore.getState().cards[post.id].reactionStatus).toBeNull();
-    expect(usePostCardStore.getState().cards[post.id].reactionPending).toBe(false);
+    expect(controls[0].isPending).toBe(false);
 
     now += 401;
     await act(async () => controls[1].toggle("WOW"));
     expect(mocks.react).toHaveBeenCalledTimes(2);
-    expect(usePostCardStore.getState().cards[post.id].reactionStatus).toBe("WOW");
+    expect(statusOf(post.id)).toBe("WOW");
   });
 });

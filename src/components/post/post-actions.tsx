@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -47,8 +47,8 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
   const setShowReactions = usePostCardStore((state) => state.setShowReactions);
   const setShowReport = usePostCardStore((state) => state.setShowReport);
 
-  const postCounters = card?.postCounters ?? post.counters;
-  const reactionStatus = card ? card.reactionStatus : (post.currentUserReaction ?? null);
+  const postCounters = post.counters;
+  const reactionStatus: ReactionType | null = post.currentUserReaction ?? null;
   // O reactionSummary (contagem real por tipo) é a verdade; postCounters.reactions pode estar
   // dessincronizado (bug no decrement ou credibilidade que desconta). Soma do summary quando existe.
   const summaryTotal = post.reactionSummary
