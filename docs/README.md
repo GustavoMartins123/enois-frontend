@@ -10,7 +10,7 @@ Plataforma de networking profissional focada em conexões humanas autênticas, m
 - **Tailwind CSS 4** + **shadcn/ui**
 - **Vite 7** (bundler)
 - **Nitro** (deploy SSR)
-- Backend Java/Kotlin em `https://rede.fly.dev`
+- Backend em Java, servido por `https://enois.ia.br/api` (o proxy de dev aponta para ele)
 
 ## Índice da Documentação
 

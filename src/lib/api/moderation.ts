@@ -1,3 +1,4 @@
+import type { AdminAccountView } from "@/types/application/moderation/admin-account-view";
 import type { BulkBanResult } from "@/types/application/moderation/bulk-ban-result";
 import type { BulkDeletePostsResult } from "@/types/application/moderation/bulk-delete-posts-result";
 import type { EmailLogView } from "@/types/application/moderation/email-log-view";
@@ -24,6 +25,11 @@ import { api } from "../api-client";
  */
 export const moderationApi = {
   me: () => api.get<ModeratorMeView>("/moderation/me"),
+
+  admins: () => api.get<AdminAccountView[]>("/admin/admins"),
+  promoteAdmin: (username: string) => api.post<AdminAccountView>("/admin/admins", { username }),
+  revokeAdmin: (username: string) =>
+    api.post<AdminAccountView>(`/admin/admins/${encodeURIComponent(username)}/revoke`, {}),
 
   apply: (data: { motivation: string; experience?: string; availability?: string }) =>
     api.post<ModeratorApplicationView>("/moderation/applications", data),
