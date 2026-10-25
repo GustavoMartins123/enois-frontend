@@ -13,6 +13,7 @@ import { EyeOff, Image, Loader2, Mic, Send, Square, X } from "lucide-react";
 
 import { commentsApi } from "@/lib/api";
 import { getCurrentUser } from "@/lib/current-user";
+import { updatePostInQueryCache } from "@/lib/feed/post-query-cache";
 import { litePageSize } from "@/lib/lite-mode";
 import { useAuth } from "@/lib/use-auth";
 import { useLiteMode } from "@/lib/use-lite-mode";
@@ -47,12 +48,9 @@ export function PostComments({ postId, postAuthorId }: { postId: string; postAut
   const draft = usePostCardStore((state) => state.cards[postId]?.draft ?? "");
   const mentions = usePostCardStore(selectCommentMentions(postId));
   const replyToId = usePostCardStore((state) => state.cards[postId]?.replyToId ?? null);
-  const setComments = usePostCardStore((state) => state.setComments);
-  const addComment = usePostCardStore((state) => state.addComment);
   const setDraft = usePostCardStore((state) => state.setDraft);
   const setCommentMentions = usePostCardStore((state) => state.setCommentMentions);
   const setReplyToId = usePostCardStore((state) => state.setReplyToId);
-  const updateCommentCount = usePostCardStore((state) => state.updateCommentCount);
 
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
@@ -177,7 +175,7 @@ export function PostComments({ postId, postAuthorId }: { postId: string; postAut
     setError(null);
     try {
       const page = await commentsApi.list(postId, null, pageSize);
-      setComments(postId, oldestFirst(page.items));
+      setComments(oldestFirst(page.items));
       setCursor(page.nextCursor);
       setHasMore(Boolean(page.nextCursor));
     } catch {
@@ -185,7 +183,7 @@ export function PostComments({ postId, postAuthorId }: { postId: string; postAut
     } finally {
       setLoading(false);
     }
-  }, [postId, setComments, pageSize]);
+  }, [postId, pageSize]);
 
   useEffect(() => {
     void loadFirstPage();
@@ -196,7 +194,7 @@ export function PostComments({ postId, postAuthorId }: { postId: string; postAut
     setLoadingMore(true);
     try {
       const page = await commentsApi.list(postId, cursor, pageSize);
-      setComments(postId, oldestFirst([...comments, ...page.items]));
+      setComments((current) => oldestFirst([...current, ...page.items]));
       setCursor(page.nextCursor);
       setHasMore(Boolean(page.nextCursor));
     } catch {
@@ -239,8 +237,11 @@ export function PostComments({ postId, postAuthorId }: { postId: string; postAut
         String(formData.get("website") ?? ""),
         mediaSpoiler,
       );
-      addComment(postId, created);
-      updateCommentCount(postId, 1);
+      setComments((current) => [created, ...current]);
+      updatePostInQueryCache(queryClient, postId, (current) => ({
+        ...current,
+        counters: { ...current.counters, comments: current.counters.comments + 1 },
+      }));
       setDraft(postId, "");
       setCommentMentions(postId, []);
       setReplyToId(postId, null);
@@ -255,6 +256,14 @@ export function PostComments({ postId, postAuthorId }: { postId: string; postAut
       setPosting(false);
       setSending(false);
     }
+  };
+
+  const handleCommentDeleted = (commentId: string) => {
+    setComments((current) => current.filter((comment) => comment.id !== commentId));
+    updatePostInQueryCache(queryClient, postId, (current) => ({
+      ...current,
+      counters: { ...current.counters, comments: Math.max(0, current.counters.comments - 1) },
+    }));
   };
 
   const byId = new Map<string, CommentView>(comments.map((comment) => [comment.id, comment]));
@@ -322,6 +331,7 @@ export function PostComments({ postId, postAuthorId }: { postId: string; postAut
                   comment={comment}
                   postAuthorId={postAuthorId}
                   onPinChanged={() => void loadFirstPage()}
+                  onDeleted={handleCommentDeleted}
                 />
 
                 {replies.length > 0 && (
@@ -333,6 +343,7 @@ export function PostComments({ postId, postAuthorId }: { postId: string; postAut
                         replyingTo={byId.get(reply.parentCommentId ?? "")?.authorName}
                         postAuthorId={postAuthorId}
                         onPinChanged={() => void loadFirstPage()}
+                        onDeleted={handleCommentDeleted}
                       />
                     ))}
                   </div>

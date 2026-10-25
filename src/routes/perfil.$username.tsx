@@ -47,6 +47,7 @@ import {
 import { authApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { buildShareTags } from "@/lib/open-graph";
+import { isApprovedSoundCloudEmbed } from "@/lib/soundcloud-embed";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 import { cn } from "@/lib/utils";
@@ -385,17 +386,13 @@ function Profile() {
         <div className="rounded-[1.5rem] border border-border-soft bg-surface-card shadow-[0_28px_80px_-48px_color-mix(in_oklab,var(--primary)_95%,transparent)]">
           <div className="group relative h-[24dvh] min-h-48 overflow-hidden rounded-t-[1.5rem] sm:h-[28dvh] sm:min-h-60">
             {user.bannerHtml ? (
-              // Capa em HTML/CSS: mesmo espaço da foto (mesmas classes), sem moldura própria — quem
-              // recorta é a capa, e o quadro já vem com sandbox sem scripts. `clip` é o delimitador:
-              // a capa é uma FAIXA da altura que o layout diz, e o HTML do autor é cortado nela —
-              // sem ele, um `height: 100vh` na capa realimentava a medida e crescia até tomar a tela.
+              // Só o embed oficial recebe scripts; HTML arbitrário continua no sandbox sem scripts.
               <SandboxedHtmlFrame
                 html={user.bannerHtml}
                 title={texts.profile.bannerHtml.frameTitle}
                 className="h-full w-full rounded-none border-0 shadow-none"
-                // Faixa fixa com ROLAGEM interna (pedido da comunidade): o HTML do autor não é
-                // mais cortado — se passar da altura, rola dentro da capa.
                 autoHeight={false}
+                allowSoundCloudPlayer={isApprovedSoundCloudEmbed(user.bannerHtml)}
               />
             ) : user.banner ? (
               <img src={resolveCdnUrl(user.banner)} alt="" className="h-full w-full object-cover" />
@@ -412,13 +409,13 @@ function Profile() {
           </div>
 
           <div className="relative px-4 pb-5 sm:px-6 sm:pb-6">
-            <div className="-mt-14 flex flex-wrap items-end justify-between gap-3 sm:-mt-16 sm:gap-4">
+            <div className="flex flex-wrap items-end justify-between gap-3 sm:gap-4">
               <div className="group relative">
                 <UserAvatar
                   frame={user.avatarFrame}
                   src={resolveCdnUrl(user.avatar)}
                   alt={user.name}
-                  className={`h-28 w-28 ring-8 shadow-[0_20px_42px_-20px_color-mix(in_oklab,var(--primary)_90%,transparent)] sm:h-32 sm:w-32 ${FRAME_RING[user.avatarFrame ?? ""] ?? "ring-surface-card"}`}
+                  className={`-mt-14 sm:-mt-16 h-28 w-28 ring-8 shadow-[0_20px_42px_-20px_color-mix(in_oklab,var(--primary)_90%,transparent)] sm:h-32 sm:w-32 ${FRAME_RING[user.avatarFrame ?? ""] ?? "ring-surface-card"}`}
                 />
                 <input
                   ref={avatarRef}
@@ -960,7 +957,7 @@ function Profile() {
                         <Link
                           to="/perfil/$username"
                           params={{ username: u.username }}
-                          className="truncate text-sm font-normal text-text-strong hover:underline"
+                          className="block truncate text-sm font-normal text-text-strong hover:underline"
                         >
                           {u.name}
                         </Link>
