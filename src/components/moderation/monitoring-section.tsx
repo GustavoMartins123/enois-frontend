@@ -755,10 +755,11 @@ function EventRow({ event, onCopy }: { event: MonitoringEvent; onCopy: () => voi
           </button>
         </div>
 
-        {event.requestId && (
+        {(event.requestId || event.userId || event.clientIp) && (
           <p className="mt-0.5 truncate font-mono text-[9px] text-text-subtle">
-            req {event.requestId}
-            {event.userId ? ` · ${event.userId}` : ""}
+            {event.requestId ? `req ${event.requestId}` : null}
+            {event.userId ? ` · ${event.userId}` : null}
+            {event.clientIp ? ` · IP ${event.clientIp}` : null}
           </p>
         )}
       </td>
@@ -976,9 +977,19 @@ function ResourcePanel({ resource }: { resource: MonitoringResource }) {
           label={texts.moderator.monitoring.dbPool}
           value={pool ? `${pool.active} / ${pool.max} ativos · ${pool.waiting} esperando` : "—"}
         />
-        <Stat
+        <UsageBar
           label={texts.moderator.monitoring.cgroupCpu}
-          value={resource.cgroupCpuCores > 0 ? `${resource.cgroupCpuCores.toFixed(2)} cores` : "—"}
+          used={resource.cgroupCpuPercent ?? -1}
+          total={100}
+          detail={
+            resource.cgroupCpuPercent >= 0
+              ? resource.cgroupCpuCores > 0
+                ? `${resource.cgroupCpuPercent.toFixed(0)}% de ${resource.cgroupCpuCores.toFixed(2)} cores`
+                : `${resource.cgroupCpuPercent.toFixed(0)}% (sem limite)`
+              : resource.cgroupCpuCores > 0
+                ? `${resource.cgroupCpuCores.toFixed(2)} cores (sem uso atual)`
+                : "—"
+          }
         />
       </div>
     </div>
@@ -1059,6 +1070,8 @@ function eventLine(event: MonitoringEvent): string {
     event.message,
     http ? `(${http})` : "",
     event.requestId ? `req=${event.requestId}` : "",
+    event.clientIp ? `ip=${event.clientIp}` : "",
+    event.userId ? `usuario=${event.userId}` : "",
   ]
     .filter(Boolean)
     .join(" ");
