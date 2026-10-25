@@ -45,6 +45,8 @@ export class ApiError extends Error {
     public code: string | undefined,
     message: string,
     public path?: string,
+    /** Segundos do header Retry-After (só em 429): o chamador decide se espera. */
+    public retryAfter?: number,
   ) {
     super(message);
     this.name = "ApiError";
@@ -334,6 +336,7 @@ async function request<T>(
   // "É necessário entrar para ver isso" — a resposta de 401 ja dizia "Email ou senha invalidos".
   if (!response.ok) {
     const errorBody = await response.json().catch(() => null);
+    const retryAfter = response.headers.get("Retry-After") ?? response.headers.get("retry-after");
     if (
       !errorBody?.code &&
       !errorBody?.message &&
@@ -361,6 +364,7 @@ async function request<T>(
       errorBody?.code,
       errorBody?.message ?? response.statusText,
       path,
+      retryAfter ? Number.parseInt(retryAfter, 10) || undefined : undefined,
     );
   }
 
