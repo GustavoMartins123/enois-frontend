@@ -4,6 +4,7 @@ import { texts } from "@/texts";
 import { Gavel } from "lucide-react";
 
 import { sanctionsApi } from "@/lib/api";
+import { dataHora } from "@/lib/date/format";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -57,9 +58,7 @@ export function AppealsSection() {
             >
               <p className="text-sm">{item.message}</p>
 
-              <p className="text-xs text-text-subtle">
-                {new Date(item.createdAt).toLocaleString("pt-BR")}
-              </p>
+              <p className="text-xs text-text-subtle">{dataHora(item.createdAt)}</p>
 
               <div className="flex flex-wrap gap-2 pt-1">
                 <Button

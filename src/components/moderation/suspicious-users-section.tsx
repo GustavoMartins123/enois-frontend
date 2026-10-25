@@ -6,6 +6,7 @@ import { texts } from "@/texts";
 import { Check, ShieldAlert, ShieldCheck } from "lucide-react";
 
 import { moderationApi } from "@/lib/api";
+import { dataCurta } from "@/lib/date/format";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
@@ -208,9 +209,7 @@ export function SuspiciousUsersSection() {
                       </span>
 
                       <span className="block text-xs text-text-subtle">
-                        {texts.moderator.suspicious.createdAt(
-                          new Date(item.createdAt).toLocaleDateString("pt-BR"),
-                        )}
+                        {texts.moderator.suspicious.createdAt(dataCurta(item.createdAt))}
                         {" · "}
                         {texts.moderator.suspicious.counts(
                           item.posts,

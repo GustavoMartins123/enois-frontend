@@ -5,19 +5,20 @@ import type { Experience } from "@/types/application/profile/experience";
 import { Briefcase, MapPin } from "lucide-react";
 
 import { profileApi } from "@/lib/api";
-
-const MONTH_YEAR = new Intl.DateTimeFormat("pt-BR", { month: "short", year: "numeric" });
+import { mesAno, partesDaData } from "@/lib/date/format";
 
 /** "jan. de 2023" → "jan. 2023" (o LinkedIn mostra assim, sem o "de"). */
-const monthYear = (iso: string) =>
-  MONTH_YEAR.format(new Date(`${iso}T12:00:00`)).replace(" de ", " ");
+const monthYear = (iso: string) => mesAno(iso).replace(" de ", " ");
 
 /** Meses inclusivos entre início e fim (mês de entrada conta), como no LinkedIn. */
 function monthsBetween(start: string, end: string | null): number {
-  const from = new Date(`${start}T12:00:00`);
-  const to = end ? new Date(`${end}T12:00:00`) : new Date();
-  const months =
-    (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth()) + 1;
+  // Ano e mês lidos no fuso do app: `getMonth()` usa o fuso do runtime e o servidor (UTC) e o
+  // navegador contariam meses diferentes na virada do mês — o HTML do servidor pararia de bater
+  // com o do cliente.
+  const from = partesDaData(start);
+  const to = partesDaData(end ?? new Date());
+  if (!from || !to) return 1;
+  const months = (to.ano - from.ano) * 12 + (to.mes - from.mes) + 1;
   return Math.max(1, months);
 }
 

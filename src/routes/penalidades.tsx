@@ -7,6 +7,7 @@ import { texts } from "@/texts";
 import { ArrowLeft, ShieldAlert } from "lucide-react";
 
 import { sanctionsApi } from "@/lib/api";
+import { formatarData } from "@/lib/date/format";
 import { requireAuth } from "@/lib/require-auth";
 
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,7 @@ export const Route = createFileRoute("/penalidades")({
 });
 
 function formatDate(value: string) {
-  return new Date(value).toLocaleDateString("pt-BR", {
+  return formatarData(value, {
     day: "2-digit",
     month: "short",
     year: "numeric",

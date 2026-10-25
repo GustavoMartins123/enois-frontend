@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 
 import { monitoringApi } from "@/lib/api";
+import { hora, valorDeDataLocal } from "@/lib/date/format";
 import { formatFaisca } from "@/lib/faisca";
 import { cn } from "@/lib/utils";
 
@@ -442,9 +443,7 @@ export function MonitoringSection() {
 
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-text-subtle">
-              {texts.moderator.monitoring.updatedAt(
-                new Date(data.generatedAt).toLocaleTimeString("pt-BR", { hour12: false }),
-              )}
+              {texts.moderator.monitoring.updatedAt(hora(data.generatedAt))}
             </span>
 
             {rows.length > 0 && (
@@ -713,7 +712,7 @@ function EventRow({ event, onCopy }: { event: MonitoringEvent; onCopy: () => voi
   return (
     <tr className="border-t border-border-soft align-top">
       <td className="whitespace-nowrap px-2 py-1.5 font-mono text-[10px] text-text-subtle">
-        {new Date(event.createdAt).toLocaleTimeString("pt-BR", { hour12: false })}
+        {hora(event.createdAt)}
       </td>
 
       <td className="px-2 py-1.5">
@@ -1075,10 +1074,9 @@ function formatUptime(seconds: number) {
   return `${minutes}m`;
 }
 
-/** Converte um Date para o valor cru de um campo datetime-local (hora local). */
+/** Converte um Date para o valor cru de um campo datetime-local (hora do app). */
 function localInput(date: Date): string {
-  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
-  return local.toISOString().slice(0, 16);
+  return valorDeDataLocal(date);
 }
 
 /** Uma linha legível do evento, para colar em relatório ou ticket. */

@@ -6,6 +6,7 @@ import { texts } from "@/texts";
 import { Gamepad2 } from "lucide-react";
 
 import { moderationApi } from "@/lib/api";
+import { dataCurta } from "@/lib/date/format";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -77,9 +78,7 @@ export function GamesReviewSection() {
 
                     <p className="text-xs text-text-subtle">
                       @{g.username ?? g.userId}
-                      {g.submittedAt
-                        ? ` · ${new Date(g.submittedAt).toLocaleDateString("pt-BR")}`
-                        : ""}
+                      {g.submittedAt ? ` · ${dataCurta(g.submittedAt)}` : ""}
                       {g.tags ? ` · ${g.tags}` : ""}
                     </p>
                   </div>

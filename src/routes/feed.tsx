@@ -42,6 +42,7 @@ import {
   subscribeActiveIdentity,
 } from "@/lib/active-identity";
 import { authApi, corporateApi, eventsApi, feedApi, networkApi, profileApi } from "@/lib/api";
+import { dataHora, valorDeDataLocal } from "@/lib/date/format";
 import { clearFeedScroll, readFeedScroll } from "@/lib/feed-scroll-restoration";
 import { litePageSize } from "@/lib/lite-mode";
 import { requireAuth } from "@/lib/require-auth";
@@ -285,10 +286,7 @@ function Home() {
   const schedulePost = useMutation({
     mutationFn: (data: Parameters<typeof feedApi.schedule>[0]) => feedApi.schedule(data),
     onSuccess: (agendado) => {
-      toast(
-        texts.feed.composer.scheduleDone(new Date(agendado.scheduledAt).toLocaleString("pt-BR")),
-        "success",
-      );
+      toast(texts.feed.composer.scheduleDone(dataHora(agendado.scheduledAt)), "success");
       void queryClient.invalidateQueries({ queryKey: ["feed", "scheduled"] });
     },
     onError: (error) => setPublishError(error.message),
@@ -352,9 +350,7 @@ function Home() {
   };
 
   // O mínimo do input datetime-local é AGORA+1min (o backend recusa mais perto que isso).
-  const minScheduleAt = new Date(Date.now() + 60_000 - new Date().getTimezoneOffset() * 60_000)
-    .toISOString()
-    .slice(0, 16);
+  const minScheduleAt = valorDeDataLocal(new Date(Date.now() + 60_000));
 
   const publishPost = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -961,9 +957,7 @@ function Home() {
                       </p>
 
                       <p className="text-xs text-text-subtle">
-                        {texts.feed.composer.scheduledFor(
-                          new Date(agendado.scheduledAt).toLocaleString("pt-BR"),
-                        )}
+                        {texts.feed.composer.scheduledFor(dataHora(agendado.scheduledAt))}
                         {agendado.lastError ? ` · ${agendado.lastError}` : ""}
                       </p>
                     </div>
