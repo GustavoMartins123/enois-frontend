@@ -4,7 +4,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { ArrowLeft, Send, ShieldAlert, ShoppingBag, Sparkles, TrendingUp, Zap } from "lucide-react";
+import {
+  ArrowLeft,
+  Send,
+  ShieldAlert,
+  ShoppingBag,
+  Sparkles,
+  TrendingUp,
+  User,
+  Zap,
+} from "lucide-react";
 
 import { walletApi } from "@/lib/api";
 import { dataHora } from "@/lib/date/format";
@@ -127,16 +136,22 @@ function Carteira() {
           <p className="text-sm text-text-subtle">{texts.frameShop.subtitle}</p>
         </div>
 
-        <Tabs defaultValue="loja">
+        <Tabs defaultValue="carteira">
           <TabsList className="wallet-shop-tabs">
-            <TabsTrigger value="carteira">{texts.frameShop.walletTab}</TabsTrigger>
+            <TabsTrigger value="carteira">
+              <Zap className="h-4 w-4" aria-hidden="true" />
+              {texts.frameShop.walletTab}
+            </TabsTrigger>
 
             <TabsTrigger value="loja">
-              <ShoppingBag className="h-4 w-4" />
+              <ShoppingBag className="h-4 w-4" aria-hidden="true" />
               {texts.frameShop.storeTab}
             </TabsTrigger>
 
-            <TabsTrigger value="minhas">{texts.frameShop.ownedTab}</TabsTrigger>
+            <TabsTrigger value="minhas">
+              <User className="h-4 w-4" aria-hidden="true" />
+              {texts.frameShop.ownedTab}
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="carteira" className="mx-auto max-w-2xl space-y-6 pt-5">

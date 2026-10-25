@@ -165,13 +165,41 @@
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
+.frame-shop-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.frame-shop-order {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-subtle);
+  min-width: 0;
+}
+.frame-shop-order select {
+  max-width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border-soft);
+  border-radius: 9px;
+  background: var(--surface-card);
+  color: var(--text-strong);
+}
+.frame-shop-order select:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
 .frame-shop-filters {
   display: flex;
   gap: 6px;
   align-items: center;
   overflow: auto;
   scrollbar-width: none;
-  margin-bottom: 18px;
   padding: 2px;
 }
 .frame-shop-filters button {

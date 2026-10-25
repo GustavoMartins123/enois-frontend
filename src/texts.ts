@@ -3832,6 +3832,9 @@ export const texts = {
     catalogDescription: "Só aparência. Toda a sua personalidade.",
     search: "Buscar moldura",
     filterLabel: "Filtrar molduras",
+    orderLabel: "Ordenar por",
+    oldestFirst: "Mais antigas primeiro",
+    newestFirst: "Mais novas primeiro",
     filters: {
       all: "Todas",
       simple: "Simples",

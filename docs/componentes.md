@@ -1,5 +1,26 @@
 # Componentes
 
+## `FrameShop` (`src/components/wallet/frame-shop.tsx`)
+
+Loja de molduras de avatar na rota `/carteira`.
+
+**Props:** `{ onlyOwned?: boolean }`
+
+**Funcionalidades:**
+
+- Abas Carteira, Loja e Minhas molduras com ícones; a rota abre na aba Carteira
+- Busca por nome e descrição, filtros Todas, Simples e Animadas
+- Ordenação por mais antigas (padrão) ou mais novas, preservada ao buscar e filtrar
+- Ordenação solicitada à API por `GET /loja?order=oldest|newest`, baseada no campo
+  `releaseOrder` do catálogo; resposta validada antes da exibição
+- Paginação de 12 itens com botão "Mostrar mais molduras"
+- Prévia da moldura no avatar e no perfil
+- Compra, equipar e desequipar pelos contratos existentes de `POST /loja/{itemId}/comprar` e
+  `POST /loja/{itemId}/equipar`
+
+**Estado:** `useQuery` para catálogo; `useMutation` para comprar e equipar; estado local para
+busca, filtro, ordenação, quantidade visível e prévia selecionada
+
 ## `AppShell` (`src/components/app-shell.tsx`)
 
 Layout principal da aplicação. Envolve todo o conteúdo das páginas autenticadas.

@@ -4,6 +4,7 @@ export type LojaItem = {
   description: string;
   priceMf: number;
   cssRing: string;
+  releaseOrder: number;
   owned?: boolean;
   equipped?: boolean;
 };

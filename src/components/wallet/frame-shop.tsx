@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { FRAME_SHOP_PAGE_SIZE } from "@/constants/frame-shop";
 import { texts } from "@/texts";
+import type { CatalogOrder } from "@/types/application/loja/catalog-order";
 import type { LojaItem } from "@/types/application/loja/loja-item";
 import type { FrameShopProps } from "@/types/components/wallet/frame-shop-props";
 import { ArrowUpRight, Check, ChevronDown, Heart, Search, Sparkles } from "lucide-react";
@@ -27,10 +28,11 @@ export function FrameShop({ onlyOwned = false }: FrameShopProps) {
   const { toast } = useToast();
   const { data: user } = useCurrentUser();
   const [filter, setFilter] = useState("all");
+  const [order, setOrder] = useState<CatalogOrder>("oldest");
   const [search, setSearch] = useState("");
   const [visible, setVisible] = useState(FRAME_SHOP_PAGE_SIZE);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const catalog = useQuery({ queryKey: ["loja"], queryFn: () => lojaApi.catalog() });
+  const catalog = useQuery({ queryKey: ["loja", order], queryFn: () => lojaApi.catalog(order) });
   const buy = useMutation({
     mutationFn: (id: string) => lojaApi.buy(id),
     onSuccess: () => {
@@ -66,8 +68,6 @@ export function FrameShop({ onlyOwned = false }: FrameShopProps) {
   const items = catalog.data;
   const selected = items.find((item) => item.id === selectedId);
   const featured = items.slice(0, 3);
-  // A API entrega o catálogo da moldura mais antiga à mais nova. Filtrar e paginar
-  // preserva essa ordem, inclusive ao voltar para "Todas" depois de uma busca.
   const visibleItems = items.filter((item) => {
     if (onlyOwned && !item.owned) return false;
     if (
@@ -168,12 +168,30 @@ export function FrameShop({ onlyOwned = false }: FrameShopProps) {
           </label>
         </div>
 
-        <div className="frame-shop-filters" aria-label={texts.frameShop.filterLabel}>
-          {Object.entries(texts.frameShop.filters).map(([key, label]) => (
-            <button key={key} aria-pressed={filter === key} onClick={() => changeFilter(key)}>
-              {label}
-            </button>
-          ))}
+        <div className="frame-shop-controls">
+          <div className="frame-shop-filters" aria-label={texts.frameShop.filterLabel}>
+            {Object.entries(texts.frameShop.filters).map(([key, label]) => (
+              <button key={key} aria-pressed={filter === key} onClick={() => changeFilter(key)}>
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <label className="frame-shop-order">
+            <span>{texts.frameShop.orderLabel}</span>
+
+            <select
+              value={order}
+              onChange={(event) => {
+                setOrder(event.target.value as CatalogOrder);
+                setVisible(FRAME_SHOP_PAGE_SIZE);
+              }}
+            >
+              <option value="oldest">{texts.frameShop.oldestFirst}</option>
+
+              <option value="newest">{texts.frameShop.newestFirst}</option>
+            </select>
+          </label>
         </div>
 
         {visibleItems.length === 0 ? (
