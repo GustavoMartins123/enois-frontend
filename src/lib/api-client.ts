@@ -152,7 +152,15 @@ async function doRefresh(): Promise<RefreshOutcome> {
     // So a recusa EXPLICITA (401/403) significa sessao encerrada. Um 429 do limitador ou um 502
     // durante o deploy sao falhas do servidor, nao prova de que a sessao morreu — deslogar aqui
     // era o que fazia a pessoa cair no login "sem motivo".
-    if (response.status === HttpStatus.UNAUTHORIZED || response.status === HttpStatus.FORBIDDEN) {
+    if (response.status === 401 || response.status === 403) {
+      // O backend GIRA o refresh token a cada renovacao (o usado e revogado). Como o armazenamento
+      // e compartilhado entre as abas do navegador, outra aba pode ter renovado enquanto esta
+      // chamada corria: o token guardado ja e o NOVO e a sessao nova esta viva — o 401 aqui e so
+      // o token velho. Encerrar a sessao apagava a sessao da outra aba e as DUAS caiam no login.
+      const guardado = refreshTokenValue();
+      if (guardado !== null && guardado !== token) {
+        return "renewed";
+      }
       clearSession();
       return "refused";
     }
