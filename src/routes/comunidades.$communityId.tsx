@@ -3,7 +3,7 @@ import { type ChangeEvent, type FormEvent, useCallback, useEffect, useRef, useSt
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 
-import { TOPICS, TOPIC_LABELS } from "@/constants/community-topics";
+import { TOPICS, TOPIC_LABELS, topicLabel } from "@/constants/community-topics";
 import { postContentLimit } from "@/constants/post-content-limits";
 import { PAGE_HTML_MAX_LENGTH } from "@/constants/post-page";
 import { ARTICLE_BODY_MAX_LENGTH, POST_TYPES } from "@/constants/post-types";
@@ -331,9 +331,11 @@ function CommunityDetail() {
                   />
                 )}
                 <div className="min-w-0">
-                  <Badge className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft">
-                    {live.topic}
-                  </Badge>
+                  {live.topic && (
+                    <Badge className="rounded-full bg-primary-soft text-primary hover:bg-primary-soft">
+                      {topicLabel(live.topic)}
+                    </Badge>
+                  )}
 
                   <h1 className="mt-2 break-words text-2xl font-semibold tracking-tight">
                     {live.name}
@@ -642,7 +644,11 @@ function CommunityDetail() {
                   <button
                     type="button"
                     onClick={() => setMediaSpoiler((active) => !active)}
-                    title={mediaSpoiler ? texts.feed.composer.mediaSpoilerActive : texts.feed.composer.mediaSpoiler}
+                    title={
+                      mediaSpoiler
+                        ? texts.feed.composer.mediaSpoilerActive
+                        : texts.feed.composer.mediaSpoiler
+                    }
                     className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-normal transition ${
                       mediaSpoiler
                         ? "bg-primary text-primary-foreground"
@@ -650,7 +656,9 @@ function CommunityDetail() {
                     }`}
                   >
                     <EyeOff className="h-3.5 w-3.5" />
-                    {mediaSpoiler ? texts.feed.composer.mediaSpoilerActive : texts.feed.composer.mediaSpoiler}
+                    {mediaSpoiler
+                      ? texts.feed.composer.mediaSpoilerActive
+                      : texts.feed.composer.mediaSpoiler}
                   </button>
                 )}
 
@@ -814,7 +822,8 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
   const [bannerHtml, setBannerHtml] = useState(community.bannerHtml ?? "");
   // O tópico muda depois de criada: a comunidade cresce e muda de assunto, e antes não havia
   // como corrigir — o valor ficava congelado no que foi escolhido no dia da criação.
-  const [topic, setTopic] = useState<CommunityTopic>(community.topic);
+  // A comunidade pode nao ter assunto (a API manda `null`): o campo fica vazio ate escolher.
+  const [topic, setTopic] = useState<CommunityTopic | null>(community.topic);
 
   const handleCropComplete = useCallback(
     async (blob: Blob) => {
@@ -874,7 +883,7 @@ function EditCommunityForm({ community, onClose }: EditCommunityFormProps) {
         <Label className="text-xs text-muted-foreground">{texts.communities.create.topic}</Label>
 
         <select
-          value={topic}
+          value={topic ?? ""}
           onChange={(e) => setTopic(e.target.value as CommunityTopic)}
           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm border-transparent bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >

@@ -166,7 +166,7 @@ function Servicos() {
               Nenhuma oferta publicada ainda.
             </p>
           ) : (
-            <ul className="grid gap-3 sm:grid-cols-2">
+            <ul className="grid min-w-0 gap-3 sm:grid-cols-2">
               {catalog.data!.ofertas.map((l) => (
                 <OfferCard key={l.id} listing={l} />
               ))}
@@ -223,7 +223,10 @@ function OfferCard({ listing }: { listing: ServiceListing }) {
   });
 
   return (
-    <li id={`oferta-${listing.id}`} className="surface-card scroll-mt-4 p-4">
+    // `min-w-0`: item de grid nasce com `min-width:auto`, e o titulo truncado (nowrap) fazia a
+    // coluna esticar alem da tela — o card saia 1px do container a 390px e 31px a 360px, e a
+    // pagina passava a rolar de lado no celular.
+    <li id={`oferta-${listing.id}`} className="surface-card min-w-0 scroll-mt-4 p-4">
       <div className="flex items-start justify-between gap-2">
         <span className="min-w-0">
           <span className="block truncate font-semibold">{listing.title}</span>

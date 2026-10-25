@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -9,6 +9,7 @@ import type { PostActionsProps } from "@/types/components/post/post-actions-prop
 import { Bookmark, Flag, Heart, MessageSquare, Repeat2, Share2 } from "lucide-react";
 
 import { REACTION_EMOJIS, reactionsApi } from "@/lib/api";
+import { updatePostInQueryCache } from "@/lib/feed/post-query-cache";
 import {
   savedPostsQueryOptions,
   savedStateFromAction,
@@ -43,8 +44,6 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
   const initializePostCard = usePostCardStore((state) => state.initializePostCard);
   const disposePostCard = usePostCardStore((state) => state.disposePostCard);
   const card = usePostCardStore((state) => state.cards[post.id]);
-  const setPostCounters = usePostCardStore((state) => state.setPostCounters);
-  const setReactionStatus = usePostCardStore((state) => state.setReactionStatus);
   const setShowReactions = usePostCardStore((state) => state.setShowReactions);
   const setShowReport = usePostCardStore((state) => state.setShowReport);
 
@@ -62,7 +61,7 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
   const reactionsMounted = useMountedOnce(card?.showReactions ?? false);
   const sealsMounted = useMountedOnce(card?.showSeals ?? false);
   const reportMounted = useMountedOnce(showReport);
-  const { toggle: toggleReaction } = usePostReaction(post.id);
+  const { toggle: toggleReaction } = usePostReaction(post.id, post);
   // Enquanto há reação em andamento, o estado otimista manda — a prop do feed não sobrescreve.
   const reactionPendingRef = useRef(false);
   reactionPendingRef.current = card?.reactionPending ?? false;
@@ -80,14 +79,9 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
   }, [card?.reactionPending, reactionStatus]);
 
   useEffect(() => {
-    initializePostCard(post);
+    initializePostCard(post.id);
     return () => disposePostCard(post.id);
   }, [disposePostCard, initializePostCard, post]);
-
-  useEffect(() => {
-    if (reactionPendingRef.current) return;
-    setReactionStatus(post.id, post.currentUserReaction ?? null);
-  }, [post.currentUserReaction, post.id, setReactionStatus]);
 
   const [saved, setSaved] = useState(false);
 
@@ -112,7 +106,10 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
         : await reactionsApi.save(post.id);
       const nextSaved = savedStateFromAction(result.status);
       if (nextSaved !== null) setSaved(nextSaved);
-      setPostCounters(post.id, result.counters);
+      updatePostInQueryCache(queryClient, post.id, (current) => ({
+        ...current,
+        counters: result.counters,
+      }));
       syncSavedPostsCache(queryClient, post, result);
     } catch {
       // silently fail
@@ -132,7 +129,10 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
     const url = shareUrl ?? `${window.location.origin}/post/${post.id}`;
     try {
       const result = await reactionsApi.share(post.id);
-      setPostCounters(post.id, result.counters);
+      updatePostInQueryCache(queryClient, post.id, (current) => ({
+        ...current,
+        counters: result.counters,
+      }));
       // Share nativo so no celular: no desktop o dialog rejeita sem gesto e parecia
       // "nao fazer nada". PC copia o link (com aviso); mobile usa o sheet do sistema.
       if (/Mobi|Android|iPhone/i.test(navigator.userAgent)) {
