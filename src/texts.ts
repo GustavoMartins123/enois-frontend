@@ -3606,6 +3606,8 @@ export const texts = {
       copyFailed: "Não foi possível copiar.",
       showMore: "mostrar mais",
       showLess: "mostrar menos",
+      showStack: "ver pilha do erro",
+      hideStack: "ocultar pilha",
       loadMore: "Carregar mais eventos",
       fromLabel: "De (data e hora)",
       toLabel: "Até (data e hora)",
