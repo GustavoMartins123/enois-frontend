@@ -1,13 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { PostActionsProps } from "@/types/components/post/post-actions-props";
 import { Bookmark, Flag, Heart, MessageSquare, Repeat2, Share2 } from "lucide-react";
 
-import { REACTION_EMOJIS, feedApi, reactionsApi } from "@/lib/api";
+import { REACTION_EMOJIS, reactionsApi } from "@/lib/api";
+import {
+  savedPostsQueryOptions,
+  savedStateFromAction,
+  syncSavedPostsCache,
+} from "@/lib/feed/saved-posts";
 import { usePostReaction } from "@/lib/reactions/use-post-reaction";
 import { useAuth } from "@/lib/use-auth";
 import { useMountedOnce } from "@/lib/use-mounted-once";
@@ -31,6 +36,7 @@ import { SealsDialog } from "./seals-dialog";
  */
 export function PostActions({ post, onComments, shareUrl, children }: PostActionsProps) {
   const { requireAuth, user } = useAuth();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const initializePostCard = usePostCardStore((state) => state.initializePostCard);
   const disposePostCard = usePostCardStore((state) => state.disposePostCard);
@@ -74,9 +80,7 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
   // Sem sessão não há "salvos" para perguntar — a resposta seria 401 numa página que abre para
   // quem recebeu o link (o post do blog, o post compartilhado).
   const { data: savedData } = useQuery({
-    queryKey: ["saved-posts"],
-    queryFn: () => feedApi.listSaved(),
-    staleTime: 30_000,
+    ...savedPostsQueryOptions(),
     enabled: !!user,
   });
 
@@ -92,8 +96,10 @@ export function PostActions({ post, onComments, shareUrl, children }: PostAction
       const result = saved
         ? await reactionsApi.removeSave(post.id)
         : await reactionsApi.save(post.id);
-      setSaved(!saved);
+      const nextSaved = savedStateFromAction(result.status);
+      if (nextSaved !== null) setSaved(nextSaved);
       setPostCounters(post.id, result.counters);
+      syncSavedPostsCache(queryClient, post, result);
     } catch {
       // silently fail
     }

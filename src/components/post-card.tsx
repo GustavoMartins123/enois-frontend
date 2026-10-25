@@ -17,6 +17,7 @@ import { BookOpen, Clock, FileText, Pin, PinOff, Repeat2, Tag } from "lucide-rea
 import { communitiesApi, feedApi } from "@/lib/api";
 import { sealsApi } from "@/lib/api/seals";
 import { saveFeedScroll } from "@/lib/feed-scroll-restoration";
+import { savedPostsQueryOptions } from "@/lib/feed/saved-posts";
 import { inlineMediaIds } from "@/lib/rich-text/inline-media";
 import { hideExternalPageUrls } from "@/lib/shared-links";
 import { useAuth } from "@/lib/use-auth";
@@ -161,7 +162,7 @@ function PostCardView({
       toast(texts.posts.owner.edited);
       queryClient.invalidateQueries({ queryKey: ["feed"] });
       queryClient.invalidateQueries({ queryKey: ["post", post.id] });
-      queryClient.invalidateQueries({ queryKey: ["saved-posts"] });
+      queryClient.invalidateQueries({ queryKey: savedPostsQueryOptions().queryKey });
     },
     onError: () => toast(texts.posts.owner.error, "error"),
   });
@@ -185,7 +186,7 @@ function PostCardView({
         },
       });
       queryClient.invalidateQueries({ queryKey: ["feed"] });
-      queryClient.invalidateQueries({ queryKey: ["saved-posts"] });
+      queryClient.invalidateQueries({ queryKey: savedPostsQueryOptions().queryKey });
       // Na pagina do post unico, o conteudo some: volta para o feed em vez de ficar num "nao encontrado".
       if (typeof window !== "undefined" && window.location.pathname.startsWith("/post/")) {
         window.location.href = "/feed";
@@ -219,7 +220,7 @@ function PostCardView({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["feed"] });
       queryClient.invalidateQueries({ queryKey: ["post"] });
-      queryClient.invalidateQueries({ queryKey: ["saved-posts"] });
+      queryClient.invalidateQueries({ queryKey: savedPostsQueryOptions().queryKey });
       queryClient.invalidateQueries({ queryKey: ["community"] });
     },
   });
@@ -431,11 +432,7 @@ function PostCardView({
 
           {post.repostOfMediaIds && post.repostOfMediaIds.length > 0 && (
             <div className="mt-2">
-              <MediaGrid
-                mediaIds={post.repostOfMediaIds}
-                compact
-                mediaSpoiler={mediaSpoiler}
-              />
+              <MediaGrid mediaIds={post.repostOfMediaIds} compact mediaSpoiler={mediaSpoiler} />
             </div>
           )}
 
