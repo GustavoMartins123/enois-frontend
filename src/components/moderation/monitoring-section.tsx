@@ -755,10 +755,11 @@ function EventRow({ event, onCopy }: { event: MonitoringEvent; onCopy: () => voi
           </button>
         </div>
 
-        {event.requestId && (
+        {(event.requestId || event.userId || event.clientIp) && (
           <p className="mt-0.5 truncate font-mono text-[9px] text-text-subtle">
-            req {event.requestId}
-            {event.userId ? ` · ${event.userId}` : ""}
+            {event.requestId ? `req ${event.requestId}` : null}
+            {event.userId ? ` · ${event.userId}` : null}
+            {event.clientIp ? ` · IP ${event.clientIp}` : null}
           </p>
         )}
       </td>
@@ -1059,6 +1060,8 @@ function eventLine(event: MonitoringEvent): string {
     event.message,
     http ? `(${http})` : "",
     event.requestId ? `req=${event.requestId}` : "",
+    event.clientIp ? `ip=${event.clientIp}` : "",
+    event.userId ? `usuario=${event.userId}` : "",
   ]
     .filter(Boolean)
     .join(" ");
