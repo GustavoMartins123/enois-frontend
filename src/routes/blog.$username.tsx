@@ -6,6 +6,7 @@ import { ArrowLeft, PenLine, Plus, Rss } from "lucide-react";
 
 import { blogsApi } from "@/lib/api/blogs";
 import { resolveCdnUrl } from "@/lib/api/media";
+import { formatarData } from "@/lib/date/format";
 import { buildShareTags } from "@/lib/open-graph";
 import { plainPreview } from "@/lib/rich-text/preview";
 import { useAuth } from "@/lib/use-auth";
@@ -226,7 +227,7 @@ function BlogPage() {
                   ) : null}
 
                   <p className="mt-1 text-xs font-normal text-text-subtle">
-                    {new Date(post.publishedAt).toLocaleDateString("pt-BR", {
+                    {formatarData(post.publishedAt, {
                       day: "2-digit",
                       month: "long",
                       year: "numeric",

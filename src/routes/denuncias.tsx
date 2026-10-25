@@ -5,6 +5,7 @@ import { texts } from "@/texts";
 import { ArrowLeft, Flag } from "lucide-react";
 
 import { reportsApi } from "@/lib/api";
+import { formatarData } from "@/lib/date/format";
 import { requireAuth } from "@/lib/require-auth";
 
 import { EmptyState } from "@/components/ui/empty-state";
@@ -83,7 +84,7 @@ function MinhasDenuncias() {
                   </span>
 
                   <span className="ml-auto text-xs text-text-subtle">
-                    {new Date(report.createdAt).toLocaleDateString("pt-BR", {
+                    {formatarData(report.createdAt, {
                       day: "2-digit",
                       month: "short",
                       year: "numeric",

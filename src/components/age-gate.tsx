@@ -7,6 +7,7 @@ import type { AgeGateMode } from "@/types/components/age-gate-mode";
 
 import { BIRTH_DATE_REQUIRED_EVENT, PARENTAL_CONSENT_REQUIRED_EVENT } from "@/lib/age-required";
 import { parentalApi, profileApi } from "@/lib/api";
+import { anoAtual } from "@/lib/date/format";
 import { hasSession } from "@/lib/require-auth";
 
 import { Button } from "@/components/ui/button";
@@ -131,7 +132,7 @@ export function AgeGate() {
   };
 
   const today = new Date().toISOString().slice(0, 10);
-  const oldest = `${new Date().getFullYear() - 120}-01-01`;
+  const oldest = `${anoAtual() - 120}-01-01`;
 
   const isParental = mode === "parental";
 

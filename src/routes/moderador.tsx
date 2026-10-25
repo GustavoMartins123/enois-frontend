@@ -34,6 +34,7 @@ import {
 
 import { moderationApi } from "@/lib/api";
 import { reportsAdminApi } from "@/lib/api/reports-admin";
+import { dataHora } from "@/lib/date/format";
 import { requireAuth } from "@/lib/require-auth";
 import { cn } from "@/lib/utils";
 
@@ -553,7 +554,7 @@ function ReportsSection({ admin }: { admin: boolean }) {
                       {texts.moderator.reports.targets[report.targetType] ?? report.targetType}
                     </span>
 
-                    <span>{new Date(report.createdAt).toLocaleString("pt-BR")}</span>
+                    <span>{dataHora(report.createdAt)}</span>
                   </div>
 
                   <div className="grid gap-1 text-sm sm:grid-cols-2">
@@ -931,7 +932,7 @@ function ApplicationCard({
         </span>
         {application.username && <span> (@{application.username})</span>}
         {" · "}
-        {new Date(application.createdAt).toLocaleString("pt-BR")}
+        {dataHora(application.createdAt)}
       </p>
 
       <div>

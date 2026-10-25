@@ -8,6 +8,7 @@ import type { FreelanceView } from "@/types/application/freelance/freelance-view
 import { Banknote, CalendarClock, Handshake, Plus, Search, Sparkles } from "lucide-react";
 
 import { freelancesApi } from "@/lib/api";
+import { dataCurta } from "@/lib/date/format";
 import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { litePageSize } from "@/lib/lite-mode";
 import { requireAuth } from "@/lib/require-auth";
@@ -209,8 +210,7 @@ function FreelanceCard({ item }: { item: FreelanceView }) {
 
         <span className="inline-flex items-center gap-1.5 text-text-subtle">
           <CalendarClock className="h-4 w-4" />
-          {texts.jobs.freelancePage.deadline}:{" "}
-          {new Date(`${item.deadline}T12:00:00`).toLocaleDateString("pt-BR")}
+          {texts.jobs.freelancePage.deadline}: {dataCurta(item.deadline)}
         </span>
       </div>
 

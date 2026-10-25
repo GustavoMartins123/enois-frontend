@@ -12,6 +12,7 @@ import type { GameView } from "@/types/application/games/game-view";
 import { Bookmark, Gamepad2, Newspaper, Pencil, Share2, Sparkles } from "lucide-react";
 
 import { gamesApi, mediaApi } from "@/lib/api";
+import { formatarData } from "@/lib/date/format";
 import { formatFaisca } from "@/lib/faisca";
 import { getSessionKey, useSessionKey } from "@/lib/session-key";
 import { isAuthenticated, useAuth } from "@/lib/use-auth";
@@ -579,7 +580,7 @@ function GameDetailContent({ username, gameSlug }: { username: string; gameSlug:
                   </p>
 
                   <p className="text-xs text-text-subtle">
-                    {new Date(update.createdAt).toLocaleDateString("pt-BR", {
+                    {formatarData(update.createdAt, {
                       day: "2-digit",
                       month: "long",
                       year: "numeric",

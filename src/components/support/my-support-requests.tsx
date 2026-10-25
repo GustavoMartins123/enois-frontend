@@ -4,6 +4,7 @@ import { texts } from "@/texts";
 import type { SupportStatus } from "@/types/application/support/support-status";
 
 import { supportApi } from "@/lib/api";
+import { dataHora } from "@/lib/date/format";
 import { cn } from "@/lib/utils";
 
 const STATUS_STYLE: Record<SupportStatus, string> = {
@@ -57,7 +58,7 @@ export function MySupportRequests() {
                   {texts.support.status[ticket.status] ?? ticket.status}
                 </span>
 
-                <span>{new Date(ticket.createdAt).toLocaleString("pt-BR")}</span>
+                <span>{dataHora(ticket.createdAt)}</span>
               </div>
 
               <p className="break-words text-sm font-semibold text-text-strong">{ticket.subject}</p>

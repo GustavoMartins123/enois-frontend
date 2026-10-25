@@ -7,6 +7,7 @@ import type { EmailLogStatusFilter } from "@/types/application/moderation/email-
 import { Mail } from "lucide-react";
 
 import { moderationApi } from "@/lib/api";
+import { dataHora } from "@/lib/date/format";
 import { cn } from "@/lib/utils";
 
 import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
@@ -84,9 +85,7 @@ export function EmailLogSection() {
                   {texts.moderator.emails.status[email.status] ?? email.status}
                 </span>
 
-                <span className="text-text-subtle">
-                  {new Date(email.createdAt).toLocaleString("pt-BR")}
-                </span>
+                <span className="text-text-subtle">{dataHora(email.createdAt)}</span>
               </div>
 
               <p className="text-sm font-medium text-text-strong">

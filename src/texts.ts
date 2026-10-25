@@ -1,21 +1,4 @@
-/**
- * Data do evento ("2026-10-23") em português curto. Lida em UTC de propósito: a data vem sem fuso
- * e, lida no fuso local, "2026-10-23" virava 22 de outubro para quem está a oeste de Greenwich.
- */
-function formatEventDate(date: string): string {
-  const parsed = new Date(`${date}T00:00:00Z`);
-  if (Number.isNaN(parsed.getTime())) return date;
-  const sameYear = parsed.getUTCFullYear() === new Date().getFullYear();
-  return parsed
-    .toLocaleDateString("pt-BR", {
-      day: "numeric",
-      month: "short",
-      year: sameYear ? undefined : "numeric",
-      timeZone: "UTC",
-    })
-    .replace(/\./g, "")
-    .replace(/ de /g, " ");
-}
+import { dataCurta, dataDeEvento } from "@/lib/date/format";
 
 const common = {
   enter: "Entrar",
@@ -1681,8 +1664,7 @@ export const texts = {
     blockedEmpty: "Você não bloqueou ninguém.",
     blockedHint:
       "O bloqueio vale para sempre e os dois lados deixam de se ver. Desbloqueie aqui quando quiser.",
-    blockedSince: (date: string | null) =>
-      date ? `Bloqueado em ${new Date(date).toLocaleDateString("pt-BR")}` : "Bloqueado",
+    blockedSince: (date: string | null) => (date ? `Bloqueado em ${dataCurta(date)}` : "Bloqueado"),
     openToWork: "Aberto a oportunidades",
     mentorAvailable: "Mentor disponível",
     connections: (count: number) => `${count} ${count === 1 ? "conexão" : "conexões"}`,
@@ -2457,7 +2439,7 @@ export const texts = {
     hostedBy: (host: string) => `por ${host}`,
     watchLive: "Assistir ao vivo",
     /** "23 out · 08:00"; o ano só aparece quando não é o atual ("31 dez 2029 · 23:59"). */
-    dateTime: (date: string, time: string) => `${formatEventDate(date)} · ${time}`,
+    dateTime: (date: string, time: string) => `${dataDeEvento(date)} · ${time}`,
     attend: "Confirmar presença",
     cancelAttend: "Desconfirmar presença",
     youAreGoing: "Você vai",
