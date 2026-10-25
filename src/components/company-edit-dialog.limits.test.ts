@@ -38,4 +38,24 @@ describe("limite dos campos de texto", () => {
     const fonte = readFileSync(join(process.cwd(), "src/routes/eventos.tsx"), "utf8");
     expect(fonte).toContain(`maxLength={${COLUNAS.events.title}}`);
   });
+
+  it("as ofertas e os pedidos de serviço usam o teto das colunas", () => {
+    const fonte = readFileSync(join(process.cwd(), "src/routes/servicos.tsx"), "utf8");
+    for (const teto of [40, 160, 2000, 1000]) {
+      expect(fonte).toContain(`maxLength={${teto}}`);
+    }
+  });
+
+  it("o envio do jogo usa o teto das colunas", () => {
+    const fonte = readFileSync(join(process.cwd(), "src/routes/games.tsx"), "utf8");
+    for (const teto of [200, 4000, 500]) {
+      expect(fonte).toContain(`maxLength={${teto}}`);
+    }
+  });
+
+  it("a contestação da carteira usa o teto das colunas", () => {
+    const fonte = readFileSync(join(process.cwd(), "src/routes/carteira.tsx"), "utf8");
+    // A descricao e um campo livre (o motivo vem de uma lista fixa, sem maxLength).
+    expect(fonte).toContain("maxLength={1000}");
+  });
 });

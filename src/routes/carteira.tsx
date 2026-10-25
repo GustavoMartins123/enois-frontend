@@ -281,6 +281,7 @@ function Carteira() {
                   <Textarea
                     rows={4}
                     value={contestar.descricao}
+                    maxLength={1000}
                     onChange={(e) => setContestar({ ...contestar, descricao: e.target.value })}
                   />
                 </label>
