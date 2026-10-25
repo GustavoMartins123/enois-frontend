@@ -122,6 +122,10 @@ export function usePostReaction(postId: string, post: PostView): UsePostReaction
       } else if (error instanceof ApiError && error.status === 401) {
         // Sessão morta mesmo após o refresh: o api-client já limpou e mandou para o login.
         toast(texts.posts.reactions.sessionError, "error");
+      } else if (error instanceof ApiError && error.status === 0) {
+        // Nenhuma resposta chegou (rede caiu, proxy bloqueou o preflight): dizer "não foi
+        // possível reagir" sem isso faz a pessoa achar que o botão está quebrado.
+        toast(texts.posts.reactions.networkError, "error");
       } else {
         toast(texts.posts.reactions.error, "error");
       }

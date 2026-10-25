@@ -1495,6 +1495,8 @@ export const texts = {
       restrictedError: "Sua conta está restrita e não pode reagir agora. Veja em Penalidades.",
       sessionError: "Sua sessão expirou. Entre de novo para reagir.",
       rateLimitError: "Calma aí — muitas ações em pouco tempo. Aguarde um minuto e tente de novo.",
+      /** Sem resposta do servidor (rede, bloqueio do proxy): não é recusa da reação. */
+      networkError: "Não conseguimos falar com o servidor agora. Tente de novo em instantes.",
       loadError: "Não foi possível carregar as reações.",
       emojis: {
         LIKE: "👍",
