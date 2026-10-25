@@ -116,10 +116,13 @@ export function usePostReaction(postId: string, post: PostView): UsePostReaction
       }
 
       if (error instanceof ApiError && error.status === 403) {
-        toast(texts.posts.reactions.permissionError, "error");
-      } else if (!(error instanceof ApiError && error.status === 401)) {
-        // 401 já é tratado pelo api-client (renova o token ou redireciona para o login): um toast
-        // genérico aqui só duplicaria o feedback (o api-client é o dono do 401).
+        toast(texts.posts.reactions.restrictedError, "error");
+      } else if (error instanceof ApiError && error.status === 429) {
+        toast(texts.posts.reactions.rateLimitError, "error");
+      } else if (error instanceof ApiError && error.status === 401) {
+        // Sessão morta mesmo após o refresh: o api-client já limpou e mandou para o login.
+        toast(texts.posts.reactions.sessionError, "error");
+      } else {
         toast(texts.posts.reactions.error, "error");
       }
     },
@@ -156,8 +159,11 @@ export function usePostReaction(postId: string, post: PostView): UsePostReaction
           state.status === "pending" || now - state.submittedAt < RAPID_CLICK_WINDOW_MS,
       );
     if (hasRecentMutation || currentCard?.reactionPending) return;
+    // Sem sessão não há o que alternar: o requireAuth já mandou para o login.
     const current = queryClient.getQueryData<PostView>(["post", postId]) ?? post;
-    mutation.mutate({ type, remove: (current.currentUserReaction ?? null) === type });
+    const mine = current.currentUserReaction ?? null;
+    // Reagir de novo no MESMO emoji remove; trocar de emoji troca. Sem estado anterior, reage.
+    mutation.mutate({ type, remove: mine !== null && mine === type });
   };
 
   return { toggle, isPending: mutation.isPending, reactionStatus };

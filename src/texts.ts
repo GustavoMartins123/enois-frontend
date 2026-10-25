@@ -1492,6 +1492,9 @@ export const texts = {
       seeWho: (count: number) => `Ver quem reagiu (${count} ${count === 1 ? "reação" : "reações"})`,
       error: "Não foi possível reagir. Tente novamente.",
       permissionError: "Você não tem permissão para reagir neste post.",
+      restrictedError: "Sua conta está restrita e não pode reagir agora. Veja em Penalidades.",
+      sessionError: "Sua sessão expirou. Entre de novo para reagir.",
+      rateLimitError: "Calma aí — muitas ações em pouco tempo. Aguarde um minuto e tente de novo.",
       loadError: "Não foi possível carregar as reações.",
       emojis: {
         LIKE: "👍",
