@@ -302,30 +302,33 @@ async function request<T>(
         );
       }
 
-      // A renovação funcionou (token novo válido no storage), mas a operação
-      // repetida falhou.
-      // 401 no retry → o token novo também foi rejeitado: sessão expirada de
-      //     fato, cai para o clearSession() abaixo.
-      // Qualquer outro status (403, 429, 5xx): a sessão É válida; o erro é da
-      //     operação e deve chegar à tela sem deslogar quem está usando (#183).
-      if (response.status !== HttpStatus.UNAUTHORIZED) {
-        const errorBody = await response.json().catch(() => null);
-        throw new ApiError(
-          response.status,
-          errorBody?.code,
-          errorBody?.message ?? response.statusText,
-          path,
-        );
-      }
+      // 401 no retry → a sessão acabou (cai no encerramento abaixo). Qualquer outro status: a
+      // sessão É válida e o erro é da operação — deixa o bloco comum resolver (lê o corpo, aciona
+      // o aviso específico quando é o caso e devolve o erro com o código). Antes o erro era
+      // lançado aqui, o que pulava o tratamento específico; e a condição era só "não é 401", então
+      // um retry bem-sucedido depois de renovar a sessão virava "erro" com status 200/204.
     }
 
     // Só chega aqui quando:
     //  • refreshSession retornou "refused" (401/403 no /auth/refresh → token morto), ou
     //  • o retry após renovação também veio 401 (token novo rejeitado).
     // Em ambos os casos a sessão acabou de verdade: limpa e redireciona.
-    clearSession();
-    if (typeof window !== "undefined") {
-      window.location.href = "/entrar?tab=login";
+    // Só encerra a sessão quando ela acabou de verdade: o refresh foi recusado OU o token novo
+    // também foi rejeitado. Depois de renovar e a operação dar certo, a sessão está viva — limpar
+    // aqui derrubava quem acabou de entrar (e a operação que deu certo voltava como erro).
+    if (refreshed === "refused" || response.status === HttpStatus.UNAUTHORIZED) {
+      clearSession();
+      if (typeof window !== "undefined") {
+        window.location.href = "/entrar?tab=login";
+      }
+      // Erro que diz o que aconteceu: o genérico da operação chegava sem `code` e virava
+      // "não foi possível" numa tela em que a pessoa só precisava entrar de novo.
+      throw new ApiError(
+        HttpStatus.UNAUTHORIZED,
+        "SESSION_EXPIRED",
+        "Sua sessão expirou. Entre de novo para continuar.",
+        path,
+      );
     }
   }
 

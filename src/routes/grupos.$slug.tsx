@@ -29,6 +29,7 @@ import {
 import { groupsApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { useCurrentUser } from "@/lib/current-user";
+import { dataHora, formatarData } from "@/lib/date/format";
 import { useIsAuthenticated } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
@@ -553,11 +554,7 @@ function GroupPostItem({
   });
 
   const currentReaction = (post.myReaction as ReactionType | null) ?? null;
-  const createdAt = new Date(post.createdAt);
-  const createdTime = createdAt.toLocaleTimeString("pt-BR", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  const createdTime = formatarData(post.createdAt, { hour: "2-digit", minute: "2-digit" });
 
   return (
     <li className="rounded-2xl border border-border-soft bg-surface-card p-4">
@@ -583,7 +580,7 @@ function GroupPostItem({
       </div>
 
       <div className="mt-1 flex flex-wrap items-center gap-x-2 text-xs text-text-subtle">
-        <time dateTime={post.createdAt} title={createdAt.toLocaleString("pt-BR")}>
+        <time dateTime={post.createdAt} title={dataHora(post.createdAt)}>
           {`${formatTime(post.createdAt)} · ${createdTime}`}
         </time>
 
@@ -686,10 +683,10 @@ function GroupPostItem({
 
                     <time
                       dateTime={item.createdAt}
-                      title={new Date(item.createdAt).toLocaleString("pt-BR")}
+                      title={dataHora(item.createdAt)}
                       className="block text-xs text-text-subtle"
                     >
-                      {`${formatTime(item.createdAt)} · ${new Date(item.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`}
+                      {`${formatTime(item.createdAt)} · ${formatarData(item.createdAt, { hour: "2-digit", minute: "2-digit" })}`}
                     </time>
 
                     <RichText
