@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { SIGNUP_OPEN } from "@/constants/account";
+import { OAUTH_PROVIDER_LABELS, availableSocialProviders } from "@/constants/auth-providers";
 import { texts } from "@/texts";
 import type { OAuthProvider } from "@/types/application/auth/oauth-provider";
 import type { TwoFactorChallenge } from "@/types/application/auth/two-factor-challenge";
@@ -20,7 +21,7 @@ import { z } from "zod";
 import { ApiError, authApi } from "@/lib/api";
 import { ogMetas } from "@/lib/seo";
 import { storeSession } from "@/lib/session";
-import { useCaptchaConfig } from "@/lib/use-captcha-config";
+import { useAuthConfig } from "@/lib/use-auth-config";
 
 import { Button } from "@/components/ui/button";
 import { DateTextInput } from "@/components/ui/date-text-input";
@@ -198,10 +199,15 @@ function TabBtn({ active, children, onClick }: TabBtnProps) {
   );
 }
 
-/** Entrada social: os provedores habilitados em ENABLED_OAUTH_PROVIDERS (Google, LinkedIn). */
+/**
+ * Entrada social: os provedores habilitados em ENABLED_OAUTH_PROVIDERS menos os que o ambiente
+ * desligou (o Google pode estar desligado — a API avisa em `/auth/config` e recusa o start).
+ */
 function SocialButtons({ mode }: SocialButtonsProps) {
   const [loading, setLoading] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const config = useAuthConfig();
+  const providers = availableSocialProviders(config.data?.googleLoginEnabled);
 
   const start = async (provider: OAuthProvider) => {
     setLoading(provider);
@@ -212,9 +218,7 @@ function SocialButtons({ mode }: SocialButtonsProps) {
       const start = await authApi.oauthStart(provider, mode);
       window.location.href = start.authorizationUrl;
     } catch (err) {
-      // Sem o aplicativo aprovado no provedor o start falha: explicamos em vez de vazar o erro cru.
-      const detail = err instanceof ApiError && import.meta.env.DEV ? ` (${err.message})` : "";
-      setError(`${texts.auth.social.pendingApproval}${detail}`);
+      setError(mensagemDeFalhaSocial(err, provider));
       setLoading(null);
     }
   };
@@ -231,23 +235,53 @@ function SocialButtons({ mode }: SocialButtonsProps) {
     </button>
   );
 
+  /** Ícone e rótulo de cada provedor conhecido. Provedor sem par visual não vira botão. */
+  const visualDoProvedor = (provider: OAuthProvider): { icon: ReactNode; label: string } | null => {
+    if (provider === "GOOGLE") {
+      return {
+        icon: <GoogleIcon />,
+        label: mode === "signup" ? texts.auth.social.googleSignup : texts.auth.social.google,
+      };
+    }
+    if (provider === "LINKEDIN") {
+      return {
+        icon: <LinkedinIcon />,
+        label: mode === "signup" ? texts.auth.social.linkedinSignup : texts.auth.social.linkedin,
+      };
+    }
+    return null;
+  };
+
   return (
     <div className="grid grid-cols-1 gap-2">
-      {providerButton(
-        "GOOGLE",
-        <GoogleIcon />,
-        mode === "signup" ? texts.auth.social.googleSignup : texts.auth.social.google,
-      )}
-      {providerButton(
-        "LINKEDIN",
-        <LinkedinIcon />,
-        mode === "signup" ? texts.auth.social.linkedinSignup : texts.auth.social.linkedin,
-      )}
+      {providers.map((provider) => {
+        const visual = visualDoProvedor(provider);
+        if (!visual) return null;
+        return providerButton(provider, visual.icon, visual.label);
+      })}
       {error && (
         <p className="rounded-xl bg-destructive/10 px-4 py-2 text-sm text-destructive">{error}</p>
       )}
     </div>
   );
+}
+
+/**
+ * Mensagem de falha da entrada social.
+ *
+ * A API sabe por que recusou: `OAUTH_PROVIDER_DISABLED` quer dizer que o provedor está desligado
+ * neste ambiente, e a mensagem dela diz melhor que qualquer texto genérico. O resto (aplicativo do
+ * OAuth ainda em aprovação) mantém o texto de sempre — mas citando o provedor certo: antes ele
+ * dizia "Google" mesmo quando a falha era do LinkedIn.
+ */
+function mensagemDeFalhaSocial(err: unknown, provider: OAuthProvider): string {
+  const nome = OAUTH_PROVIDER_LABELS[provider];
+  if (err instanceof ApiError && err.code === "OAUTH_PROVIDER_DISABLED") {
+    return texts.auth.social.providerDisabled(nome);
+  }
+  // Sem o aplicativo aprovado no provedor o start falha: explicamos em vez de vazar o erro cru.
+  const detail = err instanceof ApiError && import.meta.env.DEV ? ` (${err.message})` : "";
+  return `${texts.auth.social.pendingApproval(nome)}${detail}`;
 }
 
 function LinkedinIcon() {
@@ -280,9 +314,9 @@ function SignupForm(_props: AuthFormProps) {
   const turnstileRef = useRef<TurnstileInstance>(null);
   /** Conta criada e pendente de confirmação: o formulário dá lugar à tela "confirme seu e-mail". */
   const [pendingEmail, setPendingEmail] = useState<string | null>(null);
-  const captcha = useCaptchaConfig();
-  const captchaMode = captcha.data?.captchaMode;
-  const turnstileSiteKey = captcha.data?.turnstileSiteKey ?? TURNSTILE_SITE_KEY;
+  const config = useAuthConfig();
+  const captchaMode = config.data?.captchaMode;
+  const turnstileSiteKey = config.data?.turnstileSiteKey ?? TURNSTILE_SITE_KEY;
   const challenge = useQuery({
     queryKey: ["auth", "signup-challenge"],
     queryFn: () => authApi.signupChallenge(),
@@ -592,8 +626,8 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
   const [loading, setLoading] = useState(false);
   const [show, setShow] = useState(false);
   const loginTurnstileRef = useRef<TurnstileInstance>(null);
-  const captcha = useCaptchaConfig();
-  const turnstileSiteKey = captcha.data?.turnstileSiteKey ?? TURNSTILE_SITE_KEY;
+  const config = useAuthConfig();
+  const turnstileSiteKey = config.data?.turnstileSiteKey ?? TURNSTILE_SITE_KEY;
   /** Conta pendente de confirmação: em vez de "erro", a tela explica e oferece reenviar. */
   const [unverifiedEmail, setUnverifiedEmail] = useState<string | null>(null);
   /** Segundo fator pedido pelo backend depois da senha correta. */
@@ -697,7 +731,7 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
         </Field>
 
         {!!formError && <ErrorBanner error={formError} showDetails={false} />}
-        {captcha.data?.captchaMode === "TURNSTILE" && turnstileSiteKey && (
+        {config.data?.captchaMode === "TURNSTILE" && turnstileSiteKey && (
           <Turnstile
             ref={loginTurnstileRef}
             siteKey={turnstileSiteKey}

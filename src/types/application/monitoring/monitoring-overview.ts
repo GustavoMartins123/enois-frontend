@@ -2,6 +2,7 @@ import type { MonitoringCount } from "./monitoring-count";
 import type { MonitoringEvent } from "./monitoring-event";
 import type { MonitoringJvm } from "./monitoring-jvm";
 import type { MonitoringMinutePoint } from "./monitoring-minute-point";
+import type { MonitoringResource } from "./monitoring-resource";
 
 export type MonitoringOverview = {
   generatedAt: string;
@@ -18,4 +19,16 @@ export type MonitoringOverview = {
   topRoutes: MonitoringCount[];
   recent: MonitoringEvent[];
   jvm: MonitoringJvm;
+  requestsPerSecond: number;
+  inFlight: number;
+  peakInFlight: number;
+  requestsTotal: number;
+  p50Ms: number;
+  p99Ms: number;
+  maxMs: number;
+  slowLastMinute: number;
+  rateLimitedLastMinute: number;
+  statusCounts: MonitoringCount[];
+  methodCounts: MonitoringCount[];
+  resources: MonitoringResource;
 };
