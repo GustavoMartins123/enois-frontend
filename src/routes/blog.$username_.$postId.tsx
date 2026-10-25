@@ -9,6 +9,7 @@ import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 import { feedApi } from "@/lib/api";
 import { blogsApi } from "@/lib/api/blogs";
 import { resolveCdnUrl } from "@/lib/api/media";
+import { formatarData } from "@/lib/date/format";
 import { buildShareTags } from "@/lib/open-graph";
 
 import { Button } from "@/components/ui/button";
@@ -189,7 +190,7 @@ function BlogPostPage() {
 
               <span className="text-xs font-normal text-text-subtle">
                 {blog.authorName} ·{" "}
-                {new Date(post.publishedAt).toLocaleDateString("pt-BR", {
+                {formatarData(post.publishedAt, {
                   day: "2-digit",
                   month: "long",
                   year: "numeric",
@@ -220,7 +221,7 @@ function BlogPostPage() {
               lendo), não o do post no feed. */}
           {feedPost && (
             <div className="px-5 pb-4 sm:px-8 sm:pb-5">
-              <ReactionsSummary postId={post.id} />
+              <ReactionsSummary post={feedPost} />
               <PostActions
                 post={feedPost}
                 onComments={focusComments}

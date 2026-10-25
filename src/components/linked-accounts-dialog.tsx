@@ -12,6 +12,7 @@ import type { LinkedAccountsDialogProps } from "@/types/components/account/linke
 import { Link2, Link2Off, Loader2 } from "lucide-react";
 
 import { ApiError, authApi, linkedInIntegrationApi } from "@/lib/api";
+import { dataHora } from "@/lib/date/format";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -204,9 +205,7 @@ export function LinkedAccountsDialog({ open, onOpenChange }: LinkedAccountsDialo
                 {linkedinStatus.lastShareStatus === "OK"
                   ? texts.auth.links.linkedinSync.lastShareOk
                   : texts.auth.links.linkedinSync.lastShareFailed(linkedinStatus.lastShareStatus)}
-                {linkedinStatus.lastShareAt
-                  ? new Date(linkedinStatus.lastShareAt).toLocaleString("pt-BR")
-                  : null}
+                {linkedinStatus.lastShareAt ? dataHora(linkedinStatus.lastShareAt) : null}
               </p>
             )}
 

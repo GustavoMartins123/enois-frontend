@@ -9,6 +9,7 @@ import { Bell, Check, CheckCheck, Loader2, X } from "lucide-react";
 import { networkApi, notificationsApi, profileApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { getCurrentUserId } from "@/lib/current-user";
+import { formatarData } from "@/lib/date/format";
 import { isNotificationHidden } from "@/lib/notification-module";
 import { useDisabledModules } from "@/lib/use-personalization";
 import { cn } from "@/lib/utils";
@@ -388,7 +389,7 @@ function ConnectionRequestItem({
       </div>
 
       <span className="shrink-0 text-xs text-text-subtle">
-        {new Date(request.createdAt).toLocaleDateString("pt-BR", {
+        {formatarData(request.createdAt, {
           day: "numeric",
           month: "short",
         })}

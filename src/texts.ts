@@ -1,21 +1,4 @@
-/**
- * Data do evento ("2026-10-23") em português curto. Lida em UTC de propósito: a data vem sem fuso
- * e, lida no fuso local, "2026-10-23" virava 22 de outubro para quem está a oeste de Greenwich.
- */
-function formatEventDate(date: string): string {
-  const parsed = new Date(`${date}T00:00:00Z`);
-  if (Number.isNaN(parsed.getTime())) return date;
-  const sameYear = parsed.getUTCFullYear() === new Date().getFullYear();
-  return parsed
-    .toLocaleDateString("pt-BR", {
-      day: "numeric",
-      month: "short",
-      year: sameYear ? undefined : "numeric",
-      timeZone: "UTC",
-    })
-    .replace(/\./g, "")
-    .replace(/ de /g, " ");
-}
+import { dataCurta, dataDeEvento } from "@/lib/date/format";
 
 const common = {
   enter: "Entrar",
@@ -1376,6 +1359,10 @@ export const texts = {
     },
     momentExpiry: (hours: number) => `some em ${hours}h`,
     momentExpiryTitle: "Momento se apaga sozinho em 24 horas",
+    imagePreview: {
+      title: "Imagem ampliada",
+      open: "Ampliar imagem",
+    },
     /** Palco de mídia do Modo lite: o vídeo aberto em tela cheia, com o resto da página pausado. */
     mediaStage: {
       open: "Assistir em tela cheia",
@@ -1681,8 +1668,7 @@ export const texts = {
     blockedEmpty: "Você não bloqueou ninguém.",
     blockedHint:
       "O bloqueio vale para sempre e os dois lados deixam de se ver. Desbloqueie aqui quando quiser.",
-    blockedSince: (date: string | null) =>
-      date ? `Bloqueado em ${new Date(date).toLocaleDateString("pt-BR")}` : "Bloqueado",
+    blockedSince: (date: string | null) => (date ? `Bloqueado em ${dataCurta(date)}` : "Bloqueado"),
     openToWork: "Aberto a oportunidades",
     mentorAvailable: "Mentor disponível",
     connections: (count: number) => `${count} ${count === 1 ? "conexão" : "conexões"}`,
@@ -2457,7 +2443,7 @@ export const texts = {
     hostedBy: (host: string) => `por ${host}`,
     watchLive: "Assistir ao vivo",
     /** "23 out · 08:00"; o ano só aparece quando não é o atual ("31 dez 2029 · 23:59"). */
-    dateTime: (date: string, time: string) => `${formatEventDate(date)} · ${time}`,
+    dateTime: (date: string, time: string) => `${dataDeEvento(date)} · ${time}`,
     attend: "Confirmar presença",
     cancelAttend: "Desconfirmar presença",
     youAreGoing: "Você vai",
@@ -3189,7 +3175,10 @@ export const texts = {
       "Restrições ativas na sua conta e o andamento dos seus recursos. A decisão final é sempre de uma pessoa do time.",
     empty: "Nenhuma penalidade na sua conta.",
     emptyHint: "Isto não é um histórico de elogios — é só o que de fato restringiu a conta.",
-    type: { RESTRICTION: "Restrição", BAN: "Banimento" } as Record<string, string>,
+    type: { RESTRICTION: "Restrição", SUSPENDED: "Suspensão", BAN: "Banimento" } as Record<
+      string,
+      string
+    >,
     statusLabel: {
       ACTIVE: "Ativa",
       REMOVED: "Removida",
@@ -3211,6 +3200,8 @@ export const texts = {
     restrictedNotice:
       "Sua conta está restrita: você não pode publicar nem comentar enquanto a restrição estiver ativa.",
     bannedNotice: "Sua conta está banida após revisão do recurso. Se precisar, fale com o suporte.",
+    suspendedNotice:
+      "Sua conta está suspensa: você não entra nem publica até recorrer ou o prazo terminar.",
     moderationTitle: "Moderação · recursos",
     moderationDescription:
       "Fila de recursos de penalidade automática. Aprovar remove a restrição; negar converte em banimento (sessões revogadas).",
@@ -3597,6 +3588,8 @@ export const texts = {
       copyFailed: "Não foi possível copiar.",
       showMore: "mostrar mais",
       showLess: "mostrar menos",
+      showStack: "ver pilha do erro",
+      hideStack: "ocultar pilha",
       loadMore: "Carregar mais eventos",
       fromLabel: "De (data e hora)",
       toLabel: "Até (data e hora)",

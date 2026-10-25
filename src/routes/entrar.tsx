@@ -19,6 +19,7 @@ import { ArrowRight, Loader2, MailCheck, ShieldCheck } from "lucide-react";
 import { z } from "zod";
 
 import { ApiError, authApi } from "@/lib/api";
+import { anoAtual } from "@/lib/date/format";
 import { ogMetas } from "@/lib/seo";
 import { storeSession } from "@/lib/session";
 import { useAuthConfig } from "@/lib/use-auth-config";
@@ -417,7 +418,7 @@ function SignupForm(_props: AuthFormProps) {
             name="birthDate"
             required
             autoComplete="bday"
-            min={`${new Date().getFullYear() - 120}-01-01`}
+            min={`${anoAtual() - 120}-01-01`}
             max={new Date().toISOString().slice(0, 10)}
           />
         </Field>

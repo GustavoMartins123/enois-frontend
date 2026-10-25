@@ -4,6 +4,7 @@ import { texts } from "@/texts";
 import { ShieldAlert } from "lucide-react";
 
 import { walletApi } from "@/lib/api";
+import { dataHora } from "@/lib/date/format";
 import { formatFaisca } from "@/lib/faisca";
 
 import { Button } from "@/components/ui/button";
@@ -70,8 +71,7 @@ export function DisputesSection() {
               </p>
 
               <p className="text-xs text-text-subtle">
-                {new Date(disputa.createdAt).toLocaleString("pt-BR")} · ref{" "}
-                {disputa.entryRef.slice(0, 16)}…
+                {dataHora(disputa.createdAt)} · ref {disputa.entryRef.slice(0, 16)}…
               </p>
 
               <div className="flex flex-wrap gap-2 pt-1">

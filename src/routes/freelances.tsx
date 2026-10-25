@@ -8,6 +8,7 @@ import type { FreelanceView } from "@/types/application/freelance/freelance-view
 import { Banknote, CalendarClock, Handshake, Plus, Search, Sparkles } from "lucide-react";
 
 import { freelancesApi } from "@/lib/api";
+import { dataCurta } from "@/lib/date/format";
 import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { litePageSize } from "@/lib/lite-mode";
 import { requireAuth } from "@/lib/require-auth";
@@ -175,9 +176,12 @@ function FreelanceCard({ item }: { item: FreelanceView }) {
   });
 
   return (
-    <li className="surface-card flex h-full flex-col gap-3 p-4">
+    // `min-w-0` + `break-words`: item de grid nasce com `min-width:auto` e o titulo e texto do
+    // prestador (pode ser uma palavra gigante sem espaco). Sem os dois, o card estica a coluna
+    // e a pagina rola de lado no celular.
+    <li className="surface-card flex h-full min-w-0 flex-col gap-3 p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <h2 className="min-w-0 font-semibold text-text-strong">{item.title}</h2>
+        <h2 className="min-w-0 break-words font-semibold text-text-strong">{item.title}</h2>
 
         {item.owned && item.status === "OPEN" && (
           <Button
@@ -209,8 +213,7 @@ function FreelanceCard({ item }: { item: FreelanceView }) {
 
         <span className="inline-flex items-center gap-1.5 text-text-subtle">
           <CalendarClock className="h-4 w-4" />
-          {texts.jobs.freelancePage.deadline}:{" "}
-          {new Date(`${item.deadline}T12:00:00`).toLocaleDateString("pt-BR")}
+          {texts.jobs.freelancePage.deadline}: {dataCurta(item.deadline)}
         </span>
       </div>
 

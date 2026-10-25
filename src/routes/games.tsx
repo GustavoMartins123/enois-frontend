@@ -528,6 +528,7 @@ function SubmitButton() {
 
                 <Input
                   value={form.title}
+                  maxLength={200}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                 />
               </label>
@@ -555,6 +556,7 @@ function SubmitButton() {
                 <Input
                   placeholder="https://meujogo.itch.io/…"
                   value={form.url}
+                  maxLength={500}
                   onChange={(e) => setForm({ ...form, url: e.target.value })}
                 />
               </label>
@@ -563,6 +565,7 @@ function SubmitButton() {
                 <span className="mb-1 block font-medium">Descrição</span>
 
                 <Textarea
+                  maxLength={4000}
                   rows={3}
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
@@ -574,6 +577,7 @@ function SubmitButton() {
 
                 <Input
                   value={form.tags}
+                  maxLength={500}
                   onChange={(e) => setForm({ ...form, tags: e.target.value })}
                 />
               </label>

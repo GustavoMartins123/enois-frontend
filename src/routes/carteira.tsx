@@ -8,6 +8,7 @@ import { ArrowLeft, Send, ShieldAlert, ShoppingBag, Sparkles, TrendingUp, Zap } 
 
 import { lojaApi, walletApi } from "@/lib/api";
 import { ANIMATED_FRAMES } from "@/lib/avatar-frames";
+import { dataHora } from "@/lib/date/format";
 import { faiscaToBrlCents, formatBrlCents, formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { requireAuth } from "@/lib/require-auth";
 
@@ -281,6 +282,7 @@ function Carteira() {
                   <Textarea
                     rows={4}
                     value={contestar.descricao}
+                    maxLength={1000}
                     onChange={(e) => setContestar({ ...contestar, descricao: e.target.value })}
                   />
                 </label>
@@ -330,7 +332,7 @@ function Carteira() {
                     </span>
 
                     <span className="block text-xs text-text-subtle">
-                      {new Date(entry.createdAt).toLocaleString("pt-BR")}
+                      {dataHora(entry.createdAt)}
                     </span>
                   </span>
 
