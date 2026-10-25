@@ -2,10 +2,11 @@ import { useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 
+import { texts } from "@/texts";
+
 import { mediaApi } from "@/lib/api";
 import { resolveCdnUrl, withImageKitOriginal } from "@/lib/api/media";
 
-import { texts } from "@/texts";
 import { LiteVideo } from "./lite-video";
 import { SpoilerMedia } from "./spoiler-media";
 
@@ -17,7 +18,13 @@ import { SpoilerMedia } from "./spoiler-media";
  * Imagem clica para ver em tela cheia; vídeo e áudio ganham o player (sem autoplay: som que
  * começa sozinho no meio de um texto é o oposto do que esta rede quer).
  */
-export function InlineMedia({ mediaId, mediaSpoiler = false }: { mediaId: string; mediaSpoiler?: boolean }) {
+export function InlineMedia({
+  mediaId,
+  mediaSpoiler = false,
+}: {
+  mediaId: string;
+  mediaSpoiler?: boolean;
+}) {
   const [fullscreen, setFullscreen] = useState(false);
   const { data: media } = useQuery({
     queryKey: ["media", mediaId],
@@ -44,9 +51,7 @@ export function InlineMedia({ mediaId, mediaSpoiler = false }: { mediaId: string
     return (
       <div className="my-2 overflow-hidden rounded-xl border border-border-soft">
         <SpoilerMedia active={mediaSpoiler} label={texts.posts.mediaSpoiler.reveal}>
-          {() => (
-            <LiteVideo src={withImageKitOriginal(media.cdnUrl)} />
-          )}
+          {() => <LiteVideo src={withImageKitOriginal(media.cdnUrl)} />}
         </SpoilerMedia>
       </div>
     );

@@ -1,13 +1,6 @@
-import type { ReactNode } from "react";
+import type { SpoilerPreviewProps } from "@/types/components/post/spoiler-preview-props";
 
 import { cn } from "@/lib/utils";
-
-type SpoilerPreviewProps = {
-  active?: boolean;
-  label: string;
-  children: ReactNode;
-  className?: string;
-};
 
 /** Preview-only spoiler treatment used while composing a post, comment, or message. */
 export function SpoilerPreview({

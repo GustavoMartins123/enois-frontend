@@ -100,7 +100,9 @@ export function CommentItem({ comment, replyingTo, postAuthorId, onPinChanged }:
     }
     setReplyToId(postId, comment.id);
     setTimeout(() => {
-      document.getElementById(`comment-form-${postId}`)?.scrollIntoView({ behavior: "smooth", block: "center" });
+      document
+        .getElementById(`comment-form-${postId}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 50);
   };
 
@@ -245,7 +247,11 @@ export function CommentItem({ comment, replyingTo, postAuthorId, onPinChanged }:
 
               {comment.mediaIds && comment.mediaIds.length > 0 && (
                 <div className="mt-2 max-w-full">
-                  <MediaGrid mediaIds={comment.mediaIds} compact mediaSpoiler={comment.mediaSpoiler} />
+                  <MediaGrid
+                    mediaIds={comment.mediaIds}
+                    compact
+                    mediaSpoiler={comment.mediaSpoiler}
+                  />
                 </div>
               )}
 
