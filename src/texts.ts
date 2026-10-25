@@ -1376,6 +1376,10 @@ export const texts = {
     },
     momentExpiry: (hours: number) => `some em ${hours}h`,
     momentExpiryTitle: "Momento se apaga sozinho em 24 horas",
+    imagePreview: {
+      title: "Imagem ampliada",
+      open: "Ampliar imagem",
+    },
     /** Palco de mídia do Modo lite: o vídeo aberto em tela cheia, com o resto da página pausado. */
     mediaStage: {
       open: "Assistir em tela cheia",
