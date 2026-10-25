@@ -7,6 +7,7 @@ import { mediaApi } from "@/lib/api";
 import { resolveCdnUrl, withImageKitOriginal } from "@/lib/api/media";
 import { autoplayVideoRef } from "@/lib/feed/video-autoplay";
 
+import { ImageLightbox } from "./image-lightbox";
 import { LiteVideo } from "./lite-video";
 import { SpoilerMedia } from "./spoiler-media";
 

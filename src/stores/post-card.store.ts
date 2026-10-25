@@ -118,7 +118,7 @@ export const usePostCardStore = create<PostCardStore>()((set) => ({
 }));
 
 /**
- * Referências estáveis para o "nada" dos seletores.
+ * Referência estável para o "nada" do seletor de menções.
  *
  * O `useSyncExternalStore` (zustand) compara o snapshot por REFERÊNCIA: um `?? []` criado a cada
  * leitura devolve um array novo sempre, o React entende que o estado mudou e renderiza de novo —
@@ -126,14 +126,7 @@ export const usePostCardStore = create<PostCardStore>()((set) => ({
  * quando o post ainda não entrou no store (o primeiro render da página do post) ou quando não entra
  * nunca (o post do blog, que não usa o card do feed).
  */
-const NENHUM_COMENTARIO: CommentView[] = [];
 const NENHUMA_MENCAO: string[] = [];
-
-/** Os comentários locais do post — mesma referência enquanto o estado não muda. */
-export function selectLocalComments(postId: string) {
-  return (state: Pick<PostCardStore, "cards">): CommentView[] =>
-    state.cards[postId]?.localComments ?? NENHUM_COMENTARIO;
-}
 
 /** As menções em edição do comentário — mesma referência enquanto o estado não muda. */
 export function selectCommentMentions(postId: string) {
