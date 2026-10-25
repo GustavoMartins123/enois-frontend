@@ -15,4 +15,5 @@ export type MonitoringEvent = {
   userId: string | null;
   clientIp: string | null;
   deviceId: string | null;
+  metadata: string | null;
 };

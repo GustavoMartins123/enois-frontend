@@ -707,6 +707,7 @@ function TrafficChart({ series }: { series: MonitoringMinutePoint[] }) {
 
 function EventRow({ event, onCopy }: { event: MonitoringEvent; onCopy: () => void }) {
   const [expanded, setExpanded] = useState(false);
+  const [stackOpen, setStackOpen] = useState(false);
   const long = event.message.length > 140;
 
   return (
@@ -759,7 +760,28 @@ function EventRow({ event, onCopy }: { event: MonitoringEvent; onCopy: () => voi
           <p className="mt-0.5 truncate font-mono text-[9px] text-text-subtle">
             req {event.requestId}
             {event.userId ? ` · ${event.userId}` : ""}
+            {event.clientIp ? ` · ${event.clientIp}` : ""}
           </p>
+        )}
+
+        {event.metadata && (
+          <div className="mt-1">
+            <button
+              type="button"
+              onClick={() => setStackOpen((v) => !v)}
+              className="text-[10px] text-primary hover:underline"
+            >
+              {stackOpen
+                ? texts.moderator.monitoring.hideStack
+                : texts.moderator.monitoring.showStack}
+            </button>
+
+            {stackOpen && (
+              <pre className="mt-1 max-h-48 overflow-auto rounded bg-surface-2 p-2 font-mono text-[9px] break-all whitespace-pre-wrap text-text-strong">
+                {event.metadata}
+              </pre>
+            )}
+          </div>
         )}
       </td>
 
@@ -1059,6 +1081,8 @@ function eventLine(event: MonitoringEvent): string {
     event.message,
     http ? `(${http})` : "",
     event.requestId ? `req=${event.requestId}` : "",
+    event.clientIp ? `ip=${event.clientIp}` : "",
+    event.metadata ? `\n${event.metadata}` : "",
   ]
     .filter(Boolean)
     .join(" ");
