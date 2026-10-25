@@ -452,6 +452,7 @@ function Empresa() {
             <div className="mt-3 space-y-3 text-sm">
               <input
                 value={projectForm.title}
+                maxLength={200}
                 onChange={(event) => setProjectForm({ ...projectForm, title: event.target.value })}
                 placeholder={texts.empresa.projectTitle}
                 className="h-10 w-full rounded-lg border border-border-soft bg-surface-1 px-3 outline-none"

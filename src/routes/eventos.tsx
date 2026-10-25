@@ -345,8 +345,11 @@ function CreateEventForm({ onSave, isPending }: CreateEventFormProps) {
   return (
     <div className="space-y-4 pt-2">
       <Field label={texts.events.form.title}>
+        {/* O limite e o mesmo da coluna (`events.title varchar(255)`) e que a API recusa com 400
+            dizendo o campo: sem ele no campo, a pessoa tomava 409 sem entender o motivo. */}
         <Input
           value={title}
+          maxLength={255}
           onChange={(e) => setTitle(e.target.value)}
           className="h-10 border-transparent bg-muted"
         />
