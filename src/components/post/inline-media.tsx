@@ -5,7 +5,6 @@ import { texts } from "@/texts";
 import { mediaApi } from "@/lib/api";
 import { resolveCdnUrl, withImageKitOriginal } from "@/lib/api/media";
 
-import { ImageLightbox } from "./image-lightbox";
 import { LiteVideo } from "./lite-video";
 import { SpoilerMedia } from "./spoiler-media";
 
@@ -24,6 +23,7 @@ export function InlineMedia({
   mediaId: string;
   mediaSpoiler?: boolean;
 }) {
+  const [fullscreen, setFullscreen] = useState(false);
   const { data: media } = useQuery({
     queryKey: ["media", mediaId],
     queryFn: () => mediaApi.get(mediaId),

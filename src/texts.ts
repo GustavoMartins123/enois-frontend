@@ -2989,7 +2989,7 @@ export const texts = {
     originRemoved: "Origem removida.",
     originError: "Não foi possível cadastrar a origem.",
     originValidHint:
-      "Use só o domínio com https (http é aceito apenas em localhost). Sem origem cadastrada, a requisição recebe 403 ORIGIN_REQUIRED.",
+      "Use só o domínio com https (http é aceito apenas em localhost). Sem origem cadastrada, a requisição recebe 403 ORIGIN_NOT_ALLOWED (e ORIGIN_REQUIRED quando a chamada não manda origem nenhuma).",
     originBlocked: "Bloqueada por atividade suspeita",
     sandboxTitle: "API pública = sandbox. Produção só com pedido aprovado",
     sandboxBody:

@@ -1,7 +1,7 @@
-import { Eye } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import type { SpoilerMediaProps } from "@/types/components/post/spoiler-media-props";
+import { Eye } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
