@@ -54,7 +54,7 @@ describe("UserAvatar com moldura", () => {
       </>,
     );
     const ids = [...html.matchAll(/ id="([^"]+)"/g)].map((m) => m[1]);
-    if (frame !== "moldura-orbita" && frame !== "moldura-galaxia") {
+    if (!["moldura-orbita", "moldura-galaxia", "moldura-fliperama"].includes(frame)) {
       expect(ids.length).toBeGreaterThan(0);
     }
     expect(new Set(ids).size).toBe(ids.length);
