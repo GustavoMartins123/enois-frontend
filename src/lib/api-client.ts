@@ -112,6 +112,19 @@ function idemKey(): Record<string, string> {
 /** Renova quando faltar menos que isso para expirar, em vez de esperar o 401. */
 const REFRESH_WINDOW_MS = 5 * 60 * 1000;
 
+/**
+ * Espera máxima aceita para repetir uma escrita recusada por limite. Acima disso a espera é
+ * pior do que devolver o aviso e deixar a pessoa tentar de novo.
+ */
+const MAX_RETRY_AFTER_SECONDS = 15;
+
+/** Espera antes de repetir uma escrita que morreu sem resposta (janela do limitador da frente). */
+const NETWORK_RETRY_DELAY_MS = 2000;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 let refreshPromise: Promise<RefreshOutcome> | null = null;
 
 function refreshTokenValue(): string | null {
@@ -258,13 +271,49 @@ async function request<T>(
       headers,
       body: body ? JSON.stringify(body) : undefined,
     });
-  } catch {
-    throw new ApiError(
-      0,
-      "NETWORK_ERROR",
-      "Não foi possível conectar ao servidor. Verifique sua conexão e se o backend está no ar.",
-      path,
-    );
+    // Limite do proxy/CDN: a recusa vem sem CORS e o navegador a reporta como falha de rede.
+    // Em escrita idempotente (todas as nossas), esperar o Retry-After e repetir uma vez é
+    // melhor do que devolver "não foi possível" para quem só clicou duas vezes seguidas.
+    if (response.status === HttpStatus.TOO_MANY_REQUESTS && opts?.idempotent) {
+      const seconds = Number.parseInt(response.headers.get("Retry-After") ?? "", 10);
+      if (Number.isFinite(seconds) && seconds > 0 && seconds <= MAX_RETRY_AFTER_SECONDS) {
+        await sleep(seconds * 1000);
+        response = await fetch(`${baseUrl()}${path}`, {
+          method,
+          headers,
+          body: body ? JSON.stringify(body) : undefined,
+        });
+      }
+    }
+  } catch (firstFailure) {
+    // Falha de rede numa escrita idempotente: pode ser o limitador da frente recusando o
+    // preflight (o navegador esconde a resposta e reporta "fetch failed"). Espera a janela
+    // virar e tenta uma vez; se continuar falhando, o erro sobe.
+    if (opts?.idempotent) {
+      try {
+        await sleep(NETWORK_RETRY_DELAY_MS);
+        response = await fetch(`${baseUrl()}${path}`, {
+          method,
+          headers,
+          body: body ? JSON.stringify(body) : undefined,
+        });
+      } catch {
+        throw new ApiError(
+          0,
+          "NETWORK_ERROR",
+          "Não foi possível conectar ao servidor. Verifique sua conexão e se o backend está no ar.",
+          path,
+        );
+      }
+    } else {
+      throw new ApiError(
+        0,
+        "NETWORK_ERROR",
+        "Não foi possível conectar ao servidor. Verifique sua conexão e se o backend está no ar.",
+        path,
+      );
+    }
+    void firstFailure;
   }
 
   const hadSession = Boolean(headers["X-Session-Token"]);
