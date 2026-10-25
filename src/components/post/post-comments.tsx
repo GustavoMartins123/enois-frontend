@@ -1,6 +1,10 @@
 import { type ChangeEvent, type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
-import { usePostCardStore } from "@/stores/post-card.store";
+import {
+  selectCommentMentions,
+  selectLocalComments,
+  usePostCardStore,
+} from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { CommentView } from "@/types/application/comment/comment-view";
 import type { PostIdProps } from "@/types/components/post/post-id-props";
@@ -39,9 +43,9 @@ export function PostComments({ postId, postAuthorId }: { postId: string; postAut
   const pageSize = litePageSize(PAGE_SIZE, lite);
   const currentUser = getCurrentUser();
   const { requireAuth } = useAuth();
-  const comments = usePostCardStore((state) => state.cards[postId]?.localComments ?? []);
+  const comments = usePostCardStore(selectLocalComments(postId));
   const draft = usePostCardStore((state) => state.cards[postId]?.draft ?? "");
-  const mentions = usePostCardStore((state) => state.cards[postId]?.commentMentions ?? []);
+  const mentions = usePostCardStore(selectCommentMentions(postId));
   const replyToId = usePostCardStore((state) => state.cards[postId]?.replyToId ?? null);
   const setComments = usePostCardStore((state) => state.setComments);
   const addComment = usePostCardStore((state) => state.addComment);

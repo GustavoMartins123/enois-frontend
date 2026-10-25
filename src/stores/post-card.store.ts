@@ -141,3 +141,27 @@ export const usePostCardStore = create<PostCardStore>()((set) => ({
       cards: updateCard(state.cards, postId, (card) => ({ ...card, showReport })),
     })),
 }));
+
+/**
+ * Referências estáveis para o "nada" dos seletores.
+ *
+ * O `useSyncExternalStore` (zustand) compara o snapshot por REFERÊNCIA: um `?? []` criado a cada
+ * leitura devolve um array novo sempre, o React entende que o estado mudou e renderiza de novo —
+ * é o aviso "The result of getSnapshot should be cached to avoid an infinite loop". Acontece
+ * quando o post ainda não entrou no store (o primeiro render da página do post) ou quando não entra
+ * nunca (o post do blog, que não usa o card do feed).
+ */
+const NENHUM_COMENTARIO: CommentView[] = [];
+const NENHUMA_MENCAO: string[] = [];
+
+/** Os comentários locais do post — mesma referência enquanto o estado não muda. */
+export function selectLocalComments(postId: string) {
+  return (state: Pick<PostCardStore, "cards">): CommentView[] =>
+    state.cards[postId]?.localComments ?? NENHUM_COMENTARIO;
+}
+
+/** As menções em edição do comentário — mesma referência enquanto o estado não muda. */
+export function selectCommentMentions(postId: string) {
+  return (state: Pick<PostCardStore, "cards">): string[] =>
+    state.cards[postId]?.commentMentions ?? NENHUMA_MENCAO;
+}
