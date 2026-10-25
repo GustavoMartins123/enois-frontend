@@ -125,7 +125,7 @@ function PostCardView({
   const mySeals = seals ? (seals.mySeals ?? (seals.mySeal ? [seals.mySeal] : [])) : [];
 
   useEffect(() => {
-    initializePostCard(post);
+    initializePostCard(post.id);
     return () => disposePostCard(post.id);
   }, [disposePostCard, initializePostCard, post]);
 
@@ -505,7 +505,7 @@ function PostCardView({
         </p>
       ) : null}
 
-      <ReactionsSummary postId={post.id} initialSummary={post.reactionSummary} />
+      <ReactionsSummary post={post} initialSummary={post.reactionSummary} />
       <LinkPreviews content={post.content} autoplay={!lite} />
 
       {post.tags.length > 0 && (

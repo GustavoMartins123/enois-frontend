@@ -175,9 +175,12 @@ function FreelanceCard({ item }: { item: FreelanceView }) {
   });
 
   return (
-    <li className="surface-card flex h-full flex-col gap-3 p-4">
+    // `min-w-0` + `break-words`: item de grid nasce com `min-width:auto` e o titulo e texto do
+    // prestador (pode ser uma palavra gigante sem espaco). Sem os dois, o card estica a coluna
+    // e a pagina rola de lado no celular.
+    <li className="surface-card flex h-full min-w-0 flex-col gap-3 p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <h2 className="min-w-0 font-semibold text-text-strong">{item.title}</h2>
+        <h2 className="min-w-0 break-words font-semibold text-text-strong">{item.title}</h2>
 
         {item.owned && item.status === "OPEN" && (
           <Button

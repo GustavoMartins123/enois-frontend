@@ -1,3 +1,4 @@
+import { HttpStatus } from "@/types/application/api/http-status";
 import type { RefreshOutcome } from "@/types/application/api/refresh-outcome";
 import type { RequestOptions } from "@/types/application/api/request-options";
 
@@ -152,6 +153,14 @@ async function doRefresh(): Promise<RefreshOutcome> {
     // durante o deploy sao falhas do servidor, nao prova de que a sessao morreu — deslogar aqui
     // era o que fazia a pessoa cair no login "sem motivo".
     if (response.status === 401 || response.status === 403) {
+      // O backend GIRA o refresh token a cada renovacao (o usado e revogado). Como o armazenamento
+      // e compartilhado entre as abas do navegador, outra aba pode ter renovado enquanto esta
+      // chamada corria: o token guardado ja e o NOVO e a sessao nova esta viva — o 401 aqui e so
+      // o token velho. Encerrar a sessao apagava a sessao da outra aba e as DUAS caiam no login.
+      const guardado = refreshTokenValue();
+      if (guardado !== null && guardado !== token) {
+        return "renewed";
+      }
       clearSession();
       return "refused";
     }
@@ -260,7 +269,7 @@ async function request<T>(
   // 401 e sessao invalida/expirada (tenta refresh e, se nao der, manda para o login). 403 e
   // PERMISSAO negada, nao sessao: derrubar o usuario aqui era um erro (quem tem conta pendente de
   // verificacao, por exemplo, era desconectado em vez de ler o aviso).
-  if (response.status === 401 && hadSession && !path.startsWith("/auth/")) {
+  if (response.status === HttpStatus.UNAUTHORIZED && hadSession && !path.startsWith("/auth/")) {
     const refreshed = await refreshSession();
 
     if (refreshed === "unavailable") {
@@ -276,19 +285,19 @@ async function request<T>(
 
     if (refreshed === "renewed") {
       headers["X-Session-Token"] = getToken() ?? "";
-      const retry = await fetch(`${baseUrl()}${path}`, {
-        method,
-        headers,
-        body: body ? JSON.stringify(body) : undefined,
-      });
-
-      if (retry.ok) {
-        if (retry.status === 204 || retry.headers.get("content-length") === "0") {
-          return undefined as T;
-        }
-        const data = await retry.json();
-        if (data?.body !== undefined) return data.body as T;
-        return data as T;
+      try {
+        response = await fetch(`${baseUrl()}${path}`, {
+          method,
+          headers,
+          body: body ? JSON.stringify(body) : undefined,
+        });
+      } catch {
+        throw new ApiError(
+          0,
+          "NETWORK_ERROR",
+          "Não foi possível conectar ao servidor. Verifique sua conexão e se o backend está no ar.",
+          path,
+        );
       }
 
       // A renovação funcionou (token novo válido no storage), mas a operação
@@ -316,12 +325,6 @@ async function request<T>(
     if (typeof window !== "undefined") {
       window.location.href = "/entrar?tab=login";
     }
-    throw new ApiError(
-      response.status,
-      "SESSION_EXPIRED",
-      "Sessão expirada. Faça login novamente.",
-      path,
-    );
   }
 
   // Sem sessao nao redireciona daqui (ha consultas autenticadas em telas publicas, como "posts
@@ -334,7 +337,7 @@ async function request<T>(
     if (
       !errorBody?.code &&
       !errorBody?.message &&
-      (response.status === 401 || response.status === 403) &&
+      (response.status === HttpStatus.UNAUTHORIZED || response.status === HttpStatus.FORBIDDEN) &&
       !hadSession
     ) {
       throw new ApiError(
@@ -361,7 +364,7 @@ async function request<T>(
     );
   }
 
-  if (response.status === 204 || response.headers.get("content-length") === "0") {
+  if (response.status === HttpStatus.NO_CONTENT || response.headers.get("content-length") === "0") {
     return undefined as T;
   }
 
