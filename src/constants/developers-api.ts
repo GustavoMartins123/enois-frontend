@@ -1178,7 +1178,7 @@ export const apiSections: ApiSection[] = [
       {
         method: "GET",
         path: "/daily-games/blocks/today",
-        access: "public",
+        access: "auth",
         description:
           "O estado do jogo de Blocos de hoje (com sessão, inclui o progresso do jogador).",
       },
@@ -1203,8 +1203,51 @@ export const apiSections: ApiSection[] = [
       {
         method: "GET",
         path: "/daily-games/words/today",
+        access: "auth",
+        description:
+          "Estado do jogo de Palavras de hoje (com sessão, inclui o progresso do jogador).",
+      },
+      {
+        method: "GET",
+        path: "/daily-games/words/leaderboard",
         access: "public",
-        description: "Estado do jogo de Palavras de hoje.",
+        description: "Ranking de Palavras do dia (e histórico).",
+      },
+      {
+        method: "POST",
+        path: "/daily-games/words/today/start",
+        access: "auth",
+        description: "Inicia a partida de Palavras de hoje.",
+      },
+      {
+        method: "POST",
+        path: "/daily-games/words/today/guesses",
+        access: "auth",
+        description: "Envia um palpite da partida de Palavras em andamento.",
+      },
+      {
+        method: "GET",
+        path: "/daily-games/maze/today",
+        access: "auth",
+        description: "O estado do Labirinto de hoje (com sessão, inclui o progresso do jogador).",
+      },
+      {
+        method: "POST",
+        path: "/daily-games/maze/today/start",
+        access: "auth",
+        description: "Inicia a partida de Labirinto de hoje.",
+      },
+      {
+        method: "POST",
+        path: "/daily-games/maze/today/moves",
+        access: "auth",
+        description: "Move o cursor no Labirinto da partida em andamento.",
+      },
+      {
+        method: "GET",
+        path: "/daily-games/maze/leaderboard",
+        access: "public",
+        description: "Ranking do Labirinto do dia (e histórico).",
       },
       {
         method: "GET",
