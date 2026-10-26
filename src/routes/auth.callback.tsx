@@ -13,10 +13,6 @@ import { storeSession } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 
 const searchSchema = z.object({
-  token: z.string().optional(),
-  refreshToken: z.string().optional(),
-  expiresAt: z.string().optional(),
-  refreshExpiresAt: z.string().optional(),
   /** Cancelamento ou falha devolvidos pelo provedor (ver finishOAuthError no backend). */
   error: z.string().optional(),
   provider: z.string().optional(),
@@ -48,7 +44,7 @@ function OAuthCallback() {
     }
 
     // LinkedIn está registrado com redirect_uri para esta página: o code/state são trocados no
-    // backend, que devolve a sessão em /auth/callback?token=... (o mesmo caminho do Google).
+    // backend, que grava os cookies da sessão e volta para esta página (o mesmo caminho do Google).
     // A URL precisa ser ABSOLUTA (`apiUrl`): o host do front não expõe `/api`, então um caminho
     // relativo cai no 404 do próprio front e o login morre antes de chegar no backend.
     if (search.provider && search.code && search.state) {
@@ -59,24 +55,16 @@ function OAuthCallback() {
       return;
     }
 
-    if (!search.token) {
-      setError(texts.auth.social.callbackError);
-      return;
-    }
-
-    storeSession({
-      token: search.token,
-      refreshToken: search.refreshToken,
-      expiresAt: search.expiresAt,
-      refreshExpiresAt: search.refreshExpiresAt,
-    });
-
-    // Busca o usuário para o cabeçalho já mostrar nome/foto (o token já está no storage).
+    // The API set the session cookies on the redirect that brought us here (`?status=ok`); the
+    // URL carries no token. /auth/me confirms the session (401 means the login did not complete)
+    // and fills the header with name and photo.
     void authApi
       .me()
-      .then((user) => storeSession({ token: search.token!, user }))
-      .catch(() => undefined)
-      .finally(() => navigate({ to: "/feed", replace: true }));
+      .then((user) => {
+        storeSession({ user });
+        return navigate({ to: "/feed", replace: true });
+      })
+      .catch(() => setError(texts.auth.social.callbackError));
   }, [search, navigate]);
 
   return (

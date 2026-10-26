@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { notifyBirthDateRequired } from "./age-required";
 import { ApiError, api } from "./api-client";
 
-vi.mock("./auth-hint", () => ({ clearAuthHint: vi.fn() }));
+vi.mock("./auth-hint", () => ({ clearAuthHint: vi.fn(), setAuthHint: vi.fn() }));
 vi.mock("./query-client", () => ({ resetSessionScopedData: vi.fn() }));
 vi.mock("./age-required", () => ({
   notifyBirthDateRequired: vi.fn(),
@@ -17,10 +17,7 @@ describe("resposta da operação após renovar a sessão", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    const values = new Map([
-      ["session_token", "token-antigo"],
-      ["refresh_token", "refresh-antigo"],
-    ]);
+    const values = new Map([["session_active", "1"]]);
     vi.stubGlobal("window", { location });
     vi.stubGlobal("localStorage", {
       getItem: (key: string) => values.get(key) ?? null,
@@ -33,8 +30,6 @@ describe("resposta da operação após renovar a sessão", () => {
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
     fetchMock.mockResolvedValueOnce(
       Response.json({
-        token: "token-novo",
-        refreshToken: "refresh-novo",
         expiresAt: "2099-01-01T00:00:00Z",
         refreshExpiresAt: "2099-02-01T00:00:00Z",
       }),
@@ -57,12 +52,16 @@ describe("resposta da operação após renovar a sessão", () => {
         message: "Falha da operação",
         path: "/recurso",
       });
-      expect(localStorage.getItem("session_token")).toBe("token-novo");
-      expect(localStorage.getItem("refresh_token")).toBe("refresh-novo");
+      expect(localStorage.getItem("session_active")).toBe("1");
       expect(location.href).toBe("/feed");
       expect(fetchMock).toHaveBeenCalledTimes(3);
+      // The refresh rides on the cookie: no token in the body.
       expect(fetchMock.mock.calls[1][0]).toBe("/api/auth/refresh");
-      expect(fetchMock.mock.calls[2][1].headers["X-Session-Token"]).toBe("token-novo");
+      expect(fetchMock.mock.calls[1][1]).toMatchObject({ credentials: "include", body: undefined });
+      // The retry carries the cookies and the CSRF header, never a token header.
+      expect(fetchMock.mock.calls[2][1].credentials).toBe("include");
+      expect(fetchMock.mock.calls[2][1].headers["X-CSRF-Protection"]).toBe("1");
+      expect(fetchMock.mock.calls[2][1].headers).not.toHaveProperty("X-Session-Token");
     },
   );
 
@@ -73,8 +72,7 @@ describe("resposta da operação após renovar a sessão", () => {
       status: 401,
       code: "SESSION_EXPIRED",
     });
-    expect(localStorage.getItem("session_token")).toBeNull();
-    expect(localStorage.getItem("refresh_token")).toBeNull();
+    expect(localStorage.getItem("session_active")).toBeNull();
     expect(location.href).toBe("/entrar?tab=login");
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
@@ -83,25 +81,28 @@ describe("resposta da operação após renovar a sessão", () => {
     fetchMock.mockReset();
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 403 }));
+    // No other tab renewed either: /auth/me also refuses.
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
 
     await expect(api.get("/recurso")).rejects.toMatchObject({ code: "SESSION_EXPIRED" });
-    expect(localStorage.getItem("session_token")).toBeNull();
+    expect(localStorage.getItem("session_active")).toBeNull();
     expect(location.href).toBe("/entrar?tab=login");
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(fetchMock.mock.calls[2][0]).toBe("/api/auth/me");
   });
 
   it("devolve os dados da nova tentativa bem-sucedida", async () => {
     fetchMock.mockResolvedValueOnce(Response.json({ body: { id: "recurso" } }));
 
     await expect(api.get("/recurso")).resolves.toEqual({ id: "recurso" });
-    expect(localStorage.getItem("session_token")).toBe("token-novo");
+    expect(localStorage.getItem("session_active")).toBe("1");
   });
 
   it("aceita uma nova tentativa sem conteúdo", async () => {
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
 
     await expect(api.get("/recurso")).resolves.toBeUndefined();
-    expect(localStorage.getItem("session_token")).toBe("token-novo");
+    expect(localStorage.getItem("session_active")).toBe("1");
   });
 
   it("mantém o tratamento específico de permissão da operação", async () => {
@@ -111,7 +112,7 @@ describe("resposta da operação após renovar a sessão", () => {
 
     await expect(api.get("/recurso")).rejects.toMatchObject({ code: "BIRTH_DATE_REQUIRED" });
     expect(notifyBirthDateRequired).toHaveBeenCalledOnce();
-    expect(localStorage.getItem("session_token")).toBe("token-novo");
+    expect(localStorage.getItem("session_active")).toBe("1");
   });
 
   it("preserva a sessão se a nova tentativa falha na rede", async () => {
@@ -125,8 +126,7 @@ describe("resposta da operação após renovar a sessão", () => {
       code: "NETWORK_ERROR",
       path: "/recurso",
     });
-    expect(localStorage.getItem("session_token")).toBe("token-novo");
-    expect(localStorage.getItem("refresh_token")).toBe("refresh-novo");
+    expect(localStorage.getItem("session_active")).toBe("1");
     expect(location.href).toBe("/feed");
     expect(fetchMock).toHaveBeenCalledTimes(3);
   });
@@ -149,8 +149,7 @@ describe("resposta da operação após renovar a sessão", () => {
         code: "SESSION_CHECK_UNAVAILABLE",
         path: "/recurso",
       });
-      expect(localStorage.getItem("session_token")).toBe("token-antigo");
-      expect(localStorage.getItem("refresh_token")).toBe("refresh-antigo");
+      expect(localStorage.getItem("session_active")).toBe("1");
       expect(location.href).toBe("/feed");
       expect(fetchMock).toHaveBeenCalledTimes(2);
       expect(fetchMock.mock.calls[1][0]).toBe("/api/auth/refresh");

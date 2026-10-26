@@ -43,14 +43,15 @@ export const preferencesApi = {
    * para revisão — nada é salvo automaticamente. Usa fetch direto (multipart).
    */
   importLinkedinArchive: async (file: File) => {
-    const { apiUrl, getSessionToken } = await import("../api-client");
+    const { apiUrl, sessionHeaders } = await import("../api-client");
     const formData = new FormData();
     formData.append("file", file);
     // URL absoluta (`apiUrl`): o host do front não serve `/api` em produção, e o multipart
     // relativo ia parar no 404 do próprio front.
     const response = await fetch(apiUrl("/me/import/linkedin"), {
       method: "POST",
-      headers: { "X-Session-Token": getSessionToken() ?? "", ...clientOriginHeader() },
+      credentials: "include",
+      headers: sessionHeaders(),
       body: formData,
     });
     if (!response.ok) {

@@ -71,8 +71,6 @@ export const authApi = {
   disableEmailOtp: (password: string) =>
     api.post<StatusResponse>("/auth/2fa/email/disable", { password }),
 
-  refresh: (refreshToken: string) => api.post<AuthResponse>("/auth/refresh", { refreshToken }),
-
   logout: () => api.post<void>("/auth/logout"),
 
   me: () => api.get<AuthUser>("/auth/me"),

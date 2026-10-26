@@ -1,8 +1,7 @@
 import type { LinkedinImportPreview } from "@/types/application/profile/linkedin-import-preview";
 import type { ResumeApplyPrefill } from "@/types/application/profile/resume-apply-prefill";
 
-import { ApiError, apiUrl, getSessionToken } from "../api-client";
-import { clientOriginHeader } from "./client-origin";
+import { ApiError, apiUrl, sessionHeaders } from "../api-client";
 
 /**
  * Importação via CURRÍCULO (PDF ou texto). Terceira origem do retrato profissional, ao lado
@@ -19,7 +18,8 @@ export const resumeImportApi = {
     formData.append("file", file);
     const response = await fetch(apiUrl("/me/import/resume"), {
       method: "POST",
-      headers: { "X-Session-Token": getSessionToken() ?? "", ...clientOriginHeader() },
+      credentials: "include",
+      headers: sessionHeaders(),
       body: formData,
     });
     if (!response.ok) {
@@ -43,7 +43,8 @@ export const resumeImportApi = {
     formData.append("file", file);
     const response = await fetch(apiUrl(`/me/import/resume/prefill/${jobId}`), {
       method: "POST",
-      headers: { "X-Session-Token": getSessionToken() ?? "", ...clientOriginHeader() },
+      credentials: "include",
+      headers: sessionHeaders(),
       body: formData,
     });
     if (!response.ok) {

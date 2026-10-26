@@ -74,6 +74,13 @@ BACKEND_TARGET=http://localhost:8081 npm run dev
 Sem o `context-path=/api` o backend responde só em `/push/config`, `/notifications`, etc., e o proxy devolve
 404 em tudo.
 
+**Sessão no dev**: a sessão vive em cookies HttpOnly (`enois_session`/`enois_refresh`) que a API grava. No
+dev o navegador fala só com o Vite (`/api` relativo, via proxy), então os cookies são do próprio
+`localhost` e chegam sem configuração de CORS. Eles saem com `Secure`: o navegador aceita isso em
+`http://localhost`, mas não em `http://<ip-da-rede>` — para abrir o dev pelo IP, suba o backend com o profile
+`dev` (que liga `rede.auth.cookie-secure=false`). Toda escrita manda `X-CSRF-Protection: 1`; o backend
+recusa escrita com cookie sem esse header (403 `CSRF_REQUIRED`).
+
 ## Scripts
 
 - `npm run dev`: inicia o ambiente local
