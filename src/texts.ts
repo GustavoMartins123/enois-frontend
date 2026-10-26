@@ -2547,6 +2547,9 @@ export const texts = {
       deadline: "Prazo",
       scope: "Escopo fechado",
       close: "Encerrar",
+      closeTitle: "Encerrar este freela?",
+      closeDescription:
+        "Ele sai da lista de abertos. O título e o escopo deixam de aparecer para quem está procurando.",
       closed: "Freela encerrado.",
       createTitle: "Publicar freela",
       titleField: "Título do trabalho",
