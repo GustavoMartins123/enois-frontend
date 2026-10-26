@@ -1,3 +1,4 @@
+import { texts } from "@/texts";
 import { HttpStatus } from "@/types/application/api/http-status";
 import type { RefreshOutcome } from "@/types/application/api/refresh-outcome";
 import type { RequestOptions } from "@/types/application/api/request-options";
@@ -452,7 +453,7 @@ async function fail<T>(response: Response, path: string, hadSession: boolean): P
   throw new ApiError(
     response.status,
     errorBody?.code,
-    errorBody?.message ?? response.statusText,
+    texts.errors.apiMessages[errorBody?.code] ?? errorBody?.message ?? response.statusText,
     path,
     retryAfter ? Number.parseInt(retryAfter, 10) || undefined : undefined,
   );

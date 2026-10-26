@@ -356,6 +356,11 @@ export const texts = {
       http: (status: number) => `HTTP ${status}`,
       postPath: (path: string) => `POST ${path}`,
     },
+    /** Replaces the API message for codes whose raw text is not fit for the screen. */
+    apiMessages: {
+      UNSAFE_LINK:
+        "Um dos links não é permitido. Use endereços que comecem com http://, https:// ou mailto:.",
+    } as Record<string, string>,
     knownCodes: {
       NETWORK_ERROR:
         "O navegador não conseguiu falar com a API. Se você estiver rodando localmente, verifique se o backend está em execução (ex.: `docker compose up` ou o servidor Java na porta 8081) e se a variável VITE_API_BACKEND no arquivo .env aponta para ele.",
@@ -650,6 +655,7 @@ export const texts = {
     },
     reset: {
       invalidLink: "Link inválido ou expirado. Solicite uma nova redefinição de senha.",
+      usedLink: "Este link já foi usado. Solicite uma nova redefinição de senha.",
       successTitle: "Senha redefinida!",
       successDescription: "Sua senha foi atualizada com sucesso. Já pode entrar na sua conta.",
       enterNow: "Entrar agora ",

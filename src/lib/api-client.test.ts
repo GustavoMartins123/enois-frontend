@@ -1,3 +1,4 @@
+import { texts } from "@/texts";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { notifyBirthDateRequired } from "./age-required";
@@ -155,4 +156,31 @@ describe("resposta da operação após renovar a sessão", () => {
       expect(fetchMock.mock.calls[1][0]).toBe("/api/auth/refresh");
     },
   );
+});
+
+describe("mensagem de erro da API", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("troca o texto cru de link não permitido por uma mensagem legível", async () => {
+    vi.stubGlobal("window", { location: { origin: "https://enois.ia.br", href: "/feed" } });
+    vi.stubGlobal("localStorage", { getItem: () => null, setItem: vi.fn(), removeItem: vi.fn() });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () =>
+        Response.json(
+          {
+            code: "UNSAFE_LINK",
+            message: "O campo content tem um link com endereco nao permitido",
+          },
+          { status: 400 },
+        ),
+      ),
+    );
+
+    await expect(api.post("/feed/posts", { content: "x" })).rejects.toMatchObject({
+      status: 400,
+      code: "UNSAFE_LINK",
+      message: texts.errors.apiMessages.UNSAFE_LINK,
+    });
+  });
 });
