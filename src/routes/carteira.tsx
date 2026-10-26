@@ -12,7 +12,7 @@ import {
   Sparkles,
   TrendingUp,
   User,
-  Wallet,
+  Zap,
 } from "lucide-react";
 
 import { walletApi } from "@/lib/api";
@@ -137,7 +137,7 @@ function Carteira() {
         <Tabs defaultValue="carteira">
           <TabsList className="wallet-shop-tabs">
             <TabsTrigger value="carteira">
-              <Wallet className="h-4 w-4" aria-hidden="true" />
+              <Zap className="h-4 w-4" aria-hidden="true" />
               {texts.frameShop.walletTab}
             </TabsTrigger>
 
