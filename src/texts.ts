@@ -839,6 +839,9 @@ export const texts = {
       apoie: "Apoie o Énóis",
       deleteAccount: "Excluir conta",
       logout: "Sair",
+      /** O backend não confirmou: os cookies da sessão continuariam valendo. */
+      logoutFailed: "Não foi possível sair agora. Sua sessão continua ativa neste aparelho.",
+      logoutRetry: "Tentar de novo",
       loggingOut: "Saindo...",
       pushOn: "Notificações no celular ativadas",
       pushOff: "Ativar notificações no celular",
