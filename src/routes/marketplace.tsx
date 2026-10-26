@@ -19,13 +19,7 @@ import { useIsAuthenticated } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { PageHeader } from "@/components/ui/page-header";
 import { useToast } from "@/components/ui/toast";
@@ -34,6 +28,7 @@ import { AppContainer } from "@/components/app-container";
 import { ThemeSellDialog } from "@/components/appearance/theme-sell-dialog";
 import { MarketplaceContentDialog } from "@/components/marketplace/marketplace-content-dialog";
 import { MarketplaceSellDialog } from "@/components/marketplace/marketplace-sell-dialog";
+import { ThemeProfilePreview } from "@/components/marketplace/theme-profile-preview";
 
 /** Piso de preço do marketplace: 50 faíscas (o backend também recusa abaixo disso). */
 const MIN_PRICE = parseFaiscaInput("50") ?? 50_000;
@@ -280,85 +275,6 @@ function Miniatura({ packageJson }: { packageJson: string }) {
   );
 }
 
-/** Amostra maior do item: um cartão de perfil/post com as cores reais do pacote. */
-function PreviewMock({ packageJson }: { packageJson: string }) {
-  const p = paletteOf(packageJson);
-
-  return (
-    <div className="min-w-0 rounded-xl p-4" style={{ background: p.bg }}>
-      <div
-        className="rounded-lg border p-4"
-        style={{ background: p.surface, borderColor: p.border }}
-      >
-        <div className="flex min-w-0 items-center gap-3">
-          <div className="h-10 w-10 shrink-0 rounded-full" style={{ background: p.primary }} />
-
-          <div className="min-w-0 flex-1 space-y-1.5">
-            <div className="h-2.5 w-2/3 rounded-full" style={{ background: p.strong }} />
-            <div
-              className="h-2 w-1/2 rounded-full"
-              style={{ background: p.subtle, opacity: 0.55 }}
-            />
-          </div>
-        </div>
-
-        <div className="mt-4 space-y-2">
-          <div
-            className="h-2 w-full rounded-full"
-            style={{ background: p.subtle, opacity: 0.35 }}
-          />
-          <div
-            className="h-2 w-11/12 rounded-full"
-            style={{ background: p.subtle, opacity: 0.35 }}
-          />
-          <div className="h-2 w-3/5 rounded-full" style={{ background: p.subtle, opacity: 0.35 }} />
-        </div>
-
-        <div className="mt-4 flex items-center gap-2">
-          <span
-            className="rounded-full px-4 py-1.5 text-xs font-medium"
-            style={{ background: p.primary, color: p.bg }}
-          >
-            Botão
-          </span>
-
-          <span
-            className="rounded-full border px-4 py-1.5 text-xs font-medium"
-            style={{ borderColor: p.border, color: p.strong }}
-          >
-            Secundário
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** Botão "Ver preview": abre a amostra maior sem sair da vitrine. */
-function PreviewButton({ packageJson, title }: { packageJson: string; title: string }) {
-  return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button size="sm" variant="outline" className="w-full rounded-full">
-          Ver preview
-        </Button>
-      </DialogTrigger>
-
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Preview · {title}</DialogTitle>
-        </DialogHeader>
-
-        <PreviewMock packageJson={packageJson} />
-
-        <p className="text-xs text-text-subtle">
-          Amostra com as cores do pacote. O item pode incluir outros ajustes além da paleta.
-        </p>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
 /** A listagem com o preview do tema (buscado da galeria). */
 function ListingCard({
   listing,
@@ -411,9 +327,7 @@ function ListingCard({
         </div>
 
         <div className="mt-auto space-y-2">
-          {theme.data && (
-            <PreviewButton packageJson={theme.data.packageJson} title={listing.title} />
-          )}
+          {theme.data && <ThemeProfilePreview theme={theme.data} title={listing.title} />}
 
           <span className="flex items-center gap-1.5 text-lg font-semibold text-primary">
             <Sparkles className="h-4 w-4" />

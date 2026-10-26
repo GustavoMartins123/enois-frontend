@@ -2000,6 +2000,13 @@ export const texts = {
    * aqui é o convite. Quando o site de origem proíbe quadro, a tela explica em vez de fingir falha.
    */
   marketplace: {
+    previewAction: "Ver preview",
+    previewTitle: (title: string) => `Prévia · ${title}`,
+    previewDescription:
+      "Veja as cores do tema no cartão do perfil. Sua aparência atual continua a mesma.",
+    profilePreview: "Prévia do perfil com o tema",
+    previewGuest: "Perfil de exemplo. Entre na sua conta para ver a prévia com seus dados.",
+    previewRetry: "Tentar novamente",
     purchaseConfirmed: "Compra confirmada",
     purchaseHeld:
       "As faíscas ficam retidas com segurança até você confirmar que recebeu o conteúdo. Se algo der errado, o reembolso devolve tudo.",
