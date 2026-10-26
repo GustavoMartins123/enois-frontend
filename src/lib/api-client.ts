@@ -143,10 +143,33 @@ function sessionExpiresAt(): number | null {
  */
 function refreshSession(): Promise<RefreshOutcome> {
   if (refreshPromise) return refreshPromise;
-  refreshPromise = doRefresh().finally(() => {
+  const expiryBefore = sessionExpiresAt();
+  refreshPromise = withRefreshLock(() => {
+    // Another tab renewed while this one waited for the lock: the shared cookies are already new,
+    // and refreshing again would rotate the token a second time for nothing.
+    const expiryNow = sessionExpiresAt();
+    if (
+      expiryNow !== null &&
+      (expiryBefore === null || expiryNow > expiryBefore) &&
+      expiryNow - Date.now() > REFRESH_WINDOW_MS
+    ) {
+      return Promise.resolve<RefreshOutcome>("renewed");
+    }
+    return doRefresh();
+  }).finally(() => {
     refreshPromise = null;
   });
   return refreshPromise;
+}
+
+/**
+ * One refresh at a time across every tab of the origin (Web Locks). Without locks support the
+ * per-tab promise above still dedupes, and the /auth/me check covers a cross-tab rotation.
+ */
+async function withRefreshLock(task: () => Promise<RefreshOutcome>): Promise<RefreshOutcome> {
+  const locks = typeof navigator !== "undefined" ? navigator.locks : undefined;
+  if (!locks?.request) return task();
+  return await locks.request("enois-refresh", task);
 }
 
 /**

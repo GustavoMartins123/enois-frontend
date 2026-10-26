@@ -222,3 +222,57 @@ describe("sessão que não tem mais como renovar", () => {
     expect(values.has("session_active")).toBe(false);
   });
 });
+
+describe("renovação entre abas (Web Locks)", () => {
+  const fetchMock = vi.fn();
+  let values: Map<string, string>;
+
+  beforeEach(() => {
+    values = new Map([
+      ["session_active", "1"],
+      // Longe de vencer: nada de renovação proativa, só a do 401.
+      ["session_expires_at", new Date(Date.now() + 3_600_000).toISOString()],
+    ]);
+    vi.stubGlobal("window", { location: { origin: "https://enois.ia.br", href: "/feed" } });
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+      removeItem: (key: string) => values.delete(key),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    fetchMock.mockReset();
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("não renova de novo quando outra aba renovou enquanto esta esperava o lock", async () => {
+    const request = vi.fn(async (_name: string, task: () => Promise<unknown>) => {
+      // A outra aba segurava o lock e renovou: a validade guardada andou para frente.
+      values.set("session_expires_at", new Date(Date.now() + 7_200_000).toISOString());
+      return task();
+    });
+    vi.stubGlobal("navigator", { locks: { request } });
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    fetchMock.mockResolvedValueOnce(Response.json({ ok: true }));
+
+    await expect(api.get("/recurso")).resolves.toEqual({ ok: true });
+    expect(request).toHaveBeenCalledWith("enois-refresh", expect.any(Function));
+    expect(fetchMock.mock.calls.map((call) => call[0])).toEqual(["/api/recurso", "/api/recurso"]);
+  });
+
+  it("renova dentro do lock quando ninguém renovou antes", async () => {
+    const request = vi.fn(async (_name: string, task: () => Promise<unknown>) => task());
+    vi.stubGlobal("navigator", { locks: { request } });
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    fetchMock.mockResolvedValueOnce(
+      Response.json({
+        expiresAt: "2099-01-01T00:00:00Z",
+        refreshExpiresAt: "2099-02-01T00:00:00Z",
+      }),
+    );
+    fetchMock.mockResolvedValueOnce(Response.json({ ok: true }));
+
+    await expect(api.get("/recurso")).resolves.toEqual({ ok: true });
+    expect(fetchMock.mock.calls[1][0]).toBe("/api/auth/refresh");
+  });
+});
