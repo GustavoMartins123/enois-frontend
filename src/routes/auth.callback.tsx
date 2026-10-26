@@ -7,7 +7,8 @@ import { Loader2, Sparkles } from "lucide-react";
 import { z } from "zod";
 
 import { authApi } from "@/lib/api";
-import { apiUrl, renewSession } from "@/lib/api-client";
+import { renewSession } from "@/lib/api-client";
+import { oauthCallbackUrl } from "@/lib/oauth-callback";
 import { storeSession } from "@/lib/session";
 
 import { Button } from "@/components/ui/button";
@@ -48,10 +49,9 @@ function OAuthCallback() {
     // A URL precisa ser ABSOLUTA (`apiUrl`): o host do front não expõe `/api`, então um caminho
     // relativo cai no 404 do próprio front e o login morre antes de chegar no backend.
     if (search.provider && search.code && search.state) {
-      const params = new URLSearchParams({ code: search.code, state: search.state });
-      window.location.replace(
-        apiUrl(`/auth/oauth/${search.provider.toLowerCase()}/callback?${params.toString()}`),
-      );
+      const callbackUrl = oauthCallbackUrl(search.provider, search.code, search.state);
+      if (callbackUrl) window.location.replace(callbackUrl);
+      else setError(texts.auth.social.callbackError);
       return;
     }
 
