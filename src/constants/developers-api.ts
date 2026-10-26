@@ -766,6 +766,14 @@ export const apiSections: ApiSection[] = [
  {"amount":100000,"kind":"AIRDROP","message":"Distribuição inicial","createdAt":"2026-10-18T09:59:59Z"}]}`,
       },
       {
+        method: "GET",
+        path: "/carteira/extrato?page=0&size=20",
+        access: "auth",
+        description:
+          "Extrato da própria carteira, mais recentes primeiro. page começa em zero (até 10.000); size aceita de 1 a 100. from e to são opcionais, usam YYYY-MM-DD e incluem o dia inteiro no fuso America/Sao_Paulo. Datas ou páginas inválidas retornam 400. A leitura não cria conta nem credita faíscas.",
+        response: `{"entries":[{"amount":5000,"kind":"REWARD","message":"Presença diária","refId":"presenca_demo","createdAt":"2026-10-18T10:00:00Z"}],"page":0,"size":20,"hasNext":false}`,
+      },
+      {
         method: "POST",
         path: "/carteira/transferencias",
         access: "auth",

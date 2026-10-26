@@ -12,11 +12,10 @@ import {
   Sparkles,
   TrendingUp,
   User,
-  Zap,
+  Wallet,
 } from "lucide-react";
 
 import { walletApi } from "@/lib/api";
-import { dataHora } from "@/lib/date/format";
 import { faiscaToBrlCents, formatBrlCents, formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { requireAuth } from "@/lib/require-auth";
 
@@ -30,6 +29,7 @@ import { useToast } from "@/components/ui/toast";
 import { AppContainer } from "@/components/app-container";
 import { UserPicker } from "@/components/user-picker";
 import { FrameShop } from "@/components/wallet/frame-shop";
+import { WalletHistory } from "@/components/wallet/wallet-history";
 
 export const Route = createFileRoute("/carteira")({
   beforeLoad: requireAuth,
@@ -45,7 +45,7 @@ function Carteira() {
 
   const {
     data: wallet,
-    isLoading,
+    isPending,
     isError,
     refetch,
   } = useQuery({
@@ -56,19 +56,18 @@ function Carteira() {
     queryKey: ["cotacao"],
     queryFn: () => walletApi.cotacao(90),
   });
-
   const transfer = useMutation({
-    mutationFn: () =>
-      walletApi.transfer(
-        form.toUsername.trim(),
-        parseFaiscaInput(form.amount) ?? 0,
-        form.message.trim() || undefined,
-      ),
+    mutationFn: () => {
+      const amount = parseFaiscaInput(form.amount);
+      if (amount === null) throw new Error(texts.wallet.invalidAmount);
+      return walletApi.transfer(form.toUsername.trim(), amount, form.message.trim() || undefined);
+    },
     onSuccess: () => {
       setPayOpen(false);
       setForm({ toUsername: "", amount: "", message: "" });
       toast(texts.wallet.sent, "success");
       void queryClient.invalidateQueries({ queryKey: ["carteira"] });
+      void queryClient.invalidateQueries({ queryKey: ["carteira-extrato"] });
     },
     onError: (error: unknown) => {
       const apiError = error as { code?: string; message?: string };
@@ -100,6 +99,7 @@ function Carteira() {
       setContestar(null);
       toast("Contestação enviada: a moderação vai analisar os dois lados.", "success");
       void queryClient.invalidateQueries({ queryKey: ["carteira"] });
+      void queryClient.invalidateQueries({ queryKey: ["carteira-extrato"] });
     },
     onError: (error: unknown) => {
       const code = (error as { code?: string }).code;
@@ -113,8 +113,6 @@ function Carteira() {
       );
     },
   });
-
-  const entries = wallet?.entries ?? [];
 
   return (
     <AppContainer>
@@ -139,7 +137,7 @@ function Carteira() {
         <Tabs defaultValue="carteira">
           <TabsList className="wallet-shop-tabs">
             <TabsTrigger value="carteira">
-              <Zap className="h-4 w-4" aria-hidden="true" />
+              <Wallet className="h-4 w-4" aria-hidden="true" />
               {texts.frameShop.walletTab}
             </TabsTrigger>
 
@@ -154,108 +152,67 @@ function Carteira() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="carteira" className="mx-auto max-w-2xl space-y-6 pt-5">
-            <div className="surface-card space-y-4 p-6">
-              <div className="flex items-center gap-2 text-text-subtle">
-                <Sparkles className="h-4 w-4 text-primary" />
+          <TabsContent value="carteira" className="wallet-tab-content space-y-6 pt-5">
+            <div className="wallet-overview-grid">
+              <section
+                className="wallet-panel wallet-balance"
+                aria-label={texts.frameShop.walletTab}
+              >
+                <div className="frame-shop-eyebrow">
+                  <Sparkles className="h-4 w-4" aria-hidden="true" />
 
-                <span className="text-xs font-medium uppercase tracking-widest">
-                  {texts.wallet.title}
-                </span>
-              </div>
-
-              {isLoading ? (
-                <LoadingState />
-              ) : isError ? (
-                <div className="rounded-xl border border-border-soft p-4 text-sm text-text-subtle">
-                  Não foi possível carregar a carteira agora.
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="ml-2 rounded-full"
-                    onClick={() => refetch()}
-                  >
-                    Tentar de novo
-                  </Button>
+                  <span>{texts.wallet.title}</span>
                 </div>
-              ) : (
-                <p className="text-4xl font-semibold tracking-tight text-text-strong">
-                  {formatFaisca(wallet?.balance ?? 0)}{" "}
-                  <span className="text-lg font-normal text-text-subtle">faíscas</span>
-                </p>
-              )}
 
-              {wallet && (
-                <p className="text-xs text-text-subtle">
-                  {texts.wallet.chaveLabel}:{" "}
-                  <span className="font-mono text-text-strong">{wallet.chave}</span>
-                </p>
-              )}
+                {isPending ? (
+                  <LoadingState />
+                ) : isError ? (
+                  <div className="wallet-history-empty" role="alert">
+                    <p>{texts.wallet.balanceLoadError}</p>
 
-              <Button className="rounded-full gap-2" onClick={() => setPayOpen(true)}>
-                <Send className="h-4 w-4" />
-                {texts.wallet.pay}
-              </Button>
+                    <Button size="sm" variant="outline" onClick={() => void refetch()}>
+                      {texts.common.retry}
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <p className="wallet-balance-value">
+                      {formatFaisca(wallet.balance)} <span>{texts.frameShop.sparks}</span>
+                    </p>
 
-              <p className="text-xs leading-relaxed text-text-subtle">{texts.wallet.notice}</p>
+                    <p className="wallet-balance-key">
+                      {texts.wallet.chaveLabel}: <span className="font-mono">{wallet.chave}</span>
+                    </p>
+                  </>
+                )}
+
+                <Button
+                  className="wallet-pay"
+                  disabled={!wallet || isError}
+                  onClick={() => setPayOpen(true)}
+                >
+                  <Send className="h-4 w-4" aria-hidden="true" />
+                  {texts.wallet.pay}
+                </Button>
+
+                <p className="wallet-panel-note">{texts.wallet.notice}</p>
+              </section>
+
+              {wallet && !isError && <CotacaoCard mf={wallet.balance} />}
             </div>
 
-            <CotacaoCard mf={wallet?.balance ?? 0} />
-
-            <section className="space-y-3">
-              <h2 className="text-sm font-semibold uppercase tracking-widest text-text-subtle">
-                {texts.wallet.history}
-              </h2>
-
-              {entries.length === 0 ? (
-                <div className="rounded-2xl border border-border-soft bg-surface-card p-6 text-sm text-muted-foreground">
-                  <Zap className="mb-2 h-4 w-4 text-primary" />
-                  {texts.wallet.historyEmpty}
-                </div>
-              ) : (
-                <ul className="divide-y divide-border-soft overflow-hidden rounded-2xl border border-border-soft bg-surface-card">
-                  {entries.map((entry, index) => (
-                    <li key={index} className="flex items-center gap-3 p-4">
-                      <span
-                        className={`text-sm font-semibold ${entry.amount >= 0 ? "text-green-600 dark:text-green-400" : "text-destructive"}`}
-                      >
-                        {entry.amount >= 0 ? "+" : ""}
-                        {formatFaisca(entry.amount)}
-                      </span>
-
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm text-text-strong">
-                          {entry.message || (texts.wallet.kind[entry.kind] ?? entry.kind)}
-                        </span>
-
-                        <span className="block text-xs text-text-subtle">
-                          {dataHora(entry.createdAt)}
-                        </span>
-                      </span>
-
-                      {entry.kind === "TRANSFER_OUT" && entry.refId && (
-                        <button
-                          type="button"
-                          className="shrink-0 rounded-full border border-border-soft px-2 py-1 text-xs text-text-subtle transition hover:border-destructive hover:text-destructive"
-                          onClick={() =>
-                            setContestar({ refId: entry.refId!, motivo: "golpe", descricao: "" })
-                          }
-                        >
-                          Contestar
-                        </button>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section>
+            {wallet && !isError && (
+              <WalletHistory
+                onContest={(refId) => setContestar({ refId, motivo: "golpe", descricao: "" })}
+              />
+            )}
           </TabsContent>
 
-          <TabsContent value="loja" className="pt-5">
+          <TabsContent value="loja" className="wallet-tab-content pt-5">
             <FrameShop />
           </TabsContent>
 
-          <TabsContent value="minhas" className="pt-5">
+          <TabsContent value="minhas" className="wallet-tab-content pt-5">
             <FrameShop onlyOwned />
           </TabsContent>
         </Tabs>
@@ -408,11 +365,32 @@ function Carteira() {
  * faísca com dinheiro é Fase 6/7, condicionada a parecer jurídico.
  */
 function CotacaoCard({ mf }: { mf: number }) {
-  const { data: cotacao } = useQuery({
+  const {
+    data: cotacao,
+    isPending,
+    isError,
+    refetch,
+  } = useQuery({
     queryKey: ["cotacao"],
     queryFn: () => walletApi.cotacao(90),
   });
-  if (!cotacao) return null;
+  if (isPending)
+    return (
+      <section className="wallet-panel">
+        <LoadingState />
+      </section>
+    );
+  if (isError) {
+    return (
+      <section className="wallet-panel wallet-history-empty" role="alert">
+        <p>{texts.wallet.quoteLoadError}</p>
+
+        <Button size="sm" variant="outline" onClick={() => void refetch()}>
+          {texts.common.retry}
+        </Button>
+      </section>
+    );
+  }
 
   const pontos = [...cotacao.historico].reverse();
   const atual = cotacao.brlCents;
@@ -420,7 +398,7 @@ function CotacaoCard({ mf }: { mf: number }) {
   const subiu = atual >= anterior;
 
   return (
-    <section className="surface-card space-y-3 p-6" aria-label="Cotação da faísca">
+    <section className="wallet-panel space-y-4" aria-label="Cotação da faísca">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-text-subtle">
           <TrendingUp className="h-4 w-4 text-primary" />

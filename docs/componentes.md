@@ -21,6 +21,40 @@ Loja de molduras de avatar na rota `/carteira`.
 **Estado:** `useQuery` para catálogo; `useMutation` para comprar e equipar; estado local para
 busca, filtro, ordenação, quantidade visível e prévia selecionada
 
+## `Carteira` (`src/routes/carteira.tsx`)
+
+Página de saldo, cotação e extrato com as mesmas abas e superfícies visuais da loja.
+
+**Funcionalidades:**
+
+- Aba Carteira aberta por padrão; as três abas usam a mesma largura, cores e organização de cartões
+- Saldo e cotação lado a lado no desktop e empilhados no celular
+- Extrato em seção própria, pelo componente `WalletHistory`
+- Transferência e contestação preservadas
+
+**Estado:** `useQuery` para carteira e cotação; `useMutation` para transferência e contestação;
+estado local para os diálogos
+
+## `WalletHistory` (`src/components/wallet/wallet-history.tsx`)
+
+Extrato da carteira com filtros de período e navegação entre páginas.
+
+**Props:** `{ onContest: (refId: string) => void }`
+
+**Funcionalidades:**
+
+- Páginas de 20 lançamentos pelo contrato `GET /carteira/extrato?page=&size=&from=&to=`
+- Filtros por data inicial e final, juntos ou separados, aplicados pelo botão Filtrar
+- Datas no fuso `America/Sao_Paulo`, o mesmo usado na exibição do extrato
+- Filtrar ou limpar o período volta à primeira página; intervalo invertido exibe erro
+- Carregamento, falha de leitura com nova tentativa e período sem movimentações têm estados próprios
+- Tipo, mensagem, valor e data de cada lançamento; contestação pela referência da transferência
+- Compra de moldura, transferência e contestação invalidam a consulta do extrato
+- Resposta validada antes da exibição, incluindo a página solicitada e a indicação de próxima página
+
+**Estado:** `useQuery` para a página do extrato; estado local para o período em edição,
+o período aplicado e a página atual
+
 ## `AppShell` (`src/components/app-shell.tsx`)
 
 Layout principal da aplicação. Envolve todo o conteúdo das páginas autenticadas.

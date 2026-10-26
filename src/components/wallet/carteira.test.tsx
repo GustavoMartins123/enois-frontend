@@ -20,7 +20,7 @@ vi.mock("@/components/app-container", () => ({
 vi.mock("@/components/ui/toast", () => ({ useToast: () => ({ toast: vi.fn() }) }));
 vi.mock("@/lib/current-user", () => ({ useCurrentUser: () => ({ data: undefined }) }));
 vi.mock("@/lib/api", () => ({
-  walletApi: { wallet: vi.fn(), cotacao: vi.fn() },
+  walletApi: { wallet: vi.fn(), cotacao: vi.fn(), extract: vi.fn() },
   lojaApi: { catalog: vi.fn(), buy: vi.fn(), equip: vi.fn() },
 }));
 
@@ -72,6 +72,14 @@ describe("Carteira e ordenação das molduras", () => {
     );
     client.setQueryData(["carteira"], { balance: 0, chave: "demonstracao", entries: [] });
     client.setQueryData(["cotacao"], { brlCents: 100, historico: [] });
+    client.setQueryData(["carteira-extrato", 0, "", ""], {
+      entries: [],
+      page: 0,
+      size: 20,
+      hasNext: false,
+      from: "",
+      to: "",
+    });
     const Page = Route.options.component!;
     await act(async () =>
       root.render(
@@ -122,7 +130,7 @@ describe("Carteira e ordenação das molduras", () => {
     expect(tabs[0].textContent).toBe(texts.frameShop.walletTab);
     expect(tabs[0].getAttribute("aria-selected")).toBe("true");
     expect(tabs[1].getAttribute("aria-selected")).toBe("false");
-    expect(tabs[0].querySelector("svg.lucide-zap")).not.toBeNull();
+    expect(tabs[0].querySelector("svg.lucide-wallet")).not.toBeNull();
     for (const tab of tabs) expect(tab.querySelector("svg[aria-hidden=true]")).not.toBeNull();
     expect(host.textContent).toContain(texts.wallet.history);
     expect(host.querySelector(".frame-shop-grid")).toBeNull();

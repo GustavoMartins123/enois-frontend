@@ -38,6 +38,7 @@ export function FrameShop({ onlyOwned = false }: FrameShopProps) {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["loja"] });
       void queryClient.invalidateQueries({ queryKey: ["carteira"] });
+      void queryClient.invalidateQueries({ queryKey: ["carteira-extrato"] });
       toast(texts.frameShop.bought, "success");
     },
     onError: () => toast(texts.frameShop.buyError, "error"),
