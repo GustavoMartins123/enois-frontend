@@ -128,6 +128,18 @@ function sleep(ms: number): Promise<void> {
 
 let refreshPromise: Promise<RefreshOutcome> | null = null;
 
+/**
+ * Ceiling for the session calls made while holding the cross-tab refresh lock: a stalled request
+ * would otherwise block the refresh of every tab. A timeout counts as "unavailable".
+ */
+const SESSION_CALL_TIMEOUT_MS = 15_000;
+
+function sessionCallSignal(): AbortSignal | undefined {
+  return typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function"
+    ? AbortSignal.timeout(SESSION_CALL_TIMEOUT_MS)
+    : undefined;
+}
+
 function sessionExpiresAt(): number | null {
   if (typeof window === "undefined") return null;
   const raw = localStorage.getItem("session_expires_at");
@@ -194,6 +206,7 @@ async function doRefresh(legacyToken?: string): Promise<RefreshOutcome> {
         ? { "Content-Type": "application/json", ...sessionHeaders() }
         : sessionHeaders(),
       body: legacyToken ? JSON.stringify({ refreshToken: legacyToken }) : undefined,
+      signal: sessionCallSignal(),
     });
 
     // So a recusa EXPLICITA (400/401/403) significa sessao encerrada — 400 e o refresh sem cookie
@@ -233,6 +246,7 @@ async function sessionStillValid(): Promise<"valid" | "invalid" | "unknown"> {
     const response = await fetch(`${baseUrl()}/auth/me`, {
       credentials: "include",
       headers: sessionHeaders(),
+      signal: sessionCallSignal(),
     });
     if (response.ok) return "valid";
     return response.status === 401 || response.status === 403 ? "invalid" : "unknown";

@@ -364,3 +364,42 @@ describe("envio multipart", () => {
     expect(retry.credentials).toBe("include");
   });
 });
+
+describe("chamadas de sessão com prazo", () => {
+  const fetchMock = vi.fn();
+  let values: Map<string, string>;
+
+  beforeEach(() => {
+    values = new Map([["session_active", "1"]]);
+    vi.stubGlobal("window", { location: { origin: "https://enois.ia.br", href: "/feed" } });
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+      removeItem: (key: string) => values.delete(key),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    fetchMock.mockReset();
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("bounds /auth/refresh and /auth/me with a timeout signal", async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+
+    await expect(api.get("/recurso")).rejects.toMatchObject({ code: "SESSION_EXPIRED" });
+    expect(fetchMock.mock.calls[1][0]).toBe("/api/auth/refresh");
+    expect(fetchMock.mock.calls[1][1].signal).toBeInstanceOf(AbortSignal);
+    expect(fetchMock.mock.calls[2][0]).toBe("/api/auth/me");
+    expect(fetchMock.mock.calls[2][1].signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it("treats a timed-out refresh as unavailable and keeps the session", async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    fetchMock.mockRejectedValueOnce(new DOMException("timed out", "TimeoutError"));
+
+    await expect(api.get("/recurso")).rejects.toMatchObject({ code: "SESSION_CHECK_UNAVAILABLE" });
+    expect(values.get("session_active")).toBe("1");
+  });
+});
