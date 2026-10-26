@@ -1,19 +1,20 @@
 // @vitest-environment jsdom
 import { act } from "react";
-
 import * as React from "react";
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-import { updatePostInQueryCache } from "@/lib/feed/post-query-cache";
-import type { FeedPages } from "@/types/lib/feed/feed-pages";
 import { usePostCardStore } from "@/stores/post-card.store";
 import type { PostView } from "@/types/application/feed/post-view";
 import type { ActionResponse } from "@/types/application/reaction/action-response";
+import type { FeedPages } from "@/types/lib/feed/feed-pages";
 import type { UsePostReactionResult } from "@/types/lib/reactions/use-post-reaction-result";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { usePostReaction } from "./use-post-reaction";
+import { updatePostInQueryCache } from "@/lib/feed/post-query-cache";
+
+import { resetReactionGuards, usePostReaction } from "./use-post-reaction";
 
 const mocks = vi.hoisted(() => ({
   react: vi.fn(),
@@ -81,6 +82,7 @@ describe("Reações rápidas de uma publicação", () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    resetReactionGuards();
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
     now = 10_000;
     vi.spyOn(Date, "now").mockImplementation(() => now);
