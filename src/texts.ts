@@ -1,21 +1,4 @@
-/**
- * Data do evento ("2026-10-23") em português curto. Lida em UTC de propósito: a data vem sem fuso
- * e, lida no fuso local, "2026-10-23" virava 22 de outubro para quem está a oeste de Greenwich.
- */
-function formatEventDate(date: string): string {
-  const parsed = new Date(`${date}T00:00:00Z`);
-  if (Number.isNaN(parsed.getTime())) return date;
-  const sameYear = parsed.getUTCFullYear() === new Date().getFullYear();
-  return parsed
-    .toLocaleDateString("pt-BR", {
-      day: "numeric",
-      month: "short",
-      year: sameYear ? undefined : "numeric",
-      timeZone: "UTC",
-    })
-    .replace(/\./g, "")
-    .replace(/ de /g, " ");
-}
+import { dataCurta, dataDeEvento } from "@/lib/date/format";
 
 const common = {
   enter: "Entrar",
@@ -1376,6 +1359,10 @@ export const texts = {
     },
     momentExpiry: (hours: number) => `some em ${hours}h`,
     momentExpiryTitle: "Momento se apaga sozinho em 24 horas",
+    imagePreview: {
+      title: "Imagem ampliada",
+      open: "Ampliar imagem",
+    },
     /** Palco de mídia do Modo lite: o vídeo aberto em tela cheia, com o resto da página pausado. */
     mediaStage: {
       open: "Assistir em tela cheia",
@@ -1505,6 +1492,11 @@ export const texts = {
       seeWho: (count: number) => `Ver quem reagiu (${count} ${count === 1 ? "reação" : "reações"})`,
       error: "Não foi possível reagir. Tente novamente.",
       permissionError: "Você não tem permissão para reagir neste post.",
+      restrictedError: "Sua conta está restrita e não pode reagir agora. Veja em Penalidades.",
+      sessionError: "Sua sessão expirou. Entre de novo para reagir.",
+      rateLimitError: "Calma aí — muitas ações em pouco tempo. Aguarde um minuto e tente de novo.",
+      /** Sem resposta do servidor (rede, bloqueio do proxy): não é recusa da reação. */
+      networkError: "Não conseguimos falar com o servidor agora. Tente de novo em instantes.",
       loadError: "Não foi possível carregar as reações.",
       emojis: {
         LIKE: "👍",
@@ -1681,8 +1673,7 @@ export const texts = {
     blockedEmpty: "Você não bloqueou ninguém.",
     blockedHint:
       "O bloqueio vale para sempre e os dois lados deixam de se ver. Desbloqueie aqui quando quiser.",
-    blockedSince: (date: string | null) =>
-      date ? `Bloqueado em ${new Date(date).toLocaleDateString("pt-BR")}` : "Bloqueado",
+    blockedSince: (date: string | null) => (date ? `Bloqueado em ${dataCurta(date)}` : "Bloqueado"),
     openToWork: "Aberto a oportunidades",
     mentorAvailable: "Mentor disponível",
     connections: (count: number) => `${count} ${count === 1 ? "conexão" : "conexões"}`,
@@ -2457,7 +2448,7 @@ export const texts = {
     hostedBy: (host: string) => `por ${host}`,
     watchLive: "Assistir ao vivo",
     /** "23 out · 08:00"; o ano só aparece quando não é o atual ("31 dez 2029 · 23:59"). */
-    dateTime: (date: string, time: string) => `${formatEventDate(date)} · ${time}`,
+    dateTime: (date: string, time: string) => `${dataDeEvento(date)} · ${time}`,
     attend: "Confirmar presença",
     cancelAttend: "Desconfirmar presença",
     youAreGoing: "Você vai",
@@ -2530,6 +2521,22 @@ export const texts = {
       description:
         "Trabalhos pontuais com escopo fechado, prazo e faixa de valor — pagos em dinheiro ou em faíscas. Qualquer pessoa com conta verificada pode publicar.",
       create: "Publicar freela",
+      /** Aviso no topo: contratar (publicar e conversar) exige conta verificada. */
+      hiringNoticeTitle: "Quer contratar? Crie sua conta.",
+      hiringNotice:
+        "Publicar um freela e falar com quem se candidata exige uma conta verificada no Énóis — é o que mantém o combinado rastreável e protege os dois lados. Criar conta é gratuito.",
+      hiringNoticeCta: "Criar conta",
+      apply: "Candidatar-se",
+      applyTitle: "Candidatar-se ao freela",
+      applyHint:
+        "A mensagem vai direto para a conversa com quem publicou — escopo, prazo e valor são combinados ali.",
+      applyPlaceholder: "Conte como você pretende entregar o trabalho...",
+      applyMessage: (title: string) => `Olá! Tenho interesse no freela "${title}".`,
+      applySend: "Enviar mensagem",
+      applySending: "Enviando...",
+      applySent: "Mensagem enviada.",
+      applyError: "Não foi possível enviar a mensagem.",
+      applyOpenChat: "Abrir conversa",
       empty: "Nenhum freela aberto agora.",
       emptyHint: "Publique o primeiro: escopo fechado, prazo e faixa de valor.",
       searchPlaceholder: "Buscar freelances por título ou escopo",
@@ -3006,6 +3013,7 @@ export const texts = {
     originError: "Não foi possível cadastrar a origem.",
     originValidHint:
       "Use só o domínio com https (http é aceito apenas em localhost). Sem origem cadastrada, a requisição recebe 403 ORIGIN_NOT_ALLOWED (e ORIGIN_REQUIRED quando a chamada não manda origem nenhuma).",
+    originBlocked: "Bloqueada por atividade suspeita",
     sandboxTitle: "API pública = sandbox. Produção só com pedido aprovado",
     sandboxBody:
       "Os exemplos desta página apontam para o ambiente de testes (sandbox). Quem precisa falar com a API de produção abre um pedido no suporte com os dados abaixo — a gente confere e libera o acesso.",
@@ -3190,7 +3198,10 @@ export const texts = {
       "Restrições ativas na sua conta e o andamento dos seus recursos. A decisão final é sempre de uma pessoa do time.",
     empty: "Nenhuma penalidade na sua conta.",
     emptyHint: "Isto não é um histórico de elogios — é só o que de fato restringiu a conta.",
-    type: { RESTRICTION: "Restrição", BAN: "Banimento" } as Record<string, string>,
+    type: { RESTRICTION: "Restrição", SUSPENDED: "Suspensão", BAN: "Banimento" } as Record<
+      string,
+      string
+    >,
     statusLabel: {
       ACTIVE: "Ativa",
       REMOVED: "Removida",
@@ -3212,6 +3223,8 @@ export const texts = {
     restrictedNotice:
       "Sua conta está restrita: você não pode publicar nem comentar enquanto a restrição estiver ativa.",
     bannedNotice: "Sua conta está banida após revisão do recurso. Se precisar, fale com o suporte.",
+    suspendedNotice:
+      "Sua conta está suspensa: você não entra nem publica até recorrer ou o prazo terminar.",
     moderationTitle: "Moderação · recursos",
     moderationDescription:
       "Fila de recursos de penalidade automática. Aprovar remove a restrição; negar converte em banimento (sessões revogadas).",
@@ -3598,6 +3611,8 @@ export const texts = {
       copyFailed: "Não foi possível copiar.",
       showMore: "mostrar mais",
       showLess: "mostrar menos",
+      showStack: "ver pilha do erro",
+      hideStack: "ocultar pilha",
       loadMore: "Carregar mais eventos",
       fromLabel: "De (data e hora)",
       toLabel: "Até (data e hora)",
@@ -3823,6 +3838,54 @@ export const texts = {
   importNewerVersion:
     "Este arquivo é de uma versão mais nova do Énóis. Atualize o app para importar.",
   galleryLink: "Temas da comunidade",
+
+  frameShop: {
+    title: "Carteira & estilo",
+    subtitle: "Suas faíscas, suas escolhas.",
+    walletTab: "Carteira",
+    storeTab: "Loja",
+    ownedTab: "Minhas molduras",
+    cosmetics: "Molduras de avatar",
+    yourCollection: "Sua coleção",
+    heroTitle: "Seu perfil, do seu jeito.",
+    heroDescription: "Encontre a moldura que combina com você e experimente no seu avatar.",
+    ownedTitle: "Pequenos detalhes. Um estilo só seu.",
+    ownedDescription: "Escolha uma das suas molduras para acompanhar seu avatar pela comunidade.",
+    catalog: "Explore as molduras",
+    catalogDescription: "Só aparência. Toda a sua personalidade.",
+    search: "Buscar moldura",
+    filterLabel: "Filtrar molduras",
+    orderLabel: "Ordenar por",
+    oldestFirst: "Mais antigas primeiro",
+    newestFirst: "Mais novas primeiro",
+    filters: {
+      all: "Todas",
+      simple: "Simples",
+      animated: "Animadas",
+    },
+    owned: "Você já tem esta moldura",
+    equipped: "Em uso",
+    animated: "Animada",
+    simple: "Simples",
+    buy: "Comprar",
+    equip: "Equipar",
+    unequip: "Desequipar",
+    try: "Experimentar",
+    tryItem: (name: string) => `Experimentar ${name}`,
+    preview: "Experimente no seu perfil",
+    sparks: "faíscas",
+    showMore: "Mostrar mais molduras",
+    showing: (visible: number, total: number) => `Mostrando ${visible} de ${total} molduras`,
+    noResults: "Nenhuma moldura encontrada",
+    noOwned: "Sua coleção começa aqui",
+    emptyHint: "Explore a loja ou experimente outro filtro.",
+    note: "A moldura acompanha seu avatar por toda a comunidade.",
+    loadError: "Não foi possível carregar a loja.",
+    retry: "Tentar novamente",
+    bought: "Moldura comprada. Agora você pode equipá-la.",
+    buyError: "Não foi possível comprar a moldura. Confira seu saldo e tente novamente.",
+    equipError: "Não foi possível atualizar a moldura. Tente novamente.",
+  },
 
   wallet: {
     seoTitle: "Carteira · Énóis",

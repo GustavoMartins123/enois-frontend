@@ -8,6 +8,7 @@ import { texts } from "@/texts";
 import { ArrowRight, ArrowUpRight, GitPullRequest, ShieldAlert } from "lucide-react";
 
 import { statsApi } from "@/lib/api";
+import { anoAtual } from "@/lib/date/format";
 
 import { Button } from "@/components/ui/button";
 
@@ -726,7 +727,7 @@ function Landing() {
 
           <div className="mt-12 space-y-3 border-t border-border pt-6">
             <p className="text-xs text-muted-foreground">
-              {texts.landing.footer.copyright(new Date().getFullYear())}
+              {texts.landing.footer.copyright(anoAtual())}
             </p>
 
             {/* Aviso de independência pedido pela Mel: afasta confusão com organizações homônimas. */}

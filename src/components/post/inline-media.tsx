@@ -7,6 +7,7 @@ import { texts } from "@/texts";
 import { mediaApi } from "@/lib/api";
 import { resolveCdnUrl, withImageKitOriginal } from "@/lib/api/media";
 
+import { ImageLightbox } from "./image-lightbox";
 import { LiteVideo } from "./lite-video";
 import { SpoilerMedia } from "./spoiler-media";
 
@@ -62,35 +63,23 @@ export function InlineMedia({
       <div className="my-2 overflow-hidden rounded-xl border border-border-soft">
         <SpoilerMedia active={mediaSpoiler} label={texts.posts.mediaSpoiler.reveal}>
           {() => (
-            <button
-              type="button"
-              className="block w-full cursor-zoom-in"
-              onClick={() => setFullscreen(true)}
-            >
-              <img
-                src={resolveCdnUrl(media.cdnUrl)}
-                alt=""
-                loading="lazy"
-                className="max-h-96 w-full bg-surface-1 object-cover"
-              />
-            </button>
+            <ImageLightbox src={resolveCdnUrl(media.cdnUrl)}>
+              <button
+                type="button"
+                className="block w-full cursor-zoom-in"
+                aria-label={texts.posts.imagePreview.open}
+              >
+                <img
+                  src={resolveCdnUrl(media.cdnUrl)}
+                  alt=""
+                  loading="lazy"
+                  className="h-auto max-h-96 w-full bg-surface-1 object-contain"
+                />
+              </button>
+            </ImageLightbox>
           )}
         </SpoilerMedia>
       </div>
-
-      {fullscreen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
-          onClick={() => setFullscreen(false)}
-        >
-          <img
-            src={resolveCdnUrl(media.cdnUrl)}
-            alt=""
-            className="max-h-[90vh] max-w-[90vw] cursor-zoom-out rounded-2xl object-contain"
-            onClick={(event) => event.stopPropagation()}
-          />
-        </div>
-      )}
     </>
   );
 }

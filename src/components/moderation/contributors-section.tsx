@@ -6,6 +6,7 @@ import type { ContributorApplicationStatus } from "@/types/application/contribut
 import { Mail, RefreshCw, UserPlus } from "lucide-react";
 
 import { contributorsApi } from "@/lib/api";
+import { dataCurta, dataHora } from "@/lib/date/format";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
@@ -104,9 +105,7 @@ function ContributorCard({ application }: { application: ContributorAdminView })
         <div className="min-w-0">
           <p className="text-sm font-semibold text-text-strong">{application.name}</p>
 
-          <p className="text-xs text-text-subtle">
-            {new Date(application.createdAt).toLocaleString("pt-BR")}
-          </p>
+          <p className="text-xs text-text-subtle">{dataHora(application.createdAt)}</p>
         </div>
 
         <span
@@ -155,8 +154,7 @@ function ContributorCard({ application }: { application: ContributorAdminView })
         )}
 
         <span className="text-text-subtle">
-          {texts.moderator.contributors.acceptedAt}:{" "}
-          {new Date(application.acceptedTermsAt).toLocaleDateString("pt-BR")}
+          {texts.moderator.contributors.acceptedAt}: {dataCurta(application.acceptedTermsAt)}
         </span>
       </div>
 

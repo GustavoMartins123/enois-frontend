@@ -5,6 +5,8 @@ import type { LegalLastUpdatedProps } from "@/types/components/legal/legal-last-
 import type { LegalSectionProps } from "@/types/components/legal/legal-section-props";
 import type { WithRequiredChildren } from "@/types/components/with-required-children";
 
+import { anoAtual } from "@/lib/date/format";
+
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export function LegalLayout({ children }: WithRequiredChildren) {
@@ -32,7 +34,7 @@ export function LegalLayout({ children }: WithRequiredChildren) {
 
       <footer className="border-t border-border py-6">
         <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 px-4 text-xs text-muted-foreground sm:px-6">
-          <p>{texts.legal.footer.copyright(new Date().getFullYear())}</p>
+          <p>{texts.legal.footer.copyright(anoAtual())}</p>
 
           <nav className="flex items-center gap-4">
             <Link to="/sobre" className="transition-colors hover:text-foreground">

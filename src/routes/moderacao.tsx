@@ -8,6 +8,7 @@ import { ArrowLeft } from "lucide-react";
 import { Ban, Gamepad2, Gavel, ShieldAlert, ShieldOff, Trash2 } from "lucide-react";
 
 import { gamesApi, moderationApi, sanctionsApi, walletApi } from "@/lib/api";
+import { dataCurta, dataHora } from "@/lib/date/format";
 import { formatFaisca } from "@/lib/faisca";
 import { requireAuth } from "@/lib/require-auth";
 
@@ -105,9 +106,7 @@ function Moderacao() {
               >
                 <p className="text-sm">{item.message}</p>
 
-                <p className="text-xs text-text-subtle">
-                  {new Date(item.createdAt).toLocaleString("pt-BR")}
-                </p>
+                <p className="text-xs text-text-subtle">{dataHora(item.createdAt)}</p>
 
                 <div className="flex flex-wrap gap-2 pt-1">
                   <Button
@@ -202,7 +201,7 @@ function DisputasSection() {
               </p>
 
               <p className="text-xs text-text-subtle">
-                {new Date(d.createdAt).toLocaleString("pt-BR")} · ref {d.entryRef.slice(0, 16)}…
+                {dataHora(d.createdAt)} · ref {d.entryRef.slice(0, 16)}…
               </p>
 
               <div className="flex flex-wrap gap-2 pt-1">
@@ -543,8 +542,7 @@ function JogosSection() {
                   <p className="truncate text-sm font-semibold">{g.title}</p>
 
                   <p className="text-xs text-text-subtle">
-                    @{g.username ?? g.userId} ·{" "}
-                    {new Date(g.submittedAt).toLocaleDateString("pt-BR")}
+                    @{g.username ?? g.userId} · {dataCurta(g.submittedAt)}
                     {g.tags ? ` · ${g.tags}` : ""}
                   </p>
                 </div>

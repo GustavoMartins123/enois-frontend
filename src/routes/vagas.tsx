@@ -41,6 +41,7 @@ import {
 import { jobsApi, reportsApi } from "@/lib/api";
 import { CURRENCIES, currencySymbol, formatSalary } from "@/lib/currency";
 import { useCurrentUser } from "@/lib/current-user";
+import { dataCurta } from "@/lib/date/format";
 import { canCreateJob, missingReputationToCreateJob } from "@/lib/job-permissions";
 import { requireAuth } from "@/lib/require-auth";
 import { useIsAuthenticated } from "@/lib/use-auth";
@@ -88,7 +89,7 @@ function formatPostedAt(dateStr: string | null | undefined): string {
   const diffD = Math.floor((now.getTime() - date.getTime()) / 86400000);
   if (diffD < 1) return texts.jobs.today;
   if (diffD < 30) return texts.jobs.daysAgo(diffD);
-  return date.toLocaleDateString("pt-BR");
+  return dataCurta(date);
 }
 
 function Vagas() {

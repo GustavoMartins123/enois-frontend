@@ -12,6 +12,7 @@ import { Calendar, CheckCircle2, Image as ImageIcon, Sparkles, Star, Trash2 } fr
 import { ApiError, mentorsApi, profileApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { useCurrentUser } from "@/lib/current-user";
+import { formatarData } from "@/lib/date/format";
 import { requireAuth } from "@/lib/require-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
@@ -773,7 +774,7 @@ function formatSlot(value: string | null): string {
   if (!value) return texts.mentoring.noSlot;
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return texts.mentoring.noSlot;
-  return date.toLocaleString("pt-BR", {
+  return formatarData(date, {
     day: "2-digit",
     month: "short",
     hour: "2-digit",

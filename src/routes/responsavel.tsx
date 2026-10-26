@@ -9,6 +9,7 @@ import { Check, ShieldCheck, UserMinus, X } from "lucide-react";
 import { z } from "zod";
 
 import { parentalApi } from "@/lib/api";
+import { dataCurta } from "@/lib/date/format";
 import { hasSession } from "@/lib/require-auth";
 import { ogMetas } from "@/lib/seo";
 
@@ -248,8 +249,7 @@ function MinorRow({
         <span className="block truncate text-sm font-medium text-text-strong">{minor.name}</span>
 
         <span className="block text-xs text-text-subtle">
-          @{minor.username} ·{" "}
-          {texts.guardian.since(new Date(minor.since).toLocaleDateString("pt-BR"))}
+          @{minor.username} · {texts.guardian.since(dataCurta(minor.since))}
         </span>
       </span>
 

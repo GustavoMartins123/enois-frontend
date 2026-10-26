@@ -9,6 +9,7 @@ import { ArrowLeft, Globe, MapPin, Users } from "lucide-react";
 import { companiesApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { getCurrentUser } from "@/lib/current-user";
+import { dataCurta } from "@/lib/date/format";
 import { safeHttpUrl } from "@/lib/safe-url";
 
 import { Button } from "@/components/ui/button";
@@ -268,7 +269,7 @@ function Empresa() {
                   <StatusChip status={project.status} />
 
                   <span className="ml-auto text-xs text-muted-foreground">
-                    {new Date(project.createdAt).toLocaleDateString("pt-BR")}
+                    {dataCurta(project.createdAt)}
                   </span>
                 </div>
 
@@ -287,9 +288,7 @@ function Empresa() {
                       {/* O prazo vem como data pura ("2026-10-30"). `new Date` lê isso como
                           meia-noite UTC, que no Brasil ainda é o dia anterior: o prazo aparecia
                           um dia antes. Meio-dia local, como em /freelances, mantém o dia. */}
-                      {texts.empresa.deadlineBy(
-                        new Date(`${project.deadline}T12:00:00`).toLocaleDateString("pt-BR"),
-                      )}
+                      {texts.empresa.deadlineBy(dataCurta(project.deadline))}
                     </span>
                   )}
                 </div>
@@ -453,6 +452,7 @@ function Empresa() {
             <div className="mt-3 space-y-3 text-sm">
               <input
                 value={projectForm.title}
+                maxLength={200}
                 onChange={(event) => setProjectForm({ ...projectForm, title: event.target.value })}
                 placeholder={texts.empresa.projectTitle}
                 className="h-10 w-full rounded-lg border border-border-soft bg-surface-1 px-3 outline-none"

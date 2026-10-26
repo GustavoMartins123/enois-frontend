@@ -8,6 +8,7 @@ import type { SupportStatus } from "@/types/application/support/support-status";
 import { LifeBuoy } from "lucide-react";
 
 import { supportApi } from "@/lib/api";
+import { dataHora } from "@/lib/date/format";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
@@ -148,7 +149,7 @@ export function SupportTicketsSection({
                       : texts.moderator.support.statusClosed}
                 </span>
 
-                <span>{new Date(ticket.createdAt).toLocaleString("pt-BR")}</span>
+                <span>{dataHora(ticket.createdAt)}</span>
 
                 {ticket.githubIssueNumber != null && (
                   <a
@@ -238,9 +239,7 @@ export function SupportTicketsSection({
                   </p>
 
                   {ticket.repliedAt && (
-                    <p className="mt-1 text-xs text-text-subtle">
-                      {new Date(ticket.repliedAt).toLocaleString("pt-BR")}
-                    </p>
+                    <p className="mt-1 text-xs text-text-subtle">{dataHora(ticket.repliedAt)}</p>
                   )}
                 </div>
               )}

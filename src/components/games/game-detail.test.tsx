@@ -5,7 +5,7 @@ import { texts } from "@/texts";
 import type { GameView } from "@/types/application/games/game-view";
 import type { Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { builtinEnvironments } from "vitest/environments";
+import { builtinEnvironments } from "vitest/runtime";
 
 // Ambiente node com o DOM montado aqui: React, React DOM e TanStack precisam ser a mesma cópia.
 await builtinEnvironments.jsdom.setup(globalThis, {

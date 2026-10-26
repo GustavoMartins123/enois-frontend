@@ -2,9 +2,10 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    # A linha do dia a dia e a `qa`: sem ela, os PRs da equipe entravam sem rodar teste nenhum.
+    branches: [main, qa]
   push:
-    branches: [main]
+    branches: [main, qa]
 
 permissions:
   contents: read
@@ -29,9 +30,15 @@ jobs:
       - name: Instalar dependências
         run: npm ci
 
-      # Lint e typecheck entram aqui quando a main passar neles (hoje: ~300
-      # erros de lint, quase todos local/type-boundaries em src/types, e ~60
-      # erros de TypeScript).
+      # A divida que travava estes passos foi paga (o lint e o typecheck passam limpos
+      # nas duas linhas), entao eles rodam aqui de verdade: sem o typecheck, um campo que a
+      # API devolve nulo passa e quebra no navegador.
+      - name: Lint
+        run: npm run lint
+
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Testes unitários
         run: npm test
 

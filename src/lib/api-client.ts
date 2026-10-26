@@ -1,3 +1,4 @@
+import { HttpStatus } from "@/types/application/api/http-status";
 import type { RefreshOutcome } from "@/types/application/api/refresh-outcome";
 import type { RequestOptions } from "@/types/application/api/request-options";
 
@@ -44,6 +45,8 @@ export class ApiError extends Error {
     public code: string | undefined,
     message: string,
     public path?: string,
+    /** Segundos do header Retry-After (só em 429): o chamador decide se espera. */
+    public retryAfter?: number,
   ) {
     super(message);
     this.name = "ApiError";
@@ -109,6 +112,19 @@ function idemKey(): Record<string, string> {
 /** Renova quando faltar menos que isso para expirar, em vez de esperar o 401. */
 const REFRESH_WINDOW_MS = 5 * 60 * 1000;
 
+/**
+ * Espera máxima aceita para repetir uma escrita recusada por limite. Acima disso a espera é
+ * pior do que devolver o aviso e deixar a pessoa tentar de novo.
+ */
+const MAX_RETRY_AFTER_SECONDS = 15;
+
+/** Espera antes de repetir uma escrita que morreu sem resposta (janela do limitador da frente). */
+const NETWORK_RETRY_DELAY_MS = 2000;
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 let refreshPromise: Promise<RefreshOutcome> | null = null;
 
 function refreshTokenValue(): string | null {
@@ -152,6 +168,14 @@ async function doRefresh(): Promise<RefreshOutcome> {
     // durante o deploy sao falhas do servidor, nao prova de que a sessao morreu — deslogar aqui
     // era o que fazia a pessoa cair no login "sem motivo".
     if (response.status === 401 || response.status === 403) {
+      // O backend GIRA o refresh token a cada renovacao (o usado e revogado). Como o armazenamento
+      // e compartilhado entre as abas do navegador, outra aba pode ter renovado enquanto esta
+      // chamada corria: o token guardado ja e o NOVO e a sessao nova esta viva — o 401 aqui e so
+      // o token velho. Encerrar a sessao apagava a sessao da outra aba e as DUAS caiam no login.
+      const guardado = refreshTokenValue();
+      if (guardado !== null && guardado !== token) {
+        return "renewed";
+      }
       clearSession();
       return "refused";
     }
@@ -247,20 +271,56 @@ async function request<T>(
       headers,
       body: body ? JSON.stringify(body) : undefined,
     });
-  } catch {
-    throw new ApiError(
-      0,
-      "NETWORK_ERROR",
-      "Não foi possível conectar ao servidor. Verifique sua conexão e se o backend está no ar.",
-      path,
-    );
+    // Limite do proxy/CDN: a recusa vem sem CORS e o navegador a reporta como falha de rede.
+    // Em escrita idempotente (todas as nossas), esperar o Retry-After e repetir uma vez é
+    // melhor do que devolver "não foi possível" para quem só clicou duas vezes seguidas.
+    if (response.status === HttpStatus.TOO_MANY_REQUESTS && opts?.idempotent) {
+      const seconds = Number.parseInt(response.headers.get("Retry-After") ?? "", 10);
+      if (Number.isFinite(seconds) && seconds > 0 && seconds <= MAX_RETRY_AFTER_SECONDS) {
+        await sleep(seconds * 1000);
+        response = await fetch(`${baseUrl()}${path}`, {
+          method,
+          headers,
+          body: body ? JSON.stringify(body) : undefined,
+        });
+      }
+    }
+  } catch (firstFailure) {
+    // Falha de rede numa escrita idempotente: pode ser o limitador da frente recusando o
+    // preflight (o navegador esconde a resposta e reporta "fetch failed"). Espera a janela
+    // virar e tenta uma vez; se continuar falhando, o erro sobe.
+    if (opts?.idempotent) {
+      try {
+        await sleep(NETWORK_RETRY_DELAY_MS);
+        response = await fetch(`${baseUrl()}${path}`, {
+          method,
+          headers,
+          body: body ? JSON.stringify(body) : undefined,
+        });
+      } catch {
+        throw new ApiError(
+          0,
+          "NETWORK_ERROR",
+          "Não foi possível conectar ao servidor. Verifique sua conexão e se o backend está no ar.",
+          path,
+        );
+      }
+    } else {
+      throw new ApiError(
+        0,
+        "NETWORK_ERROR",
+        "Não foi possível conectar ao servidor. Verifique sua conexão e se o backend está no ar.",
+        path,
+      );
+    }
+    void firstFailure;
   }
 
   const hadSession = Boolean(headers["X-Session-Token"]);
   // 401 e sessao invalida/expirada (tenta refresh e, se nao der, manda para o login). 403 e
   // PERMISSAO negada, nao sessao: derrubar o usuario aqui era um erro (quem tem conta pendente de
   // verificacao, por exemplo, era desconectado em vez de ler o aviso).
-  if (response.status === 401 && hadSession && !path.startsWith("/auth/")) {
+  if (response.status === HttpStatus.UNAUTHORIZED && hadSession && !path.startsWith("/auth/")) {
     const refreshed = await refreshSession();
 
     if (refreshed === "unavailable") {
@@ -276,28 +336,48 @@ async function request<T>(
 
     if (refreshed === "renewed") {
       headers["X-Session-Token"] = getToken() ?? "";
-      const retry = await fetch(`${baseUrl()}${path}`, {
-        method,
-        headers,
-        body: body ? JSON.stringify(body) : undefined,
-      });
+      try {
+        response = await fetch(`${baseUrl()}${path}`, {
+          method,
+          headers,
+          body: body ? JSON.stringify(body) : undefined,
+        });
+      } catch {
+        throw new ApiError(
+          0,
+          "NETWORK_ERROR",
+          "Não foi possível conectar ao servidor. Verifique sua conexão e se o backend está no ar.",
+          path,
+        );
+      }
 
-      if (retry.ok) {
-        if (retry.status === 204 || retry.headers.get("content-length") === "0") {
-          return undefined as T;
-        }
-        const data = await retry.json();
-        if (data?.body !== undefined) return data.body as T;
-        return data as T;
+      // A renovação funcionou e a operação foi repetida.
+      //  - 2xx/204: deu certo; segue o fluxo normal (era aqui que a resposta boa virava erro).
+      //  - 401: o token novo também foi rejeitado — a sessão acabou de fato, cai para o
+      //    clearSession() abaixo.
+      //  - qualquer outro status (403, 429, 5xx): a sessão É válida; o erro é da operação e
+      //    deve chegar à tela sem deslogar quem está usando (#183).
+      if (response.ok) {
+        return parseBody<T>(response);
+      }
+      if (response.status !== HttpStatus.UNAUTHORIZED) {
+        // A sessão está boa; o erro é da operação. Passa pelo mesmo tratamento do fluxo comum
+        // (data de nascimento, consentimento parental, Retry-After), sem deslogar ninguém.
+        return fail<T>(response, path, hadSession);
       }
     }
 
+    // Só chega aqui quando:
+    //  • refreshSession retornou "refused" (401/403 no /auth/refresh → token morto), ou
+    //  • o retry após renovação também veio 401 (token novo rejeitado).
+    // Em ambos os casos a sessão acabou de verdade: limpa, manda para o login e responde com o
+    // código próprio (o corpo do 401 da operação não descreve o que houve com a sessão).
     clearSession();
     if (typeof window !== "undefined") {
       window.location.href = "/entrar?tab=login";
     }
     throw new ApiError(
-      response.status,
+      HttpStatus.UNAUTHORIZED,
       "SESSION_EXPIRED",
       "Sessão expirada. Faça login novamente.",
       path,
@@ -310,43 +390,56 @@ async function request<T>(
   // O que o backend respondeu vem SEMPRE primeiro: era isso que fazia senha errada no login exibir
   // "É necessário entrar para ver isso" — a resposta de 401 ja dizia "Email ou senha invalidos".
   if (!response.ok) {
-    const errorBody = await response.json().catch(() => null);
-    if (
-      !errorBody?.code &&
-      !errorBody?.message &&
-      (response.status === 401 || response.status === 403) &&
-      !hadSession
-    ) {
-      throw new ApiError(
-        response.status,
-        "UNAUTHENTICATED",
-        "É necessário entrar para ver isso.",
-        path,
-      );
-    }
-    // Escrever (postar, comentar, mensagem) exige a data de nascimento declarada: em vez de só
-    // mostrar o erro, o app abre o diálogo de regularização em qualquer tela.
-    if (errorBody?.code === "BIRTH_DATE_REQUIRED") {
-      notifyBirthDateRequired();
-    }
-    // Menor sem autorizacao do responsavel: abre a tela de supervisao em qualquer acao bloqueada.
-    if (errorBody?.code === "PARENTAL_CONSENT_REQUIRED") {
-      notifyParentalConsentRequired();
-    }
+    return fail<T>(response, path, hadSession);
+  }
+
+  return parseBody<T>(response);
+}
+
+/**
+ * Resposta de erro: mensagem do backend sempre em primeiro lugar e os efeitos colaterais que
+ * dependem do código (data de nascimento, consentimento parental). Nunca retorna.
+ */
+async function fail<T>(response: Response, path: string, hadSession: boolean): Promise<T> {
+  const errorBody = await response.json().catch(() => null);
+  const retryAfter = response.headers.get("Retry-After") ?? response.headers.get("retry-after");
+  if (
+    !errorBody?.code &&
+    !errorBody?.message &&
+    (response.status === HttpStatus.UNAUTHORIZED || response.status === HttpStatus.FORBIDDEN) &&
+    !hadSession
+  ) {
     throw new ApiError(
       response.status,
-      errorBody?.code,
-      errorBody?.message ?? response.statusText,
+      "UNAUTHENTICATED",
+      "É necessário entrar para ver isso.",
       path,
     );
   }
+  // Escrever (postar, comentar, mensagem) exige a data de nascimento declarada: em vez de só
+  // mostrar o erro, o app abre o diálogo de regularização em qualquer tela.
+  if (errorBody?.code === "BIRTH_DATE_REQUIRED") {
+    notifyBirthDateRequired();
+  }
+  // Menor sem autorizacao do responsavel: abre a tela de supervisao em qualquer acao bloqueada.
+  if (errorBody?.code === "PARENTAL_CONSENT_REQUIRED") {
+    notifyParentalConsentRequired();
+  }
+  throw new ApiError(
+    response.status,
+    errorBody?.code,
+    errorBody?.message ?? response.statusText,
+    path,
+    retryAfter ? Number.parseInt(retryAfter, 10) || undefined : undefined,
+  );
+}
 
-  if (response.status === 204 || response.headers.get("content-length") === "0") {
+/** Corpo padrão das respostas bem-sucedidas (204/vazio, envelope `{body}` ou JSON direto). */
+async function parseBody<T>(response: Response): Promise<T> {
+  if (response.status === HttpStatus.NO_CONTENT || response.headers.get("content-length") === "0") {
     return undefined as T;
   }
-
   const data = await response.json();
-
   if (data?.body !== undefined) return data.body as T;
   return data as T;
 }

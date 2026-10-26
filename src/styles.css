@@ -532,6 +532,42 @@
   animation: shake 0.55s ease-in-out;
 }
 
+.post-action-reaction-pulse {
+  animation: post-action-reaction-pulse 220ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes post-action-reaction-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.18);
+  }
+  75% {
+    transform: scale(0.97);
+  }
+}
+
+.post-action-bookmark {
+  fill: currentColor;
+  fill-opacity: 0;
+  transition: fill-opacity 180ms ease-out;
+}
+
+.post-action-bookmark[data-saved="true"] {
+  fill-opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-force-motion]) .post-action-reaction-pulse {
+    animation: none;
+  }
+  html:not([data-force-motion]) .post-action-bookmark {
+    transition: none;
+  }
+}
+
 /* Molduras da loja: desenhadas sobre o avatar para funcionar em qualquer tamanho. */
 [data-avatar-frame]::after {
   content: "";

@@ -27,6 +27,19 @@ import { useToast } from "@/components/ui/toast";
  * mídia do app) e a equipe (membros com papel, para OWNER/ADMIN). O backend já expõe
  * `myRole` no detalhe e o PATCH aceita EDITOR — esta é a porta que faltava no front.
  */
+/**
+ * Os tetos dos campos: sao os MESMOS numeros que a coluna do banco aceita e que a API recusa
+ * (a API devolve 400 dizendo o campo e o limite quando passa). Sem eles no campo, a pessoa podia
+ * digitar mais e tomava 409 "conflita com o estado atual dos dados".
+ */
+const LIMITES_CAMPO = {
+  name: 160,
+  sector: 80,
+  size: 40,
+  location: 160,
+  website: 300,
+} as const;
+
 export function CompanyEditDialog({
   company,
   open,
@@ -101,7 +114,13 @@ export function CompanyEditDialog({
           <label className="block space-y-1 text-sm">
             <span className="text-xs text-text-subtle">{texts.empresa.editPanel.nameLabel}</span>
 
-            <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            {/* O limite e o mesmo da coluna (`companies.name varchar(160)`) e da API: sem ele a
+                pessoa podia digitar mais e tomar 409 "conflita com o estado atual dos dados". */}
+            <Input
+              value={form.name}
+              maxLength={LIMITES_CAMPO.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+            />
           </label>
 
           <div className="grid grid-cols-2 gap-2">
@@ -183,6 +202,7 @@ export function CompanyEditDialog({
 
                 <Input
                   value={form[campo]}
+                  maxLength={LIMITES_CAMPO[campo]}
                   onChange={(e) => setForm({ ...form, [campo]: e.target.value })}
                 />
               </label>

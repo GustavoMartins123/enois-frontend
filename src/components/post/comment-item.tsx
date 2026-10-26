@@ -28,7 +28,13 @@ import { ReportDialog } from "./report-dialog";
 import { RichText } from "./rich-text";
 
 /** Um comentário (com responder, reagir e excluir). */
-export function CommentItem({ comment, replyingTo, postAuthorId, onPinChanged }: CommentItemProps) {
+export function CommentItem({
+  comment,
+  replyingTo,
+  postAuthorId,
+  onPinChanged,
+  onDeleted,
+}: CommentItemProps) {
   const { toast } = useToast();
   // Inscrito na query do /me: sem isso, o comentario da propria pessoa so aparecia como tal
   // depois que alguma outra consulta redesenhava a tela (o cache do /me chega em outra hora).
@@ -38,8 +44,6 @@ export function CommentItem({ comment, replyingTo, postAuthorId, onPinChanged }:
   const setDraft = usePostCardStore((state) => state.setDraft);
   const setCommentMentions = usePostCardStore((state) => state.setCommentMentions);
   const setReplyToId = usePostCardStore((state) => state.setReplyToId);
-  const removeComment = usePostCardStore((state) => state.removeComment);
-  const updateCommentCount = usePostCardStore((state) => state.updateCommentCount);
   const isOwner = currentUserId === comment.authorId;
   // O autor do post fixa qualquer comentário; o autor do comentário fixa o próprio.
   const canPin =
@@ -109,8 +113,7 @@ export function CommentItem({ comment, replyingTo, postAuthorId, onPinChanged }:
   const handleDelete = async () => {
     try {
       await commentsApi.remove(postId, comment.id);
-      removeComment(postId, comment.id);
-      updateCommentCount(postId, -1);
+      onDeleted?.(comment.id);
     } catch {
       // silently fail
     }
