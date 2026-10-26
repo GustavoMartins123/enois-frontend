@@ -2001,12 +2001,12 @@ export const texts = {
    */
   marketplace: {
     previewAction: "Ver preview",
-    previewTitle: (title: string) => `Prévia · ${title}`,
-    previewDescription:
-      "Veja as cores do tema no cartão do perfil. Sua aparência atual continua a mesma.",
-    profilePreview: "Prévia do perfil com o tema",
-    previewGuest: "Perfil de exemplo. Entre na sua conta para ver a prévia com seus dados.",
-    previewRetry: "Tentar novamente",
+    previewTitle: (title: string) => `Prévia temporária · ${title}`,
+    previewBarLabel: "Prévia temporária do tema",
+    previewTemporary:
+      "Navegue para experimentar. Ao encerrar ou recarregar, seu tema original volta.",
+    previewProfile: "Ver meu perfil",
+    previewEnd: "Encerrar prévia",
     purchaseConfirmed: "Compra confirmada",
     purchaseHeld:
       "As faíscas ficam retidas com segurança até você confirmar que recebeu o conteúdo. Se algo der errado, o reembolso devolve tudo.",

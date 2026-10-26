@@ -12,6 +12,7 @@ import {
   useRouterState,
 } from "@tanstack/react-router";
 
+import { useThemePreviewStore } from "@/stores/theme-preview.store";
 import { texts } from "@/texts";
 import type { WithRequiredChildren } from "@/types/components/with-required-children";
 import type { PushNavigateMessage } from "@/types/push/push-navigate-message";
@@ -29,6 +30,7 @@ import { ToastProvider } from "@/components/ui/toast";
 
 import { AgeGate } from "@/components/age-gate";
 import { AppContainer } from "@/components/app-container";
+import { ThemePreviewBar } from "@/components/appearance/theme-preview-bar";
 import { HealthyUsageGuard } from "@/components/healthy-usage/healthy-usage-guard";
 import { InstallPwaBanner } from "@/components/install-pwa-banner";
 import { LiteModeEffects } from "@/components/lite-mode-effects";
@@ -218,6 +220,10 @@ function RootInsideProvider() {
   useThemeSync();
 
   useEffect(() => {
+    if (pathname === "/entrar") useThemePreviewStore.getState().stopPreview();
+  }, [pathname]);
+
+  useEffect(() => {
     registerServiceWorker();
   }, []);
 
@@ -252,6 +258,7 @@ function RootInsideProvider() {
         <Outlet />
       </ModuleDisabledGate>
 
+      <ThemePreviewBar />
       <InstallPwaBanner />
       <LiteModeEffects />
       <HealthyUsageGuard />

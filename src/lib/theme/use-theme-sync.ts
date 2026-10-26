@@ -3,11 +3,12 @@ import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import { hydratePreferences, usePreferencesStore } from "@/stores/preferences.store";
+import { useThemePreviewStore } from "@/stores/theme-preview.store";
 
 import { preferencesApi } from "@/lib/api";
 import { hasSessionFlag } from "@/lib/session";
 
-import { applyThemeSettings } from "./apply-theme";
+import { applyThemePreview, applyThemeSettings } from "./apply-theme";
 import { resolveThemeCollection } from "./build-collection-css";
 import { isGalleryCollectionId } from "./gallery-collections";
 import { syncThemeCollection } from "./sync-theme-collection";
@@ -19,6 +20,7 @@ import { syncThemeCollection } from "./sync-theme-collection";
  * não renderizam o botão de tema.
  */
 export function useThemeSync(): void {
+  const preview = useThemePreviewStore((state) => state.preview);
   const theme = usePreferencesStore((state) => state.theme);
   const themeSettings = usePreferencesStore((state) => state.themeSettings);
   const themeCollection = usePreferencesStore((state) => state.themeCollection);
@@ -33,18 +35,14 @@ export function useThemeSync(): void {
   }, []);
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
-    applyThemeSettings(
-      themeSettings,
-      theme,
-      themeCollection,
-      widgetBackground,
-      pageBackground,
-      accentAlpha,
-      widgetAlpha,
-      pageAlpha,
-    );
+    if (preview) {
+      document.documentElement.classList.toggle("dark", preview.mode === "dark");
+      applyThemePreview(preview);
+    } else {
+      restoreSavedTheme();
+    }
   }, [
+    preview,
     theme,
     themeSettings,
     themeCollection,
@@ -55,7 +53,40 @@ export function useThemeSync(): void {
     pageAlpha,
   ]);
 
+  useEffect(() => {
+    if (!preview) return;
+    const stop = () => {
+      useThemePreviewStore.getState().stopPreview();
+      // pagehide também cobre o cache de navegação: o DOM guardado volta com o tema salvo.
+      restoreSavedTheme();
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !event.defaultPrevented) stop();
+    };
+    window.addEventListener("pagehide", stop);
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("pagehide", stop);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [preview]);
+
   useThemeAccountSync();
+}
+
+function restoreSavedTheme(): void {
+  const state = usePreferencesStore.getState();
+  document.documentElement.classList.toggle("dark", state.theme === "dark");
+  applyThemeSettings(
+    state.themeSettings,
+    state.theme,
+    state.themeCollection,
+    state.widgetBackground,
+    state.pageBackground,
+    state.accentAlpha,
+    state.widgetAlpha,
+    state.pageAlpha,
+  );
 }
 
 /**
