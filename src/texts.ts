@@ -474,7 +474,7 @@ export const texts = {
     pending: {
       title: "Confirme seu e-mail",
       description: (email: string) =>
-        `Enviamos um link de confirmação para ${email}. Sua conta só é criada depois que você abrir o link.`,
+        `Se este e-mail puder ser usado, você vai receber uma mensagem em ${email} com o próximo passo. A conta só é criada depois que você abrir o link.`,
       step1: "O link vale por 24 horas e só pode ser usado uma vez.",
       step2: "Confira a caixa de spam se não encontrar em alguns minutos.",
       step3: "A conta nasce (e o acesso libera) assim que o e-mail for confirmado.",
@@ -538,7 +538,12 @@ export const texts = {
       email2faConfirm: "Confirmar código",
       email2faDisable: "Desativar",
       passwordRequired: "Senha atual",
-      passwordHelp: "Confirme sua senha para desativar.",
+      passwordHelp: "Confirme sua senha atual.",
+      /** Ligar ou desligar o segundo fator encerra a sessão nos outros aparelhos. */
+      otherDevicesNotice: "Ativar ou desativar encerra sua sessão nos outros aparelhos.",
+      /** Depois de 5 códigos errados o desafio é invalidado, mesmo para o código certo. */
+      tooManyAttempts:
+        "Muitas tentativas com código errado. Por segurança, comece o login de novo com e-mail e senha.",
       backupLeft: (count: number) =>
         `${count} código${count === 1 ? "" : "s"} de recuperação ainda válido${count === 1 ? "" : "s"}.`,
       error: "Não foi possível concluir agora. Tente novamente.",

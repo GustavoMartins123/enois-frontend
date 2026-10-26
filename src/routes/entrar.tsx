@@ -784,6 +784,10 @@ function TwoFactorForm({
       storeSession(result);
       onDone();
     } catch (err) {
+      if (err instanceof ApiError && err.code === "TOO_MANY_ATTEMPTS") {
+        setError(new Error(texts.auth.twoFactor.tooManyAttempts));
+        return;
+      }
       setError(err instanceof Error ? err : new Error(texts.auth.twoFactor.error));
     } finally {
       setLoading(false);
