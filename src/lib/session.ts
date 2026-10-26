@@ -30,15 +30,14 @@ export function storeSession({ expiresAt, refreshExpiresAt, user }: SessionPaylo
   }
 }
 
-/**
- * Pulls the tokens out of localStorage, where any script on the origin could read them.
- *
- * Returns the legacy refresh token (if any) so the caller can trade it ONCE for the new cookies;
- * after this runs nothing token-like stays in storage.
- */
-export function takeLegacyRefreshToken(): string | null {
+/** Refresh token left in localStorage by the pre-cookie client, to trade once for the cookies. */
+export function legacyRefreshToken(): string | null {
   if (typeof window === "undefined") return null;
-  const refreshToken = localStorage.getItem("refresh_token");
+  return localStorage.getItem("refresh_token");
+}
+
+/** Removes the pre-cookie token keys (after the trade settled, or on logout). */
+export function dropLegacyTokens(): void {
+  if (typeof window === "undefined") return;
   for (const key of LEGACY_TOKEN_KEYS) localStorage.removeItem(key);
-  return refreshToken;
 }

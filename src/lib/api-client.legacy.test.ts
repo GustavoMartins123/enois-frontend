@@ -43,26 +43,36 @@ describe("one-time move off localStorage tokens", () => {
 
     const { api } = await import("./api-client");
 
-    expect(values.has("session_token")).toBe(false);
-    expect(values.has("refresh_token")).toBe(false);
-
     // Requests keep working on the cookies the migration obtained.
     await expect(api.get("/recurso")).resolves.toEqual({ id: "x" });
+    await vi.waitFor(() => expect(values.get("session_active")).toBe("1"));
+    expect(values.has("session_token")).toBe(false);
+    expect(values.has("refresh_token")).toBe(false);
     expect(fetchMock.mock.calls[0][0]).toBe("/api/auth/refresh");
     expect(fetchMock.mock.calls[0][1]).toMatchObject({
       credentials: "include",
       body: JSON.stringify({ refreshToken: "legacy-refresh" }),
     });
-    expect(values.get("session_active")).toBe("1");
+  });
+
+  it("keeps the legacy token for the next load when the API cannot answer", async () => {
+    fetchMock.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+
+    await import("./api-client");
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(values.get("refresh_token")).toBe("legacy-refresh");
+    expect(values.has("session_active")).toBe(false);
   });
 
   it("ends the local session when the legacy refresh token is refused", async () => {
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
 
     await import("./api-client");
-    await vi.waitFor(() => expect(values.has("session_active")).toBe(false));
+    await vi.waitFor(() => expect(values.has("refresh_token")).toBe(false));
 
-    expect(values.has("refresh_token")).toBe(false);
+    expect(values.has("session_active")).toBe(false);
     // The legacy path never probes /auth/me: there was no cookie session to find.
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });

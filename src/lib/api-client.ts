@@ -8,7 +8,7 @@ import { clientOriginHeader } from "./api/client-origin";
 import { clearAuthHint } from "./auth-hint";
 import { getDeviceId } from "./device-id";
 import { resetSessionScopedData } from "./query-client";
-import { hasSessionFlag, storeSession, takeLegacyRefreshToken } from "./session";
+import { dropLegacyTokens, hasSessionFlag, legacyRefreshToken, storeSession } from "./session";
 import { SESSION_FLAG_KEY, dropSessionKey } from "./session-key";
 
 /**
@@ -153,15 +153,15 @@ function refreshSession(): Promise<RefreshOutcome> {
  * Renews through the `enois_refresh` cookie (no body). `legacyRefreshToken` is only for the one-time
  * move of a session that still had its tokens in localStorage: the API answers with the cookies.
  */
-async function doRefresh(legacyRefreshToken?: string): Promise<RefreshOutcome> {
+async function doRefresh(legacyToken?: string): Promise<RefreshOutcome> {
   try {
     const response = await fetch(`${baseUrl()}/auth/refresh`, {
       method: "POST",
       credentials: "include",
-      headers: legacyRefreshToken
+      headers: legacyToken
         ? { "Content-Type": "application/json", ...sessionHeaders() }
         : sessionHeaders(),
-      body: legacyRefreshToken ? JSON.stringify({ refreshToken: legacyRefreshToken }) : undefined,
+      body: legacyToken ? JSON.stringify({ refreshToken: legacyToken }) : undefined,
     });
 
     // So a recusa EXPLICITA (400/401/403) significa sessao encerrada — 400 e o refresh sem cookie
@@ -172,7 +172,7 @@ async function doRefresh(legacyRefreshToken?: string): Promise<RefreshOutcome> {
       // The API rotates the refresh token on every renewal and the cookie jar is shared by every
       // tab: another tab may have renewed while this call was in flight, so this 401 is only the
       // old token. Ending the session here would log BOTH tabs out; ask the API first.
-      if (!legacyRefreshToken) {
+      if (!legacyToken) {
         const session = await sessionStillValid();
         if (session === "valid") return "renewed";
         // Could not tell (network/CORS, e.g. a limiter 429 without CORS headers): keep the session.
@@ -187,6 +187,7 @@ async function doRefresh(legacyRefreshToken?: string): Promise<RefreshOutcome> {
 
     const data = await response.json();
     const body = data?.body ?? data;
+    if (legacyToken) dropLegacyTokens();
     storeSession({ expiresAt: body?.expiresAt, refreshExpiresAt: body?.refreshExpiresAt });
     return "renewed";
   } catch {
@@ -234,13 +235,12 @@ async function refreshIfNeeded(): Promise<void> {
 // bfcache ou recuperar a rede nao disparam esse evento em varias plataformas (iOS principalmente),
 // e a pessoa cai no login sem entender. `pageshow` e `online` fecham essa lacuna.
 if (typeof window !== "undefined") {
-  // One-time move off localStorage tokens: the old refresh token is traded for the cookies and
-  // deleted. Until that answers, it IS the in-flight refresh, so a 401 meanwhile waits for it
-  // instead of ending the session.
-  const legacyRefreshToken = takeLegacyRefreshToken();
-  if (legacyRefreshToken) {
-    localStorage.setItem(SESSION_FLAG_KEY, "1");
-    refreshPromise = doRefresh(legacyRefreshToken).finally(() => {
+  // One-time move off localStorage tokens: the old refresh token is traded for the cookies. It
+  // is deleted only once the API settled it (cookies issued, or token refused); a network or
+  // server failure keeps it for the next load. The session flag only appears on success.
+  const legacyToken = legacyRefreshToken();
+  if (legacyToken) {
+    refreshPromise = doRefresh(legacyToken).finally(() => {
       refreshPromise = null;
     });
   }
@@ -263,7 +263,7 @@ if (typeof window !== "undefined") {
 export function clearSession() {
   const hadSession = hasSessionFlag();
   localStorage.removeItem(SESSION_FLAG_KEY);
-  takeLegacyRefreshToken();
+  dropLegacyTokens();
   localStorage.removeItem("session_expires_at");
   localStorage.removeItem("refresh_expires_at");
   localStorage.removeItem("current_user");
