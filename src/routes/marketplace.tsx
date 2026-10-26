@@ -5,13 +5,14 @@ import { createFileRoute } from "@tanstack/react-router";
 
 import { MARKETPLACE_KINDS, MARKETPLACE_KIND_LABELS } from "@/constants/marketplace-kinds";
 import { usePreferencesStore } from "@/stores/preferences.store";
+import { useThemePreviewStore } from "@/stores/theme-preview.store";
 import { texts } from "@/texts";
 import type { MarketplaceListing as MarketplaceListingView } from "@/types/application/marketplace/marketplace-listing";
 import type { MarketplacePalette } from "@/types/application/marketplace/marketplace-palette";
 import type { MarketplacePurchase } from "@/types/application/marketplace/marketplace-purchase";
-import { BadgeCheck, Check, RotateCcw, Search, Sparkles, Store } from "lucide-react";
+import { BadgeCheck, Check, Receipt, RotateCcw, Search, Sparkles, Store } from "lucide-react";
 
-import { marketplaceApi, themesApi } from "@/lib/api";
+import { ApiError, marketplaceApi, themesApi } from "@/lib/api";
 import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { useListingTheme } from "@/lib/marketplace/use-listing-theme";
 import { registerGalleryCollection } from "@/lib/theme/gallery-collections";
@@ -21,7 +22,9 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { LoadingState } from "@/components/ui/loading-state";
 import { PageHeader } from "@/components/ui/page-header";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
@@ -44,6 +47,7 @@ export const Route = createFileRoute("/marketplace")({
  */
 function Marketplace() {
   const authenticated = useIsAuthenticated();
+  const [tab, setTab] = useState("store");
   const [q, setQ] = useState("");
   const [search, setSearch] = useState("");
   const [kind, setKind] = useState<string | null>(null);
@@ -101,85 +105,172 @@ function Marketplace() {
           />
         </div>
 
-        <div className="mb-4 space-y-2">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-subtle" />
-            <Input
-              value={q}
-              onChange={(event) => setQ(event.target.value)}
-              placeholder="Buscar no marketplace..."
-              className="pl-9"
-            />
-          </div>
+        <Tabs value={tab} onValueChange={setTab}>
+          <TabsList className="mb-4 flex-wrap" aria-label={texts.marketplace.tabsLabel}>
+            <TabsTrigger value="store" className="data-[state=active]:text-primary">
+              <Store className="h-4 w-4" aria-hidden="true" />
+              {texts.marketplace.storeTab}
+            </TabsTrigger>
 
-          <div className="flex flex-wrap gap-1.5">
-            <button
-              type="button"
-              onClick={() => setKind(null)}
-              className={cn(
-                "rounded-full px-3 py-1 text-xs font-medium transition",
-                kind === null
-                  ? "bg-primary text-primary-foreground"
-                  : "border border-border-soft text-text-subtle hover:border-primary/50",
-              )}
-            >
-              Todas
-            </button>
+            {authenticated && (
+              <>
+                <TabsTrigger value="purchases" className="data-[state=active]:text-primary">
+                  <Receipt className="h-4 w-4" aria-hidden="true" />
+                  {texts.marketplace.purchasesTab}
+                </TabsTrigger>
 
-            {MARKETPLACE_KINDS.map((value) => (
-              <button
-                key={value}
-                type="button"
-                onClick={() => setKind(kind === value ? null : value)}
-                className={cn(
-                  "rounded-full px-3 py-1 text-xs font-medium transition",
-                  kind === value
-                    ? "bg-primary text-primary-foreground"
-                    : "border border-border-soft text-text-subtle hover:border-primary/50",
+                <TabsTrigger value="sales" className="data-[state=active]:text-primary">
+                  <BadgeCheck className="h-4 w-4" aria-hidden="true" />
+                  {texts.marketplace.salesTab}
+                </TabsTrigger>
+              </>
+            )}
+          </TabsList>
+
+          <TabsContent value="store">
+            <div className="mb-4 space-y-2">
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-subtle" />
+                <Input
+                  value={q}
+                  onChange={(event) => setQ(event.target.value)}
+                  placeholder="Buscar no marketplace..."
+                  className="pl-9"
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setKind(null)}
+                  className={cn(
+                    "rounded-full px-3 py-1 text-xs font-medium transition",
+                    kind === null
+                      ? "bg-primary text-primary-foreground"
+                      : "border border-border-soft text-text-subtle hover:border-primary/50",
+                  )}
+                >
+                  Todas
+                </button>
+
+                {MARKETPLACE_KINDS.map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setKind(kind === value ? null : value)}
+                    className={cn(
+                      "rounded-full px-3 py-1 text-xs font-medium transition",
+                      kind === value
+                        ? "bg-primary text-primary-foreground"
+                        : "border border-border-soft text-text-subtle hover:border-primary/50",
+                    )}
+                  >
+                    {MARKETPLACE_KIND_LABELS[value]}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {authenticated && purchases.isError && (
+              <div className="mb-4 space-y-2" role="alert">
+                <p className="text-sm text-text-subtle">{texts.marketplace.purchasesCheckError}</p>
+
+                <Button variant="outline" size="sm" onClick={() => void purchases.refetch()}>
+                  {texts.marketplace.retry}
+                </Button>
+              </div>
+            )}
+            {catalog.isLoading ? (
+              <p className="py-10 text-center text-sm text-text-subtle">Carregando…</p>
+            ) : catalog.isError ? (
+              <p className="py-10 text-center text-sm text-text-subtle">
+                Não foi possível carregar o marketplace agora.
+              </p>
+            ) : (catalog.data?.length ?? 0) === 0 ? (
+              <div className="surface-card rounded-2xl p-8 text-center">
+                <Store className="mx-auto h-10 w-10 text-primary" />
+
+                <p className="mt-3 text-sm font-medium">Nada à venda ainda.</p>
+
+                <p className="mt-1 text-sm text-text-subtle">
+                  Toque em “Publicar tema” acima: a sua aparência vira uma listagem aqui, por no
+                  mínimo 50 faíscas.
+                </p>
+              </div>
+            ) : (
+              <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {catalog.data!.map((l) => (
+                  <ListingCard
+                    key={l.id}
+                    listing={l}
+                    owned={
+                      authenticated &&
+                      (purchases.data ?? []).some(
+                        (purchase) =>
+                          purchase.state !== "REFUNDED" &&
+                          (purchase.listingId === l.id ||
+                            (purchase.itemKind === l.itemKind && purchase.itemId === l.itemId)),
+                      )
+                    }
+                    checkingPurchases={
+                      authenticated &&
+                      (purchases.isPending || purchases.isFetching || purchases.isError)
+                    }
+                    onOpenPurchases={() => setTab("purchases")}
+                    onBought={(purchaseId) =>
+                      setBought({ title: l.title, price: l.price, purchaseId })
+                    }
+                  />
+                ))}
+              </ul>
+            )}
+          </TabsContent>
+
+          {authenticated && (
+            <>
+              <TabsContent value="purchases">
+                {purchases.isPending ? (
+                  <LoadingState label={texts.common.loading} />
+                ) : purchases.isError ? (
+                  <div className="space-y-3" role="alert">
+                    <p className="text-sm text-text-subtle">{texts.marketplace.purchasesError}</p>
+
+                    <Button variant="outline" onClick={() => void purchases.refetch()}>
+                      {texts.marketplace.retry}
+                    </Button>
+                  </div>
+                ) : purchases.data.length === 0 ? (
+                  <p className="surface-card p-6 text-sm text-text-subtle">
+                    {texts.marketplace.purchasesEmpty}
+                  </p>
+                ) : (
+                  <MyPurchases purchases={purchases.data} onOpenContent={setContentPurchase} />
                 )}
-              >
-                {MARKETPLACE_KIND_LABELS[value]}
-              </button>
-            ))}
-          </div>
-        </div>
+              </TabsContent>
 
-        {purchases.data && purchases.data.length > 0 && (
-          <MyPurchases
-            purchases={purchases.data}
-            onOpenContent={(purchase) => setContentPurchase(purchase)}
-          />
-        )}
-        {sales.data && sales.data.length > 0 && <MySales sales={sales.data} />}
+              <TabsContent value="sales">
+                {sales.isPending ? (
+                  <LoadingState label={texts.common.loading} />
+                ) : sales.isError ? (
+                  <div className="space-y-3" role="alert">
+                    <p className="text-sm text-text-subtle">{texts.marketplace.salesError}</p>
 
-        {catalog.isLoading ? (
-          <p className="py-10 text-center text-sm text-text-subtle">Carregando…</p>
-        ) : catalog.isError ? (
-          <p className="py-10 text-center text-sm text-text-subtle">
-            Não foi possível carregar o marketplace agora.
-          </p>
-        ) : (catalog.data?.length ?? 0) === 0 ? (
-          <div className="surface-card rounded-2xl p-8 text-center">
-            <Store className="mx-auto h-10 w-10 text-primary" />
+                    <Button variant="outline" onClick={() => void sales.refetch()}>
+                      {texts.marketplace.retry}
+                    </Button>
+                  </div>
+                ) : sales.data.length === 0 ? (
+                  <p className="surface-card p-6 text-sm text-text-subtle">
+                    {texts.marketplace.salesEmpty}
+                  </p>
+                ) : (
+                  <MySales sales={sales.data} />
+                )}
+              </TabsContent>
+            </>
+          )}
+        </Tabs>
 
-            <p className="mt-3 text-sm font-medium">Nada à venda ainda.</p>
-
-            <p className="mt-1 text-sm text-text-subtle">
-              Toque em “Publicar tema” acima: a sua aparência vira uma listagem aqui, por no mínimo
-              50 faíscas.
-            </p>
-          </div>
-        ) : (
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {catalog.data!.map((l) => (
-              <ListingCard
-                key={l.id}
-                listing={l}
-                onBought={(purchaseId) => setBought({ title: l.title, price: l.price, purchaseId })}
-              />
-            ))}
-          </ul>
-        )}
         <Dialog open={bought !== null} onOpenChange={(open) => !open && setBought(null)}>
           <DialogContent className="max-w-md">
             <DialogHeader>
@@ -205,7 +296,17 @@ function Marketplace() {
                   <p className="mt-2 text-xs text-text-subtle">{texts.marketplace.purchaseHeld}</p>
                 </div>
 
-                <div className="flex justify-end">
+                <div className="flex flex-wrap justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setBought(null);
+                      setTab("purchases");
+                    }}
+                  >
+                    {texts.marketplace.openPurchases}
+                  </Button>
+
                   <Button className="rounded-full" onClick={() => setBought(null)}>
                     {texts.marketplace.keepShopping}
                   </Button>
@@ -278,18 +379,32 @@ function Miniatura({ packageJson }: { packageJson: string }) {
 /** A listagem com o preview do tema (buscado da galeria). */
 function ListingCard({
   listing,
+  owned,
+  checkingPurchases,
+  onOpenPurchases,
   onBought,
 }: {
   listing: MarketplaceListingView;
+  owned: boolean;
+  checkingPurchases: boolean;
+  onOpenPurchases: () => void;
   onBought: (purchaseId: string) => void;
 }) {
   const theme = useListingTheme(listing);
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const buy = useMutation({
     mutationFn: () => marketplaceApi.buy(listing.id),
-    onSuccess: (result) => {
-      void queryClient.invalidateQueries({ queryKey: ["marketplace"] });
+    onSuccess: async (result) => {
+      await queryClient.invalidateQueries({ queryKey: ["marketplace"] });
+      void queryClient.invalidateQueries({ queryKey: ["carteira"] });
       onBought(result.purchaseId);
+    },
+    onError: (error) => {
+      if (error instanceof ApiError && error.code === "ITEM_ALREADY_OWNED") {
+        void queryClient.invalidateQueries({ queryKey: ["marketplace", "purchases"] });
+      }
+      toast(error instanceof ApiError ? error.message : texts.marketplace.buyError, "error");
     },
   });
 
@@ -334,14 +449,26 @@ function ListingCard({
             {formatFaisca(listing.price)} faíscas
           </span>
 
-          <Button
-            size="sm"
-            className="w-full rounded-full"
-            disabled={buy.isPending}
-            onClick={() => buy.mutate()}
-          >
-            {buy.isPending ? "Retendo faíscas…" : "Comprar"}
-          </Button>
+          {owned ? (
+            <Button
+              size="sm"
+              variant="outline"
+              className="w-full rounded-full"
+              onClick={onOpenPurchases}
+            >
+              <Check className="h-4 w-4" aria-hidden="true" />
+              {texts.marketplace.owned}
+            </Button>
+          ) : (
+            <Button
+              size="sm"
+              className="w-full rounded-full"
+              disabled={buy.isPending || checkingPurchases}
+              onClick={() => buy.mutate()}
+            >
+              {buy.isPending ? texts.marketplace.buying : texts.marketplace.buy}
+            </Button>
+          )}
         </div>
       </div>
     </li>
@@ -363,10 +490,15 @@ function MyPurchases({
   const confirm = useMutation({
     mutationFn: (id: string) => marketplaceApi.confirm(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["marketplace"] }),
+    onError: () => toast(texts.marketplace.confirmError, "error"),
   });
   const refund = useMutation({
     mutationFn: (id: string) => marketplaceApi.refund(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["marketplace"] }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["carteira"] });
+      return queryClient.invalidateQueries({ queryKey: ["marketplace"] });
+    },
+    onError: () => toast(texts.marketplace.refundError, "error"),
   });
   const applyTheme = useMutation({
     mutationFn: (itemId: string) => themesApi.get(itemId),
@@ -379,9 +511,10 @@ function MyPurchases({
         modeDefault: theme.modeDefault,
       });
       setThemeCollection(collection.id);
-      toast("Tema aplicado!", "success");
+      useThemePreviewStore.getState().stopPreview();
+      toast(texts.marketplace.themeApplied, "success");
     },
-    onError: () => toast("Não foi possível aplicar o tema agora.", "error"),
+    onError: () => toast(texts.marketplace.themeApplyError, "error"),
   });
 
   // Agrupado por categoria: "Temas", "Templates", "Banners"... — o comprador acha o que comprou.
@@ -393,7 +526,7 @@ function MyPurchases({
 
   return (
     <section className="mb-6 space-y-3">
-      <h2 className="text-sm font-semibold text-text-subtle">Minhas compras</h2>
+      <h2 className="text-sm font-semibold text-text-subtle">{texts.marketplace.purchasesTab}</h2>
 
       {[...groups.entries()].map(([kind, list]) => (
         <div key={kind} className="space-y-2">
@@ -480,7 +613,7 @@ function MyPurchases({
 function MySales({ sales }: { sales: Awaited<ReturnType<typeof marketplaceApi.sales>> }) {
   return (
     <section className="mb-6">
-      <h2 className="mb-2 text-sm font-semibold text-text-subtle">Minhas vendas</h2>
+      <h2 className="mb-2 text-sm font-semibold text-text-subtle">{texts.marketplace.salesTab}</h2>
 
       <ul className="space-y-2">
         {sales.map((s) => (

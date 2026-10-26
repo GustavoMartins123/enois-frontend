@@ -2056,6 +2056,26 @@ export const texts = {
    * aqui é o convite. Quando o site de origem proíbe quadro, a tela explica em vez de fingir falha.
    */
   marketplace: {
+    tabsLabel: "Seções do marketplace",
+    storeTab: "Loja",
+    purchasesTab: "Minhas compras",
+    salesTab: "Minhas vendas",
+    purchasesEmpty: "Você ainda não tem compras no marketplace.",
+    salesEmpty: "Você ainda não tem vendas no marketplace.",
+    purchasesError: "Não foi possível carregar suas compras.",
+    purchasesCheckError:
+      "Não foi possível conferir suas compras. Tente novamente para comprar com segurança.",
+    salesError: "Não foi possível carregar suas vendas.",
+    retry: "Tentar novamente",
+    openPurchases: "Ver minhas compras",
+    owned: "Já comprado · Ver compra",
+    buy: "Comprar",
+    buying: "Retendo faíscas…",
+    buyError: "Não foi possível concluir a compra. Tente novamente.",
+    confirmError: "Não foi possível confirmar a compra. Tente novamente.",
+    refundError: "Não foi possível pedir o reembolso. Tente novamente.",
+    themeApplied: "Tema aplicado!",
+    themeApplyError: "Não foi possível aplicar o tema agora.",
     previewAction: "Ver preview",
     previewTitle: (title: string) => `Prévia temporária · ${title}`,
     previewBarLabel: "Prévia temporária do tema",
