@@ -2,7 +2,7 @@ import type { EndpointDoIndice } from "@/types/application/developers/endpoint-d
 import type { EndpointDocumentado } from "@/types/application/developers/endpoint-documentado";
 import { describe, expect, it } from "vitest";
 
-import { confereMatrizComIndice, segmentosDoCaminho } from "./api-matrix-check";
+import { confereEscopos, confereMatrizComIndice, segmentosDoCaminho } from "./api-matrix-check";
 
 /**
  * A pagina `/developers` promete uma API. O indice (`GET /api/v1`) e o que a API e de verdade.
@@ -83,5 +83,47 @@ describe("conferencia da matriz de API", () => {
     expect(segmentosDoCaminho("/feed?limit=20")).toEqual(["feed"]);
     expect(segmentosDoCaminho("/users/{username}/")).toEqual(["users", "{username}"]);
     expect(segmentosDoCaminho("/")).toEqual([]);
+  });
+});
+
+describe("conferência de escopo da matriz", () => {
+  it("acha a rota prometida como pública que a API recusa sem sessão", () => {
+    const divergencia = confereEscopos(
+      [
+        { method: "GET", path: "/daily-games/blocks/today", access: "public" },
+        { method: "GET", path: "/daily-games/blocks/leaderboard", access: "public" },
+      ],
+      [
+        { path: "/daily-games/blocks/today", status: 401 },
+        { path: "/daily-games/blocks/leaderboard", status: 200 },
+      ],
+    );
+    expect(divergencia.publicasQueExigemSessao).toEqual(["GET /daily-games/blocks/today (401)"]);
+    expect(divergencia.fechadasQueRespondem).toEqual([]);
+  });
+
+  it("acha a rota prometida como fechada que responde sem sessão", () => {
+    const divergencia = confereEscopos(
+      [{ method: "GET", path: "/stats/community", access: "auth" }],
+      [{ path: "/stats/community", status: 200 }],
+    );
+    expect(divergencia.fechadasQueRespondem).toEqual(["GET /stats/community (200)"]);
+  });
+
+  it("não julga rota com variável no caminho (a sondagem não sabe o id)", () => {
+    const divergencia = confereEscopos(
+      [{ method: "GET", path: "/users/{username}", access: "public" }],
+      [],
+    );
+    expect(divergencia.publicasQueExigemSessao).toEqual([]);
+    expect(divergencia.fechadasQueRespondem).toEqual([]);
+  });
+
+  it("só julga leitura: escrita não é sondada", () => {
+    const divergencia = confereEscopos(
+      [{ method: "POST", path: "/feed/posts", access: "public" }],
+      [{ path: "/feed/posts", status: 401 }],
+    );
+    expect(divergencia.publicasQueExigemSessao).toEqual([]);
   });
 });
