@@ -184,3 +184,41 @@ describe("mensagem de erro da API", () => {
     });
   });
 });
+
+describe("sessão que não tem mais como renovar", () => {
+  const fetchMock = vi.fn();
+  let values: Map<string, string>;
+
+  beforeEach(() => {
+    values = new Map([["session_active", "1"]]);
+    vi.stubGlobal("window", { location: { origin: "https://enois.ia.br", href: "/feed" } });
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+      removeItem: (key: string) => values.delete(key),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    fetchMock.mockReset();
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("encerra a sessão quando o refresh vem 400 (sem cookie de refresh)", async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    fetchMock.mockResolvedValueOnce(
+      Response.json({ code: "INVALID_REFRESH_TOKEN" }, { status: 400 }),
+    );
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+
+    await expect(api.get("/recurso")).rejects.toMatchObject({ code: "SESSION_EXPIRED" });
+    expect(values.has("session_active")).toBe(false);
+  });
+
+  it("descarta o indicador de sessão depois do vencimento do refresh", async () => {
+    values.set("refresh_expires_at", "2000-01-01T00:00:00Z");
+    fetchMock.mockResolvedValueOnce(Response.json({ ok: true }));
+
+    await api.get("/publico");
+    expect(values.has("session_active")).toBe(false);
+  });
+});

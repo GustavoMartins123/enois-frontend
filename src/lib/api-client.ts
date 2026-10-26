@@ -164,10 +164,11 @@ async function doRefresh(legacyRefreshToken?: string): Promise<RefreshOutcome> {
       body: legacyRefreshToken ? JSON.stringify({ refreshToken: legacyRefreshToken }) : undefined,
     });
 
-    // So a recusa EXPLICITA (401/403) significa sessao encerrada. Um 429 do limitador ou um 502
-    // durante o deploy sao falhas do servidor, nao prova de que a sessao morreu — deslogar aqui
-    // era o que fazia a pessoa cair no login "sem motivo".
-    if (response.status === 401 || response.status === 403) {
+    // So a recusa EXPLICITA (400/401/403) significa sessao encerrada — 400 e o refresh sem cookie
+    // (cookies vencidos ou apagados). Um 429 do limitador ou um 502 durante o deploy sao falhas do
+    // servidor, nao prova de que a sessao morreu — deslogar aqui era o que fazia a pessoa cair no
+    // login "sem motivo".
+    if (response.status === 400 || response.status === 401 || response.status === 403) {
       // The API rotates the refresh token on every renewal and the cookie jar is shared by every
       // tab: another tab may have renewed while this call was in flight, so this 401 is only the
       // old token. Ending the session here would log BOTH tabs out; ask the API first.
@@ -205,6 +206,16 @@ async function sessionStillValid(): Promise<"valid" | "invalid" | "unknown"> {
   } catch {
     return "unknown";
   }
+}
+
+/**
+ * Past the stored refresh expiry the refresh cookie is gone too: the session cannot come back, so
+ * the "logged in" flag is dropped instead of leaving a shell that only fails.
+ */
+function dropExpiredSession(): void {
+  if (typeof window === "undefined" || !hasSessionFlag()) return;
+  const refreshExpiresAt = Date.parse(localStorage.getItem("refresh_expires_at") ?? "");
+  if (!Number.isNaN(refreshExpiresAt) && refreshExpiresAt <= Date.now()) clearSession();
 }
 
 /** Havendo sessao perto de expirar, renova antes da requisicao (evita o 401 e a ida ao login). */
@@ -267,6 +278,7 @@ async function request<T>(
   body?: unknown,
   opts?: RequestOptions,
 ): Promise<T> {
+  dropExpiredSession();
   // Renova proativamente antes de sair com um token que esta vencendo (as rotas de auth cuidam
   // da propria sessao e nao passam por aqui).
   if (!path.startsWith("/auth/")) {
