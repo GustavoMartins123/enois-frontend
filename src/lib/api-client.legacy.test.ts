@@ -111,12 +111,24 @@ describe("one-time move off localStorage tokens", () => {
 
   it("ends the local session when the legacy refresh token is refused", async () => {
     fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
 
     await import("./api-client");
     await vi.waitFor(() => expect(values.has("refresh_token")).toBe(false));
 
     expect(values.has("session_active")).toBe(false);
-    // The legacy path never probes /auth/me: there was no cookie session to find.
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[1][0]).toBe("/api/auth/me");
+  });
+
+  it("stays logged in when another tab already traded the same legacy token", async () => {
+    // The other tab won: the token is revoked, but its cookies are already in the shared jar.
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    fetchMock.mockResolvedValueOnce(Response.json({ id: "user_1" }));
+
+    await import("./api-client");
+    await vi.waitFor(() => expect(values.has("refresh_token")).toBe(false));
+
+    expect(values.get("session_active")).toBe("1");
+    expect(fetchMock.mock.calls[1][0]).toBe("/api/auth/me");
   });
 });

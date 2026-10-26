@@ -219,12 +219,14 @@ async function doRefresh(legacyToken?: string): Promise<RefreshOutcome> {
       // The API rotates the refresh token on every renewal and the cookie jar is shared by every
       // tab: another tab may have renewed while this call was in flight, so this 401 is only the
       // old token. Ending the session here would log BOTH tabs out; ask the API first.
-      if (!legacyToken) {
-        const session = await sessionStillValid();
-        if (session === "valid") return "renewed";
-        // Could not tell (network/CORS, e.g. a limiter 429 without CORS headers): keep the session.
-        if (session === "unknown") return "unavailable";
+      // Same for a legacy token: another tab may have traded it first (without Web Locks).
+      const session = await sessionStillValid();
+      if (session === "valid") {
+        if (legacyToken) dropLegacyTokens();
+        return "renewed";
       }
+      // Could not tell (network/CORS, e.g. a limiter 429 without CORS headers): keep the session.
+      if (session === "unknown") return "unavailable";
       clearSession();
       return "refused";
     }
