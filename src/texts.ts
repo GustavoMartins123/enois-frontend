@@ -362,6 +362,10 @@ export const texts = {
       INVALID_CREDENTIALS:
         "E-mail ou senha incorretos. Confira os dados ou use 'Esqueci minha senha'.",
       SESSION_EXPIRED: "Sua sessão expirou. Entre novamente.",
+      MEDIA_TYPE_NOT_ALLOWED:
+        "Esse tipo de arquivo não é aceito aqui. Foto de perfil, capa, banner e ícones só aceitam imagem; currículo só aceita PDF.",
+      IMPORT_TOO_LARGE:
+        "Esse arquivo do LinkedIn é grande demais para importar. Baixe de novo só os dados do perfil (sem mensagens e conexões) e tente outra vez.",
       IDEMPOTENCY_KEY_REQUIRED:
         "O backend rejeitou a requisição por falta de Idempotency-Key. Recarregue a página; se o problema persistir, há um bug no front-end (src/lib/api-client.ts).",
     },
@@ -2928,6 +2932,10 @@ export const texts = {
     messagesDeleted: "Mensagens apagadas para você. O outro participante continua vendo.",
     messagesDeleteError: "Não foi possível apagar. Tente novamente.",
     restoreError: "Não foi possível restaurar. Tente novamente.",
+    /** Menor de idade só conversa com quem tem conexão aceita (regra do backend). */
+    minorRestricted:
+      "Para proteger menores de idade, a conversa só é possível depois de uma conexão aceita.",
+    openError: "Não foi possível abrir a conversa. Tente novamente.",
     selectConversation: "Selecione uma conversa ou comece uma nova para exibir as mensagens",
     noMessages: "Nenhuma mensagem ainda",
     inputPlaceholder: "Escreva uma mensagem...",

@@ -1,3 +1,4 @@
+import { texts } from "@/texts";
 import type { Personalization } from "@/types/application/preferences/personalization";
 import type { LinkedinImportPreview } from "@/types/application/profile/linkedin-import-preview";
 import type { Profile } from "@/types/application/profile/profile";
@@ -56,6 +57,10 @@ export const preferencesApi = {
     });
     if (!response.ok) {
       const body = await response.json().catch(() => null);
+      // 413 may come from the API (IMPORT_TOO_LARGE) or from a proxy without a JSON body.
+      if (response.status === 413 || body?.code === "IMPORT_TOO_LARGE") {
+        throw new Error(texts.errors.knownCodes.IMPORT_TOO_LARGE);
+      }
       throw new Error(body?.message ?? "Não foi possível ler o arquivo do LinkedIn.");
     }
     return (await response.json()) as LinkedinImportPreview;
