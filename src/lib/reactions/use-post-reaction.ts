@@ -1,11 +1,12 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+
+import { useQueryClient } from "@tanstack/react-query";
 
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { PostView } from "@/types/application/feed/post-view";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { ReactionsListResponse } from "@/types/application/reaction/reactions-list-response";
-import type { ReactionVariables } from "@/types/lib/reactions/reaction-variables";
 import type { UsePostReactionResult } from "@/types/lib/reactions/use-post-reaction-result";
 
 import { ApiError, reactionsApi } from "@/lib/api";
@@ -17,61 +18,82 @@ import { useToast } from "@/components/ui/toast";
 import { reactionsQueryOptions } from "./query-options";
 import { applyReactionToSummary, removeReactionFromSummary } from "./summary";
 
-const RAPID_CLICK_WINDOW_MS = 400;
+/**
+ * Janela curta contra duplo toque. Fica fora do React de propósito: as duas instâncias do hook
+ * (a barra do post e as pílulas do resumo) precisam enxergar a mesma janela.
+ */
+const RAPID_CLICK_WINDOW_MS = 200;
+const lastSentAt = new Map<string, number>();
+const inFlight = new Set<string>();
+
+/** Só para teste: zera a janela entre casos (o estado do módulo sobrevive a cada um). */
+export function resetReactionGuards(): void {
+  lastSentAt.clear();
+  inFlight.clear();
+}
 
 /**
- * Alterna a reação do post de forma otimista.
+ * Alterna a reação do post: clicar no tipo atual remove, clicar em outro troca, clicar sem reação
+ * adiciona.
  *
- * O backend guarda no máximo UMA reação por pessoa: clicar num tipo diferente troca; clicar no
- * mesmo remove. O clique pinta na hora (cache do React Query + store do card) e só depois
- * fala com o servidor; a falha devolve o que estava antes e avisa.
+ * <p>A ordem importa: o estado otimista é enfeite, a requisição é o que vale. Por isso a
+ * atualização do cache roda dentro de um try/catch próprio — se ela falhar (cache parcial, campo
+ * ausente), a chamada ao servidor acontece do mesmo jeito. Antes, uma exceção no otimismo abortava
+ * a mutação antes do `fetch`, e a pessoa via "não foi possível reagir" sem nenhuma requisição sair
+ * do navegador.</p>
  */
 export function usePostReaction(postId: string, post: PostView): UsePostReactionResult {
   const queryClient = useQueryClient();
   const { requireAuth, user } = useAuth();
   const { toast } = useToast();
   const setReactionPending = usePostCardStore((state) => state.setReactionPending);
+  const [isPending, setIsPending] = useState(false);
 
   const reactionStatus = post.currentUserReaction ?? null;
   const queryKey = reactionsQueryOptions(postId).queryKey;
-  const mutationKey = ["post-reaction", postId] as const;
 
-  const mutation = useMutation({
-    mutationKey,
-    mutationFn: ({ type, remove }: ReactionVariables) =>
-      remove ? reactionsApi.removeReaction(postId) : reactionsApi.react(postId, type),
-    onMutate: async ({ type, remove }) => {
-      // Cancela leituras em andamento para uma resposta antiga não sobrescrever o otimismo.
-      await queryClient.cancelQueries({ queryKey });
+  const currentPost = (): PostView => queryClient.getQueryData<PostView>(["post", postId]) ?? post;
 
-      const previousSummary = queryClient.getQueryData<ReactionsListResponse>(queryKey);
-      const previousReaction = reactionStatus;
-      const previousCounters = post.counters;
+  const toggle = async (type: ReactionType) => {
+    if (!requireAuth()) return;
+    const now = Date.now();
+    if (inFlight.has(postId)) return;
+    const previous = lastSentAt.get(postId);
+    // Relógio para trás (troca de fuso, teste, aba suspensa) não pode travar o botão.
+    if (previous !== undefined && now >= previous && now - previous < RAPID_CLICK_WINDOW_MS) return;
+    if (lastSentAt.size > 500) lastSentAt.clear();
+    inFlight.add(postId);
+    lastSentAt.set(postId, now);
+    setIsPending(true);
+    setReactionPending(postId, true);
 
-      setReactionPending(postId, true);
-      const delta = remove ? -1 : previousReaction && previousReaction !== type ? 0 : 1;
+    const before = currentPost();
+    const mine = before.currentUserReaction ?? null;
+    const remove = mine !== null && mine === type;
+    const previousSummary = queryClient.getQueryData<ReactionsListResponse>(queryKey);
+
+    // Otimismo é melhor esforço: qualquer falha aqui é descartada sem impedir a requisição.
+    try {
       updatePostInQueryCache(queryClient, postId, (current) => {
         const baseSummary = current.reactionSummary ?? {};
         const withoutMine =
-          previousReaction && previousReaction !== type
-            ? removeReactionFromSummary(baseSummary, previousReaction)
-            : baseSummary;
+          mine && mine !== type ? removeReactionFromSummary(baseSummary, mine) : baseSummary;
         return {
           ...current,
           currentUserReaction: remove ? null : type,
           counters: {
             ...current.counters,
-            reactions: Math.max(0, current.counters.reactions + delta),
+            reactions: Math.max(
+              0,
+              (current.counters?.reactions ?? 0) + (remove ? -1 : mine && mine !== type ? 0 : 1),
+            ),
           },
           reactionSummary: remove
-            ? removeReactionFromSummary(baseSummary, previousReaction ?? type)
+            ? removeReactionFromSummary(baseSummary, mine ?? type)
             : applyReactionToSummary(withoutMine, type),
         };
       });
-
-      // A lista do diálogo recebe a minha entrada na hora; o refetch do fim troca pela do servidor.
       queryClient.setQueryData<ReactionsListResponse>(queryKey, (current) => {
-        // Sem cache (o card leu o resumo do próprio post), parte das contagens do feed, não de zero.
         const base = current ?? {
           summary: post.reactionSummary ?? {},
           reactions: [],
@@ -80,95 +102,75 @@ export function usePostReaction(postId: string, post: PostView): UsePostReaction
         const myId = user?.id;
         const others = myId ? base.reactions.filter((r) => r.userId !== myId) : base.reactions;
         const withoutMine =
-          previousReaction && previousReaction !== type
-            ? removeReactionFromSummary(base.summary, previousReaction)
-            : base.summary;
-        const summary = remove
-          ? removeReactionFromSummary(base.summary, previousReaction ?? type)
-          : applyReactionToSummary(withoutMine, type);
-        const reactions =
-          myId && !remove
-            ? [{ userId: myId, type, createdAt: new Date().toISOString() }, ...others]
-            : others;
-
-        return { ...base, summary, reactions };
+          mine && mine !== type ? removeReactionFromSummary(base.summary, mine) : base.summary;
+        return {
+          ...base,
+          summary: remove
+            ? removeReactionFromSummary(base.summary, mine ?? type)
+            : applyReactionToSummary(withoutMine, type),
+          reactions:
+            myId && !remove
+              ? [{ userId: myId, type, createdAt: new Date().toISOString() }, ...others]
+              : others,
+        };
       });
+    } catch {
+      // Cache em formato inesperado não pode derrubar a ação.
+    }
 
-      return { previousSummary, previousReaction, previousCounters };
-    },
-    onError: (error, _variables, context) => {
-      // Desfaz o otimismo e explica. 403 é PERMISSÃO (não derruba a sessão); 401 já é tratado
-      // pelo api-client (renova o token ou manda para o login).
-      if (context) {
-        if (context.previousSummary !== undefined) {
-          queryClient.setQueryData(queryKey, context.previousSummary);
+    try {
+      const result = remove
+        ? await reactionsApi.removeReaction(postId)
+        : await reactionsApi.react(postId, type);
+      if (result && "counters" in result && result.counters) {
+        try {
+          updatePostInQueryCache(queryClient, postId, (current) => ({
+            ...current,
+            counters: result.counters ?? current.counters,
+          }));
+        } catch {
+          // Idem: a resposta do servidor já é a verdade; o cache se corrige no refetch.
+        }
+      }
+    } catch (error) {
+      // Desfaz o que foi pintado e explica o que de fato aconteceu.
+      try {
+        if (previousSummary !== undefined) {
+          queryClient.setQueryData(queryKey, previousSummary);
         } else {
-          // Sem cache anterior não há o que restaurar: remove para a reação otimista não ficar
-          // "fantasma" no resumo até o próximo refetch.
           queryClient.removeQueries({ queryKey });
         }
-
         updatePostInQueryCache(queryClient, postId, (current) => ({
           ...current,
-          currentUserReaction: context.previousReaction,
-          counters: context.previousCounters ?? current.counters,
+          currentUserReaction: before.currentUserReaction ?? null,
+          counters: before.counters ?? current.counters,
         }));
+      } catch {
+        // Sem cache para restaurar: o refetch abaixo alinha com o servidor.
       }
-
-      if (error instanceof ApiError && error.status === 403) {
-        toast(texts.posts.reactions.restrictedError, "error");
-      } else if (error instanceof ApiError && error.status === 429) {
-        toast(texts.posts.reactions.rateLimitError, "error");
-      } else if (error instanceof ApiError && error.status === 401) {
-        // Sessão morta mesmo após o refresh: o api-client já limpou e mandou para o login.
-        toast(texts.posts.reactions.sessionError, "error");
-      } else if (error instanceof ApiError && error.status === 0) {
-        // Nenhuma resposta chegou (rede caiu, proxy bloqueou o preflight): dizer "não foi
-        // possível reagir" sem isso faz a pessoa achar que o botão está quebrado.
-        toast(texts.posts.reactions.networkError, "error");
-      } else {
-        toast(texts.posts.reactions.error, "error");
-      }
-    },
-    onSuccess: (result) => {
-      // A resposta traz as contagens exatas do servidor — melhor que o palpite otimista.
-      if (result && "counters" in result && result.counters) {
-        updatePostInQueryCache(queryClient, postId, (current) => ({
-          ...current,
-          counters: result.counters ?? current.counters,
-        }));
-      }
-    },
-    onSettled: () => {
-      // Uma única revalidação no fim: o cache volta a refletir o servidor (some a entrada otimista).
+      toast(messageFor(error), "error");
+    } finally {
+      // Revalidação única, DEPOIS da resposta do servidor — inclusive no sucesso: o resumo e a
+      // lista passam a refletir o que o servidor gravou, e o otimismo não fica valendo sozinho.
+      inFlight.delete(postId);
+      setIsPending(false);
+      setReactionPending(postId, false);
       queryClient.invalidateQueries({ queryKey });
       queryClient.invalidateQueries({ queryKey: ["feed"] });
       queryClient.invalidateQueries({ queryKey: ["post", postId] });
-      setReactionPending(postId, false);
-    },
-  });
-
-  const toggle = (type: ReactionType) => {
-    if (!requireAuth()) return;
-    const currentCard = usePostCardStore.getState().cards[postId];
-    // O cache marca a mutação como pendente antes do await em onMutate, inclusive entre
-    // as instâncias de PostActions e ReactionsSummary. A janela curta também absorve
-    // o segundo clique quando a resposta chega antes de um duplo clique terminar.
-    const now = Date.now();
-    const hasRecentMutation = queryClient
-      .getMutationCache()
-      .findAll({ mutationKey, exact: true })
-      .some(
-        ({ state }) =>
-          state.status === "pending" || now - state.submittedAt < RAPID_CLICK_WINDOW_MS,
-      );
-    if (hasRecentMutation || currentCard?.reactionPending) return;
-    // Sem sessão não há o que alternar: o requireAuth já mandou para o login.
-    const current = queryClient.getQueryData<PostView>(["post", postId]) ?? post;
-    const mine = current.currentUserReaction ?? null;
-    // Reagir de novo no MESMO emoji remove; trocar de emoji troca. Sem estado anterior, reage.
-    mutation.mutate({ type, remove: mine !== null && mine === type });
+    }
   };
 
-  return { toggle, isPending: mutation.isPending, reactionStatus };
+  return { toggle: (type) => void toggle(type), isPending, reactionStatus };
+}
+
+/** Uma frase por motivo real: recusa de permissão, limite, sessão, rede ou falha desconhecida. */
+function messageFor(error: unknown): string {
+  if (error instanceof ApiError) {
+    if (error.status === 403) return texts.posts.reactions.restrictedError;
+    if (error.status === 429) return texts.posts.reactions.rateLimitError;
+    if (error.status === 401) return texts.posts.reactions.sessionError;
+    if (error.status === 0) return texts.posts.reactions.networkError;
+  }
+  return texts.posts.reactions.error;
 }

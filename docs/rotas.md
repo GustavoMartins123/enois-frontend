@@ -249,7 +249,7 @@ seguintes; aqui é o mapa completo.
 | `/entrar`                        | `entrar.tsx`                                     | Login e cadastro (e-mail + social + 2FA).                                     |
 | `/eventos`                       | `eventos.tsx`                                    | Catálogo de eventos com RSVP.                                                 |
 | `/feed`                          | `feed.tsx`                                       | Feed principal: compositor, abas, feed infinito, sidebar.                     |
-| `/freelances`                    | `freelances.tsx`                                 | Catálogo de freelances da comunidade.                                         |
+| `/freelances`                    | `freelances.tsx`                                 | Freelances; visitante vê o aviso e o botão de candidatura.                    |
 | `/games`                         | `games.tsx`                                      | Catálogo de jogos da comunidade.                                              |
 | `/games/:username`               | `games.$username.tsx`                            | Página de criador de jogos.                                                   |
 | `/games/:username/:gameSlug`     | `games.$username.$gameSlug.tsx`                  | Página pública de um jogo (jogar no sandbox).                                 |

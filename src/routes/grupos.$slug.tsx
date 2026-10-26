@@ -29,7 +29,7 @@ import {
 import { groupsApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { useCurrentUser } from "@/lib/current-user";
-import { dataHora, formatarData } from "@/lib/date/format";
+import { dataHora, hora } from "@/lib/date/format";
 import { useIsAuthenticated } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
@@ -554,7 +554,7 @@ function GroupPostItem({
   });
 
   const currentReaction = (post.myReaction as ReactionType | null) ?? null;
-  const createdTime = formatarData(post.createdAt, { hour: "2-digit", minute: "2-digit" });
+  const createdTime = hora(post.createdAt);
 
   return (
     <li className="rounded-2xl border border-border-soft bg-surface-card p-4">
@@ -686,7 +686,7 @@ function GroupPostItem({
                       title={dataHora(item.createdAt)}
                       className="block text-xs text-text-subtle"
                     >
-                      {`${formatTime(item.createdAt)} · ${formatarData(item.createdAt, { hour: "2-digit", minute: "2-digit" })}`}
+                      {`${formatTime(item.createdAt)} · ${hora(item.createdAt)}`}
                     </time>
 
                     <RichText
