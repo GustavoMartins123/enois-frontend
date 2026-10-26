@@ -48,10 +48,14 @@ const SECURITY_HEADERS: Record<string, string> = {
   "cross-origin-resource-policy": "same-site",
 };
 
-/** The OAuth return page may carry a provider `code`/`state` in its URL: never leak it. */
-const NO_REFERRER_PATHS = ["/auth/callback"];
+/** Pages whose URL carries a secret (OAuth `code`/`state`, reset or email-confirmation token). */
+const NO_REFERRER_PATHS = ["/auth/callback", "/auth/reset", "/auth/verify"];
 
-function withSecurityHeaders(response: Response, request: Request, nonce: string | null): Response {
+export function withSecurityHeaders(
+  response: Response,
+  request: Request,
+  nonce: string | null,
+): Response {
   const headers = new Headers(response.headers);
   for (const [name, value] of Object.entries(SECURITY_HEADERS)) {
     if (!headers.has(name)) headers.set(name, value);
