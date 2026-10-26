@@ -2521,6 +2521,22 @@ export const texts = {
       description:
         "Trabalhos pontuais com escopo fechado, prazo e faixa de valor — pagos em dinheiro ou em faíscas. Qualquer pessoa com conta verificada pode publicar.",
       create: "Publicar freela",
+      /** Aviso no topo: contratar (publicar e conversar) exige conta verificada. */
+      hiringNoticeTitle: "Quer contratar? Crie sua conta.",
+      hiringNotice:
+        "Publicar um freela e falar com quem se candidata exige uma conta verificada no Énóis — é o que mantém o combinado rastreável e protege os dois lados. Criar conta é gratuito.",
+      hiringNoticeCta: "Criar conta",
+      apply: "Candidatar-se",
+      applyTitle: "Candidatar-se ao freela",
+      applyHint:
+        "A mensagem vai direto para a conversa com quem publicou — escopo, prazo e valor são combinados ali.",
+      applyPlaceholder: "Conte como você pretende entregar o trabalho...",
+      applyMessage: (title: string) => `Olá! Tenho interesse no freela "${title}".`,
+      applySend: "Enviar mensagem",
+      applySending: "Enviando...",
+      applySent: "Mensagem enviada.",
+      applyError: "Não foi possível enviar a mensagem.",
+      applyOpenChat: "Abrir conversa",
       empty: "Nenhum freela aberto agora.",
       emptyHint: "Publique o primeiro: escopo fechado, prazo e faixa de valor.",
       searchPlaceholder: "Buscar freelances por título ou escopo",
