@@ -6,6 +6,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { texts } from "@/texts";
 import type { RequestCardProps } from "@/types/routes/network/request-card-props";
 import type { StatProps } from "@/types/routes/network/stat-props";
+import { StyledName, UserAvatar } from "@rede-enois/design-system/domain";
 import { Button, PageHeader } from "@rede-enois/design-system/ui";
 import { Check, Send, UserMinus, UserPlus, X } from "lucide-react";
 
@@ -16,8 +17,6 @@ import { requireAuth } from "@/lib/require-auth";
 import { useLiteMode } from "@/lib/use-lite-mode";
 
 import { AppContainer } from "@/components/app-container";
-import { StyledName } from "@/components/styled-name";
-import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/rede")({
   beforeLoad: requireAuth,

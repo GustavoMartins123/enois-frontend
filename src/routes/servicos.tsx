@@ -6,6 +6,7 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import type { ServiceContract } from "@/types/application/services/service-contract";
 import type { ServiceListing } from "@/types/application/services/service-listing";
 import type { ServiceRequest } from "@/types/application/services/service-request";
+import { StyledName } from "@rede-enois/design-system/domain";
 import { Button, Input, PageHeader, Textarea, useToast } from "@rede-enois/design-system/ui";
 import { Briefcase, Handshake, MessageCircle, Search, Send, Sparkles } from "lucide-react";
 
@@ -18,7 +19,6 @@ import { requireAuth } from "@/lib/require-auth";
 import { useIsAuthenticated } from "@/lib/use-auth";
 
 import { AppContainer } from "@/components/app-container";
-import { StyledName } from "@/components/styled-name";
 
 export const Route = createFileRoute("/servicos")({
   head: () => ({ meta: [{ title: "Serviços · Énóis" }] }),

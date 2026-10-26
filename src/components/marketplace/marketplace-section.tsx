@@ -8,6 +8,7 @@ import { texts } from "@/texts";
 import type { MarketplaceListing as MarketplaceListingView } from "@/types/application/marketplace/marketplace-listing";
 import type { MarketplacePalette } from "@/types/application/marketplace/marketplace-palette";
 import type { MarketplacePurchase } from "@/types/application/marketplace/marketplace-purchase";
+import { StyledName } from "@rede-enois/design-system/domain";
 import {
   Button,
   Dialog,
@@ -31,7 +32,6 @@ import { cn } from "@/lib/utils";
 import { ThemeSellDialog } from "@/components/appearance/theme-sell-dialog";
 import { MarketplaceContentDialog } from "@/components/marketplace/marketplace-content-dialog";
 import { MarketplaceSellDialog } from "@/components/marketplace/marketplace-sell-dialog";
-import { StyledName } from "@/components/styled-name";
 
 /** Piso de preço do marketplace: 50 faíscas (o backend também recusa abaixo disso). */
 const MIN_PRICE = parseFaiscaInput("50") ?? 50_000;
