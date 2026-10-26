@@ -152,10 +152,12 @@ function sessionExpiresAt(): number | null {
  * Renova a sessao uma unica vez, mesmo com varias chamadas concorrentes: todas aguardam a MESMA
  * promessa. Sem isso, cada 401 paralelo disparava um refresh proprio e rotacionava o token varias
  * vezes, derrubando a sessao.
+ *
+ * `expiryBefore` is the expiry the caller's credentials were sent with: a 401 for a request sent
+ * before another refresh completed must compare against THAT, or it rotates the token again.
  */
-function refreshSession(): Promise<RefreshOutcome> {
+function refreshSession(expiryBefore = sessionExpiresAt()): Promise<RefreshOutcome> {
   if (refreshPromise) return refreshPromise;
-  const expiryBefore = sessionExpiresAt();
   refreshPromise = withRefreshLock(() => {
     // Another tab renewed while this one waited for the lock: the shared cookies are already new,
     // and refreshing again would rotate the token a second time for nothing.
@@ -338,6 +340,8 @@ async function request<T>(
     ...sessionHeaders(),
   };
   const hadSession = hasSessionFlag();
+  // Expiry the cookies had when this request left: decides later whether a 401 is already stale.
+  const expiryAtSend = sessionExpiresAt();
 
   if (opts?.idempotent) {
     Object.assign(headers, idemKey());
@@ -406,7 +410,7 @@ async function request<T>(
   // PERMISSAO negada, nao sessao: derrubar o usuario aqui era um erro (quem tem conta pendente de
   // verificacao, por exemplo, era desconectado em vez de ler o aviso).
   if (response.status === HttpStatus.UNAUTHORIZED && hadSession && !path.startsWith("/auth/")) {
-    const refreshed = await refreshSession();
+    const refreshed = await refreshSession(expiryAtSend);
 
     if (refreshed === "unavailable") {
       // Servidor instavel (429/5xx/rede). NAO encerra a sessao: a proxima tentativa pode dar certo

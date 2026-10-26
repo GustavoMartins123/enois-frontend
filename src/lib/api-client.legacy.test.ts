@@ -77,6 +77,27 @@ describe("one-time move off localStorage tokens", () => {
     expect(values.get("session_active")).toBe("1");
   });
 
+  it("a 401 that arrives after the exchange finished does not rotate again", async () => {
+    let answerExchange!: (response: Response) => void;
+    let answerRequest!: (response: Response) => void;
+    fetchMock.mockReturnValueOnce(new Promise<Response>((resolve) => (answerExchange = resolve)));
+    fetchMock.mockReturnValueOnce(new Promise<Response>((resolve) => (answerRequest = resolve)));
+    fetchMock.mockResolvedValueOnce(Response.json({ id: "x" }));
+
+    const { api } = await import("./api-client");
+    // Sent with the legacy credentials, before the exchange answered.
+    const request = api.get("/recurso");
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    answerExchange(Response.json({ expiresAt: new Date(Date.now() + 3_600_000).toISOString() }));
+    await vi.waitFor(() => expect(values.has("refresh_token")).toBe(false));
+    // Only now its 401 comes back: the cookies are already new, so it just retries.
+    answerRequest(new Response(null, { status: 401 }));
+
+    await expect(request).resolves.toEqual({ id: "x" });
+    const refreshCalls = fetchMock.mock.calls.filter((call) => call[0] === "/api/auth/refresh");
+    expect(refreshCalls).toHaveLength(1);
+  });
+
   it("keeps the flag and the legacy token when the API cannot answer", async () => {
     fetchMock.mockRejectedValueOnce(new TypeError("Failed to fetch"));
 
