@@ -553,6 +553,9 @@ export const texts = {
       /** Depois de 5 códigos errados o desafio é invalidado, mesmo para o código certo. */
       tooManyAttempts:
         "Muitas tentativas com código errado. Por segurança, comece o login de novo com e-mail e senha.",
+      /** No código por e-mail, reenviar gera um código novo e zera as tentativas. */
+      tooManyAttemptsEmail:
+        "Muitas tentativas com código errado. Peça um novo código por e-mail e tente de novo.",
       backupLeft: (count: number) =>
         `${count} código${count === 1 ? "" : "s"} de recuperação ainda válido${count === 1 ? "" : "s"}.`,
       error: "Não foi possível concluir agora. Tente novamente.",

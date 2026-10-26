@@ -785,7 +785,13 @@ function TwoFactorForm({
       onDone();
     } catch (err) {
       if (err instanceof ApiError && err.code === "TOO_MANY_ATTEMPTS") {
-        setError(new Error(texts.auth.twoFactor.tooManyAttempts));
+        setError(
+          new Error(
+            byEmail
+              ? texts.auth.twoFactor.tooManyAttemptsEmail
+              : texts.auth.twoFactor.tooManyAttempts,
+          ),
+        );
         return;
       }
       setError(err instanceof Error ? err : new Error(texts.auth.twoFactor.error));
