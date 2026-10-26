@@ -1,4 +1,6 @@
-import { apiUrl } from "./api-client";
+import { apiUrl, renewSession } from "./api-client";
+import { authApi } from "./api/auth";
+import { storeSession } from "./session";
 
 /** Providers the API registers a callback for; anything else never reaches the API path. */
 const OAUTH_PROVIDERS = new Set(["google", "linkedin", "apple"]);
@@ -12,4 +14,20 @@ export function oauthCallbackUrl(provider: string, code: string, state: string):
   if (!OAUTH_PROVIDERS.has(normalized)) return null;
   const params = new URLSearchParams({ code, state });
   return apiUrl(`/auth/oauth/${normalized}/callback?${params.toString()}`);
+}
+
+/**
+ * Completes the OAuth return: the redirect set the session cookies (no token in the URL).
+ * /auth/me confirms the session and fills the header with name and photo; one refresh records the
+ * expiry the redirect does not carry. False when the session did not hold (me failed or the
+ * refresh was refused), so the page shows the login error instead of entering the app.
+ */
+export async function finishOAuthLogin(): Promise<boolean> {
+  try {
+    const user = await authApi.me();
+    storeSession({ user });
+    return (await renewSession()) !== "refused";
+  } catch {
+    return false;
+  }
 }
