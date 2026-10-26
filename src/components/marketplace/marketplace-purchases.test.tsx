@@ -13,6 +13,10 @@ import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "@/lib/api-client";
+import {
+  registerGalleryCollection,
+  resolveGalleryCollection,
+} from "@/lib/theme/gallery-collections";
 
 const mocks = vi.hoisted(() => ({
   authenticated: true,
@@ -231,6 +235,25 @@ describe("Compras no marketplace", () => {
     await mount();
     await act(async () => button(texts.marketplace.buy).click());
     await vi.waitFor(() => expect(mocks.toast).toHaveBeenCalledWith("Item já comprado", "error"));
+  });
+
+  it("reembolsar um tema aplicado remove o pacote local e permite comprar novamente", async () => {
+    mocks.purchases
+      .mockResolvedValueOnce([{ ...purchase, state: "HELD" }])
+      .mockResolvedValue([{ ...purchase, state: "REFUNDED" }]);
+    mocks.refund.mockResolvedValue({ purchaseId: purchase.id, state: "REFUNDED" });
+    const collection = registerGalleryCollection(theme);
+    usePreferencesStore.getState().setThemeCollection(collection.id);
+    useThemePreviewStore.getState().startPreview(theme, theme.name);
+    await mount();
+    await tab(texts.marketplace.purchasesTab);
+    await act(async () => button("Reembolso").click());
+    await vi.waitFor(() => expect(usePreferencesStore.getState().themeCollection).toBeNull());
+    expect(resolveGalleryCollection(collection.id)).toBeNull();
+    expect(useThemePreviewStore.getState().preview).toBeNull();
+    await tab(texts.marketplace.storeTab);
+    await vi.waitFor(() => expect(button(texts.marketplace.buy)?.disabled).toBe(false));
+    expect(button(texts.marketplace.owned)).toBeUndefined();
   });
 
   it("atualiza a posse após comprar e oferece acesso direto à aba de compras", async () => {

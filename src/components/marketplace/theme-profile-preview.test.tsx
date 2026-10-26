@@ -19,6 +19,7 @@ import { ThemeProfilePreview } from "./theme-profile-preview";
 
 const api = vi.hoisted(() => ({ getTheme: vi.fn(), setTheme: vi.fn() }));
 vi.mock("@/lib/api", () => ({ preferencesApi: api }));
+vi.mock("@/lib/use-auth", () => ({ useIsAuthenticated: () => false }));
 
 const theme: GalleryThemePackage = {
   id: "tema-previa",

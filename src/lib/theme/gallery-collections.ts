@@ -48,6 +48,12 @@ export function registerGalleryCollection(theme: GalleryThemePackage): ThemeColl
   return collection;
 }
 
+/** O reembolso remove também o pacote local, para ele não reaparecer após recarregar. */
+export function removeGalleryCollection(themeId: string): void {
+  cache.delete(galleryCollectionId(themeId));
+  writeStored(readStored().filter((item) => item.id !== themeId));
+}
+
 /** Resolve um id de tema da comunidade; `null` quando não é da galeria ou saiu do registro. */
 export function resolveGalleryCollection(id: string | null | undefined): ThemeCollection | null {
   if (!id || !id.startsWith(GALLERY_COLLECTION_PREFIX)) return null;

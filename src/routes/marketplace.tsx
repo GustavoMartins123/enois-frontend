@@ -15,7 +15,8 @@ import { BadgeCheck, Check, Receipt, RotateCcw, Search, Sparkles, Store } from "
 import { ApiError, marketplaceApi, themesApi } from "@/lib/api";
 import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { useListingTheme } from "@/lib/marketplace/use-listing-theme";
-import { registerGalleryCollection } from "@/lib/theme/gallery-collections";
+import { galleryCollectionId, registerGalleryCollection } from "@/lib/theme/gallery-collections";
+import { revokeRefundedThemes } from "@/lib/theme/revoke-refunded-themes";
 import { useIsAuthenticated } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
 
@@ -494,7 +495,22 @@ function MyPurchases({
   });
   const refund = useMutation({
     mutationFn: (id: string) => marketplaceApi.refund(id),
-    onSuccess: () => {
+    onSuccess: (_, purchaseId) => {
+      const refunded = purchases.find((purchase) => purchase.id === purchaseId);
+      if (refunded) {
+        revokeRefundedThemes([
+          ...purchases.filter((purchase) => purchase.id !== purchaseId),
+          { ...refunded, state: "REFUNDED" },
+        ]);
+        const preview = useThemePreviewStore.getState();
+        if (
+          refunded.itemKind === "THEME" &&
+          refunded.itemId &&
+          preview.preview?.collection.id === galleryCollectionId(refunded.itemId)
+        ) {
+          preview.stopPreview();
+        }
+      }
       void queryClient.invalidateQueries({ queryKey: ["carteira"] });
       return queryClient.invalidateQueries({ queryKey: ["marketplace"] });
     },
@@ -545,7 +561,7 @@ function MyPurchases({
                   <span className="block text-xs text-text-subtle">
                     {formatFaisca(p.price)} faíscas ·{" "}
                     {p.state === "HELD"
-                      ? "retidas no escrow"
+                      ? texts.marketplace.heldUntil(p.createdAt)
                       : p.state === "RELEASED"
                         ? "concluída"
                         : "reembolsada"}
@@ -586,7 +602,7 @@ function MyPurchases({
                       onClick={() => confirm.mutate(p.id)}
                     >
                       <BadgeCheck className="h-4 w-4" />
-                      Confirmar
+                      {texts.marketplace.confirmReceipt}
                     </Button>
 
                     <Button
