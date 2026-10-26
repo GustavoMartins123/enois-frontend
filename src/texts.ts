@@ -363,6 +363,9 @@ export const texts = {
         "Não foi possível confirmar que o pedido veio do Énóis. Recarregue a página e tente de novo.",
       UNSAFE_LINK:
         "Um dos links não é permitido. Use endereços que comecem com http://, https:// ou mailto:.",
+      /** O mesmo código de verificação chegou duas vezes (ex.: clique duplo); só o primeiro vale. */
+      TWO_FACTOR_CHALLENGE_ALREADY_USED:
+        "Este código já foi usado. Se você já entrou, recarregue a página; senão, comece o login de novo.",
     } as Record<string, string>,
     knownCodes: {
       NETWORK_ERROR:
