@@ -2027,7 +2027,10 @@ export const texts = {
       "Navegue para experimentar. Ao encerrar ou recarregar, seu tema original volta.",
     previewProfile: "Ver meu perfil",
     previewEnd: "Encerrar prévia",
-    purchaseConfirmed: "Compra confirmada",
+    purchaseConfirmed: "Compra registrada",
+    confirmReceipt: "Confirmar recebimento",
+    heldUntil: (createdAt: string) =>
+      `retidas · liberação automática após ${dataCurta(new Date(Date.parse(createdAt) + 7 * 86_400_000).toISOString())}`,
     purchaseHeld:
       "As faíscas ficam retidas com segurança até você confirmar que recebeu o conteúdo. Se algo der errado, o reembolso devolve tudo.",
     keepShopping: "Continuar comprando",

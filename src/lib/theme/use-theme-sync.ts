@@ -12,6 +12,7 @@ import { applyThemePreview, applyThemeSettings } from "./apply-theme";
 import { resolveThemeCollection } from "./build-collection-css";
 import { isGalleryCollectionId } from "./gallery-collections";
 import { syncThemeCollection } from "./sync-theme-collection";
+import { useGalleryThemeOwnership } from "./use-gallery-theme-ownership";
 
 /**
  * Único ponto que leva modo (claro/escuro), coleção temática e personalização para o DOM.
@@ -72,6 +73,7 @@ export function useThemeSync(): void {
   }, [preview]);
 
   useThemeAccountSync();
+  useGalleryThemeOwnership();
 }
 
 function restoreSavedTheme(): void {
