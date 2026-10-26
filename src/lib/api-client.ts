@@ -155,7 +155,8 @@ function refreshSession(): Promise<RefreshOutcome> {
     ) {
       return Promise.resolve<RefreshOutcome>("renewed");
     }
-    return doRefresh();
+    // While a pre-cookie refresh token is still stored, renewing means trading it for cookies.
+    return doRefresh(legacyRefreshToken() ?? undefined);
   }).finally(() => {
     refreshPromise = null;
   });
@@ -266,14 +267,13 @@ async function refreshIfNeeded(): Promise<void> {
 // bfcache ou recuperar a rede nao disparam esse evento em varias plataformas (iOS principalmente),
 // e a pessoa cai no login sem entender. `pageshow` e `online` fecham essa lacuna.
 if (typeof window !== "undefined") {
-  // One-time move off localStorage tokens: the old refresh token is traded for the cookies. It
-  // is deleted only once the API settled it (cookies issued, or token refused); a network or
-  // server failure keeps it for the next load. The session flag only appears on success.
-  const legacyToken = legacyRefreshToken();
-  if (legacyToken) {
-    refreshPromise = doRefresh(legacyToken).finally(() => {
-      refreshPromise = null;
-    });
+  // One-time move off localStorage tokens: the old refresh token is traded for the cookies. The
+  // person stays in the logged-in shell meanwhile (flag set now): a refusal clears flag and token,
+  // a network/server failure keeps both, so the next refresh or load trades the token again. A
+  // 401 meanwhile waits for this same in-flight refresh instead of ending the session.
+  if (legacyRefreshToken()) {
+    localStorage.setItem(SESSION_FLAG_KEY, "1");
+    void refreshSession();
   }
 
   document.addEventListener("visibilitychange", () => {
