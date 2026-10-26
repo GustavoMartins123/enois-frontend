@@ -163,6 +163,14 @@ function refreshSession(): Promise<RefreshOutcome> {
 }
 
 /**
+ * Renews the session now and stores its expiry. For entry points that receive the cookies without
+ * an expiry in the body (OAuth return): without it the proactive refresh never runs.
+ */
+export function renewSession(): Promise<RefreshOutcome> {
+  return refreshSession();
+}
+
+/**
  * One refresh at a time across every tab of the origin (Web Locks). Without locks support the
  * per-tab promise above still dedupes, and the /auth/me check covers a cross-tab rotation.
  */

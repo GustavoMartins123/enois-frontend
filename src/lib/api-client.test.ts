@@ -2,7 +2,7 @@ import { texts } from "@/texts";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { notifyBirthDateRequired } from "./age-required";
-import { ApiError, api } from "./api-client";
+import { ApiError, api, renewSession } from "./api-client";
 
 vi.mock("./auth-hint", () => ({ clearAuthHint: vi.fn(), setAuthHint: vi.fn() }));
 vi.mock("./query-client", () => ({ resetSessionScopedData: vi.fn() }));
@@ -274,5 +274,38 @@ describe("renovação entre abas (Web Locks)", () => {
 
     await expect(api.get("/recurso")).resolves.toEqual({ ok: true });
     expect(fetchMock.mock.calls[1][0]).toBe("/api/auth/refresh");
+  });
+});
+
+describe("renewSession", () => {
+  const fetchMock = vi.fn();
+  let values: Map<string, string>;
+
+  beforeEach(() => {
+    values = new Map([["session_active", "1"]]);
+    vi.stubGlobal("window", { location: { origin: "https://enois.ia.br", href: "/feed" } });
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+      removeItem: (key: string) => values.delete(key),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    fetchMock.mockReset();
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("records the expiry of a session that arrived without one (OAuth return)", async () => {
+    fetchMock.mockResolvedValueOnce(
+      Response.json({
+        expiresAt: "2099-01-01T00:00:00Z",
+        refreshExpiresAt: "2099-02-01T00:00:00Z",
+      }),
+    );
+
+    await expect(renewSession()).resolves.toBe("renewed");
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/auth/refresh");
+    expect(values.get("session_expires_at")).toBe("2099-01-01T00:00:00Z");
+    expect(values.get("refresh_expires_at")).toBe("2099-02-01T00:00:00Z");
   });
 });

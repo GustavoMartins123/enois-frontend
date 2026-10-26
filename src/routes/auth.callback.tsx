@@ -7,7 +7,7 @@ import { Loader2, Sparkles } from "lucide-react";
 import { z } from "zod";
 
 import { authApi } from "@/lib/api";
-import { apiUrl } from "@/lib/api-client";
+import { apiUrl, renewSession } from "@/lib/api-client";
 import { storeSession } from "@/lib/session";
 
 import { Button } from "@/components/ui/button";
@@ -57,11 +57,13 @@ function OAuthCallback() {
 
     // The API set the session cookies on the redirect that brought us here (`?status=ok`); the
     // URL carries no token. /auth/me confirms the session (401 means the login did not complete)
-    // and fills the header with name and photo.
+    // and fills the header with name and photo. The redirect carries no expiry either, so one
+    // refresh records it (otherwise the proactive refresh never runs for this session).
     void authApi
       .me()
-      .then((user) => {
+      .then(async (user) => {
         storeSession({ user });
+        await renewSession();
         return navigate({ to: "/feed", replace: true });
       })
       .catch(() => setError(texts.auth.social.callbackError));
