@@ -316,8 +316,11 @@ async function request<T>(
     await refreshIfNeeded();
   }
 
+  // FormData (multipart uploads/imports) goes as-is: the browser sets the boundary header.
+  const multipart = typeof FormData !== "undefined" && body instanceof FormData;
+  const payload = multipart ? (body as FormData) : body ? JSON.stringify(body) : undefined;
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    ...(multipart ? {} : { "Content-Type": "application/json" }),
     ...sessionHeaders(),
   };
   const hadSession = hasSessionFlag();
@@ -336,7 +339,7 @@ async function request<T>(
       method,
       credentials: "include",
       headers,
-      body: body ? JSON.stringify(body) : undefined,
+      body: payload,
     });
     // Limite do proxy/CDN: a recusa vem sem CORS e o navegador a reporta como falha de rede.
     // Em escrita idempotente (todas as nossas), esperar o Retry-After e repetir uma vez é
@@ -349,7 +352,7 @@ async function request<T>(
           method,
           credentials: "include",
           headers,
-          body: body ? JSON.stringify(body) : undefined,
+          body: payload,
         });
       }
     }
@@ -364,7 +367,7 @@ async function request<T>(
           method,
           credentials: "include",
           headers,
-          body: body ? JSON.stringify(body) : undefined,
+          body: payload,
         });
       } catch {
         throw new ApiError(
@@ -408,7 +411,7 @@ async function request<T>(
           method,
           credentials: "include",
           headers,
-          body: body ? JSON.stringify(body) : undefined,
+          body: payload,
         });
       } catch {
         throw new ApiError(

@@ -309,3 +309,44 @@ describe("renewSession", () => {
     expect(values.get("refresh_expires_at")).toBe("2099-02-01T00:00:00Z");
   });
 });
+
+describe("envio multipart", () => {
+  const fetchMock = vi.fn();
+  let values: Map<string, string>;
+
+  beforeEach(() => {
+    values = new Map([["session_active", "1"]]);
+    vi.stubGlobal("window", { location: { origin: "https://enois.ia.br", href: "/perfil" } });
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+      removeItem: (key: string) => values.delete(key),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    fetchMock.mockReset();
+  });
+
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("sends FormData as-is and renews the session on 401 like any other call", async () => {
+    fetchMock.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    fetchMock.mockResolvedValueOnce(
+      Response.json({
+        expiresAt: "2099-01-01T00:00:00Z",
+        refreshExpiresAt: "2099-02-01T00:00:00Z",
+      }),
+    );
+    fetchMock.mockResolvedValueOnce(Response.json({ ok: true }));
+    const form = new FormData();
+    form.append("file", new Blob(["pdf"]), "cv.pdf");
+
+    await expect(api.post("/me/import/resume", form, { idempotent: false })).resolves.toEqual({
+      ok: true,
+    });
+    expect(fetchMock.mock.calls[1][0]).toBe("/api/auth/refresh");
+    const retry = fetchMock.mock.calls[2][1];
+    expect(retry.body).toBe(form);
+    expect(retry.headers).not.toHaveProperty("Content-Type");
+    expect(retry.credentials).toBe("include");
+  });
+});
