@@ -3002,6 +3002,8 @@ export const texts = {
     originsDescription:
       "Toda requisição ao backend precisa de uma origem cadastrada. O navegador manda Origin sozinho; chamadas de servidor (SSR, curl, integrações) precisam mandar X-Client-Origin: https://meuapp.com. A origem do próprio Énóis é liberada automaticamente; cadastre a do seu app abaixo. Rotas de administração e moderação aceitam apenas a origem do frontend.",
     originsLogin: "Entre na sua conta para cadastrar a origem do seu app.",
+    /** Aviso na origem cadastrada que a API bloqueou (a coluna fica com o motivo). */
+    originBlocked: "Bloqueada por atividade suspeita",
     originPlaceholder: "https://meuapp.com",
     originAdd: "Cadastrar origem",
     originEmpty: "Nenhuma origem cadastrada ainda.",

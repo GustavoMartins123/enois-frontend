@@ -110,6 +110,12 @@ const ALL_TABS: { id: ModeratorTabId; label: string; icon: typeof Flag; adminOnl
     icon: Users,
     adminOnly: true,
   },
+  {
+    id: "contributors",
+    label: texts.moderator.tabs.contributors,
+    icon: Users,
+    adminOnly: true,
+  },
 ];
 
 /**
