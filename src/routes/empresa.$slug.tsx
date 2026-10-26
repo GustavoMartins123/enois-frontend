@@ -173,7 +173,11 @@ function Empresa() {
             )}
           </div>
 
-          <div className="px-4 pb-5 sm:px-6">
+          {/* A capa é position:relative. Sem z-index, um posicionado pinta por cima do
+              fluxo normal — a logo, puxada para cima com -mt-10, ficava por baixo dela.
+              O mesmo bloco relativo do avatar no perfil. Fonte:
+              https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_positioned_layout/Understanding_z-index/Stacking_without_z-index */}
+          <div className="relative px-4 pb-5 sm:px-6">
             <div className="-mt-10 flex items-end gap-4">
               {company.logo ? (
                 <img
