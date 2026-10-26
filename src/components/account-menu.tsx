@@ -313,7 +313,7 @@ export function AccountMenu({ profile }: AccountMenuProps) {
           <div className="shrink-0 border-t border-border-soft py-1">
             <button
               type="button"
-              onClick={handleLogout}
+              onClick={() => void handleLogout()}
               disabled={loggingOut}
               className={cn(ITEM_CLASS, "text-destructive hover:text-destructive")}
             >
