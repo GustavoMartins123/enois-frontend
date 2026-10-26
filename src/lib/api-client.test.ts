@@ -161,6 +161,20 @@ describe("resposta da operação após renovar a sessão", () => {
 describe("mensagem de erro da API", () => {
   afterEach(() => vi.unstubAllGlobals());
 
+  it("explica a recusa por falta do header anti-CSRF", async () => {
+    vi.stubGlobal("window", { location: { origin: "https://enois.ia.br", href: "/feed" } });
+    vi.stubGlobal("localStorage", { getItem: () => null, setItem: vi.fn(), removeItem: vi.fn() });
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => Response.json({ code: "CSRF_REQUIRED", message: "x" }, { status: 403 })),
+    );
+
+    await expect(api.post("/feed/posts", { content: "x" })).rejects.toMatchObject({
+      code: "CSRF_REQUIRED",
+      message: texts.errors.apiMessages.CSRF_REQUIRED,
+    });
+  });
+
   it("troca o texto cru de link não permitido por uma mensagem legível", async () => {
     vi.stubGlobal("window", { location: { origin: "https://enois.ia.br", href: "/feed" } });
     vi.stubGlobal("localStorage", { getItem: () => null, setItem: vi.fn(), removeItem: vi.fn() });

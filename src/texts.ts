@@ -358,6 +358,9 @@ export const texts = {
     },
     /** Replaces the API message for codes whose raw text is not fit for the screen. */
     apiMessages: {
+      /** Escrita com cookie de sessão sem o header anti-CSRF: só acontece com página desatualizada. */
+      CSRF_REQUIRED:
+        "Não foi possível confirmar que o pedido veio do Énóis. Recarregue a página e tente de novo.",
       UNSAFE_LINK:
         "Um dos links não é permitido. Use endereços que comecem com http://, https:// ou mailto:.",
     } as Record<string, string>,
