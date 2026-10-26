@@ -4,14 +4,18 @@ import { useQuery } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { GifPickerDialogProps } from "@/types/components/post/gif-picker-dialog-props";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  Input,
+} from "@rede-enois/design-system/ui";
 import { Loader2 } from "lucide-react";
 
 import { gifsApi } from "@/lib/api/gifs";
 import { isGifUrl } from "@/lib/gif-url";
-
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 
 const SEARCH_DEBOUNCE_MS = 350;
 

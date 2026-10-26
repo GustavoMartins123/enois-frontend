@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 
+import { useToast } from "@rede-enois/design-system/ui";
 import { Copy, Heart, X } from "lucide-react";
 import QRCode from "qrcode";
 
 import { PIX_KEY, pixCopiaECola } from "@/lib/pix";
-
-import { useToast } from "@/components/ui/toast";
 
 /**
  * O convite de doação no topo da home: o Énóis é gratuito e livre, e quem quiser ajuda

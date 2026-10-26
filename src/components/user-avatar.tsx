@@ -1,12 +1,11 @@
 import { texts } from "@/texts";
 import type { UserAvatarProps } from "@/types/components/user-avatar/user-avatar-props";
+import { Avatar, AvatarFallback, AvatarImage } from "@rede-enois/design-system/ui";
 
 import { resolveCdnUrl } from "@/lib/api/media";
 import { ANIMATED_FRAMES, isFxFrame } from "@/lib/avatar-frames";
 import { useAvatarAnimation } from "@/lib/use-avatar-animation";
 import { cn } from "@/lib/utils";
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 import { AvatarFrameFx } from "@/components/avatar-frames/avatar-frame-fx";
 

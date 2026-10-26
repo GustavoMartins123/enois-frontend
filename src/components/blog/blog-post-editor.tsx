@@ -6,14 +6,10 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { texts } from "@/texts";
 import type { BlogPost } from "@/types/application/blog/blog-post";
 import type { BlogPostFormat } from "@/types/application/blog/blog-post-format";
+import { Button, Input, Pill, useToast } from "@rede-enois/design-system/ui";
 import { ArrowLeft, Eye, PenLine } from "lucide-react";
 
 import { blogsApi } from "@/lib/api/blogs";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Pill } from "@/components/ui/pill";
-import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { HtmlEditor } from "@/components/html-editor";

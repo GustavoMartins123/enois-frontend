@@ -4,25 +4,24 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { GameView } from "@/types/application/games/game-view";
-import { ImagePlus, Trash2, X } from "lucide-react";
-
-import { gamesApi } from "@/lib/api";
-import { resolveCdnUrl } from "@/lib/api/media";
-import { useMediaUpload } from "@/lib/use-media-upload";
-
-import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
+  Button,
+  ConfirmDialog,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
+  Input,
+  Label,
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
+import { ImagePlus, Trash2, X } from "lucide-react";
+
+import { gamesApi } from "@/lib/api";
+import { resolveCdnUrl } from "@/lib/api/media";
+import { useMediaUpload } from "@/lib/use-media-upload";
 
 const STAGES = [
   ["IN_DEVELOPMENT", "Em desenvolvimento"],

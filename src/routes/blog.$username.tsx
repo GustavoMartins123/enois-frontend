@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import { Button, useToast } from "@rede-enois/design-system/ui";
 import { ArrowLeft, PenLine, Plus, Rss } from "lucide-react";
 
 import { blogsApi } from "@/lib/api/blogs";
@@ -10,9 +11,6 @@ import { formatarData } from "@/lib/date/format";
 import { buildShareTags } from "@/lib/open-graph";
 import { plainPreview } from "@/lib/rich-text/preview";
 import { useAuth } from "@/lib/use-auth";
-
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { RichText } from "@/components/post/rich-text";

@@ -7,6 +7,7 @@ import { texts } from "@/texts";
 import type { CommentView } from "@/types/application/comment/comment-view";
 import type { PostIdProps } from "@/types/components/post/post-id-props";
 import type { MediaItem } from "@/types/routes/feed/media-item";
+import { Button } from "@rede-enois/design-system/ui";
 import { EyeOff, Image, Loader2, Mic, Send, Square, X } from "lucide-react";
 
 import { commentsApi } from "@/lib/api";
@@ -16,8 +17,6 @@ import { litePageSize } from "@/lib/lite-mode";
 import { useAuth } from "@/lib/use-auth";
 import { useLiteMode } from "@/lib/use-lite-mode";
 import { useMediaUpload } from "@/lib/use-media-upload";
-
-import { Button } from "@/components/ui/button";
 
 import { MentionTextarea } from "@/components/mention-textarea";
 import { SpoilerPreview } from "@/components/post/spoiler-preview";

@@ -2,14 +2,12 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 
 import { usePreferencesStore } from "@/stores/preferences.store";
 import { texts } from "@/texts";
+import { Button, useToast } from "@rede-enois/design-system/ui";
 import { Loader2, Store } from "lucide-react";
 
 import { marketplaceApi, themesApi } from "@/lib/api";
 import { registerGalleryCollection } from "@/lib/theme/gallery-collections";
 import { useIsAuthenticated } from "@/lib/use-auth";
-
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
 
 /**
  * Temas que a pessoa comprou na loja. O conteúdo comprado é aberto pelo backend (só o comprador),

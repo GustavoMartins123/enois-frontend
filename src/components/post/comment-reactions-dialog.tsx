@@ -5,14 +5,21 @@ import { useQuery } from "@tanstack/react-query";
 import { texts } from "@/texts";
 import type { ReactionTab } from "@/types/application/reaction/reaction-tab";
 import type { CommentReactionsDialogProps } from "@/types/components/post/comment-reactions-dialog-props";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@rede-enois/design-system/ui";
 import { Smile, Users } from "lucide-react";
 
 import { REACTION_EMOJIS, profileApi, reactionsApi } from "@/lib/api";
 import { sortReactionTabsStable } from "@/lib/reactions/summary";
 import { useAuth } from "@/lib/use-auth";
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { UserAvatar } from "@/components/user-avatar";
 

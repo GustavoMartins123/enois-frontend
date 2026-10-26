@@ -5,13 +5,17 @@ import { useMutation } from "@tanstack/react-query";
 import { PROFILE_HTML_MAX_LENGTH } from "@/constants/profile";
 import { texts } from "@/texts";
 import type { ProfileBioDialogProps } from "@/types/components/profile/profile-bio-dialog-props";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  useToast,
+} from "@rede-enois/design-system/ui";
 import { Code2 } from "lucide-react";
 
 import { profileApi } from "@/lib/api";
-
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/toast";
 
 import { HtmlEditor } from "@/components/html-editor";
 

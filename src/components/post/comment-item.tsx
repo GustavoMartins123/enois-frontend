@@ -7,6 +7,7 @@ import { texts } from "@/texts";
 import type { ReactionSummary } from "@/types/application/reaction/reaction-summary";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { CommentItemProps } from "@/types/components/post/comment-item-props";
+import { Button, ReadMore, useToast } from "@rede-enois/design-system/ui";
 import { Flag, Heart, MessageCircle, Pencil, Pin, PinOff, Trash2 } from "lucide-react";
 
 import { REACTION_EMOJIS, commentsApi, profileApi, reactionsApi } from "@/lib/api";
@@ -14,10 +15,6 @@ import { useCurrentUser } from "@/lib/current-user";
 import { applyReactionToSummary, removeReactionFromSummary } from "@/lib/reactions/summary";
 import { hideExternalPageUrls } from "@/lib/shared-links";
 import { useAuth } from "@/lib/use-auth";
-
-import { Button } from "@/components/ui/button";
-import { ReadMore } from "@/components/ui/read-more";
-import { useToast } from "@/components/ui/toast";
 
 import { ContributorTag } from "@/components/contributor-tag";
 import { MentionTextarea } from "@/components/mention-textarea";

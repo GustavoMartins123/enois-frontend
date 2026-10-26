@@ -6,14 +6,13 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { TOPIC_LABELS } from "@/constants/community-topics";
 import { texts } from "@/texts";
 import type { PostView } from "@/types/application/feed/post-view";
+import { Button } from "@rede-enois/design-system/ui";
 import { ArrowLeft, Hash, Lock } from "lucide-react";
 
 import { communitiesApi, feedApi } from "@/lib/api";
 import { litePageSize } from "@/lib/lite-mode";
 import { useIsAuthenticated } from "@/lib/use-auth";
 import { useLiteMode } from "@/lib/use-lite-mode";
-
-import { Button } from "@/components/ui/button";
 
 import { AppContainer } from "@/components/app-container";
 import { InfiniteScroll } from "@/components/infinite-scroll";

@@ -16,6 +16,16 @@ import type { ComposerActionProps } from "@/types/routes/feed/composer-action-pr
 import type { HomeTab } from "@/types/routes/feed/home-tab";
 import type { MediaItem } from "@/types/routes/feed/media-item";
 import {
+  Button,
+  EmptyState,
+  Input,
+  LoadingState,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  useToast,
+} from "@rede-enois/design-system/ui";
+import {
   ArrowUp,
   BarChart3,
   Briefcase,
@@ -51,13 +61,6 @@ import { useIsAuthenticated } from "@/lib/use-auth";
 import { useLiteMode } from "@/lib/use-lite-mode";
 import { useMediaUpload } from "@/lib/use-media-upload";
 import { cn } from "@/lib/utils";
-
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/loading-state";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useToast } from "@/components/ui/toast";
 
 import { ApoieCard } from "@/components/apoie-card";
 import { AppContainer } from "@/components/app-container";

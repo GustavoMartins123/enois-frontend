@@ -2,10 +2,14 @@ import { useCallback, useEffect, useState } from "react";
 
 import { texts } from "@/texts";
 import type { ImageCropDialogProps } from "@/types/components/image-crop-dialog/image-crop-dialog-props";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@rede-enois/design-system/ui";
 import Cropper, { type Area, type Point } from "react-easy-crop";
-
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 function createImage(url: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {

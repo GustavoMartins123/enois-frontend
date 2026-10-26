@@ -9,21 +9,20 @@ import {
 import { texts } from "@/texts";
 import type { OAuthProvider } from "@/types/application/auth/oauth-provider";
 import type { LinkedAccountsDialogProps } from "@/types/components/account/linked-accounts-dialog-props";
-import { Link2, Link2Off, Loader2 } from "lucide-react";
-
-import { ApiError, authApi, linkedInIntegrationApi } from "@/lib/api";
-import { dataHora } from "@/lib/date/format";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Switch } from "@/components/ui/switch";
-import { useToast } from "@/components/ui/toast";
+  Switch,
+  useToast,
+} from "@rede-enois/design-system/ui";
+import { Link2, Link2Off, Loader2 } from "lucide-react";
+
+import { ApiError, authApi, linkedInIntegrationApi } from "@/lib/api";
+import { dataHora } from "@/lib/date/format";
 
 import { LinkedinImportSection } from "@/components/security/linkedin-import-section";
 

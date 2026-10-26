@@ -1,7 +1,6 @@
 import { texts } from "@/texts";
 import type { SkeletonListProps } from "@/types/components/skeletons/skeleton-list-props";
-
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@rede-enois/design-system/ui";
 
 /** Mesmo desenho da linha de conversa em `mensagens` (avatar, título, última mensagem, hora). */
 export function ConversationListSkeletons({ count = 6 }: SkeletonListProps) {

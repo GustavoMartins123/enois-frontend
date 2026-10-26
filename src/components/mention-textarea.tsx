@@ -14,6 +14,7 @@ import type { UserSearchResult } from "@/types/application/user/user-search-resu
 import type { Props } from "@/types/components/mention-textarea/props";
 import type { MentionListSide } from "@/types/lib/mentions/list-placement";
 import type { RichTextFormat } from "@/types/lib/rich-text/rich-text-format";
+import { CharCounter } from "@rede-enois/design-system/ui";
 
 import { usersApi } from "@/lib/api";
 import {
@@ -24,8 +25,6 @@ import {
 } from "@/lib/mentions/list-placement";
 import { applyFormat } from "@/lib/rich-text/apply-format";
 import { insertSnippet } from "@/lib/rich-text/insert-snippet";
-
-import { CharCounter } from "@/components/ui/char-counter";
 
 import { RichTextToolbar } from "@/components/rich-text-toolbar";
 import { UserAvatar } from "@/components/user-avatar";

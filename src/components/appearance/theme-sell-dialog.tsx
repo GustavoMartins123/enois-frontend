@@ -3,24 +3,23 @@ import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { usePreferencesStore } from "@/stores/preferences.store";
-
-import { ApiError, marketplaceApi, themesApi } from "@/lib/api";
-import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
-import { resolveThemeCollection } from "@/lib/theme/build-collection-css";
-import { buildGalleryPackage } from "@/lib/theme/gallery-package";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
+  Input,
+  Label,
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
+
+import { ApiError, marketplaceApi, themesApi } from "@/lib/api";
+import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
+import { resolveThemeCollection } from "@/lib/theme/build-collection-css";
+import { buildGalleryPackage } from "@/lib/theme/gallery-package";
 
 /**
  * "Vender no marketplace" da APARÊNCIA ATUAL.

@@ -4,24 +4,23 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { AgeGateMode } from "@/types/components/age-gate-mode";
-
-import { BIRTH_DATE_REQUIRED_EVENT, PARENTAL_CONSENT_REQUIRED_EVENT } from "@/lib/age-required";
-import { parentalApi, profileApi } from "@/lib/api";
-import { anoAtual } from "@/lib/date/format";
-import { hasSession } from "@/lib/require-auth";
-
-import { Button } from "@/components/ui/button";
-import { DateTextInput } from "@/components/ui/date-text-input";
 import {
+  Button,
+  DateTextInput,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/toast";
+  Input,
+  Label,
+  useToast,
+} from "@rede-enois/design-system/ui";
+
+import { BIRTH_DATE_REQUIRED_EVENT, PARENTAL_CONSENT_REQUIRED_EVENT } from "@/lib/age-required";
+import { parentalApi, profileApi } from "@/lib/api";
+import { anoAtual } from "@/lib/date/format";
+import { hasSession } from "@/lib/require-auth";
 
 /**
  * Política de idade do ECA Digital, em um diálogo só.

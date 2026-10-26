@@ -3,11 +3,10 @@ import { Link } from "@tanstack/react-router";
 import { topicLabel } from "@/constants/community-topics";
 import { texts } from "@/texts";
 import type { CommunityCardProps } from "@/types/components/community-card-props";
+import { Button } from "@rede-enois/design-system/ui";
 import { Users } from "lucide-react";
 
 import { resolveCdnUrl } from "@/lib/api/media";
-
-import { Button } from "@/components/ui/button";
 
 import { CommunityFavoriteButton } from "@/components/community-favorite-button";
 

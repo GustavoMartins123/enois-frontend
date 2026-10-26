@@ -5,14 +5,18 @@ import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { GithubImportDialogProps } from "@/types/components/profile/github-import-dialog-props";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  useToast,
+} from "@rede-enois/design-system/ui";
 import { Archive, Download, GitFork, Loader2, Star } from "lucide-react";
 
 import { ApiError, githubProfileApi } from "@/lib/api";
 import { dataCurta } from "@/lib/date/format";
-
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/toast";
 
 import { GithubIcon } from "@/components/icons/github";
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";

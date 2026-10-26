@@ -4,13 +4,10 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { LinkedinImportPreview } from "@/types/application/profile/linkedin-import-preview";
+import { Button, Textarea, useToast } from "@rede-enois/design-system/ui";
 import { ClipboardPaste, FileUp } from "lucide-react";
 
 import { preferencesApi, profileApi, projectsApi, resumeImportApi } from "@/lib/api";
-
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
 
 import { LinkedinContactsSection } from "./linkedin-contacts-section";
 

@@ -3,15 +3,11 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
+import { Button, EmptyState, Input, useToast } from "@rede-enois/design-system/ui";
 import { FolderKanban, Globe } from "lucide-react";
 
 import { communityProjectsApi } from "@/lib/api";
 import { safeHref } from "@/lib/safe-url";
-
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/toast";
 
 import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
 

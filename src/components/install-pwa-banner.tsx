@@ -4,18 +4,17 @@ import { useRouterState } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { BeforeInstallPromptEvent } from "@/types/components/install-pwa/before-install-prompt-event";
-import { Download, Share, X } from "lucide-react";
-
-import { hasSession } from "@/lib/require-auth";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@rede-enois/design-system/ui";
+import { Download, Share, X } from "lucide-react";
+
+import { hasSession } from "@/lib/require-auth";
 
 /** Quem fecha o convite não vê de novo até abrir outra aba/sessão. */
 const SILENCED_KEY = "connect-grow-pwa-banner-silenced";

@@ -1,7 +1,6 @@
 import { texts } from "@/texts";
 import type { SkeletonListProps } from "@/types/components/skeletons/skeleton-list-props";
-
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@rede-enois/design-system/ui";
 
 /** Mesmo desenho do `CommunityCard` (capa, avatar, título, descrição, rodapé), sem o conteúdo. */
 export function CommunityCardSkeletons({ count = 6 }: SkeletonListProps) {

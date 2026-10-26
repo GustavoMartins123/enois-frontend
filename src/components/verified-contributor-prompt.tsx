@@ -4,13 +4,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { VerifiedContributorPromptProps } from "@/types/components/verified-contributor-prompt-props";
+import { Button } from "@rede-enois/design-system/ui";
 import { Award, ChevronDown } from "lucide-react";
 
 import { contributorsApi } from "@/lib/api";
 import { useIsAuthenticated } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
-
-import { Button } from "@/components/ui/button";
 
 import { ContributionForm } from "./contribution-form";
 

@@ -2,19 +2,18 @@ import { useState } from "react";
 
 import { texts } from "@/texts";
 import type { DeleteAccountDialogProps } from "@/types/components/account/delete-account-dialog-props";
-
-import { ApiError, authApi, clearSession } from "@/lib/api";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+  Input,
+  Label,
+} from "@rede-enois/design-system/ui";
+
+import { ApiError, authApi, clearSession } from "@/lib/api";
 
 export function DeleteAccountDialog({ open, onOpenChange }: DeleteAccountDialogProps) {
   const [password, setPassword] = useState("");

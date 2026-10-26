@@ -2,6 +2,7 @@ import { useState } from "react";
 
 import { texts } from "@/texts";
 import type { ApplyByEmailButtonProps } from "@/types/components/job/apply-by-email-button-props";
+import { Button, useToast } from "@rede-enois/design-system/ui";
 import { Mail } from "lucide-react";
 
 import { resolveCdnUrl } from "@/lib/api/media";
@@ -12,9 +13,6 @@ import {
   shareResume,
 } from "@/lib/apply-email";
 import { useCurrentUser } from "@/lib/current-user";
-
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
 
 /**
  * "Agilizar envio": escreve o e-mail de candidatura e abre o app de e-mail da pessoa.

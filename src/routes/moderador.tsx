@@ -10,6 +10,15 @@ import type { SanctionProposalDecision } from "@/types/application/moderation/sa
 import type { SanctionProposalView } from "@/types/application/moderation/sanction-proposal-view";
 import type { ModeratorTabId } from "@/types/routes/moderador/moderator-tab-id";
 import {
+  Button,
+  ConfirmDialog,
+  EmptyState,
+  Input,
+  LoadingState,
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
+import {
   Activity,
   ArrowLeft,
   Bug,
@@ -39,14 +48,6 @@ import { reportsAdminApi } from "@/lib/api/reports-admin";
 import { dataHora } from "@/lib/date/format";
 import { requireAuth } from "@/lib/require-auth";
 import { cn } from "@/lib/utils";
-
-import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/loading-state";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { AppealsSection } from "@/components/moderation/appeals-section";

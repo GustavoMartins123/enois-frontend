@@ -4,14 +4,11 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { ProfileQuickComposerProps } from "@/types/components/profile/profile-quick-composer-props";
+import { Button, Textarea, useToast } from "@rede-enois/design-system/ui";
 import { FilePenLine, Image, Send, Video } from "lucide-react";
 
 import { feedApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
-
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
 
 import { UserAvatar } from "@/components/user-avatar";
 

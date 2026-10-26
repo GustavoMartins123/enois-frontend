@@ -4,17 +4,13 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { MAX_BADGES } from "@/constants/badges";
 import { texts } from "@/texts";
+import { Button, Input, Label, useToast } from "@rede-enois/design-system/ui";
 import { X } from "lucide-react";
 
 import { preferencesApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { useCurrentUser } from "@/lib/current-user";
 import { useMediaUpload } from "@/lib/use-media-upload";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/toast";
 
 /**
  * Nome e identidade: nome social (substitui o de cadastro para todo mundo), apelido

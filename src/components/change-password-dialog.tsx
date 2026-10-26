@@ -4,21 +4,20 @@ import { useQuery } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { ChangePasswordDialogProps } from "@/types/components/account/change-password-dialog-props";
-import { Loader2 } from "lucide-react";
-
-import { ApiError, authApi, clearSession } from "@/lib/api";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { PasswordInput } from "@/components/ui/password-input";
+  Input,
+  Label,
+  PasswordInput,
+} from "@rede-enois/design-system/ui";
+import { Loader2 } from "lucide-react";
+
+import { ApiError, authApi, clearSession } from "@/lib/api";
 
 const MIN_LENGTH = 8;
 

@@ -4,6 +4,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 import { createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import { Button, ConfirmDialog, Input, useToast } from "@rede-enois/design-system/ui";
 import { Search } from "lucide-react";
 
 import { messagesApi, networkApi } from "@/lib/api";
@@ -12,11 +13,6 @@ import { useCurrentUser } from "@/lib/current-user";
 import { liteInterval, litePageSize } from "@/lib/lite-mode";
 import { requireAuth } from "@/lib/require-auth";
 import { useLiteMode } from "@/lib/use-lite-mode";
-
-import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { ConversationItem } from "@/components/messages/conversation-item";

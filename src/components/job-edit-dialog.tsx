@@ -15,22 +15,21 @@ import type { CurrencyCode } from "@/types/application/currency/currency-code";
 import type { CreateJobInput } from "@/types/application/job/create-job-input";
 import type { Job } from "@/types/application/job/job";
 import type { JobEditDialogProps } from "@/types/components/job/job-edit-dialog-props";
-
-import { jobsApi } from "@/lib/api";
-import { CURRENCIES, currencySymbol } from "@/lib/currency";
-import { cn } from "@/lib/utils";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+  Input,
+  Label,
+  Textarea,
+} from "@rede-enois/design-system/ui";
+
+import { jobsApi } from "@/lib/api";
+import { CURRENCIES, currencySymbol } from "@/lib/currency";
+import { cn } from "@/lib/utils";
 
 const SELECT_CLASS =
   "flex h-9 w-full rounded-md border border-transparent bg-muted px-3 py-2 text-sm font-normal text-text-strong outline-none focus-visible:ring-1 focus-visible:ring-ring";

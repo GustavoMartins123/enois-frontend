@@ -1,13 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
+import { Button, Switch, useToast } from "@rede-enois/design-system/ui";
 import { FileUp } from "lucide-react";
 
 import { linkedinContactsApi } from "@/lib/api";
-
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { useToast } from "@/components/ui/toast";
 
 /** Mesmo teto do serviço (LinkedinImportService.MAX_CONTACTS_BYTES / 5 MB no ZIP). */
 const CONTACTS_MAX_MB = 5;

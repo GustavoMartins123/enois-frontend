@@ -4,6 +4,17 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { TOPICS, TOPIC_LABELS } from "@/constants/community-topics";
 import { texts } from "@/texts";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Pill,
+  Switch,
+  useToast,
+} from "@rede-enois/design-system/ui";
 import { HeartPulse } from "lucide-react";
 
 import { preferencesApi } from "@/lib/api";
@@ -21,13 +32,6 @@ import {
   writeLiteMode,
 } from "@/lib/lite-mode";
 import { usePersonalization } from "@/lib/use-personalization";
-
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Pill } from "@/components/ui/pill";
-import { Switch } from "@/components/ui/switch";
-import { useToast } from "@/components/ui/toast";
 
 /** Os assuntos reais da plataforma (mesma taxonomia das comunidades); "Todas" não é assunto. */
 const TOPIC_OPTIONS = TOPICS.filter((topic) => topic !== "Todas");

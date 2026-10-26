@@ -1,6 +1,5 @@
 import { texts } from "@/texts";
-
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@rede-enois/design-system/ui";
 
 import { AppContainer } from "@/components/app-container";
 

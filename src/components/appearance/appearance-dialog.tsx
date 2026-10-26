@@ -19,6 +19,18 @@ import type { AppearanceDialogProps } from "@/types/components/appearance/appear
 import type { ThemeAccent } from "@/types/preferences/theme-accent";
 import type { ThemeBackground } from "@/types/preferences/theme-background";
 import type { ThemePresetId } from "@/types/preferences/theme-preset-id";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@rede-enois/design-system/ui";
 import { ChevronDown, Download, Moon, RotateCcw, Store, Sun, Upload } from "lucide-react";
 
 import { cosmeticsApi } from "@/lib/api";
@@ -27,16 +39,6 @@ import { reportThemeContrast, sameThemeSettings } from "@/lib/theme/build-theme-
 import { syncThemeCollection } from "@/lib/theme/sync-theme-collection";
 import { THEME_FILE_EXTENSION, buildThemeFile, parseThemeFile } from "@/lib/theme/theme-file";
 import { cn } from "@/lib/utils";
-
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { BackgroundStylePicker } from "./background-style-picker";
 import { CollectionGrid } from "./collection-grid";

@@ -4,12 +4,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
 import type { MazeDirection } from "@/types/application/daily-games/maze-direction";
+import { Button } from "@rede-enois/design-system/ui";
 import { Clock, Flag, Map, Trophy } from "lucide-react";
 
 import { randomUUID } from "@/lib/api-client";
 import { dailyMazeApi, previousChallengeDate } from "@/lib/api/daily-games";
-
-import { Button } from "@/components/ui/button";
 
 const keys: Record<string, MazeDirection> = {
   ArrowUp: "UP",

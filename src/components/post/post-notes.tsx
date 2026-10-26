@@ -6,22 +6,21 @@ import { Link } from "@tanstack/react-router";
 import { texts } from "@/texts";
 import type { PostNote } from "@/types/application/feed/post-note";
 import type { PostView } from "@/types/application/feed/post-view";
-import { BadgeCheck, Loader2, StickyNote } from "lucide-react";
-
-import { postNotesApi } from "@/lib/api";
-import { useCurrentUser } from "@/lib/current-user";
-import { dataHora } from "@/lib/date/format";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
+import { BadgeCheck, Loader2, StickyNote } from "lucide-react";
+
+import { postNotesApi } from "@/lib/api";
+import { useCurrentUser } from "@/lib/current-user";
+import { dataHora } from "@/lib/date/format";
 
 import { ContributorTag } from "@/components/contributor-tag";
 import { StyledName } from "@/components/styled-name";

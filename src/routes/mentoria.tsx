@@ -7,6 +7,19 @@ import { texts } from "@/texts";
 import type { CreateMentorInput } from "@/types/application/mentor/create-mentor-input";
 import type { MentorCardProps } from "@/types/routes/mentoring/mentor-card-props";
 import type { RegisterMentorFormProps } from "@/types/routes/mentoring/register-mentor-form-props";
+import {
+  Badge,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  EmptyState,
+  Input,
+  Label,
+  Textarea,
+} from "@rede-enois/design-system/ui";
 import { Calendar, CheckCircle2, Image as ImageIcon, Sparkles, Star, Trash2 } from "lucide-react";
 
 import { ApiError, mentorsApi, profileApi } from "@/lib/api";
@@ -15,20 +28,6 @@ import { useCurrentUser } from "@/lib/current-user";
 import { formatarData } from "@/lib/date/format";
 import { requireAuth } from "@/lib/require-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 
 import { AppContainer } from "@/components/app-container";
 import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
