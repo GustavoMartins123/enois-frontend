@@ -1,4 +1,5 @@
 import { texts } from "@/texts";
+import type { ThemePreview } from "@/types/lib/theme/theme-preview";
 import type { BackgroundStyle } from "@/types/preferences/background-style";
 import type { Theme } from "@/types/preferences/theme";
 import type { ThemeSettings } from "@/types/preferences/theme-settings";
@@ -37,6 +38,17 @@ export const THEME_CSS_STORAGE_KEY = "connect-grow-theme-css";
  * existir ANTES do primeiro paint — é o que impede o conteúdo piscar sem o tema.
  */
 export const THEME_COLLECTION_STORAGE_KEY = "connect-grow-theme-collection";
+
+/** Usa o motor normal na página inteira, sem gravar a prévia no armazenamento. */
+export function applyThemePreview({ collection, mode }: ThemePreview): void {
+  document.documentElement.dataset.theme = collection.id;
+  const existing = document.getElementById(THEME_STYLE_ELEMENT_ID);
+  const style = (existing as HTMLStyleElement | null) ?? document.createElement("style");
+  style.id = THEME_STYLE_ELEMENT_ID;
+  style.textContent = buildCollectionCss(collection, mode);
+  if (!existing) document.head.appendChild(style);
+  updateThemeColorElement(collection.metaColor);
+}
 
 /**
  * Aplica o que o usuário escolheu, em camadas: padrão da marca / tema da coleção >

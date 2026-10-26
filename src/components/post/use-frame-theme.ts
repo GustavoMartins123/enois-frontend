@@ -1,6 +1,7 @@
 import { type RefObject, useEffect } from "react";
 
 import { usePreferencesStore } from "@/stores/preferences.store";
+import { useThemePreviewStore } from "@/stores/theme-preview.store";
 import type { Theme } from "@/types/preferences/theme";
 
 import { THEME_STYLE_ELEMENT_ID } from "@/lib/theme/apply-theme";
@@ -12,7 +13,9 @@ import { syncFrameTheme } from "./sync-frame-theme";
  * deste. O observador pega essa gravação e copia o resultado já calculado para o quadro.
  */
 export function useFrameTheme(frame: RefObject<HTMLIFrameElement | null>, enabled = true): Theme {
-  const theme = usePreferencesStore((state) => state.theme);
+  const savedTheme = usePreferencesStore((state) => state.theme);
+  const previewMode = useThemePreviewStore((state) => state.preview?.mode);
+  const theme = previewMode ?? savedTheme;
 
   useEffect(() => {
     if (!enabled) return;
