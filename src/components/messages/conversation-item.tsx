@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
@@ -6,6 +8,8 @@ import type { ConversationItemProps } from "@/types/routes/messages/conversation
 
 import { profileApi } from "@/lib/api";
 import { useCurrentUser } from "@/lib/current-user";
+import { decryptReceived } from "@/lib/e2e/conversation";
+import { hasLocalKeys } from "@/lib/e2e/key-manager";
 import { authorNameStyle } from "@/lib/profile-name-style";
 
 import { formatTime } from "@/components/post/format-time";
@@ -33,6 +37,34 @@ export function ConversationItem({
 
   const title = conversation.title ?? otherUser?.name ?? texts.messages.conversationFallback;
   const otherNameStyle = authorNameStyle(otherUser);
+
+  const [preview, setPreview] = useState(conversation.lastMessage ?? "");
+  useEffect(() => {
+    if (!conversation.lastMessageE2e || !conversation.lastMessage || !conversation.lastMessageIv) {
+      setPreview(conversation.lastMessage ?? "");
+      return;
+    }
+    let cancelled = false;
+    hasLocalKeys().then((has) => {
+      if (!has || cancelled) return;
+      decryptReceived({
+        e2e: true,
+        text: conversation.lastMessage!,
+        iv: conversation.lastMessageIv!,
+        conversationId: conversation.id,
+      } as Parameters<typeof decryptReceived>[0]).then((plain) => {
+        if (!cancelled) setPreview(plain);
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    conversation.lastMessage,
+    conversation.lastMessageE2e,
+    conversation.lastMessageIv,
+    conversation.id,
+  ]);
 
   return (
     <li>
@@ -72,9 +104,7 @@ export function ConversationItem({
           </div>
 
           <div className="flex items-center justify-between gap-2">
-            <p className="truncate text-xs text-muted-foreground">
-              {conversation.lastMessage ?? ""}
-            </p>
+            <p className="truncate text-xs text-muted-foreground">{preview}</p>
             {conversation.unread > 0 && (
               <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground">
                 {conversation.unread}
