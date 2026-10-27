@@ -669,6 +669,19 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
       }
 
       storeSession(result);
+      // E2E: se não tem keypair local, tenta setup ou restore (fire-and-forget).
+      import("@/lib/e2e/key-manager").then(
+        async ({ hasLocalKeys, generateAndUpload, restoreFromBackup }) => {
+          try {
+            if (await hasLocalKeys()) return;
+            await restoreFromBackup(parsed.data.password).catch(() =>
+              generateAndUpload(parsed.data.password),
+            );
+          } catch {
+            // E2E setup falhou — não impede o login.
+          }
+        },
+      );
       onDone();
     } catch (err) {
       if (err instanceof ApiError && err.code === "EMAIL_NOT_VERIFIED") {
