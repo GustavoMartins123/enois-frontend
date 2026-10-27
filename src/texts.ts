@@ -1827,6 +1827,8 @@ export const texts = {
       modeStructured: "Estruturado",
       modeHtml: "HTML próprio",
       titleField: "Título do projeto",
+      descriptionField: "Descrição do projeto",
+      descriptionPlaceholder: "Uma frase sobre o que o projeto faz",
       stackField: "Stack (separe por vírgula)",
       repoField: "Link do repositório (https)",
       statusField: "Status",

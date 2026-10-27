@@ -92,6 +92,12 @@ export function ProfileProjectsSection({ username, isOwner }: ProjectsSectionPro
                   {project.status && <Chip label={project.status} />}
                 </div>
 
+                {project.description && (
+                  <p className="mt-2 text-sm leading-relaxed text-text-subtle">
+                    {project.description}
+                  </p>
+                )}
+
                 {project.stack.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1.5">
                     {project.stack.map((tech) => (
