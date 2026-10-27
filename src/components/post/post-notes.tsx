@@ -44,9 +44,10 @@ export function PostNotes({ post }: { post: PostView }) {
   const notes = post.communityNotes ?? [];
   const mine = post.myNote;
   const ownPost = Boolean(currentUser && currentUser.id === post.authorId);
-  const showAdd = Boolean(currentUser) && !ownPost && !mine && !sent;
+  const showAdd = Boolean(currentUser) && !ownPost && notes.length === 0 && !mine && !sent;
   const pending = mine?.status === "PENDING" || sent;
   const denied = mine?.status === "DENIED";
+  const discarded = mine?.status === "DISCARDED";
 
   const create = useMutation({
     mutationFn: () => postNotesApi.create(post.id, body.trim()),
@@ -59,7 +60,7 @@ export function PostNotes({ post }: { post: PostView }) {
     onError: () => toast(texts.posts.notes.error, "error"),
   });
 
-  if (notes.length === 0 && !pending && !denied && !showAdd) return null;
+  if (notes.length === 0 && !pending && !denied && !discarded && !showAdd) return null;
 
   return (
     <div className="mt-3 space-y-2">
@@ -78,6 +79,12 @@ export function PostNotes({ post }: { post: PostView }) {
       {denied && (
         <p className="rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2 text-xs text-destructive">
           {texts.posts.notes.denied(mine?.reviewReason ?? "")}
+        </p>
+      )}
+
+      {discarded && (
+        <p className="rounded-lg bg-surface-2 px-3 py-2 text-xs text-text-subtle">
+          {texts.posts.notes.discarded}
         </p>
       )}
 
