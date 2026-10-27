@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
@@ -53,7 +53,11 @@ export const Route = createFileRoute("/carteira")({
 function Carteira() {
   const search = Route.useSearch();
   const navigate = Route.useNavigate();
-  const activeTab: WalletTab = search.tab ?? "carteira";
+  const [activeTab, setActiveTab] = useState<WalletTab>(search.tab ?? "carteira");
+  // A aba vive na URL; o estado local mantém a troca imediata (e os testes que não montam o router).
+  useEffect(() => {
+    setActiveTab(search.tab ?? "carteira");
+  }, [search.tab]);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [payOpen, setPayOpen] = useState(false);
@@ -155,8 +159,10 @@ function Carteira() {
         <Tabs
           value={activeTab}
           onValueChange={(value) => {
+            const tab = value as WalletTab;
+            setActiveTab(tab);
             void navigate({
-              search: value === "carteira" ? {} : { tab: value as WalletTab },
+              search: tab === "carteira" ? {} : { tab },
               replace: true,
             });
           }}
