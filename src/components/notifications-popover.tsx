@@ -423,7 +423,7 @@ function useDecryptedChatPreviews(chatNotifications: Notification[]): Map<string
   const needsDecrypt = chatNotifications.filter((n) => n.body === "Mensagem cifrada");
 
   const { data: conversations } = useQuery({
-    queryKey: ["conversations", "inbox"],
+    queryKey: ["conversations", "e2e-preview"],
     queryFn: () => messagesApi.listConversations(null, 20),
     enabled: needsDecrypt.length > 0,
     staleTime: 30_000,
