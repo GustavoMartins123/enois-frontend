@@ -15,6 +15,9 @@ import type { SendMessageInput } from "@/types/routes/messages/send-message-inpu
 import { Briefcase, EyeOff, ImageIcon, Send, X } from "lucide-react";
 
 import { messagesApi, profileApi, servicesApi } from "@/lib/api";
+import { encryptForSend } from "@/lib/e2e/conversation";
+import { hasLocalKeys } from "@/lib/e2e/key-manager";
+import { useDecryptedMessages } from "@/lib/e2e/use-decrypted-messages";
 import { liteInterval, litePageSize } from "@/lib/lite-mode";
 import { insertSnippet } from "@/lib/rich-text/insert-snippet";
 import { useLiteMode } from "@/lib/use-lite-mode";
@@ -82,13 +85,14 @@ export function ConversationThread({
   const peerLastReadAt = conversation.otherLastReadAt
     ? new Date(conversation.otherLastReadAt).getTime()
     : null;
-  const messages = (messagesData?.pages.flatMap((page) => page.items) ?? []).sort(
+  const rawMessages = (messagesData?.pages.flatMap((page) => page.items) ?? []).sort(
     (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
   );
+  const messages = useDecryptedMessages(rawMessages);
 
   const sendMessage = useMutation({
-    mutationFn: ({ conversationId, text, mediaIds, mediaSpoiler }: SendMessageInput) =>
-      messagesApi.sendMessage(conversationId, text, mediaIds, mediaSpoiler),
+    mutationFn: ({ conversationId, text, mediaIds, mediaSpoiler, e2e }: SendMessageInput) =>
+      messagesApi.sendMessage(conversationId, text, mediaIds, mediaSpoiler, e2e),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["messages", conversation.id] });
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
@@ -149,11 +153,21 @@ export function ConversationThread({
         const results = await upload.uploadAll(media.map((item) => ({ file: item.file })));
         mediaIds = results.map((result) => result.mediaId);
       }
+      const e2eReady = await hasLocalKeys();
+      let e2ePayload: { ciphertext: string; iv: string } | undefined;
+      if (e2eReady && content) {
+        try {
+          e2ePayload = await encryptForSend(conversation.id, content, conversation.participantIds);
+        } catch {
+          // E2E falhou — envia em texto claro.
+        }
+      }
       sendMessage.mutate({
         conversationId: conversation.id,
         text: content,
         mediaIds,
         mediaSpoiler: shouldSpoiler,
+        e2e: e2ePayload,
       });
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : texts.messages.mediaError);
