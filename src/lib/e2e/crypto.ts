@@ -61,7 +61,7 @@ async function deriveKeyFromPassword(password: string, salt: Uint8Array): Promis
   );
   const params: Pbkdf2Params = {
     name: "PBKDF2",
-    salt,
+    salt: salt.buffer as ArrayBuffer,
     iterations: PBKDF2_ITERATIONS,
     hash: "SHA-256",
   };
