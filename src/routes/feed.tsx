@@ -218,7 +218,7 @@ function Home() {
   // página anterior, e não passeando pelas abas).
   const { aba } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const tab: HomeTab = aba ?? "FOR_YOU";
+  const tab: HomeTab = aba ?? "ALL";
   const setTab = (next: HomeTab) => {
     if (next === tab) return;
     void navigate({ search: { aba: next }, replace: true });
