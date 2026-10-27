@@ -658,7 +658,7 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
 
       // Senha expirada: backend retorna token de reset pra trocar direto.
       if ("passwordExpired" in result && result.passwordExpired) {
-        setExpiredResetToken((result as { resetToken: string }).resetToken);
+        setExpiredResetToken((result as unknown as { resetToken: string }).resetToken);
         return;
       }
 
