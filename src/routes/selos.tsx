@@ -10,6 +10,7 @@ import { ogMetas } from "@/lib/seo";
 import { Button } from "@/components/ui/button";
 
 import { AppContainer } from "@/components/app-container";
+import { ContributorLinkStatus } from "@/components/contributor-link-status";
 import { GithubIcon } from "@/components/icons/github";
 import { VerifiedContributorPrompt } from "@/components/verified-contributor-prompt";
 
@@ -65,7 +66,8 @@ function Selos() {
             </p>
           </header>
 
-          <VerifiedContributorPrompt />
+          <VerifiedContributorPrompt showConfirmed />
+          <ContributorLinkStatus />
 
           <section className="space-y-3">
             <h2 className="text-lg font-semibold tracking-tight">

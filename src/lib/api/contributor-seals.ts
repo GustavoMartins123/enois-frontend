@@ -5,6 +5,7 @@ import type { ContributorContributionStatus } from "@/types/application/seals/co
 import type { ContributorRepository } from "@/types/application/seals/contributor-repository";
 import type { ContributorSealType } from "@/types/application/seals/contributor-seal-type";
 import type { ContributorSyncReport } from "@/types/application/seals/contributor-sync-report";
+import type { ContributorSyncResult } from "@/types/application/seals/contributor-sync-result";
 import type { GitHubIdentity } from "@/types/application/seals/github-identity";
 import type { ProfileSeal } from "@/types/application/seals/profile-seal";
 import type { SealCriteria } from "@/types/application/seals/seal-criteria";
@@ -29,6 +30,9 @@ export const contributorSealsApi = {
 
   /** Estado do vínculo GitHub da conta logada. */
   githubStatus: () => api.get<GitHubIdentity>("/me/github"),
+
+  /** Revalida as contribuições do vínculo GitHub agora (botão "Verificar contribuições"). */
+  sync: () => api.post<ContributorSyncResult>("/me/github/sync"),
 
   adminContributions: (
     status?: ContributorContributionStatus,

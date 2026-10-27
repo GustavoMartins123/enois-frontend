@@ -394,9 +394,27 @@ export const texts = {
         "Vincule sua conta GitHub para que o Énóis possa verificar PRs integrados nos repositórios oficiais. O vínculo não altera seu login nem sua verificação de identidade.",
       linkedAs: (login: string) => `Vinculado como @${login}`,
       lastSync: (date: string) => `Última sincronização: ${date}`,
-      neverSynced: "Ainda não sincronizou; os dados aparecem no próximo ciclo.",
-      syncStale: "Os dados podem estar desatualizados; a próxima sincronização atualiza.",
-      syncError: "A última sincronização falhou; os números podem estar desatualizados.",
+      neverSynced:
+        "Ainda não sincronizou. Use “Verificar contribuições” para buscar os dados agora.",
+      syncStale:
+        "Os dados podem estar desatualizados. Use “Verificar contribuições” para atualizar agora.",
+      syncError:
+        "A última sincronização falhou; os números podem estar desatualizados. Tente verificar de novo.",
+      syncNow: "Verificar contribuições",
+      syncing: "Verificando contribuições...",
+      syncEmpty:
+        "Nenhuma contribuição encontrada ainda. Se você já teve PR integrado ou issue qualificada, tente de novo em alguns instantes.",
+      syncFound: (contributions: number, issues: number) => {
+        const parts: string[] = [];
+        if (contributions > 0) {
+          parts.push(contributions === 1 ? "1 pull request" : `${contributions} pull requests`);
+        }
+        if (issues > 0) {
+          parts.push(issues === 1 ? "1 issue" : `${issues} issues`);
+        }
+        return `Verificação concluída: ${parts.join(" e ")}.`;
+      },
+      syncFailed: "Não foi possível verificar agora. Tente de novo em alguns minutos.",
       link: "Vincular GitHub",
       unlink: "Desvincular GitHub",
       linking: "Abrindo GitHub...",
@@ -4495,7 +4513,15 @@ export const texts = {
       close: "Agora não",
       formTitle: "Confirme seus dados",
       formHint: "É o mesmo formulário da landing; o GitHub já comprovou a contribuição.",
+      confirmedTitle: "Seus dados de contribuinte já estão confirmados",
+      confirmedDescription:
+        "A contribuição foi verificada pelo GitHub e seus dados já aparecem no painel de contribuintes. Não há mais nada para preencher.",
     },
+    pendingTitle: "GitHub vinculado, contribuição ainda não verificada",
+    pendingDescription: (login: string) =>
+      `Vinculado como @${login}. Ainda não encontramos nenhum pull request integrado ou issue qualificada nos repositórios elegíveis. Se você acabou de contribuir, verifique de novo.`,
+    pendingError: "A última verificação falhou; tente de novo agora.",
+    pendingNotLinked: "Vincule sua conta do GitHub na tela de Segurança para começar.",
     cta: "Vincular GitHub",
     ctaHint: "É preciso ter uma conta no Énóis e entrar antes de vincular.",
   },
