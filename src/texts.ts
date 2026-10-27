@@ -1710,6 +1710,7 @@ export const texts = {
       sent: "Nota enviada para moderação.",
       error: "Não foi possível enviar a nota.",
       pending: "Sua nota está em análise pela moderação.",
+      discarded: "Outra nota foi aprovada para este post; a sua foi descartada sem penalidade.",
       denied: (reason: string) => `Sua nota foi negada: ${reason}`,
       ownPost: "Você não pode adicionar nota ao próprio post.",
       close: "Fechar",
@@ -3761,7 +3762,7 @@ export const texts = {
     notes: {
       title: "Notas de rodapé",
       description:
-        "Correções enviadas pela comunidade. Aprovar exibe a nota no post; negar mantém oculta e reduz a credibilidade de quem enviou.",
+        "Correções enviadas pela comunidade. Só uma nota é aprovada por post — aprovar descarta as outras pendentes sem penalidade. Negar mantém oculta e reduz a credibilidade de quem enviou.",
       empty: "Nenhuma nota pendente.",
       approve: "Aprovar",
       reject: "Negar",
