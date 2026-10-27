@@ -26,6 +26,7 @@ export { contributorSealsApi } from "./contributor-seals";
 export { companiesApi } from "./companies";
 export { gamesApi } from "./games";
 export { projectsApi } from "./projects";
+export { githubProfileApi } from "./github-profile";
 export { communityProjectsApi } from "./community-projects";
 export { freelancesApi } from "./freelances";
 export { servicesApi } from "./services";
