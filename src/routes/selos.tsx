@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 
 import { AppContainer } from "@/components/app-container";
 import { GithubIcon } from "@/components/icons/github";
+import { VerifiedContributorPrompt } from "@/components/verified-contributor-prompt";
 
 export const Route = createFileRoute("/selos")({
   head: () => ({
@@ -63,6 +64,8 @@ function Selos() {
               {texts.sealsPage.intro}
             </p>
           </header>
+
+          <VerifiedContributorPrompt />
 
           <section className="space-y-3">
             <h2 className="text-lg font-semibold tracking-tight">

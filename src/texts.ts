@@ -281,6 +281,11 @@ export const texts = {
     nameStylePreview: "Prévia",
     nameStylePreviewName: "Seu nome",
     nameStyleUseColor: (color: string) => `Usar cor ${color}`,
+    contributorTagTitle: "Tag de contribuinte",
+    contributorTagHint:
+      "Escolha a cor da tag que aparece abaixo do seu nome. Só quem tem contribuição verificada pelo GitHub vê esta opção.",
+    contributorTagDefault: "Cor padrão",
+    contributorTagPreview: "Prévia da tag",
     preview: "Como vai ficar",
     previewPost: "Esse detalhe do cache mudou minha semana.",
     previewBadge: "Projeto",
@@ -1233,10 +1238,16 @@ export const texts = {
       termsLink: "regras de contribuição e os termos de uso",
       termsSuffix: ".",
       submit: "Enviar candidatura",
+      confirm: "Confirmar meus dados",
       sending: "Enviando...",
       successTitle: "Recebemos sua candidatura",
       successDescription:
         "O registro fica na fila interna do projeto. Se houver uma issue ou um próximo passo para a sua área, a gente fala com você pelo GitHub ou pelo e-mail informado.",
+      verifiedGithubHint:
+        "O GitHub vem do seu vínculo verificado; ele não pode ser alterado por aqui.",
+      verifiedSuccessTitle: "Dados confirmados",
+      verifiedSuccessDescription:
+        "Você já aparece no painel de contribuintes. A verificação é o próprio GitHub, sem aprovação manual.",
       again: "Enviar outra",
       error: "Não foi possível enviar agora. Tente de novo em alguns minutos.",
       validationName: "Informe seu nome (pelo menos 2 caracteres).",
@@ -1746,6 +1757,7 @@ export const texts = {
       "O bloqueio vale para sempre e os dois lados deixam de se ver. Desbloqueie aqui quando quiser.",
     blockedSince: (date: string | null) => (date ? `Bloqueado em ${dataCurta(date)}` : "Bloqueado"),
     openToWork: "Aberto a oportunidades",
+    contributorTag: "Contribuinte",
     mentorAvailable: "Mentor disponível",
     connections: (count: number) => `${count} ${count === 1 ? "conexão" : "conexões"}`,
     connectionsMeta: (count: number) => `· ${count} ${count === 1 ? "conexão" : "conexões"}`,
@@ -3459,6 +3471,13 @@ export const texts = {
       approve: "Aprovar",
       reject: "Recusar",
       done: "Decidida",
+      verifiedByGithub: "Verificado pelo GitHub",
+      landingSource: "Landing",
+      githubOnly: "Aprovado pelo GitHub — sem triagem manual.",
+      formPending: "Aguardando a confirmação dos dados pelo formulário.",
+      seal: (name: string) => `Selo: ${name}`,
+      evidence: (count: number) =>
+        count === 1 ? "1 contribuição verificada" : `${count} contribuições verificadas`,
     },
     githubContributions: {
       title: "Contribuições GitHub",
@@ -4427,6 +4446,15 @@ export const texts = {
     privacyTitle: "O que fica público",
     privacy:
       "No perfil aparecem o nome do nível, a categoria, a data de concessão e os links das evidências validadas. Notas internas, suspeitas, e-mail e detalhes de revisão não são públicos.",
+    verified: {
+      title: "Você tem contribuições verificadas",
+      description:
+        "Confirme seus dados para aparecer no painel de contribuintes. A verificação é o próprio GitHub — não há aprovação manual.",
+      action: "Preencher formulário",
+      close: "Agora não",
+      formTitle: "Confirme seus dados",
+      formHint: "É o mesmo formulário da landing; o GitHub já comprovou a contribuição.",
+    },
     cta: "Vincular GitHub",
     ctaHint: "É preciso ter uma conta no Énóis e entrar antes de vincular.",
   },

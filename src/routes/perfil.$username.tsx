@@ -36,6 +36,7 @@ import {
 
 import {
   ApiError,
+  contributorSealsApi,
   feedApi,
   gamesApi,
   messagesApi,
@@ -87,6 +88,7 @@ import { ProfileQuickComposer } from "@/components/profile/profile-quick-compose
 import { ProfileProjectsSection } from "@/components/profile/projects-section";
 import { PostCardSkeletons } from "@/components/skeletons/post-card-skeletons";
 import { UserAvatar } from "@/components/user-avatar";
+import { VerifiedContributorPrompt } from "@/components/verified-contributor-prompt";
 
 /** Paginas de "Publicacoes recentes": o mesmo tamanho do feed, para nao sobrecarregar o perfil. */
 const USER_POSTS_PAGE_SIZE = 10;
@@ -183,6 +185,15 @@ function Profile() {
 
   const user = liveProfile ?? loaderUser;
   const isOwnProfile = me?.id === user.id;
+
+  const { data: contributorSeals } = useQuery({
+    queryKey: ["contributor-seals", user.username],
+    queryFn: () => contributorSealsApi.byUsername(user.username),
+    staleTime: 5 * 60_000,
+    retry: false,
+  });
+  const isContributor = (contributorSeals?.length ?? 0) > 0;
+
   const localNameFont = usePreferencesStore((state) => state.displayNameFont);
   const localNameColor = usePreferencesStore((state) => state.displayNameColor);
   const localNameTheme = usePreferencesStore((state) => state.displayNameTheme);
@@ -665,9 +676,29 @@ function Profile() {
                 )}
               </div>
 
+              {isContributor && (
+                <div className="mt-1">
+                  <span
+                    className="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium"
+                    style={{
+                      color: user.contributorTagColor ?? "var(--primary)",
+                      borderColor: user.contributorTagColor ?? "var(--primary)",
+                    }}
+                  >
+                    {texts.profile.contributorTag}
+                  </span>
+                </div>
+              )}
+
               <div className="mt-4">
                 <ProfileSeals username={user.username} />
               </div>
+
+              {isOwnProfile && (
+                <div className="mt-4">
+                  <VerifiedContributorPrompt />
+                </div>
+              )}
 
               <p className="mt-1 break-words text-sm font-normal text-primary">{user.headline}</p>
 
@@ -1037,6 +1068,8 @@ function Profile() {
         profileNameFont={user.nameFont ?? undefined}
         profileNameColor={user.nameColor}
         profileNameTheme={user.nameTheme ?? undefined}
+        contributor={isOwnProfile && isContributor}
+        contributorTagColor={user.contributorTagColor ?? null}
       />
       <ProfileNetworkDialog
         username={user.username}
