@@ -1,4 +1,5 @@
 import type { PostCommunity } from "@/types/application/community/post-community";
+import type { AuthorContributorTag } from "@/types/application/profile/author-contributor-tag";
 import type { AuthorNameStyle } from "@/types/application/profile/author-name-style";
 import type { ReactionSummary } from "@/types/application/reaction/reaction-summary";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
@@ -11,6 +12,8 @@ export type PostView = {
   authorBadge?: string | null;
   /** Personalização do nome do autor (tema/fonte/cor); ausente = padrão. */
   authorStyle?: AuthorNameStyle | null;
+  /** Tag "Contribuinte" quando o autor tem selo ativo; ausente = não é contribuinte. */
+  authorContributor?: AuthorContributorTag | null;
   /** Todos os emblemas (até 5), na ordem escolhida: acompanham o nome em todo lugar. */
   authorBadges?: string[] | null;
   authorAvatar: string | null;

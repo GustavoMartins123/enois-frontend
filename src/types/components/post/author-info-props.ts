@@ -8,6 +8,7 @@ export type AuthorInfoProps = Pick<
   | "authorAvatarFrame"
   | "authorBadge"
   | "authorStyle"
+  | "authorContributor"
   | "authorBadges"
   | "authorIdentity"
   | "createdAt"

@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { texts } from "@/texts";
 import type { AuthorInfoProps } from "@/types/components/post/author-info-props";
 
+import { ContributorTag } from "@/components/contributor-tag";
 import { StyledName } from "@/components/styled-name";
 import { UserAvatar } from "@/components/user-avatar";
 import { UserBadges } from "@/components/user-badge";
@@ -18,6 +19,7 @@ export function AuthorInfo({
   authorBadge,
   authorBadges,
   authorStyle,
+  authorContributor,
   authorIdentity,
   createdAt,
   community,
@@ -71,6 +73,8 @@ export function AuthorInfo({
               <StyledName name={authorName} style={authorStyle} />
             </Link>
           )}
+
+          {authorContributor && <ContributorTag color={authorContributor.color} />}
 
           <UserBadges badges={authorBadges} badge={authorBadge} />
 

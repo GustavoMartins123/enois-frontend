@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { ReadMore } from "@/components/ui/read-more";
 import { useToast } from "@/components/ui/toast";
 
+import { ContributorTag } from "@/components/contributor-tag";
 import { MentionTextarea } from "@/components/mention-textarea";
 import { StyledName } from "@/components/styled-name";
 import { UserAvatar } from "@/components/user-avatar";
@@ -177,6 +178,10 @@ export function CommentItem({
         <div className="rounded-xl bg-surface-1 px-3 py-2">
           <div className="flex flex-wrap items-center gap-2">
             {profileLink}
+
+            {comment.authorContributor && (
+              <ContributorTag color={comment.authorContributor.color} />
+            )}
 
             <UserBadges badges={comment.authorBadges} badge={comment.authorBadge} />
             {replyingTo && (
