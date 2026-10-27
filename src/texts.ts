@@ -363,6 +363,7 @@ export const texts = {
     },
     /** Replaces the API message for codes whose raw text is not fit for the screen. */
     apiMessages: {
+      SESSION_CHANGED: "A sessão mudou. Confira a conta atual antes de repetir a operação.",
       /** Escrita com cookie de sessão sem o header anti-CSRF: só acontece com página desatualizada. */
       CSRF_REQUIRED:
         "Não foi possível confirmar que o pedido veio do Énóis. Recarregue a página e tente de novo.",
@@ -2076,6 +2077,7 @@ export const texts = {
     refundError: "Não foi possível pedir o reembolso. Tente novamente.",
     themeApplied: "Tema aplicado!",
     themeApplyError: "Não foi possível aplicar o tema agora.",
+    themeNotOwned: "Esta compra não dá mais acesso ao tema. Atualize Minhas compras.",
     previewAction: "Ver preview",
     previewTitle: (title: string) => `Prévia temporária · ${title}`,
     previewBarLabel: "Prévia temporária do tema",

@@ -4,6 +4,78 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { notifyBirthDateRequired } from "./age-required";
 import { ApiError, api, renewSession } from "./api-client";
 
+describe("escritas vinculadas à sessão que iniciou a compra", () => {
+  let values: Map<string, string>;
+  const fetchMock = vi.fn();
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    values = new Map([
+      ["session_active", "1"],
+      ["session_id", "sessao-original"],
+    ]);
+    vi.stubGlobal("window", { location: { origin: "https://enois.ia.br", href: "/marketplace" } });
+    vi.stubGlobal("localStorage", {
+      getItem: (key: string) => values.get(key) ?? null,
+      setItem: (key: string, value: string) => values.set(key, value),
+      removeItem: (key: string) => values.delete(key),
+    });
+    fetchMock.mockReset();
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
+
+  it("não envia a operação se a conta já mudou", async () => {
+    values.set("session_id", "outra-sessao");
+    await expect(
+      api.post("/marketplace/listing/buy", {}, { expectedSessionKey: "sessao-original" }),
+    ).rejects.toMatchObject({ code: "SESSION_CHANGED" });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it.each(["rede", "429"])("não repete %s com os cookies de outra conta", async (failure) => {
+    if (failure === "rede") fetchMock.mockRejectedValueOnce(new TypeError("Falha de rede"));
+    else
+      fetchMock.mockResolvedValueOnce(
+        new Response(null, { status: 429, headers: { "Retry-After": "1" } }),
+      );
+    const result = api
+      .post("/marketplace/listing/buy", {}, { expectedSessionKey: "sessao-original" })
+      .then(
+        () => null,
+        (error: unknown) => error,
+      );
+    await vi.advanceTimersByTimeAsync(0);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    values.set("session_id", "outra-sessao");
+    await vi.runAllTimersAsync();
+    expect(await result).toMatchObject({ code: "SESSION_CHANGED" });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("mantém a mesma chave idempotente quando repete na mesma sessão", async () => {
+    fetchMock.mockResolvedValueOnce(
+      new Response(null, { status: 429, headers: { "Retry-After": "1" } }),
+    );
+    fetchMock.mockResolvedValueOnce(Response.json({ purchaseId: "compra" }));
+    const result = api.post(
+      "/marketplace/listing/buy",
+      {},
+      { expectedSessionKey: "sessao-original" },
+    );
+    await vi.runAllTimersAsync();
+    await expect(result).resolves.toEqual({ purchaseId: "compra" });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    const original = fetchMock.mock.calls[0][1].headers["Idempotency-Key"];
+    expect(original).toBeTruthy();
+    expect(fetchMock.mock.calls[1][1].headers["Idempotency-Key"]).toBe(original);
+  });
+});
+
 vi.mock("./auth-hint", () => ({ clearAuthHint: vi.fn(), setAuthHint: vi.fn() }));
 vi.mock("./query-client", () => ({ resetSessionScopedData: vi.fn() }));
 vi.mock("./age-required", () => ({

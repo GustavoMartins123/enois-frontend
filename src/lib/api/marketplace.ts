@@ -4,6 +4,7 @@ import type { MarketplacePurchase } from "@/types/application/marketplace/market
 import type { PurchasedItem } from "@/types/application/marketplace/purchased-item";
 
 import { api } from "../api-client";
+import { getSessionKey } from "../session-key";
 
 /**
  * O marketplace (Fase 4): vender tema por faíscas, comprar com ESCROW (as faíscas
@@ -46,23 +47,26 @@ export const marketplaceApi = {
     api.get<PurchasedItem>(`/marketplace/purchases/${purchaseId}/content`),
 
   /** Compra: as faíscas vão para o escrow. */
-  buy: (listingId: string) =>
+  buy: (listingId: string, expectedSessionKey = getSessionKey()) =>
     api.post<{ purchaseId: string; state: string; price: number }>(
       `/marketplace/${listingId}/buy`,
       {},
+      { expectedSessionKey },
     ),
 
   /** Confirmou que está tudo certo: libera para o criador (−10% de taxa). */
-  confirm: (purchaseId: string) =>
+  confirm: (purchaseId: string, expectedSessionKey = getSessionKey()) =>
     api.post<{ purchaseId: string; state: string }>(
       `/marketplace/purchases/${purchaseId}/confirm`,
       {},
+      { expectedSessionKey },
     ),
 
   /** Não serviu (dentro de 7 dias): devolve 100%. */
-  refund: (purchaseId: string) =>
+  refund: (purchaseId: string, expectedSessionKey = getSessionKey()) =>
     api.post<{ purchaseId: string; state: string }>(
       `/marketplace/purchases/${purchaseId}/refund`,
       {},
+      { expectedSessionKey },
     ),
 };

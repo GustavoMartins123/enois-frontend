@@ -1,22 +1,21 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 import { MARKETPLACE_KINDS, MARKETPLACE_KIND_LABELS } from "@/constants/marketplace-kinds";
-import { usePreferencesStore } from "@/stores/preferences.store";
-import { useThemePreviewStore } from "@/stores/theme-preview.store";
 import { texts } from "@/texts";
 import type { MarketplaceListing as MarketplaceListingView } from "@/types/application/marketplace/marketplace-listing";
 import type { MarketplacePalette } from "@/types/application/marketplace/marketplace-palette";
 import type { MarketplacePurchase } from "@/types/application/marketplace/marketplace-purchase";
 import { BadgeCheck, Check, Receipt, RotateCcw, Search, Sparkles, Store } from "lucide-react";
 
-import { ApiError, marketplaceApi, themesApi } from "@/lib/api";
+import { ApiError, marketplaceApi } from "@/lib/api";
 import { formatFaisca, parseFaiscaInput } from "@/lib/faisca";
+import { marketplacePurchasesQueryOptions } from "@/lib/marketplace/purchases-query";
 import { useListingTheme } from "@/lib/marketplace/use-listing-theme";
-import { galleryCollectionId, registerGalleryCollection } from "@/lib/theme/gallery-collections";
-import { revokeRefundedThemes } from "@/lib/theme/revoke-refunded-themes";
+import { usePurchaseActions } from "@/lib/marketplace/use-purchase-actions";
+import { getSessionKey, useSessionKey } from "@/lib/session-key";
 import { useIsAuthenticated } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
 
@@ -47,6 +46,11 @@ export const Route = createFileRoute("/marketplace")({
  * as faíscas ficam retidas até o comprador confirmar (ou pedir reembolso em 7 dias).
  */
 function Marketplace() {
+  const sessionKey = useSessionKey();
+  return <MarketplaceSession key={sessionKey} sessionKey={sessionKey} />;
+}
+
+function MarketplaceSession({ sessionKey }: { sessionKey: string | null }) {
   const authenticated = useIsAuthenticated();
   const [tab, setTab] = useState("store");
   const [q, setQ] = useState("");
@@ -68,12 +72,11 @@ function Marketplace() {
     queryFn: () => marketplaceApi.catalog(60, search || undefined, kind || undefined),
   });
   const purchases = useQuery({
-    queryKey: ["marketplace", "purchases"],
-    queryFn: () => marketplaceApi.purchases(),
+    ...marketplacePurchasesQueryOptions(sessionKey),
     enabled: authenticated,
   });
   const sales = useQuery({
-    queryKey: ["marketplace", "sales"],
+    queryKey: ["marketplace", "sales", sessionKey],
     queryFn: () => marketplaceApi.sales(),
     enabled: authenticated,
   });
@@ -245,7 +248,11 @@ function Marketplace() {
                     {texts.marketplace.purchasesEmpty}
                   </p>
                 ) : (
-                  <MyPurchases purchases={purchases.data} onOpenContent={setContentPurchase} />
+                  <MyPurchases
+                    key={sessionKey}
+                    purchases={purchases.data}
+                    onOpenContent={setContentPurchase}
+                  />
                 )}
               </TabsContent>
 
@@ -394,18 +401,36 @@ function ListingCard({
   const theme = useListingTheme(listing);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const busy = useRef(false);
+  const mounted = useRef(false);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
   const buy = useMutation({
-    mutationFn: () => marketplaceApi.buy(listing.id),
-    onSuccess: async (result) => {
+    mutationFn: (sessionKey: string | null) => marketplaceApi.buy(listing.id, sessionKey),
+    onSuccess: async (result, sessionKey) => {
+      if (sessionKey !== getSessionKey()) return;
+      await queryClient.cancelQueries({
+        queryKey: marketplacePurchasesQueryOptions(sessionKey).queryKey,
+        exact: true,
+      });
       await queryClient.invalidateQueries({ queryKey: ["marketplace"] });
+      if (sessionKey !== getSessionKey()) return;
       void queryClient.invalidateQueries({ queryKey: ["carteira"] });
-      onBought(result.purchaseId);
+      if (mounted.current) onBought(result.purchaseId);
     },
-    onError: (error) => {
+    onError: (error, sessionKey) => {
+      if (sessionKey !== getSessionKey() || !mounted.current) return;
       if (error instanceof ApiError && error.code === "ITEM_ALREADY_OWNED") {
         void queryClient.invalidateQueries({ queryKey: ["marketplace", "purchases"] });
       }
       toast(error instanceof ApiError ? error.message : texts.marketplace.buyError, "error");
+    },
+    onSettled: () => {
+      busy.current = false;
     },
   });
 
@@ -465,7 +490,11 @@ function ListingCard({
               size="sm"
               className="w-full rounded-full"
               disabled={buy.isPending || checkingPurchases}
-              onClick={() => buy.mutate()}
+              onClick={() => {
+                if (busy.current || checkingPurchases) return;
+                busy.current = true;
+                buy.mutate(getSessionKey());
+              }}
             >
               {buy.isPending ? texts.marketplace.buying : texts.marketplace.buy}
             </Button>
@@ -484,54 +513,7 @@ function MyPurchases({
   purchases: MarketplacePurchase[];
   onOpenContent: (purchase: MarketplacePurchase) => void;
 }) {
-  const queryClient = useQueryClient();
-  const { toast } = useToast();
-  const setThemeCollection = usePreferencesStore((state) => state.setThemeCollection);
-
-  const confirm = useMutation({
-    mutationFn: (id: string) => marketplaceApi.confirm(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["marketplace"] }),
-    onError: () => toast(texts.marketplace.confirmError, "error"),
-  });
-  const refund = useMutation({
-    mutationFn: (id: string) => marketplaceApi.refund(id),
-    onSuccess: (_, purchaseId) => {
-      const refunded = purchases.find((purchase) => purchase.id === purchaseId);
-      if (refunded) {
-        revokeRefundedThemes([
-          ...purchases.filter((purchase) => purchase.id !== purchaseId),
-          { ...refunded, state: "REFUNDED" },
-        ]);
-        const preview = useThemePreviewStore.getState();
-        if (
-          refunded.itemKind === "THEME" &&
-          refunded.itemId &&
-          preview.preview?.collection.id === galleryCollectionId(refunded.itemId)
-        ) {
-          preview.stopPreview();
-        }
-      }
-      void queryClient.invalidateQueries({ queryKey: ["carteira"] });
-      return queryClient.invalidateQueries({ queryKey: ["marketplace"] });
-    },
-    onError: () => toast(texts.marketplace.refundError, "error"),
-  });
-  const applyTheme = useMutation({
-    mutationFn: (itemId: string) => themesApi.get(itemId),
-    onSuccess: (theme) => {
-      const collection = registerGalleryCollection({
-        id: theme.id,
-        name: theme.name,
-        description: "",
-        packageJson: theme.packageJson,
-        modeDefault: theme.modeDefault,
-      });
-      setThemeCollection(collection.id);
-      useThemePreviewStore.getState().stopPreview();
-      toast(texts.marketplace.themeApplied, "success");
-    },
-    onError: () => toast(texts.marketplace.themeApplyError, "error"),
-  });
+  const actions = usePurchaseActions();
 
   // Agrupado por categoria: "Temas", "Templates", "Banners"... — o comprador acha o que comprou.
   const groups = new Map<string, MarketplacePurchase[]>();
@@ -575,8 +557,8 @@ function MyPurchases({
                     size="sm"
                     variant="outline"
                     className="rounded-full"
-                    disabled={applyTheme.isPending}
-                    onClick={() => applyTheme.mutate(p.itemId!)}
+                    disabled={actions.isPending}
+                    onClick={() => actions.execute("apply", p)}
                   >
                     Aplicar tema
                   </Button>
@@ -598,8 +580,8 @@ function MyPurchases({
                     <Button
                       size="sm"
                       className="rounded-full gap-1"
-                      disabled={confirm.isPending}
-                      onClick={() => confirm.mutate(p.id)}
+                      disabled={actions.isPending}
+                      onClick={() => actions.execute("confirm", p)}
                     >
                       <BadgeCheck className="h-4 w-4" />
                       {texts.marketplace.confirmReceipt}
@@ -609,8 +591,8 @@ function MyPurchases({
                       size="sm"
                       variant="outline"
                       className="rounded-full gap-1"
-                      disabled={refund.isPending}
-                      onClick={() => refund.mutate(p.id)}
+                      disabled={actions.isPending}
+                      onClick={() => actions.execute("refund", p)}
                     >
                       <RotateCcw className="h-4 w-4" />
                       Reembolso

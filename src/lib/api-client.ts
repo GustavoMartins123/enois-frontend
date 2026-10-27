@@ -9,7 +9,7 @@ import { clearAuthHint } from "./auth-hint";
 import { getDeviceId } from "./device-id";
 import { resetSessionScopedData } from "./query-client";
 import { dropLegacyTokens, hasSessionFlag, legacyRefreshToken, storeSession } from "./session";
-import { SESSION_FLAG_KEY, dropSessionKey } from "./session-key";
+import { SESSION_FLAG_KEY, dropSessionKey, getSessionKey } from "./session-key";
 
 /**
  * Base da API.
@@ -327,6 +327,12 @@ async function request<T>(
   body?: unknown,
   opts?: RequestOptions,
 ): Promise<T> {
+  const assertExpectedSession = () => {
+    if (opts?.expectedSessionKey !== undefined && opts.expectedSessionKey !== getSessionKey()) {
+      throw new ApiError(409, "SESSION_CHANGED", texts.errors.apiMessages.SESSION_CHANGED, path);
+    }
+  };
+  assertExpectedSession();
   dropExpiredSession();
   // Renova proativamente antes de sair com um token que esta vencendo (as rotas de auth cuidam
   // da propria sessao e nao passam por aqui).
@@ -354,13 +360,12 @@ async function request<T>(
   }
 
   let response: Response;
+  const send = () => {
+    assertExpectedSession();
+    return fetch(`${baseUrl()}${path}`, { method, credentials: "include", headers, body: payload });
+  };
   try {
-    response = await fetch(`${baseUrl()}${path}`, {
-      method,
-      credentials: "include",
-      headers,
-      body: payload,
-    });
+    response = await send();
     // Limite do proxy/CDN: a recusa vem sem CORS e o navegador a reporta como falha de rede.
     // Em escrita idempotente (todas as nossas), esperar o Retry-After e repetir uma vez é
     // melhor do que devolver "não foi possível" para quem só clicou duas vezes seguidas.
@@ -368,28 +373,20 @@ async function request<T>(
       const seconds = Number.parseInt(response.headers.get("Retry-After") ?? "", 10);
       if (Number.isFinite(seconds) && seconds > 0 && seconds <= MAX_RETRY_AFTER_SECONDS) {
         await sleep(seconds * 1000);
-        response = await fetch(`${baseUrl()}${path}`, {
-          method,
-          credentials: "include",
-          headers,
-          body: payload,
-        });
+        response = await send();
       }
     }
   } catch (firstFailure) {
+    if (firstFailure instanceof ApiError) throw firstFailure;
     // Falha de rede numa escrita idempotente: pode ser o limitador da frente recusando o
     // preflight (o navegador esconde a resposta e reporta "fetch failed"). Espera a janela
     // virar e tenta uma vez; se continuar falhando, o erro sobe.
     if (opts?.idempotent) {
       try {
         await sleep(NETWORK_RETRY_DELAY_MS);
-        response = await fetch(`${baseUrl()}${path}`, {
-          method,
-          credentials: "include",
-          headers,
-          body: payload,
-        });
-      } catch {
+        response = await send();
+      } catch (retryFailure) {
+        if (retryFailure instanceof ApiError) throw retryFailure;
         throw new ApiError(
           0,
           "NETWORK_ERROR",
@@ -407,12 +404,14 @@ async function request<T>(
     }
     void firstFailure;
   }
+  assertExpectedSession();
 
   // 401 e sessao invalida/expirada (tenta refresh e, se nao der, manda para o login). 403 e
   // PERMISSAO negada, nao sessao: derrubar o usuario aqui era um erro (quem tem conta pendente de
   // verificacao, por exemplo, era desconectado em vez de ler o aviso).
   if (response.status === HttpStatus.UNAUTHORIZED && hadSession && !path.startsWith("/auth/")) {
     const refreshed = await refreshSession(expiryAtSend);
+    assertExpectedSession();
 
     if (refreshed === "unavailable") {
       // Servidor instavel (429/5xx/rede). NAO encerra a sessao: a proxima tentativa pode dar certo
@@ -427,13 +426,10 @@ async function request<T>(
 
     if (refreshed === "renewed") {
       try {
-        response = await fetch(`${baseUrl()}${path}`, {
-          method,
-          credentials: "include",
-          headers,
-          body: payload,
-        });
-      } catch {
+        response = await send();
+        assertExpectedSession();
+      } catch (retryFailure) {
+        if (retryFailure instanceof ApiError) throw retryFailure;
         throw new ApiError(
           0,
           "NETWORK_ERROR",

@@ -13,6 +13,8 @@ import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ApiError } from "@/lib/api-client";
+import { marketplacePurchasesQueryOptions } from "@/lib/marketplace/purchases-query";
+import { renewSessionKey } from "@/lib/session-key";
 import {
   registerGalleryCollection,
   resolveGalleryCollection,
@@ -96,6 +98,7 @@ describe("Compras no marketplace", () => {
 
   beforeEach(() => {
     vi.stubGlobal("IS_REACT_ACT_ENVIRONMENT", true);
+    localStorage.clear();
     mocks.authenticated = true;
     mocks.catalog.mockReset().mockResolvedValue([listing]);
     mocks.purchases.mockReset().mockResolvedValue([purchase]);
@@ -282,5 +285,169 @@ describe("Compras no marketplace", () => {
     expect(button(texts.marketplace.owned)).toBeDefined();
     expect(button(texts.marketplace.buy)).toBeUndefined();
     expect(mocks.buy).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(["confirm", "refund", "apply"] as const)(
+    "bloqueia as outras decisões enquanto %s está pendente",
+    async (action) => {
+      mocks.purchases.mockResolvedValue([{ ...purchase, state: "HELD" }]);
+      await mount();
+      await tab(texts.marketplace.purchasesTab);
+      let finish!: () => void;
+      const pending = new Promise<void>((resolve) => {
+        finish = resolve;
+      });
+      const label =
+        action === "confirm"
+          ? texts.marketplace.confirmReceipt
+          : action === "refund"
+            ? "Reembolso"
+            : "Aplicar tema";
+      if (action === "apply") mocks.getTheme.mockImplementation(() => pending.then(() => theme));
+      else
+        mocks[action].mockImplementation(() => pending.then(() => ({ purchaseId: purchase.id })));
+      await act(async () => button(label).click());
+      try {
+        await vi.waitFor(async () => {
+          await act(async () => {});
+          expect(button("Aplicar tema").disabled).toBe(true);
+          expect(button("Reembolso").disabled).toBe(true);
+          expect(button(texts.marketplace.confirmReceipt).disabled).toBe(true);
+        });
+      } finally {
+        await act(async () => finish());
+      }
+    },
+  );
+
+  it("aceita uma única decisão mesmo com dois cliques no mesmo ciclo do React", async () => {
+    mocks.purchases.mockResolvedValue([{ ...purchase, state: "HELD" }]);
+    mocks.confirm.mockResolvedValue({ purchaseId: purchase.id, state: "RELEASED" });
+    mocks.refund.mockResolvedValue({ purchaseId: purchase.id, state: "REFUNDED" });
+    await mount();
+    await tab(texts.marketplace.purchasesTab);
+    await act(async () => {
+      button(texts.marketplace.confirmReceipt).click();
+      button("Reembolso").click();
+    });
+    expect(mocks.confirm).toHaveBeenCalledTimes(1);
+    expect(mocks.refund).not.toHaveBeenCalled();
+  });
+
+  it("não aplica uma resposta atrasada quando a compra foi reembolsada em outra aba", async () => {
+    await mount();
+    await tab(texts.marketplace.purchasesTab);
+    let finish!: (value: typeof theme) => void;
+    mocks.getTheme.mockImplementation(
+      () =>
+        new Promise<typeof theme>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    await act(async () => button("Aplicar tema").click());
+    mocks.purchases.mockResolvedValue([{ ...purchase, state: "REFUNDED" }]);
+    await act(async () => finish(theme));
+    expect(usePreferencesStore.getState().themeCollection).not.toBe("galeria-" + theme.id);
+    expect(mocks.toast).not.toHaveBeenCalledWith(texts.marketplace.themeApplied, "success");
+  });
+
+  it("não aplica uma resposta atrasada depois de sair da aba de compras", async () => {
+    await mount();
+    await tab(texts.marketplace.purchasesTab);
+    let finish!: (value: typeof theme) => void;
+    mocks.getTheme.mockImplementation(
+      () =>
+        new Promise<typeof theme>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    await act(async () => button("Aplicar tema").click());
+    await tab(texts.marketplace.storeTab);
+    await act(async () => finish(theme));
+    expect(usePreferencesStore.getState().themeCollection).not.toBe("galeria-" + theme.id);
+  });
+
+  it("não aplica uma resposta atrasada em outra sessão", async () => {
+    await mount();
+    await tab(texts.marketplace.purchasesTab);
+    let finish!: (value: typeof theme) => void;
+    mocks.getTheme.mockImplementation(
+      () =>
+        new Promise<typeof theme>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    await act(async () => button("Aplicar tema").click());
+    await act(async () => renewSessionKey());
+    await act(async () => finish(theme));
+    expect(usePreferencesStore.getState().themeCollection).not.toBe("galeria-" + theme.id);
+    expect(mocks.toast).not.toHaveBeenCalledWith(texts.marketplace.themeApplied, "success");
+  });
+
+  it("uma resposta atrasada não substitui uma escolha de tema mais recente", async () => {
+    await mount();
+    await tab(texts.marketplace.purchasesTab);
+    let finish!: (value: typeof theme) => void;
+    mocks.getTheme.mockImplementation(
+      () =>
+        new Promise<typeof theme>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    await act(async () => button("Aplicar tema").click());
+    await act(async () => usePreferencesStore.getState().setThemeCollection("outra-escolha"));
+    await act(async () => finish(theme));
+    expect(usePreferencesStore.getState().themeCollection).toBe("outra-escolha");
+  });
+
+  it("dois cliques imediatos em comprar enviam uma única requisição", async () => {
+    mocks.purchases.mockResolvedValue([]);
+    mocks.buy.mockResolvedValue({ purchaseId: purchase.id, state: "HELD", price: listing.price });
+    await mount();
+    await act(async () => {
+      button(texts.marketplace.buy).click();
+      button(texts.marketplace.buy).click();
+    });
+    expect(mocks.buy).toHaveBeenCalledTimes(1);
+  });
+
+  it("uma compra concluída na sessão anterior não abre confirmação na nova conta", async () => {
+    mocks.purchases.mockResolvedValue([]);
+    await mount();
+    let finish!: (result: { purchaseId: string }) => void;
+    mocks.buy.mockImplementation(
+      () =>
+        new Promise<{ purchaseId: string }>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    await act(async () => button(texts.marketplace.buy).click());
+    await act(async () => renewSessionKey());
+    await act(async () => finish({ purchaseId: purchase.id }));
+    expect(document.querySelector('[role="dialog"]')).toBeNull();
+  });
+
+  it("reembolsar uma compra antiga preserva uma aquisição nova que chegou ao cache", async () => {
+    mocks.purchases.mockResolvedValue([{ ...purchase, state: "HELD" }]);
+    const collection = registerGalleryCollection(theme);
+    usePreferencesStore.getState().setThemeCollection(collection.id);
+    await mount();
+    await tab(texts.marketplace.purchasesTab);
+    let finish!: (result: { purchaseId: string }) => void;
+    mocks.refund.mockImplementation(
+      () =>
+        new Promise<{ purchaseId: string }>((resolve) => {
+          finish = resolve;
+        }),
+    );
+    await act(async () => button("Reembolso").click());
+    const newer = { ...purchase, id: "nova-compra", state: "HELD" as const };
+    await act(async () =>
+      client.setQueryData(marketplacePurchasesQueryOptions(null).queryKey, [purchase, newer]),
+    );
+    mocks.purchases.mockResolvedValue([{ ...purchase, state: "REFUNDED" }, newer]);
+    await act(async () => finish({ purchaseId: purchase.id }));
+    expect(usePreferencesStore.getState().themeCollection).toBe(collection.id);
+    expect(resolveGalleryCollection(collection.id)).not.toBeNull();
   });
 });

@@ -109,7 +109,7 @@ describe("Temas reembolsados", () => {
     );
     await vi.waitFor(async () => {
       await act(async () => {});
-      expect(client.getQueryState(["marketplace", "purchases"])?.status).toBe("error");
+      expect(client.getQueryState(["marketplace", "purchases", null])?.status).toBe("error");
     });
     expect(usePreferencesStore.getState().themeCollection).toBe("galeria-" + theme.id);
   });
