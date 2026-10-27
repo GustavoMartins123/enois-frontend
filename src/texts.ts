@@ -1707,6 +1707,9 @@ export const texts = {
       verified: (count: number) =>
         count === 1 ? "1 contribuição verificada" : `${count} contribuições verificadas`,
       tierRange: (min: number, max: number | null) => (max === null ? `${min}+` : `${min}–${max}`),
+      loadMore: "Carregar mais",
+      loadingEvidence: "Carregando evidências...",
+      evidenceError: "Não foi possível carregar as evidências.",
     },
     seoFallbackTitle: "Perfil",
     seoFallbackDescription: "Perfil profissional",
