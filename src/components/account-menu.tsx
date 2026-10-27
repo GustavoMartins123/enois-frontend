@@ -6,6 +6,7 @@ import { Link } from "@tanstack/react-router";
 import { texts } from "@/texts";
 import type { AccountMenuProps } from "@/types/components/account/account-menu-props";
 import type { ActiveIdentity } from "@/types/lib/active-identity";
+import { UserAvatar } from "@rede-enois/design-system/domain";
 import { Popover, PopoverContent, PopoverTrigger, useToast } from "@rede-enois/design-system/ui";
 import {
   Flag,
@@ -42,7 +43,6 @@ import { DeleteAccountDialog } from "./delete-account-dialog";
 import { HealthyUsageDialog } from "./healthy-usage/healthy-usage-dialog";
 import { LinkedAccountsDialog } from "./linked-accounts-dialog";
 import { PushToggle } from "./push-toggle";
-import { UserAvatar } from "./user-avatar";
 
 const ITEM_CLASS =
   "flex w-full items-center gap-2 px-4 py-2 text-left text-sm font-normal text-text-strong transition hover:bg-surface-2 disabled:opacity-50";

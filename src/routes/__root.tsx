@@ -27,6 +27,7 @@ import { useThemeSync } from "@/lib/theme/use-theme-sync";
 
 import { AgeGate } from "@/components/age-gate";
 import { AppContainer } from "@/components/app-container";
+import { DesignSystemProvider } from "@/components/design-system-provider";
 import { HealthyUsageGuard } from "@/components/healthy-usage/healthy-usage-guard";
 import { InstallPwaBanner } from "@/components/install-pwa-banner";
 import { LiteModeEffects } from "@/components/lite-mode-effects";
@@ -44,25 +45,29 @@ function NotFoundComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AppContainer>
-        <div className="flex min-h-[60vh] items-center justify-center px-4">
-          <div className="max-w-md text-center">
-            <p className="text-7xl font-bold text-primary">{texts.root.notFound.code}</p>
+      <DesignSystemProvider>
+        <AppContainer>
+          <div className="flex min-h-[60vh] items-center justify-center px-4">
+            <div className="max-w-md text-center">
+              <p className="text-7xl font-bold text-primary">{texts.root.notFound.code}</p>
 
-            <h1 className="mt-4 text-xl font-semibold text-foreground">
-              {texts.root.notFound.title}
-            </h1>
+              <h1 className="mt-4 text-xl font-semibold text-foreground">
+                {texts.root.notFound.title}
+              </h1>
 
-            <p className="mt-2 text-sm text-muted-foreground">{texts.root.notFound.description}</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {texts.root.notFound.description}
+              </p>
 
-            <div className="mt-6">
-              <Link to="/" className={buttonVariants({ size: "lg" })}>
-                {texts.root.notFound.home}
-              </Link>
+              <div className="mt-6">
+                <Link to="/" className={buttonVariants({ size: "lg" })}>
+                  {texts.root.notFound.home}
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-      </AppContainer>
+        </AppContainer>
+      </DesignSystemProvider>
     </QueryClientProvider>
   );
 }
@@ -204,7 +209,9 @@ function RootComponent() {
   // ("No QueryClient set" — o RootComponent roda FORA do proprio provider).
   return (
     <QueryClientProvider client={queryClient}>
-      <RootInsideProvider />
+      <DesignSystemProvider>
+        <RootInsideProvider />
+      </DesignSystemProvider>
     </QueryClientProvider>
   );
 }

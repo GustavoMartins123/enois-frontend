@@ -1,7 +1,6 @@
 import { texts } from "@/texts";
 import type { GlobalSearchResultsProps } from "@/types/components/global-search/global-search-results-props";
-
-import { UserAvatar } from "@/components/user-avatar";
+import { UserAvatar } from "@rede-enois/design-system/domain";
 
 export function GlobalSearchResults({
   items,

@@ -6,6 +6,7 @@ import { Link } from "@tanstack/react-router";
 import { texts } from "@/texts";
 import type { PostNote } from "@/types/application/feed/post-note";
 import type { PostView } from "@/types/application/feed/post-view";
+import { ContributorTag, StyledName } from "@rede-enois/design-system/domain";
 import {
   Button,
   Dialog,
@@ -21,9 +22,6 @@ import { BadgeCheck, Loader2, StickyNote } from "lucide-react";
 import { postNotesApi } from "@/lib/api";
 import { useCurrentUser } from "@/lib/current-user";
 import { dataHora } from "@/lib/date/format";
-
-import { ContributorTag } from "@/components/contributor-tag";
-import { StyledName } from "@/components/styled-name";
 
 const MAX_NOTE = 500;
 const MIN_NOTE = 10;

@@ -55,7 +55,6 @@ src/
 │   ├── mention-textarea.tsx     # Textarea com @menções
 │   ├── post-card.tsx            # Card de post
 │   ├── theme-toggle.tsx         # Alternador de tema
-│   ├── user-avatar.tsx          # Avatar do usuário
 │   └── …                        # primitivas de UI: @rede-enois/design-system/ui
 ├── hooks/
 │   └── use-mobile.tsx           # Hook de breakpoint mobile

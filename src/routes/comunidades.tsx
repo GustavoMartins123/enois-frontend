@@ -9,6 +9,7 @@ import { texts } from "@/texts";
 import type { Community } from "@/types/application/community/community";
 import type { CommunityTopic } from "@/types/application/community/community-topic";
 import type { CreateCommunityDialogProps } from "@/types/routes/communities/create-community-dialog-props";
+import { CommunityCardSkeletons } from "@rede-enois/design-system/domain";
 import {
   Button,
   ConfirmDialog,
@@ -36,7 +37,6 @@ import { useLiteMode } from "@/lib/use-lite-mode";
 
 import { AppContainer } from "@/components/app-container";
 import { CommunityCard } from "@/components/community-card";
-import { CommunityCardSkeletons } from "@/components/skeletons/community-card-skeletons";
 
 export const Route = createFileRoute("/comunidades")({
   head: () => ({ meta: [{ title: texts.communities.seoTitle }] }),
