@@ -5,6 +5,7 @@ export { profileApi } from "./profile";
 export { preferencesApi } from "./preferences";
 export { feedApi } from "./feed";
 export { commentsApi } from "./comments";
+export { postNotesApi } from "./post-notes";
 export { developerOriginsApi } from "./developers";
 export { reactionsApi, REACTION_EMOJIS } from "./reactions";
 export { networkApi } from "./network";
