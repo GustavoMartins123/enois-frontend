@@ -64,7 +64,7 @@ async function deriveKeyFromPassword(password: string, salt: Uint8Array): Promis
     keyMaterial,
     { name: "AES-GCM", length: 256 },
     false,
-    ["encrypt", "decrypt"],
+    ["encrypt", "decrypt"] as KeyUsage[],
   );
 }
 
