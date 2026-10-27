@@ -1,14 +1,18 @@
 import type { AvatarFrameFxProps } from "@/types/components/avatar-frames/avatar-frame-fx-props";
 
 import { BuracoNegroFx } from "./buraco-negro";
+import { CircuitoFx } from "./circuito";
+import { FliperamaFx } from "./fliperama";
 import { GalaxiaFx } from "./galaxia";
 import { GlacialFx } from "./glacial";
 import { HologramaFx } from "./holograma";
 import { InfernoFx } from "./inferno";
 import { MareFx } from "./mare";
 import { NebulosaFx } from "./nebulosa";
+import { NeonFx } from "./neon";
 import { OrbitaFx } from "./orbita";
 import { PortalFx } from "./portal";
+import { RadarFx } from "./radar";
 import { SupernovaFx } from "./supernova";
 import { TempestadeFx } from "./tempestade";
 import { ToxicaFx } from "./toxica";
@@ -33,6 +37,10 @@ const EFEITOS: Record<string, () => React.JSX.Element> = {
   "moldura-trepadeira": TrepadeiraFx,
   "moldura-vendaval": VendavalFx,
   "moldura-vaga-lumes": VagaLumesFx,
+  "moldura-fliperama": FliperamaFx,
+  "moldura-circuito": CircuitoFx,
+  "moldura-neon": NeonFx,
+  "moldura-radar": RadarFx,
 };
 
 /**
