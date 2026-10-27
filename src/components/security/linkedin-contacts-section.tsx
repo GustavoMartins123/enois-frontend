@@ -5,6 +5,7 @@ import { FileUp } from "lucide-react";
 
 import { linkedinContactsApi } from "@/lib/api";
 
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/toast";
 
@@ -96,6 +97,22 @@ export function LinkedinContactsSection() {
       <p className="text-[11px] leading-relaxed text-text-subtle">
         {texts.account.linkedinContacts.autoInviteHint}
       </p>
+
+      {resumo.isError && (
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="text-xs text-text-subtle">{texts.account.linkedinContacts.loadError}</p>
+
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-full"
+            disabled={resumo.isFetching}
+            onClick={() => void resumo.refetch()}
+          >
+            {texts.account.linkedinContacts.retry}
+          </Button>
+        </div>
+      )}
 
       {summary && summary.contacts > 0 && (
         <div className="space-y-1">

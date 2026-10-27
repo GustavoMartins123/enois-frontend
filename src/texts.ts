@@ -897,6 +897,8 @@ export const texts = {
         "Aceita o CSV (ou o ZIP da exportação), até 5 MB. Só nome e e-mail são usados para encontrar a pessoa; empresa, cargo e URL são descartados.",
       tooLarge: (mb: number) => `O arquivo passa de ${mb} MB.`,
       importing: "Lendo seus contatos...",
+      loadError: "Não foi possível carregar os seus contatos do LinkedIn.",
+      retry: "Tentar de novo",
       autoInvite: "Enviar convites automaticamente",
       autoInviteHint:
         "Ligado, cada contato importado que ainda não está conectado recebe uma solicitação sua. Quem tiver mais de um perfil com o mesmo nome fica de fora.",
