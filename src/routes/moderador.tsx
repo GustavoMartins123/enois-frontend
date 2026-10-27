@@ -27,6 +27,7 @@ import {
   Shield,
   ShieldAlert,
   ShieldCheck,
+  StickyNote,
   Trash2,
   UserCheck,
   Users,
@@ -55,6 +56,7 @@ import { DisputesSection } from "@/components/moderation/disputes-section";
 import { EmailLogSection } from "@/components/moderation/email-log-section";
 import { GamesReviewSection } from "@/components/moderation/games-review-section";
 import { MonitoringSection } from "@/components/moderation/monitoring-section";
+import { NotesSection } from "@/components/moderation/notes-section";
 import { PanicModeSection } from "@/components/moderation/panic-mode-section";
 import { ProjectsReviewSection } from "@/components/moderation/projects-review-section";
 import { PullRequestsSection } from "@/components/moderation/pull-requests-section";
@@ -76,6 +78,7 @@ const ALL_TABS: { id: ModeratorTabId; label: string; icon: typeof Flag; adminOnl
   { id: "support", label: texts.moderator.tabs.support, icon: LifeBuoy, adminOnly: false },
   { id: "issues", label: texts.moderator.tabs.issues, icon: Bug, adminOnly: false },
   { id: "pulls", label: texts.moderator.tabs.pulls, icon: GitPullRequest, adminOnly: false },
+  { id: "notes", label: texts.moderator.tabs.notes, icon: StickyNote, adminOnly: false },
   { id: "history", label: texts.moderator.tabs.history, icon: History, adminOnly: false },
   { id: "appeals", label: texts.moderator.tabs.appeals, icon: ShieldAlert, adminOnly: false },
   { id: "disputes", label: texts.moderator.tabs.disputes, icon: Scale, adminOnly: false },
@@ -255,6 +258,7 @@ function Moderador() {
             {me.admin && activeTab === "contributors" && <ContributorsSection />}
             {me.admin && activeTab === "githubContributions" && <ContributionsSection />}
             {canModerate && activeTab === "pulls" && <PullRequestsSection />}
+            {canModerate && activeTab === "notes" && <NotesSection />}
           </div>
         ) : (
           <ApplicationSection me={me} />
