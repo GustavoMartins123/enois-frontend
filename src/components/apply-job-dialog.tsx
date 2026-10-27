@@ -5,22 +5,21 @@ import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { Job } from "@/types/application/job/job";
-import { CheckCircle2, FileUp, Loader2, Send } from "lucide-react";
-
-import { ApiError, jobsApi, resumeImportApi } from "@/lib/api";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+  Input,
+  Label,
+  Textarea,
+} from "@rede-enois/design-system/ui";
+import { CheckCircle2, FileUp, Loader2, Send } from "lucide-react";
+
+import { ApiError, jobsApi, resumeImportApi } from "@/lib/api";
 
 /**
  * Candidatura: responde o formulário que o autor montou e envia o perfil.

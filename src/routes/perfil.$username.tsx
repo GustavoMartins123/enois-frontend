@@ -14,6 +14,17 @@ import type { UpdateProfileRequest } from "@/types/application/profile/update-pr
 import type { ProfileCropPurpose } from "@/types/routes/profile/profile-crop-purpose";
 import type { RecommendationItemProps } from "@/types/routes/profile/recommendation-item-props";
 import type { SectionProps } from "@/types/routes/profile/section-props";
+import { ContributorTag, StyledName, UserAvatar } from "@rede-enois/design-system/domain";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
 import {
   Briefcase,
   Camera,
@@ -54,17 +65,6 @@ import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 import { cn } from "@/lib/utils";
 
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
-
 import { AppContainer } from "@/components/app-container";
 import { AppearanceDialog } from "@/components/appearance/appearance-dialog";
 import { BlockUserDialog } from "@/components/block-user-dialog";
@@ -87,8 +87,6 @@ import { ProfileNetworkDialog } from "@/components/profile/profile-network-dialo
 import { ProfileQuickComposer } from "@/components/profile/profile-quick-composer";
 import { ProfileProjectsSection } from "@/components/profile/projects-section";
 import { PostCardSkeletons } from "@/components/skeletons/post-card-skeletons";
-import { StyledName } from "@/components/styled-name";
-import { UserAvatar } from "@/components/user-avatar";
 import { VerifiedContributorPrompt } from "@/components/verified-contributor-prompt";
 
 /** Paginas de "Publicacoes recentes": o mesmo tamanho do feed, para nao sobrecarregar o perfil. */
@@ -679,15 +677,7 @@ function Profile() {
 
               {isContributor && (
                 <div className="mt-1">
-                  <span
-                    className="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium"
-                    style={{
-                      color: user.contributorTagColor ?? "var(--primary)",
-                      borderColor: user.contributorTagColor ?? "var(--primary)",
-                    }}
-                  >
-                    {texts.profile.contributorTag}
-                  </span>
+                  <ContributorTag color={user.contributorTagColor} />
                 </div>
               )}
 

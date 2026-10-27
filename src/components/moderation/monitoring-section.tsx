@@ -7,6 +7,7 @@ import type { MonitoringEvent } from "@/types/application/monitoring/monitoring-
 import type { MonitoringEventLevel } from "@/types/application/monitoring/monitoring-event-level";
 import type { MonitoringMinutePoint } from "@/types/application/monitoring/monitoring-minute-point";
 import type { MonitoringResource } from "@/types/application/monitoring/monitoring-resource";
+import { Button, Input, LoadingState, useToast } from "@rede-enois/design-system/ui";
 import {
   Activity,
   AlertTriangle,
@@ -24,11 +25,6 @@ import { monitoringApi } from "@/lib/api";
 import { hora, valorDeDataLocal } from "@/lib/date/format";
 import { formatFaisca } from "@/lib/faisca";
 import { cn } from "@/lib/utils";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/loading-state";
-import { useToast } from "@/components/ui/toast";
 
 const number = new Intl.NumberFormat("pt-BR");
 

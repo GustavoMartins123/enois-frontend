@@ -6,17 +6,23 @@ import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { ReactionTab } from "@/types/application/reaction/reaction-tab";
 import type { PostIdProps } from "@/types/components/post/post-id-props";
+import { UserAvatar } from "@rede-enois/design-system/domain";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@rede-enois/design-system/ui";
 import { Smile, Users } from "lucide-react";
 
 import { REACTION_EMOJIS, profileApi } from "@/lib/api";
 import { reactionsQueryOptions } from "@/lib/reactions/query-options";
 import { sortReactionTabsStable } from "@/lib/reactions/summary";
 import { useAuth } from "@/lib/use-auth";
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-import { UserAvatar } from "@/components/user-avatar";
 
 /**
  * Lista quem reagiu ao post, filtrável por tipo.

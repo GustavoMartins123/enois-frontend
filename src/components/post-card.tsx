@@ -12,6 +12,20 @@ import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { PostView } from "@/types/application/feed/post-view";
 import type { PostCardProps } from "@/types/components/post/post-card-props";
+import {
+  Badge,
+  Button,
+  ConfirmDialog,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
 import { BookOpen, Clock, FileText, Pin, PinOff, Repeat2, Tag } from "lucide-react";
 
 import { communitiesApi, feedApi } from "@/lib/api";
@@ -24,14 +38,6 @@ import { useAuth } from "@/lib/use-auth";
 import { useLiteMode } from "@/lib/use-lite-mode";
 import { cn } from "@/lib/utils";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
-
 import { MentionTextarea } from "@/components/mention-textarea";
 
 import { AuthorInfo } from "./post/author-info";
@@ -40,6 +46,7 @@ import { LinkPreviews } from "./post/link-previews";
 import { MediaGrid } from "./post/media-grid";
 import { PostActions } from "./post/post-actions";
 import { PostComments } from "./post/post-comments";
+import { PostNotes } from "./post/post-notes";
 import { PostOwnerMenu } from "./post/post-owner-menu";
 import { PostPage } from "./post/post-page";
 import { ReactionsSummary } from "./post/reactions-summary";
@@ -274,6 +281,7 @@ function PostCardView({
           authorBadge={post.authorBadge}
           authorBadges={post.authorBadges}
           authorStyle={post.authorStyle}
+          authorContributor={post.authorContributor}
           authorIdentity={post.authorIdentity}
           authorAvatar={post.authorAvatar}
           authorAvatarFrame={post.authorAvatarFrame}
@@ -522,6 +530,8 @@ function PostCardView({
           ))}
         </div>
       )}
+
+      <PostNotes post={post} />
 
       {/* Selos: entram na fileira das ações (a peça é do card, que é quem sabe os selos do post). */}
       <PostActions post={post} onComments={toggleComments}>

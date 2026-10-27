@@ -7,22 +7,21 @@ import {
   MARKETPLACE_KIND_LABELS,
   type MarketplaceKind,
 } from "@/constants/marketplace-kinds";
-
-import { ApiError, marketplaceApi } from "@/lib/api";
-import { parseFaiscaInput } from "@/lib/faisca";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
+  Input,
+  Label,
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
+
+import { ApiError, marketplaceApi } from "@/lib/api";
+import { parseFaiscaInput } from "@/lib/faisca";
 
 const MIN_PRICE = parseFaiscaInput("50") ?? 50_000;
 

@@ -3,13 +3,13 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
+import type { VerifiedContributorPromptProps } from "@/types/components/verified-contributor-prompt-props";
+import { Button } from "@rede-enois/design-system/ui";
 import { Award, ChevronDown } from "lucide-react";
 
 import { contributorsApi } from "@/lib/api";
 import { useIsAuthenticated } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
-
-import { Button } from "@/components/ui/button";
 
 import { ContributionForm } from "./contribution-form";
 
@@ -18,7 +18,9 @@ import { ContributionForm } from "./contribution-form";
  * O formulário é o mesmo da landing; a diferença é que a aprovação já veio do GitHub — não há
  * triagem manual. Fica colapsado por padrão.
  */
-export function VerifiedContributorPrompt() {
+export function VerifiedContributorPrompt({
+  showConfirmed = false,
+}: VerifiedContributorPromptProps) {
   const authenticated = useIsAuthenticated();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -31,7 +33,31 @@ export function VerifiedContributorPrompt() {
     staleTime: 60_000,
   });
 
-  if (!authenticated || !data?.verified || !data.applicationPending) return null;
+  if (!authenticated || !data?.verified) return null;
+
+  // Quem já confirmou não vê o formulário de novo; na página de selos mostramos o estado para a
+  // ausência do convite não parecer falha.
+  if (!data.applicationPending) {
+    if (!showConfirmed) return null;
+
+    return (
+      <section className="surface-card flex items-start gap-3 p-5">
+        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary-soft text-primary">
+          <Award className="h-5 w-5" aria-hidden />
+        </span>
+
+        <div className="min-w-0 space-y-1">
+          <h2 className="text-base font-semibold tracking-tight">
+            {texts.sealsPage.verified.confirmedTitle}
+          </h2>
+
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {texts.sealsPage.verified.confirmedDescription}
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="surface-card space-y-3 p-5">

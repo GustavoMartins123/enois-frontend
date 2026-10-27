@@ -4,6 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import { UserAvatar } from "@rede-enois/design-system/domain";
+import { Button, Input, LoadingState, Textarea, useToast } from "@rede-enois/design-system/ui";
 import { ArrowLeft, Camera, Image as ImageIcon } from "lucide-react";
 
 import { corporateApi } from "@/lib/api";
@@ -12,15 +14,8 @@ import { requireAuth } from "@/lib/require-auth";
 import { useIsAuthenticated } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/loading-state";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
-
 import { AppContainer } from "@/components/app-container";
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
-import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/profissional")({
   beforeLoad: requireAuth,

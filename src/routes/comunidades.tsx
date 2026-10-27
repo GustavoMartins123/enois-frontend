@@ -9,6 +9,24 @@ import { texts } from "@/texts";
 import type { Community } from "@/types/application/community/community";
 import type { CommunityTopic } from "@/types/application/community/community-topic";
 import type { CreateCommunityDialogProps } from "@/types/routes/communities/create-community-dialog-props";
+import { CommunityCardSkeletons } from "@rede-enois/design-system/domain";
+import {
+  Button,
+  ConfirmDialog,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  EmptyState,
+  Input,
+  Label,
+  PageHeader,
+  Pill,
+  PillRow,
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
 import { Loader2, Plus, Search, Star, Users } from "lucide-react";
 
 import { communitiesApi } from "@/lib/api";
@@ -17,27 +35,8 @@ import { litePageSize } from "@/lib/lite-mode";
 import { useAuth, useIsAuthenticated } from "@/lib/use-auth";
 import { useLiteMode } from "@/lib/use-lite-mode";
 
-import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { PageHeader } from "@/components/ui/page-header";
-import { Pill } from "@/components/ui/pill";
-import { PillRow } from "@/components/ui/pill-row";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
-
 import { AppContainer } from "@/components/app-container";
 import { CommunityCard } from "@/components/community-card";
-import { CommunityCardSkeletons } from "@/components/skeletons/community-card-skeletons";
 
 export const Route = createFileRoute("/comunidades")({
   head: () => ({ meta: [{ title: texts.communities.seoTitle }] }),

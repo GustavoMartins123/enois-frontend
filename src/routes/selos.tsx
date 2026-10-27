@@ -2,14 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import { Button } from "@rede-enois/design-system/ui";
 import { ArrowRight, Award, GitPullRequest, ShieldCheck } from "lucide-react";
 
 import { contributorSealsApi } from "@/lib/api";
 import { ogMetas } from "@/lib/seo";
 
-import { Button } from "@/components/ui/button";
-
 import { AppContainer } from "@/components/app-container";
+import { ContributorLinkStatus } from "@/components/contributor-link-status";
 import { GithubIcon } from "@/components/icons/github";
 import { VerifiedContributorPrompt } from "@/components/verified-contributor-prompt";
 
@@ -65,7 +65,8 @@ function Selos() {
             </p>
           </header>
 
-          <VerifiedContributorPrompt />
+          <VerifiedContributorPrompt showConfirmed />
+          <ContributorLinkStatus />
 
           <section className="space-y-3">
             <h2 className="text-lg font-semibold tracking-tight">

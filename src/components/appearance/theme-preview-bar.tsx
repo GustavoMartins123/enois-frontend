@@ -2,10 +2,9 @@ import { Link } from "@tanstack/react-router";
 
 import { useThemePreviewStore } from "@/stores/theme-preview.store";
 import { texts } from "@/texts";
+import { Button } from "@rede-enois/design-system/ui";
 
 import { useCurrentUser } from "@/lib/current-user";
-
-import { Button } from "@/components/ui/button";
 
 export function ThemePreviewBar() {
   const active = useThemePreviewStore((state) => state.preview !== null);

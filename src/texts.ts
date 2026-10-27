@@ -186,6 +186,16 @@ export const texts = {
     title: "Aparência",
     description:
       "Escolha o tema e as cores do app. O tema acompanha a sua conta entre dispositivos; as cores finas valem neste.",
+    tabGlobal: "Tema global",
+    tabIdentity: "Identidade",
+    themesCollapse: "Recolher temas",
+    themesExpand: "Mostrar temas",
+    purchasedThemesTitle: "Temas adquiridos",
+    purchasedThemesHint: "Temas que você comprou na loja e pode aplicar de novo.",
+    purchasedThemesEmpty: "Você ainda não comprou temas na loja.",
+    purchasedThemeApply: "Aplicar tema",
+    purchasedThemeApplied: "Tema aplicado.",
+    purchasedThemeError: "Não foi possível aplicar o tema agora.",
     mode: "Modo",
     accentSection: "Cor de destaque",
     accentHint: "Botões, links, selos e o gradiente da marca.",
@@ -266,6 +276,10 @@ export const texts = {
       DISPLAY: "Display",
       PIXEL: "8-bit",
       GOTHIC: "Gótica",
+      CURSIVE: "Cursiva",
+      CONDENSED: "Condensada",
+      COMIC: "Comic",
+      SLAB: "Slab",
     },
     nameStyleThemesTitle: "Temas do nome",
     nameStyleThemesHint: "Misture fonte, cores e movimento com presets seguros.",
@@ -276,6 +290,12 @@ export const texts = {
       NEON: "Neon",
       GLITCH: "Glitch",
       CANDY: "Candy",
+      RETRO: "Retrô",
+      OCEAN: "Oceano",
+      SUNSET: "Pôr do sol",
+      MATRIX: "Matrix",
+      GOLD: "Dourado",
+      ICE: "Gelo",
     },
     nameStyleOtherColor: "Outra cor",
     nameStylePreview: "Prévia",
@@ -394,9 +414,27 @@ export const texts = {
         "Vincule sua conta GitHub para que o Énóis possa verificar PRs integrados nos repositórios oficiais. O vínculo não altera seu login nem sua verificação de identidade.",
       linkedAs: (login: string) => `Vinculado como @${login}`,
       lastSync: (date: string) => `Última sincronização: ${date}`,
-      neverSynced: "Ainda não sincronizou; os dados aparecem no próximo ciclo.",
-      syncStale: "Os dados podem estar desatualizados; a próxima sincronização atualiza.",
-      syncError: "A última sincronização falhou; os números podem estar desatualizados.",
+      neverSynced:
+        "Ainda não sincronizou. Use “Verificar contribuições” para buscar os dados agora.",
+      syncStale:
+        "Os dados podem estar desatualizados. Use “Verificar contribuições” para atualizar agora.",
+      syncError:
+        "A última sincronização falhou; os números podem estar desatualizados. Tente verificar de novo.",
+      syncNow: "Verificar contribuições",
+      syncing: "Verificando contribuições...",
+      syncEmpty:
+        "Nenhuma contribuição encontrada ainda. Se você já teve PR integrado ou issue qualificada, tente de novo em alguns instantes.",
+      syncFound: (contributions: number, issues: number) => {
+        const parts: string[] = [];
+        if (contributions > 0) {
+          parts.push(contributions === 1 ? "1 pull request" : `${contributions} pull requests`);
+        }
+        if (issues > 0) {
+          parts.push(issues === 1 ? "1 issue" : `${issues} issues`);
+        }
+        return `Verificação concluída: ${parts.join(" e ")}.`;
+      },
+      syncFailed: "Não foi possível verificar agora. Tente de novo em alguns minutos.",
       link: "Vincular GitHub",
       unlink: "Desvincular GitHub",
       linking: "Abrindo GitHub...",
@@ -850,6 +888,42 @@ export const texts = {
       resumeButton: "Enviar o currículo",
       resumeHint:
         "Sem LinkedIn? Suba o currículo: o app lê o arquivo e mostra a mesma prévia antes de salvar. Vale PDF (até 10 MB e 20 páginas) ou .txt/.md. Se for DOC/DOCX, exporte em PDF no seu editor.",
+    },
+    linkedinContacts: {
+      title: "Convidar contatos do LinkedIn",
+      hint: "O LinkedIn não entrega a sua lista de conexões pela API. Baixe o Connections.csv no arquivo de dados e envie aqui: o Énóis encontra quem já tem conta e manda a solicitação de conexão.",
+      import: "Enviar Connections.csv",
+      importHint:
+        "Aceita o CSV (ou o ZIP da exportação), até 5 MB. Só nome e e-mail são usados para encontrar a pessoa; empresa, cargo e URL são descartados.",
+      tooLarge: (mb: number) => `O arquivo passa de ${mb} MB.`,
+      importing: "Lendo seus contatos...",
+      loadError: "Não foi possível carregar os seus contatos do LinkedIn.",
+      retry: "Tentar de novo",
+      autoInvite: "Enviar convites automaticamente",
+      autoInviteHint:
+        "Ligado, cada contato importado que ainda não está conectado recebe uma solicitação sua. Quem tiver mais de um perfil com o mesmo nome fica de fora.",
+      autoOn: "Convite automático ligado: a fila está sendo enviada.",
+      autoOff: "Convite automático desligado. Os contatos já importados ficam na fila.",
+      summary: (contacts: number, invited: number) =>
+        `${contacts} ${contacts === 1 ? "contato importado" : "contatos importados"} · ` +
+        `${invited} ${invited === 1 ? "convite enviado" : "convites enviados"}`,
+      details: (detalhes: string) => `Também: ${detalhes}.`,
+      already: (count: number) => `${count} já ${count === 1 ? "era conexão" : "eram conexões"}`,
+      pending: (count: number) =>
+        `${count} já ${count === 1 ? "tinha pedido" : "tinham pedido"} para conectar`,
+      queued: (count: number) => `${count} na fila`,
+      missing: (count: number) => `${count} sem conta no Énóis`,
+      ambiguous: (count: number) => `${count} com nome ambíguo`,
+      skipped: (count: number) => `${count} não ${count === 1 ? "enviado" : "enviados"}`,
+      imported: (invited: number, queued: number) => {
+        const partes: string[] = [];
+        if (invited > 0)
+          partes.push(`${invited} ${invited === 1 ? "convite enviado" : "convites enviados"}`);
+        if (queued > 0) partes.push(`${queued} na fila`);
+        return partes.length > 0
+          ? `Contatos importados: ${partes.join(" e ")}.`
+          : "Contatos importados do LinkedIn.";
+      },
     },
     menu: {
       trigger: "Menu da conta",
@@ -1676,6 +1750,26 @@ export const texts = {
       micDenied: "Não foi possível usar o microfone. Confira a permissão do navegador.",
       mediaLimit: "Máximo de 4 mídias por comentário.",
       uploadFailed: "Não foi possível enviar a mídia. Tente de novo.",
+    },
+    notes: {
+      title: "Nota da comunidade",
+      verified: "Verificada pela comunidade",
+      add: "Adicionar nota de rodapé",
+      dialogTitle: "Nota de rodapé",
+      dialogDescription:
+        "Corrija ou contextualize este post. A nota vai para a moderação e só aparece depois de aprovada.",
+      warning:
+        "Enviar uma nota falsa reduz sua credibilidade. Uma nota aprovada não altera sua credibilidade.",
+      placeholder: "O que está incorreto ou falta neste post? Inclua o contexto ou a fonte.",
+      send: "Enviar para moderação",
+      sending: "Enviando...",
+      sent: "Nota enviada para moderação.",
+      error: "Não foi possível enviar a nota.",
+      pending: "Sua nota está em análise pela moderação.",
+      discarded: "Outra nota foi aprovada para este post; a sua foi descartada sem penalidade.",
+      denied: (reason: string) => `Sua nota foi negada: ${reason}`,
+      ownPost: "Você não pode adicionar nota ao próprio post.",
+      close: "Fechar",
     },
     video: {
       playerTitle: "Vídeo do post",
@@ -3493,6 +3587,8 @@ export const texts = {
       monitoring: "Monitorabilidade",
       contributors: "Contribuintes",
       githubContributions: "Contribuições GitHub",
+      pulls: "Pull requests",
+      notes: "Notas",
       suspicious: "Contas suspeitas",
       suspiciousPosts: "Posts suspeitos",
     },
@@ -3719,6 +3815,49 @@ export const texts = {
       image: "Abrir print anexado",
       noMessage: "Sem mensagem.",
       githubIssue: "Issue no GitHub",
+      threadTitle: "Conversa",
+      threadHint: "Respostas daqui também são publicadas na issue do GitHub.",
+      threadEmpty: "Nenhuma resposta ainda.",
+      threadGithub: "GitHub",
+      threadEnos: "Énóis",
+      threadError: "Não foi possível carregar a conversa.",
+    },
+    notes: {
+      title: "Notas de rodapé",
+      description:
+        "Correções enviadas pela comunidade. Só uma nota é aprovada por post — aprovar descarta as outras pendentes sem penalidade. Negar mantém oculta e reduz a credibilidade de quem enviou.",
+      empty: "Nenhuma nota pendente.",
+      approve: "Aprovar",
+      reject: "Negar",
+      reasonLabel: "Motivo da negação",
+      reasonPlaceholder: "Explique por que a nota é falsa ou não se aplica...",
+      confirmReject: "Confirmar negação",
+      cancel: "Cancelar",
+      openPost: "Abrir post",
+      approved: "Nota aprovada e publicada.",
+      denied: "Nota negada.",
+      error: "Não foi possível revisar a nota.",
+    },
+    pulls: {
+      title: "Pull requests abertos",
+      description:
+        "PRs abertos nos repositórios oficiais. Aprovar ou pedir mudanças envia a revisão para o GitHub em nome de quem revisa quando o vínculo tem permissão de escrita.",
+      empty: "Nenhum PR aberto agora.",
+      error: "Não foi possível carregar os PRs.",
+      approve: "Aprovar",
+      requestChanges: "Pedir mudanças",
+      cancel: "Cancelar",
+      commentLabel: "O que precisa mudar",
+      commentPlaceholder: "Explique o que precisa mudar antes de pedir alterações...",
+      send: "Enviar revisão",
+      approved: "PR aprovado.",
+      changesRequested: "Mudanças solicitadas.",
+      reviewError: "Não foi possível enviar a revisão. Confira a permissão do seu GitHub.",
+      writeHint:
+        "Para revisar em seu nome — e não como o bot do Énóis — conecte o GitHub com permissão de escrita.",
+      connectWrite: "Conectar GitHub com permissão de escrita",
+      openOnGithub: "Abrir no GitHub",
+      by: (login: string) => `por @${login}`,
     },
     emails: {
       title: "E-mails enviados",
@@ -4047,6 +4186,7 @@ export const texts = {
     title: "Carteira & estilo",
     subtitle: "Suas faíscas, suas escolhas.",
     walletTab: "Carteira",
+    marketplaceTab: "Marketplace",
     storeTab: "Loja",
     ownedTab: "Minhas molduras",
     cosmetics: "Molduras de avatar",
@@ -4502,7 +4642,15 @@ export const texts = {
       close: "Agora não",
       formTitle: "Confirme seus dados",
       formHint: "É o mesmo formulário da landing; o GitHub já comprovou a contribuição.",
+      confirmedTitle: "Seus dados de contribuinte já estão confirmados",
+      confirmedDescription:
+        "A contribuição foi verificada pelo GitHub e seus dados já aparecem no painel de contribuintes. Não há mais nada para preencher.",
     },
+    pendingTitle: "GitHub vinculado, contribuição ainda não verificada",
+    pendingDescription: (login: string) =>
+      `Vinculado como @${login}. Ainda não encontramos nenhum pull request integrado ou issue qualificada nos repositórios elegíveis. Se você acabou de contribuir, verifique de novo.`,
+    pendingError: "A última verificação falhou; tente de novo agora.",
+    pendingNotLinked: "Vincule sua conta do GitHub na tela de Segurança para começar.",
     cta: "Vincular GitHub",
     ctaHint: "É preciso ter uma conta no Énóis e entrar antes de vincular.",
   },

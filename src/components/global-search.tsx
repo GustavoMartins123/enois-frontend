@@ -6,11 +6,10 @@ import { useNavigate } from "@tanstack/react-router";
 import { texts } from "@/texts";
 import type { SearchResult } from "@/types/application/search/search-result";
 import { navigateToHref } from "@/utils/navigation";
+import { Input } from "@rede-enois/design-system/ui";
 import { Loader2, Search } from "lucide-react";
 
 import { searchApi } from "@/lib/api";
-
-import { Input } from "@/components/ui/input";
 
 import { GlobalSearchResults } from "./global-search-results";
 

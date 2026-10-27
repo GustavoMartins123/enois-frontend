@@ -4,14 +4,10 @@ import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { ContributionFormProps } from "@/types/components/contribution-form-props";
+import { Button, Input, Label, Textarea } from "@rede-enois/design-system/ui";
 import { CheckCircle2, Loader2 } from "lucide-react";
 
 import { ApiError, contributorsApi } from "@/lib/api";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 

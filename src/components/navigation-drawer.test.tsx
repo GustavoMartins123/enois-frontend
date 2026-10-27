@@ -12,7 +12,8 @@ import { NavigationDrawer } from "./navigation-drawer";
 // do Radix é provado à parte, no navegador.
 vi.mock("./navigation-links", () => ({ NavigationLinks: () => <nav /> }));
 vi.mock("./app-brand", () => ({ AppBrand: () => <span /> }));
-vi.mock("@/components/ui/sheet", () => ({
+vi.mock("@rede-enois/design-system/ui", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@rede-enois/design-system/ui")>()),
   Sheet: ({ children, open }: { children: ReactNode; open: boolean }) =>
     open ? <div>{children}</div> : null,
   SheetContent: ({ children }: { children: ReactNode }) => <div>{children}</div>,

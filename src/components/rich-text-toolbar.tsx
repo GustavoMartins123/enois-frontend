@@ -1,6 +1,7 @@
 import { texts } from "@/texts";
 import type { RichTextToolbarProps } from "@/types/components/rich-text-toolbar/props";
 import type { RichTextFormat } from "@/types/lib/rich-text/rich-text-format";
+import { EmojiPicker } from "@rede-enois/design-system/ui";
 import {
   Bold,
   Code,
@@ -14,8 +15,6 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-
-import { EmojiPicker } from "@/components/ui/emoji-picker";
 
 const ACTIONS: { format: RichTextFormat; label: string; icon: typeof Bold }[] = [
   { format: "bold", label: texts.posts.formatting.bold, icon: Bold },

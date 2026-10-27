@@ -4,13 +4,13 @@ import { REACTION_EMOJIS } from "@/constants/reaction-emojis";
 import { texts } from "@/texts";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { MessageBubbleProps } from "@/types/routes/messages/message-bubble-props";
-import { Check, CheckCheck, Smile } from "lucide-react";
+import { UserAvatar } from "@rede-enois/design-system/domain";
+import { Check, CheckCheck, Flag, Smile } from "lucide-react";
 
 import { formatTime } from "@/components/post/format-time";
 import { MediaGrid } from "@/components/post/media-grid";
 import { ReactionPicker } from "@/components/post/reaction-picker";
 import { RichText } from "@/components/post/rich-text";
-import { UserAvatar } from "@/components/user-avatar";
 import { UserBadges } from "@/components/user-badge";
 
 /** Um balão da conversa: avatar do outro, texto, mídia, hora e reações. */
@@ -24,6 +24,7 @@ export function MessageBubble({
   onToggleSelect,
   onReact,
   readByOther = false,
+  onReport,
 }: MessageBubbleProps) {
   return (
     <div
@@ -130,6 +131,17 @@ export function MessageBubble({
           >
             <Smile className="h-3.5 w-3.5" />
           </ReactionPicker>
+
+          {!isMe && onReport && (
+            <button
+              type="button"
+              onClick={onReport}
+              className="inline-flex h-6 w-6 items-center justify-center rounded-full text-text-subtle transition hover:bg-destructive/10 hover:text-destructive"
+              title="Denunciar mensagem"
+            >
+              <Flag className="h-3 w-3" />
+            </button>
+          )}
         </div>
       </div>
     </div>

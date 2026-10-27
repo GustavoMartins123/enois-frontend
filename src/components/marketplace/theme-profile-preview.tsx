@@ -1,8 +1,7 @@
 import { useThemePreviewStore } from "@/stores/theme-preview.store";
 import { texts } from "@/texts";
 import type { ThemeProfilePreviewProps } from "@/types/components/marketplace/theme-profile-preview-props";
-
-import { Button } from "@/components/ui/button";
+import { Button } from "@rede-enois/design-system/ui";
 
 export function ThemeProfilePreview({ theme, title }: ThemeProfilePreviewProps) {
   const startPreview = useThemePreviewStore((state) => state.startPreview);

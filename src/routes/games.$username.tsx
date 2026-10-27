@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import { UserAvatar } from "@rede-enois/design-system/domain";
+import { Button } from "@rede-enois/design-system/ui";
 import { ExternalLink, Gamepad2, Users } from "lucide-react";
 
 import { gamesApi } from "@/lib/api";
@@ -9,11 +11,8 @@ import { resolveCdnUrl } from "@/lib/api/media";
 import { safeHref } from "@/lib/safe-url";
 import { useAuth } from "@/lib/use-auth";
 
-import { Button } from "@/components/ui/button";
-
 import { AppContainer } from "@/components/app-container";
 import { GameIcon } from "@/components/game-icon";
-import { UserAvatar } from "@/components/user-avatar";
 import { UserBadges } from "@/components/user-badge";
 
 export const Route = createFileRoute("/games/$username")({

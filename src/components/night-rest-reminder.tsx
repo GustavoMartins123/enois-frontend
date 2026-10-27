@@ -4,20 +4,19 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { Moon } from "lucide-react";
-
-import { preferencesApi } from "@/lib/api";
-import { nightKey, shouldShowNightRest } from "@/lib/night-rest";
-import { usePersonalization } from "@/lib/use-personalization";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@rede-enois/design-system/ui";
+import { Moon } from "lucide-react";
+
+import { preferencesApi } from "@/lib/api";
+import { nightKey, shouldShowNightRest } from "@/lib/night-rest";
+import { usePersonalization } from "@/lib/use-personalization";
 
 /**
  * Popup de cuidado ao abrir o feed entre 00:00 e 04:59 no relógio do aparelho.

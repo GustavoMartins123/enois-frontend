@@ -1,9 +1,16 @@
 import { texts } from "@/texts";
 import type { PostOwnerMenuProps } from "@/types/components/post/post-owner-menu-props";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@rede-enois/design-system/ui";
 import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 const triggerClassName =
   "rounded-lg p-1.5 text-muted-foreground transition hover:bg-muted hover:text-foreground";

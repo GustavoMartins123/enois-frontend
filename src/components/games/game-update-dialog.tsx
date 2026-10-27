@@ -4,21 +4,20 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { GameView } from "@/types/application/games/game-view";
-
-import { gamesApi } from "@/lib/api";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
+  Input,
+  Label,
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
+
+import { gamesApi } from "@/lib/api";
 
 /**
  * "Novidades/atualizações": o criador conta o que mudou nesta versão e quem acompanha o criador

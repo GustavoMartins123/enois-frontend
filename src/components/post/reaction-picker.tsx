@@ -3,8 +3,7 @@ import { type PointerEvent as ReactPointerEvent, useEffect, useRef, useState } f
 import { REACTION_EMOJIS } from "@/constants/reaction-emojis";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { ReactionPickerProps } from "@/types/components/post/reaction-picker-props";
-
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@rede-enois/design-system/ui";
 
 /** Quanto tempo de pressão abre o seletor em modo arrastar (o toque curto segue abrindo por clique). */
 const HOLD_MS = 400;

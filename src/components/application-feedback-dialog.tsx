@@ -2,11 +2,15 @@ import { useState } from "react";
 
 import { texts } from "@/texts";
 import type { ApplicationFeedbackDialogProps } from "@/types/components/job/application-feedback-dialog-props";
-
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  Label,
+  Textarea,
+} from "@rede-enois/design-system/ui";
 
 /** Teto do retorno — o mesmo do backend (`feedback` varchar(1000)). */
 const MAX_FEEDBACK = 1000;

@@ -1,4 +1,6 @@
+import type { AuthorContributorTag } from "@/types/application/profile/author-contributor-tag";
 import type { AuthorNameStyle } from "@/types/application/profile/author-name-style";
+import type { ReactionSummary } from "@/types/application/reaction/reaction-summary";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
 
 export type CommentView = {
@@ -14,6 +16,8 @@ export type CommentView = {
   authorBadge?: string | null;
   /** Personalização do nome do autor (tema/fonte/cor); ausente = padrão. */
   authorStyle?: AuthorNameStyle | null;
+  /** Tag "Contribuinte" quando o autor tem selo ativo. */
+  authorContributor?: AuthorContributorTag | null;
   /** Todos os emblemas (até 5), na ordem escolhida. */
   authorBadges?: string[] | null;
   parentCommentId: string | null;
@@ -29,6 +33,8 @@ export type CommentView = {
   currentUserReaction?: ReactionType | null;
   /** Total de reações no comentário. */
   reactionCount?: number;
+  /** Contagem por tipo — é o que desenha as pílulas, igual ao post. */
+  reactionSummary?: ReactionSummary | null;
   /** Fixado no topo da lista do post (um por post). */
   pinned?: boolean;
 };

@@ -3,18 +3,17 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
-
-import { linkedInIntegrationApi } from "@/lib/api";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/toast";
+  useToast,
+} from "@rede-enois/design-system/ui";
+
+import { linkedInIntegrationApi } from "@/lib/api";
 
 const PENDING_KEY = "linkedin_link_pending";
 

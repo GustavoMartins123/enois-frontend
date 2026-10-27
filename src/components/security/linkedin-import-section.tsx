@@ -4,13 +4,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { LinkedinImportPreview } from "@/types/application/profile/linkedin-import-preview";
+import { Button, Textarea, useToast } from "@rede-enois/design-system/ui";
 import { ClipboardPaste, FileUp } from "lucide-react";
 
 import { preferencesApi, profileApi, projectsApi, resumeImportApi } from "@/lib/api";
 
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
+import { LinkedinContactsSection } from "./linkedin-contacts-section";
 
 /**
  * Importar o ARQUIVO DE DADOS do LinkedIn (Configurações → "Obter uma cópia dos seus
@@ -493,6 +492,10 @@ export function LinkedinImportSection({
           </div>
         </div>
       )}
+
+      {/* Contatos: o mesmo arquivo de dados traz o Connections.csv, e daí sai o convite
+          automático para quem já tem conta no Énóis. Só faz sentido com o LinkedIn vinculado. */}
+      {linkedinConectado && <LinkedinContactsSection />}
     </div>
   );
 }

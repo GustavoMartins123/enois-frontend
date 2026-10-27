@@ -6,6 +6,8 @@ import { Link } from "@tanstack/react-router";
 import { texts } from "@/texts";
 import type { AccountMenuProps } from "@/types/components/account/account-menu-props";
 import type { ActiveIdentity } from "@/types/lib/active-identity";
+import { UserAvatar } from "@rede-enois/design-system/domain";
+import { Popover, PopoverContent, PopoverTrigger, useToast } from "@rede-enois/design-system/ui";
 import {
   Flag,
   Gavel,
@@ -35,16 +37,12 @@ import { corporateApi, profileApi } from "@/lib/api";
 import { logout } from "@/lib/logout";
 import { cn } from "@/lib/utils";
 
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useToast } from "@/components/ui/toast";
-
 import { ChangeEmailDialog } from "./change-email-dialog";
 import { ChangePasswordDialog } from "./change-password-dialog";
 import { DeleteAccountDialog } from "./delete-account-dialog";
 import { HealthyUsageDialog } from "./healthy-usage/healthy-usage-dialog";
 import { LinkedAccountsDialog } from "./linked-accounts-dialog";
 import { PushToggle } from "./push-toggle";
-import { UserAvatar } from "./user-avatar";
 
 const ITEM_CLASS =
   "flex w-full items-center gap-2 px-4 py-2 text-left text-sm font-normal text-text-strong transition hover:bg-surface-2 disabled:opacity-50";
@@ -217,7 +215,12 @@ export function AccountMenu({ profile }: AccountMenuProps) {
               <>{texts.account.menu.wallet}</>
             </Link>
 
-            <Link to="/marketplace" onClick={() => setMenuOpen(false)} className={ITEM_CLASS}>
+            <Link
+              to="/carteira"
+              search={{ tab: "marketplace" }}
+              onClick={() => setMenuOpen(false)}
+              className={ITEM_CLASS}
+            >
               <Store className="h-4 w-4" />
 
               <>Marketplace</>

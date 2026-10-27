@@ -4,11 +4,9 @@ import { texts } from "@/texts";
 import type { NotificationItemProps } from "@/types/components/notification/notification-item-props";
 import { navigateToHref } from "@/utils/navigation";
 import { formatNotificationTime } from "@/utils/notification-time";
+import { StyledName, UserAvatar } from "@rede-enois/design-system/domain";
 
 import { cn } from "@/lib/utils";
-
-import { StyledName } from "@/components/styled-name";
-import { UserAvatar } from "@/components/user-avatar";
 
 import { notificationMeta } from "./notification-meta";
 

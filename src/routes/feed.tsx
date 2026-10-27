@@ -15,6 +15,17 @@ import type { ActiveIdentity } from "@/types/lib/active-identity";
 import type { ComposerActionProps } from "@/types/routes/feed/composer-action-props";
 import type { HomeTab } from "@/types/routes/feed/home-tab";
 import type { MediaItem } from "@/types/routes/feed/media-item";
+import { StyledName, UserAvatar } from "@rede-enois/design-system/domain";
+import {
+  Button,
+  EmptyState,
+  Input,
+  LoadingState,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  useToast,
+} from "@rede-enois/design-system/ui";
 import {
   ArrowUp,
   BarChart3,
@@ -52,13 +63,6 @@ import { useLiteMode } from "@/lib/use-lite-mode";
 import { useMediaUpload } from "@/lib/use-media-upload";
 import { cn } from "@/lib/utils";
 
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/loading-state";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useToast } from "@/components/ui/toast";
-
 import { ApoieCard } from "@/components/apoie-card";
 import { AppContainer } from "@/components/app-container";
 import { TodayGamesCard } from "@/components/games/today-games-card";
@@ -71,8 +75,6 @@ import { PlatformSpacesCard } from "@/components/platform-spaces-card";
 import { PostCard } from "@/components/post-card";
 import { SpoilerPreview } from "@/components/post/spoiler-preview";
 import { PostCardSkeletons } from "@/components/skeletons/post-card-skeletons";
-import { StyledName } from "@/components/styled-name";
-import { UserAvatar } from "@/components/user-avatar";
 
 /** Abas válidas da tela inicial (a URL carrega a escolhida). */
 const HOME_TABS: HomeTab[] = ["ALL", "FOR_YOU", "UNSEEN", "TRENDING", "CORPORATE"];
@@ -218,7 +220,7 @@ function Home() {
   // página anterior, e não passeando pelas abas).
   const { aba } = Route.useSearch();
   const navigate = Route.useNavigate();
-  const tab: HomeTab = aba ?? "FOR_YOU";
+  const tab: HomeTab = aba ?? "ALL";
   const setTab = (next: HomeTab) => {
     if (next === tab) return;
     void navigate({ search: { aba: next }, replace: true });
@@ -787,7 +789,7 @@ function Home() {
                   )}
 
                   {typePickerOpen && (
-                    <div className="absolute bottom-full left-0 z-40 mb-1 w-[min(22rem,80vw)] rounded-2xl border border-border-soft bg-popover p-2 shadow-lg">
+                    <div className="absolute bottom-full right-0 z-40 mb-1 max-h-[60vh] w-[min(22rem,80vw)] overflow-y-auto rounded-2xl border border-border-soft bg-popover p-2 shadow-lg sm:left-0 sm:right-auto">
                       <div className="flex flex-wrap gap-1.5">
                         {availableTypes.map((option) => (
                           <ComposerAction

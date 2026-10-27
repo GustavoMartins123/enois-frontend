@@ -15,6 +15,17 @@ import type { LoginFormProps } from "@/types/routes/auth/login-form-props";
 import type { SocialButtonsProps } from "@/types/routes/auth/social-buttons-props";
 import type { TabBtnProps } from "@/types/routes/auth/tab-btn-props";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
+import {
+  Button,
+  DateTextInput,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
+  PasswordInput,
+} from "@rede-enois/design-system/ui";
 import { ArrowRight, Loader2, MailCheck, ShieldCheck } from "lucide-react";
 import { z } from "zod";
 
@@ -24,13 +35,6 @@ import { ogMetas } from "@/lib/seo";
 import { storeSession } from "@/lib/session";
 import { twoFactorLockedMessage } from "@/lib/two-factor-locked";
 import { useAuthConfig } from "@/lib/use-auth-config";
-
-import { Button } from "@/components/ui/button";
-import { DateTextInput } from "@/components/ui/date-text-input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { PasswordInput } from "@/components/ui/password-input";
 
 import { AuthHero } from "@/components/auth-hero";
 import { ErrorBanner } from "@/components/error-banner";
@@ -669,6 +673,19 @@ function LoginForm({ onDone, onForgot }: LoginFormProps) {
       }
 
       storeSession(result);
+      // E2E: se não tem keypair local, tenta setup ou restore (fire-and-forget).
+      import("@/lib/e2e/key-manager").then(
+        async ({ hasLocalKeys, generateAndUpload, restoreFromBackup }) => {
+          try {
+            if (await hasLocalKeys()) return;
+            await restoreFromBackup(parsed.data.password).catch(() =>
+              generateAndUpload(parsed.data.password),
+            );
+          } catch {
+            // E2E setup falhou — não impede o login.
+          }
+        },
+      );
       onDone();
     } catch (err) {
       if (err instanceof ApiError && err.code === "EMAIL_NOT_VERIFIED") {
@@ -916,7 +933,13 @@ function PasswordExpiredForm({ resetToken, onDone }: { resetToken: string; onDon
     setError(null);
     setLoading(true);
     try {
-      await authApi.resetPassword(resetToken, password);
+      const result = await authApi.resetPassword(resetToken, password);
+      // Backend retorna sessao quando o reset veio de senha expirada (auto-login).
+      if ("user" in result) {
+        storeSession(result as never);
+        window.location.href = "/feed";
+        return;
+      }
       setSuccess(true);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t.error);
@@ -951,11 +974,24 @@ function PasswordExpiredForm({ resetToken, onDone }: { resetToken: string; onDon
 
       <form onSubmit={submit} className="mt-6 space-y-4" noValidate>
         <Field label={t.newPassword}>
-          <Input name="password" type="password" autoFocus minLength={8} required />
+          <Input
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            autoFocus
+            minLength={8}
+            required
+          />
         </Field>
 
         <Field label={t.confirm}>
-          <Input name="confirm" type="password" minLength={8} required />
+          <Input
+            name="confirm"
+            type="password"
+            autoComplete="new-password"
+            minLength={8}
+            required
+          />
         </Field>
         {error && <p className="text-sm text-destructive">{error}</p>}
         <Button type="submit" className="w-full" disabled={loading}>

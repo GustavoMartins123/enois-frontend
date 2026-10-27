@@ -2,20 +2,19 @@ import { useEffect, useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 
-import { Copy, Download } from "lucide-react";
-
-import { marketplaceApi } from "@/lib/api";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
+import { Copy, Download } from "lucide-react";
+
+import { marketplaceApi } from "@/lib/api";
 
 /**
  * Conteúdo de uma compra: o comprador edita os textos aqui mesmo e copia o HTML.

@@ -10,6 +10,7 @@ import {
 
 import { texts } from "@/texts";
 import type { GamePlayerProps } from "@/types/components/games/game-player-props";
+import { Button, useToast } from "@rede-enois/design-system/ui";
 import { ExternalLink, Gamepad2, Loader2, Maximize2, RotateCcw } from "lucide-react";
 
 import { SLOW_LOADING_MS, initialPlayerState, playerReducer } from "@/lib/games/game-player-state";
@@ -21,9 +22,6 @@ import {
   parseGameMessage,
 } from "@/lib/games/game-protocol";
 import { cn } from "@/lib/utils";
-
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
 
 const subscribeNothing = () => () => {};
 const MOBILE_HINT_MS = 3000;

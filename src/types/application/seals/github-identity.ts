@@ -7,4 +7,6 @@ export type GitHubIdentity = {
   lastSyncedAt: string | null;
   syncState: GitHubSyncState | null;
   lastSyncError: string | null;
+  /** Token com escopo de escrita guardado (revisa PRs/responde issues em nome da pessoa). */
+  writeAccess?: boolean;
 };
