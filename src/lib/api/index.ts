@@ -35,7 +35,7 @@ export { marketplaceApi } from "./marketplace";
 export { themesApi } from "./themes";
 export { cosmeticsApi } from "./cosmetics";
 export { walletApi } from "./wallet";
-export { linkedInIntegrationApi } from "./linkedin";
+export { linkedInIntegrationApi, linkedinContactsApi } from "./linkedin";
 export { lojaApi } from "./loja";
 export { rankingApi } from "./ranking";
 export { usersApi } from "./users";

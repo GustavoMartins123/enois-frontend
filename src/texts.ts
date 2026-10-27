@@ -889,6 +889,40 @@ export const texts = {
       resumeHint:
         "Sem LinkedIn? Suba o currículo: o app lê o arquivo e mostra a mesma prévia antes de salvar. Vale PDF (até 10 MB e 20 páginas) ou .txt/.md. Se for DOC/DOCX, exporte em PDF no seu editor.",
     },
+    linkedinContacts: {
+      title: "Convidar contatos do LinkedIn",
+      hint: "O LinkedIn não entrega a sua lista de conexões pela API. Baixe o Connections.csv no arquivo de dados e envie aqui: o Énóis encontra quem já tem conta e manda a solicitação de conexão.",
+      import: "Enviar Connections.csv",
+      importHint:
+        "Aceita o CSV (ou o ZIP da exportação), até 5 MB. Só nome e e-mail são usados para encontrar a pessoa; empresa, cargo e URL são descartados.",
+      tooLarge: (mb: number) => `O arquivo passa de ${mb} MB.`,
+      importing: "Lendo seus contatos...",
+      autoInvite: "Enviar convites automaticamente",
+      autoInviteHint:
+        "Ligado, cada contato importado que ainda não está conectado recebe uma solicitação sua. Quem tiver mais de um perfil com o mesmo nome fica de fora.",
+      autoOn: "Convite automático ligado: a fila está sendo enviada.",
+      autoOff: "Convite automático desligado. Os contatos já importados ficam na fila.",
+      summary: (contacts: number, invited: number) =>
+        `${contacts} ${contacts === 1 ? "contato importado" : "contatos importados"} · ` +
+        `${invited} ${invited === 1 ? "convite enviado" : "convites enviados"}`,
+      details: (detalhes: string) => `Também: ${detalhes}.`,
+      already: (count: number) => `${count} já ${count === 1 ? "era conexão" : "eram conexões"}`,
+      pending: (count: number) =>
+        `${count} já ${count === 1 ? "tinha pedido" : "tinham pedido"} para conectar`,
+      queued: (count: number) => `${count} na fila`,
+      missing: (count: number) => `${count} sem conta no Énóis`,
+      ambiguous: (count: number) => `${count} com nome ambíguo`,
+      skipped: (count: number) => `${count} não ${count === 1 ? "enviado" : "enviados"}`,
+      imported: (invited: number, queued: number) => {
+        const partes: string[] = [];
+        if (invited > 0)
+          partes.push(`${invited} ${invited === 1 ? "convite enviado" : "convites enviados"}`);
+        if (queued > 0) partes.push(`${queued} na fila`);
+        return partes.length > 0
+          ? `Contatos importados: ${partes.join(" e ")}.`
+          : "Contatos importados do LinkedIn.";
+      },
+    },
     menu: {
       trigger: "Menu da conta",
       profile: "Ver perfil",

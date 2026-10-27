@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/toast";
 
+import { LinkedinContactsSection } from "./linkedin-contacts-section";
+
 /**
  * Importar o ARQUIVO DE DADOS do LinkedIn (Configurações → "Obter uma cópia dos seus
  * dados" → ZIP). O backend parseia e DEVOLVE o retrato; nada é salvo automaticamente —
@@ -493,6 +495,10 @@ export function LinkedinImportSection({
           </div>
         </div>
       )}
+
+      {/* Contatos: o mesmo arquivo de dados traz o Connections.csv, e daí sai o convite
+          automático para quem já tem conta no Énóis. Só faz sentido com o LinkedIn vinculado. */}
+      {linkedinConectado && <LinkedinContactsSection />}
     </div>
   );
 }
