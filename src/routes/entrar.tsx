@@ -888,7 +888,17 @@ function PasswordExpiredForm({ resetToken, onDone }: { resetToken: string; onDon
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const t = texts.auth.passwordExpired;
+  const t = {
+    title: "Atualize sua senha",
+    description:
+      "De acordo com a nossa nova política de segurança, selecione uma nova senha para continuar.",
+    newPassword: "Nova senha",
+    confirm: "Confirmar nova senha",
+    action: "Salvar nova senha",
+    mismatch: "As senhas não coincidem.",
+    success: "Senha atualizada. Faça login com a nova senha.",
+    error: "Não foi possível atualizar a senha. Tente novamente.",
+  };
 
   const submit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
