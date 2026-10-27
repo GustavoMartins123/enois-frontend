@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { Award, Link2, Link2Off, Loader2 } from "lucide-react";
+import { Award, Link2, Link2Off, Loader2, RefreshCw } from "lucide-react";
 
 import { ApiError, authApi, contributorSealsApi } from "@/lib/api";
 import { dataEHora } from "@/lib/date/format";
@@ -39,9 +39,19 @@ export function GitHubLinkCard() {
     },
   });
 
+  const sync = useMutation({
+    mutationFn: () => contributorSealsApi.sync(),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ["me", "github"] });
+      void queryClient.invalidateQueries({ queryKey: ["contributors", "me"] });
+      void queryClient.invalidateQueries({ queryKey: ["contributor-seals"] });
+    },
+  });
+
   const error = link.error ?? unlink.error;
   const notConfigured =
     link.error instanceof ApiError && link.error.code === "OAUTH_NOT_CONFIGURED";
+  const checkedContributions = (sync.data?.contributions ?? 0) + (sync.data?.issues ?? 0);
 
   return (
     <section className="surface-card space-y-3 p-4">
@@ -97,6 +107,40 @@ export function GitHubLinkCard() {
                   ? texts.auth.githubLink.syncStale
                   : texts.auth.githubLink.lastSync(dataEHora(data.lastSyncedAt))}
           </p>
+
+          <Button
+            size="sm"
+            variant="outline"
+            className="rounded-full gap-1.5"
+            disabled={sync.isPending}
+            onClick={() => sync.mutate()}
+          >
+            {sync.isPending ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <RefreshCw className="h-3.5 w-3.5" />
+            )}
+
+            <>{sync.isPending ? texts.auth.githubLink.syncing : texts.auth.githubLink.syncNow}</>
+          </Button>
+
+          {sync.isSuccess && (
+            <p
+              className={
+                sync.data.rateLimited ? "text-xs text-amber-600" : "text-xs text-text-subtle"
+              }
+            >
+              {sync.data.rateLimited
+                ? texts.auth.githubLink.syncFailed
+                : checkedContributions > 0
+                  ? texts.auth.githubLink.syncFound(sync.data.contributions, sync.data.issues)
+                  : texts.auth.githubLink.syncEmpty}
+            </p>
+          )}
+
+          {sync.isError && (
+            <p className="text-xs text-destructive">{texts.auth.githubLink.syncFailed}</p>
+          )}
         </div>
       ) : (
         <Button
