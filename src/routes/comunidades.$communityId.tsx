@@ -32,7 +32,6 @@ import {
 import { communitiesApi, feedApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { buildShareTags } from "@/lib/open-graph";
-import { safeBlobSrc } from "@/lib/safe-blob-src";
 import { useAuth } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
@@ -707,11 +706,7 @@ function CommunityDetail() {
                       label={texts.posts.mediaSpoiler.badge}
                       className="h-full w-full"
                     >
-                      <img
-                        src={safeBlobSrc(item.preview)}
-                        alt=""
-                        className="h-full w-full object-cover"
-                      />
+                      <img src={item.preview} alt="" className="h-full w-full object-cover" />
                     </SpoilerPreview>
 
                     <button

@@ -26,8 +26,7 @@ export function withImageKitOriginal(url: string | null | undefined): string | u
   if (!resolved) return undefined;
   try {
     const parsed = new URL(resolved);
-    if (parsed.hostname !== "ik.imagekit.io" && !parsed.hostname.endsWith(".imagekit.io"))
-      return resolved;
+    if (!parsed.hostname.endsWith("imagekit.io")) return resolved;
     if (!parsed.searchParams.has("tr")) parsed.searchParams.set("tr", "orig-true");
     return parsed.toString();
   } catch {
