@@ -18,6 +18,7 @@ import {
   FolderKanban,
   Gamepad2,
   Gavel,
+  GitPullRequest,
   History,
   LifeBuoy,
   Mail,
@@ -48,6 +49,7 @@ import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { AppealsSection } from "@/components/moderation/appeals-section";
+import { ContributionsSection } from "@/components/moderation/contributions-section";
 import { ContributorsSection } from "@/components/moderation/contributors-section";
 import { DisputesSection } from "@/components/moderation/disputes-section";
 import { EmailLogSection } from "@/components/moderation/email-log-section";
@@ -55,6 +57,7 @@ import { GamesReviewSection } from "@/components/moderation/games-review-section
 import { MonitoringSection } from "@/components/moderation/monitoring-section";
 import { PanicModeSection } from "@/components/moderation/panic-mode-section";
 import { ProjectsReviewSection } from "@/components/moderation/projects-review-section";
+import { PullRequestsSection } from "@/components/moderation/pull-requests-section";
 import { SupportTicketsSection } from "@/components/moderation/support-tickets-section";
 import { SuspiciousPostsSection } from "@/components/moderation/suspicious-posts-section";
 import { SuspiciousUsersSection } from "@/components/moderation/suspicious-users-section";
@@ -72,6 +75,7 @@ const ALL_TABS: { id: ModeratorTabId; label: string; icon: typeof Flag; adminOnl
   { id: "projects", label: texts.moderator.tabs.projects, icon: FolderKanban, adminOnly: false },
   { id: "support", label: texts.moderator.tabs.support, icon: LifeBuoy, adminOnly: false },
   { id: "issues", label: texts.moderator.tabs.issues, icon: Bug, adminOnly: false },
+  { id: "pulls", label: texts.moderator.tabs.pulls, icon: GitPullRequest, adminOnly: false },
   { id: "history", label: texts.moderator.tabs.history, icon: History, adminOnly: false },
   { id: "appeals", label: texts.moderator.tabs.appeals, icon: ShieldAlert, adminOnly: false },
   { id: "disputes", label: texts.moderator.tabs.disputes, icon: Scale, adminOnly: false },
@@ -111,9 +115,9 @@ const ALL_TABS: { id: ModeratorTabId; label: string; icon: typeof Flag; adminOnl
     adminOnly: true,
   },
   {
-    id: "contributors",
-    label: texts.moderator.tabs.contributors,
-    icon: Users,
+    id: "githubContributions",
+    label: texts.moderator.tabs.githubContributions,
+    icon: GitPullRequest,
     adminOnly: true,
   },
 ];
@@ -249,6 +253,8 @@ function Moderador() {
             {canModerate && activeTab === "emails" && <EmailLogSection />}
             {canModerate && activeTab === "monitoring" && <MonitoringSection />}
             {me.admin && activeTab === "contributors" && <ContributorsSection />}
+            {me.admin && activeTab === "githubContributions" && <ContributionsSection />}
+            {canModerate && activeTab === "pulls" && <PullRequestsSection />}
           </div>
         ) : (
           <ApplicationSection me={me} />

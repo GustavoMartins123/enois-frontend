@@ -71,6 +71,7 @@ import { PlatformSpacesCard } from "@/components/platform-spaces-card";
 import { PostCard } from "@/components/post-card";
 import { SpoilerPreview } from "@/components/post/spoiler-preview";
 import { PostCardSkeletons } from "@/components/skeletons/post-card-skeletons";
+import { StyledName } from "@/components/styled-name";
 import { UserAvatar } from "@/components/user-avatar";
 
 /** Abas válidas da tela inicial (a URL carrega a escolhida). */
@@ -786,7 +787,7 @@ function Home() {
                   )}
 
                   {typePickerOpen && (
-                    <div className="absolute bottom-full left-0 z-40 mb-1 w-[min(22rem,80vw)] rounded-2xl border border-border-soft bg-popover p-2 shadow-lg">
+                    <div className="absolute bottom-full right-0 z-40 mb-1 max-h-[60vh] w-[min(22rem,80vw)] overflow-y-auto rounded-2xl border border-border-soft bg-popover p-2 shadow-lg sm:left-0 sm:right-auto">
                       <div className="flex flex-wrap gap-1.5">
                         {availableTypes.map((option) => (
                           <ComposerAction
@@ -1172,7 +1173,7 @@ function Home() {
                         params={{ username: u.username }}
                         className="block truncate text-sm font-normal text-text-strong hover:underline"
                       >
-                        {u.name}
+                        <StyledName name={u.name} style={u.nameStyle} />
                       </Link>
 
                       <p className="truncate text-xs font-normal text-text-subtle">{u.headline}</p>
