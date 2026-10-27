@@ -5,12 +5,16 @@ import { GalaxiaFx } from "./galaxia";
 import { GlacialFx } from "./glacial";
 import { HologramaFx } from "./holograma";
 import { InfernoFx } from "./inferno";
+import { MareFx } from "./mare";
 import { NebulosaFx } from "./nebulosa";
 import { OrbitaFx } from "./orbita";
 import { PortalFx } from "./portal";
 import { SupernovaFx } from "./supernova";
 import { TempestadeFx } from "./tempestade";
 import { ToxicaFx } from "./toxica";
+import { TrepadeiraFx } from "./trepadeira";
+import { VagaLumesFx } from "./vaga-lumes";
+import { VendavalFx } from "./vendaval";
 
 /** As molduras com efeito; a lista de ids vive em FX_FRAMES (lib/avatar-frames). */
 const EFEITOS: Record<string, () => React.JSX.Element> = {
@@ -25,6 +29,10 @@ const EFEITOS: Record<string, () => React.JSX.Element> = {
   "moldura-galaxia": GalaxiaFx,
   "moldura-portal": PortalFx,
   "moldura-holograma": HologramaFx,
+  "moldura-mare": MareFx,
+  "moldura-trepadeira": TrepadeiraFx,
+  "moldura-vendaval": VendavalFx,
+  "moldura-vaga-lumes": VagaLumesFx,
 };
 
 /**
