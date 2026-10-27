@@ -14,7 +14,6 @@ import type { UserSearchResult } from "@/types/application/user/user-search-resu
 import type { Props } from "@/types/components/mention-textarea/props";
 import type { MentionListSide } from "@/types/lib/mentions/list-placement";
 import type { RichTextFormat } from "@/types/lib/rich-text/rich-text-format";
-import { UserAvatar } from "@rede-enois/design-system/domain";
 import { CharCounter } from "@rede-enois/design-system/ui";
 
 import { usersApi } from "@/lib/api";
@@ -28,6 +27,7 @@ import { applyFormat } from "@/lib/rich-text/apply-format";
 import { insertSnippet } from "@/lib/rich-text/insert-snippet";
 
 import { RichTextToolbar } from "@/components/rich-text-toolbar";
+import { UserAvatar } from "@/components/user-avatar";
 
 /** Altura mínima da caixa, em linhas de texto, para dar espaço de revisar o que foi escrito. */
 const MIN_ROWS = 4;

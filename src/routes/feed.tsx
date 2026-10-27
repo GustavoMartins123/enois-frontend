@@ -15,7 +15,7 @@ import type { ActiveIdentity } from "@/types/lib/active-identity";
 import type { ComposerActionProps } from "@/types/routes/feed/composer-action-props";
 import type { HomeTab } from "@/types/routes/feed/home-tab";
 import type { MediaItem } from "@/types/routes/feed/media-item";
-import { StyledName, UserAvatar } from "@rede-enois/design-system/domain";
+import { StyledName } from "@rede-enois/design-system/domain";
 import {
   Button,
   EmptyState,
@@ -75,6 +75,7 @@ import { PlatformSpacesCard } from "@/components/platform-spaces-card";
 import { PostCard } from "@/components/post-card";
 import { SpoilerPreview } from "@/components/post/spoiler-preview";
 import { PostCardSkeletons } from "@/components/skeletons/post-card-skeletons";
+import { UserAvatar } from "@/components/user-avatar";
 
 /** Abas válidas da tela inicial (a URL carrega a escolhida). */
 const HOME_TABS: HomeTab[] = ["ALL", "FOR_YOU", "UNSEEN", "TRENDING", "CORPORATE"];

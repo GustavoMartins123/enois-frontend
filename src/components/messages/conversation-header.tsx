@@ -3,13 +3,14 @@ import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { ConversationHeaderProps } from "@/types/routes/messages/conversation-header-props";
-import { StyledName, UserAvatar } from "@rede-enois/design-system/domain";
+import { StyledName } from "@rede-enois/design-system/domain";
 import { ArrowLeft } from "lucide-react";
 
 import { profileApi } from "@/lib/api";
 import { useCurrentUser } from "@/lib/current-user";
 import { authorNameStyle } from "@/lib/profile-name-style";
 
+import { UserAvatar } from "@/components/user-avatar";
 import { UserBadges } from "@/components/user-badge";
 
 /** Cabeçalho do filão: quem é o outro, voltar para a lista e a ação da tela. */

@@ -6,7 +6,6 @@ import { Link } from "@tanstack/react-router";
 import { texts } from "@/texts";
 import type { AccountMenuProps } from "@/types/components/account/account-menu-props";
 import type { ActiveIdentity } from "@/types/lib/active-identity";
-import { UserAvatar } from "@rede-enois/design-system/domain";
 import { Popover, PopoverContent, PopoverTrigger, useToast } from "@rede-enois/design-system/ui";
 import {
   Flag,
@@ -36,6 +35,8 @@ import {
 import { corporateApi, profileApi } from "@/lib/api";
 import { logout } from "@/lib/logout";
 import { cn } from "@/lib/utils";
+
+import { UserAvatar } from "@/components/user-avatar";
 
 import { ChangeEmailDialog } from "./change-email-dialog";
 import { ChangePasswordDialog } from "./change-password-dialog";

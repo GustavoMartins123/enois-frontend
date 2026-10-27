@@ -15,7 +15,6 @@ import type { PostView } from "@/types/application/feed/post-view";
 import type { CommunityCropPurpose } from "@/types/routes/communities/community-crop-purpose";
 import type { EditCommunityFormProps } from "@/types/routes/communities/edit-community-form-props";
 import type { MediaItem } from "@/types/routes/feed/media-item";
-import { UserAvatar } from "@rede-enois/design-system/domain";
 import {
   Badge,
   Button,
@@ -61,6 +60,7 @@ import { PostCard } from "@/components/post-card";
 import { RichText } from "@/components/post/rich-text";
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { SpoilerPreview } from "@/components/post/spoiler-preview";
+import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/comunidades/$communityId")({
   loader: async ({ params }) => {

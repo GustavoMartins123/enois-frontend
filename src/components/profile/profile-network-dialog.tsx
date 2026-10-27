@@ -4,10 +4,12 @@ import { Link } from "@tanstack/react-router";
 import { texts } from "@/texts";
 import type { ProfileNetworkUser } from "@/types/application/profile/profile-network-user";
 import type { ProfileNetworkDialogProps } from "@/types/components/profile/profile-network-dialog-props";
-import { StyledName, UserAvatar } from "@rede-enois/design-system/domain";
+import { StyledName } from "@rede-enois/design-system/domain";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@rede-enois/design-system/ui";
 
 import { profileApi } from "@/lib/api";
+
+import { UserAvatar } from "@/components/user-avatar";
 
 export function ProfileNetworkDialog({
   username,

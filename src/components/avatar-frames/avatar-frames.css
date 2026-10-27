@@ -1,0 +1,774 @@
+/* Maré: o anel é um tubo com água. A maré enche e vaza, a água balança, as duas camadas da
+   superfície correm em sentidos opostos, bolhas sobem e o peixe vai e volta pelo fundo. */
+.moldura-mare__nivel {
+  animation: moldura-mare-nivel 8s ease-in-out infinite alternate;
+}
+.moldura-mare__balanco {
+  animation: moldura-mare-balanco 3.4s ease-in-out infinite alternate;
+}
+.moldura-mare__tras {
+  animation: moldura-mare-onda 2.6s linear infinite;
+}
+.moldura-mare__frente {
+  animation: moldura-mare-onda 1.9s linear infinite;
+}
+.moldura-mare__bolha {
+  animation: moldura-mare-bolha 2.6s ease-in infinite;
+}
+.moldura-mare__nado {
+  animation: moldura-mare-nado 7s ease-in-out infinite;
+}
+.moldura-mare__peixe {
+  animation: moldura-mare-peixe 7s linear infinite;
+}
+@keyframes moldura-mare-nivel {
+  to {
+    transform: translateY(-22px);
+  }
+}
+@keyframes moldura-mare-balanco {
+  from {
+    transform: rotate(-6deg);
+  }
+  to {
+    transform: rotate(6deg);
+  }
+}
+@keyframes moldura-mare-onda {
+  to {
+    transform: translateX(var(--periodo));
+  }
+}
+@keyframes moldura-mare-bolha {
+  0% {
+    transform: translateY(0) scale(0.5);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-12px) scale(1.1);
+    opacity: 0;
+  }
+}
+/* O giro leva o peixe pelo fundo do tubo; o espelhamento vira o peixe nas pontas do caminho. */
+@keyframes moldura-mare-nado {
+  0%,
+  100% {
+    transform: rotate(-40deg);
+  }
+  50% {
+    transform: rotate(40deg);
+  }
+}
+@keyframes moldura-mare-peixe {
+  0%,
+  49.9% {
+    transform: scaleX(-1);
+  }
+  50%,
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+/* Trepadeira: as folhas brotam de baixo para cima, a flor abre no topo e tudo murcha junto. */
+.moldura-trepadeira__folha {
+  transform-origin: 0 0;
+  animation: moldura-trepadeira-folha 9s ease-out infinite;
+}
+.moldura-trepadeira__flor {
+  transform-origin: 0 0;
+  animation: moldura-trepadeira-flor 9s ease-out infinite;
+}
+@keyframes moldura-trepadeira-folha {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  8% {
+    transform: scale(1.12);
+    opacity: 1;
+  }
+  12%,
+  62% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  72% {
+    transform: scale(0.8) rotate(20deg);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+@keyframes moldura-trepadeira-flor {
+  0% {
+    transform: scale(0) rotate(-60deg);
+    opacity: 0;
+  }
+  10% {
+    transform: scale(1.15) rotate(0deg);
+    opacity: 1;
+  }
+  14%,
+  52% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  62% {
+    transform: scale(0.6) rotate(30deg);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+/* Vendaval: rajadas em espiral girando em ritmos diferentes, poeira e folhas levadas. */
+.moldura-vendaval__giro {
+  animation: moldura-giro 2.4s linear infinite;
+}
+.moldura-vendaval__risco {
+  animation: moldura-vendaval-risco 1.8s ease-in-out infinite;
+}
+.moldura-vendaval__poeira {
+  animation: moldura-giro 1.4s linear infinite;
+}
+.moldura-vendaval__voo {
+  animation: moldura-giro 2.7s linear infinite;
+}
+.moldura-vendaval__folha {
+  transform-origin: 0 0;
+  animation:
+    moldura-giro 0.9s linear infinite,
+    moldura-vendaval-folha 2.7s ease-in-out infinite;
+}
+@keyframes moldura-vendaval-risco {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.9;
+  }
+  60% {
+    opacity: 0.6;
+  }
+}
+/* A cada 6s uma rajada atravessa a foto, levando uma folha, e a foto (o Avatar, irmão do
+   .moldura-fx no invólucro) balança no mesmo compasso: inclina quando o vento passa no meio e
+   volta oscilando. */
+.moldura-vendaval__rajada {
+  opacity: 0;
+  animation: moldura-vendaval-rajada 6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+.moldura-vendaval__rajada-folha {
+  opacity: 0;
+  animation: moldura-vendaval-rajada-folha 6s ease-in-out infinite;
+  animation-delay: 0.12s;
+}
+.moldura-vendaval__rodopio {
+  transform-origin: 0 0;
+  animation: moldura-giro 0.6s linear infinite;
+}
+[data-avatar-frame="moldura-vendaval"] > :not(.moldura-fx) {
+  animation: moldura-vendaval-sopro 6s ease-out infinite;
+}
+@keyframes moldura-vendaval-rajada {
+  0% {
+    transform: translateX(-75px);
+    opacity: 0;
+  }
+  4% {
+    opacity: 0.8;
+  }
+  14% {
+    opacity: 0.7;
+  }
+  19%,
+  100% {
+    transform: translateX(75px);
+    opacity: 0;
+  }
+}
+@keyframes moldura-vendaval-rajada-folha {
+  0% {
+    transform: translate(-70px, 6px);
+    opacity: 0;
+  }
+  5%,
+  16% {
+    opacity: 1;
+  }
+  10% {
+    transform: translate(0, -6px);
+  }
+  20%,
+  100% {
+    transform: translate(72px, 4px);
+    opacity: 0;
+  }
+}
+@keyframes moldura-vendaval-sopro {
+  0%,
+  7% {
+    transform: none;
+  }
+  12% {
+    transform: translateX(1.2%) rotate(7deg);
+  }
+  17% {
+    transform: translateX(-0.4%) rotate(-3deg);
+  }
+  22% {
+    transform: rotate(1.2deg);
+  }
+  27%,
+  100% {
+    transform: none;
+  }
+}
+@keyframes moldura-vendaval-folha {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  15%,
+  65% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0;
+  }
+}
+
+/* Vaga-lumes: noite no campo. Estrelas piscam, o capim balança, os vaga-lumes batem as asas
+   e voam em volta com rastro, e luzes distantes acendem fora de compasso. */
+.moldura-vaga-lumes__estrela {
+  transform-origin: 0 0;
+  animation: moldura-vaga-lumes-estrela 2.4s ease-in-out infinite;
+}
+.moldura-vaga-lumes__distante {
+  animation: moldura-vaga-lumes-distante 3s ease-in-out infinite;
+}
+.moldura-vaga-lumes__capim {
+  transform-origin: 0 0;
+  animation: moldura-vaga-lumes-capim 3.2s ease-in-out infinite alternate;
+}
+.moldura-vaga-lumes__orbita {
+  animation: moldura-giro 16s linear infinite;
+}
+.moldura-vaga-lumes__voo {
+  animation: moldura-vaga-lumes-voo 3s ease-in-out infinite;
+}
+.moldura-vaga-lumes__luz {
+  animation: moldura-vaga-lumes-luz 2s ease-in-out infinite;
+}
+.moldura-vaga-lumes__asa {
+  transform-origin: 0 0;
+  animation: moldura-vaga-lumes-asa 0.12s linear infinite alternate;
+}
+@keyframes moldura-vaga-lumes-estrela {
+  0%,
+  100% {
+    transform: scale(0.4);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes moldura-vaga-lumes-distante {
+  0%,
+  100% {
+    opacity: 0.1;
+  }
+  45% {
+    opacity: 0.15;
+  }
+  60% {
+    opacity: 0.85;
+  }
+  78% {
+    opacity: 0.15;
+  }
+}
+@keyframes moldura-vaga-lumes-capim {
+  from {
+    transform: rotate(-5deg);
+  }
+  to {
+    transform: rotate(5deg);
+  }
+}
+@keyframes moldura-vaga-lumes-voo {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  33% {
+    transform: translate(var(--dx), var(--dy));
+  }
+  66% {
+    transform: translate(calc(var(--dy) * -1), var(--dx));
+  }
+}
+@keyframes moldura-vaga-lumes-luz {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes moldura-vaga-lumes-asa {
+  to {
+    transform: scaleY(0.25);
+  }
+}
+
+.moldura-fliperama__cobra {
+  opacity: 0;
+  animation: moldura-fliperama-cobra 25s step-end infinite;
+}
+.moldura-fliperama__maca {
+  transform: translate(var(--x0), var(--y0));
+  animation: moldura-fliperama-maca 25s step-end infinite;
+}
+.moldura-fliperama__moeda {
+  transform-origin: 0 0;
+  animation: moldura-fliperama-moeda 25s step-end infinite;
+}
+.moldura-fliperama__ponto {
+  opacity: 0;
+  animation: moldura-fliperama-ponto 25s linear infinite;
+}
+.moldura-fliperama__coracao {
+  transform-origin: 0 0;
+  animation: moldura-fliperama-coracao 1s step-end infinite;
+}
+.moldura-fliperama__estrela {
+  animation: moldura-fliperama-estrela 2.2s step-end infinite;
+}
+@keyframes moldura-fliperama-cobra {
+  0%,
+  7.645%,
+  31.85%,
+  56.055%,
+  80.26%,
+  100% {
+    opacity: 0;
+  }
+  6%,
+  29.5%,
+  53%,
+  76.5% {
+    opacity: 1;
+  }
+  6.318%,
+  29.818%,
+  53.318%,
+  76.818% {
+    opacity: 0.65;
+  }
+}
+@keyframes moldura-fliperama-maca {
+  0%,
+  87.9%,
+  100% {
+    transform: translate(var(--x0), var(--y0));
+    opacity: 1;
+  }
+  13.144% {
+    transform: translate(var(--x1), var(--y1));
+    opacity: 0;
+  }
+  24.81% {
+    transform: translate(var(--x1), var(--y1));
+    opacity: 1;
+  }
+  46.162% {
+    transform: translate(var(--x2), var(--y2));
+    opacity: 1;
+  }
+  65.22% {
+    transform: translate(var(--x3), var(--y3));
+    opacity: 1;
+  }
+  79.508% {
+    transform: translate(var(--x0), var(--y0));
+    opacity: 0;
+  }
+}
+@keyframes moldura-fliperama-moeda {
+  0%,
+  14.644%,
+  47.662%,
+  66.72%,
+  81.008%,
+  100% {
+    transform: scaleX(1);
+  }
+  13.144%,
+  14.144%,
+  46.162%,
+  47.162%,
+  65.22%,
+  66.22%,
+  79.508%,
+  80.508% {
+    transform: scaleX(0.55);
+  }
+  13.644%,
+  46.662%,
+  65.72%,
+  80.008% {
+    transform: scaleX(0.15);
+  }
+}
+@keyframes moldura-fliperama-ponto {
+  0%,
+  13.134%,
+  15.654%,
+  46.152%,
+  48.672%,
+  65.21%,
+  67.73%,
+  79.498%,
+  82.018%,
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+  13.144%,
+  46.162%,
+  65.22%,
+  79.508% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  15.644%,
+  48.662%,
+  67.72%,
+  82.008% {
+    opacity: 0;
+    transform: translateY(-7px);
+  }
+}
+@keyframes moldura-fliperama-coracao {
+  50% {
+    transform: scale(1.25);
+  }
+}
+@keyframes moldura-fliperama-estrela {
+  50% {
+    opacity: 0.2;
+  }
+  75% {
+    opacity: 0.6;
+  }
+}
+
+/* Circuito: a energia corre pelo anel, pulsos descem as trilhas e acendem o terminal ao chegar,
+   o anel de dados gira com os pacotes correndo ao contrário e o LED do chip pisca. */
+.moldura-circuito__dados {
+  animation: moldura-giro 20s linear infinite;
+}
+.moldura-circuito__energia {
+  animation: moldura-giro 3.2s linear infinite;
+}
+.moldura-circuito__pacotes {
+  animation: moldura-giro 6s linear infinite reverse;
+}
+.moldura-circuito__pulso {
+  opacity: 0;
+  animation: moldura-circuito-pulso 2s ease-in infinite;
+}
+.moldura-circuito__terminal {
+  opacity: 0.25;
+  animation: moldura-circuito-terminal 2s linear infinite;
+}
+.moldura-circuito__led {
+  animation: moldura-circuito-led 1.4s step-end infinite;
+}
+@keyframes moldura-circuito-pulso {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  60% {
+    transform: translateY(var(--percurso));
+    opacity: 1;
+  }
+  70%,
+  100% {
+    transform: translateY(var(--percurso));
+    opacity: 0;
+  }
+}
+@keyframes moldura-circuito-terminal {
+  0%,
+  55%,
+  100% {
+    opacity: 0.25;
+  }
+  62% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 0.25;
+  }
+}
+@keyframes moldura-circuito-led {
+  50% {
+    opacity: 0.15;
+  }
+}
+
+/* Radar: o feixe gira; cada contato acende quando ele passa e apaga devagar como fósforo, a
+   trilha do alvo acende um ponto por volta, e um pulso sai da tela a cada volta. Tudo no ritmo
+   da VARREDURA de radar.tsx (4s). */
+.moldura-radar__feixe {
+  animation: moldura-giro 4s linear infinite;
+}
+.moldura-radar__contato {
+  animation: moldura-radar-contato 4s ease-out infinite;
+}
+.moldura-radar__trilha {
+  opacity: 0;
+  animation: moldura-radar-trilha 20s ease-out infinite;
+}
+.moldura-radar__mira {
+  opacity: 0;
+  transform-origin: 0 0;
+  animation: moldura-radar-mira 20s ease-out infinite;
+}
+.moldura-radar__pulso {
+  opacity: 0;
+  animation: moldura-radar-pulso 4s ease-out infinite;
+}
+@keyframes moldura-radar-contato {
+  0% {
+    opacity: 1;
+  }
+  75%,
+  100% {
+    opacity: 0.08;
+  }
+}
+@keyframes moldura-radar-trilha {
+  0% {
+    opacity: 1;
+  }
+  20% {
+    opacity: 0.35;
+  }
+  60%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes moldura-radar-mira {
+  0% {
+    transform: scale(1.8) rotate(45deg);
+    opacity: 0;
+  }
+  2% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+  9% {
+    opacity: 1;
+  }
+  14%,
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+@keyframes moldura-radar-pulso {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  60%,
+  100% {
+    transform: scale(1.22);
+    opacity: 0;
+  }
+}
+
+/* Neon na chuva: as camadas de chuva descem, os pingos pendem do tubo e caem na poça, a onda
+   abre onde o pingo bate, a chuva respinga no alto do tubo e o neon molhado falha às vezes. De
+   vez em quando relampeja; o cabo balança e as gotas paradas no tubo brilham. */
+.moldura-neon__chuva {
+  animation: moldura-neon-chuva 1s linear infinite;
+}
+.moldura-neon__pingo {
+  transform-origin: 0 0;
+  animation: moldura-neon-pingo 2.6s infinite;
+}
+.moldura-neon__onda {
+  opacity: 0;
+  animation: moldura-neon-onda 2.6s ease-out infinite;
+}
+.moldura-neon__poca {
+  animation: moldura-neon-poca 2.2s ease-in-out infinite alternate;
+}
+.moldura-neon__respingo {
+  opacity: 0;
+  animation: moldura-neon-respingo 1s ease-out infinite;
+}
+.moldura-neon__clarao {
+  opacity: 0;
+  animation: moldura-neon-clarao 9s linear infinite;
+}
+.moldura-neon__cabo {
+  transform-origin: 0 0;
+  animation: moldura-neon-cabo 3.4s ease-in-out infinite alternate;
+}
+/* O LED do transformador pisca no mesmo compasso do LED do chip do circuito. */
+.moldura-neon__led {
+  animation: moldura-circuito-led 1.4s step-end infinite;
+}
+.moldura-neon__gota {
+  animation: moldura-neon-gota 2.4s ease-in-out infinite;
+}
+.moldura-neon__tubo {
+  animation: moldura-neon-falha 6s linear infinite;
+}
+@keyframes moldura-neon-chuva {
+  to {
+    transform: translateY(160px);
+  }
+}
+@keyframes moldura-neon-pingo {
+  0% {
+    transform: translateY(0) scale(0.3);
+    opacity: 0;
+    animation-timing-function: ease-out;
+  }
+  12% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(1px) scale(1);
+    animation-timing-function: ease-in-out;
+  }
+  58% {
+    transform: translateY(2px) scale(0.9, 1.2);
+    animation-timing-function: cubic-bezier(0.55, 0, 1, 0.45);
+  }
+  100% {
+    transform: translateY(var(--queda)) scale(0.8, 1.3);
+    opacity: 0.9;
+  }
+}
+@keyframes moldura-neon-onda {
+  0% {
+    transform: scale(0.2);
+    opacity: 0.9;
+  }
+  45%,
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+@keyframes moldura-neon-poca {
+  from {
+    transform: scaleX(0.94);
+    opacity: 0.75;
+  }
+  to {
+    transform: scaleX(1.05);
+    opacity: 1;
+  }
+}
+@keyframes moldura-neon-respingo {
+  0% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy));
+    opacity: 0;
+  }
+}
+@keyframes moldura-neon-clarao {
+  0%,
+  79%,
+  85%,
+  100% {
+    opacity: 0;
+  }
+  80% {
+    opacity: 1;
+  }
+  81% {
+    opacity: 0.15;
+  }
+  82.5% {
+    opacity: 0.85;
+  }
+}
+@keyframes moldura-neon-cabo {
+  from {
+    transform: rotate(-3deg);
+  }
+  to {
+    transform: rotate(3deg);
+  }
+}
+@keyframes moldura-neon-gota {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes moldura-neon-falha {
+  0%,
+  70%,
+  71.5%,
+  73.5%,
+  100% {
+    opacity: 1;
+  }
+  71% {
+    opacity: 0.35;
+  }
+  72.5% {
+    opacity: 0.55;
+  }
+}
+
+[data-avatar-frame="moldura-vendaval"][data-avatar-animated]:not([data-avatar-animating])
+  > :not(.moldura-fx) {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html:not([data-force-motion]) [data-avatar-frame="moldura-vendaval"] > :not(.moldura-fx) {
+    animation: none !important;
+    transform: none !important;
+  }
+}

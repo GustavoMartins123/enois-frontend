@@ -5,7 +5,6 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { JobApplication } from "@/types/application/job/job-application";
-import { UserAvatar } from "@rede-enois/design-system/domain";
 import { Button } from "@rede-enois/design-system/ui";
 import { ArrowLeft, BadgeCheck, Loader2, MessageCircle, ShieldAlert } from "lucide-react";
 
@@ -14,6 +13,7 @@ import { actionsFor, statusTone } from "@/lib/job-application-status";
 import { requireAuth } from "@/lib/require-auth";
 
 import { AppContainer } from "@/components/app-container";
+import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/vagas/$jobId/candidaturas")({
   beforeLoad: requireAuth,

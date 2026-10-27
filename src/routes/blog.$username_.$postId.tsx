@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { StyledName, UserAvatar } from "@rede-enois/design-system/domain";
+import { StyledName } from "@rede-enois/design-system/domain";
 import { Button, ConfirmDialog, useToast } from "@rede-enois/design-system/ui";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 
@@ -20,6 +20,7 @@ import { PostComments } from "@/components/post/post-comments";
 import { ReactionsSummary } from "@/components/post/reactions-summary";
 import { RichText } from "@/components/post/rich-text";
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
+import { UserAvatar } from "@/components/user-avatar";
 
 /**
  * Um post do blog: `/blog/{username}/{postId}`.

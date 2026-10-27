@@ -4176,6 +4176,7 @@ export const texts = {
   galleryLink: "Temas da comunidade",
 
   frameShop: {
+    unknownFrame: "Moldura de avatar não reconhecida.",
     title: "Carteira & estilo",
     subtitle: "Suas faíscas, suas escolhas.",
     walletTab: "Carteira",

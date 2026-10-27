@@ -4,7 +4,6 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 import { createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { UserAvatar } from "@rede-enois/design-system/domain";
 import { Button, ConfirmDialog, Input, useToast } from "@rede-enois/design-system/ui";
 import { Search } from "lucide-react";
 
@@ -19,6 +18,7 @@ import { AppContainer } from "@/components/app-container";
 import { ConversationItem } from "@/components/messages/conversation-item";
 import { ConversationThread } from "@/components/messages/conversation-thread";
 import { ConversationListSkeletons } from "@/components/skeletons/conversation-list-skeletons";
+import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/mensagens")({
   beforeLoad: requireAuth,

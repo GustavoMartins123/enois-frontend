@@ -2,7 +2,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { UserAvatar } from "@rede-enois/design-system/domain";
 import { Button, EmptyState, LoadingState } from "@rede-enois/design-system/ui";
 import { ShieldOff, Undo2 } from "lucide-react";
 
@@ -10,6 +9,7 @@ import { networkApi } from "@/lib/api";
 import { requireAuth } from "@/lib/require-auth";
 
 import { AppContainer } from "@/components/app-container";
+import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/bloqueados")({
   head: () => ({ meta: [{ title: texts.profile.blockedSeoTitle }] }),

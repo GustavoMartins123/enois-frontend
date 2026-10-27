@@ -3,10 +3,11 @@ import { useEffect, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 
 import type { SearchResult } from "@/types/application/search/search-result";
-import { UserAvatar } from "@rede-enois/design-system/domain";
 import { AtSign, Loader2 } from "lucide-react";
 
 import { searchApi } from "@/lib/api";
+
+import { UserAvatar } from "@/components/user-avatar";
 
 /**
  * Campo de destinatário com busca de usuário (igual ao marcar @): a pessoa digita nome

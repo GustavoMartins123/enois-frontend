@@ -7,7 +7,6 @@ import { texts } from "@/texts";
 import type { CatalogOrder } from "@/types/application/loja/catalog-order";
 import type { LojaItem } from "@/types/application/loja/loja-item";
 import type { FrameShopProps } from "@/types/components/wallet/frame-shop-props";
-import { ANIMATED_FRAMES, UserAvatar } from "@rede-enois/design-system/domain";
 import {
   Button,
   Dialog,
@@ -19,8 +18,11 @@ import {
 import { ArrowUpRight, Check, ChevronDown, Heart, Search, Sparkles } from "lucide-react";
 
 import { lojaApi } from "@/lib/api";
+import { ANIMATED_FRAMES } from "@/lib/avatar-frames";
 import { useCurrentUser } from "@/lib/current-user";
 import { formatFaisca } from "@/lib/faisca";
+
+import { UserAvatar } from "@/components/user-avatar";
 
 import "./frame-shop.css";
 
