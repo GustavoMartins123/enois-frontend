@@ -929,7 +929,13 @@ function PasswordExpiredForm({ resetToken, onDone }: { resetToken: string; onDon
     setError(null);
     setLoading(true);
     try {
-      await authApi.resetPassword(resetToken, password);
+      const result = await authApi.resetPassword(resetToken, password);
+      // Backend retorna sessao quando o reset veio de senha expirada (auto-login).
+      if ("user" in result) {
+        storeSession(result as never);
+        window.location.href = "/feed";
+        return;
+      }
       setSuccess(true);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t.error);
@@ -964,11 +970,24 @@ function PasswordExpiredForm({ resetToken, onDone }: { resetToken: string; onDon
 
       <form onSubmit={submit} className="mt-6 space-y-4" noValidate>
         <Field label={t.newPassword}>
-          <Input name="password" type="password" autoFocus minLength={8} required />
+          <Input
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            autoFocus
+            minLength={8}
+            required
+          />
         </Field>
 
         <Field label={t.confirm}>
-          <Input name="confirm" type="password" minLength={8} required />
+          <Input
+            name="confirm"
+            type="password"
+            autoComplete="new-password"
+            minLength={8}
+            required
+          />
         </Field>
         {error && <p className="text-sm text-destructive">{error}</p>}
         <Button type="submit" className="w-full" disabled={loading}>
