@@ -6,14 +6,18 @@ import { texts } from "@/texts";
 import type { ReportReason } from "@/types/application/report/report-reason";
 import type { ReportTargetType } from "@/types/application/report/report-target-type";
 import type { ReportDialogProps } from "@/types/components/post/report-dialog-props";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  Label,
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
 
 import { REPORT_REASONS, reportsApi } from "@/lib/api";
-
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
 
 /** Título por alvo: o mesmo formulário serve para post, comentário, perfil, vaga e grupo. */
 const REPORT_TITLES: Record<ReportTargetType, string> = {

@@ -9,6 +9,16 @@ import type { GamePendingRequest } from "@/types/application/games/game-pending-
 import type { GameShareRequest } from "@/types/application/games/game-share-request";
 import type { GameSpendRequest } from "@/types/application/games/game-spend-request";
 import type { GameView } from "@/types/application/games/game-view";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  useToast,
+} from "@rede-enois/design-system/ui";
 import { Bookmark, Gamepad2, Newspaper, Pencil, Share2, Sparkles } from "lucide-react";
 
 import { gamesApi, mediaApi } from "@/lib/api";
@@ -17,17 +27,6 @@ import { formatFaisca } from "@/lib/faisca";
 import { getSessionKey, useSessionKey } from "@/lib/session-key";
 import { isAuthenticated, useAuth } from "@/lib/use-auth";
 import { cn } from "@/lib/utils";
-
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/toast";
 
 import { GameIcon } from "@/components/game-icon";
 import { GameBanner } from "@/components/games/game-banner";

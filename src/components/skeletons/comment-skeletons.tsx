@@ -1,7 +1,6 @@
 import { texts } from "@/texts";
 import type { SkeletonListProps } from "@/types/components/skeletons/skeleton-list-props";
-
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@rede-enois/design-system/ui";
 
 /** Mesmo desenho do `CommentItem` (avatar, nome, balão de texto), sem o conteúdo. */
 export function CommentSkeletons({ count = 3 }: SkeletonListProps) {

@@ -1,9 +1,8 @@
 import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import { Button } from "@rede-enois/design-system/ui";
 import { LogIn } from "lucide-react";
-
-import { Button } from "@/components/ui/button";
 
 import { ThemeToggle } from "@/components/theme-toggle";
 

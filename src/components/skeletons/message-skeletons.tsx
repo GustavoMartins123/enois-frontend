@@ -1,7 +1,6 @@
 import { texts } from "@/texts";
 import type { SkeletonListProps } from "@/types/components/skeletons/skeleton-list-props";
-
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@rede-enois/design-system/ui";
 
 /**
  * Balões da conversa em `mensagens`, alternando os dois lados como na tela real.

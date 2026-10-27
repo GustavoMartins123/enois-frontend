@@ -6,6 +6,7 @@ import { Link, createFileRoute, useNavigate } from "@tanstack/react-router";
 import type { ServiceContract } from "@/types/application/services/service-contract";
 import type { ServiceListing } from "@/types/application/services/service-listing";
 import type { ServiceRequest } from "@/types/application/services/service-request";
+import { Button, Input, PageHeader, Textarea, useToast } from "@rede-enois/design-system/ui";
 import { Briefcase, Handshake, MessageCircle, Search, Send, Sparkles } from "lucide-react";
 
 // (import duplicado removido no merge)
@@ -15,12 +16,6 @@ import { conversationErrorMessage } from "@/lib/conversation-error";
 import { formatBrlCents, formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { requireAuth } from "@/lib/require-auth";
 import { useIsAuthenticated } from "@/lib/use-auth";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { PageHeader } from "@/components/ui/page-header";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { StyledName } from "@/components/styled-name";

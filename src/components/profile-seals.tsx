@@ -3,12 +3,11 @@ import { useState } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
+import { Button } from "@rede-enois/design-system/ui";
 import { Award, ChevronDown, ExternalLink, Loader2 } from "lucide-react";
 
 import { contributorSealsApi } from "@/lib/api";
 import { dataCurta } from "@/lib/date/format";
-
-import { Button } from "@/components/ui/button";
 
 /**
  * Selos oficiais de contribuição no perfil. Só chegam aqui evidências validadas; notas internas e

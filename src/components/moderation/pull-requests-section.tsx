@@ -4,15 +4,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { OpenPullRequest } from "@/types/application/seals/open-pull-request";
+import { Button, Textarea, useToast } from "@rede-enois/design-system/ui";
 import { GitPullRequest, Loader2 } from "lucide-react";
 
 import { authApi, contributorSealsApi } from "@/lib/api";
 import { dataHora } from "@/lib/date/format";
 import { safeHref } from "@/lib/safe-url";
-
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
 
 import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
 

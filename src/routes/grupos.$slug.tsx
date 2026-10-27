@@ -11,6 +11,19 @@ import type { GroupPost } from "@/types/application/group/group-post";
 import type { GroupView } from "@/types/application/group/group-view";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import {
+  Button,
+  ConfirmDialog,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Label,
+  Pill,
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
+import {
   Camera,
   ChevronDown,
   ChevronRight,
@@ -32,15 +45,6 @@ import { useCurrentUser } from "@/lib/current-user";
 import { dataHora, hora } from "@/lib/date/format";
 import { useIsAuthenticated } from "@/lib/use-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
-
-import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Pill } from "@/components/ui/pill";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { HtmlEditor } from "@/components/html-editor";

@@ -4,12 +4,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { BlockUserDialogProps } from "@/types/components/profile/block-user-dialog-props";
-import { Loader2, ShieldOff, Undo2 } from "lucide-react";
-
-import { networkApi } from "@/lib/api";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
@@ -17,7 +13,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@rede-enois/design-system/ui";
+import { Loader2, ShieldOff, Undo2 } from "lucide-react";
+
+import { networkApi } from "@/lib/api";
 
 /**
  * Bloquear esconde a pessoa de tudo (feed, comentários, notificações, busca) e vale para sempre —

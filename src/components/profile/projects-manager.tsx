@@ -8,21 +8,20 @@ import type { UserProjectInput } from "@/types/application/project/user-project-
 import type { ProjectCardMode } from "@/types/components/profile/project-card-mode";
 import type { ProjectsManagerProps } from "@/types/components/profile/projects-manager-props";
 import type { EditingProject } from "@/types/components/profile/projects-manager-state";
-
-import { projectsApi } from "@/lib/api";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
+  Input,
+  Label,
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
+
+import { projectsApi } from "@/lib/api";
 
 import { HtmlEditor } from "@/components/html-editor";
 

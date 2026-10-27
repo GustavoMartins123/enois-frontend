@@ -52,6 +52,7 @@
     "@radix-ui/react-toggle": "^1.1.10",
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
+    "@rede-enois/design-system": "0.1.0-rc.4",
     "@tailwindcss/vite": "^4.2.1",
     "@tanstack/react-query": "^5.104.3",
     "@tanstack/react-router": "1.170.13",
@@ -84,6 +85,8 @@
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@lovable.dev/vite-tanstack-config": "2.3.2",
+    "@orval/core": "^8.44.0",
+    "@tailwindcss/vite": "^4.3.3",
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
     "@types/node": "^26.6.5",
     "@types/qrcode": "^1.5.6",
@@ -99,7 +102,6 @@
     "jsdom": "^26.1.0",
     "lint-staged": "^17.6.0",
     "nitro": "3.0.260603-beta",
-    "@orval/core": "^8.44.0",
     "orval": "^8.22.0",
     "prettier": "^3.9.10",
     "simple-git-hooks": "^2.14.0",
@@ -107,8 +109,7 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "^7.3.1",
-    "vitest": "^5.0.5",
-    "@tailwindcss/vite": "^4.3.3"
+    "vitest": "^5.0.5"
   },
   "simple-git-hooks": {
     "pre-commit": "npx lint-staged"

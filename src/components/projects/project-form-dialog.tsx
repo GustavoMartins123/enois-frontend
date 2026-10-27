@@ -5,14 +5,18 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { texts } from "@/texts";
 import type { CommunityProjectView } from "@/types/application/projects/community-project-view";
 import type { CommunityProjectFormState } from "@/types/components/projects/community-project-form-state";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  Input,
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
 
 import { communityProjectsApi } from "@/lib/api";
-
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
 
 const EMPTY: CommunityProjectFormState = {
   title: "",

@@ -4,17 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import { Button, EmptyState, LoadingState, PageHeader } from "@rede-enois/design-system/ui";
 import { BookOpen, PenLine, Plus } from "lucide-react";
 
 import { blogsApi } from "@/lib/api/blogs";
 import { requireAuth } from "@/lib/require-auth";
 import { ogMetas } from "@/lib/seo";
 import { useIsAuthenticated } from "@/lib/use-auth";
-
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
-import { LoadingState } from "@/components/ui/loading-state";
-import { PageHeader } from "@/components/ui/page-header";
 
 import { AppContainer } from "@/components/app-container";
 import { BlogEditorDialog } from "@/components/blog/blog-editor-dialog";

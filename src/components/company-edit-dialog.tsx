@@ -5,22 +5,21 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { texts } from "@/texts";
 import type { CompanyDetail } from "@/types/application/companies/company-detail";
 import type { CompanyMember } from "@/types/application/companies/company-member";
-import { ImagePlus, Loader2, UserPlus } from "lucide-react";
-
-import { companiesApi, searchApi } from "@/lib/api";
-import { useMediaUpload } from "@/lib/use-media-upload";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
+  Input,
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
+import { ImagePlus, Loader2, UserPlus } from "lucide-react";
+
+import { companiesApi, searchApi } from "@/lib/api";
+import { useMediaUpload } from "@/lib/use-media-upload";
 
 /**
  * O painel de edição da página empresarial: os campos do cadastro + logo/capa (upload pela

@@ -25,7 +25,10 @@ vi.mock("@/lib/require-auth", () => ({ requireAuth: vi.fn() }));
 vi.mock("@/components/app-container", () => ({
   AppContainer: ({ children }: { children: ReactNode }) => <main>{children}</main>,
 }));
-vi.mock("@/components/ui/toast", () => ({ useToast: () => ({ toast: vi.fn() }) }));
+vi.mock("@rede-enois/design-system/ui", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@rede-enois/design-system/ui")>()),
+  useToast: () => ({ toast: vi.fn() }),
+}));
 vi.mock("@/lib/current-user", () => ({ useCurrentUser: () => ({ data: undefined }) }));
 vi.mock("@/lib/api", () => ({
   walletApi: { wallet: vi.fn(), cotacao: vi.fn() },

@@ -2,16 +2,12 @@ import { useRef, useState } from "react";
 
 import { texts } from "@/texts";
 import type { SupportCategory } from "@/types/application/support/support-category";
+import { Button, Input, Label, Textarea } from "@rede-enois/design-system/ui";
 import { CheckCircle2, Loader2, Paperclip, X } from "lucide-react";
 
 import { ApiError, supportApi } from "@/lib/api";
 import { getCurrentUser } from "@/lib/current-user";
 import { useMediaUpload } from "@/lib/use-media-upload";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_MESSAGE = 10;

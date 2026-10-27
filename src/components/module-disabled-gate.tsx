@@ -2,13 +2,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Link, useRouterState } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import { Button } from "@rede-enois/design-system/ui";
 import { PauseCircle } from "lucide-react";
 
 import { preferencesApi } from "@/lib/api";
 import { moduleForPath } from "@/lib/module-paths";
 import { useDisabledModules } from "@/lib/use-personalization";
-
-import { Button } from "@/components/ui/button";
 
 /**
  * Acesso direto a uma área desativada nas preferências: em vez de uma tela quebrada, a

@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { texts } from "@/texts";
 import type { ContributorContributionStatus } from "@/types/application/seals/contributor-contribution-status";
 import type { ContributorSyncReport } from "@/types/application/seals/contributor-sync-report";
+import { Button, Textarea } from "@rede-enois/design-system/ui";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -18,9 +19,6 @@ import {
 import { ApiError, contributorSealsApi } from "@/lib/api";
 import { dataEHora } from "@/lib/date/format";
 import { cn } from "@/lib/utils";
-
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 
 import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
 

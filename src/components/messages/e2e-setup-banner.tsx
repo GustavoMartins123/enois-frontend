@@ -1,12 +1,10 @@
 import { type FormEvent, useState } from "react";
 
+import { Button, Input } from "@rede-enois/design-system/ui";
 import { Loader2, Lock } from "lucide-react";
 
 import { authApi } from "@/lib/api/auth";
 import { generateAndUpload, restoreFromBackup } from "@/lib/e2e/key-manager";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 
 /**
  * Banner no topo do chat quando E2E não está configurado.

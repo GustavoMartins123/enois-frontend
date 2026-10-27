@@ -6,23 +6,22 @@ import { MIN_REPUTATION_TO_CREATE_JOB } from "@/constants/job-rules";
 import { texts } from "@/texts";
 import type { CreateExternalJobInput } from "@/types/application/job/create-external-job-input";
 import type { CreateExternalJobDialogProps } from "@/types/routes/jobs/create-external-job-dialog-props";
-import { ExternalLink, Lock } from "lucide-react";
-
-import { ApiError, jobsApi } from "@/lib/api";
-import { useCurrentUser } from "@/lib/current-user";
-import { canCreateJob, missingReputationToCreateJob } from "@/lib/job-permissions";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+  Input,
+  Label,
+  Textarea,
+} from "@rede-enois/design-system/ui";
+import { ExternalLink, Lock } from "lucide-react";
+
+import { ApiError, jobsApi } from "@/lib/api";
+import { useCurrentUser } from "@/lib/current-user";
+import { canCreateJob, missingReputationToCreateJob } from "@/lib/job-permissions";
 
 /**
  * Cadastro de vaga EXTERNA: a pessoa cola uma vaga achada em outro site e o Énóis só lista.

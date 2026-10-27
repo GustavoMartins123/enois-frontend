@@ -2,15 +2,14 @@ import { useState } from "react";
 
 import { texts } from "@/texts";
 import type { ImageLightboxProps } from "@/types/components/post/image-lightbox-props";
-import { X } from "lucide-react";
-
 import {
   Dialog,
   DialogClose,
   DialogContent,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
+} from "@rede-enois/design-system/ui";
+import { X } from "lucide-react";
 
 /** O portal do diálogo impede que o content-visibility do card prenda a ampliação no feed. */
 export function ImageLightbox({ src, children }: ImageLightboxProps) {

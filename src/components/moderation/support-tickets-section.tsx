@@ -5,16 +5,13 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { texts } from "@/texts";
 import type { SupportCategory } from "@/types/application/support/support-category";
 import type { SupportStatus } from "@/types/application/support/support-status";
+import { Button, Textarea, useToast } from "@rede-enois/design-system/ui";
 import { LifeBuoy } from "lucide-react";
 
 import { supportApi } from "@/lib/api";
 import { dataHora } from "@/lib/date/format";
 import { safeHref } from "@/lib/safe-url";
 import { cn } from "@/lib/utils";
-
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
 
 import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
 

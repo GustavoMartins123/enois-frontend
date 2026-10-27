@@ -2,12 +2,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import { Button } from "@rede-enois/design-system/ui";
 import { Award, Link2, Link2Off, Loader2, RefreshCw } from "lucide-react";
 
 import { ApiError, authApi, contributorSealsApi } from "@/lib/api";
 import { dataEHora } from "@/lib/date/format";
-
-import { Button } from "@/components/ui/button";
 
 import { GithubIcon } from "@/components/icons/github";
 

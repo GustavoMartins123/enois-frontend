@@ -4,11 +4,10 @@ import { POST_SEALS, postSeal } from "@/constants/post-seals";
 import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { PostIdProps } from "@/types/components/post/post-id-props";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@rede-enois/design-system/ui";
 
 import { profileApi, sealsApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
-
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 import { UserAvatar } from "@/components/user-avatar";
 

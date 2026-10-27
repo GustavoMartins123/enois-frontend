@@ -6,6 +6,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { texts } from "@/texts";
 import type { RequestCardProps } from "@/types/routes/network/request-card-props";
 import type { StatProps } from "@/types/routes/network/stat-props";
+import { Button, PageHeader } from "@rede-enois/design-system/ui";
 import { Check, Send, UserMinus, UserPlus, X } from "lucide-react";
 
 import { networkApi, profileApi } from "@/lib/api";
@@ -13,9 +14,6 @@ import { useCurrentUser } from "@/lib/current-user";
 import { liteInterval } from "@/lib/lite-mode";
 import { requireAuth } from "@/lib/require-auth";
 import { useLiteMode } from "@/lib/use-lite-mode";
-
-import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/ui/page-header";
 
 import { AppContainer } from "@/components/app-container";
 import { StyledName } from "@/components/styled-name";

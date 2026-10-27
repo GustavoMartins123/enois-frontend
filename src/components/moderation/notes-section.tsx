@@ -5,14 +5,11 @@ import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { AdminPostNote } from "@/types/application/feed/admin-post-note";
+import { Button, Textarea, useToast } from "@rede-enois/design-system/ui";
 import { Loader2, StickyNote } from "lucide-react";
 
 import { postNotesApi } from "@/lib/api";
 import { dataHora } from "@/lib/date/format";
-
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
 
 import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
 

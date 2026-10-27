@@ -3,14 +3,11 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
+import { Button, Input, useToast } from "@rede-enois/design-system/ui";
 import { Gamepad2 } from "lucide-react";
 
 import { moderationApi } from "@/lib/api";
 import { dataCurta } from "@/lib/date/format";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/toast";
 
 import { GamePlayer } from "@/components/games/game-player";
 import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";

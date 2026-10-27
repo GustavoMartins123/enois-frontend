@@ -6,6 +6,17 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { texts } from "@/texts";
 import type { WalletTab } from "@/types/routes/wallet/wallet-tab";
 import {
+  Button,
+  Input,
+  LoadingState,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
+import {
   ArrowLeft,
   Send,
   ShieldAlert,
@@ -21,13 +32,6 @@ import { walletApi } from "@/lib/api";
 import { dataHora } from "@/lib/date/format";
 import { faiscaToBrlCents, formatBrlCents, formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { requireAuth } from "@/lib/require-auth";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/loading-state";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { MarketplaceSection } from "@/components/marketplace/marketplace-section";

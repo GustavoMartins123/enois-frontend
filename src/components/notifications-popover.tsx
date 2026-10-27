@@ -5,6 +5,14 @@ import { useMutation, useQueries, useQuery, useQueryClient } from "@tanstack/rea
 import { texts } from "@/texts";
 import type { Notification } from "@/types/application/notification/notification";
 import type { NotificationTab } from "@/types/components/notification/notification-tab";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@rede-enois/design-system/ui";
 import { Bell, Check, CheckCheck, Loader2, X } from "lucide-react";
 
 import { messagesApi, networkApi, notificationsApi, profileApi } from "@/lib/api";
@@ -17,9 +25,6 @@ import { isNotificationHidden } from "@/lib/notification-module";
 import { useIsAuthenticated } from "@/lib/use-auth";
 import { useDisabledModules } from "@/lib/use-personalization";
 import { cn } from "@/lib/utils";
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 import { NotificationItem } from "./notification-item";
 

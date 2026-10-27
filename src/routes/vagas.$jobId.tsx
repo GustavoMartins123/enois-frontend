@@ -6,6 +6,7 @@ import { Link, Outlet, createFileRoute, useMatchRoute, useNavigate } from "@tans
 import { jobLevelLabel, jobTypeLabel } from "@/constants/job-options";
 import { texts } from "@/texts";
 import type { JobApplication } from "@/types/application/job/job-application";
+import { Button, ConfirmDialog } from "@rede-enois/design-system/ui";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -30,9 +31,6 @@ import { useCurrentUser } from "@/lib/current-user";
 import { actionsFor, applicationStatusLabel, statusTone } from "@/lib/job-application-status";
 import { buildShareTags } from "@/lib/open-graph";
 import { safeHref } from "@/lib/safe-url";
-
-import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 import { AppContainer } from "@/components/app-container";
 import { ApplicationFeedbackDialog } from "@/components/application-feedback-dialog";

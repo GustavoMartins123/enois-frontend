@@ -2,12 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import { Button } from "@rede-enois/design-system/ui";
 import { ArrowRight, Award, GitPullRequest, ShieldCheck } from "lucide-react";
 
 import { contributorSealsApi } from "@/lib/api";
 import { ogMetas } from "@/lib/seo";
-
-import { Button } from "@/components/ui/button";
 
 import { AppContainer } from "@/components/app-container";
 import { ContributorLinkStatus } from "@/components/contributor-link-status";

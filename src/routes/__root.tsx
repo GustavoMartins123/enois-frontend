@@ -18,14 +18,12 @@ import type { PushNavigateMessage } from "@/types/push/push-navigate-message";
 import type { ErrorComponentProps } from "@/types/routes/root/error-component-props";
 import type { RootRouteContext } from "@/types/routes/root/root-route-context";
 import { navigateToHref } from "@/utils/navigation";
+import { ToastProvider, buttonVariants } from "@rede-enois/design-system/ui";
 
 import { hrefDoPush } from "@/lib/push-navigation";
 import { registerServiceWorker } from "@/lib/pwa";
 import { hasSession, isProtectedPath } from "@/lib/require-auth";
 import { useThemeSync } from "@/lib/theme/use-theme-sync";
-
-import { buttonVariants } from "@/components/ui/button-variants";
-import { ToastProvider } from "@/components/ui/toast";
 
 import { AgeGate } from "@/components/age-gate";
 import { AppContainer } from "@/components/app-container";

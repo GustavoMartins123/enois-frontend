@@ -4,11 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { ProjectsSectionProps } from "@/types/components/profile/projects-section-props";
+import { Button } from "@rede-enois/design-system/ui";
 
 import { projectsApi } from "@/lib/api";
 import { safeHref } from "@/lib/safe-url";
-
-import { Button } from "@/components/ui/button";
 
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { GithubImportDialog } from "@/components/profile/github-import-dialog";

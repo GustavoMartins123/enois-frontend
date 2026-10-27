@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute, notFound, useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import { Button, ConfirmDialog, useToast } from "@rede-enois/design-system/ui";
 import { ArrowLeft, Pencil, Trash2 } from "lucide-react";
 
 import { feedApi } from "@/lib/api";
@@ -11,10 +12,6 @@ import { blogsApi } from "@/lib/api/blogs";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { formatarData } from "@/lib/date/format";
 import { buildShareTags } from "@/lib/open-graph";
-
-import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { PostActions } from "@/components/post/post-actions";

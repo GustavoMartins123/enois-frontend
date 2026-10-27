@@ -3,9 +3,8 @@ import { useState } from "react";
 import { PHONE_FRAME_CLASS } from "@/constants/post-page";
 import { texts } from "@/texts";
 import type { HtmlEditorProps } from "@/types/components/html-editor/props";
+import { Textarea } from "@rede-enois/design-system/ui";
 import { Code2, Eye } from "lucide-react";
-
-import { Textarea } from "@/components/ui/textarea";
 
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 

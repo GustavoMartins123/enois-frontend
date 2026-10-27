@@ -3,13 +3,10 @@ import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
+import { Badge, Button, useToast } from "@rede-enois/design-system/ui";
 import { BadgeCheck, Loader2, ShieldQuestion } from "lucide-react";
 
 import { ApiError, identityApi } from "@/lib/api";
-
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
 
 /**
  * Verificação de identidade civil. O estado vem SEMPRE do backend; o botão só existe quando há um

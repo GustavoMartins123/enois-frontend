@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 
+import { useToast } from "@rede-enois/design-system/ui";
 import { Copy, Heart } from "lucide-react";
 import QRCode from "qrcode";
 
 import { PIX_KEY, pixCopiaECola } from "@/lib/pix";
-
-import { useToast } from "./ui/toast";
 
 /**
  * O convite de doação no menu direito do feed (versão compacta do banner da home).
