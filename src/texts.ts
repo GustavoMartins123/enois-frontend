@@ -1707,6 +1707,9 @@ export const texts = {
       verified: (count: number) =>
         count === 1 ? "1 contribuição verificada" : `${count} contribuições verificadas`,
       tierRange: (min: number, max: number | null) => (max === null ? `${min}+` : `${min}–${max}`),
+      loadMore: "Carregar mais",
+      loadingEvidence: "Carregando evidências...",
+      evidenceError: "Não foi possível carregar as evidências.",
     },
     seoFallbackTitle: "Perfil",
     seoFallbackDescription: "Perfil profissional",
@@ -1827,6 +1830,8 @@ export const texts = {
       modeStructured: "Estruturado",
       modeHtml: "HTML próprio",
       titleField: "Título do projeto",
+      descriptionField: "Descrição do projeto",
+      descriptionPlaceholder: "Uma frase sobre o que o projeto faz",
       stackField: "Stack (separe por vírgula)",
       repoField: "Link do repositório (https)",
       statusField: "Status",
@@ -1840,6 +1845,42 @@ export const texts = {
       saved: "Projeto salvo.",
       error: "Não foi possível salvar o projeto.",
       htmlFrame: "Card de projeto em HTML",
+    },
+    githubImport: {
+      action: "Importar do GitHub",
+      title: "Importar do GitHub",
+      description:
+        "Traga seus repositórios públicos como projetos do perfil e use o README do seu perfil como bio. O GitHub precisa estar vinculado à sua conta.",
+      reposTitle: "Seus repositórios",
+      reposHint: "Escolha os que devem virar cards. O link de cada card aponta para o repositório.",
+      loading: "Carregando...",
+      selectAll: "Selecionar todos",
+      clear: "Limpar",
+      fork: "fork",
+      archived: "arquivado",
+      open: "Abrir no GitHub",
+      import: (count: number) =>
+        count === 1 ? "Importar 1 projeto" : `Importar ${count} projetos`,
+      importing: "Importando...",
+      imported: (created: number, skipped: number, invalid: number) => {
+        const parts = [`${created} ${created === 1 ? "projeto importado" : "projetos importados"}`];
+        if (skipped > 0) parts.push(`${skipped} já estava${skipped === 1 ? "" : "m"}`);
+        if (invalid > 0) parts.push(`${invalid} inválido${invalid === 1 ? "" : "s"}`);
+        return parts.join(" · ");
+      },
+      error: "Não foi possível importar agora. Tente de novo.",
+      empty: "Nenhum repositório público encontrado.",
+      notLinked: "Vincule sua conta GitHub para importar seus repositórios e seu README.",
+      goToSecurity: "Vincular GitHub",
+      readmeTitle: "README do perfil",
+      readmeHint:
+        "O README do repositório com o seu nome vira a bio em HTML, com links e imagens apontando para o GitHub.",
+      readmeUse: "Usar como bio",
+      readmeUsing: "Salvando...",
+      readmeSaved: "Bio atualizada com o README.",
+      readmeMissing: "Seu perfil do GitHub ainda não tem um README público para importar.",
+      readmeError: "Não foi possível ler o README agora.",
+      openReadme: "Abrir repositório",
     },
     sections: {
       about: "Sobre",

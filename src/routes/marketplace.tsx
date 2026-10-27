@@ -29,6 +29,7 @@ import { ThemeSellDialog } from "@/components/appearance/theme-sell-dialog";
 import { MarketplaceContentDialog } from "@/components/marketplace/marketplace-content-dialog";
 import { MarketplaceSellDialog } from "@/components/marketplace/marketplace-sell-dialog";
 import { ThemeProfilePreview } from "@/components/marketplace/theme-profile-preview";
+import { StyledName } from "@/components/styled-name";
 
 /** Piso de preço do marketplace: 50 faíscas (o backend também recusa abaixo disso). */
 const MIN_PRICE = parseFaiscaInput("50") ?? 50_000;
@@ -321,7 +322,7 @@ function ListingCard({
           )}
 
           <p className="truncate text-xs text-text-subtle">
-            {listing.sellerName ?? ""}
+            <StyledName name={listing.sellerName ?? ""} style={listing.sellerStyle} />
             {listing.sellerUsername ? ` · @${listing.sellerUsername}` : ""}
           </p>
         </div>

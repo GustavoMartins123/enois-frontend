@@ -1,5 +1,3 @@
-import type { SealEvidence } from "./seal-evidence";
-
 export type ProfileSeal = {
   type: string;
   name: string;
@@ -10,5 +8,4 @@ export type ProfileSeal = {
   evidenceCount: number;
   minCount: number;
   maxCount: number | null;
-  evidence: SealEvidence[];
 };

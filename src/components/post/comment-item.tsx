@@ -17,6 +17,7 @@ import { ReadMore } from "@/components/ui/read-more";
 import { useToast } from "@/components/ui/toast";
 
 import { MentionTextarea } from "@/components/mention-textarea";
+import { StyledName } from "@/components/styled-name";
 import { UserAvatar } from "@/components/user-avatar";
 import { UserBadges } from "@/components/user-badge";
 
@@ -140,10 +141,12 @@ export function CommentItem({
       params={{ username: comment.authorUsername }}
       className="text-xs font-medium text-text-strong hover:underline"
     >
-      {comment.authorName}
+      <StyledName name={comment.authorName} style={comment.authorStyle} />
     </Link>
   ) : (
-    <span className="text-xs font-medium text-text-strong">{comment.authorName}</span>
+    <span className="text-xs font-medium text-text-strong">
+      <StyledName name={comment.authorName} style={comment.authorStyle} />
+    </span>
   );
 
   const avatar = (
