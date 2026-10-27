@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
-import { Award, ExternalLink } from "lucide-react";
+import { Award, ChevronDown, ExternalLink } from "lucide-react";
 
 import { contributorSealsApi } from "@/lib/api";
 import { dataCurta } from "@/lib/date/format";
@@ -59,10 +59,19 @@ export function ProfileSeals({ username }: { username: string }) {
           <p className="text-sm leading-relaxed text-muted-foreground">{seal.description}</p>
 
           {seal.evidence.length > 0 && (
-            <div>
-              <p className="text-xs font-medium text-text-subtle">{texts.profile.seals.evidence}</p>
+            <details className="group rounded-xl border border-border-soft px-3 py-2">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-xs font-medium text-text-subtle [&::-webkit-details-marker]:hidden">
+                <span>
+                  {texts.profile.seals.evidence} ({seal.evidence.length})
+                </span>
 
-              <ul className="mt-1 space-y-1">
+                <ChevronDown
+                  className="h-3.5 w-3.5 shrink-0 transition-transform group-open:rotate-180"
+                  aria-hidden
+                />
+              </summary>
+
+              <ul className="mt-2 max-h-64 space-y-1 overflow-y-auto pr-1">
                 {seal.evidence.map((evidence) => (
                   <li key={`${evidence.repository}-${evidence.kind}-${evidence.number}`}>
                     <a
@@ -81,7 +90,7 @@ export function ProfileSeals({ username }: { username: string }) {
                   </li>
                 ))}
               </ul>
-            </div>
+            </details>
           )}
         </article>
       ))}
