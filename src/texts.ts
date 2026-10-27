@@ -383,6 +383,26 @@ export const texts = {
   },
 
   auth: {
+    githubLink: {
+      title: "GitHub para selos de contribuição",
+      description:
+        "Vincule sua conta GitHub para que o Énóis possa verificar PRs integrados nos repositórios oficiais. O vínculo não altera seu login nem sua verificação de identidade.",
+      linkedAs: (login: string) => `Vinculado como @${login}`,
+      lastSync: (date: string) => `Última sincronização: ${date}`,
+      neverSynced: "Ainda não sincronizou; os dados aparecem no próximo ciclo.",
+      syncStale: "Os dados podem estar desatualizados; a próxima sincronização atualiza.",
+      syncError: "A última sincronização falhou; os números podem estar desatualizados.",
+      link: "Vincular GitHub",
+      unlink: "Desvincular GitHub",
+      linking: "Abrindo GitHub...",
+      unlinkConfirm:
+        "Desvincular o GitHub? Os selos já concedidos permanecem, mas novas contribuições não serão vinculadas.",
+      error: "Não foi possível alterar o vínculo com o GitHub.",
+      unlinkError: "Não foi possível desvincular o GitHub.",
+      criteria: "Ler os critérios dos selos",
+      notConfigured:
+        "O vínculo com GitHub ainda não está configurado neste ambiente. Fale com a administração.",
+    },
     hero: {
       eyebrow: "Networking com propósito",
       // A frase e a TESE do produto (a mesma da landing), nao um depoimento: antes era uma
@@ -1253,6 +1273,7 @@ export const texts = {
       terms: "Termos",
       contact: "Contato",
       api: "API pública",
+      seals: "Selos",
       about: "Sobre o énóis",
       home: "Início",
     },
@@ -1666,6 +1687,16 @@ export const texts = {
   },
 
   profile: {
+    seals: {
+      title: "Selos de contribuição",
+      grantedAt: "Concedido em",
+      categories: "Categoria",
+      evidence: "Evidências públicas",
+      noEvidence: "Sem evidência pública.",
+      verified: (count: number) =>
+        count === 1 ? "1 contribuição verificada" : `${count} contribuições verificadas`,
+      tierRange: (min: number, max: number | null) => (max === null ? `${min}+` : `${min}–${max}`),
+    },
     seoFallbackTitle: "Perfil",
     seoFallbackDescription: "Perfil profissional",
     seoTitle: (name: string) => `${name} · Énóis`,
@@ -3401,6 +3432,7 @@ export const texts = {
       emails: "E-mails",
       monitoring: "Monitorabilidade",
       contributors: "Contribuintes",
+      githubContributions: "Contribuições GitHub",
       suspicious: "Contas suspeitas",
       suspiciousPosts: "Posts suspeitos",
     },
@@ -3427,6 +3459,65 @@ export const texts = {
       approve: "Aprovar",
       reject: "Recusar",
       done: "Decidida",
+    },
+    githubContributions: {
+      title: "Contribuições GitHub",
+      description:
+        "Evidências de PRs integrados e issues dos repositórios oficiais. PR integrado entra validado; issue só conta com label de qualificação ou validação de um mantenedor. Toda decisão é auditada.",
+      filterAll: "Todas",
+      kindAll: "PRs e issues",
+      kind: {
+        PULL_REQUEST: "PRs",
+        ISSUE: "Issues",
+      } as Record<string, string>,
+      kindLabel: {
+        PULL_REQUEST: "PR",
+        ISSUE: "Issue",
+      } as Record<string, string>,
+      status: {
+        PENDING: "Pendente",
+        VALIDATED: "Validada",
+        REJECTED: "Recusada",
+        CONTESTED: "Contestada",
+        REVOKED: "Revogada",
+      } as Record<string, string>,
+      sync: "Sincronizar agora",
+      syncDryRun: "Simular backfill",
+      syncFull: "Backfill completo",
+      syncing: "Sincronizando...",
+      syncDone: (
+        created: number,
+        updated: number,
+        fetched: number,
+        issuesCreated = 0,
+        issuesUpdated = 0,
+        issuesFetched = 0,
+      ) =>
+        `Sincronização concluída: ${fetched} PRs lidos (${created} novos, ${updated} atualizados) e ${issuesFetched} issues lidas (${issuesCreated} novas, ${issuesUpdated} atualizadas).`,
+      syncError: "Não foi possível sincronizar com o GitHub.",
+      rateLimited: "O GitHub limitou as chamadas; tente de novo mais tarde.",
+      empty: "Nenhuma evidência nesta fila.",
+      error: "Não foi possível carregar as evidências.",
+      refresh: "Atualizar evidências",
+      reviewNote: "Justificativa da revisão",
+      reviewNotePlaceholder: "Explique por que esta contribuição é relevante (ou não).",
+      validate: "Validar",
+      reject: "Recusar",
+      contest: "Contestar",
+      revokeEvidence: "Revogar evidência",
+      reviewedBy: "Revisado por",
+      mergedAt: "Integrado em",
+      closedAt: "Fechada em",
+      labels: "Labels",
+      tests: "Testes",
+      reverted: "Revertido",
+      openPr: "Abrir PR",
+      openIssue: "Abrir issue",
+      noUser: "GitHub sem vínculo com uma conta Énóis",
+      saveError: "Não foi possível concluir a revisão.",
+      repositoriesTitle: "Repositórios elegíveis",
+      repositoryOn: "Elegível",
+      repositoryOff: "Desabilitado",
     },
     suspiciousPosts: {
       title: "Posts suspeitos",
@@ -4290,6 +4381,54 @@ export const texts = {
         ],
       },
     },
+  },
+
+  sealsPage: {
+    seoTitle: "Selos de contribuição · Énóis",
+    seoDescription:
+      "Como o Énóis reconhece contribuições técnicas verificadas nos repositórios oficiais da organização Rede-ENois.",
+    title: "Selos de contribuição",
+    intro:
+      "O Énóis reconhece quem ajuda a construir o projeto. Os selos vêm de contribuições verificadas nos repositórios oficiais: PRs integrados contam para Código e issues qualificadas contam para Issues. O nível sobe com a contagem — não é um produto comercial nem privilégio de moderação.",
+    categoriesTitle: "Categorias e níveis",
+    categoriesEmpty: "Nenhuma categoria disponível neste ambiente.",
+    categories: {
+      CODE: "Pull requests integrados contam automaticamente. PR revertido deixa de contar.",
+      ISSUES: "Só issues qualificadas contam: label de qualificação ou validação de um mantenedor.",
+    },
+    tierRange: (min: number, max: number | null) =>
+      max === null ? `${min}+` : min === max ? `${min}` : `${min}–${max}`,
+    criteriaTitle: "Como o nível é calculado",
+    criteria: [
+      "PR integrado em um dos repositórios oficiais da organização Rede-ENois conta automaticamente.",
+      "Issue conta quando tem label de qualificação ou é validada por um mantenedor.",
+      "Autoria verificável pelo ID imutável da conta GitHub vinculada ao perfil.",
+      "Cada categoria exibe apenas o nível mais alto alcançado.",
+      "PR revertido ou issue invalidada deixam de contar e o nível é recalculado.",
+      "Selo é reconhecimento de trabalho, não privilégio de moderação.",
+    ],
+    reposTitle: "Repositórios elegíveis",
+    reposEmpty: "Nenhum repositório elegível configurado neste ambiente.",
+    linkTitle: "Como vincular seu GitHub",
+    linkSteps: [
+      "Entre na sua conta do Énóis.",
+      "Abra Segurança e toque em “Vincular GitHub”.",
+      "Autorize o acesso de leitura ao perfil público do GitHub.",
+      "A partir daí, PRs integrados e issues qualificadas nos repositórios elegíveis são sincronizados.",
+    ],
+    statesTitle: "Estados da evidência",
+    states: {
+      PENDING: "Pendente: issue coletada, aguardando qualificação por label ou mantenedor.",
+      VALIDATED: "Validada: conta para o nível. PR integrado entra assim automaticamente.",
+      REJECTED: "Recusada: não atende aos critérios; não conta.",
+      CONTESTED: "Contestada: precisa de uma nova revisão.",
+      REVOKED: "Revogada: deixou de contar, com registro de auditoria.",
+    },
+    privacyTitle: "O que fica público",
+    privacy:
+      "No perfil aparecem o nome do nível, a categoria, a data de concessão e os links das evidências validadas. Notas internas, suspeitas, e-mail e detalhes de revisão não são públicos.",
+    cta: "Vincular GitHub",
+    ctaHint: "É preciso ter uma conta no Énóis e entrar antes de vincular.",
   },
 
   root: {
