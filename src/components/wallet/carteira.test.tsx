@@ -10,14 +10,25 @@ import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("@tanstack/react-router", () => ({
-  createFileRoute: () => (options: { component: () => ReactNode }) => ({ options }),
+  createFileRoute: () => (options: { component: () => ReactNode }) => ({
+    options,
+    useSearch: () => ({}),
+    useNavigate: () => () => {},
+  }),
   Link: ({ children }: { children: ReactNode }) => <a>{children}</a>,
+}));
+// A vitrine do marketplace tem a própria suíte; aqui só a Carteira importa.
+vi.mock("@/components/marketplace/marketplace-section", () => ({
+  MarketplaceSection: () => null,
 }));
 vi.mock("@/lib/require-auth", () => ({ requireAuth: vi.fn() }));
 vi.mock("@/components/app-container", () => ({
   AppContainer: ({ children }: { children: ReactNode }) => <main>{children}</main>,
 }));
-vi.mock("@/components/ui/toast", () => ({ useToast: () => ({ toast: vi.fn() }) }));
+vi.mock("@rede-enois/design-system/ui", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@rede-enois/design-system/ui")>()),
+  useToast: () => ({ toast: vi.fn() }),
+}));
 vi.mock("@/lib/current-user", () => ({ useCurrentUser: () => ({ data: undefined }) }));
 vi.mock("@/lib/api", () => ({
   walletApi: { wallet: vi.fn(), cotacao: vi.fn(), extract: vi.fn() },

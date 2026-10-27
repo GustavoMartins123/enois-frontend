@@ -5,21 +5,20 @@ import { Link } from "@tanstack/react-router";
 
 import { TOPICS, TOPIC_LABELS } from "@/constants/community-topics";
 import { texts } from "@/texts";
-import { Hash, Lock, Plus } from "lucide-react";
-
-import { communitiesApi } from "@/lib/api";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/toast";
+  Input,
+  Label,
+  useToast,
+} from "@rede-enois/design-system/ui";
+import { Hash, Lock, Plus } from "lucide-react";
+
+import { communitiesApi } from "@/lib/api";
 
 /**
  * Canais privados por tema da comunidade.

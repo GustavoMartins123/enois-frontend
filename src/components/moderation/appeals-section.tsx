@@ -1,14 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
+import { Button, EmptyState, useToast } from "@rede-enois/design-system/ui";
 import { Gavel } from "lucide-react";
 
 import { sanctionsApi } from "@/lib/api";
 import { dataHora } from "@/lib/date/format";
-
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
-import { useToast } from "@/components/ui/toast";
 
 import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
 

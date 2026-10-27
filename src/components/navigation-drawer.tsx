@@ -2,8 +2,7 @@ import { useEffect } from "react";
 
 import { useAppShellStore } from "@/stores/app-shell.store";
 import { texts } from "@/texts";
-
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTitle } from "@rede-enois/design-system/ui";
 
 import { AppBrand } from "./app-brand";
 import { NavigationLinks } from "./navigation-links";

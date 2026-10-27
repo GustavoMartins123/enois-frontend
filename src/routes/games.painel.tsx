@@ -5,17 +5,13 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { GameView } from "@/types/application/games/game-view";
+import { Button, Input, Textarea, useToast } from "@rede-enois/design-system/ui";
 import { BarChart3, Newspaper, Pencil, X } from "lucide-react";
 
 import { gamesApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { requireAuth } from "@/lib/require-auth";
 import { useMediaUpload } from "@/lib/use-media-upload";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { GameIcon } from "@/components/game-icon";

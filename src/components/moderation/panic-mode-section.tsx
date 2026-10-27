@@ -3,14 +3,11 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
+import { Button, ConfirmDialog, useToast } from "@rede-enois/design-system/ui";
 import { OctagonAlert, Power } from "lucide-react";
 
 import { moderationApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
-
-import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { useToast } from "@/components/ui/toast";
 
 /**
  * Botão de pânico: bloqueia TODA escrita da aplicação com 429 enquanto estiver ativo. O próprio

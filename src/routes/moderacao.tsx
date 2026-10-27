@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Outlet, createFileRoute, useMatchRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import { Button, EmptyState, Input, LoadingState, useToast } from "@rede-enois/design-system/ui";
 import { ArrowLeft } from "lucide-react";
 import { Ban, Gamepad2, Gavel, ShieldAlert, ShieldOff, Trash2 } from "lucide-react";
 
@@ -11,12 +12,6 @@ import { gamesApi, moderationApi, sanctionsApi, walletApi } from "@/lib/api";
 import { dataCurta, dataHora } from "@/lib/date/format";
 import { formatFaisca } from "@/lib/faisca";
 import { requireAuth } from "@/lib/require-auth";
-
-import { Button } from "@/components/ui/button";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/loading-state";
-import { useToast } from "@/components/ui/toast";
 
 import { AppContainer } from "@/components/app-container";
 import { GamePlayer } from "@/components/games/game-player";

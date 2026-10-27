@@ -6,6 +6,7 @@ import { usePostCardStore } from "@/stores/post-card.store";
 import { texts } from "@/texts";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { PostActionsProps } from "@/types/components/post/post-actions-props";
+import { useToast } from "@rede-enois/design-system/ui";
 import { Bookmark, Flag, Heart, MessageSquare, Repeat2, Share2 } from "lucide-react";
 
 import { REACTION_EMOJIS, reactionsApi } from "@/lib/api";
@@ -19,8 +20,6 @@ import { prefersReducedMotion, readForceMotion, readLiteMode } from "@/lib/lite-
 import { usePostReaction } from "@/lib/reactions/use-post-reaction";
 import { useAuth } from "@/lib/use-auth";
 import { useMountedOnce } from "@/lib/use-mounted-once";
-
-import { useToast } from "@/components/ui/toast";
 
 import { ReactionPicker } from "./reaction-picker";
 import { ReactionsDialog } from "./reactions-dialog";

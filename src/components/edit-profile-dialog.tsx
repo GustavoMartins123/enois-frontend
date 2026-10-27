@@ -16,26 +16,25 @@ import type { FieldProps } from "@/types/components/profile/edit-profile-dialog/
 import type { Props } from "@/types/components/profile/edit-profile-dialog/props";
 import type { SubListProps } from "@/types/components/profile/edit-profile-dialog/sub-list-props";
 import type { SubListUpdate } from "@/types/components/profile/edit-profile-dialog/sub-list-update";
+import {
+  Button,
+  DateTextInput,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  Input,
+  Label,
+  Switch,
+  Textarea,
+} from "@rede-enois/design-system/ui";
 import { Loader2, Pencil, Plus, Trash2, X } from "lucide-react";
 
 import { ApiError, preferencesApi, profileApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { ISO_DATE, hasMinAge } from "@/lib/min-age";
 import { useMediaUpload } from "@/lib/use-media-upload";
-
-import { Button } from "@/components/ui/button";
-import { DateTextInput } from "@/components/ui/date-text-input";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { Textarea } from "@/components/ui/textarea";
 
 /**
  * Os emblemas do perfil: a lista nova e, para quem ainda só tem o emblema antigo (campo único),

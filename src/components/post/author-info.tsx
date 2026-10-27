@@ -2,8 +2,8 @@ import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { AuthorInfoProps } from "@/types/components/post/author-info-props";
+import { ContributorTag, StyledName, UserAvatar } from "@rede-enois/design-system/domain";
 
-import { UserAvatar } from "@/components/user-avatar";
 import { UserBadges } from "@/components/user-badge";
 
 import { formatTime } from "./format-time";
@@ -16,6 +16,8 @@ export function AuthorInfo({
   authorAvatarFrame,
   authorBadge,
   authorBadges,
+  authorStyle,
+  authorContributor,
   authorIdentity,
   createdAt,
   community,
@@ -58,7 +60,7 @@ export function AuthorInfo({
               params={{ username: authorUsername }}
               className="font-bold hover:underline text-sm"
             >
-              {authorName}
+              <StyledName name={authorName} style={authorStyle} />
             </Link>
           ) : (
             <Link
@@ -66,7 +68,7 @@ export function AuthorInfo({
               params={{ username: authorUsername }}
               className="font-bold hover:underline text-sm"
             >
-              {authorName}
+              <StyledName name={authorName} style={authorStyle} />
             </Link>
           )}
 
@@ -100,6 +102,12 @@ export function AuthorInfo({
             {texts.posts.authorTime(formatTime(createdAt))}
           </span>
         </div>
+
+        {authorContributor && (
+          <div className="mt-1">
+            <ContributorTag color={authorContributor.color} />
+          </div>
+        )}
       </div>
     </div>
   );

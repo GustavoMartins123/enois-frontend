@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 
 import { texts } from "@/texts";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@rede-enois/design-system/ui";
 import { HeartPulse } from "lucide-react";
 
 import { readHealthyUsage, subscribeHealthyUsage } from "@/lib/healthy-usage";
-
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 /**
  * Conta o tempo da SESSÃO (recarregar zera) e mostra o lembrete quando o limite configurado

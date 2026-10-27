@@ -5,12 +5,11 @@ import { Link } from "@tanstack/react-router";
 
 import type { BlocksAction } from "@/types/application/daily-games/blocks-action";
 import type { BlocksState } from "@/types/application/daily-games/blocks-state";
+import { Button } from "@rede-enois/design-system/ui";
 import { Boxes } from "lucide-react";
 
 import { ApiError, randomUUID } from "@/lib/api-client";
 import { dailyBlocksApi, previousChallengeDate } from "@/lib/api/daily-games";
-
-import { Button } from "@/components/ui/button";
 
 // Espelho do BlocksEngine.java (rules version 2): grade 10x20, gravidade a cada 5 ticks de
 // 100 ms, rotação horária sem wall kick, peça O não gira, spawn em x=3/y=0, pontuação

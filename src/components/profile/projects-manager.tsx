@@ -8,21 +8,20 @@ import type { UserProjectInput } from "@/types/application/project/user-project-
 import type { ProjectCardMode } from "@/types/components/profile/project-card-mode";
 import type { ProjectsManagerProps } from "@/types/components/profile/projects-manager-props";
 import type { EditingProject } from "@/types/components/profile/projects-manager-state";
-
-import { projectsApi } from "@/lib/api";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
+  Input,
+  Label,
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
+
+import { projectsApi } from "@/lib/api";
 
 import { HtmlEditor } from "@/components/html-editor";
 
@@ -30,6 +29,7 @@ const STATUS_PRESETS = ["ideia", "em andamento", "pausado", "concluído"] as con
 
 const vazio = (): UserProjectInput => ({
   title: "",
+  description: "",
   stack: [],
   repoUrl: null,
   status: "em andamento",
@@ -68,6 +68,7 @@ export function ProjectsManager({ open, onOpenChange, username, onSaved }: Proje
       if (!editando) return null;
       const input: UserProjectInput = {
         title: editando.title.trim(),
+        description: editando.description?.trim() || null,
         stack: stackTexto
           .split(",")
           .map((item) => item.trim())
@@ -208,6 +209,21 @@ export function ProjectsManager({ open, onOpenChange, username, onSaved }: Proje
 
             {modo === "estruturado" ? (
               <>
+                <div className="space-y-1.5">
+                  <Label className="text-xs text-muted-foreground">
+                    {texts.profile.projects.descriptionField}
+                  </Label>
+
+                  <Input
+                    value={editando.description ?? ""}
+                    maxLength={500}
+                    placeholder={texts.profile.projects.descriptionPlaceholder}
+                    onChange={(event) =>
+                      setEditando({ ...editando, description: event.target.value })
+                    }
+                  />
+                </div>
+
                 <div className="space-y-1.5">
                   <Label className="text-xs text-muted-foreground">
                     {texts.profile.projects.statusField}

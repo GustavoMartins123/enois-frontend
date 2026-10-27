@@ -3,20 +3,19 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
-import { Repeat2 } from "lucide-react";
-
-import { ApiError, reactionsApi } from "@/lib/api";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
+import { Repeat2 } from "lucide-react";
+
+import { ApiError, reactionsApi } from "@/lib/api";
 
 /** Limite combinado com o backend (`RepostPostService`). */
 export const REPOST_OPINION_MAX = 600;

@@ -5,9 +5,8 @@ import { PAGE_EMBED_HEIGHT } from "@/constants/post-page";
 import { texts } from "@/texts";
 import type { PostPageProps } from "@/types/components/post/post-page-props";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { Dialog, DialogContent, DialogTitle } from "@rede-enois/design-system/ui";
 import { Maximize2, X } from "lucide-react";
-
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 import { SandboxedHtmlFrame } from "./sandboxed-html-frame";
 

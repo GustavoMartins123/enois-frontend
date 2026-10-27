@@ -4,14 +4,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import { Button, Input, useToast } from "@rede-enois/design-system/ui";
 import { Globe, Trash2 } from "lucide-react";
 
 import { developerOriginsApi } from "@/lib/api";
 import { useIsAuthenticated } from "@/lib/use-auth";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/toast";
 
 /**
  * Cadastro da origem que pode consumir a API pública pelo navegador. Sem ela, o preflight de

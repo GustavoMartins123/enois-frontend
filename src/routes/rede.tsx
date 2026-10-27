@@ -6,6 +6,8 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 import { texts } from "@/texts";
 import type { RequestCardProps } from "@/types/routes/network/request-card-props";
 import type { StatProps } from "@/types/routes/network/stat-props";
+import { StyledName, UserAvatar } from "@rede-enois/design-system/domain";
+import { Button, PageHeader } from "@rede-enois/design-system/ui";
 import { Check, Send, UserMinus, UserPlus, X } from "lucide-react";
 
 import { networkApi, profileApi } from "@/lib/api";
@@ -14,11 +16,7 @@ import { liteInterval } from "@/lib/lite-mode";
 import { requireAuth } from "@/lib/require-auth";
 import { useLiteMode } from "@/lib/use-lite-mode";
 
-import { Button } from "@/components/ui/button";
-import { PageHeader } from "@/components/ui/page-header";
-
 import { AppContainer } from "@/components/app-container";
-import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/rede")({
   beforeLoad: requireAuth,
@@ -165,7 +163,7 @@ function Rede() {
                     params={{ username: u.username }}
                     className="mt-3 block break-words font-semibold hover:underline"
                   >
-                    {u.name}
+                    <StyledName name={u.name} style={u.nameStyle} />
                   </Link>
 
                   <p className="mt-1 line-clamp-2 min-h-[2.5rem] text-xs text-muted-foreground">

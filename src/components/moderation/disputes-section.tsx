@@ -1,14 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
+import { Button, useToast } from "@rede-enois/design-system/ui";
 import { ShieldAlert } from "lucide-react";
 
 import { walletApi } from "@/lib/api";
 import { dataHora } from "@/lib/date/format";
 import { formatFaisca } from "@/lib/faisca";
-
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/toast";
 
 import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
 

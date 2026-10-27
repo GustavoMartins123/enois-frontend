@@ -10,6 +10,15 @@ import type { SanctionProposalDecision } from "@/types/application/moderation/sa
 import type { SanctionProposalView } from "@/types/application/moderation/sanction-proposal-view";
 import type { ModeratorTabId } from "@/types/routes/moderador/moderator-tab-id";
 import {
+  Button,
+  ConfirmDialog,
+  EmptyState,
+  Input,
+  LoadingState,
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
+import {
   Activity,
   ArrowLeft,
   Bug,
@@ -18,6 +27,7 @@ import {
   FolderKanban,
   Gamepad2,
   Gavel,
+  GitPullRequest,
   History,
   LifeBuoy,
   Mail,
@@ -26,6 +36,7 @@ import {
   Shield,
   ShieldAlert,
   ShieldCheck,
+  StickyNote,
   Trash2,
   UserCheck,
   Users,
@@ -38,23 +49,18 @@ import { dataHora } from "@/lib/date/format";
 import { requireAuth } from "@/lib/require-auth";
 import { cn } from "@/lib/utils";
 
-import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/loading-state";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
-
 import { AppContainer } from "@/components/app-container";
 import { AppealsSection } from "@/components/moderation/appeals-section";
+import { ContributionsSection } from "@/components/moderation/contributions-section";
 import { ContributorsSection } from "@/components/moderation/contributors-section";
 import { DisputesSection } from "@/components/moderation/disputes-section";
 import { EmailLogSection } from "@/components/moderation/email-log-section";
 import { GamesReviewSection } from "@/components/moderation/games-review-section";
 import { MonitoringSection } from "@/components/moderation/monitoring-section";
+import { NotesSection } from "@/components/moderation/notes-section";
 import { PanicModeSection } from "@/components/moderation/panic-mode-section";
 import { ProjectsReviewSection } from "@/components/moderation/projects-review-section";
+import { PullRequestsSection } from "@/components/moderation/pull-requests-section";
 import { SupportTicketsSection } from "@/components/moderation/support-tickets-section";
 import { SuspiciousPostsSection } from "@/components/moderation/suspicious-posts-section";
 import { SuspiciousUsersSection } from "@/components/moderation/suspicious-users-section";
@@ -72,6 +78,8 @@ const ALL_TABS: { id: ModeratorTabId; label: string; icon: typeof Flag; adminOnl
   { id: "projects", label: texts.moderator.tabs.projects, icon: FolderKanban, adminOnly: false },
   { id: "support", label: texts.moderator.tabs.support, icon: LifeBuoy, adminOnly: false },
   { id: "issues", label: texts.moderator.tabs.issues, icon: Bug, adminOnly: false },
+  { id: "pulls", label: texts.moderator.tabs.pulls, icon: GitPullRequest, adminOnly: false },
+  { id: "notes", label: texts.moderator.tabs.notes, icon: StickyNote, adminOnly: false },
   { id: "history", label: texts.moderator.tabs.history, icon: History, adminOnly: false },
   { id: "appeals", label: texts.moderator.tabs.appeals, icon: ShieldAlert, adminOnly: false },
   { id: "disputes", label: texts.moderator.tabs.disputes, icon: Scale, adminOnly: false },
@@ -111,9 +119,9 @@ const ALL_TABS: { id: ModeratorTabId; label: string; icon: typeof Flag; adminOnl
     adminOnly: true,
   },
   {
-    id: "contributors",
-    label: texts.moderator.tabs.contributors,
-    icon: Users,
+    id: "githubContributions",
+    label: texts.moderator.tabs.githubContributions,
+    icon: GitPullRequest,
     adminOnly: true,
   },
 ];
@@ -249,6 +257,9 @@ function Moderador() {
             {canModerate && activeTab === "emails" && <EmailLogSection />}
             {canModerate && activeTab === "monitoring" && <MonitoringSection />}
             {me.admin && activeTab === "contributors" && <ContributorsSection />}
+            {me.admin && activeTab === "githubContributions" && <ContributionsSection />}
+            {canModerate && activeTab === "pulls" && <PullRequestsSection />}
+            {canModerate && activeTab === "notes" && <NotesSection />}
           </div>
         ) : (
           <ApplicationSection me={me} />

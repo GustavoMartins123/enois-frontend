@@ -157,16 +157,10 @@ Textarea com autocomplete de @menções.
 - Dropdown de resultados com navegação por setas, Tab/Enter para selecionar, Escape para fechar
 - Insere `@username` no texto e rastreia IDs dos mencionados
 
-## `UserAvatar` (`src/components/user-avatar.tsx`)
+## `UserAvatar` (`@rede-enois/design-system/domain`)
 
-Componente de avatar reutilizável.
-
-**Props:** `{ src?, alt?, className?, fallback? }`
-
-- Usa `Avatar` do shadcn com `AvatarImage` e `AvatarFallback`
-- Resolve CDN URL via `resolveCdnUrl()`
-- Fallback: primeira letra do nome ou "?"
-- Se sem src, aplica `dark:invert` no placeholder
+Avatar reutilizável. Mora no design system (`src/domain/avatar/user-avatar.tsx` do repositório
+`enois-design-system`); props e variações estão no Storybook de lá.
 
 ## `ThemeToggle` (`src/components/theme-toggle.tsx`)
 

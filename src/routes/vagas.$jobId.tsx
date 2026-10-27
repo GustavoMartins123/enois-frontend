@@ -6,6 +6,8 @@ import { Link, Outlet, createFileRoute, useMatchRoute, useNavigate } from "@tans
 import { jobLevelLabel, jobTypeLabel } from "@/constants/job-options";
 import { texts } from "@/texts";
 import type { JobApplication } from "@/types/application/job/job-application";
+import { StyledName, UserAvatar } from "@rede-enois/design-system/domain";
+import { Button, ConfirmDialog } from "@rede-enois/design-system/ui";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -31,16 +33,12 @@ import { actionsFor, applicationStatusLabel, statusTone } from "@/lib/job-applic
 import { buildShareTags } from "@/lib/open-graph";
 import { safeHref } from "@/lib/safe-url";
 
-import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-
 import { AppContainer } from "@/components/app-container";
 import { ApplicationFeedbackDialog } from "@/components/application-feedback-dialog";
 import { ApplyByEmailButton } from "@/components/apply-by-email-button";
 import { ApplyJobDialog } from "@/components/apply-job-dialog";
 import { JobEditDialog } from "@/components/job-edit-dialog";
 import { RichText } from "@/components/post/rich-text";
-import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/vagas/$jobId")({
   loader: async ({ params }) => {
@@ -230,10 +228,12 @@ function JobDetail() {
                       params={{ username: job.author.username }}
                       className="truncate text-sm font-medium text-text-strong hover:underline"
                     >
-                      {job.author.name}
+                      <StyledName name={job.author.name} style={job.author.nameStyle} />
                     </Link>
                   ) : (
-                    <span className="truncate text-sm font-medium">{job.author.name}</span>
+                    <span className="truncate text-sm font-medium">
+                      <StyledName name={job.author.name} style={job.author.nameStyle} />
+                    </span>
                   )}
 
                   <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs">

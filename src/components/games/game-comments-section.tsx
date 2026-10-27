@@ -3,16 +3,12 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
+import { UserAvatar } from "@rede-enois/design-system/domain";
+import { Button, Textarea, useToast } from "@rede-enois/design-system/ui";
 import { Trash2 } from "lucide-react";
 
 import { gamesApi } from "@/lib/api";
 import { useCurrentUser } from "@/lib/current-user";
-
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
-
-import { UserAvatar } from "@/components/user-avatar";
 
 export function GameCommentsSection({ gameId, ownerId }: { gameId: string; ownerId: string }) {
   const queryClient = useQueryClient();

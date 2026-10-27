@@ -3,16 +3,12 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
+import { UserAvatar } from "@rede-enois/design-system/domain";
+import { Button, Textarea, useToast } from "@rede-enois/design-system/ui";
 import { Star } from "lucide-react";
 
 import { gamesApi } from "@/lib/api";
 import { useCurrentUser } from "@/lib/current-user";
-
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
-
-import { UserAvatar } from "@/components/user-avatar";
 
 /** Nota em estrelas; `onPick` ausente = só leitura. */
 function Stars({ value, onPick }: { value: number; onPick?: (rating: number) => void }) {

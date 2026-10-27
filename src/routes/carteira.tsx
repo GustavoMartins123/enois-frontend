@@ -1,15 +1,28 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import type { WalletTab } from "@/types/routes/wallet/wallet-tab";
+import {
+  Button,
+  Input,
+  LoadingState,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+  Textarea,
+  useToast,
+} from "@rede-enois/design-system/ui";
 import {
   ArrowLeft,
   Send,
   ShieldAlert,
   ShoppingBag,
   Sparkles,
+  Store,
   TrendingUp,
   User,
   Zap,
@@ -19,25 +32,36 @@ import { walletApi } from "@/lib/api";
 import { faiscaToBrlCents, formatBrlCents, formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { requireAuth } from "@/lib/require-auth";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/loading-state";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/toast";
-
 import { AppContainer } from "@/components/app-container";
+import { MarketplaceSection } from "@/components/marketplace/marketplace-section";
 import { UserPicker } from "@/components/user-picker";
 import { FrameShop } from "@/components/wallet/frame-shop";
 import { WalletHistory } from "@/components/wallet/wallet-history";
 
+const WALLET_TABS: WalletTab[] = ["carteira", "marketplace", "loja", "minhas"];
+
 export const Route = createFileRoute("/carteira")({
   beforeLoad: requireAuth,
+  /** A aba vive na URL: /carteira?tab=marketplace (a rota antiga /marketplace redireciona para cá). */
+  validateSearch: (search: Record<string, unknown>): { tab?: WalletTab } => {
+    const tab =
+      typeof search.tab === "string" && WALLET_TABS.includes(search.tab as WalletTab)
+        ? (search.tab as WalletTab)
+        : undefined;
+    return tab ? { tab } : {};
+  },
   head: () => ({ meta: [{ title: texts.wallet.seoTitle }] }),
   component: Carteira,
 });
 
 function Carteira() {
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
+  const [activeTab, setActiveTab] = useState<WalletTab>(search.tab ?? "carteira");
+  // A aba vive na URL; o estado local mantém a troca imediata (e os testes que não montam o router).
+  useEffect(() => {
+    setActiveTab(search.tab ?? "carteira");
+  }, [search.tab]);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [payOpen, setPayOpen] = useState(false);
@@ -134,11 +158,26 @@ function Carteira() {
           <p className="text-sm text-text-subtle">{texts.frameShop.subtitle}</p>
         </div>
 
-        <Tabs defaultValue="carteira">
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => {
+            const tab = value as WalletTab;
+            setActiveTab(tab);
+            void navigate({
+              search: tab === "carteira" ? {} : { tab },
+              replace: true,
+            });
+          }}
+        >
           <TabsList className="wallet-shop-tabs">
             <TabsTrigger value="carteira">
               <Zap className="h-4 w-4" aria-hidden="true" />
               {texts.frameShop.walletTab}
+            </TabsTrigger>
+
+            <TabsTrigger value="marketplace">
+              <Store className="h-4 w-4" aria-hidden="true" />
+              {texts.frameShop.marketplaceTab}
             </TabsTrigger>
 
             <TabsTrigger value="loja">
@@ -206,6 +245,10 @@ function Carteira() {
                 onContest={(refId) => setContestar({ refId, motivo: "golpe", descricao: "" })}
               />
             )}
+          </TabsContent>
+
+          <TabsContent value="marketplace" className="wallet-tab-content pt-5">
+            <MarketplaceSection />
           </TabsContent>
 
           <TabsContent value="loja" className="wallet-tab-content pt-5">

@@ -4,16 +4,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import { Button, ConfirmDialog, EmptyState, Input, useToast } from "@rede-enois/design-system/ui";
 import { Check, ShieldAlert, Trash2 } from "lucide-react";
 
 import { moderationApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
-
-import { Button } from "@/components/ui/button";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Input } from "@/components/ui/input";
-import { useToast } from "@/components/ui/toast";
 
 import { ListRowSkeletons } from "@/components/skeletons/list-row-skeletons";
 

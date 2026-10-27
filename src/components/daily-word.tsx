@@ -9,19 +9,18 @@ import type { TileState } from "@/types/application/daily-games/tile-state";
 import type { UserWordStats } from "@/types/application/daily-games/user-word-stats";
 import type { WordMark } from "@/types/application/daily-games/word-mark";
 import type { WordState } from "@/types/application/daily-games/word-state";
-import { BarChart2, HelpCircle, Share2, Sparkles, Type } from "lucide-react";
-
-import { randomUUID } from "@/lib/api-client";
-import { dailyWordsApi, previousChallengeDate } from "@/lib/api/daily-games";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from "@rede-enois/design-system/ui";
+import { BarChart2, HelpCircle, Share2, Sparkles, Type } from "lucide-react";
+
+import { randomUUID } from "@/lib/api-client";
+import { dailyWordsApi, previousChallengeDate } from "@/lib/api/daily-games";
 
 // ─── Estatísticas e Persistência Local ─────────────────────────────────────────
 

@@ -4,13 +4,13 @@ import { useQuery } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { ProjectsSectionProps } from "@/types/components/profile/projects-section-props";
+import { Button } from "@rede-enois/design-system/ui";
 
 import { projectsApi } from "@/lib/api";
 import { safeHref } from "@/lib/safe-url";
 
-import { Button } from "@/components/ui/button";
-
 import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
+import { GithubImportDialog } from "@/components/profile/github-import-dialog";
 import { ProjectsManager } from "@/components/profile/projects-manager";
 
 /** Um emblema de status do card de projeto. */
@@ -29,6 +29,7 @@ function Chip({ label }: { label: string }) {
  */
 export function ProfileProjectsSection({ username, isOwner }: ProjectsSectionProps) {
   const [managing, setManaging] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [diarioAberto, setDiarioAberto] = useState<string | null>(null);
 
   const { data: projects = [] } = useQuery({
@@ -42,14 +43,25 @@ export function ProfileProjectsSection({ username, isOwner }: ProjectsSectionPro
         <h2 className="text-base font-normal text-text-strong">{texts.profile.projects.title}</h2>
 
         {isOwner && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="rounded-full"
-            onClick={() => setManaging(true)}
-          >
-            {texts.profile.projects.manage}
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full"
+              onClick={() => setImporting(true)}
+            >
+              {texts.profile.githubImport.action}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="rounded-full"
+              onClick={() => setManaging(true)}
+            >
+              {texts.profile.projects.manage}
+            </Button>
+          </div>
         )}
       </div>
 
@@ -78,6 +90,12 @@ export function ProfileProjectsSection({ username, isOwner }: ProjectsSectionPro
 
                   {project.status && <Chip label={project.status} />}
                 </div>
+
+                {project.description && (
+                  <p className="mt-2 text-sm leading-relaxed text-text-subtle">
+                    {project.description}
+                  </p>
+                )}
 
                 {project.stack.length > 0 && (
                   <div className="mt-2 flex flex-wrap gap-1.5">
@@ -137,14 +155,17 @@ export function ProfileProjectsSection({ username, isOwner }: ProjectsSectionPro
       )}
 
       {isOwner && (
-        <ProjectsManager
-          open={managing}
-          onOpenChange={setManaging}
-          username={username}
-          onSaved={() => {
-            /* a invalidação do query já re-renderiza a seção */
-          }}
-        />
+        <>
+          <ProjectsManager
+            open={managing}
+            onOpenChange={setManaging}
+            username={username}
+            onSaved={() => {
+              /* a invalidação do query já re-renderiza a seção */
+            }}
+          />
+          <GithubImportDialog open={importing} onOpenChange={setImporting} username={username} />
+        </>
       )}
     </section>
   );

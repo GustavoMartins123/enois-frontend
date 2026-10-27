@@ -2,11 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
+import { Skeleton } from "@rede-enois/design-system/ui";
 import { Flame } from "lucide-react";
 
 import { gamesApi } from "@/lib/api";
-
-import { Skeleton } from "@/components/ui/skeleton";
 
 import { GameIcon } from "@/components/game-icon";
 

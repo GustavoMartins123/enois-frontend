@@ -4,15 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { WalletHistoryProps } from "@/types/components/wallet/wallet-history-props";
+import { Button, Input, LoadingState } from "@rede-enois/design-system/ui";
 import { ChevronLeft, ChevronRight, ReceiptText } from "lucide-react";
 
 import { walletApi } from "@/lib/api";
 import { dataHora } from "@/lib/date/format";
 import { formatFaisca } from "@/lib/faisca";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { LoadingState } from "@/components/ui/loading-state";
 
 export function WalletHistory({ onContest }: WalletHistoryProps) {
   const [draft, setDraft] = useState({ from: "", to: "" });

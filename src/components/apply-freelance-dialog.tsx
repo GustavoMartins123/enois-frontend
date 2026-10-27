@@ -5,19 +5,18 @@ import { useNavigate } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { FreelanceView } from "@/types/application/freelance/freelance-view";
-import { Send } from "lucide-react";
-
-import { messagesApi } from "@/lib/api";
-
-import { Button } from "@/components/ui/button";
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
+  Textarea,
+} from "@rede-enois/design-system/ui";
+import { Send } from "lucide-react";
+
+import { messagesApi } from "@/lib/api";
 
 /**
  * Candidatura a um freela: não existe formulário — abre (ou reaproveita) a conversa direta com quem

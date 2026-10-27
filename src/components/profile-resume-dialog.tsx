@@ -4,15 +4,19 @@ import { useMutation } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { ProfileResumeDialogProps } from "@/types/components/profile/profile-resume-dialog-props";
+import {
+  Button,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  useToast,
+} from "@rede-enois/design-system/ui";
 import { FileText, Upload, X } from "lucide-react";
 
 import { profileApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
 import { useMediaUpload } from "@/lib/use-media-upload";
-
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/toast";
 
 /** Teto do arquivo: currículo é texto; acima disso é portfólio disfarçado. */
 const MAX_RESUME_BYTES = 5 * 1024 * 1024;

@@ -118,7 +118,7 @@ function PostDetail() {
       <div className="space-y-6">
         <Link
           to="/feed"
-          search={{ aba: feedTab ?? "FOR_YOU" }}
+          search={{ aba: feedTab ?? "ALL" }}
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="h-4 w-4" />
