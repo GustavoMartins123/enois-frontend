@@ -68,6 +68,7 @@ import { useToast } from "@/components/ui/toast";
 import { AppContainer } from "@/components/app-container";
 import { AppearanceDialog } from "@/components/appearance/appearance-dialog";
 import { BlockUserDialog } from "@/components/block-user-dialog";
+import { ContributorTag } from "@/components/contributor-tag";
 import { EditProfileDialog } from "@/components/edit-profile-dialog";
 import { ImageCropDialog } from "@/components/image-crop-dialog";
 import { InfiniteScroll } from "@/components/infinite-scroll";
@@ -679,15 +680,7 @@ function Profile() {
 
               {isContributor && (
                 <div className="mt-1">
-                  <span
-                    className="inline-flex items-center rounded-full border px-2 py-0.5 text-[11px] font-medium"
-                    style={{
-                      color: user.contributorTagColor ?? "var(--primary)",
-                      borderColor: user.contributorTagColor ?? "var(--primary)",
-                    }}
-                  >
-                    {texts.profile.contributorTag}
-                  </span>
+                  <ContributorTag color={user.contributorTagColor} />
                 </div>
               )}
 
