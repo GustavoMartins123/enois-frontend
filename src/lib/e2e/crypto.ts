@@ -59,13 +59,15 @@ async function deriveKeyFromPassword(password: string, salt: Uint8Array): Promis
     false,
     ["deriveKey"],
   );
-  return crypto.subtle.deriveKey(
-    { name: "PBKDF2", salt, iterations: PBKDF2_ITERATIONS, hash: "SHA-256" },
-    keyMaterial,
-    { name: "AES-GCM", length: 256 },
-    false,
-    ["encrypt", "decrypt"] as KeyUsage[],
-  );
+  const params: Pbkdf2Params = {
+    name: "PBKDF2",
+    salt,
+    iterations: PBKDF2_ITERATIONS,
+    hash: "SHA-256",
+  };
+  const derived: AesDerivedKeyParams = { name: "AES-GCM", length: 256 };
+  const usages: KeyUsage[] = ["encrypt", "decrypt"];
+  return crypto.subtle.deriveKey(params, keyMaterial, derived, false, usages);
 }
 
 /** Cifra a chave privada com a senha do usuário. Retorna salt + iv + ciphertext em base64. */
