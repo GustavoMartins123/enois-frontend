@@ -942,6 +942,18 @@ export const texts = {
       deleting: "Excluindo...",
       error: "Não foi possível excluir a conta. Confira a senha.",
     },
+    passwordExpired: {
+      title: "Atualize sua senha",
+      description:
+        "De acordo com a nossa nova política de segurança, selecione uma nova senha para continuar.",
+      newPassword: "Nova senha",
+      confirm: "Confirmar nova senha",
+      action: "Salvar nova senha",
+      saving: "Salvando...",
+      mismatch: "As senhas não coincidem.",
+      success: "Senha atualizada. Faça login com a nova senha.",
+      error: "Não foi possível atualizar a senha. Tente novamente.",
+    },
     resetPassword: {
       title: "Redefinir senha",
       description: (email: string) => `Enviaremos um link de redefinição para ${email}.`,
