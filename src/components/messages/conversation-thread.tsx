@@ -15,6 +15,7 @@ import type { SendMessageInput } from "@/types/routes/messages/send-message-inpu
 import { Briefcase, EyeOff, ImageIcon, Send, X } from "lucide-react";
 
 import { messagesApi, profileApi, reportsApi, servicesApi } from "@/lib/api";
+import { useCurrentUser } from "@/lib/current-user";
 import { encryptForSend } from "@/lib/e2e/conversation";
 import { hasLocalKeys } from "@/lib/e2e/key-manager";
 import { useDecryptedMessages } from "@/lib/e2e/use-decrypted-messages";
@@ -31,6 +32,7 @@ import { SpoilerPreview } from "@/components/post/spoiler-preview";
 import { MessageSkeletons } from "@/components/skeletons/message-skeletons";
 
 import { ConversationHeader } from "./conversation-header";
+import { E2eSetupBanner } from "./e2e-setup-banner";
 import { MessageBubble } from "./message-bubble";
 
 /** Tamanho que o app sempre usou; em modo lite cada página vem maior (menos idas ao servidor). */
@@ -85,6 +87,12 @@ export function ConversationThread({
   const peerLastReadAt = conversation.otherLastReadAt
     ? new Date(conversation.otherLastReadAt).getTime()
     : null;
+  const { data: currentUserData } = useCurrentUser();
+  const [e2eReady, setE2eReady] = useState(false);
+  useEffect(() => {
+    hasLocalKeys().then(setE2eReady);
+  }, []);
+
   const rawMessages = (messagesData?.pages.flatMap((page) => page.items) ?? []).sort(
     (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
   );
@@ -319,6 +327,15 @@ export function ConversationThread({
         conversation={conversation}
         onBack={onBack}
       />
+
+      {!e2eReady && currentUserData && (
+        <div className="px-4 pt-3">
+          <E2eSetupBanner
+            hasPassword={currentUserData.hasPassword}
+            onSetupComplete={() => setE2eReady(true)}
+          />
+        </div>
+      )}
 
       <div
         ref={messagesScrollRef}
