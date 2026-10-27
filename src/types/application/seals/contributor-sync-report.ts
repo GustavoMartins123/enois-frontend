@@ -8,6 +8,10 @@ export type ContributorSyncReport = {
   skipped: number;
   detailsFetched: number;
   revertedFlagged: number;
+  issuesFetched: number;
+  issuesCreated: number;
+  issuesUpdated: number;
+  sealsRecalculated: number;
   rateLimited: boolean;
   errors: string[];
   startedAt: string;

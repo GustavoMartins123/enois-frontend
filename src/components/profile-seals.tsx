@@ -4,10 +4,11 @@ import { texts } from "@/texts";
 import { Award, ExternalLink } from "lucide-react";
 
 import { contributorSealsApi } from "@/lib/api";
+import { dataCurta } from "@/lib/date/format";
 
 /**
  * Selos oficiais de contribuição no perfil. Só chegam aqui evidências validadas; notas internas e
- * suspeitas nunca são projetadas pela API pública.
+ * suspeitas nunca são projetadas pela API pública. O nível exibido já vem calculado do backend.
  */
 export function ProfileSeals({ username }: { username: string }) {
   const { data } = useQuery({
@@ -42,10 +43,15 @@ export function ProfileSeals({ username }: { username: string }) {
               <p className="text-sm font-semibold text-text-strong">{seal.name}</p>
 
               <p className="text-xs text-text-subtle">
-                {texts.profile.seals.grantedAt}{" "}
-                {new Date(seal.grantedAt).toLocaleDateString("pt-BR")}
+                {seal.categoryName}
                 {" · "}
-                {texts.profile.seals.categories}: {seal.category}
+                {texts.profile.seals.tierRange(seal.minCount, seal.maxCount)}
+                {" · "}
+                {texts.profile.seals.verified(seal.evidenceCount)}
+              </p>
+
+              <p className="text-xs text-text-subtle">
+                {texts.profile.seals.grantedAt} {dataCurta(seal.grantedAt)}
               </p>
             </div>
           </div>
@@ -58,7 +64,7 @@ export function ProfileSeals({ username }: { username: string }) {
 
               <ul className="mt-1 space-y-1">
                 {seal.evidence.map((evidence) => (
-                  <li key={`${evidence.repository}-${evidence.prNumber}`}>
+                  <li key={`${evidence.repository}-${evidence.kind}-${evidence.number}`}>
                     <a
                       href={evidence.url}
                       target="_blank"
@@ -66,7 +72,8 @@ export function ProfileSeals({ username }: { username: string }) {
                       className="inline-flex min-w-0 items-center gap-1 text-xs text-primary hover:underline"
                     >
                       <span className="truncate">
-                        {evidence.repository} #{evidence.prNumber} · {evidence.title}
+                        {evidence.kind === "ISSUE" ? "Issue" : "PR"} · {evidence.repository} #
+                        {evidence.number} · {evidence.title}
                       </span>
 
                       <ExternalLink className="h-3 w-3 shrink-0" aria-hidden />

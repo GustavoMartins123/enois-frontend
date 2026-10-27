@@ -1,3 +1,4 @@
+import type { ContributorContributionKind } from "./contributor-contribution-kind";
 import type { ContributorContributionStatus } from "./contributor-contribution-status";
 
 export type ContributorContribution = {
@@ -6,10 +7,13 @@ export type ContributorContribution = {
   username: string | null;
   githubLogin: string;
   repository: string;
-  prNumber: number;
+  kind: ContributorContributionKind;
+  number: number;
   title: string;
   url: string;
+  labels: string | null;
   mergedAt: string | null;
+  closedAt: string | null;
   changedFiles: number;
   additions: number;
   deletions: number;

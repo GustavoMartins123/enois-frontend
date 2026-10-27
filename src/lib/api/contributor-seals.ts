@@ -1,7 +1,9 @@
 import type { ContributorContribution } from "@/types/application/seals/contributor-contribution";
 import type { ContributorContributionDetail } from "@/types/application/seals/contributor-contribution-detail";
+import type { ContributorContributionKind } from "@/types/application/seals/contributor-contribution-kind";
 import type { ContributorContributionStatus } from "@/types/application/seals/contributor-contribution-status";
 import type { ContributorRepository } from "@/types/application/seals/contributor-repository";
+import type { ContributorSealType } from "@/types/application/seals/contributor-seal-type";
 import type { ContributorSyncReport } from "@/types/application/seals/contributor-sync-report";
 import type { GitHubIdentity } from "@/types/application/seals/github-identity";
 import type { ProfileSeal } from "@/types/application/seals/profile-seal";
@@ -11,19 +13,22 @@ import { api, buildQuery } from "../api-client";
 
 /** Selos de contribuição (não confundir com os selos de post em `seals.ts`). */
 export const contributorSealsApi = {
-  /** Selos ativos no perfil público (só evidências validadas). */
+  /** Níveis ativos no perfil público (só evidências validadas). */
   byUsername: (username: string) =>
     api.get<ProfileSeal[]>(`/users/${encodeURIComponent(username)}/seals`),
 
-  /** Critérios públicos e repositórios elegíveis. */
+  /** Categorias, faixas, políticas e repositórios elegíveis. */
   criteria: () => api.get<SealCriteria>("/seals/criteria"),
 
   /** Estado do vínculo GitHub da conta logada. */
   githubStatus: () => api.get<GitHubIdentity>("/me/github"),
 
-  adminContributions: (status?: ContributorContributionStatus) =>
+  adminContributions: (
+    status?: ContributorContributionStatus,
+    kind?: ContributorContributionKind,
+  ) =>
     api.get<ContributorContribution[]>(
-      `/admin/contributors/contributions${buildQuery({ status })}`,
+      `/admin/contributors/contributions${buildQuery({ status, kind })}`,
     ),
 
   adminDetail: (id: string) =>
@@ -35,8 +40,13 @@ export const contributorSealsApi = {
       note,
     }),
 
-  adminRevokeSeal: (userId: string, reason: string) =>
-    api.post<{ status: string }>(`/admin/contributors/seals/${userId}/revoke`, { reason }),
+  adminRevokeSeal: (userId: string, type: ContributorSealType, reason: string) =>
+    api.post<{ status: string }>(`/admin/contributors/seals/${userId}/revoke`, { type, reason }),
+
+  adminGrantSeal: (userId: string, type: ContributorSealType, reason: string) =>
+    api.post<{ status: string }>(`/admin/contributors/seals/${userId}/grant`, { type, reason }),
+
+  adminRecalculateAll: () => api.post<{ users: number }>("/admin/contributors/recalculate", {}),
 
   adminSync: (data: { dryRun: boolean; full: boolean; repositories?: string[] }) =>
     api.post<ContributorSyncReport>("/admin/contributors/sync", data),

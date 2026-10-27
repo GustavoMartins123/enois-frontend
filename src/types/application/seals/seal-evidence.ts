@@ -1,8 +1,11 @@
+import type { ContributorContributionKind } from "./contributor-contribution-kind";
+
 export type SealEvidence = {
+  kind: ContributorContributionKind;
   repository: string;
-  prNumber: number;
+  number: number;
   title: string;
   url: string;
-  mergedAt: string | null;
+  happenedAt: string | null;
   category: string;
 };

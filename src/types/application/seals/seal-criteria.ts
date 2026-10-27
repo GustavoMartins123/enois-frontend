@@ -1,9 +1,8 @@
+import type { SealCategoryCriteria } from "./seal-category-criteria";
+
 export type SealCriteria = {
-  type: string;
-  name: string;
-  description: string;
-  category: string;
   repositories: string[];
-  criteria: string[];
+  categories: SealCategoryCriteria[];
+  policies: string[];
   states: string[];
 };

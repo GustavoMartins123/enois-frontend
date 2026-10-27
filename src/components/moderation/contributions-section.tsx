@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 import { ApiError, contributorSealsApi } from "@/lib/api";
+import { dataEHora } from "@/lib/date/format";
 import { cn } from "@/lib/utils";
 
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,8 @@ const FILTERS: (ContributorContributionStatus | "ALL")[] = [
   "REVOKED",
 ];
 
+const KINDS = ["ALL", "PULL_REQUEST", "ISSUE"] as const;
+
 /**
  * Fila de evidências do GitHub. O sync só importa; validar é uma decisão humana registrada na
  * auditoria do backend. O frontend nunca concede selo por conta própria.
@@ -39,12 +42,17 @@ const FILTERS: (ContributorContributionStatus | "ALL")[] = [
 export function ContributionsSection() {
   const queryClient = useQueryClient();
   const [filter, setFilter] = useState<(typeof FILTERS)[number]>("PENDING");
+  const [kind, setKind] = useState<(typeof KINDS)[number]>("ALL");
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [report, setReport] = useState<ContributorSyncReport | null>(null);
 
   const { data, isLoading, isError, refetch, isFetching } = useQuery({
-    queryKey: ["admin", "github-contributions", filter],
-    queryFn: () => contributorSealsApi.adminContributions(filter === "ALL" ? undefined : filter),
+    queryKey: ["admin", "github-contributions", filter, kind],
+    queryFn: () =>
+      contributorSealsApi.adminContributions(
+        filter === "ALL" ? undefined : filter,
+        kind === "ALL" ? undefined : kind,
+      ),
     retry: false,
   });
 
@@ -57,17 +65,6 @@ export function ContributionsSection() {
   const review = useMutation({
     mutationFn: ({ id, status }: { id: string; status: ContributorContributionStatus }) =>
       contributorSealsApi.adminReview(id, status, notes[id] ?? ""),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["admin", "github-contributions"] });
-    },
-  });
-
-  const revokeSeal = useMutation({
-    mutationFn: ({ userId, note }: { userId: string; note: string }) =>
-      contributorSealsApi.adminRevokeSeal(
-        userId,
-        note || texts.moderator.githubContributions.revokeReason,
-      ),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ["admin", "github-contributions"] });
     },
@@ -95,7 +92,7 @@ export function ContributionsSection() {
   });
 
   const rows = data ?? [];
-  const error = review.error ?? revokeSeal.error ?? sync.error ?? toggleRepository.error;
+  const error = review.error ?? sync.error ?? toggleRepository.error;
 
   return (
     <section className="space-y-4">
@@ -170,6 +167,9 @@ export function ContributionsSection() {
               report.created,
               report.updated,
               report.fetched,
+              report.issuesCreated,
+              report.issuesUpdated,
+              report.issuesFetched,
             )}
           </p>
 
@@ -209,6 +209,26 @@ export function ContributionsSection() {
               : texts.moderator.githubContributions.status[id]}
           </button>
         ))}
+
+        <span className="mx-1 h-6 w-px self-center bg-border-soft" aria-hidden />
+
+        {KINDS.map((id) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => setKind(id)}
+            className={cn(
+              "rounded-full border px-3 py-1 text-xs font-medium transition",
+              kind === id
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border-soft text-text-subtle hover:border-primary/50 hover:text-primary",
+            )}
+          >
+            {id === "ALL"
+              ? texts.moderator.githubContributions.kindAll
+              : texts.moderator.githubContributions.kind[id]}
+          </button>
+        ))}
       </div>
 
       {error && (
@@ -235,7 +255,18 @@ export function ContributionsSection() {
         <ul className="space-y-2">
           {rows.map((contribution) => {
             const note = notes[contribution.id] ?? "";
-            const busy = review.isPending || revokeSeal.isPending;
+            const busy = review.isPending;
+            const happenedAt =
+              contribution.kind === "ISSUE" ? contribution.closedAt : contribution.mergedAt;
+            const labels = (() => {
+              if (!contribution.labels) return "";
+              try {
+                const parsed: unknown = JSON.parse(contribution.labels);
+                return Array.isArray(parsed) ? parsed.join(", ") : "";
+              } catch {
+                return contribution.labels;
+              }
+            })();
 
             return (
               <li
@@ -254,7 +285,8 @@ export function ContributionsSection() {
                     </a>
 
                     <p className="mt-0.5 text-xs text-text-subtle">
-                      {contribution.repository} #{contribution.prNumber}
+                      {texts.moderator.githubContributions.kindLabel[contribution.kind]} ·{" "}
+                      {contribution.repository} #{contribution.number}
                       {contribution.username
                         ? ` · @${contribution.username}`
                         : ` · ${texts.moderator.githubContributions.noUser}`}
@@ -279,24 +311,35 @@ export function ContributionsSection() {
 
                 <div className="flex flex-wrap gap-2 text-xs text-text-subtle">
                   <span>
-                    {texts.moderator.githubContributions.mergedAt}:{" "}
-                    {contribution.mergedAt
-                      ? new Date(contribution.mergedAt).toLocaleString("pt-BR")
-                      : "—"}
+                    {contribution.kind === "ISSUE"
+                      ? texts.moderator.githubContributions.closedAt
+                      : texts.moderator.githubContributions.mergedAt}
+                    : {happenedAt ? dataEHora(happenedAt) : "—"}
                   </span>
 
-                  <span>
-                    {texts.moderator.githubContributions.tests}:{" "}
-                    {contribution.hasTests ? "sim" : "não"}
-                  </span>
+                  {contribution.kind === "PULL_REQUEST" && (
+                    <>
+                      <span>
+                        {texts.moderator.githubContributions.tests}:{" "}
+                        {contribution.hasTests ? "sim" : "não"}
+                      </span>
 
-                  <span>{contribution.changedFiles} arquivos</span>
+                      <span>{contribution.changedFiles} arquivos</span>
 
-                  <span>
-                    +{contribution.additions} / -{contribution.deletions}
-                  </span>
+                      <span>
+                        +{contribution.additions} / -{contribution.deletions}
+                      </span>
 
-                  <span>score {contribution.score}</span>
+                      <span>score {contribution.score}</span>
+                    </>
+                  )}
+
+                  {labels && (
+                    <span>
+                      {texts.moderator.githubContributions.labels}: {labels}
+                    </span>
+                  )}
+
                   {contribution.reverted && (
                     <span className="inline-flex items-center gap-1 text-amber-600">
                       <AlertTriangle className="h-3.5 w-3.5" />
@@ -347,22 +390,15 @@ export function ContributionsSection() {
                     {texts.moderator.githubContributions.contest}
                   </Button>
 
-                  {contribution.userId && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="rounded-full text-destructive"
-                      disabled={busy}
-                      onClick={() =>
-                        revokeSeal.mutate({
-                          userId: contribution.userId!,
-                          note: notes[contribution.id] ?? "",
-                        })
-                      }
-                    >
-                      {texts.moderator.githubContributions.revokeSeal}
-                    </Button>
-                  )}
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="rounded-full text-destructive"
+                    disabled={busy || contribution.status === "REVOKED"}
+                    onClick={() => review.mutate({ id: contribution.id, status: "REVOKED" })}
+                  >
+                    {texts.moderator.githubContributions.revokeEvidence}
+                  </Button>
                 </div>
 
                 {contribution.reviewNote && (
