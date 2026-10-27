@@ -87,6 +87,7 @@ import { ProfileNetworkDialog } from "@/components/profile/profile-network-dialo
 import { ProfileQuickComposer } from "@/components/profile/profile-quick-composer";
 import { ProfileProjectsSection } from "@/components/profile/projects-section";
 import { PostCardSkeletons } from "@/components/skeletons/post-card-skeletons";
+import { StyledName } from "@/components/styled-name";
 import { UserAvatar } from "@/components/user-avatar";
 import { VerifiedContributorPrompt } from "@/components/verified-contributor-prompt";
 
@@ -997,7 +998,10 @@ function Profile() {
                           params={{ username: u.username }}
                           className="block truncate text-sm font-normal text-text-strong hover:underline"
                         >
-                          {u.name}
+                          <StyledName
+                            name={u.name}
+                            style={{ theme: u.nameTheme, font: u.nameFont, color: u.nameColor }}
+                          />
                         </Link>
                       </div>
 

@@ -71,6 +71,7 @@ import { PlatformSpacesCard } from "@/components/platform-spaces-card";
 import { PostCard } from "@/components/post-card";
 import { SpoilerPreview } from "@/components/post/spoiler-preview";
 import { PostCardSkeletons } from "@/components/skeletons/post-card-skeletons";
+import { StyledName } from "@/components/styled-name";
 import { UserAvatar } from "@/components/user-avatar";
 
 /** Abas válidas da tela inicial (a URL carrega a escolhida). */
@@ -1172,7 +1173,7 @@ function Home() {
                         params={{ username: u.username }}
                         className="block truncate text-sm font-normal text-text-strong hover:underline"
                       >
-                        {u.name}
+                        <StyledName name={u.name} style={u.nameStyle} />
                       </Link>
 
                       <p className="truncate text-xs font-normal text-text-subtle">{u.headline}</p>
