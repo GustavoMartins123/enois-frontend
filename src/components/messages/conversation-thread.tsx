@@ -14,8 +14,8 @@ import type { ConversationThreadProps } from "@/types/routes/messages/conversati
 import type { SendMessageInput } from "@/types/routes/messages/send-message-input";
 import { Briefcase, EyeOff, ImageIcon, Send, X } from "lucide-react";
 
-import { authApi, messagesApi, profileApi, reportsApi, servicesApi } from "@/lib/api";
-import { useCurrentUser } from "@/lib/current-user";
+import { messagesApi, profileApi, reportsApi, servicesApi } from "@/lib/api";
+import { authApi } from "@/lib/api/auth";
 import { encryptForSend } from "@/lib/e2e/conversation";
 import { hasLocalKeys } from "@/lib/e2e/key-manager";
 import { useDecryptedMessages } from "@/lib/e2e/use-decrypted-messages";
@@ -87,7 +87,6 @@ export function ConversationThread({
   const peerLastReadAt = conversation.otherLastReadAt
     ? new Date(conversation.otherLastReadAt).getTime()
     : null;
-  const { data: currentUserData } = useCurrentUser();
   const { data: authMe } = useQuery({
     queryKey: ["auth-me"],
     queryFn: () => authApi.me(),
@@ -332,10 +331,10 @@ export function ConversationThread({
         onBack={onBack}
       />
 
-      {!e2eReady && currentUserData && (
+      {!e2eReady && authMe && (
         <div className="px-4 pt-3">
           <E2eSetupBanner
-            hasPassword={authMe?.hasPassword ?? true}
+            hasPassword={authMe.hasPassword}
             onSetupComplete={() => setE2eReady(true)}
           />
         </div>
