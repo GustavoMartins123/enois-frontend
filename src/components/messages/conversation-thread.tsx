@@ -14,7 +14,10 @@ import type { ConversationThreadProps } from "@/types/routes/messages/conversati
 import type { SendMessageInput } from "@/types/routes/messages/send-message-input";
 import { Briefcase, EyeOff, ImageIcon, Send, X } from "lucide-react";
 
-import { messagesApi, profileApi, servicesApi } from "@/lib/api";
+import { messagesApi, profileApi, reportsApi, servicesApi } from "@/lib/api";
+import { encryptForSend } from "@/lib/e2e/conversation";
+import { hasLocalKeys } from "@/lib/e2e/key-manager";
+import { useDecryptedMessages } from "@/lib/e2e/use-decrypted-messages";
 import { liteInterval, litePageSize } from "@/lib/lite-mode";
 import { insertSnippet } from "@/lib/rich-text/insert-snippet";
 import { useLiteMode } from "@/lib/use-lite-mode";
@@ -82,13 +85,14 @@ export function ConversationThread({
   const peerLastReadAt = conversation.otherLastReadAt
     ? new Date(conversation.otherLastReadAt).getTime()
     : null;
-  const messages = (messagesData?.pages.flatMap((page) => page.items) ?? []).sort(
+  const rawMessages = (messagesData?.pages.flatMap((page) => page.items) ?? []).sort(
     (a, b) => new Date(a.time).getTime() - new Date(b.time).getTime(),
   );
+  const messages = useDecryptedMessages(rawMessages);
 
   const sendMessage = useMutation({
-    mutationFn: ({ conversationId, text, mediaIds, mediaSpoiler }: SendMessageInput) =>
-      messagesApi.sendMessage(conversationId, text, mediaIds, mediaSpoiler),
+    mutationFn: ({ conversationId, text, mediaIds, mediaSpoiler, e2e }: SendMessageInput) =>
+      messagesApi.sendMessage(conversationId, text, mediaIds, mediaSpoiler, e2e),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["messages", conversation.id] });
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
@@ -132,6 +136,43 @@ export function ConversationThread({
     onError: () => toast(texts.messages.messagesDeleteError, "error"),
   });
 
+  const reportMessage = async (messageId: string, conversationId: string) => {
+    try {
+      const { exportSymmetricKey } = await import("@/lib/e2e/crypto");
+      const { default: convModule } = await import("@/lib/e2e/conversation").then((m) => ({
+        default: m,
+      }));
+      let e2eKey: string | undefined;
+      try {
+        // Tenta exportar a chave simétrica da conversa pra o moderador decifrar.
+        const convKeyView = await (
+          await import("@/lib/api/e2e")
+        ).e2eApi.myConversationKey(conversationId);
+        if (convKeyView.encryptedKey) {
+          const { importPrivateKey, decryptWithPrivateKey } = await import("@/lib/e2e/crypto");
+          const { getLocalPrivateKey } = await import("@/lib/e2e/key-manager");
+          const pk = await getLocalPrivateKey();
+          if (pk) {
+            const privateKey = await importPrivateKey(pk);
+            e2eKey = await decryptWithPrivateKey(convKeyView.encryptedKey, privateKey);
+          }
+        }
+      } catch {
+        // Sem chave E2E — envia a denúncia sem ela.
+      }
+      await reportsApi.create({
+        targetType: "MESSAGE",
+        targetId: messageId,
+        reason: "SPAM",
+        description: "Mensagem denunciada pelo chat",
+        e2eConversationKey: e2eKey,
+      });
+      toast("Denúncia enviada.");
+    } catch {
+      toast("Não foi possível denunciar.", "error");
+    }
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (sendMessage.isPending) return;
@@ -149,11 +190,21 @@ export function ConversationThread({
         const results = await upload.uploadAll(media.map((item) => ({ file: item.file })));
         mediaIds = results.map((result) => result.mediaId);
       }
+      const e2eReady = await hasLocalKeys();
+      let e2ePayload: { ciphertext: string; iv: string } | undefined;
+      if (e2eReady && content) {
+        try {
+          e2ePayload = await encryptForSend(conversation.id, content, conversation.participantIds);
+        } catch {
+          // E2E falhou — envia em texto claro.
+        }
+      }
       sendMessage.mutate({
         conversationId: conversation.id,
         text: content,
         mediaIds,
         mediaSpoiler: shouldSpoiler,
+        e2e: e2ePayload,
       });
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : texts.messages.mediaError);
@@ -317,6 +368,11 @@ export function ConversationThread({
                   showingPreviousThread
                     ? undefined
                     : (type) => reactToMessage.mutate({ messageId: m.id, type })
+                }
+                onReport={
+                  showingPreviousThread || m.from === currentUserId
+                    ? undefined
+                    : () => reportMessage(m.id, conversation.id)
                 }
               />
             ))
