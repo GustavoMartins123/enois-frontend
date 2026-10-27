@@ -74,8 +74,6 @@ export function AuthorInfo({
             </Link>
           )}
 
-          {authorContributor && <ContributorTag color={authorContributor.color} />}
-
           <UserBadges badges={authorBadges} badge={authorBadge} />
 
           {community ? (
@@ -106,6 +104,12 @@ export function AuthorInfo({
             {texts.posts.authorTime(formatTime(createdAt))}
           </span>
         </div>
+
+        {authorContributor && (
+          <div className="mt-1">
+            <ContributorTag color={authorContributor.color} />
+          </div>
+        )}
       </div>
     </div>
   );
