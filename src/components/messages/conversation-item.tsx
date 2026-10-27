@@ -6,8 +6,10 @@ import type { ConversationItemProps } from "@/types/routes/messages/conversation
 
 import { profileApi } from "@/lib/api";
 import { useCurrentUser } from "@/lib/current-user";
+import { authorNameStyle } from "@/lib/profile-name-style";
 
 import { formatTime } from "@/components/post/format-time";
+import { StyledName } from "@/components/styled-name";
 import { UserAvatar } from "@/components/user-avatar";
 import { UserBadges } from "@/components/user-badge";
 
@@ -30,6 +32,7 @@ export function ConversationItem({
   });
 
   const title = conversation.title ?? otherUser?.name ?? texts.messages.conversationFallback;
+  const otherNameStyle = authorNameStyle(otherUser);
 
   return (
     <li>
@@ -56,7 +59,9 @@ export function ConversationItem({
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between">
             <span className="flex min-w-0 items-center gap-1.5">
-              <span className="truncate text-sm font-medium">{title}</span>
+              <span className="truncate text-sm font-medium">
+                {conversation.title ?? <StyledName name={title} style={otherNameStyle} />}
+              </span>
 
               <UserBadges badges={otherUser?.badges} badge={otherUser?.badge} />
             </span>
