@@ -8,6 +8,7 @@ import type { ContributorSyncReport } from "@/types/application/seals/contributo
 import type { GitHubIdentity } from "@/types/application/seals/github-identity";
 import type { ProfileSeal } from "@/types/application/seals/profile-seal";
 import type { SealCriteria } from "@/types/application/seals/seal-criteria";
+import type { SealEvidencePage } from "@/types/application/seals/seal-evidence-page";
 
 import { api, buildQuery } from "../api-client";
 
@@ -16,6 +17,12 @@ export const contributorSealsApi = {
   /** Níveis ativos no perfil público (só evidências validadas). */
   byUsername: (username: string) =>
     api.get<ProfileSeal[]>(`/users/${encodeURIComponent(username)}/seals`),
+
+  /** Evidências públicas de uma categoria, em páginas (o perfil não tem teto de 12). */
+  evidence: (username: string, category: string, page = 0, size = 50) =>
+    api.get<SealEvidencePage>(
+      `/users/${encodeURIComponent(username)}/seals/${encodeURIComponent(category)}/evidence${buildQuery({ page, size })}`,
+    ),
 
   /** Categorias, faixas, políticas e repositórios elegíveis. */
   criteria: () => api.get<SealCriteria>("/seals/criteria"),

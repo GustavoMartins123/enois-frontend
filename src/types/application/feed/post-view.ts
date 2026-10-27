@@ -1,4 +1,5 @@
 import type { PostCommunity } from "@/types/application/community/post-community";
+import type { AuthorNameStyle } from "@/types/application/profile/author-name-style";
 import type { ReactionSummary } from "@/types/application/reaction/reaction-summary";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
 
@@ -8,6 +9,8 @@ export type PostView = {
   authorUsername: string;
   authorName: string;
   authorBadge?: string | null;
+  /** Personalização do nome do autor (tema/fonte/cor); ausente = padrão. */
+  authorStyle?: AuthorNameStyle | null;
   /** Todos os emblemas (até 5), na ordem escolhida: acompanham o nome em todo lugar. */
   authorBadges?: string[] | null;
   authorAvatar: string | null;

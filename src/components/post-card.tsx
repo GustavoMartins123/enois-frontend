@@ -273,6 +273,7 @@ function PostCardView({
           authorName={post.authorName}
           authorBadge={post.authorBadge}
           authorBadges={post.authorBadges}
+          authorStyle={post.authorStyle}
           authorIdentity={post.authorIdentity}
           authorAvatar={post.authorAvatar}
           authorAvatarFrame={post.authorAvatarFrame}
