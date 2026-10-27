@@ -13,6 +13,7 @@ import { commentsApi } from "@/lib/api";
 import { getCurrentUser } from "@/lib/current-user";
 import { updatePostInQueryCache } from "@/lib/feed/post-query-cache";
 import { litePageSize } from "@/lib/lite-mode";
+import { safeBlobSrc } from "@/lib/safe-blob-src";
 import { useAuth } from "@/lib/use-auth";
 import { useLiteMode } from "@/lib/use-lite-mode";
 import { useMediaUpload } from "@/lib/use-media-upload";
@@ -405,7 +406,7 @@ export function PostComments({ postId, postAuthorId }: { postId: string; postAut
                 <div key={item.preview} className="relative">
                   {item.type === "audio" ? (
                     <audio
-                      src={item.preview}
+                      src={safeBlobSrc(item.preview)}
                       controls
                       className="h-16 w-56 rounded-lg border border-border-soft"
                     />
@@ -416,7 +417,7 @@ export function PostComments({ postId, postAuthorId }: { postId: string; postAut
                       className="h-16 w-16 rounded-lg"
                     >
                       <img
-                        src={item.preview}
+                        src={safeBlobSrc(item.preview)}
                         alt=""
                         className="h-16 w-16 rounded-lg border border-border-soft object-cover"
                       />

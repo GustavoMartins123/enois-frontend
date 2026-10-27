@@ -46,6 +46,7 @@ import { dataHora, valorDeDataLocal } from "@/lib/date/format";
 import { clearFeedScroll, readFeedScroll } from "@/lib/feed-scroll-restoration";
 import { litePageSize } from "@/lib/lite-mode";
 import { requireAuth } from "@/lib/require-auth";
+import { safeBlobSrc } from "@/lib/safe-blob-src";
 import { ogMetas } from "@/lib/seo";
 import { useIsAuthenticated } from "@/lib/use-auth";
 import { useLiteMode } from "@/lib/use-lite-mode";
@@ -635,7 +636,7 @@ function Home() {
                           label={texts.posts.mediaSpoiler.badge}
                         >
                           <img
-                            src={item.preview}
+                            src={safeBlobSrc(item.preview)}
                             alt=""
                             className="h-48 w-full object-cover bg-surface-1"
                           />
@@ -657,7 +658,7 @@ function Home() {
                   <div className="relative overflow-hidden rounded-xl border border-border-soft">
                     <SpoilerPreview active={mediaSpoiler} label={texts.posts.mediaSpoiler.badge}>
                       <video
-                        src={media[0].preview}
+                        src={safeBlobSrc(media[0].preview)}
                         controls
                         className="max-h-64 w-full bg-surface-1"
                       />

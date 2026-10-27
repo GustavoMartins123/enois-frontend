@@ -21,6 +21,7 @@ import { hasLocalKeys } from "@/lib/e2e/key-manager";
 import { useDecryptedMessages } from "@/lib/e2e/use-decrypted-messages";
 import { liteInterval, litePageSize } from "@/lib/lite-mode";
 import { insertSnippet } from "@/lib/rich-text/insert-snippet";
+import { safeBlobSrc } from "@/lib/safe-blob-src";
 import { useLiteMode } from "@/lib/use-lite-mode";
 import { useMediaUpload } from "@/lib/use-media-upload";
 
@@ -446,7 +447,7 @@ export function ConversationThread({
                     className="h-16 w-16 rounded-lg"
                   >
                     <img
-                      src={item.preview}
+                      src={safeBlobSrc(item.preview)}
                       alt=""
                       className="h-16 w-16 rounded-lg border border-border-soft object-cover"
                     />
