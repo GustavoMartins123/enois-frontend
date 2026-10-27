@@ -4143,6 +4143,7 @@ export const texts = {
     title: "Carteira & estilo",
     subtitle: "Suas faíscas, suas escolhas.",
     walletTab: "Carteira",
+    marketplaceTab: "Marketplace",
     storeTab: "Loja",
     ownedTab: "Minhas molduras",
     cosmetics: "Molduras de avatar",
