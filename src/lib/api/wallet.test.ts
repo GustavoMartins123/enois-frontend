@@ -5,7 +5,7 @@ import { walletApi } from "./wallet";
 
 vi.mock("../api-client", () => ({ api: { get: vi.fn() } }));
 
-const query = { page: 0, size: 20, from: "", to: "" };
+const query = { page: 0, size: 20 };
 const response = { entries: [], page: 0, size: 20, hasNext: false };
 
 describe("Contrato do extrato", () => {
