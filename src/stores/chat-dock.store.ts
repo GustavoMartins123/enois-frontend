@@ -2,12 +2,12 @@ import type { ChatDockState } from "@/types/stores/chat-dock-state";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
-const MAX_OPEN_CHATS = 2;
+const MAX_OPEN_CHATS = 4;
 
 export const useChatDockStore = create<ChatDockState>()(
   persist(
     (set) => ({
-      expanded: false,
+      expanded: true,
       openChats: [],
 
       toggleExpanded: () => set((s) => ({ expanded: !s.expanded })),
