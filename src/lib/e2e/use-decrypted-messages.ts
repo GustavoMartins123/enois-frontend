@@ -20,6 +20,7 @@ export function useDecryptedMessages(messages: Message[]): DecryptedResult {
 
   useEffect(() => {
     let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
 
     async function decrypt() {
       const start = Date.now();
@@ -55,24 +56,30 @@ export function useDecryptedMessages(messages: Message[]): DecryptedResult {
         }),
       );
 
+      const apply = () => {
+        if (isFirstRun) firstDecryptDone.current = true;
+        if (!cancelled) {
+          setDecrypted(results);
+          setDecrypting(false);
+        }
+      };
+
       // No primeiro load, garante um tempo minimo pra evitar flash.
       if (isFirstRun) {
         const elapsed = Date.now() - start;
         if (elapsed < MIN_DECRYPT_MS) {
-          await new Promise((r) => setTimeout(r, MIN_DECRYPT_MS - elapsed));
+          timer = setTimeout(apply, MIN_DECRYPT_MS - elapsed);
+          return;
         }
-        firstDecryptDone.current = true;
       }
 
-      if (!cancelled) {
-        setDecrypted(results);
-        setDecrypting(false);
-      }
+      apply();
     }
 
     decrypt();
     return () => {
       cancelled = true;
+      if (timer) clearTimeout(timer);
     };
   }, [messages]);
 

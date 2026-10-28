@@ -88,7 +88,7 @@ export function ConversationThread({
     queryKey: ["auth-me"],
     queryFn: () => authApi.me(),
   });
-  const [e2eReady, setE2eReady] = useState(false);
+  const [e2eReady, setE2eReady] = useState<boolean | null>(null);
   useEffect(() => {
     hasLocalKeys().then(setE2eReady);
   }, []);
@@ -328,22 +328,18 @@ export function ConversationThread({
         onBack={onBack}
       />
 
-      {!e2eReady && authMe && (
+      {e2eReady === false && authMe && (
         <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-muted/30 p-5">
           <E2eSetupBanner
             hasPassword={authMe.hasPassword}
             onSetupComplete={() => setE2eReady(true)}
           />
-        </div>
-      )}
 
-      {!e2eReady && (
-        <div className="border-t border-border px-3 py-3">
           <p className="text-center text-xs text-text-subtle">{texts.messages.e2eRequired}</p>
         </div>
       )}
 
-      {e2eReady && (
+      {e2eReady !== false && (
         <>
           <div
             ref={messagesScrollRef}
