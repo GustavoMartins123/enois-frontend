@@ -1,11 +1,11 @@
 // @vitest-environment node
-import { texts } from "@/texts";
 import { FX_FRAMES as DESIGN_SYSTEM_FX_FRAMES } from "@rede-enois/design-system/domain";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import { ANIMATED_FRAMES, NEW_FX_FRAMES } from "@/lib/avatar-frames";
 
+import { AvatarFrameFx } from "./avatar-frames/avatar-frame-fx";
 import { UserAvatar } from "./user-avatar";
 
 describe("UserAvatar com as coleções Elementos e Tecnologia", () => {
@@ -48,12 +48,20 @@ describe("UserAvatar com as coleções Elementos e Tecnologia", () => {
     expect(html).toMatch(/^<span[^>]*class="[^"]*overflow-hidden/);
   });
 
-  it.each(["moldura-desconhecida", "toString", ""])(
-    "rejeita a moldura desconhecida %s",
+  it.each(["moldura-desconhecida", "toString", "constructor", "__proto__", ""])(
+    "%s: preserva o avatar quando a moldura ainda não é conhecida",
     (frame) => {
-      expect(() => renderToString(<UserAvatar frame={frame} />)).toThrow(
-        texts.frameShop.unknownFrame,
-      );
+      const html = renderToString(<UserAvatar frame={frame} fallback="DE" className="h-8 w-8" />);
+      expect(html).toContain("DE");
+      expect(html).toContain("h-8 w-8");
+      expect(html).not.toContain('class="moldura-fx"');
+    },
+  );
+
+  it.each(["moldura-desconhecida", "toString", "constructor", "__proto__", ""])(
+    "%s: retorna sem efeito quando a moldura não está no mapa",
+    (frame) => {
+      expect(renderToString(<AvatarFrameFx frame={frame} />)).toBe("");
     },
   );
 });

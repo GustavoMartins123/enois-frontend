@@ -761,12 +761,29 @@
   }
 }
 
+/* As novas molduras controlam o próprio movimento, inclusive antes do observer iniciar. */
+[data-avatar-new-frame] > .moldura-fx,
+[data-avatar-new-frame] > .moldura-fx * {
+  animation-play-state: paused;
+}
+
+[data-avatar-new-frame][data-avatar-animating] > .moldura-fx,
+[data-avatar-new-frame][data-avatar-animating] > .moldura-fx *,
+[data-avatar-frame="moldura-vendaval"][data-avatar-animating] > :not(.moldura-fx) {
+  animation-play-state: running;
+}
+
 [data-avatar-frame="moldura-vendaval"][data-avatar-animated]:not([data-avatar-animating])
   > :not(.moldura-fx) {
   animation-play-state: paused;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html:not([data-force-motion]) [data-avatar-new-frame] > .moldura-fx,
+  html:not([data-force-motion]) [data-avatar-new-frame] > .moldura-fx * {
+    animation: none !important;
+  }
+
   html:not([data-force-motion]) [data-avatar-frame="moldura-vendaval"] > :not(.moldura-fx) {
     animation: none !important;
     transform: none !important;

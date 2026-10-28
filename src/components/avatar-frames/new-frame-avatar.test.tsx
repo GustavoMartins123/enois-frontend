@@ -4,6 +4,8 @@ import { act } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { NEW_FX_FRAMES } from "@/lib/avatar-frames";
+
 import { UserAvatar } from "@/components/user-avatar";
 
 describe("Animação das novas molduras", () => {
@@ -81,5 +83,26 @@ describe("Animação das novas molduras", () => {
       "Falha ao observar avatar",
     );
     expect(disconnect).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(NEW_FX_FRAMES)("%s: controla a animação pela visibilidade e pela aba", async (frame) => {
+    await act(async () => root.render(<UserAvatar frame={frame} />));
+    const avatar = host.querySelector("[data-avatar-animated]")!;
+    const intersect = (isIntersecting: boolean) =>
+      callback(
+        [{ target: avatar, isIntersecting } as IntersectionObserverEntry],
+        {} as IntersectionObserver,
+      );
+    expect(avatar.hasAttribute("data-avatar-animating")).toBe(false);
+    intersect(true);
+    expect(avatar.hasAttribute("data-avatar-animating")).toBe(true);
+    hidden = true;
+    document.dispatchEvent(new Event("visibilitychange"));
+    expect(avatar.hasAttribute("data-avatar-animating")).toBe(false);
+    hidden = false;
+    document.dispatchEvent(new Event("visibilitychange"));
+    expect(avatar.hasAttribute("data-avatar-animating")).toBe(true);
+    intersect(false);
+    expect(avatar.hasAttribute("data-avatar-animating")).toBe(false);
   });
 });

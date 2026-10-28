@@ -13,8 +13,13 @@ em `src/lib/avatar-frames.ts` reúne as molduras do pacote e as duas novas cole�
 incluindo os filtros e os indicadores da loja.
 
 As animações novas compartilham um observer para pausar fora da área visível e
-na aba oculta. O CSS também respeita movimento reduzido e o corte em campos compactos.
-IDs desconhecidos geram erro explícito.
+na aba oculta. O CSS local pausa os efeitos marcados com `data-avatar-new-frame`
+por padrão e só os libera com `data-avatar-animating`. Também desativa suas animações
+com movimento reduzido, respeitando a opção explícita de forçar movimento do app.
+Esses controles incluem o balanço do avatar da Vendaval e não dependem dos
+seletores de movimento do design system. O corte em campos compactos é preservado.
+Molduras desconhecidas preservam o retorno existente do design system: o avatar
+continua renderizado e nenhum efeito desconhecido é montado.
 
 ## `FrameShop` (`src/components/wallet/frame-shop.tsx`)
 

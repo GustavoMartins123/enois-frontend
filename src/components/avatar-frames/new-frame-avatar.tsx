@@ -24,6 +24,7 @@ export function NewFrameAvatar({
       )}
       data-avatar-frame={frame}
       data-avatar-animated
+      data-avatar-new-frame
     >
       <DesignSystemUserAvatar {...avatarProps} className="h-full w-full" />
       <AvatarFrameFx frame={frame} />

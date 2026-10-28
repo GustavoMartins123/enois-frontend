@@ -1,4 +1,3 @@
-import { texts } from "@/texts";
 import {
   UserAvatar as DesignSystemUserAvatar,
   type UserAvatarProps,
@@ -13,5 +12,5 @@ export function UserAvatar(props: UserAvatarProps) {
   const { frame } = props;
   if (frame == null || isDesignSystemFrame(frame)) return <DesignSystemUserAvatar {...props} />;
   if (isNewFxFrame(frame)) return <NewFrameAvatar {...props} frame={frame} />;
-  throw new Error(texts.frameShop.unknownFrame);
+  return <DesignSystemUserAvatar {...props} />;
 }

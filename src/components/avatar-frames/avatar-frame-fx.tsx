@@ -1,4 +1,3 @@
-import { texts } from "@/texts";
 import type { AvatarFrameFxProps } from "@rede-enois/design-system/domain";
 
 import { CircuitoFx } from "./circuito";
@@ -22,7 +21,7 @@ const EFEITOS: Record<string, () => React.JSX.Element> = {
 };
 
 export function AvatarFrameFx({ frame }: AvatarFrameFxProps) {
-  if (!Object.hasOwn(EFEITOS, frame)) throw new Error(texts.frameShop.unknownFrame);
+  if (!Object.hasOwn(EFEITOS, frame)) return null;
   const Efeito = EFEITOS[frame];
   return (
     <span aria-hidden className="moldura-fx">
