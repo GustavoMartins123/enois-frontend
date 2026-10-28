@@ -1,7 +1,6 @@
 import type { ThemePreviewState } from "@/types/stores/theme-preview-state";
+import { buildGalleryCollection } from "@rede-enois/design-system/domain";
 import { create } from "zustand";
-
-import { buildGalleryCollection } from "@/lib/theme/gallery-collections";
 
 // Sem persistência: recarregar ou fechar a página nunca conserva um tema em avaliação.
 export const useThemePreviewStore = create<ThemePreviewState>((set) => ({

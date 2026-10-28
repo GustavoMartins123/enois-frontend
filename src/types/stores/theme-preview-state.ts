@@ -1,6 +1,5 @@
-import type { GalleryThemePackage } from "@/types/lib/theme/gallery-theme-package";
 import type { ThemePreview } from "@/types/lib/theme/theme-preview";
-import type { Theme } from "@/types/preferences/theme";
+import type { GalleryThemePackage, Theme } from "@rede-enois/design-system/domain";
 
 export type ThemePreviewState = {
   preview: ThemePreview | null;

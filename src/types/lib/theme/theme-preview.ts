@@ -1,5 +1,4 @@
-import type { Theme } from "@/types/preferences/theme";
-import type { ThemeCollection } from "@/types/preferences/theme-collection";
+import type { Theme, ThemeCollection } from "@rede-enois/design-system/domain";
 
 export type ThemePreview = {
   collection: ThemeCollection;

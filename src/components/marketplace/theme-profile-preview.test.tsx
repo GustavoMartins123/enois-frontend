@@ -5,7 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import { usePreferencesStore } from "@/stores/preferences.store";
 import { useThemePreviewStore } from "@/stores/theme-preview.store";
-import type { GalleryThemePackage } from "@/types/lib/theme/gallery-theme-package";
+import type { GalleryThemePackage } from "@rede-enois/design-system/domain";
 import { type Root, createRoot } from "react-dom/client";
 import { renderToString } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";

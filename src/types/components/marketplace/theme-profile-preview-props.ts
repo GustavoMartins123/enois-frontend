@@ -1,4 +1,4 @@
-import type { GalleryThemePackage } from "@/types/lib/theme/gallery-theme-package";
+import type { GalleryThemePackage } from "@rede-enois/design-system/domain";
 
 export type ThemeProfilePreviewProps = {
   theme: GalleryThemePackage;

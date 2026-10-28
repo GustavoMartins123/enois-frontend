@@ -1,6 +1,6 @@
 import { usePreferencesStore } from "@/stores/preferences.store";
 import { useThemePreviewStore } from "@/stores/theme-preview.store";
-import type { Theme } from "@/types/preferences/theme";
+import type { Theme } from "@rede-enois/design-system/domain";
 import { ThemeToggle as ThemeToggleView } from "@rede-enois/design-system/patterns";
 
 /** Alterna claro/escuro. A aplicação no DOM fica em `useThemeSync`, no root. */
