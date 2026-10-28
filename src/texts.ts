@@ -1391,6 +1391,7 @@ export const texts = {
       description: "Seu feed de insights, perguntas e projetos da comunidade profissional.",
     },
     you: "Você",
+    refreshing: "Atualizando publicações…",
     loadingMore: "Carregando mais publicações...",
     endOfFeed: "Você chegou ao fim do feed.",
     loadMore: "Carregar mais",
