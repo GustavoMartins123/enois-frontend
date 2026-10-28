@@ -169,6 +169,44 @@ describe("Carteira e ordenação das molduras", () => {
     expect(names()).toHaveLength(12);
   });
 
+  it("renderiza as oito molduras do pacote na categoria Animadas", async () => {
+    const frames = [
+      "mare",
+      "trepadeira",
+      "vendaval",
+      "vaga-lumes",
+      "fliperama",
+      "circuito",
+      "neon",
+      "radar",
+    ].map((name, index) => ({
+      id: `moldura-${name}`,
+      name,
+      description: "Moldura de demonstração",
+      priceMf: 10_000,
+      cssRing: "",
+      releaseOrder: 19 + index,
+      owned: false,
+      equipped: false,
+    }));
+    const expanded = [...catalog, ...frames];
+    client.setQueryData(["loja", "oldest"], expanded);
+    client.setQueryData(["loja", "newest"], [...expanded].reverse());
+    await openTab(texts.frameShop.storeTab);
+    await changeOrder("newest");
+    await click(texts.frameShop.filters.animated);
+    expect(names().slice(0, 8)).toEqual(frames.map((frame) => frame.name).reverse());
+    for (const frame of frames) {
+      const avatar = host.querySelector(`.frame-shop-card [data-avatar-frame="${frame.id}"]`)!;
+      expect(avatar).not.toBeNull();
+      expect(avatar.hasAttribute("data-avatar-animated")).toBe(true);
+      expect(avatar.querySelectorAll(".moldura-fx > svg")).toHaveLength(1);
+      expect(avatar.closest(".frame-shop-card")!.textContent).toContain(texts.frameShop.animated);
+    }
+    await click(texts.frameShop.filters.simple);
+    expect(names()).toEqual(["coral", "violeta", "esmeralda", "ambar"]);
+  });
+
   it("oferece as duas ordens também em Minhas molduras, sem incluir itens não comprados", async () => {
     await openTab(texts.frameShop.ownedTab);
     const owned = catalog.filter((item) => item.owned).map((item) => item.name);

@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { texts } from "@/texts";
 import type { ReactionTab } from "@/types/application/reaction/reaction-tab";
 import type { CommentReactionsDialogProps } from "@/types/components/post/comment-reactions-dialog-props";
+import { UserAvatar } from "@rede-enois/design-system/domain";
 import {
   Dialog,
   DialogContent,
@@ -20,8 +21,6 @@ import { Smile, Users } from "lucide-react";
 import { REACTION_EMOJIS, profileApi, reactionsApi } from "@/lib/api";
 import { sortReactionTabsStable } from "@/lib/reactions/summary";
 import { useAuth } from "@/lib/use-auth";
-
-import { UserAvatar } from "@/components/user-avatar";
 
 /**
  * Quem reagiu a um comentário, filtrável por tipo — o mesmo diálogo que o post abre pelo

@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
-import { StyledName } from "@rede-enois/design-system/domain";
+import { StyledName, UserAvatar } from "@rede-enois/design-system/domain";
 import { Button, EmptyState, LoadingState, PageHeader } from "@rede-enois/design-system/ui";
 import { BookOpen, PenLine, Plus } from "lucide-react";
 
@@ -16,7 +16,6 @@ import { useIsAuthenticated } from "@/lib/use-auth";
 import { AppContainer } from "@/components/app-container";
 import { BlogEditorDialog } from "@/components/blog/blog-editor-dialog";
 import { RichText } from "@/components/post/rich-text";
-import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/blogs")({
   head: () => ({

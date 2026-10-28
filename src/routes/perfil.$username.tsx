@@ -14,7 +14,7 @@ import type { UpdateProfileRequest } from "@/types/application/profile/update-pr
 import type { ProfileCropPurpose } from "@/types/routes/profile/profile-crop-purpose";
 import type { RecommendationItemProps } from "@/types/routes/profile/recommendation-item-props";
 import type { SectionProps } from "@/types/routes/profile/section-props";
-import { ContributorTag, StyledName } from "@rede-enois/design-system/domain";
+import { ContributorTag, StyledName, UserAvatar } from "@rede-enois/design-system/domain";
 import {
   Button,
   Dialog,
@@ -87,7 +87,6 @@ import { ProfileNetworkDialog } from "@/components/profile/profile-network-dialo
 import { ProfileQuickComposer } from "@/components/profile/profile-quick-composer";
 import { ProfileProjectsSection } from "@/components/profile/projects-section";
 import { PostCardSkeletons } from "@/components/skeletons/post-card-skeletons";
-import { UserAvatar } from "@/components/user-avatar";
 import { VerifiedContributorPrompt } from "@/components/verified-contributor-prompt";
 
 /** Paginas de "Publicacoes recentes": o mesmo tamanho do feed, para nao sobrecarregar o perfil. */

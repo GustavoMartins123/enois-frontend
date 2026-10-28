@@ -4,13 +4,12 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { texts } from "@/texts";
 import type { ProfileQuickComposerProps } from "@/types/components/profile/profile-quick-composer-props";
+import { UserAvatar } from "@rede-enois/design-system/domain";
 import { Button, Textarea, useToast } from "@rede-enois/design-system/ui";
 import { FilePenLine, Image, Send, Video } from "lucide-react";
 
 import { feedApi } from "@/lib/api";
 import { resolveCdnUrl } from "@/lib/api/media";
-
-import { UserAvatar } from "@/components/user-avatar";
 
 export function ProfileQuickComposer({ profile }: ProfileQuickComposerProps) {
   const [content, setContent] = useState("");

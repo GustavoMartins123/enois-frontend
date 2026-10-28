@@ -5,7 +5,8 @@ import { Link } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { ConversationItemProps } from "@/types/routes/messages/conversation-item-props";
-import { StyledName } from "@rede-enois/design-system/domain";
+import { StyledName, UserAvatar } from "@rede-enois/design-system/domain";
+import { Loader2 } from "lucide-react";
 
 import { profileApi } from "@/lib/api";
 import { useCurrentUser } from "@/lib/current-user";
@@ -14,7 +15,6 @@ import { hasLocalKeys } from "@/lib/e2e/key-manager";
 import { authorNameStyle } from "@/lib/profile-name-style";
 
 import { formatTime } from "@/components/post/format-time";
-import { UserAvatar } from "@/components/user-avatar";
 import { UserBadges } from "@/components/user-badge";
 
 /** Uma linha da lista de conversas. Vive fora da rota para o dock poder reaproveitá-la. */
@@ -38,22 +38,35 @@ export function ConversationItem({
   const title = conversation.title ?? otherUser?.name ?? texts.messages.conversationFallback;
   const otherNameStyle = authorNameStyle(otherUser);
 
-  const [preview, setPreview] = useState(conversation.lastMessage ?? "");
+  const [preview, setPreview] = useState(
+    conversation.lastMessageE2e ? "" : (conversation.lastMessage ?? ""),
+  );
+  const [decryptingPreview, setDecryptingPreview] = useState(!!conversation.lastMessageE2e);
   useEffect(() => {
     if (!conversation.lastMessageE2e || !conversation.lastMessage || !conversation.lastMessageIv) {
       setPreview(conversation.lastMessage ?? "");
+      setDecryptingPreview(false);
       return;
     }
+    setDecryptingPreview(true);
     let cancelled = false;
     hasLocalKeys().then((has) => {
-      if (!has || cancelled) return;
+      if (cancelled) return;
+      if (!has) {
+        setPreview("🔒");
+        setDecryptingPreview(false);
+        return;
+      }
       decryptReceived({
         e2e: true,
         text: conversation.lastMessage!,
         iv: conversation.lastMessageIv!,
         conversationId: conversation.id,
       } as Parameters<typeof decryptReceived>[0]).then((plain) => {
-        if (!cancelled) setPreview(plain);
+        if (!cancelled) {
+          setPreview(plain);
+          setDecryptingPreview(false);
+        }
       });
     });
     return () => {
@@ -104,7 +117,13 @@ export function ConversationItem({
           </div>
 
           <div className="flex items-center justify-between gap-2">
-            <p className="truncate text-xs text-muted-foreground">{preview}</p>
+            {decryptingPreview ? (
+              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                <Loader2 className="h-3 w-3 animate-spin" />
+              </span>
+            ) : (
+              <p className="truncate text-xs text-muted-foreground">{preview}</p>
+            )}
             {conversation.unread > 0 && (
               <span className="grid h-5 min-w-5 shrink-0 place-items-center rounded-full bg-primary px-1.5 text-xs font-semibold text-primary-foreground">
                 {conversation.unread}

@@ -6,7 +6,7 @@ import { Link, Outlet, createFileRoute, useMatchRoute, useNavigate } from "@tans
 import { jobLevelLabel, jobTypeLabel } from "@/constants/job-options";
 import { texts } from "@/texts";
 import type { JobApplication } from "@/types/application/job/job-application";
-import { StyledName } from "@rede-enois/design-system/domain";
+import { StyledName, UserAvatar } from "@rede-enois/design-system/domain";
 import { Button, ConfirmDialog } from "@rede-enois/design-system/ui";
 import {
   ArrowLeft,
@@ -39,7 +39,6 @@ import { ApplyByEmailButton } from "@/components/apply-by-email-button";
 import { ApplyJobDialog } from "@/components/apply-job-dialog";
 import { JobEditDialog } from "@/components/job-edit-dialog";
 import { RichText } from "@/components/post/rich-text";
-import { UserAvatar } from "@/components/user-avatar";
 
 export const Route = createFileRoute("/vagas/$jobId")({
   loader: async ({ params }) => {

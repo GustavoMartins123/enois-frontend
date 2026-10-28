@@ -15,7 +15,7 @@ import type { ActiveIdentity } from "@/types/lib/active-identity";
 import type { ComposerActionProps } from "@/types/routes/feed/composer-action-props";
 import type { HomeTab } from "@/types/routes/feed/home-tab";
 import type { MediaItem } from "@/types/routes/feed/media-item";
-import { StyledName } from "@rede-enois/design-system/domain";
+import { StyledName, UserAvatar } from "@rede-enois/design-system/domain";
 import {
   Button,
   EmptyState,
@@ -75,7 +75,6 @@ import { PlatformSpacesCard } from "@/components/platform-spaces-card";
 import { PostCard } from "@/components/post-card";
 import { SpoilerPreview } from "@/components/post/spoiler-preview";
 import { PostCardSkeletons } from "@/components/skeletons/post-card-skeletons";
-import { UserAvatar } from "@/components/user-avatar";
 
 /** Abas válidas da tela inicial (a URL carrega a escolhida). */
 const HOME_TABS: HomeTab[] = ["ALL", "FOR_YOU", "UNSEEN", "TRENDING", "CORPORATE"];
@@ -232,6 +231,7 @@ function Home() {
   const {
     data: feedData,
     isLoading: feedLoading,
+    isFetching: feedFetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -1071,6 +1071,15 @@ function Home() {
 
           <div className="space-y-4">
             {feedLoading && <PostCardSkeletons />}
+
+            {!feedLoading && feedFetching && !isFetchingNextPage && (
+              <div className="flex items-center justify-center gap-2 py-3">
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+
+                <span className="text-sm text-text-subtle">{texts.feed.refreshing}</span>
+              </div>
+            )}
+
             {!feedLoading && feedPosts.map((p) => <PostCard key={p.id} post={p} feedTab={tab} />)}
 
             {!feedLoading && feedPosts.length === 0 && <EmptyState title={texts.feed.empty} />}

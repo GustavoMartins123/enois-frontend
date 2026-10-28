@@ -7,7 +7,7 @@ import { texts } from "@/texts";
 import type { ReactionSummary } from "@/types/application/reaction/reaction-summary";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { CommentItemProps } from "@/types/components/post/comment-item-props";
-import { ContributorTag, StyledName } from "@rede-enois/design-system/domain";
+import { ContributorTag, StyledName, UserAvatar } from "@rede-enois/design-system/domain";
 import { Button, ReadMore, useToast } from "@rede-enois/design-system/ui";
 import { Flag, Heart, MessageCircle, Pencil, Pin, PinOff, Trash2 } from "lucide-react";
 
@@ -18,7 +18,6 @@ import { hideExternalPageUrls } from "@/lib/shared-links";
 import { useAuth } from "@/lib/use-auth";
 
 import { MentionTextarea } from "@/components/mention-textarea";
-import { UserAvatar } from "@/components/user-avatar";
 import { UserBadges } from "@/components/user-badge";
 
 import { CommentReactionsDialog } from "./comment-reactions-dialog";

@@ -1,26 +1,5 @@
 # Componentes
 
-## `UserAvatar` (`src/components/user-avatar.tsx`)
-
-Compõe o avatar do design system com as coleções Elementos (Maré, Trepadeira,
-Vendaval e Vaga-lumes) e Tecnologia (Fliperama, Circuito, Neon e Radar).
-As 18 molduras existentes continuam renderizadas pelo design system; as oito
-novas usam os mesmos IDs do catálogo do backend e preservam os desenhos SVG.
-
-As telas do app usam este componente para que a moldura equipada apareça na loja,
-no perfil, no feed, nos comentários e nos demais avatares. O catálogo de animações
-em `src/lib/avatar-frames.ts` reúne as molduras do pacote e as duas novas coleções,
-incluindo os filtros e os indicadores da loja.
-
-As animações novas compartilham um observer para pausar fora da área visível e
-na aba oculta. O CSS local pausa os efeitos marcados com `data-avatar-new-frame`
-por padrão e só os libera com `data-avatar-animating`. Também desativa suas animações
-com movimento reduzido, respeitando a opção explícita de forçar movimento do app.
-Esses controles incluem o balanço do avatar da Vendaval e não dependem dos
-seletores de movimento do design system. O corte em campos compactos é preservado.
-Molduras desconhecidas preservam o retorno existente do design system: o avatar
-continua renderizado e nenhum efeito desconhecido é montado.
-
 ## `FrameShop` (`src/components/wallet/frame-shop.tsx`)
 
 Loja de molduras de avatar na rota `/carteira`.
