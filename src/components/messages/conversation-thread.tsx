@@ -35,6 +35,11 @@ import { MessageBubble } from "./message-bubble";
 /** Tamanho que o app sempre usou; em modo lite cada página vem maior (menos idas ao servidor). */
 const MESSAGES_PAGE_SIZE = 50;
 
+/** Garante que a URL e um blob local (URL.createObjectURL). CodeQL nao rastreia a origem. */
+function safeBlobSrc(url: string): string {
+  return url.startsWith("blob:") ? url : "";
+}
+
 /**
  * O filão de uma conversa: cabeçalho, histórico e compositor.
  *
@@ -447,7 +452,7 @@ export function ConversationThread({
                         className="h-16 w-16 rounded-lg"
                       >
                         <img
-                          src={item.preview}
+                          src={safeBlobSrc(item.preview)}
                           alt=""
                           className="h-16 w-16 rounded-lg border border-border-soft object-cover"
                         />
