@@ -4,14 +4,12 @@ import { REACTION_EMOJIS } from "@/constants/reaction-emojis";
 import { texts } from "@/texts";
 import type { ReactionType } from "@/types/application/reaction/reaction-type";
 import type { MessageBubbleProps } from "@/types/routes/messages/message-bubble-props";
-import { UserAvatar } from "@rede-enois/design-system/domain";
+import { ReactionPicker, UserAvatar, UserBadges } from "@rede-enois/design-system/domain";
 import { Check, CheckCheck, Flag, Smile } from "lucide-react";
 
 import { formatTime } from "@/components/post/format-time";
 import { MediaGrid } from "@/components/post/media-grid";
-import { ReactionPicker } from "@/components/post/reaction-picker";
 import { RichText } from "@/components/post/rich-text";
-import { UserBadges } from "@/components/user-badge";
 
 /** Um balão da conversa: avatar do outro, texto, mídia, hora e reações. */
 export function MessageBubble({
@@ -120,6 +118,7 @@ export function MessageBubble({
           ))}
 
           <ReactionPicker
+            emojis={REACTION_EMOJIS}
             activeType={(message.myReaction as ReactionType) ?? null}
             onReact={(type) => onReact?.(type)}
             buttonClassName={`inline-flex h-6 w-6 items-center justify-center rounded-full transition ${

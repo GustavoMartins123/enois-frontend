@@ -13,6 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { THEME_STYLE_ELEMENT_ID } from "@/lib/theme/apply-theme";
 import { useThemeSync } from "@/lib/theme/use-theme-sync";
 
+import { SandboxedHtmlFrame } from "@/components/post/sandboxed-html-frame";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 import { ThemeProfilePreview } from "./theme-profile-preview";
@@ -43,6 +44,7 @@ function Page() {
     <>
       <ThemeProfilePreview theme={theme} title={theme.name} />
       <ThemeToggle />
+      <SandboxedHtmlFrame html="<p>Conteúdo da prévia</p>" title="Bio" autoHeight={false} />
     </>
   );
 }
@@ -137,6 +139,36 @@ describe("Prévia temporária do tema na aplicação", () => {
     expect(document.documentElement.classList.contains("dark")).toBe(false);
     expect(usePreferencesStore.getState().theme).toBe("light");
     expect({ ...localStorage }).toEqual(storage);
+    await act(async () => host.querySelector<HTMLButtonElement>("button[title]")!.click());
+    expect(useThemePreviewStore.getState().preview?.mode).toBe("dark");
+    expect(document.documentElement.classList.contains("dark")).toBe(true);
+    expect(usePreferencesStore.getState().theme).toBe("light");
+    expect({ ...localStorage }).toEqual(storage);
+  });
+
+  it("sincroniza a prévia nos iframes do design system sem recarregar o conteúdo", async () => {
+    const iframe = host.querySelector("iframe")!;
+    const srcDoc = iframe.getAttribute("srcdoc");
+    const frameDocument = iframe.contentDocument!;
+    const originalBackground = frameDocument.documentElement.style.getPropertyValue("--background");
+    expect(iframe.style.colorScheme).toBe("light");
+
+    await start();
+    expect(host.querySelector("iframe")).toBe(iframe);
+    expect(iframe.getAttribute("srcdoc")).toBe(srcDoc);
+    expect(iframe.contentDocument).toBe(frameDocument);
+    expect(iframe.style.colorScheme).toBe("dark");
+    expect(frameDocument.documentElement.style.colorScheme).toBe("dark");
+    expect(frameDocument.documentElement.style.getPropertyValue("--background")).toBe("#282a36");
+
+    await act(async () => useThemePreviewStore.getState().stopPreview());
+    expect(iframe.getAttribute("srcdoc")).toBe(srcDoc);
+    expect(iframe.contentDocument).toBe(frameDocument);
+    expect(iframe.style.colorScheme).toBe("light");
+    expect(frameDocument.documentElement.style.colorScheme).toBe("light");
+    expect(frameDocument.documentElement.style.getPropertyValue("--background")).toBe(
+      originalBackground,
+    );
   });
 
   it("sair da página restaura o DOM antes de ele entrar no cache de navegação", async () => {
