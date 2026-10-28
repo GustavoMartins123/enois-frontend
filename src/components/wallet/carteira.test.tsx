@@ -82,7 +82,7 @@ describe("Carteira e ordenação das molduras", () => {
       [...catalog].sort((a, b) => b.releaseOrder - a.releaseOrder),
     );
     client.setQueryData(["carteira"], { balance: 0, chave: "demonstracao", entries: [] });
-    client.setQueryData(["cotacao"], { brlCents: 100, historico: [] });
+    client.setQueryData(["cotacao"], { brlCents: 100, brlMicros: 1_000_000, historico: [] });
     client.setQueryData(["carteira-extrato", 0, "", ""], {
       entries: [],
       page: 0,
@@ -141,7 +141,7 @@ describe("Carteira e ordenação das molduras", () => {
     expect(tabs[0].textContent).toBe(texts.frameShop.walletTab);
     expect(tabs[0].getAttribute("aria-selected")).toBe("true");
     expect(tabs[1].getAttribute("aria-selected")).toBe("false");
-    expect(tabs[0].querySelector("svg.lucide-wallet")).not.toBeNull();
+    expect(tabs[0].querySelector("svg.lucide-zap")).not.toBeNull();
     for (const tab of tabs) expect(tab.querySelector("svg[aria-hidden=true]")).not.toBeNull();
     expect(host.textContent).toContain(texts.wallet.history);
     expect(host.querySelector(".frame-shop-grid")).toBeNull();

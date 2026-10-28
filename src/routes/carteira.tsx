@@ -5,6 +5,7 @@ import { Link, createFileRoute } from "@tanstack/react-router";
 
 import { texts } from "@/texts";
 import type { WalletTab } from "@/types/routes/wallet/wallet-tab";
+import { useMessages } from "@rede-enois/design-system";
 import {
   Button,
   Input,
@@ -29,7 +30,7 @@ import {
 } from "lucide-react";
 
 import { walletApi } from "@/lib/api";
-import { faiscaToBrlCents, formatBrlCents, formatFaisca, parseFaiscaInput } from "@/lib/faisca";
+import { faiscaToBrlMicros, formatBrlMicros, formatFaisca, parseFaiscaInput } from "@/lib/faisca";
 import { requireAuth } from "@/lib/require-auth";
 
 import { AppContainer } from "@/components/app-container";
@@ -37,6 +38,7 @@ import { MarketplaceSection } from "@/components/marketplace/marketplace-section
 import { UserPicker } from "@/components/user-picker";
 import { FrameShop } from "@/components/wallet/frame-shop";
 import { WalletHistory } from "@/components/wallet/wallet-history";
+import "@/components/wallet/wallet-history.css";
 
 const WALLET_TABS: WalletTab[] = ["carteira", "marketplace", "loja", "minhas"];
 
@@ -64,6 +66,7 @@ function Carteira() {
   }, [search.tab]);
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const frameShopMessages = useMessages().frameShop;
   const [payOpen, setPayOpen] = useState(false);
   const [form, setForm] = useState({ toUsername: "", amount: "", message: "" });
 
@@ -216,7 +219,7 @@ function Carteira() {
                 ) : (
                   <>
                     <p className="wallet-balance-value">
-                      {formatFaisca(wallet.balance)} <span>{texts.frameShop.sparks}</span>
+                      {formatFaisca(wallet.balance)} <span>{frameShopMessages.sparks}</span>
                     </p>
 
                     <p className="wallet-balance-key">
@@ -288,8 +291,8 @@ function Carteira() {
                   {cotacao && parseFaiscaInput(form.amount) !== null && (
                     <span className="block text-xs text-text-subtle">
                       ≈{" "}
-                      {formatBrlCents(
-                        faiscaToBrlCents(parseFaiscaInput(form.amount)!, cotacao.brlCents),
+                      {formatBrlMicros(
+                        faiscaToBrlMicros(parseFaiscaInput(form.amount)!, cotacao.brlMicros),
                       )}{" "}
                       na cotação de referência
                     </span>
@@ -436,8 +439,8 @@ function CotacaoCard({ mf }: { mf: number }) {
   }
 
   const pontos = [...cotacao.historico].reverse();
-  const atual = cotacao.brlCents;
-  const anterior = pontos.length > 1 ? pontos[pontos.length - 2].brlCents : atual;
+  const atual = cotacao.brlMicros;
+  const anterior = pontos.length > 1 ? pontos[pontos.length - 2].brlMicros : atual;
   const subiu = atual >= anterior;
 
   return (
@@ -458,23 +461,23 @@ function CotacaoCard({ mf }: { mf: number }) {
 
       <div className="flex flex-wrap items-end justify-between gap-3">
         <p className="text-2xl font-semibold tracking-tight text-text-strong">
-          1 faísca = {formatBrlCents(atual)}
+          1 faísca = {formatBrlMicros(atual)}
         </p>
 
         <p className="text-sm text-text-subtle">
           Seu saldo ≈{" "}
           <span className="font-semibold text-text-strong">
-            {formatBrlCents(faiscaToBrlCents(mf, atual))}
+            {formatBrlMicros(faiscaToBrlMicros(mf, atual))}
           </span>
         </p>
       </div>
 
-      {pontos.length > 1 && <Sparkline valores={pontos.map((p) => p.brlCents)} subiu={subiu} />}
+      {pontos.length > 1 && <Sparkline valores={pontos.map((p) => p.brlMicros)} subiu={subiu} />}
 
       <p className="text-xs leading-relaxed text-text-subtle">
-        Preço de referência publicado pela plataforma, usado para remunerar criadores e atualizado
-        quando necessário — o histórico fica aqui embaixo do gráfico. Comprar faísca com dinheiro
-        ainda não existe.
+        Preço de referência recalculado pela plataforma a partir do uso da moeda (marketplace,
+        serviços e transferências) e da emissão automática. O histórico fica no gráfico acima.
+        Comprar faísca com dinheiro ainda não existe.
       </p>
     </section>
   );
