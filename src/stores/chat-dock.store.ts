@@ -7,7 +7,7 @@ const MAX_OPEN_CHATS = 4;
 export const useChatDockStore = create<ChatDockState>()(
   persist(
     (set) => ({
-      expanded: false,
+      expanded: true,
       openChats: [],
 
       toggleExpanded: () => set((s) => ({ expanded: !s.expanded })),
