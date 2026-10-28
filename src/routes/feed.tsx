@@ -231,6 +231,7 @@ function Home() {
   const {
     data: feedData,
     isLoading: feedLoading,
+    isFetching: feedFetching,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
@@ -1070,6 +1071,15 @@ function Home() {
 
           <div className="space-y-4">
             {feedLoading && <PostCardSkeletons />}
+
+            {!feedLoading && feedFetching && !isFetchingNextPage && (
+              <div className="flex items-center justify-center gap-2 py-3">
+                <Loader2 className="h-4 w-4 animate-spin text-primary" />
+
+                <span className="text-sm text-text-subtle">{texts.feed.refreshing}</span>
+              </div>
+            )}
+
             {!feedLoading && feedPosts.map((p) => <PostCard key={p.id} post={p} feedTab={tab} />)}
 
             {!feedLoading && feedPosts.length === 0 && <EmptyState title={texts.feed.empty} />}

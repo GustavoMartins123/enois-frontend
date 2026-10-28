@@ -1391,6 +1391,7 @@ export const texts = {
       description: "Seu feed de insights, perguntas e projetos da comunidade profissional.",
     },
     you: "Você",
+    refreshing: "Atualizando publicações…",
     loadingMore: "Carregando mais publicações...",
     endOfFeed: "Você chegou ao fim do feed.",
     loadMore: "Carregar mais",
@@ -3163,6 +3164,7 @@ export const texts = {
     mediaLimit: "Anexe no máximo 4 imagens por mensagem.",
     mediaError: "Não foi possível enviar a imagem.",
     sendError: "Não foi possível enviar a mensagem. Tente de novo.",
+    e2eRequired: "Ative a criptografia ponta a ponta para enviar e ler mensagens.",
     mediaSpoiler: "Marcar mídias como spoiler",
     mediaSpoilerActive: "Mídias marcadas como spoiler",
     conversationFallback: "Conversa",
@@ -4150,6 +4152,14 @@ export const texts = {
     error: "Não foi possível concluir agora. Tente de novo.",
     footer:
       "A autorização parental é registrada com data e versão dos termos. O Énóis não trata a declaração de idade como verificação oficial.",
+  },
+  chatDock: {
+    title: "Mensagens",
+    collapse: "Minimizar mensagens",
+    empty: "Nenhuma conversa ainda.",
+    loading: "Carregando…",
+    loadMore: "Carregar mais conversas",
+    loadingMore: "Carregando…",
   },
   /** Supervisão parental: menor sem responsável autorizado (ECA Digital). */
   parentalGate: {
