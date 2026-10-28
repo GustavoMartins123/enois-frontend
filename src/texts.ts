@@ -3157,6 +3157,7 @@ export const texts = {
     mediaLimit: "Anexe no máximo 4 imagens por mensagem.",
     mediaError: "Não foi possível enviar a imagem.",
     sendError: "Não foi possível enviar a mensagem. Tente de novo.",
+    e2eRequired: "Ative a criptografia ponta a ponta para enviar e ler mensagens.",
     mediaSpoiler: "Marcar mídias como spoiler",
     mediaSpoilerActive: "Mídias marcadas como spoiler",
     conversationFallback: "Conversa",
