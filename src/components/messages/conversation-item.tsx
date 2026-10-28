@@ -37,7 +37,9 @@ export function ConversationItem({
   const title = conversation.title ?? otherUser?.name ?? texts.messages.conversationFallback;
   const otherNameStyle = authorNameStyle(otherUser);
 
-  const [preview, setPreview] = useState(conversation.lastMessage ?? "");
+  const [preview, setPreview] = useState(
+    conversation.lastMessageE2e ? "🔒" : (conversation.lastMessage ?? ""),
+  );
   useEffect(() => {
     if (!conversation.lastMessageE2e || !conversation.lastMessage || !conversation.lastMessageIv) {
       setPreview(conversation.lastMessage ?? "");
