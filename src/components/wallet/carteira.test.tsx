@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Route } from "@/routes/carteira";
 import { texts } from "@/texts";
 import type { LojaItem } from "@/types/application/loja/loja-item";
+import { defaultMessages } from "@rede-enois/design-system";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -82,7 +83,7 @@ describe("Carteira e ordenação das molduras", () => {
       [...catalog].sort((a, b) => b.releaseOrder - a.releaseOrder),
     );
     client.setQueryData(["carteira"], { balance: 0, chave: "demonstracao", entries: [] });
-    client.setQueryData(["cotacao"], { brlCents: 100, historico: [] });
+    client.setQueryData(["cotacao"], { brlCents: 100, brlMicros: 1_000_000, historico: [] });
     const Page = Route.options.component!;
     await act(async () =>
       root.render(
@@ -194,14 +195,16 @@ describe("Carteira e ordenação das molduras", () => {
     client.setQueryData(["loja", "newest"], [...expanded].reverse());
     await openTab(texts.frameShop.storeTab);
     await changeOrder("newest");
-    await click(texts.frameShop.filters.animated);
+    await click(defaultMessages.frameShop.filters.animated);
     expect(names().slice(0, 8)).toEqual(frames.map((frame) => frame.name).reverse());
     for (const frame of frames) {
       const avatar = host.querySelector(`.frame-shop-card [data-avatar-frame="${frame.id}"]`)!;
       expect(avatar).not.toBeNull();
       expect(avatar.hasAttribute("data-avatar-animated")).toBe(true);
       expect(avatar.querySelectorAll(".moldura-fx > svg")).toHaveLength(1);
-      expect(avatar.closest(".frame-shop-card")!.textContent).toContain(texts.frameShop.animated);
+      expect(avatar.closest(".frame-shop-card")!.textContent).toContain(
+        defaultMessages.frameShop.animated,
+      );
     }
     await click(texts.frameShop.filters.simple);
     expect(names()).toEqual(["coral", "violeta", "esmeralda", "ambar"]);
