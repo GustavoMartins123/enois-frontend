@@ -12,12 +12,24 @@ const frameCss = readFileSync("src/components/avatar-frames/avatar-frames.css", 
 describe("Movimento das oito molduras no CSS local", () => {
   let host: HTMLDivElement;
   let styles: HTMLStyleElement;
-  let reducedStyles: HTMLStyleElement;
+
+  function animatedElements(avatar: Element) {
+    const selectors = [...styles.sheet!.cssRules]
+      .filter(
+        (rule): rule is CSSStyleRule =>
+          rule instanceof CSSStyleRule &&
+          rule.style.getPropertyValue("animation") !== "" &&
+          rule.style.getPropertyValue("animation") !== "none",
+      )
+      .map((rule) => rule.selectorText);
+    return [...avatar.querySelectorAll("*")].filter((element) =>
+      selectors.some((selector) => element.matches(selector)),
+    );
+  }
 
   beforeEach(() => {
     host = document.createElement("div");
     styles = document.createElement("style");
-    reducedStyles = document.createElement("style");
     styles.textContent = frameCss;
     document.head.append(styles);
     document.body.append(host);
@@ -26,16 +38,13 @@ describe("Movimento das oito molduras no CSS local", () => {
   afterEach(() => {
     host.remove();
     styles.remove();
-    reducedStyles.remove();
     document.documentElement.removeAttribute("data-force-motion");
   });
 
   it.each(NEW_FX_FRAMES)("%s: pausa e retoma todos os elementos animados", (frame) => {
     host.innerHTML = renderToStaticMarkup(<UserAvatar frame={frame} />);
     const avatar = host.querySelector("[data-avatar-new-frame]")!;
-    const animated = [...avatar.querySelectorAll("*")].filter(
-      (element) => getComputedStyle(element).animation !== "",
-    );
+    const animated = animatedElements(avatar);
     expect(animated.length).toBeGreaterThan(0);
     expect(
       animated.every((element) => getComputedStyle(element).animationPlayState === "paused"),
@@ -56,27 +65,28 @@ describe("Movimento das oito molduras no CSS local", () => {
       host.innerHTML = renderToStaticMarkup(<UserAvatar frame={frame} />);
       const avatar = host.querySelector("[data-avatar-new-frame]")!;
       avatar.setAttribute("data-avatar-animating", "");
-      const animated = [...avatar.querySelectorAll("*")].filter(
-        (element) => getComputedStyle(element).animation !== "",
-      );
+      const animated = animatedElements(avatar);
       expect(animated.length).toBeGreaterThan(0);
       const media = [...styles.sheet!.cssRules].filter(
         (rule): rule is CSSMediaRule =>
           rule instanceof CSSMediaRule && rule.conditionText === "(prefers-reduced-motion: reduce)",
       );
       expect(media).toHaveLength(1);
-      // O jsdom não aplica media queries; aplicamos as regras reais do bloco selecionado.
-      reducedStyles.textContent = media
-        .flatMap((rule) => [...rule.cssRules].map((css) => css.cssText))
-        .join("\n");
-      document.head.append(reducedStyles);
-      expect(animated.every((element) => getComputedStyle(element).animation === "none")).toBe(
-        true,
+      // O jsdom não aplica media queries: conferimos a declaração e os seletores do bloco real.
+      const disabled = [...media[0].cssRules].filter(
+        (rule): rule is CSSStyleRule =>
+          rule instanceof CSSStyleRule &&
+          rule.style.getPropertyValue("animation") === "none" &&
+          rule.style.getPropertyPriority("animation") === "important",
       );
+      expect(disabled.length).toBeGreaterThan(0);
+      expect(
+        animated.every((element) => disabled.some((rule) => element.matches(rule.selectorText))),
+      ).toBe(true);
       document.documentElement.setAttribute("data-force-motion", "");
-      expect(animated.every((element) => getComputedStyle(element).animation !== "none")).toBe(
-        true,
-      );
+      expect(
+        animated.some((element) => disabled.some((rule) => element.matches(rule.selectorText))),
+      ).toBe(false);
     },
   );
 });
