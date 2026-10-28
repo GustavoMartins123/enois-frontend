@@ -1,4 +1,4 @@
-import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 
 import {
   keepPreviousData,
@@ -35,9 +35,12 @@ import { MessageBubble } from "./message-bubble";
 /** Tamanho que o app sempre usou; em modo lite cada página vem maior (menos idas ao servidor). */
 const MESSAGES_PAGE_SIZE = 50;
 
-/** Garante que a URL e um blob local (URL.createObjectURL). CodeQL nao rastreia a origem. */
-function safeBlobSrc(url: string): string {
-  return url.startsWith("blob:") ? url : "";
+/** Preview de arquivo local: gera blob URL no render, revoga no unmount. Quebra a cadeia
+ *  de taint que o CodeQL via quando a URL passava por state. */
+function BlobPreview({ file, alt, className }: { file: File; alt: string; className: string }) {
+  const url = useMemo(() => URL.createObjectURL(file), [file]);
+  useEffect(() => () => URL.revokeObjectURL(url), [url]);
+  return <img src={url} alt={alt} className={className} />;
 }
 
 /**
@@ -451,8 +454,8 @@ export function ConversationThread({
                         label={texts.posts.mediaSpoiler.badge}
                         className="h-16 w-16 rounded-lg"
                       >
-                        <img
-                          src={safeBlobSrc(item.preview)}
+                        <BlobPreview
+                          file={item.file}
                           alt=""
                           className="h-16 w-16 rounded-lg border border-border-soft object-cover"
                         />
